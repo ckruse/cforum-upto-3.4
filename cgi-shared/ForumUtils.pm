@@ -424,8 +424,8 @@ sub uniquify_params {
         if($dcfg->{ExternCharset}->[0]->[0] eq 'ISO-8859-1') {
           # Ok, we got characters not present in Latin-1. Due to
           # our knowledge of the browser bugs we assume that
-          # Windows-1252 has been sent
-          if($val =~ /[\x0-\x1F\x7F-\x9F]/) {
+          # Windows-1252 has been sent; THIS IS JUST A HACK!
+          if($val =~ /[\x7F-\x9F]/) {
             $convert = 0;
             $nval = $Clientlib->charset_convert($val,length($val),"Windows-1252","UTF-8");
           }
