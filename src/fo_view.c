@@ -448,9 +448,9 @@ void show_threadlist(void *shm_ptr,t_cf_hash *head)
     }
     else {
       #ifdef CF_SHARED_MEM
-      run_sorting_handlers(head,ptr,&threads);
+      cf_run_sorting_handlers(head,ptr,&threads);
       #else
-      run_sorting_handlers(head,sock,&tsd,&threads);
+      cf_run_sorting_handlers(head,sock,&tsd,&threads);
       #endif
 
       for(i=0;i<threads.elements;++i) {

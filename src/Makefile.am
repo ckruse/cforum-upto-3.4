@@ -1,28 +1,28 @@
 
 SUBDIRS=. modules parsetpl
 
-# fo_post not in 2.1!
 bin_PROGRAMS= \
-  fo_server \
+	fo_server \
 	fo_view \
 	fo_cleanup \
 	fo_vote \
 	fo_tid_index \
+	fo_post \
 	fo_threadlookup
 
 pkglib_LTLIBRARIES= \
 	libcfcharconvert.la \
-  libcfreadline.la \
-  libcfhashlib.la \
-  libcfutils.la \
-  libcfconfigparser.la \
+	libcfreadline.la \
+	libcfhashlib.la \
+	libcfutils.la \
+	libcfconfigparser.la \
 	libcfserverutils.la \
 	libcfclientlib.la \
 	libcfcgi.la \
 	libcfvalidate.la \
 	libcfhtml.la \
 	libcftemplate.la \
-  libcfserverlib.la
+	libcfserverlib.la
 
 libcfcharconvert_la_SOURCES=charconvert.c
 libcfcharconvert_la_LIBADD=$(ICONV)
@@ -84,6 +84,10 @@ fo_cleanup_LDFLAGS=-export-dynamic
 fo_vote_SOURCES=fo_vote.c
 fo_vote_LDADD=libcfutils.la libcfhashlib.la libcfreadline.la libcfconfigparser.la libcfclientlib.la libcfcgi.la libcftemplate.la $(BDB_LIB)
 fo_vote_LDFLAGS=-export-dynamic
+
+fo_post_SOURCES=fo_post.c
+fo_post_LDADD=libcfconfigparser.la libcftemplate.la libcfcharconvert.la libcfreadline.la libcfutils.la libcfhashlib.la libcfclientlib.la libcfcgi.la libcfhtml.la
+fo_post_LDFLAGS=-export-dynamic
 
 fo_view_SOURCES=fo_view.c
 fo_view_LDADD=libcfconfigparser.la libcftemplate.la libcfcharconvert.la libcfreadline.la libcfutils.la libcfhashlib.la libcfclientlib.la libcfcgi.la libcfhtml.la

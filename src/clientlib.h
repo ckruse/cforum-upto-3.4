@@ -457,9 +457,16 @@ int cf_run_connect_init_handlers(t_cf_hash *head,int sock);
 int cf_run_view_init_handlers(t_cf_hash *head,t_cf_template *tpl_begin,t_cf_template *tpl_end);
 
 #ifdef CF_SHARED_MEM
-int run_sorting_handlers(t_cf_hash *head,void *ptr,t_array *threads);
+int cf_run_sorting_handlers(t_cf_hash *head,void *ptr,t_array *threads);
 #else
-int run_sorting_handlers(t_cf_hash *head,int sock,rline_t *tsd,t_array *threads);
+int cf_run_sorting_handlers(t_cf_hash *head,int sock,rline_t *tsd,t_array *threads);
+#endif
+
+void cf_run_after_post_handlers(t_cf_hash *head,t_message *p,u_int64_t tid);
+#ifdef CF_SHARED_MEM
+int cf_run_post_filters(t_cf_hash *head,t_message *p,void *sock);
+#else
+int cf_run_post_filters(t_cf_hash *head,t_message *p,int sock);
 #endif
 
 

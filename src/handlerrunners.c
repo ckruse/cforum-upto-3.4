@@ -176,11 +176,11 @@ int cf_run_connect_init_handlers(t_cf_hash *head,int sock)
 }
 /* }}} */
 
-/* {{{ run_sorting_handlers */
+/* {{{ cf_run_sorting_handlers */
 #ifdef CF_SHARED_MEM
-int run_sorting_handlers(t_cf_hash *head,void *ptr,t_array *threads)
+int cf_run_sorting_handlers(t_cf_hash *head,void *ptr,t_array *threads)
 #else
-int run_sorting_handlers(t_cf_hash *head,int sock,rline_t *tsd,t_array *threads)
+int cf_run_sorting_handlers(t_cf_hash *head,int sock,rline_t *tsd,t_array *threads)
 #endif
 {
   t_handler_config *handler;
@@ -217,6 +217,48 @@ int cf_run_view_init_handlers(t_cf_hash *head,t_cf_template *tpl_begin,t_cf_temp
       handler = array_element_at(&Modules[VIEW_INIT_HANDLER],i);
       fkt     = (t_filter_init_view)handler->func;
       ret     = fkt(head,&fo_default_conf,&fo_view_conf,tpl_begin,tpl_end);
+    }
+  }
+
+  return ret;
+}
+/* }}} */
+
+/* {{{ cf_run_after_post_filters */
+void cf_run_after_post_handlers(t_cf_hash *head,t_message *p,u_int64_t tid) {
+  int ret = FLT_OK;
+  t_handler_config *handler;
+  size_t i;
+  t_after_post_filter fkt;
+
+  if(Modules[AFTER_POST_HANDLER].elements) {
+    for(i=0;i<Modules[AFTER_POST_HANDLER].elements && (ret == FLT_OK || ret == FLT_DECLINE);i++) {
+      handler = array_element_at(&Modules[AFTER_POST_HANDLER],i);
+      fkt     = (t_after_post_filter)handler->func;
+      ret     = fkt(head,&fo_default_conf,&fo_post_conf,p,tid);
+    }
+  }
+}
+/* }}} */
+
+/* {{{ cf_run_post_filters */
+#ifdef CF_SHARED_MEM
+int cf_run_post_filters(t_cf_hash *head,t_message *p,void *sock)
+#else
+int cf_run_post_filters(t_cf_hash *head,t_message *p,int sock)
+#endif
+{
+  int ret = FLT_OK;
+  t_handler_config *handler;
+  size_t i;
+  t_new_post_filter fkt;
+  int fupto = cf_cgi_get(head,"fupto") != NULL;
+
+  if(Modules[NEW_POST_HANDLER].elements) {
+    for(i=0;i<Modules[NEW_POST_HANDLER].elements && (ret == FLT_OK || ret == FLT_DECLINE);i++) {
+      handler = array_element_at(&Modules[NEW_POST_HANDLER],i);
+      fkt     = (t_new_post_filter)handler->func;
+      ret     = fkt(head,&fo_default_conf,&fo_view_conf,p,sock,fupto);
     }
   }
 
