@@ -133,23 +133,14 @@ time_t transform_date(const u_char *datestr) {
 }
 /* }}} */
 
-/* {{{ gen_unid
- * Returns: int             the length of the generated uid or 0
- * Parameters:
- *   - u_char *buff          a pointer to a buffer
- *   - int maxlen           the maximum length of the id
- *
- * This function generates a new unique id
- *
- */
+/* {{{ gen_unid */
 int gen_unid(u_char *buff,int maxlen) {
   int i,l;
   u_char *remaddr = getenv("REMOTE_ADDR");
   static const u_char chars[] = "AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz0123456789_-";
   struct timeval  tp;
 
-  if(!remaddr) return 0;
-
+  if(!remaddr) remaddr = "127.0.0.1";
   if(gettimeofday(&tp,NULL) != 0) return 0;
 
   srand(tp.tv_usec);
@@ -161,11 +152,11 @@ int gen_unid(u_char *buff,int maxlen) {
 
   l = rand() % maxlen;
   if(l == maxlen) --l;
-  for(++i;i<l;++i) buff[i] = chars[rand() % 63];
+  for(;i<l;++i) buff[i] = chars[rand() % 63];
 
   buff[i] = '\0';
 
-  return i;
+  return i - 1;
 }
 /* }}} */
 

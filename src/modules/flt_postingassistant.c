@@ -27,7 +27,7 @@
 #include <string.h>
 #include <sys/types.h>
 
-#include <time.h>
+#include <errno.h>
 
 #include "readline.h"
 #include "hashlib.h"
@@ -36,6 +36,7 @@
 #include "cfcgi.h"
 #include "template.h"
 #include "clientlib.h"
+#include "charconvert.h"
 #include "fo_post.h"
 /* }}} */
 
@@ -47,9 +48,27 @@ struct {
   float fds_allowed;
   int qp;
   int qp_must_validate;
-} flt_poas_conf = { 0, NULL, 0, 3, 5.0, 25, 0 };
+} flt_poas_conf = { 0, NULL, 0, 0, 5.0, 25, 0 };
 
-int last_chars_consist_of(u_char *str,u_char *signs,size_t backnum,int all) {
+/* {{{ flt_poas_case_strstr */
+u_char *flt_poas_case_strstr(const u_char *haystack,const u_char *needle) {
+  size_t len1 = strlen(haystack);
+  size_t len2 = strlen(needle);
+  size_t i;
+
+  if(len1 < len2) return NULL;
+  if(len1 == len2) return cf_strcasecmp(haystack,needle) == 0 ? (u_char *)haystack : NULL;
+
+  for(i=0;i<=len1-len2;i++) {
+    if(cf_strncasecmp(haystack+i,needle,len2) == 0) return (u_char *)(haystack+i);
+  }
+
+  return NULL;
+}
+/* }}} */
+
+/* {{{ flt_poas_last_chars_consist_of */
+int flt_poas_last_chars_consist_of(u_char *str,u_char *signs,size_t backnum,int all) {
   register u_char *ptr,*sign;
   size_t matched;
   u_char *lsigns = strdup(signs);
@@ -82,7 +101,9 @@ int last_chars_consist_of(u_char *str,u_char *signs,size_t backnum,int all) {
   free(lsigns);
   return 0;
 }
+/* }}} */
 
+/* {{{ flt_poas_check_for_signs */
 float flt_poas_check_for_signs(u_char *str,int strict,int musthave) {
   register u_char *ptr;
   int signs;
@@ -100,7 +121,7 @@ float flt_poas_check_for_signs(u_char *str,int strict,int musthave) {
         gotsigns = 1;
         break;
       default:
-       if(signs >= 2) {
+        if(signs >= 2) {
           /* we *never* accept more than three signs */
           if(signs > 3) return 3.0;
 
@@ -111,14 +132,14 @@ float flt_poas_check_for_signs(u_char *str,int strict,int musthave) {
               if(cf_strncmp(ptr-signs,"...",signs)) break;
 
               /* we accept ?!?, !?! ?! and !? (in both cases) */
-              if(last_chars_consist_of(ptr,"?!",signs,1) == 0) break;
+              if(flt_poas_last_chars_consist_of(ptr,"?!",signs,1) == 0) break;
 
               /* we do not accept everything else in strict mode 1 */
               if(strict == 1) return 2.0;
               break;
 
             case 2:
-              return 2.0;
+              return 3.0;
               break;
           }
         }
@@ -127,16 +148,42 @@ float flt_poas_check_for_signs(u_char *str,int strict,int musthave) {
     }
   }
 
+
+  if(signs >= 2) {
+    /* we *never* accept more than three signs */
+    if(signs > 3) return 3.0;
+
+    switch(strict) {
+      case 0:
+      case 1:
+        /* we accept ... and .. */
+        if(cf_strncmp(ptr-signs,"...",signs)) break;
+
+        /* we accept ?!?, !?! ?! and !? (in both cases) */
+        if(flt_poas_last_chars_consist_of(ptr,"?!",signs,1) == 0) break;
+
+        /* we do not accept everything else in strict mode 1 */
+        if(strict == 1) return 2.0;
+        break;
+
+      case 2:
+        return 3.0;
+        break;
+    }
+  }
+
   if(musthave && gotsigns == 0) return 3.0;
 
   return .0;
 }
+/* }}} */
 
+/* {{{ flt_poas_check_for_cases */
 int flt_poas_check_for_cases(u_char *str) {
   register u_char *ptr;
   int has_big = 0,has_small,big_after = 0;
 
-  for(ptr=str;*ptr;ptr++) {
+  for(ptr=str;*ptr;++ptr) {
     if(isupper(*ptr)) {
       has_big++;
       big_after++;
@@ -147,7 +194,9 @@ int flt_poas_check_for_cases(u_char *str) {
     }
     else big_after = 0;
 
-    if(big_after > 4) return has_small ? 2.0 : 3.0;
+    if(big_after > 4) {
+      if(has_small == 0) return 3.0;
+    }
   }
 
   if(!has_small) return 3.0;
@@ -155,7 +204,9 @@ int flt_poas_check_for_cases(u_char *str) {
 
   return .0;
 }
+/* }}} */
 
+/* {{{ flt_poas_check_newlines */
 int flt_poas_check_newlines(u_char *str) {
   register u_char *ptr;
   int nl;
@@ -172,23 +223,94 @@ int flt_poas_check_newlines(u_char *str) {
 
   return .0;
 }
+/* }}} */
 
+/* {{{ flt_poas_standardchecks */
 int flt_poas_standardchecks(t_message *p) {
   float score = flt_poas_conf.fds_allowed;
 
-  score -= flt_poas_check_for_signs(p->subject,0,0);
-  score -= flt_poas_check_for_signs(p->author,2,0);
-  score -= flt_poas_check_for_signs(p->content,1,1);
+  score -= flt_poas_check_for_signs(p->subject.content,0,0);
+  score -= flt_poas_check_for_signs(p->author.content,2,0);
+  score -= flt_poas_check_for_signs(p->content.content,1,1);
 
-  score -= flt_poas_check_for_cases(p->subject);
-  score -= flt_poas_check_for_cases(p->author);
-  score -= flt_poas_check_for_cases(p->content);
+  score -= flt_poas_check_for_cases(p->subject.content);
+  score -= flt_poas_check_for_cases(p->author.content);
+  score -= flt_poas_check_for_cases(p->content.content);
 
-  score -= flt_poas_check_newlines(p->content);
+  score -= flt_poas_check_newlines(p->content.content);
 
-  return score >= .0 ? 0 : -1;
+  if(p->email.len == 0) score -= 1.0;
+
+  return score > .0 ? 0 : -1;
 }
+/* }}} */
 
+/* {{{ flt_poas_badwords_check */
+int flt_poas_badwords_check(t_message *p) {
+  long i;
+  int score;
+
+  if(flt_poas_conf.bws_len == 0) return 0;
+
+  for(i=0,score=flt_poas_conf.bws_allowed;i<flt_poas_conf.bws_len && score > 0;++i) {
+    if(flt_poas_case_strstr(p->content.content,flt_poas_conf.bws[i]) != NULL) score -= 1;
+    if(flt_poas_case_strstr(p->subject.content,flt_poas_conf.bws[i]) != NULL) score -= 3;
+    if(flt_poas_case_strstr(p->email.content,flt_poas_conf.bws[i]) != NULL) score -= 1;
+  }
+
+  return score <= 0 ? -1 : 0;
+}
+/* }}} */
+
+/* {{{ flt_poas_qp_check */
+int flt_poas_qp_check(t_message *p) {
+  long quote_chars = 0,normal_chars = 0,all = 0;
+  register u_char *ptr;
+  int qmode = 0;
+  size_t len = 0,len1 = 0;
+  u_int32_t cnum;
+  float qpc;
+
+  /* {{{ count quoted and non-quoted characters */
+  for(ptr=p->content.content,len1=p->content.len;*ptr;ptr+=len,len1-=len) {
+    if(*ptr == (char)127) {
+      qmode = 1;
+      len = 1;
+      continue;
+    }
+    else if(cf_strncmp(ptr,"<br />",6) == 0) {
+      qmode = 0;
+      len = 6;
+      continue;
+    }
+
+    if((len = utf8_to_unicode(ptr,len1,&cnum)) == EILSEQ) {
+      len = 1;
+      continue;
+    }
+
+    if(qmode) quote_chars += 1;
+    else normal_chars += 1;
+    ++all;
+  }
+  /* }}} */
+
+  /* both cases are an formatting error */
+  if(normal_chars == 0) return -1;
+  if(quote_chars == 0) return 0;
+
+  /*
+   * if percentage of quoted characters is bigger than
+   * configured value, we have a formatting error
+   */
+  qpc = ((float)quote_chars / (float)all) * 100.0;
+  if(qpc >= flt_poas_conf.qp) return -1;
+
+  return 0;
+}
+/* }}} */
+
+/* {{{ flt_poas_execute */
 int flt_poas_execute(t_cf_hash *head,t_configuration *dc,t_configuration *pc,t_message *p,int sock,int mode) {
   /* first: standard checks */
   if(cf_cgi_get(head,"assicheck") == NULL || flt_poas_conf.poas_must_validate) {
@@ -198,13 +320,32 @@ int flt_poas_execute(t_cf_hash *head,t_configuration *dc,t_configuration *pc,t_m
       display_posting_form(head);
       return FLT_EXIT;
     }
-
-    return FLT_OK;
   }
 
-  return FLT_DECLINE;
-}
+  /* check for bad words */
+  if(flt_poas_badwords_check(p) != 0) {
+    cf_cgi_set(head,"assicheck","1");
+    strcpy(ErrorString,"E_posting_badwords");
+    display_posting_form(head);
+    return FLT_EXIT;
+  }
 
+  /* check for quotes */
+  if(cf_cgi_get(head,"assicheck") == NULL || flt_poas_conf.qp_must_validate) {
+    if(flt_poas_qp_check(p) != 0) {
+      cf_cgi_set(head,"assicheck","1");
+      strcpy(ErrorString,"E_posting_quoting");
+      display_posting_form(head);
+      return FLT_EXIT;
+    }
+  }
+
+
+  return FLT_OK;
+}
+/* }}} */
+
+/* {{{ flt_poas_handle */
 int flt_poas_handle(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
   switch(*opt->name) {
     case 'P':
@@ -218,7 +359,7 @@ int flt_poas_handle(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_
       else flt_poas_conf.bws_allowed = atoi(args[0]);
       break;
     case 'Q':
-      if(cf_strcmp(args[0],"QuotingPercent") == 0) flt_poas_conf.qp = atoi(args[0]);
+      if(cf_strcmp(opt->name,"QuotingPercent") == 0) flt_poas_conf.qp = atoi(args[0]);
       else flt_poas_conf.qp_must_validate = cf_strcmp(args[0],"yes") == 0;
       break;
 
@@ -228,7 +369,9 @@ int flt_poas_handle(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_
 
   return 0;
 }
+/* }}} */
 
+/* {{{ flt_poas_finish */
 void flt_poas_finish(void) {
   long i;
 
@@ -238,14 +381,15 @@ void flt_poas_finish(void) {
   free(flt_poas_conf.bws);
 
 }
+/* }}} */
 
 t_conf_opt flt_poas_config[] = {
-  { "PostingAssistantMustValidate", flt_poas_handle, CFG_OPT_CONFIG, NULL },
-  { "BadWords",                     flt_poas_handle, CFG_OPT_CONFIG, NULL },
-  { "BadwordsAllowed",              flt_poas_handle, CFG_OPT_CONFIG, NULL },
-  { "FormateDeficitesAllowed",      flt_poas_handle, CFG_OPT_CONFIG, NULL },
-  { "QuotingPercent",               flt_poas_handle, CFG_OPT_CONFIG, NULL },
-  { "QuoteMustValidate",            flt_poas_handle, CFG_OPT_CONFIG, NULL },
+  { "PostingAssistantMustValidate", flt_poas_handle, CFG_OPT_CONFIG|CFG_OPT_LOCAL, NULL },
+  { "BadWords",                     flt_poas_handle, CFG_OPT_CONFIG|CFG_OPT_LOCAL, NULL },
+  { "BadwordsAllowed",              flt_poas_handle, CFG_OPT_CONFIG|CFG_OPT_LOCAL, NULL },
+  { "FormateDeficitesAllowed",      flt_poas_handle, CFG_OPT_CONFIG|CFG_OPT_LOCAL, NULL },
+  { "QuotingPercent",               flt_poas_handle, CFG_OPT_CONFIG|CFG_OPT_LOCAL, NULL },
+  { "QuoteMustValidate",            flt_poas_handle, CFG_OPT_CONFIG|CFG_OPT_LOCAL, NULL },
   { NULL, NULL, 0, NULL }
 };
 

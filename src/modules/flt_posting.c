@@ -318,6 +318,7 @@ int flt_posting_execute_filter(t_cf_hash *head,t_configuration *dc,t_configurati
 }
 /* }}} */
 
+/* {{{ flt_posting_post_display */
 int flt_posting_post_display(t_cf_hash *head,t_configuration *dc,t_configuration *pc,t_cf_template *tpl) {
   u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   t_name_value *v;
@@ -372,6 +373,7 @@ int flt_posting_post_display(t_cf_hash *head,t_configuration *dc,t_configuration
 
   return FLT_DECLINE;
 }
+/* }}} */
 
 /* {{{ pre and post content filters */
 int flt_posting_post_cnt(t_configuration *dc,t_configuration *vc,t_cl_thread *thr,t_string *content,t_string *cite,const u_char *qchars) {

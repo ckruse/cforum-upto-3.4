@@ -18,6 +18,7 @@ Load "flt_visited"
 Load "flt_include"
 Load "flt_httpauth"
 Load "flt_remotesignature"
+Load "flt_postingassistant"
 Load "flt_preview"
 
 Forum FORUM1 {

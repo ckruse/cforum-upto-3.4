@@ -483,10 +483,10 @@ t_string *body_plain2coded(const u_char *text) {
    * - normalize [message:], [image:], [iframe:] and [link:]
    * - normalize quoting characters
    */
-  for(ptr=body;*ptr;ptr++) {
+  for(ptr=body;*ptr;++ptr) {
     switch(*ptr) {
       case '\015':
-        if(*(ptr+1) == '\012') ptr++;
+        if(*(ptr+1) == '\012') ++ptr;
         str_char_append(str,'\012');
         break;
       case '[':
@@ -509,7 +509,10 @@ t_string *body_plain2coded(const u_char *text) {
           }
         }
       default:
-        if(cf_strncmp(ptr,qchars,len) == 0) str_char_append(str,(u_char)127);
+        if(cf_strncmp(ptr,qchars,len) == 0) {
+          str_char_append(str,(u_char)127);
+          ptr += len - 1;
+        }
         else str_char_append(str,*ptr);
     }
   }

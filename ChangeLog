@@ -1,3 +1,12 @@
+2005-01-21 Christian Kruse <ckruse@wwwtech.de>
+	* conf/errormessages.de.txt: Fixed bug in error message
+	* conf/fo_post.conf.in: Added flt_postingassistant
+	* src/utils.c: Bugfix in gen_unid() function
+	* src/modules/flt_postingassistant.c: Moved to 3.0 API, fixed bugs
+	* src/modules/flt_posting.c: Small code cleaning
+	* src/modules/flt_sorting.c: Added possibility to use default sorting
+	* src/fo_post.c: Bugfix in body_str2coded()
+
 2005-01-20 Christian Kruse <ckruse@wwwtech.de>
 	* conf/fo_post.conf.in: Added PreviewDateFormat directive, added preview
 		module and remote-signature module
