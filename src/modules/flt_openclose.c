@@ -187,7 +187,6 @@ int flt_oc_execute_filter(t_cf_hash *head,t_configuration *dc,t_configuration *v
 
   if(mode & CF_MODE_PRE) return FLT_DECLINE;
   if(mode & CF_MODE_THREADVIEW) return FLT_DECLINE;
-  if(ThreadsOpenByDefault == -1) return FLT_DECLINE;
 
   if(flt_oc_fn == NULL) flt_oc_fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   
