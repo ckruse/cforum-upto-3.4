@@ -783,6 +783,7 @@ int cf_get_next_thread_through_sock(int sock,rline_t *tsd,t_cl_thread *thr,const
       }
       else if(cf_strncmp(line,"Visible:",8) == 0) {
         thr->last->invisible = line[8] == '0';
+        if(thr->last->invisible) thr->msg_len--;
       }
       else if(cf_strncmp(line,"Subject:",8) == 0) {
         thr->last->subject = strdup(&line[8]);
@@ -832,6 +833,7 @@ void *cf_get_next_thread_through_shm(void *shm_ptr,t_cl_thread *thr,const u_char
   struct shmid_ds shm_buf;
   void *ptr1 = get_shm_ptr();
   size_t len;
+  int msglen;
   u_char buff[128];
 
   memset(thr,0,sizeof(*thr));
@@ -849,10 +851,10 @@ void *cf_get_next_thread_through_shm(void *shm_ptr,t_cl_thread *thr,const u_char
   ptr += sizeof(u_int64_t);
 
   /* message id */
-  thr->msg_len = *((int32_t *)ptr);
+  thr->msg_len = msglen = *((int32_t *)ptr);
   ptr += sizeof(int32_t);
 
-  for(post = 0;post < thr->msg_len;post++) {
+  for(post = 0;post < msglen;post++) {
     if(thr->last == NULL) {
       thr->messages = thr->last = fo_alloc(NULL,1,sizeof(t_message),FO_ALLOC_CALLOC);
     }
@@ -906,6 +908,8 @@ void *cf_get_next_thread_through_shm(void *shm_ptr,t_cl_thread *thr,const u_char
     thr->last->invisible = *((u_int16_t *)ptr);
     thr->last->may_show  = 1;
     ptr += sizeof(u_int16_t);
+
+    if(thr->last->invisible) thr->msg_len--;
 
     /* author length */
     thr->last->author_len = *((u_int32_t *)ptr) - 1;

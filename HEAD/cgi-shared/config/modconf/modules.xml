@@ -216,7 +216,7 @@
           <error>Soll der &quot;Zurück zum Forum&quot;-Link in Postings per Anker auf den eben besuchten Thread zeigen? Geben Sie &quot;Ja&quot; oder &quot;Nein&quot; an!</error>
           <formvalues>
             <value val="yes">Ja</value>
-            <value val="nein" default="yes">Nein</value>
+            <value val="no" default="yes">Nein</value>
           </formvalues>
         </argument>
       </directive>
@@ -487,7 +487,7 @@
         </argument>
       </directive>
       <directive name="ShowBlacklistFollowups" arguments="1">
-        <argument paramname="blacklistfollowups" type="text" encode="plain">
+        <argument paramname="blacklistfollowups" type="radio" encode="plain">
           <validate>^(?:yes|no)$</validate>
           <question>Sollen Antworten auf durch die Blacklist ausgeblendete Postings angezeigt werden?</question>
           <error>Bitte geben Sie auf die Frage, ob Antworten auf durch die Blacklist ausgeblendete Postings angezeigt werden sollen, ja oder nein an.</error>

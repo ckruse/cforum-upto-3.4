@@ -465,7 +465,7 @@ elsif($action eq 'save') {
       # 'type' attribute and use a predefined validation
       if($validate) {
         if($val !~ /$validate/ || !validate_input($val,$dname,$fo_userconf_conf)) {
-          my $err = $fo_default_conf,get_node_data(($arg->getElementsByTagName('error'))[0]);
+          my $err = get_node_data(($arg->getElementsByTagName('error'))[0]);
           generate_edit_output($cgi,$fo_default_conf,$fo_view_conf,$fo_userconf_conf,$user_config,$err);
           exit;
         }

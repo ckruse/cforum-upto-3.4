@@ -1,3 +1,9 @@
+2004-06-14 Christian Kruse <ckruse@wwwtech.de>
+	* src/clientlib.c: Bugfix for counting messages
+	* cgi-shared/config/modconf/modules.xml: Bugfix for validation entry,
+		changed 'nein' to 'no'
+	* cgi-bin/fo_userconf: Bugfix, now 'Fehler: HASH(...)' is no longer possible
+
 2004-06-07 Christian Kruse <ckruse@wwwtech.de>
 	* src/utils.h: corrected documentation
 	* src/configparser.[ch]: Changed access to configuration directives to AVL
