@@ -1,3 +1,7 @@
+2005-01-03 Christian Kruse <ckruse@wwwtech.de>
+	* src/modules/flt_votingvariables.c: Ups, forgot it to add it to the
+		repository
+
 2004-12-31 Christian Seiler <self@christian-seiler.de>
 	* Created cgi-bin/admin directory with corresponding Makefile.am
 	* Added cgi-bin/admin/fo_xmlrpc.in for XMLRPC requests

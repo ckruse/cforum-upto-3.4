@@ -105,8 +105,8 @@ void send_ok_output(t_cf_hash *head,t_name_value *cs) {
 
   generate_tpl_name(tpl_name,256,cfg_tpl);
 
-  tid   = str_to_u_int64(tid);
-  mid   = str_to_u_int64(mid);
+  tid   = str_to_u_int64(ctid);
+  mid   = str_to_u_int64(cmid);
   link  = get_link(NULL,tid,mid);
 
   if(tpl_cf_init(&tpl,tpl_name) != 0) {
@@ -159,7 +159,7 @@ int main(int argc,char *argv[],char *env[]) {
   DB_ENV *dbenv;
   DB *db;
   DBT key,data;
-  t_name_value *dbname,*cs,*send204;
+  t_name_value *dbname,*cs,*send204 = NULL;
   int fd;
 
   /* set signal handler for SIGSEGV (for error reporting) */
