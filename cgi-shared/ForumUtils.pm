@@ -402,7 +402,19 @@ sub uniquify_params {
 
   # thanks to André Malo for the following peace of code (great idea):
   # is the given charset UTF-8?
-  unless($val =~ /^\303\277/) {
+  if($val =~ /^\303\277/) {
+    # seems so, we have to check if all input is valid UTF-8; there
+    # are many broken browsers which send e.g. binary input not
+    # well-encoded as UTF-8
+    foreach($cgi->param) {
+      my @values = $cgi->param($_);
+
+      foreach my $val (@values) {
+        return get_error($dcfg,'posting','charset') unless $Clientlib->is_valid_utf8_string($val,length($val));
+      }
+    }
+  }
+  else {
     foreach($cgi->param) {
       my @values  = $cgi->param($_);
       my @newvals = ();
@@ -467,18 +479,18 @@ sub get_error {
   my ($dcfg,$err) = (shift,shift);
   my $variant     = shift || '';
 
-	unless($Msgs) {
-	  $Msgs = new BerkeleyDB::Btree(
+  unless($Msgs) {
+    $Msgs = new BerkeleyDB::Btree(
       -Filename => $dcfg->{MessagesDatabase}->[0]->[0],
       -Flags => DB_RDONLY
     ) or return 'Bad database error, go away';
-	}
+  }
 
-	my $id = $dcfg->{Language}->[0]->[0].'_E_'.($variant ? $err.'_'.$variant : $err);
+  my $id = $dcfg->{Language}->[0]->[0].'_E_'.($variant ? $err.'_'.$variant : $err);
 
   my $msg = '';
-	my $rc = $Msgs->db_get($id,$msg);
-	return $msg||'Error not found: '.$id;
+  my $rc = $Msgs->db_get($id,$msg);
+  return $msg||'Error not found: '.$id;
 }
 # }}}
 

@@ -197,10 +197,10 @@ int main(int argc,char *argv[],char *env[]) {
         memset(&key,0,sizeof(key));
         memset(&data,0,sizeof(data));
 
-        key.data = uname;
-        key.size = strlen(uname);
-        data.data = "1";
-        data.size = 1;
+        len = snprintf(buff,512,"%s_%s_%s",uname,ctid,cmid);
+
+        key.data = buff;
+        key.size = len;
 
         if((ret = db->get(db,NULL,&key,&data,0)) == 0) {
           printf("Status: 403 Forbidden\015\012Content-Type: text/html\015\012\015\012");
@@ -214,6 +214,9 @@ int main(int argc,char *argv[],char *env[]) {
           fprintf(stderr,"db->get() error: %s\n",db_strerror(ret));
           return EXIT_FAILURE;
         }
+
+        data.data = "1";
+        data.size = 1;
 
         if((ret = db->put(db,NULL,&key,&data,DB_NODUPDATA|DB_NOOVERWRITE)) != 0) {
           printf("Status: 500 Internal Server Error\015\012Content-Type: text/html\015\012\015\012");

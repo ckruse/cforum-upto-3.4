@@ -50,6 +50,9 @@
 
  SpellCheckerDictionary "ndeutsch"
  SpellCheckerFormatterType "utf8"
+
+ SMTPHost "localhost"
+ SMTPFrom "cforum@wwwtech.de"
 </General>
 
 <Images>

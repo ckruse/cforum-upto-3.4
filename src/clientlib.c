@@ -109,6 +109,7 @@ void *get_shm_ptr() {
   if(shm_lock_sem == -1) {
     /* create a new segment */
     if((shm_lock_sem = semget(atoi(shm->values[2]),0,0)) == -1) {
+      perror("semget");
       return NULL;
     }
   }
@@ -118,6 +119,7 @@ void *get_shm_ptr() {
 
     if(shm_id == -1) {
       if((shm_id = shmget(atoi(shm->values[val]),0,0)) == -1) {
+        perror("shmget");
         return NULL;
       }
     }
@@ -128,6 +130,7 @@ void *get_shm_ptr() {
        * So set SHM_RDONLY in the shmat-flag.
        */
       if((shm_ptr = shmat(shm_id,0,SHM_RDONLY)) == (void *)-1) {
+        perror("shmat");
         return NULL;
       }
     }

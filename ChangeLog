@@ -1,3 +1,26 @@
+2004-09-26 Christian Kruse <ckrsue@wwwtech.de>
+	* src/configparser.c: Added QuotingChars directive for fo_arcview
+	* src/charconvert.c: Added folding hooks ({{{ and }}})
+	* src/clientlib.c: Added perror() when shm*() fails
+	* src/modules/flt_livefilter.c: Added folding hooks, renamed some functions,
+		fixed some error handling bugs
+	* src/modules/flt_tplmode.c: Fixed a bug (removed a free() call)
+	* src/perl/CForum-Configparser/*: Fixed several bugs, changed to new
+		configparser API
+	* src/perl/CForum-Clientlib/*: Fixed several bugs, implemented shm handling
+	* Doxyfile.in: Removed CFML, changed to srcripts/
+	* cgi-shared/Plugins/MarkOwnVisited.pm: Changed sub VERSION to our $VERSION
+	* cgi-shared/Plugins/Preview.pm: Changed to clientlib API
+	* cgi-shared/ForumUtils.pm: Added UTF-8 validation, removed tab characters
+	* cgi-shared/config/errormessages.{de,fr}.txt: Added several messages
+	* cgi-shared/config/fo_post.conf.in: Added SMTP directives for mailing a
+		notice on answer
+	* cgi-shared/Plugins/SendMailOnAnswer.pm: Plugin for sending mail on activity
+		in thread
+
+2004-09-19 Christian Kruse <ckruse@wwwtech.de>
+	* src/modules/flt_posting.c: Bugfix, forgot to set some variables
+
 2004-09-15 Christian Kruse <ckruse@wwwtech.de>
 	* cgi-shared/config/modules.de.xml: Added RegisteredName (where has it gone?!)
 	* src/modules/flt_registerednames.c: Fixed bug in name transformation

@@ -45,7 +45,6 @@ int flt_tplmode_execute(t_cf_hash *head,t_configuration *dc,t_configuration *vc)
     v  = cfg_get_first_value(dc,"TemplateMode");
 
     free(v->values[0]);
-    free(v->values[1]);
 
     v->values[0] = strdup(TPLMode);
 

@@ -713,6 +713,7 @@
           <error>Bitte geben Sie für den automatischen Reload eine Zahl zwischen 2 und 30 ein!</error>
         </argument>
       </directive>
+
     </section>
   </page>
 

@@ -58,9 +58,8 @@ INPUT                  = src/ \
 												 cgi-bin/fo_userconf \
 												 cgi-shared/ForumUtils.pm \
 												 cgi-shared/Plugins \
-												 template_gen.pl \
-												 testsuite.pl \
-												 ../CFML/
+												 scripts/template_gen.pl \
+												 scripts/testsuite.pl
 FILE_PATTERNS          = *.h \
                          *.c \
 												 *.pl \
