@@ -1,7 +1,8 @@
 2004-07-20 Christian Kruse <ckruse@wwwtech.de>
 	* src/hashlib.c: Fixed bug in calloc() call, changed cf_hash_set() behavior:
 		now _cf_hash_split() will only be called if the number of elements is bigger
-		or equal than hash table size. Thanks to Mark ter Brugge
+		or equal than hash table size. Now it also uses memcmp() instead of
+		strcmp(), so binary data can be hashed, too. Thanks to Mark ter Brugge
 		<m.h.terbrugge@dacolian.nl> for mail.
 	* src/Makefile.am: Fixed bug (I commented out templates, this was wrong and
 		never should have been commited)
