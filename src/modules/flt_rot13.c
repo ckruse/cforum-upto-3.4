@@ -51,8 +51,8 @@ int flt_rot13_execute(t_configuration *fdc,t_configuration *fvc,t_cl_thread *thr
 
   t_string cnt;
 
-  int si = cf_hash_get(GlobalValues,"ShowInvisible",13) != NULL;
-  t_name_value *v = cfg_get_first_value(fdc,forum_name,si ? "UPostingURL" : "PostingURL");
+  int un = cf_hash_get(GlobalValues,"UserName",8) != NULL;
+  t_name_value *v = cfg_get_first_value(fdc,forum_name,un ? "UPostingURL" : "PostingURL");
 
   if(!thread) return FLT_DECLINE;
 
