@@ -773,7 +773,7 @@ u_char *flt_syntax_get_token(const u_char *txt) {
 
 /* {{{ flt_syntax_doit */
 int flt_syntax_doit(flt_syntax_pattern_file_t *file,flt_syntax_block_t *block,u_char *text,size_t len,t_string *cnt,u_char **pos,const u_char *extra_arg,int xhtml,int *pops) {
-  u_char *ptr,*tmpchar,*priv_extra;
+  u_char *ptr,*tmpchar,*priv_extra,*begin;
   size_t i,x;
   flt_syntax_statement_t *statement;
   t_string *str,*tmpstr;
@@ -805,13 +805,33 @@ int flt_syntax_doit(flt_syntax_pattern_file_t *file,flt_syntax_block_t *block,u_
     }
   }
 
-  for(ptr=*pos?*pos:text;*ptr;++ptr) {
+  begin = *pos ? *pos : text;
+
+  for(ptr=begin;*ptr;++ptr) {
     if(block->le_behavior == FLT_SYNTAX_POP && cf_strncmp(ptr,"<br",3) == 0) {
       str_chars_append(cnt,"<br",3);
       if(xhtml) str_chars_append(cnt," />",3);
       else str_char_append(cnt,'>');
       *pos = ptr + (xhtml ? 6 : 4);
       return 0;
+    }
+    else if(cf_strncmp(ptr,"<code",5) == 0) {
+      for(matched=0;*ptr;++ptr) {
+        if(cf_strncmp(ptr,"<code",5) == 0) {
+          ++matched;
+          str_chars_append(cnt,"<code",5);
+          ptr += 4;
+        }
+        else if(cf_strncmp(ptr,"</code>",7) == 0) {
+          --matched;
+          str_chars_append(cnt,"</code>",7);
+          ptr += 6;
+          if(matched == 0) break;
+        }
+        else str_char_append(cnt,*ptr);
+      }
+
+      continue;
     }
 
     for(i=0,matched=0;i<block->statement.elements && matched == 0;++i) {
@@ -897,6 +917,8 @@ int flt_syntax_doit(flt_syntax_pattern_file_t *file,flt_syntax_block_t *block,u_
 
         case FLT_SYNTAX_ONSTRINGLIST:
           /* {{{ onstringlist */
+          if(ptr != begin && !isspace(*(ptr-1))) continue;
+
           str = array_element_at(&statement->args,0);
           if((tmplist = flt_syntax_list_by_name(file,str->content)) == NULL) {
             fprintf(stderr,"could not find list %s!\n",str->content);
@@ -1238,6 +1260,8 @@ int flt_syntax_highlight(t_string *content,t_string *bco,const u_char *lang,cons
 
   str_chars_append(bco,"<code title=\"",13);
   str_chars_append(bco,lang,strlen(lang));
+  str_chars_append(bco,"\" class=\"",9);
+  str_chars_append(bco,lang,strlen(lang));
   str_chars_append(bco,"\">",2);
   str_str_append(bco,&code);
   str_cleanup(&code);
@@ -1270,7 +1294,9 @@ int flt_syntax_execute(t_configuration *fdc,t_configuration *fvc,const u_char *d
   /* }}} */
 
   str_init(&str);
-  for(ptr=(u_char *)parameters[1];*ptr;++ptr) str_char_append(&str,tolower(*ptr));
+  for(ptr=(u_char *)parameters[1];*ptr;++ptr) {
+    if(isalnum(*ptr)) str_char_append(&str,tolower(*ptr));
+  }
   lang = str.content;
 
   /* we got a language, check if it exists */
@@ -1283,6 +1309,8 @@ int flt_syntax_execute(t_configuration *fdc,t_configuration *fvc,const u_char *d
   /* {{{ language doesnt exist, put a <code> around it */
   if(stat(str.content,&st) == -1) {
     str_chars_append(bco,"<code title=\"",13);
+    str_chars_append(bco,parameters[1],strlen(parameters[1]));
+    str_chars_append(bco,"\" class=\"",9);
     str_chars_append(bco,parameters[1],strlen(parameters[1]));
     str_chars_append(bco,"\">",2);
     str_str_append(bco,content);
@@ -1303,6 +1331,8 @@ int flt_syntax_execute(t_configuration *fdc,t_configuration *fvc,const u_char *d
   /* {{{ highlight content */
   if(flt_syntax_highlight(content,bco,lang,str.content) != 0) {
     str_chars_append(bco,"<code title=\"",13);
+    str_chars_append(bco,parameters[1],strlen(parameters[1]));
+    str_chars_append(bco,"\" class=\"",9);
     str_chars_append(bco,parameters[1],strlen(parameters[1]));
     str_chars_append(bco,"\">",2);
     str_str_append(bco,content);

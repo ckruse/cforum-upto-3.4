@@ -59,10 +59,15 @@ sub add_user {
 
   mkdir $dir,0771 or return;
 
-  open DAT,'>'.$ufile or return;
-  print DAT 'DeletedFile "',$dir,"/dt.dat\"\n";
-  print DAT 'VisitedFile "',$dir,"/vt.dat\"\n";
-  close DAT;
+  my $dat;
+  open $dat,'>'.$ufile or return;
+  #
+  # run config plugins
+  #
+  foreach(@{$Plugins->{register}}) {
+    &$_($fo_default_conf,undef,undef,$dir,$ufile,$dat);
+  }
+  close $dat;
 
   return 1;
 }

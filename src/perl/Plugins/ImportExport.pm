@@ -100,7 +100,7 @@ sub imprt {
     my $name = $directive->getAttribute('name');
     my $uconf_directive = $dhash->{$name};
 
-    fatal($cgi,$fo_default_conf,$user_config,get_error($fo_default_conf,'IMPORT_DATAFAILURE'),get_conf_val($fo_userconf_conf,$main::Forum,'FatalTemplate')) unless $uconf_directive;
+    next unless $uconf_directive;
 
     my @arguments_user = $directive->getElementsByTagName('Argument');
     my @arguments_mod  = $uconf_directive->findnodes('./argument/validate');

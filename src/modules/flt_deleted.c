@@ -162,7 +162,7 @@ int flt_deleted_del_thread(t_cf_hash *head,t_configuration *dc,t_configuration *
 int flt_deleted_del_thread(t_cf_hash *head,t_configuration *dc,t_configuration *vc,void *sock)
 #endif
 {
-  u_char *c_tid,*qs,*a;
+  u_char *c_tid,*a;
   u_int64_t tid;
   DBT key,data;
   char one[] = "1";
@@ -173,54 +173,19 @@ int flt_deleted_del_thread(t_cf_hash *head,t_configuration *dc,t_configuration *
   u_char *tmp;
 
   if(head && Cfg.DeletedFile) {
-    qs = getenv("QUERY_STRING");
+    a = cf_cgi_get(head,"a");
 
-    if(qs) {
-      a = cf_cgi_get(head,"a");
+    if(a) {
+      if(cf_strcmp(a,"d") == 0) {
+        if((parm = cf_cgi_get_multiple(head,"t")) != NULL) {
+          memset(&data,0,sizeof(data));
+          data.data = one;
+          data.size = sizeof(one);
 
-      if(a) {
-        if(cf_strcmp(a,"d") == 0) {
-          if((parm = cf_cgi_get_multiple(head,"t")) != NULL) {
-            memset(&data,0,sizeof(data));
-            data.data = one;
-            data.size = sizeof(one);
+          for(;parm;parm=parm->next) {
+            tid = strtoull(parm->value,NULL,10);
 
-            for(;parm;parm=parm->next) {
-              tid = strtoull(parm->value,NULL,10);
-
-              if(tid) {
-                memset(&key,0,sizeof(key));
-
-                /* we transform the value again to a string because there could be trash in it... */
-                len = snprintf(buff,256,"%llu",tid);
-
-                key.data = buff;
-                key.size = len;
-
-                Cfg.db->put(Cfg.db,NULL,&key,&data,DB_NODUPDATA|DB_NOOVERWRITE);
-              }
-            }
-
-            /* set timestamp on file */
-            snprintf(buff,256,"%s.tm",Cfg.DeletedFile);
-            remove(buff);
-            if((fd = open(buff,O_CREAT|O_TRUNC|O_WRONLY)) != -1) close(fd);
-
-            cf_hash_entry_delete(head,"t",1);
-            cf_hash_entry_delete(head,"a",1);
-
-            if(Cfg.resp_204) {
-              printf("Status: 204 No Content\015\012\015\012");
-              return FLT_EXIT;
-            }
-          }
-        }
-        else if(cf_strcmp(a,"nd") == 0) {
-          Cfg.DoDelete = 0;
-        }
-        else if(cf_strcmp(a,"u") == 0) {
-          if((tmp = cf_cgi_get(head,"t")) != NULL) {
-            if((tid = strtoull(tmp,NULL,10)) > 0) {
+            if(tid) {
               memset(&key,0,sizeof(key));
 
               /* we transform the value again to a string because there could be trash in it... */
@@ -229,16 +194,47 @@ int flt_deleted_del_thread(t_cf_hash *head,t_configuration *dc,t_configuration *
               key.data = buff;
               key.size = len;
 
-              Cfg.db->del(Cfg.db,NULL,&key,0);
-
-              cf_hash_entry_delete(head,"t",1);
-              cf_hash_entry_delete(head,"a",1);
+              Cfg.db->put(Cfg.db,NULL,&key,&data,DB_NODUPDATA|DB_NOOVERWRITE);
             }
           }
-        }
 
-        return FLT_OK;
+          /* set timestamp on file */
+          snprintf(buff,256,"%s.tm",Cfg.DeletedFile);
+          remove(buff);
+          if((fd = open(buff,O_CREAT|O_TRUNC|O_WRONLY)) != -1) close(fd);
+
+          cf_hash_entry_delete(head,"t",1);
+          cf_hash_entry_delete(head,"a",1);
+
+          if(Cfg.resp_204) {
+            printf("Status: 204 No Content\015\012\015\012");
+            return FLT_EXIT;
+          }
+        }
       }
+      else if(cf_strcmp(a,"nd") == 0) {
+        Cfg.DoDelete = 0;
+      }
+      else if(cf_strcmp(a,"u") == 0) {
+        if((tmp = cf_cgi_get(head,"t")) != NULL) {
+          if((tid = strtoull(tmp,NULL,10)) > 0) {
+            memset(&key,0,sizeof(key));
+
+            /* we transform the value again to a string because there could be trash in it... */
+            len = snprintf(buff,256,"%llu",tid);
+
+            key.data = buff;
+            key.size = len;
+
+            Cfg.db->del(Cfg.db,NULL,&key,0);
+
+            cf_hash_entry_delete(head,"t",1);
+            cf_hash_entry_delete(head,"a",1);
+          }
+        }
+      }
+
+      return FLT_OK;
     }
   }
 
@@ -299,9 +295,7 @@ int flt_del_handle_command(t_configfile *cf,t_conf_opt *opt,const u_char *contex
 
   if(cf_strcmp(opt->name,"BlackList") == 0) {
     if(Cfg.BLlen) {
-      for(i=0;i<Cfg.BLlen;i++) {
-        free(Cfg.BlackList[i]);
-      }
+      for(i=0;i<Cfg.BLlen;i++) free(Cfg.BlackList[i]);
       free(Cfg.BlackList);
     }
 
@@ -326,7 +320,7 @@ int flt_del_handle_command(t_configfile *cf,t_conf_opt *opt,const u_char *contex
   else if(cf_strcmp(opt->name,"DelThreadResponse204") == 0) {
     Cfg.resp_204 = cf_strcmp(args[0],"yes") == 0;
   }
-  else if(cf_strcmp(opt->name,"BlacklistInThreadView") == 0) {
+  else if(cf_strcmp(opt->name,"BlacklistInThreadview") == 0) {
     Cfg.bl_in_thrv = cf_strcmp(args[0],"yes") == 0;
   }
 

@@ -140,6 +140,7 @@ int flt_xmlarc_mtt(t_cl_thread *thr,t_hierarchical_node *hmsg,GdomeNode *posting
   GdomeNode         *id        = gdome_nnm_getNamedItem(atts,str_id,&e);
   GdomeNode *element;
   GdomeDOMString *name;
+  GdomeDOMString *tmp;
   t_hierarchical_node h;
 
   u_char *ctmp;
@@ -148,18 +149,18 @@ int flt_xmlarc_mtt(t_cl_thread *thr,t_hierarchical_node *hmsg,GdomeNode *posting
   thr->msg_len++;
 
   if(id) {
-    GdomeDOMString *tmp = gdome_n_nodeValue(id,&e);
+    tmp = gdome_n_nodeValue(id,&e);
     hmsg->msg->mid  = str_to_u_int64(tmp->str+1);
     gdome_str_unref(tmp);
   }
   else return -1;
 
   if(invi) {
-    GdomeDOMString *tmp  = gdome_n_nodeValue(invi,&e);
+    tmp  = gdome_n_nodeValue(invi,&e);
     hmsg->msg->invisible = atoi(tmp->str);
     gdome_str_unref(tmp);
   }
-  else h.msg->invisible  = 0;
+  else hmsg->msg->invisible  = 0;
 
   for(i=0,len=gdome_nl_length(childs,&e);i<len;i++) {
     element = gdome_nl_item(childs,i,&e);

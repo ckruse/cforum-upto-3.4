@@ -94,6 +94,7 @@ Options:
   --lang=LANG          Name of the language (e.g. en, de, mandatory)
   --name=NAME          Name of the theme (e.g. html4, xhtml10, mandatory)
   --install=DIR        The target directory where to install the compiled templates (mandatory)
+  --libdir=DIR         The path to the Classic Forum libraries (mandatory)
   --cforum-source=DIR  The project directory root of the classic forum
 
 USAGE

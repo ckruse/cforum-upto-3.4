@@ -256,7 +256,7 @@ int cf_run_view_init_handlers(t_cf_hash *head,t_cf_template *tpl_begin,t_cf_temp
 
 /* {{{ cf_run_after_post_filters */
 #ifdef CF_SHARED_MEM
-void cf_run_after_post_handlers(t_cf_hash *head,t_message *p,u_int64_t tid,int sock,void *shm)
+void cf_run_after_post_handlers(t_cf_hash *head,t_message *p,u_int64_t tid,void *shm,int sock)
 #else
 void cf_run_after_post_handlers(t_cf_hash *head,t_message *p,u_int64_t tid,int sock)
 #endif

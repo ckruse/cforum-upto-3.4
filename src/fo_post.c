@@ -102,7 +102,7 @@ void display_finishing_screen(t_message *p) {
   cf_set_variable(&tpl,cs,"Name",p->author.content,p->author.len,1);
   cf_set_variable(&tpl,cs,"subject",p->subject.content,p->subject.len,1);
 
-  if((val = cf_general_get_time(df->values[0],lc->values[0],&len,&p->date)) != NULL) {
+  if((val = cf_general_get_time(df->values[0],lc->values[0],(int *)&len,&p->date)) != NULL) {
     cf_set_variable(&tpl,cs,"date",val,len,1);
     free(val);
   }
@@ -283,7 +283,7 @@ int normalize_cgi_variables(t_cf_hash *head,const u_char *field_name) {
               // \xE2\x80[\x80-\x8B\xA8-\xAF] are unicode whitespaces
               else if(cf_strncmp(ptr,"\xE2\x80",2) == 0) {
                 c = *(ptr+3);
-                if((c >= 0x80 && c <= 0x8B) || (c >= 0xA8 || c <= 0xAF)) {
+                if((c >= 0x80 && c <= 0x8B) || (c >= 0xA8 && c <= 0xAF)) {
                   str_char_append(&str,' ');
                   ptr += 2;
                 }
@@ -322,13 +322,14 @@ int normalize_cgi_variables(t_cf_hash *head,const u_char *field_name) {
               // \xE2\x80[\x80-\x8B\xA8-\xAF] are unicode whitespaces
               else if(cf_strncmp(ptr,"\xE2\x80",2) == 0) {
                 c = *(ptr+3);
-                if((c >= 0x80 && c <= 0x8B) || (c >= 0xA8 || c <= 0xAF)) {
+                if((c >= 0x80 && c <= 0x8B) || (c >= 0xA8 && c <= 0xAF)) {
                   str_char_append(&str,' ');
                   ptr += 2;
                 }
                 else str_char_append(&str,*ptr);
               }
               else str_char_append(&str,*ptr);
+
             }
             /* }}} */
 
@@ -511,10 +512,7 @@ t_string *body_plain2coded(const u_char *text) {
         str_char_append(str,'\012');
 
         if(cf_strncmp(ptr+1,qchars,len) == 0) {
-          for(++ptr;*ptr && cf_strncmp(ptr,qchars,len) == 0;ptr+=len) {
-            str_char_append(str,(u_char)127);
-          }
-
+          for(++ptr;*ptr && cf_strncmp(ptr,qchars,len) == 0;ptr+=len) str_char_append(str,(u_char)127);
           --ptr;
         }
 
@@ -542,6 +540,10 @@ t_string *body_plain2coded(const u_char *text) {
         }
 
       default:
+        if(ptr == body && cf_strncmp(ptr,qchars,len) == 0) {
+          for(;*ptr && cf_strncmp(ptr,qchars,len) == 0;ptr+=len) str_char_append(str,(u_char)127);
+        }
+
         str_char_append(str,*ptr);
     }
   }

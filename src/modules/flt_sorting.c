@@ -107,7 +107,7 @@ int flt_sorting_sort(t_cf_hash *head,t_configuration *dc,t_configuration *vc,voi
     for(i=0;i<threads->elements;++i) {
       thr = array_element_at(threads,i);
       flt_sorting_sort_msgs(thr->ht);
-      cf_msg_linearize(thr->ht);
+      cf_msg_linearize(thr,thr->ht);
     }
   }
 
@@ -124,7 +124,7 @@ int flt_sorting_sort_thread(t_cf_hash *head,t_configuration *vc,t_configuration 
 {
   if(flt_sorting_sort_messages != -1) {
     flt_sorting_sort_msgs(thread->ht);
-    cf_msg_linearize(thread->ht);
+    cf_msg_linearize(thread,thread->ht);
   }
 
   return FLT_OK;

@@ -25,8 +25,8 @@ BEGIN {
 
   $Plugins = {};
   $UserName = '';
-  $prefix  = '@prefix@';
-  $exec_prefix = '@exec_prefix@';
+  $prefix  = "@prefix@";
+  $exec_prefix = "@exec_prefix@";
   
   $Management = undef;
   $Forum = $ENV{CF_FORUM_NAME};
@@ -352,10 +352,17 @@ else {
 
     mkdir $dir,0771 or die $!;
 
-    open DAT,'>'.$ufile or die $!;
-    print DAT 'DeletedFile "',$dir,"/dt.dat\"\n";
-    print DAT 'VisitedFile "',$dir,"/vt.dat\"\n";
-    close DAT;
+    my $dat;
+    open $dat,'>'.$ufile or die $!;
+
+    #
+    # run config plugins
+    #
+    foreach(@{$Plugins->{register}}) {
+      &$_($fo_default_conf,$fo_usermanagement_conf,$user_config,$dir,$ufile,$dat);
+    }
+
+    close $dat;
 
     my $err = undef;
     $err = $Management->add_user($fo_default_conf,$fo_usermanagement_conf,$user,$passwd,$email) if $Management;

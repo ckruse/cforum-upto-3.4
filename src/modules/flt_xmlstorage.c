@@ -538,8 +538,8 @@ void flt_xmlstorage_create_threadtree(t_forum *forum,t_thread *thread,t_posting 
 
 /* {{{ flt_xmlstorage_handle_header */
 void flt_xmlstorage_handle_header(t_posting *p,GdomeNode *n) {
-  GdomeException     exc;
-        u_char *tmp,*ls;
+  GdomeException exc;
+  u_char *tmp,*ls;
 
   GdomeNodeList     *nl       = gdome_n_childNodes(n,&exc);
   GdomeNode         *author   = gdome_nl_item(nl,0,&exc);
@@ -1050,7 +1050,7 @@ int flt_xmlstorage_archive_threads(t_forum *forum,t_thread **threads,size_t len)
     }
 
     snprintf(buff,512,"%s/%d/%d/index.xml",path->values[0],t.tm_year+1900,t.tm_mon+1);
-    if(!gdome_di_saveDocToFile(impl,doc_thread,buff,0,&e)) cf_log(CF_ERR|CF_FLSH,__FILE__,__LINE__,"ERROR! COULD NOT WRITE INDEX XML FILE!\n",forum->name,threads[i]->tid);
+    if(!gdome_di_saveDocToFile(impl,doc,buff,0,&e)) cf_log(CF_ERR|CF_FLSH,__FILE__,__LINE__,"ERROR! COULD NOT WRITE INDEX XML FILE!\n",forum->name,threads[i]->tid);
 
     gdome_doc_unref(doc_thread,&e);
     gdome_doc_unref(doc,&e);

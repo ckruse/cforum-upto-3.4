@@ -386,10 +386,11 @@ t_message *cf_msg_build_hierarchical_structure(t_hierarchical_node *parent,t_mes
 
 /**
  * This function serializes a hierarchical structure into a flat chain
+ * \param thr The thread to linearize
  * \param h The t_hierarchical_node node
  * \return A posting in this or lower than this hierarchy level or NULL
  */
-void cf_msg_linearize(t_hierarchical_node *h);
+void cf_msg_linearize(t_cl_thread *thr,t_hierarchical_node *h);
 
 
 /**
@@ -484,7 +485,7 @@ int cf_run_thread_sorting_handlers(t_cf_hash *head,int sock,rline_t *tsd,t_cl_th
 #endif
 
 #ifdef CF_SHARED_MEM
-void cf_run_after_post_handlers(t_cf_hash *head,t_message *p,u_int64_t tid,int sock,void *shm);
+void cf_run_after_post_handlers(t_cf_hash *head,t_message *p,u_int64_t tid,void *shm,int sock);
 #else
 void cf_run_after_post_handlers(t_cf_hash *head,t_message *p,u_int64_t tid,int sock);
 #endif

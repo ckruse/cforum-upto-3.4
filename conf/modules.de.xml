@@ -4,6 +4,7 @@
 <config>
   <directive name="DeletedFile" invisible="yes"/>
   <directive name="VisitedFile" invisible="yes"/>
+  <directive name="MailUserDB"  invisible="yes"/>
 
   <page title="Anzeige-Funktionen" id="viewfuncs">
     <section name="Design-Ändernde Anzeige-Funktionen">
@@ -16,6 +17,14 @@
             <value val="xhtml10">XHTML 1.0</value>
             <value val="html4" default="yes">HTML 4</value>
           </formvalues>
+        </argument>
+      </directive>
+
+      <directive name="InlineCSS" arguments="1">
+        <argument paramname="inlinecss" type="textarea" encode="plain">
+          <validate>.*</validate>
+          <question>Sie können Inline-CSS-Code definieren. Dieser wird innerhalb der &lt;style&gt;-Elemente in jedem Posting und in der Haupt-Ansicht eingefügt.</question>
+          <error>Inline-CSS-Fehler</error>
         </argument>
       </directive>
 
@@ -388,7 +397,7 @@
         </argument>
       </directive>
 
-      <directive name="MarkOwnPostingsVisited" arguments="1">
+      <directive name="MarkOwnPostsVisited" arguments="1">
         <argument paramname="markownvisi" type="radio" encode="plain">
           <validate>^(yes|no)$</validate>
           <question>Sollen ihre eigenen Postings auch als besucht markiert werden?</question>
@@ -515,6 +524,14 @@
           <validate type="email"/>
           <question>Wollen Sie eine E-Mail-Adresse angeben? Beachten Sie: die Angabe ist optional und freiwillig.</question>
           <error>Ihre Angabe ist keine syntaktisch korrekte E-Mail-Adresse. Sie können dieses Feld auch leer lassen.</error>
+        </argument>
+      </directive>
+
+      <directive name="UserMail" arguments="1">
+        <argument paramname="usermail" type="text" encode="plain">
+          <validate type="email"/>
+          <question>Welche E-Mail-Adresse soll zum abonnieren von Threads benutzt werden? Beachten Sie: ohne diese Angabe kann die Funktion nicht genutzt werden.</question>
+          <error>Welche E-Mail-Adresse soll zum abonnieren von Threads benutzt werden? Ihre Angabe ist keine syntaktisch korrekte E-Mail-Adresse. Sie können dieses Feld auch leer lassen.</error>
         </argument>
       </directive>
 
@@ -704,19 +721,7 @@
         <argument paramname="activatelivefilter" type="radio" encode="plain">
           <validate>^(yes|no)$</validate>
           <question>Möchten Sie den Live-Filter aktivieren? Dieser Filter ermöglicht es Ihnen, die Thread-Liste nach bestimmten Kriterien zu filtern.</question>
-          <error>Bitte geben Sie hier &quot;ja&quot; oder &quot;nein&quot; an!</error>
-          <formvalues>
-            <value val="yes">Ja</value>
-            <value val="no" default="yes">Nein</value>
-          </formvalues>
-        </argument>
-      </directive>
-
-      <directive name="LiveFilterOverwrite" arguments="1">
-        <argument paramname="livefilteroverwrite" type="radio" encode="plain">
-          <validate>^(yes|no)$</validate>
-          <question>Soll der Live-Filter Filter wie die Blacklist oder ausgeblendete Threads überschreiben?</question>
-          <error>Bitte geben Sie hier &quot;ja&quot; oder &quot;nein&quot; an!</error>
+          <error>Möchten Sie den Live-Filter aktivieren? Bitte geben Sie hier &quot;ja&quot; oder &quot;nein&quot; an!</error>
           <formvalues>
             <value val="yes">Ja</value>
             <value val="no" default="yes">Nein</value>
