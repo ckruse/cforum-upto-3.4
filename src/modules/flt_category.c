@@ -67,9 +67,9 @@ int flt_category_execute_filter(t_cf_hash *head,t_configuration *dc,t_configurat
 }
 
 int flt_category_handle_command(t_configfile *cf,t_conf_opt *opt,u_char **args,int argnum) {
-  if(!Cats) Cats = cf_hash_new(NULL);
+  if(!flt_category_cats) flt_category_cats = cf_hash_new(NULL);
 
-  flt_category_parse_list(args[0],Cats);
+  flt_category_parse_list(args[0],flt_category_cats);
 
   return 0;
 }
