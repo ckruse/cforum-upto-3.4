@@ -550,7 +550,7 @@ void show_thread(t_cf_hash *head,void *sock,u_int64_t tid)
       break;
 
     default:
-      printf("Content-Type: text/xml; charset=UTF-8\015\012\015\012");
+      printf("Content-Type: application/rss+xml; charset=UTF-8\015\012\015\012");
       rss_head(&cnt,&thread);
       rss_thread(&cnt,&thread,head);
       rss_bottom(&cnt);
@@ -846,7 +846,7 @@ void show_threadlist(void *shm_ptr,t_cf_hash *head)
         break;
 
       default:
-        printf("Content-Type: text/xml; charset=UTF-8\015\012\015\012");
+        printf("Content-Type: application/rss+xml; charset=UTF-8\015\012\015\012");
         rss_head(&cnt,NULL);
         break;
     }

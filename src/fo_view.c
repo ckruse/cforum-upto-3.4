@@ -161,7 +161,8 @@ void show_posting(t_cf_hash *head,void *shm_ptr,u_int64_t tid,u_int64_t mid)
   rline_t tsd;
   #endif
 
-  u_char fo_thread_tplname[256],
+  u_char buff[256],
+         fo_thread_tplname[256],
          fo_posting_tplname[256],
          *UserName = cf_hash_get(GlobalValues,"UserName",8),
          *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
@@ -179,7 +180,6 @@ void show_posting(t_cf_hash *head,void *shm_ptr,u_int64_t tid,u_int64_t mid)
   t_cf_template tpl;
 
   size_t len;
-  char buff[128];
   int del = cf_hash_get(GlobalValues,"ShowInvisible",13) == NULL ? CF_KILL_DELETED : CF_KEEP_DELETED;
 
   memset(&thread,0,sizeof(thread));
@@ -238,6 +238,9 @@ void show_posting(t_cf_hash *head,void *shm_ptr,u_int64_t tid,u_int64_t mid)
 
   cf_set_variable(&tpl,cs,"forumbase",fbase->values[0],strlen(fbase->values[0]),1);
 
+  len = snprintf(buff,256,"%llu",thread.tid);
+  cf_set_variable(&tpl,cs,"tid",buff,len,0);
+
   /* user values */
   if(name && *name->values[0]) cf_set_variable(&tpl,cs,"aname",name->values[0],strlen(name->values[0]),1);
   if(email && *email->values[0]) cf_set_variable(&tpl,cs,"aemail",email->values[0],strlen(email->values[0]),1);
@@ -247,6 +250,7 @@ void show_posting(t_cf_hash *head,void *shm_ptr,u_int64_t tid,u_int64_t mid)
   cf_tpl_setvalue(&thread.messages->tpl,"start",TPL_VARIABLE_INT,1);
   cf_tpl_setvalue(&thread.messages->tpl,"msgnum",TPL_VARIABLE_INT,thread.msg_len);
   cf_tpl_setvalue(&thread.messages->tpl,"answers",TPL_VARIABLE_INT,thread.msg_len-1);
+  if(UserName) cf_tpl_setvalue(&tpl,"authed",TPL_VARIABLE_INT,1);
   /* }}} */
 
   printf("Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
