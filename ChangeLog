@@ -1,6 +1,10 @@
 2005-01-26 Christian Seiler <self@christian-seiler.de>
 	* src/parsetpl/parsetpl.lex: Do not create a new stack on {include},
-		added support to assign variables to other variables
+		added support to assign variables to other variables,
+		some bugfixes and improvements in memory handling
+	* src/template.h, src/template.c: added arrayref member to the
+		t_cf_tpl_variable structure; it is now possible to overwrite
+		{foreach} vars without segmentation faults
 
 2005-01-25 Christian Seiler <self@christian-seiler.de>
 	* src/utils.h, src/stringutils.c: Added str_cstr_append function to

@@ -181,6 +181,7 @@ void cf_tpl_freevar(t_cf_template *tpl,const u_char *vname) {
 void cf_tpl_var_init(t_cf_tpl_variable *var,unsigned short type) {
   var->type = type;
   var->temporary = 0;
+  var->arrayref = 0;
   switch(type) {
     case TPL_VARIABLE_STRING:
       str_init(&var->data.d_string);
@@ -206,6 +207,10 @@ void cf_tpl_var_init(t_cf_tpl_variable *var,unsigned short type) {
  *
  */
 void cf_tpl_var_destroy(t_cf_tpl_variable *var) {
+  // if this is a variable created in a foreach loop => do nothing
+  if(var->arrayref) {
+    return;
+  }
   switch(var->type) {
     case TPL_VARIABLE_STRING:
       str_cleanup(&var->data.d_string);

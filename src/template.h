@@ -50,6 +50,7 @@ typedef struct s_cf_tpl_variable {
   } data; /**< The actual template data */
   
   unsigned short temporary; /**< Internal flag: Is this a temporary variable? */
+  unsigned short arrayref; /**< Internal flag: Is this a variable created in a foreach loop? */
 } t_cf_tpl_variable ;
 
 typedef void (*t_parse)(t_cf_template *); /**< This is the function type called when parsing (tpl_parse) a template file */

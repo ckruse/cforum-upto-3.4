@@ -804,16 +804,6 @@ int process_foreach_tag(t_array *data) {
     // please note that getvar IS necessary because we can NOT use the old value of vf3 since that will
     // overwrite the *ORIGINAL* template variable (array member of vf2)
     str_init(&tmp);
-    str_cstr_append(&tmp,"vf");
-    str_cstr_append(&tmp,v2nb);
-    str_cstr_append(&tmp," = (t_cf_tpl_variable *)cf_tpl_getvar(tpl,\"");
-    str_chars_append(&tmp,tvs->content+1,tvs->len-1);
-    str_cstr_append(&tmp,"\");\n");
-    str_cstr_append(&tmp,"if(vf");
-    str_cstr_append(&tmp,v2nb);
-    str_cstr_append(&tmp,") vf");
-    str_cstr_append(&tmp,v2nb);
-    str_cstr_append(&tmp,"->type = TPL_VARIABLE_INVALID;\n");
     str_cstr_append(&tmp,"}\n}\n");
     str_str_append(&output,&tmp);
     str_str_append(&output_mem,&tmp);
@@ -936,11 +926,17 @@ int process_foreach_tag(t_array *data) {
     str_cstr_append(&tmp,"->data.d_array,i");
     str_cstr_append(&tmp,ivnb);
     str_cstr_append(&tmp,");\n");
+    str_cstr_append(&tmp,"vf");
+    str_cstr_append(&tmp,v2nb);
+    str_cstr_append(&tmp,"->arrayref = 1;\n");
     str_cstr_append(&tmp,"cf_tpl_setvar(tpl,\"");
     str_chars_append(&tmp,var2->data->content+1,var2->data->len-1);
     str_cstr_append(&tmp,"\",vf");
     str_cstr_append(&tmp,v2nb);
     str_cstr_append(&tmp,");\n");
+    str_cstr_append(&tmp,"vf");
+    str_cstr_append(&tmp,v2nb);
+    str_cstr_append(&tmp,"->arrayref = 0;\n");
     str_init(&vs);
     str_str_set(&vs,var2->data);
     array_push(&foreach_var_stack,&vs); // do not clean it up, this will be done by the array destroy function
