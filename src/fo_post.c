@@ -672,7 +672,7 @@ int main(int argc,char *argv[],char *env[]) {
   t_string *str,str1;
 
   u_char *tidmid;
-  u_int64_t tid,mid;
+  u_int64_t tid = 0,mid = 0;
 
   #ifdef CF_SHARED_MEM
   void *shm;
