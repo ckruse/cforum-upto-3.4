@@ -98,7 +98,7 @@ int flt_lh_execute_filter(t_cf_hash *head,t_configuration *dc,t_configuration *v
   /*
    * Initialization
    */
-  if(UserName) uname = cfg_get_first_value(vc,NULL,"Name");
+  if(UserName) uname = cfg_get_first_value(vc,flt_lh_fn,"Name");
 
   if(!Cfg.VIPList && !Cfg.WhiteList && !Cfg.HighlightCategories && !Cfg.HighlightOwnPostings) return FLT_DECLINE;
 
