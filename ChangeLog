@@ -1,3 +1,9 @@
+2005-02-10 Christian Seiler <self@christian-seiler.de>
+	* src/ipcutils.c: added to repository, implemented ipc_dpopen and
+		ipc_dpclose functions
+	* src/Makefile.am, src/utils.h: added references to ipcutils.c and
+		the functions supplied by it
+
 2005-02-10 Christian Kruse <ckruse@wwwtech.de>
 	* src/fo_post.c: Bugfix in unicode whitespace handling
 	* scripts/cf-xmlconv.pl: Added repairing routine to change old, old directive

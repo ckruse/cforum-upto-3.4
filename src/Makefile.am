@@ -34,7 +34,7 @@ libcfreadline_la_LDFLAGS=-export-dynamic -avoid-version
 libcfhashlib_la_SOURCES=hashlib.c
 libcfhashlib_la_LDFLAGS=-export-dynamic -avoid-version
 
-libcfutils_la_SOURCES=utils.c arrayutils.c listutils.c memoryutils.c stringutils.c treeutils.c cacheutils.c datautils.c
+libcfutils_la_SOURCES=utils.c arrayutils.c listutils.c memoryutils.c stringutils.c treeutils.c cacheutils.c datautils.c ipcutils.c
 libcfutils_la_LIBADD=libcfhashlib.la libcfcharconvert.la -lz
 libcfutils_la_LDFLAGS=-export-dynamic -avoid-version
 

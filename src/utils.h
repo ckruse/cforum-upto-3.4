@@ -631,6 +631,38 @@ void cf_list_destroy(t_cf_list_head *head,void (*destroy)(void *data));
 
 /* }}} */
 
+/* {{{ IPC functions */
+/**
+ * \defgroup ipc_funcs IPC functions
+ */
+/*\@{*/
+
+/**
+ * This function openes two pipes and executes a program
+ * \param filename The filename of the program to execute
+ * \param argv Its parameter list
+ * \param envp Its environment
+ * \param result A pointer to the resulting int[2] structure where the
+ *               file descriptors are to be stored
+ * \param res_pid A pointer where the resulting pid is to be stored or NULL
+ * \return 0 on success, -1 on error
+ */
+int ipc_dpopen(const char *filename,char *const argv[],char *const envp[],int *result,pid_t *res_pid);
+
+/**
+ * This function closes two pipes opened by ipc_dpopen() and waits for the process
+ * to terminate
+ * \param pipes A pointer to the int[2] structure where the
+ *              file descriptors are stored or NULL
+ * \param pid   A pointer where the pid is stored or NULL
+ * \return 0 on success, -1 on error
+ */
+int ipc_dpclose(int *pipes,pid_t *pid);
+
+/*\@}*/
+
+/* }}} */
+
 /* {{{ String comparison functions */
 /**
  * Fast implementation of strcmp()
