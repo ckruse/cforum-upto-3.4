@@ -157,18 +157,22 @@
                 </p>
               </form>
               <p>
-                <b>QuickLink:</b><br />{if $authed}
-                <a href="{$ubase}?a=nd">Ausgeblendete Threads anzeigen</a>
-{endif}
-                <a href="{$userconfig}"{if $frame} onclick="window.open(this,'_top'); return false;"{endif}>{if $authed}Benutzer-Administration{else}Benutzer-Registrierung{endif}</a><br />{if !$authed}
-                <a href="{$ubase}"{if $frame} onclick="window.open(this,'_top'); return false;"{endif}>Benutzerspezifische Ansicht</a><br />{endif}{if $admin}{if $aaf}
-                <a href="{$ubase}"{if $frame} onclick="window.open(this,'_top'); return false;"{endif}>Administrator-Ansicht deaktivieren</a>{else}<a href="{$ubase}?aaf=1"{if $frame} onclick="window.open(this,'_top'); return false;"{endif}>Administrator-Ansicht</a>{endif}<br />{endif}
-                <a href="http://selfforum.selfhtml.com.fr/"{if $frame} onclick="window.open(this,'_top'); return false;"{endif}>en fran&ccedil;ais!</a><br />
+                <b>QuickLink:</b><br />
+                <a href="http://forum.fr.selfhtml.org/"{if $frame} onclick="window.open(this,'_top'); return false;"{endif}>en fran&ccedil;ais!</a><br />
                 <a href="/archiv/"{if $frame} onclick="window.open(this,'_top'); return false;"{endif}>Forumsarchiv</a><br />
                 <a href="/faq/"{if $frame} onclick="window.open(this,'_top'); return false;"{endif}>Forums-FAQ</a><br />
                 <a href="http://selfhtml.teamone.de/"{if $frame} onclick="window.open(this,'_top'); return false;"{endif}>SELFHTML</a><br />
+                <a href="http://selfaktuell.teamone.de/"{if $frame} onclick="window.open(this,'_top'); return false;"{endif}>SELFHTML aktuell</a><br />
                 <a href="http://selfsuche.teamone.de/"{if $frame} onclick="window.open(this,'_top'); return false;"{endif}>Suche</a><br />
                 <a href="http://selfaktuell.teamone.de/live/chat.htm" onclick="if (!window.Chat) return true; Chat(); return false;">Chat</a><br />
+              </p>
+              <p>
+                <b>Optionen:</b><br />{if $authed}
+                <a href="{$ubase}?a=nd">Ausgeblendete Threads anzeigen</a>
+{endif}
+                <a href="{$userconfig}"{if $frame} onclick="window.open(this,'_top'); return false;"{endif}>{if $authed}Benutzer-Einstellungen{else}Benutzer-Registrierung{endif}</a><br />{if !$authed}
+                <a href="{$ubase}"{if $frame} onclick="window.open(this,'_top'); return false;"{endif}>Benutzerspezifische Ansicht</a><br />{endif}{if $admin}{if $aaf}
+                <a href="{$ubase}"{if $frame} onclick="window.open(this,'_top'); return false;"{endif}>Administrator-Ansicht deaktivieren</a>{else}<a href="{$ubase}?aaf=1"{if $frame} onclick="window.open(this,'_top'); return false;"{endif}>Administrator-Ansicht</a>{endif}<br />{endif}
               </p>
             </div>
           </td>
