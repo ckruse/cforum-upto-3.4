@@ -341,7 +341,7 @@ void flt_mailonpost_encode_header(t_string *str,const u_char *enc,size_t len) {
 
     str_chars_append(str,"?=",2);
   }
-  else str_chars_append(str,enc,len)
+  else str_chars_append(str,enc,len);
 }
 /* }}} */
 

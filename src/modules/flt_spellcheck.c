@@ -187,6 +187,10 @@ int flt_spellcheck_execute(t_cf_hash *head,t_configuration *dc,t_configuration *
       else if(*ptr == '\x7f') {
         str_cstr_append(&html_out,v->values[0]);
       }
+      else if(!cf_strncmp(ptr,"_/_SIG_/_",9)) {
+        str_cstr_append(&html_out,"\n-- \n");
+        i += 8;
+      }
       else {
         str_char_append(&html_out,*ptr);
       }
@@ -341,7 +345,8 @@ int flt_spellcheck_execute(t_cf_hash *head,t_configuration *dc,t_configuration *
         for(i = cpos; i < wpos - 1; i++) {
           if(p->content.content[i] == '\x7f') {
             str_cstr_append(&html_out,v->values[0]); 
-          } else {
+          }
+          else {
             str_char_append(&html_out,p->content.content[i]);
           }
         }
@@ -461,7 +466,12 @@ int flt_spellcheck_execute(t_cf_hash *head,t_configuration *dc,t_configuration *
   for(i = cpos; i < p->content.len; i++) {
     if(p->content.content[i] == '\x7f') {
       str_cstr_append(&html_out,v->values[0]); 
-    } else {
+    }
+    else if(!cf_strncmp(p->content.content+i,"_/_SIG_/_",9)) {
+      str_cstr_append(&html_out,"<br />-- <br />"); // BUG: XHTML Mode Checking
+      i += 8;
+    }
+    else {
       str_char_append(&html_out,p->content.content[i]);
     }
   }
@@ -477,6 +487,31 @@ int flt_spellcheck_execute(t_cf_hash *head,t_configuration *dc,t_configuration *
     }
     else if(*ptr == '\x7f') {
       str_cstr_append(&html_out,v->values[0]);
+    }
+    else if(*ptr == '&') {
+      if(!cf_strncmp(ptr,"&amp;",5)) {
+        str_cstr_append(&html_out,"&");
+        i += 4;
+      }
+      else if(!cf_strncmp(ptr,"&lt;",4)) {
+        str_cstr_append(&html_out,"<");
+        i += 3;
+      }
+      else if(!cf_strncmp(ptr,"&gt;",4)) {
+        str_cstr_append(&html_out,">");
+        i += 3;
+      }
+      else if(!cf_strncmp(ptr,"&quot;",6)) {
+        str_cstr_append(&html_out,"\"");
+        i += 5;
+      }
+      else {
+        str_char_append(&html_out,*ptr);
+      }
+    }
+    else if(!cf_strncmp(ptr,"_/_SIG_/_",9)) {
+      str_cstr_append(&html_out,"\n-- \n");
+      i += 8;
     }
     else {
       str_char_append(&html_out,*ptr);

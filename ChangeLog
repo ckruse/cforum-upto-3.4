@@ -1,3 +1,8 @@
+2005-02-26 Christian Seiler <self@christian-seiler.de>
+	* src/modules/flt_spellcheck.c: Fixed bug #555
+	* src/modules/flt_mailonpost.c: Added missing ; that caused parse
+		error
+
 2005-02-25 Christian Kruse <ckruse@wwwtech.de>
 	* src/fo_server.c: Fixed a _really_ nasty bug in logfile rolling...
 	* src/modules/flt_mailonpost.c: Fixed bug #564
