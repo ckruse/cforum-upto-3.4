@@ -33,6 +33,7 @@
 	* conf/modules.de.xml: Added several configuration options
 	* src/modules/flt_syntax.c: ActivateSyntax is now also allowed in user config
 		mode
+	* src/configparser.c: RedirectOnPost is now also allowed in user context
 
 2005-02-06 Christian Seiler <self@christian-seiler.de>
 	* conf/patterns/php.pat: Some improvements
