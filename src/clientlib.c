@@ -365,6 +365,7 @@ void cf_error_message(const u_char *err,FILE *out, ...) {
 
         cf_set_variable(&tpl,cs,"error",msg.content,msg.len,1);
         str_cleanup(&msg);
+        free(buff);
 
         if(out) {
           cf_tpl_parse_to_mem(&tpl);
@@ -462,6 +463,7 @@ u_char *cf_get_error_message(const u_char *err,size_t *len, ...) {
 
       free(buff);
       va_end(ap);
+      free(buff);
       if(len) *len = msg.len;
       return msg.content;
     }

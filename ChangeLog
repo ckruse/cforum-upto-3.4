@@ -1,3 +1,10 @@
+2005-01-27 Christian Kruse <ckruse@wwwtech.de>
+	* src/clientlib.c: Bugfix, error string from database as not null-terminated
+	* src/fo_vote.c: Bugfix, now fo_vote sends an error message if no parameters
+		are given.
+	* src/validate.c: Added / char in HTTP link validation to allowed characters
+		to support RFC 3986 URIs
+
 2005-01-26 Christian Seiler <self@christian-seiler.de>
 	* src/parsetpl/parsetpl.lex: Do not create a new stack on {include},
 		added support to assign variables to other variables,
@@ -43,6 +50,7 @@
 	* src/modules/flt_posting.c: Small code cleaning
 	* src/modules/flt_sorting.c: Added possibility to use default sorting
 	* src/fo_post.c: Bugfix in body_str2coded()
+
 
 2005-01-20 Christian Kruse <ckruse@wwwtech.de>
 	* conf/fo_post.conf.in: Added PreviewDateFormat directive, added preview
