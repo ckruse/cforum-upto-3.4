@@ -105,8 +105,8 @@ int flt_directives_is_relative_uri(const u_char *tmp,size_t len) {
 
 /* {{{ flt_directives_generate_uri */
 void flt_directives_generate_uri(const u_char *uri,const u_char *title,t_string *content,t_string *cite,int sig) {
-  u_char *tmp2;
-  size_t len,len1,i;
+  u_char *tmp2 = NULL;
+  size_t len = 0,len1,i;
   t_flt_directives_lt_tok *tok;
 
   if(title) {
@@ -193,10 +193,10 @@ void flt_directives_generate_uri(const u_char *uri,const u_char *title,t_string 
 
 /* {{{ flt_directives_execute */
 int flt_directives_execute(t_configuration *fdc,t_configuration *fvc,const u_char *directive,const u_char *parameter,t_string *content,t_string *cite,const u_char *qchars,int sig) {
-  size_t len,i,len1 = 0;
+  size_t len = 0,i,len1 = 0;
   t_name_value *xhtml = cfg_get_first_value(fdc,"XHTMLMode");
   u_int64_t tid,mid;
-  u_char *ptr,*tmp,*tmp1 = NULL,**list = NULL,*title_alt = NULL,*tmp2;
+  u_char *ptr,*tmp,*tmp1 = NULL,**list = NULL,*title_alt = NULL,*tmp2 = NULL;
   t_name_value *vs = cfg_get_first_value(fdc,cf_hash_get(GlobalValues,"UserName",8) ? "UPostingURL" : "PostingURL");
   t_flt_directives_ref_uri *uri;
   int go = 1;
@@ -260,13 +260,13 @@ int flt_directives_execute(t_configuration *fdc,t_configuration *fvc,const u_cha
       }
 
       if(go) {
+        tmp2 = htmlentities(tmp1,1);
+        len = strlen(tmp2);
+
         if(flt_directives_imagesaslink) {
           flt_directives_generate_uri(tmp1,title_alt,content,NULL,sig);
         }
         else {
-          tmp2 = htmlentities(tmp1,1);
-          len = strlen(tmp2);
-
           str_chars_append(content,"<img src=\"",10);
           str_chars_append(content,tmp2,len);
           str_char_append(content,'"');
@@ -280,8 +280,6 @@ int flt_directives_execute(t_configuration *fdc,t_configuration *fvc,const u_cha
 
           if(*xhtml->values[0] == 'y')  str_chars_append(content,"\"/>",3);
           else str_chars_append(content,"\">",2);
-
-          free(tmp2);
         }
 
         if(cite && sig == 0) {
@@ -294,7 +292,7 @@ int flt_directives_execute(t_configuration *fdc,t_configuration *fvc,const u_cha
           str_char_append(cite,']');
         }
 
-
+        free(tmp2);
         if(title_alt) free(title_alt);
 
         return FLT_OK;
@@ -315,13 +313,13 @@ int flt_directives_execute(t_configuration *fdc,t_configuration *fvc,const u_cha
       }
 
       if(go) {
+        tmp2 = htmlentities(parameter,1);
+        len = strlen(tmp2);
+
         if(flt_directives_iframesaslink) {
           flt_directives_generate_uri(parameter,NULL,content,NULL,sig);
         }
         else {
-          tmp2 = htmlentities(parameter,1);
-          len = strlen(tmp2);
-
           str_chars_append(content,"<iframe src=\"",13);
           str_chars_append(content,tmp2,len);
           str_chars_append(content,"\" width=\"90%\" height=\"90%\"><a href=\"",36);
@@ -335,8 +333,6 @@ int flt_directives_execute(t_configuration *fdc,t_configuration *fvc,const u_cha
           str_chars_append(content,"\">",2);
           str_chars_append(content,tmp2,len);
           str_chars_append(content,"</a></iframe>",13);
-
-          free(tmp2);
         }
 
         if(cite && sig == 0) {
@@ -344,6 +340,8 @@ int flt_directives_execute(t_configuration *fdc,t_configuration *fvc,const u_cha
           str_chars_append(cite,tmp2,len);
           str_char_append(cite,']');
         }
+
+        free(tmp2);
 
         return FLT_OK;
       }
@@ -564,7 +562,7 @@ t_conf_opt flt_directives_config[] = {
   { "PostingLinkTarget",    flt_directives_handle_link,     CFG_OPT_CONFIG|CFG_OPT_USER,  NULL },
   { "ReferenceURI",         flt_directives_handle_ref,      CFG_OPT_CONFIG|CFG_OPT_USER,  NULL },
   { "LinkTemplate",         flt_directives_handle_lt,       CFG_OPT_CONFIG|CFG_OPT_USER,  NULL },
-  { NULL, 0, NULL, NULL }
+  { NULL, NULL, 0, NULL }
 };
 
 t_handler_config flt_directives_handlers[] = {
