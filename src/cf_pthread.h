@@ -42,6 +42,12 @@ typedef struct s_cf_rwlock {
   pthread_rwlock_t rwlock; /**< The rwlock itself */
 } t_cf_rwlock;
 
+typedef struct s_cf_cond {
+  u_char *name; /**< The name of the condition variable */
+  pthread_mutex_t lock; /**< The locking mutex for this conditional */
+	pthread_cond_t cond; /**< the conditional itself */
+} t_cf_cond;
+
 /**
  * Initialization function for the t_cf_mutex
  * \param name The name of the mutex

@@ -29,4 +29,14 @@ int cf_load_data(t_forum *forum);
 
 void cf_log(int mode,const u_char *file,unsigned int line,const u_char *format, ...);
 
+int cf_setup_socket(struct sockaddr_un *addr);
+void cf_push_server(int sockfd,struct sockaddr *addr,size_t size,t_worker handler);
+int cf_push_client(int connfd,t_worker handler,int spare_threads,int max_threads,pthread_attr_t *attr);
+void cf_register_thread(t_forum *forum,t_thread *t);
+void cf_unregister_thread(t_forum *forum,t_thread *t);
+int cf_register_protocol_handler(u_char *handler_hook,t_server_protocol_handler handler);
+
+int cf_tokenize(u_char *line,u_char ***tokens);
+void cf_cftp_handler(int sockfd);
+
 /* eof */

@@ -48,6 +48,8 @@ typedef struct s_posting {
     t_string img; /**< The image URL of the poster */
     t_string ip; /**< The IP address of the  poster */
   } user;
+
+  struct s_posting *next,*prev;
 } t_posting;
 
 
@@ -58,13 +60,15 @@ typedef struct s_thread {
   /** the read-write-lock */
   t_cf_rwlock lock;
 
-  t_cf_list_head *postings; /**< A pointer to the first posting in the chain */
+  t_posting *postings; /**< A pointer to the first posting in the chain */
 
   t_posting *newest; /**< A pointer to the newest posting in the chain */
   t_posting *oldest; /**< A pointer to the oldest posting in the chain */
   t_posting *last; /**< A pointer to the last posting in the chain */
 
   u_int32_t posts; /**< The number of postings this thread contains */
+
+  struct s_thread *next,*prev;
 } t_thread;
 
 typedef void (*t_worker)(int); /**< This is a worker function */
@@ -73,17 +77,21 @@ typedef void (*t_worker)(int); /**< This is a worker function */
 typedef struct s_client {
   int sock; /**< The connection descriptor to the client */
   t_worker worker; /**< A pointer to the worker function specified for this connection */
-} t_client;
+} t_cf_client;
 
 /** This struct is used to save a server socket. */
 typedef struct s_server {
   int sock; /**< The server socket itself */
-  u_int32_t size; /**< The size of the memory block where the struct sockaddr * pointer points to */
+  size_t size; /**< The size of the memory block where the struct sockaddr * pointer points to */
   t_worker worker; /**< The worker function which clients for this server socket should handle */
   struct sockaddr *addr; /**< The address structure for this socket */
 } t_server;
 
+/* {{{ t_forum */
 typedef struct s_forum {
+  /** forum locker */
+  t_cf_rwlock lock;
+
   /** The name of the forum */
   u_char *name;
 
@@ -130,7 +138,7 @@ typedef struct s_forum {
     t_cf_hash *threads;
 
     /** The thread list */
-    t_cf_rw_list_head thread_list;
+    t_thread *threads;
 
     /** The last tid */
     u_int64_t last_tid;
@@ -145,6 +153,7 @@ typedef struct s_forum {
     t_cf_mutex lock; /**< The mutex to synchronize access to unique_ids */
   } uniques;
 } t_forum;
+/* }}} */
 
 /** This is the structure for the global 'I contain all necessary information' variable */
 typedef struct s_head {
@@ -152,7 +161,10 @@ typedef struct s_head {
   t_cf_rwlock lock;
 
   /** We wanna save the workers to pthread_join them at shutdown */
-  t_cf_rw_list_head workers;
+  struct {
+    t_cf_rw_list_head list;
+    int num;
+  } workers;
 
   struct {
     /** The logfile mutex to protect the logfile handles */
@@ -170,7 +182,9 @@ typedef struct s_head {
    * worker model and a queque
    */
   struct {
-    t_cf_rw_list_head list;
+    int num;
+    t_cf_list_head list;
+    t_cf_mutex lock;
     t_cf_cond cond;
   } clients;
 

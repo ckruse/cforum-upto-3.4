@@ -109,6 +109,8 @@ t_forum *cf_register_forum(const u_char *name) {
   cf_mutex_init("forum.shm.lock",&forum.shm.lock);
   #endif
 
+  cf_rwlock_init("forum.lock",&forum->lock);
+
   forum->threads.last_tid = forum->threads.last_mid = 0;
   forum->threads.threads  = cf_hash_new(NULL);
 
@@ -224,4 +226,743 @@ int cf_load_data(t_forum *forum) {
 }
 /* }}} */
 
+/* {{{ cf_cleanup_forumtree */
+void cf_cleanup_forum(t_forum *forum) {
+  t_thread *t,*t1;
+  t_posting *p,*p1;
+
+  for(t=forum->threads.threads;t;t=t1) {
+    for(p=t->postings;p;p=p1) {
+		  str_cleanup(&p->user.name);
+			str_cleanup(&p->subject);
+			str_cleanup(&p->unid);
+      str_cleanup(&p->user.ip);
+      str_cleanup(&p->content);
+
+      if(p->category.len)   str_cleanup(&p->category);
+      if(p->user.email.len) str_cleanup(&p->user.email);
+      if(p->user.hp.len)    str_cleanup(&p->user.hp);
+      if(p->user.img.len)   str_cleanup(&p->user.img);
+
+      p1 = p->next;
+      free(p);
+    }
+
+    cf_rwlock_destroy(&t->lock);
+
+    t1 = t->next;
+    free(t);
+  }
+
+  /** \todo write more cleanup code */
+}
+/* }}} */
+
+/* {{{ cf_worker */
+void *cf_worker(void *arg) {
+  t_cf_list_element *selfelem,*lclient;
+  pthread_t *thread,*self;
+  int run = 1,retries;
+  struct timespec timeout;
+  t_cf_client *client;
+
+
+  /* {{{ get our list element */
+  self = pthread_self();
+
+  do {
+    /* give main thread time to append us to the worker list */
+    usleep(50);
+
+    CF_RW_RD(&head.workers.lock);
+    for(selfelem=head.workers.head.elements;selfelem;selfelem=selfelem->next) {
+      thread = (pthread_t)selfelem->data;
+      if(thread == self) break;
+    }
+    CF_RW_UN(&head.workers.lock);
+  } while(selfelem == NULL);
+  /* }}} */
+
+
+  while(run) {
+    /*
+     * First, we look, if there are already entries in the queque. Therefore
+     * we have to lock it.
+     */
+    CF_LM(&head.clients.lock);
+
+    while(!head.clients.list.elements && run) {
+      /*  ok, no clients seem to exist in the queque. Lets wait for them. */
+      CF_UM(&head.clients.lock);
+
+      timeout.tv_sec = time(NULL) + 5;
+      timeout.tv_nsec = 0;
+
+      if(cf_cond_timedwait(&head.clients.cond,&timeout) != 0) {
+        /* we got a timeout; go and try it again */
+        CF_LM(&head.clients.lock);
+        continue;
+      }
+
+      /* regular signal, go and look for client */
+      CF_LM(&head.clients.lock);
+    }
+
+    if(run) {
+      lclient = head.clients.list.head.elements;
+
+      if(lclient) {
+        head.clients.list.head.elements = lclient->next;
+        head.clients.num--;
+
+        if(!head.clients.list.head.elements) head.clients.list.head.last = NULL;
+
+        CF_UM(&head.clients.lock);
+
+        client = (t_cf_client *)lclient->data;
+        if(client->worker) client->worker(client->sock);
+        else {
+          cf_log(CF_ERR,__FILE__,__LINE__,"Client without worker?!\n");
+          close(client->sock);
+        }
+
+        free(client);
+        free(lclient);
+      }
+      else CF_UM(&head.clients.lock);
+    }
+    else CF_UM(&head.clients.lock);
+  }
+
+  return NULL;
+
+}
+/* }}} */
+
+/* {{{ cf_setup_socket */
+int cf_setup_socket(struct sockaddr_un *addr) {
+  int sock;
+  t_name_value *sockpath = cfg_get_first_value(&fo_default_conf,"SocketName");
+
+  if((sock = socket(AF_LOCAL,SOCK_STREAM,0)) == -1) {
+    cf_log(CF_ERR,__FILE__,__LINE__,"socket: %s\n",strerror(errno));
+    RUN = 0;
+    return sock;
+  }
+
+  unlink(sockpath->values[0]);
+
+  memset(addr,0,sizeof(*addr));
+  addr->sun_family = AF_LOCAL;
+  strncpy(addr->sun_path,sockpath->values[0],104);
+
+  if(bind(sock,(struct sockaddr *)addr,sizeof(*addr)) < 0) {
+    cf_log(CF_ERR,__FILE__,__LINE__,"bind(%s): %s\n",sockpath->values[0],strerror(errno));
+    RUN = 0;
+    return -1;
+  }
+
+  if(listen(sock,LISTENQ) != 0) {
+    cf_log(CF_ERR,__FILE__,__LINE__,"listen: %s\n",strerror(errno));
+    RUN = 0;
+    return -1;
+  }
+
+  /*
+   * we don't care for errors in this chmod() call; if it
+   * fails, the administrator has to do it by hand
+   */
+  chmod(sockpath->values[0],S_IRWXU|S_IRWXG|S_IRWXO);
+
+  return sock;
+}
+/* }}} */
+
+/* {{{ cf_push_server */
+void cf_push_server(int sockfd,struct sockaddr *addr,size_t size,t_worker handler) {
+  t_server srv;
+
+  srv->sock   = sock;
+  srv->size   = size;
+  srv->worker = handler;
+  srv->addr   = memdup(addr,size);
+
+  CF_LM(&head.servers.lock);
+  cf_list_append(&head.servers.list,&srv,sizeof(srv));
+  CF_UM(&head.servers.lock);
+}
+/* }}} */
+
+/* {{{ cf_push_client */
+int cf_push_client(int connfd,t_worker handler,int spare_threads,int max_threads,pthread_attr_t *attr) {
+  int status,num;
+  pthread_t thread;
+  t_cf_client client;
+
+  client->worker = worker;
+  client->sock   = sock;
+
+  /*
+   * we don't care for access synchronization of head.workers.num
+   * 'cause we are the only one accessing this value
+   */
+
+  CF_LM(&head.clients.lock);
+
+  /* {{{ are there enough workers? */
+  while(head.workers.num < head.clients.num + spare_threads && head.workers.num < max_threads) {
+    if((status = pthread_create(&thread,attr,cf_worker,NULL)) != 0) {
+      cf_log(CF_ERR,__FILE__,__LINE__,"pthread_create: %s\n",strerror(status));
+      RUN = 0;
+      return -1;
+    }
+
+    cf_rw_list_append(&head.workers.list,&thread,sizeof(thread));
+    cf_log(CF_STD,__FILE__,__LINE__,"created worker %d now!\n",++head.workers.num);
+  }
+  /* }}} */
+
+  /* {{{ are we in very high traffic? */
+  if(head.clients.num >= MAX_THREADS) {
+    CF_UM(&head.clients.lock);
+
+    cf_log(CF_STD,__FILE__,__LINE__,"handling request directly...\n");
+    handler(connfd);
+  }
+  /* }}} */
+  else {
+    cf_list_append(&head.clients.list,&client,sizeof(client));
+    num = ++head.clients.num;
+
+    CF_UM(&head.clients.lock);
+
+    /*
+     * we broadcast instead of signaling to get more than one worker
+     * working
+     */
+    cf_cond_broadcast(&head.clients.cond);
+
+    /* uh, high traffic, go sleeping for 20ms (this gives the workers time to work) */
+    if(num >= max_clients - spare_threads * 2) usleep(20);
+  }
+
+  return 0;
+}
+/* }}} */
+
+/* {{{ cf_register_protocol_handler */
+int cf_register_protocol_handler(u_char *handler_hook,t_server_protocol_handler handler) {
+  CF_RW_WR(&head.lock);
+
+  if(head.protocol_handlers == NULL) {
+    if((head.protocol_handlers = cf_hash_new(NULL)) == NULL) {
+      cf_log(LOG_ERR,__FILE__,__LINE__,"cf_hash_new: %s\n",strerror(errno));
+      exit(EXIT_FAILURE);
+    }
+  }
+
+  if(cf_hash_set_static(head.protocol_handlers,handler_hook,strlen(handler_hook),handler) == 0) {
+    cf_log(LOG_ERR,__FILE__,__LINE__,"cf_hash_set: %s\n",strerror(errno));
+    return -1;
+  }
+
+  CF_RW_UN(&head.lock);
+
+  return 0;
+}
+/* }}} */
+
+/* {{{ cf_register_thread */
+void cf_register_thread(t_forum *forum,t_thread *t) {
+  CF_RW_WR(&forum->threads.lock);
+  if(!forum->threads.threads) forum->threads.threads = cf_hash_new(NULL);
+
+  cf_hash_set(forum->threads.threads,&t->tid,sizeof(t->tid),&t,sizeof(t));
+
+  CF_RW_UN(&forum->threads.lock);
+}
+/* }}} */
+
+/* {{{ cf_unregister_thread */
+void cf_unregister_thread(t_forum *forum,t_thread *t) {
+  cf_log(LOG_DBG,__FILE__,__LINE__,"unregistering thread %llu...\n",t->tid);
+
+  CF_RW_WR(&forum->threads.lock);
+  cf_hash_entry_delete(forum->threads.threads,&t->tid,sizeof(t->tid));
+  CF_RW_UN(&forum->threads.lock);
+}
+/* }}} */
+
+/* {{{ cf_tokenize */
+int cf_tokenize(u_char *line,u_char ***tokens) {
+  int n = 0,reser = 5;
+  register u_char *ptr,*prev;
+
+  *tokens = fo_alloc(NULL,5,sizeof(*tokens),FO_ALLOC_MALLOC);
+
+  for(prev=ptr=line;*ptr;ptr++) {
+    if(n >= reser) {
+      reser += 5;
+      *tokens = fo_alloc(*tokens,reser,sizeof(*tokens),FO_ALLOC_REALLOC);
+    }
+
+    if(isspace(*ptr) || *ptr == ':') {
+      if(ptr - 1 == prev || ptr == prev) {
+        prev = ptr;
+        continue;
+      }
+
+      *ptr = 0;
+      (*tokens)[n++] = memdup(prev,ptr-prev+1);
+      prev = ptr+1;
+    }
+  }
+
+  if(prev != ptr && prev-1 != ptr && *ptr) (*tokens)[n++] = memdup(prev,ptr-prev);
+
+  return n;
+}
+/* }}} */
+
+/* {{{ cf_handle_request */
+void cf_cftp_handler(int sockfd) {
+  int           shallRun = 1,i;
+  rline_t      *tsd        = fo_alloc(NULL,1,sizeof(*tsd),FO_ALLOC_CALLOC);
+  u_char *line  = NULL,**tokens;
+  int   locked = 0,tnum = 0;
+  t_forum *forum = NULL;
+  t_server_protocol_handler handler;
+  int ret;
+
+
+  while(shallRun) {
+    line = readline(sockfd,tsd);
+    cf_log(LOG_DBG,__FILE__,__LINE__,"%s",line?line:(u_char *)"(NULL)\n");
+
+    if(line) {
+      tnum = cf_tokenize(line,&tokens);
+
+      if(tnum) {
+        /* {{{ quit this request */
+        if(cf_strcmp(tokens[0],"QUIT") == 0) {
+          shallRun = 0;
+          writen(sockfd,"200 Bye, bye\n",13);
+        }
+        /* }}} */
+        /* {{{ select a forum */
+        else if(cf_strcmp(tokens[0],"SELECT") == 0) {
+          if(tnum == 2) {
+            CF_RW_RD(&head.lock);
+            forum = cf_hash_get(&head.forums,tokens[1],strlen(tokens[1]));
+            CF_RW_UN(&head.lock);
+
+            if(forum == NULL) writen(sockfd,"509 Forum does not exist\n",25);
+            else writen(sockfd,"200 Ok\n",7);
+          }
+          else writen(sockfd,"500 Sorry\n",10);
+        }
+        /* }}} */
+        /* {{{ forum is selected, other commands are allowed */
+        else if(forum) {
+          /* {{{ archive a thread */
+          if(cf_strcmp(tokens[0],"ARCHIVE") == 0) {
+            u_int64_t tid;
+            u_char *ln = readline(sockfd,tsd);
+
+            if(ln == NULL) {
+              cf_log(LOG_ERR,__FILE__,__LINE__,"declined archivation because user name not present\n");
+              writen(sockfd,"403 Access Denied\n",18);
+            }
+            if(tnum < 3) {
+              writen(sockfd,"500 Sorry\n",10);
+              cf_log(LOG_ERR,__FILE__,__LINE__,"Bad request\n");
+            }
+            else {
+              tid      = strtoull(tokens[2]+1,NULL,10);
+              cf_log(LOG_ERR,__FILE__,__LINE__,"archiving thread %lld by user %s",tid,ln);
+
+              writen(sockfd,"200 Ok\n",7);
+
+              cf_archive_thread(sockfd,forum,tid);
+              cf_generate_cache(forum);
+            }
+
+            if(ln) free(ln);
+          }
+          /* }}} */
+          /* {{{ delete a thread */
+          else if(cf_strcmp(tokens[0],"DELETE") == 0) {
+            u_int64_t tid,mid;
+            t_thread *t;
+            t_posting *p;
+            int lvl;
+            u_char *ln = readline(sockfd,tsd);
+
+            if(ln == NULL) {
+              cf_log(LOG_ERR,__FILE__,__LINE__,"declined deletion because user name not present\n");
+              writen(sockfd,"403 Access Denied\n",18);
+            }
+            else if(tnum != 3) {
+              writen(sockfd,"501 Thread id or message id missing\n",36);
+            }
+            else {
+              tid = strtoull(tokens[1]+1,NULL,10);
+              mid = strtoull(tokens[2]+1,NULL,10);
+
+              t = cf_get_thread(forum,tid);
+
+              if(!t) {
+                writen(sockfd,"404 Thread Not Found\n",21);
+                cf_log(LOG_ERR,__FILE__,__LINE__,"Thread not found\n");
+              }
+              else {
+                p = cf_get_posting(t,mid);
+
+                if(!p) {
+                  writen(sockfd,"404 Message Not Found\n",22);
+                  cf_log(LOG_ERR,__FILE__,__LINE__,"Message not found\n");
+                }
+                else {
+                  cf_log(LOG_ERR,__FILE__,__LINE__,"Deleted posting %lld in thread %lld by user %s",mid,tid,ln);
+
+                  CF_RW_WR(&t->lock);
+
+                  lvl          = p->level;
+                  p->invisible = 1;
+
+                  for(p=p->next;p && p->level > lvl;p=p->next) {
+                    p->invisible = 1;
+                  }
+
+                  writen(sockfd,"200 Ok\n",7);
+
+                  CF_RW_UN(&t->lock);
+
+                  /* we need new caches if a message has been deleted */
+                  cf_generate_cache(forum);
+                }
+              }
+            }
+
+            if(ln) free(ln);
+          }
+          /* }}} */
+          /* {{{ undelete a thread */
+          else if(cf_strcmp(tokens[0],"UNDELETE") == 0) {
+            u_int64_t tid,mid;
+            t_thread *t;
+            t_posting *p;
+            int lvl;
+            u_char *ln = readline(sockfd,tsd);
+
+            if(ln == NULL) {
+              cf_log(LOG_ERR,__FILE__,__LINE__,"declined undelete because user name not present\n");
+              writen(sockfd,"403 Access Denied\n",18);
+            }
+            if(tnum < 3) {
+              writen(sockfd,"501 Thread id or message id missing\n",36);
+            }
+            else {
+              tid = strtoull(tokens[1]+1,NULL,10);
+              mid = strtoull(tokens[2]+1,NULL,10);
+
+              t = cf_get_thread(forum,tid);
+
+              if(!t) {
+                writen(sockfd,"404 Thread Not Found\n",21);
+                cf_log(LOG_ERR,__FILE__,__LINE__,"Thread not found\n");
+              }
+              else {
+                p = cf_get_posting(t,mid);
+                cf_log(LOG_ERR,__FILE__,__LINE__,"Undelete posting %lld in posting %lld by user %lld\n",tid,mid,ln);
+
+                if(!p) {
+                  writen(sockfd,"404 Message Not Found\n",22);
+                  cf_log(LOG_ERR,__FILE__,__LINE__,"Message not found\n");
+                }
+                else {
+                  CF_RW_WR(&t->lock);
+
+                  lvl          = p->level;
+                  p->invisible = 0;
+
+                  for(p=p->next;p && p->level > lvl;p=p->next) p->invisible = 0;
+
+                  CF_RW_UN(&t->lock);
+
+                  writen(sockfd,"200 Ok\n",7);
+
+                  /* we need new caches if a message has been undeleted */
+                  cf_generate_cache(forum);
+                }
+              }
+            }
+
+            if(ln) free(ln);
+          }
+          /* }}} */
+          /* {{{ unlock a forum */
+          else if(cf_strcmp(line,"UNLOCK") == 0) {
+            CF_RW_WR(&forum->lock);
+            forum->locked = 0;
+            CF_RW_UN(&forum->lock);
+
+            writen(sockfd,"200 Ok\n",7);
+          }
+          /* }}} */
+          /* {{{ lock forum */
+          else if(cf_strcmp(tokens[0],"LOCK") == 0) {
+            CF_RW_WR(&forum->lock);
+            forum->locked = 1;
+            CF_RW_UN(&forum->lock);
+
+            writen(sockfd,"200 Ok\n",7);
+          }
+          /* }}} */
+          /* {{{ everything else may only be done when the forum is *not* locked */
+          else {
+            CF_RW_RD(&forum->lock);
+            locked = forum->locked;
+            CF_RW_UN(&forum->lock);
+
+            if(locked == 0) {
+              /* {{{ handler plugin or 500 */
+              else {
+                /* run handlers */
+
+                CF_RW_RD(&head.lock);
+
+                if(head.protocol_handlers) {
+                  CF_RW_UN(&head.lock);
+
+                  handler = cf_hash_get(head.protocol_handlers,tokens[0],strlen(tokens[0]));
+                  if(handler == NULL) writen(sockfd,"500 What's up?\n",15);
+                  else {
+                    ret = handler(sockfd,forum,(const u_char **)tokens,tnum,tsd);
+                    if(ret == FLT_DECLINE) writen(sockfd,"500 What's up?\n",15);
+                  }
+                }
+                else {
+                  CF_RW_UN(&head.lock);
+                  writen(sockfd,"500 What's up?\n",15);
+                }
+              }
+              /* }}} */
+            }
+            else writen(sockfd,"600 Forum locked\n",17);
+          }
+          /* }}} */
+        }
+        /* }}} */
+        else {
+          writen(sockfd,"508 No forum selected\n",22);
+        }
+
+        free(line);
+        line = NULL;
+
+        for(i=0;i<tnum;i++) free(tokens[i]);
+        free(tokens);
+      }
+      else {
+        writen(sockfd,"500 What's up?\n",15);
+      }
+    }
+    else {
+      shallRun = 0; /* connection broke */
+    }
+  }
+
+  if(line) free(line);
+
+  free(tsd);
+  close(sockfd);
+}
+/* }}} */
+
+/* {{{ cf_get_posting */
+t_posting *cf_get_posting(t_thread *t,u_int64_t mid) {
+  t_posting *p;
+
+  CF_RW_RD(&t->lock);
+
+  for(p=t->postings;p && p->mid != mid;p=p->next);
+
+  CF_RW_UN(&t->lock);
+
+  return p;  /* this returns NULL or the posting */
+}
+/* }}} */
+
+/* {{{ cf_get_thread */
+t_thread *cf_get_thread(t_forum *forum,u_int64_t tid) {
+  t_thread **t = NULL;
+
+  CF_RW_RD(&forum->threads.lock);
+  if(forum->threads.threads) t = cf_hash_get(forum->threads.threads,&tid,sizeof(tid));
+  CF_RW_UN(&forum->threads.lock);
+
+  return t ? *t : NULL;
+}
+/* }}} */
+
+/* {{{ cf_generate_cache */
+void *cf_generate_cache(void *arg) {
+  t_forum *forum = (t_forum *)arg;
+  t_name_value *forums;
+  int i = 0;
+
+#ifndef CF_SHARED_MEM
+  t_string str1,str2;
+
+  /* {{{ make cache for only one forum */
+  if(forum) {
+    str_init(&str1);
+    str_init(&str2);
+
+    cf_generate_list(forum,&str1,0);
+    cf_generate_list(forum,&str2,1);
+
+    CF_RW_WR(&forum->lock);
+
+    if(forum->cache.invisible.content) free(forum->cache.invisible.content);
+    if(forum->cache.visible.content) free(forum->cache.visible.content);
+
+    forum->cache.invisible.content = str2.content;
+    forum->cache.visible.content   = str1.content;
+    forum->cache.invisible.len     = str2.len;
+    forum->cache.visible.len       = str1.len;
+
+    forum->date.visible            = time(NULL);
+    forum->date.invisible          = time(NULL);
+
+    forum->fresh = 1;
+
+    CF_RW_UN(&forum->lock);
+  }
+  /* }}} */
+  /* {{{ make cache for all forums */
+  else {
+    forums = cfg_get_first_value(&fo_server_conf,"Forums");
+
+    for(i=0;i<forums->vallen;i++) {
+      if((forum = cf_hash_get(head.forums,forums->values[i],strlen(forums->values[i]))) != NULL) {
+        str_init(&str1);
+        str_init(&str2);
+
+        cf_generate_list(forum,&str1,0);
+        cf_generate_list(forum,&str2,1);
+
+        CF_RW_WR(&forum->lock);
+
+        if(forum->cache.invisible.content) free(forum->cache.invisible.content);
+        if(forum->cache.visible.content) free(forum->cache.visible.content);
+
+        forum->cache.invisible.content = str2.content;
+        forum->cache.visible.content   = str1.content;
+        forum->cache.invisible.len     = str2.len;
+        forum->cache.visible.len       = str1.len;
+
+        forum->date.visible            = time(NULL);
+        forum->date.invisible          = time(NULL);
+
+        forum->fresh = 1;
+
+        CF_RW_UN(&forum->lock);
+      }
+    }
+  }
+  /* }}} */
+  #else
+  if(forum) cf_generate_shared_memory(forum);
+  else {
+    forums = cfg_get_first_value(&fo_server_conf,"Forums");
+
+    for(i=0;i<forums->vallen;i++) {
+      if((forum = cf_hash_get(head.forums,forums->values[i],strlen(forums->values[i]))) != NULL) cf_generate_shared_memory(forum);
+    }
+  }
+  #endif
+
+  return NULL;
+}
+/* }}} */
+
+/* {{{ cf_generate_list */
+void cf_generate_list(t_string *str,int del) {
+  int n;
+  u_char buff[500];
+  t_thread *t,*t1;
+  int first;
+  t_posting *p;
+
+  str_chars_append(str,"200 Ok\n",7);
+
+  CF_RW_RD(&head.lock);
+  t1 = head.thread;
+  CF_RW_UN(&head.lock);
+
+  while(t1) {
+    first = 1;
+
+    t = t1;
+
+    CF_RW_RD(&t->lock);
+
+    for(p = t->postings;p;p = p->next) {
+      if(p->invisible && !del) {
+        for(;p && p->invisible;p=p->next);
+        if(!p) break;
+      }
+
+
+      /* thread/posting header */
+      if(first) {
+        first = 0;
+        str_chars_append(str,"THREAD t",8);
+        u_int64_to_str(str,t->tid);
+      }
+      else str_chars_append(str,"MSG m",5);
+
+      u_int64_to_str(str,p->mid);
+      str_char_append(str,'\n');
+
+      /* author */
+      str_chars_append(str,"Author:",7);
+      str_chars_append(str,p->user.name.content,p->user.name.len);
+
+      /* subject */
+      str_chars_append(str,"\nSubject:",9);
+      str_chars_append(str,p->subject.content,p->subject.len);
+
+      /* category */
+      if(p->category) {
+        str_chars_append(str,"\nCategory:",10);
+        str_chars_append(str,p->category.content,p->category.len);
+      }
+
+      /* date */
+      n = snprintf(buff,256,"\nDate:%ld\n",p->date);
+      str_chars_append(str,buff,n);
+
+      /* level */
+      n = snprintf(buff,256,"Level:%d\n",p->level);
+      str_chars_append(str,buff,n);
+
+      n = snprintf(buff,256,"Visible:%d\n",p->invisible == 0);
+      str_chars_append(str,buff,n);
+    }
+
+    str_chars_append(str,"END\n",4);
+
+    t1   = t->next;
+    CF_RW_UN(&t->lock);
+  }
+
+  str_char_append(str,'\n');
+}
+/* }}} */
+
+
 /* eof */
+

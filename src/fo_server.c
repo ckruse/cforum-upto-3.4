@@ -119,6 +119,7 @@ int main(int argc,char *argv[]) {
   pid_t pid;
 
   int c,
+      sock,
       error = 1,
       daemonize = 0,
       start_threads = 0,
@@ -142,24 +143,28 @@ int main(int argc,char *argv[]) {
 
   pthread_attr_t attr;
   pthread_t thread;
+  struct sockaddr_un addr;
 
   /* {{{ initialize  variables */
   cf_rwlock_init("head.lock",&head.lock);
-  cf_rw_list_init("head.workers",&head.workers);
+  cf_rw_list_init("head.workers",&head.workers.list);
 
   cf_mutex_init("head.log.lock",&head.log.lock);
   head.log.std = NULL;
   head.log.err = NULL;
 
-  cf_rw_list_init("head.clients.list",&head.clients.list);
+  head.workers.num = 0;
+  head.clients.num = 0;
+
+  cf_list_init(&head.clients.list);
   cf_cond_init("head.clients.cond",&head.clients.cond);
+  cf_mutex_init("head.clients.lock",&head.clients.lock);
 
   cf_mutex_init("head.servers.lock",&head.servers.lock);
   cf_list_init(&head.servers.list);
 
   head.protocol_handlers = cf_hash_new(NULL);
   /* }}} */
-
 
   /* {{{ read options from commandline */
   while((c = getopt_long(argc,argv,"p:c:d:h",server_cmdline_options,NULL)) > 0) {
@@ -253,16 +258,6 @@ int main(int argc,char *argv[]) {
   }
   /* }}} */
 
-  #ifdef sun
-  /*
-   * On Solaris 2.5, on a uniprocessor machine threads run not
-   * asynchronously by default. So we increase the thread concurrency
-   * level that threads can run asynchronous. In fact, in concurrency
-   * level six, six threads can run "simultanously".
-   */
-  thr_setconcurrency(6);
-  #endif
-
   /* {{{ ok, go through each forum, register it and read it's data... */
   forums = cfg_get_first_value(&fo_server_conf,NULL,"Forums");
   for(i=0;i<forums->valnum;i++) {
@@ -283,6 +278,17 @@ int main(int argc,char *argv[]) {
 
   /* {{{ more initialization (some threading options, starting of the worker threads, etc, pp) */
   if(error == 0) {
+    #ifdef sun
+    /*
+     * On Solaris 2.5, on a uniprocessor machine threads run not
+     * asynchronously by default. So we increase the thread concurrency
+     * level that threads can run asynchronous. In fact, in concurrency
+     * level six, six threads can run "simultanously".
+     */
+    thr_setconcurrency(6);
+    #endif
+
+
     pthread_attr_init(&thread_attr);
 
     /*
@@ -313,7 +319,8 @@ int main(int argc,char *argv[]) {
         exit(-1);
       }
 
-      cf_rw_list_append(&head.workers,&thread,sizeof(thread));
+      cf_rw_list_append(&head.workers.list,&thread,sizeof(thread));
+      head.workers.num++;
     }
 
     /* needed later */
@@ -322,6 +329,14 @@ int main(int argc,char *argv[]) {
   }
   /* }}} */
 
+  sock = cf_setup_socket(&addr);
+  cf_push_server(sock,&addr,sizeof(addr),cf_cftp_handler);
+
+  /* {{{ main loop */
+  while(RUN) {
+
+  }
+  /* }}} */
 
   /* cleanup */
   remove(pidfile);

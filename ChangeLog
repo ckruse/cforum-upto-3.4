@@ -1,3 +1,10 @@
+2004-10-26 Christian Kruse <ckruse@wwwtech.de>
+	* src/fo_server.h, src/cf_pthread.c, src/cf_pthread.h,
+		src/modules/flt_xmlstorage.c, src/serverlib.c, src/serverlib.h,
+		src/initfinish.h, src/fo_server.c: Further developement of the new server
+		components
+	* cgi-shared/ForumUtils.pm: Fixed bug in [iframe:] handling
+
 2004-10-21 Christian Kruse <ckruse@wwwtech.de>
 	* src/modules/flt_xmlstorage.c: Moved src/initfinish.c to flt_xmlstorage.c,
 		'cause the new forum server has its data storage system implemented as a
