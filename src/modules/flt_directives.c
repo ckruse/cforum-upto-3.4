@@ -363,6 +363,7 @@ int flt_directives_execute(t_configuration *fdc,t_configuration *fvc,const u_cha
         tid = str_to_u_int64(parameter+2);
         mid = str_to_u_int64(tmp1);
         tmp1 = get_link(vs->values[0],tid,mid);
+        if(tmp2) tmp2 += 7;
 
         if(sig == 0 && cite) {
           str_chars_append(cite,"[link:",6);
