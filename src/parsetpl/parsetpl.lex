@@ -76,7 +76,7 @@ static t_array   foreach_var_stack;
 }
 
 \x0D {
-  str_chars_append(&content,"\\015",4);
+  str_chars_append(&content,"\\x0D",4);
 }
 
 \{      {
@@ -204,7 +204,7 @@ static t_array   foreach_var_stack;
   }
   \x0D {
     str_char_append(&content_backup,'\r');
-    str_chars_append(&string,"\\015",4);
+    str_chars_append(&string,"\\x0D",4);
   }
   \\n                 {
     str_chars_append(&content_backup,yytext,yyleng);
