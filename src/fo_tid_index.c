@@ -29,6 +29,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
+#include <errno.h>
 #include <dirent.h>
 
 /* socket includes */
@@ -106,12 +107,12 @@ void index_month(char *year,char *month) {
   struct dirent *ent;
 
   (void)snprintf(path,256,"%s/%s/%s",apath->values[0],year,month);
-  (void)snprintf(path,256,"%s/%s/%s/.leave",apath->values[0],year,month);
+  (void)snprintf(path1,256,"%s/%s/%s/.leave",apath->values[0],year,month);
 
-  if(stat(path,&st) == 0) return;
+  if(stat(path1,&st) == 0) return;
 
   if((m = opendir(path)) == NULL) {
-    perror("opendir");
+    fprintf(stderr,"opendir(%s): %s\n",path,strerror(errno));
     exit(EXIT_FAILURE);
   }
 
@@ -149,7 +150,7 @@ void do_year(char *year) {
   (void)snprintf(path,256,"%s/%s",apath->values[0],year);
 
   if((months = opendir(path)) == NULL) {
-    perror("opendir");
+    fprintf(stderr,"opendir(%s): %s\n",path,strerror(errno));
     exit(EXIT_FAILURE);
   }
 
@@ -205,7 +206,7 @@ int main(int argc,char *argv[],char *envp[]) {
     return EXIT_FAILURE;
   }
 
-  file = array_element_at(cfgfiles,0);
+  file = *((u_char **)array_element_at(cfgfiles,0));
   cfg_init_file(&dconf,file);
   cfg_register_options(&dconf,default_options);
   free(file);
@@ -230,7 +231,7 @@ int main(int argc,char *argv[],char *envp[]) {
   }
 
   if((years = opendir(ent->values[0])) == NULL) {
-    perror("opendir");
+    fprintf(stderr,"opendir(%s): %s\n",ent->values[0],strerror(errno));
     return EXIT_FAILURE;
   }
 
@@ -244,7 +245,7 @@ int main(int argc,char *argv[],char *envp[]) {
 
   array_sort(&idx,cmp);
   if((fd = fopen(idxfile->values[0],"w")) == NULL) {
-    perror("fopen(idxfile)");
+    fprintf(stderr,"fopen(%s): %s\n",idxfile->values[0],strerror(errno));
     return EXIT_FAILURE;
   }
   fwrite(idx.array,idx.element_size,idx.elements,fd);

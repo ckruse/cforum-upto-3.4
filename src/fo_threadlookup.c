@@ -111,11 +111,10 @@ int main(int argc,char *argv[],char *envp[]) {
 
   if((cfgfiles = get_conf_file(wanted,1)) == NULL) {
     fprintf(stderr,"error getting config files\n");
-    printf("Status: 404 Not Found\015\012");
     return EXIT_FAILURE;
   }
 
-  file = array_element_at(cfgfiles,0);
+  file = *((u_char **)array_element_at(cfgfiles,0));
   cfg_init_file(&dconf,file);
   cfg_register_options(&dconf,default_options);
   free(file);
@@ -124,31 +123,30 @@ int main(int argc,char *argv[],char *envp[]) {
     fprintf(stderr,"config file error!\n");
 
     cfg_cleanup_file(&dconf);
-
-    printf("Status: 404 Not Found\015\012");
     return EXIT_FAILURE;
   }
 
   if(infos.elements != 2 && infos.elements != 4) {
-    printf("Status: 404 Not Found\015\012");
+    /** \todo Cleanup code */
     return EXIT_FAILURE;
   }
 
-  ctid = *((char **)array_element_at(&infos,1));
+  ctid = *((u_char **)array_element_at(&infos,1));
   if(is_tid(ctid) == -1) {
-    printf("Status: 404 Not Found\015\012");
+    /** \todo cleanup code */
     return EXIT_FAILURE;
   }
   if((v = cfg_get_first_value(&fo_default_conf,"ThreadIndexFile")) == NULL) {
-    printf("Status: 404 Not Found\015\012");
+    /** \todo Cleanup code */
     return EXIT_FAILURE;
   }
   if((archive_path = cfg_get_first_value(&fo_default_conf,"ArchiveURL")) == NULL) {
-    printf("Status: 404 Not Found\015\012");
+    /** \todo cleanup file */
     return EXIT_FAILURE;
   }
   if(stat(v->values[0],&st) == -1) {
-    printf("Status: 404 Not Found\015\012");
+    printf("Status: 404 Not Found\015\012\015\012");
+    str_error_message("E_FO_404",NULL,8);
     return EXIT_FAILURE;
   }
 
@@ -162,14 +160,16 @@ int main(int argc,char *argv[],char *envp[]) {
   index.elements = st.st_size / sizeof(t_tid_index);
 
   if((fd = fopen(v->values[0],"r")) == NULL) {
-    printf("Status: 404 Not Found\015\012");
+    printf("Status: 500 Internal Server Error\015\012\015\012");
+    str_error_message("E_ARCHIVE_ERROR",NULL,15);
     return EXIT_FAILURE;
   }
   fread(index.array,sizeof(t_tid_index),st.st_size/sizeof(t_tid_index),fd);
   fclose(fd);
 
   if((idx = array_bsearch(&index,(void *)&tid,cmp)) == NULL) {
-    printf("Status: 404 Not Found\015\012");
+    printf("Status: 404 Not Found\015\012\015\012");
+    str_error_message("E_FO_404",NULL,8);
     return EXIT_FAILURE;
   }
 

@@ -1,14 +1,24 @@
+2004-06-16 Christian Kruye <ckruse@wwwtech.de>
+	* configure.in: Stripped some uneccessary WITH arguments
+	* cgi-shared/config/templates/: Moved to src/templates/
+	* src/fo_arcview.c: Fixed bug #199
+	* src/fo_threadlookup.c: Fixed several bugs (e.g., config file handling),
+		added better behavior for the 'Thread/Message could not be found' behavior
+	* src/fo_tid_index.c: Fixed several bugs (e.g., config file handling, path1
+		instead of path in snprintf())
+	* src/cfcgi.c: Fixed bug in PATH_INFO parsing
+
 2004-06-16 Jan Rieger <jr@occuris.de>
-  * cgi-shared/config/templates/tpl_*/arcmonths.html:
-  * cgi-shared/config/templates/tpl_*/arcthreadlist_month.html:
-    (Re)added author row
-  * cgi-shared/config/templates/tpl_*/arcmonths.html:
+	* cgi-shared/config/templates/tpl_*/arcmonths.html:
+	* cgi-shared/config/templates/tpl_*/arcthreadlist_month.html:
+	  (Re)added author row
+	* cgi-shared/config/templates/tpl_*/arcmonths.html:
 	  Removed author row, see Bug #173
 	* cgi-shared/config/templates/tpl_*/arcthreadlist.html:
 	  Added template variables, see Bug #173
 
 2004-06-15 Jan Rieger <jr@occuris.de>
-  * cgi-shared/config/templates/tpl_*/forum_begin.html:
+	* cgi-shared/config/templates/tpl_*/forum_begin.html:
     Changed meta refresh to only contain URL in frameset view
 	* cgi-shared/config/templates/tpl_*/forum_thread.html:
     Fixed bug #194

@@ -207,7 +207,7 @@ void generate_thread_output(t_arc_message *msg,t_string *threads,t_string *threa
   cf_set_variable(tl_tpl,cs,"subject",msg->subject.content,msg->subject.len,1);
   cf_set_variable(tl_tpl,cs,"author",msg->author.content,msg->author.len,1);
 
-  if((date = get_time(&fo_arcview_conf,"DateFormatViewList",&len,&msg->date)) != NULL) {
+  if((date = get_time(&fo_arcview_conf,"DateFormatViewList",(int *)&len,&msg->date)) != NULL) {
     tpl_cf_setvar(tl_tpl,"date",date,len,1);
     free(date);
   }
@@ -526,7 +526,7 @@ void make_thread_tree(t_arc_thread *thread,t_arc_message *msg,GdomeNode *posting
     gdome_n_unref(n,&e);
   }
   else {
-    fprintf(stderr,"thread %llu: no posting content found\n",thread->tid);
+    fprintf(stderr,"thread %llu: no posting content found for message %llu\n",thread->tid,msg->mid);
     str_error_message("E_ARCHIVE_ERROR",NULL,15);
     exit(0);
   }
@@ -537,9 +537,10 @@ void make_thread_tree(t_arc_thread *thread,t_arc_message *msg,GdomeNode *posting
     gdome_str_unref(tmp);
   }
   else {
-    fprintf(stderr,"thread %llu: could not get posting content\n",thread->tid);
-    str_error_message("E_ARCHIVE_ERROR",NULL,15);
-    exit(0);
+    str_init(&msg->content);
+//    fprintf(stderr,"thread %llu: could not get posting content for message %llu\n",thread->tid,msg->mid);
+//    str_error_message("E_ARCHIVE_ERROR",NULL,15);
+//    exit(0);
   }
 
   for(i=0,len=gdome_nl_length(childs,&e);i<len;i++) {
@@ -599,8 +600,6 @@ void create_thread_structure(GdomeDocument *doc,t_arc_thread *thr) {
   GdomeDOMString *message_str = gdome_str_mkref("Message");
   GdomeNode *mid_n;
   t_cf_tree_dataset d;
-
-  memset(thr,0,sizeof(*thr));
 
   cf_tree_init(&tree,node_compare,NULL);
 
@@ -705,6 +704,7 @@ void show_thread(const u_char *year,const u_char *month,const u_char *tid) {
     return;
   }
 
+  thr.tid = strtoull(*tid == 't' ? tid+1 : tid,NULL,10);
   create_thread_structure(doc,&thr);
 
   gdome_doc_unref(doc,&e);

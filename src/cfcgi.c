@@ -126,7 +126,7 @@ void cf_cgi_parse_path_info(t_array *ary) {
     for(;*ptr;ptr++) {
       if(*ptr == '/') {
         if(start) {
-          name = strndup(start+1,ptr-start);
+          name = strndup(start+1,ptr-start-1);
           array_push(ary,&name);
           start = ptr;
         }
