@@ -1,3 +1,7 @@
+2005-03-03 Christian Kruse <ckruse@wwwtech.de>
+	* src/modules/flt_latex.c: Enhanced behavior, now PNG will alwas be created
+		and HTML will never be created
+
 2005-03-02 Christian Seiler <self@christian-seiler.de>
 	* src/template.c, src/template.h: Added support for hash variables
 	* src/parsetpl/parsetpl.lex: Added support for hash dereferencing

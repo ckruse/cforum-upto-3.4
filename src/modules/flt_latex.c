@@ -96,7 +96,7 @@ int flt_latex_create_cache(const u_char *cnt,const u_char *our_sum) {
 
   n = read(fds[0],&c,1);
 
-  if(!isalpha(c) || c == 'F' || c == 'S' || c == 'E') {
+  if((!isalpha(c) || c == 'F' || c == 'S' || c == 'E') && c != '+') {
     fprintf(stderr,"textvc returned %c\n",c);
     close(fds[0]);
     waitpid(pid,NULL,0);
@@ -112,7 +112,7 @@ int flt_latex_create_cache(const u_char *cnt,const u_char *our_sum) {
   str_init(&html_path);
 
   /* {{{ read html */
-  if(c != 'X') {
+  if(c != 'X' && c != '+') {
     while((n = read(fds[0],buff,1)) > 0 && buff[0] != '\0') str_chars_append(&html,buff,n);
     if(n < 0) {
       str_cleanup(&html);
@@ -174,7 +174,7 @@ int flt_latex_create_cache(const u_char *cnt,const u_char *our_sum) {
   str_chars_append(&mml_path,".png",4);
   rename(png_path.content,mml_path.content);
 
-  if(c != 'X') {
+  if(c != 'X' && c != '+') {
     if((fd = fopen(html_path.content,"w")) == NULL) {
       str_cleanup(&html);
       str_cleanup(&mml);
@@ -279,9 +279,11 @@ int flt_latex_check(t_string *content,const u_char *sum) {
   }
 
   /* no HTML exists, neither MathML, nor PNG */
-  if(flt_latex_create_cache(content->content,sum) == -1) {
-    str_cleanup(&str);
-    return -1;
+  if(ret == 0) {
+    if(flt_latex_create_cache(content->content,sum) == -1) {
+      str_cleanup(&str);
+      return -1;
+    }
   }
 
   str.len -= 4;
@@ -300,14 +302,45 @@ int flt_latex_check(t_string *content,const u_char *sum) {
 }
 /* }}} */
 
+/* {{{ flt_latex_nohtml */
+void flt_latex_nohtml(const u_char *cnt,t_string *str) {
+  register u_char *ptr;
+
+  for(ptr=(u_char *)cnt;*ptr;++ptr) {
+    switch(*ptr) {
+      case '<':
+        if(cf_strncmp(ptr,"<br",3) == 0) str_char_append(str,'\n');
+        for(;*ptr && *ptr != '>';++ptr);
+        break;
+
+      case '&':
+        if(cf_strncmp(ptr,"&nbsp;",6) == 0) str_char_append(str,' ');
+        else if(cf_strncmp(ptr,"&lt;",3) == 0) str_char_append(str,'<');
+        else if(cf_strncmp(ptr,"&gt;",3) == 0) str_char_append(str,'>');
+        else if(cf_strncmp(ptr,"&quot;",6) == 0) str_char_append(str,'"');
+        break;
+
+      default:
+        str_char_append(str,*ptr);
+    }
+  }
+}
+/* }}} */
+
 int flt_latex_execute(t_configuration *fdc,t_configuration *fvc,const u_char *directive,const u_char **parameters,size_t plen,t_string *bco,t_string *bci,t_string *content,t_string *cite,const u_char *qchars,int sig) {
   u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   u_char sum[33];
   int obj = 0,exist;
   t_name_value *xhtml = cfg_get_first_value(fdc,forum_name,"XHTMLMode");
   size_t len,len1;
+  t_string my_cnt;
 
   if(sig) return FLT_DECLINE;
+
+  str_init(&my_cnt);
+  flt_latex_nohtml(content->content,&my_cnt);
+  str_str_set(content,&my_cnt);
+  str_cleanup(&my_cnt);
 
   flt_latex_create_md5_sum(content->content,content->len,sum);
   if((exist = flt_latex_check(content,sum)) == -1) return FLT_DECLINE;
