@@ -2,4 +2,7 @@
 	* src/modules/flt_deleted.c, src/modules/flt_visited.c: Added file locking
 		(for the handle returned by db->fd())
 	* cgi-shared/ForumUtils.pm: Bugfix, didn't check length of a string
+	* src/fo_vote.c: Added charset and forumbase variables
+	* src/templates/de/tpl_*/vote_ok.html: Add them to the repository, needed by
+		fo_vote.c
 

@@ -92,9 +92,11 @@ int is_id(const u_char *id) {
 /* }}} */
 
 void send_ok_output(t_cf_hash *head,t_name_value *cs) {
+  t_name_value *fbase;
   t_name_value *cfg_tpl = cfg_get_first_value(&fo_vote_conf,"OkTemplate");
   u_char tpl_name[256];
   t_cf_template tpl;
+  u_char *uname = cf_hash_get(GlobalValues,"UserName",8);
 
   generate_tpl_name(tpl_name,256,cfg_tpl);
 
@@ -103,6 +105,12 @@ void send_ok_output(t_cf_hash *head,t_name_value *cs) {
     str_error_message("E_TPL_NOT_FOUND",NULL);
     return;
   }
+
+  if(uname) fbase = cfg_get_first_value(&fo_default_conf,"UBaseURL");
+  else      fbase = cfg_get_first_value(&fo_default_conf,"BaseURL");
+
+  cf_set_variable(&tpl,cs,"forumbase",fbase->values[0],strlen(fbase->values[0]),1);
+  cf_set_variable(&tpl,cs,"charset",cs->values[0],strlen(cs->values[0]),1);
 
   printf("Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
   tpl_cf_parse(&tpl);
