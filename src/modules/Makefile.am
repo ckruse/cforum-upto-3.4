@@ -111,6 +111,10 @@ pkglib_LTLIBRARIES+=flt_preview.la
 flt_preview_la_SOURCES=flt_preview.c
 flt_preview_la_LDFLAGS=-module -export-dynamic -avoid-version
 
+pkglib_LTLIBRARIES+=flt_spellcheck.la
+flt_spellcheck_la_SOURCES=flt_spellcheck.c
+flt_spellcheck_la_LDFLAGS=-module -export-dynamic -avoid-version
+
 pkglib_LTLIBRARIES+=flt_handle404.la
 flt_handle404_la_SOURCES=flt_handle404.c
 flt_handle404_la_LDFLAGS=-module -export-dynamic -avoid-version
@@ -174,9 +178,9 @@ flt_xmlarc_la_SOURCES=flt_xmlarc.c ../xml_handling.c
 flt_xmlarc_la_LDFLAGS=-module -export-dynamic -avoid-version
 flt_xmlarc_la_LIBADD=$(GDOME_LIBS)
 
-pkglib_LTLIBRARIES+=flt_mailonpost.la
-flt_mailonpost_la_SOURCES=flt_mailonpost.c
-flt_mailonpost_la_LDFLAGS=-module -export-dynamic -avoid-version
-flt_mailonpost_la_LIBADD=$(BDB_LIB) $(ESMTP_LIBS)
+#pkglib_LTLIBRARIES+=flt_mailonpost.la
+#flt_mailonpost_la_SOURCES=flt_mailonpost.c
+#flt_mailonpost_la_LDFLAGS=-module -export-dynamic -avoid-version
+#flt_mailonpost_la_LIBADD=$(BDB_LIB) $(ESMTP_LIBS)
 
 # eof

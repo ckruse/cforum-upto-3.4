@@ -1,3 +1,9 @@
+2005-02-17 Christian Seiler <self@christian-seiler.de>
+	* conf/fo_post.conf.in: Added spellchecker configuration directives
+	* src/modules/flt_spellcheck.c: First implementation of a
+		spellchecker in C using ispell.
+	* src/modules/Makefile.am: Added flt_spellcheck.la
+
 2005-02-17 Christian Kruse <ckruse@wwwtech.de>
 	* conf/fo_view.conf.in, conf/fo_post.conf.in: Added another plugin and some
 		required directives

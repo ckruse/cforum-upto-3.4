@@ -20,6 +20,7 @@ Load "flt_httpauth"
 Load "flt_posting"
 Load "flt_remotesignature"
 Load "flt_postingassistant"
+Load "flt_spellcheck"
 Load "flt_preview"
 Load "flt_syntax"
 Load "flt_checkregisteredname"
@@ -68,7 +69,9 @@ Forum FORUM1 {
  QuotingPercent "50"
  QuoteMustValidate "yes"
 
- SpellCheckerDictionary "ndeutsch"
+ SpellCheckerEnabled "yes"
+ SpellCheckerPath "/usr/bin/ispell"
+ SpellCheckerDictionary "german"
  SpellCheckerFormatterType "utf8"
 
  SMTPHost "localhost"
