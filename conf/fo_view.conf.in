@@ -9,7 +9,7 @@
 # $LastChangedBy$
 #
 
-ModulePath "@libdir@/cforum"
+ModulePath "@libdir@/cforum/"
 
 Load "flt_tplmode"
 Load "flt_http"

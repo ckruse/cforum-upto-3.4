@@ -148,27 +148,22 @@ int gen_unid(u_char *buff,int maxlen) {
   static const u_char chars[] = "AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz0123456789_-";
   struct timeval  tp;
 
-  if(!remaddr) {
-    return 0;
-  }
+  if(!remaddr) return 0;
 
-  if(gettimeofday(&tp,NULL) != 0) {
-    return 0;
-  }
+  if(gettimeofday(&tp,NULL) != 0) return 0;
 
   srand(tp.tv_usec);
   l = strlen(remaddr);
 
-  if(maxlen > l) {
-    maxlen = l;
-  }
-  if(maxlen <= l) {
-    l = maxlen - 1;
-  }
+  if(maxlen <= l) l = maxlen - 1;
 
-  for(i=0;i<l;i++) {
-    buff[i] = chars[remaddr[i] % 59 + (unsigned int)(rand() % 3)];
-  }
+  for(i=0;i<l;++i) buff[i] = chars[remaddr[i] % 59 + (unsigned int)(rand() % 3)];
+
+  l = rand() % maxlen;
+  if(l == maxlen) --l;
+  for(++i;i<l;++i) buff[i] = chars[rand() % 63];
+
+  buff[i] = '\0';
 
   return i;
 }

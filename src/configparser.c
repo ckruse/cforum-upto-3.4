@@ -139,6 +139,7 @@ t_conf_opt fo_post_options[] = {
   {  "FieldConfig",               handle_command,   CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_post_conf },
   {  "FieldNeeded",               handle_command,   CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_post_conf },
   {  "RedirectOnPost",            handle_command,   CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_post_conf },
+  { "QuotingChars",               handle_command,   CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_NEEDED|CFG_OPT_UNIQUE|CFG_OPT_LOCAL, &fo_post_conf },
 
   {  "Image",                     handle_command,   CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_post_conf },
 

@@ -113,12 +113,29 @@ void display_posting_form(t_cf_hash *head) {
   u_char tplname[256],*forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   t_name_value *tt  = cfg_get_first_value(&fo_post_conf,forum_name,"ThreadTemplate");
   t_name_value *cs  = cfg_get_first_value(&fo_default_conf,forum_name,"ExternCharset");
-  t_name_value *cats = cfg_get_first_value(&fo_default_conf,forum_name,"Category");;
+  t_name_value *cats = cfg_get_first_value(&fo_default_conf,forum_name,"Categories");;
+  t_name_value *qc = cfg_get_first_value(&fo_post_conf,forum_name,"QuotingChars");
   size_t len,i;
   u_char *val;
   u_char *cat = NULL,*tmp;
   t_cf_tpl_variable array;
-  
+  u_char buff[256];
+
+  u_char *qchars;
+  size_t qclen;
+  int utf8;
+
+  u_int32_t f;
+  t_cf_hash_entry *ent;
+  t_cf_cgi_param *param;
+
+  utf8 = cf_strcmp(cs->values[0],"UTF-8") == 0;
+
+  if(utf8 || (qchars = htmlentities_charset_convert(qc->values[0],"UTF-8",cs->values[0],&qclen,0)) == NULL) {
+    qchars = strdup(qc->values[0]);
+    qclen  = strlen(qchars);
+  }
+
   if(!tt) {
     cf_error_message("E_TPL_NOT_FOUND",NULL);
     return;
@@ -136,7 +153,7 @@ void display_posting_form(t_cf_hash *head) {
 
   if(head) {
     cat = cf_cgi_get(head,"cat");
-    cf_tpl_setvalue(&tpl,"cat",TPL_VARIABLE_STRING,cat,strlen(cat));
+    if(cat) cf_tpl_setvalue(&tpl,"cat",TPL_VARIABLE_STRING,cat,strlen(cat));
   }
 
   for(i=0;i<cats->valnum;++i) {
@@ -149,14 +166,37 @@ void display_posting_form(t_cf_hash *head) {
 
   if(*ErrorString) {
     val = cf_get_error_message(ErrorString,&len);
-    cf_set_variable(&tpl,cs,"error",val,len,1);
-    *ErrorString = '\0';
-    free(val);
+    if(!val) {
+      val = strdup(ErrorString);
+      len = strlen(val);
+    }
 
-    cf_tpl_parse(&tpl);
+    cf_tpl_setvalue(&tpl,"err",TPL_VARIABLE_STRING,val,len);
+    free(val);
   }
-  else {
+
+  if(head) {
+    for(i=0;i<hashsize(head->tablesize);i++) {
+      if(head->table[i]) {
+        for(ent = head->table[i];ent;ent=ent->next) {
+          for(param = (t_cf_cgi_param *)ent->data;param;param=param->next) {
+            if(param->value) {
+              if(cf_strncmp(param->name,"ne",2) == 0) cf_set_variable(&tpl,cs,param->name+2,param->value,strlen(param->value),1);
+              else cf_set_variable(&tpl,cs,param->name,param->value,strlen(param->value),1);
+            }
+          }
+        }
+      }
+    }
   }
+
+  len = gen_unid(buff,50);
+
+  cf_set_variable(&tpl,cs,"unid",buff,len,1);
+  cf_tpl_setvalue(&tpl,"qchar",TPL_VARIABLE_STRING,"&#255;",6);
+  cf_tpl_appendvalue(&tpl,"qchar",qchars,qclen);
+
+  cf_tpl_parse(&tpl);
 
   cf_tpl_finish(&tpl);
 }
@@ -180,7 +220,7 @@ int normalize_cgi_variables(t_cf_hash *head,const u_char *field_name) {
   u_char *converted;
   t_name_value *cs = cfg_get_first_value(&fo_default_conf,forum_name,"ExternCharset");
   t_cf_cgi_param *param;
-  char buff[50];
+  char *buff;
   t_string str;
 
   if(!field) return -1;
@@ -263,13 +303,19 @@ int normalize_cgi_variables(t_cf_hash *head,const u_char *field_name) {
     /* }}} */
   }
 
-  field = cf_cgi_get(head,(u_char *)field_name);
-  flen  = strlen(field);
 
-  /* strip character from field */
-  memcpy(buff,field+2,flen-2);
-  memcpy(field,buff,flen-2);
-  field[flen-2] = '\0';
+  if((field = cf_cgi_get(head,(u_char *)field_name)) != NULL) {
+    flen  = strlen(field);
+
+    buff = fo_alloc(NULL,1,flen-2,FO_ALLOC_MALLOC);
+
+    /* strip character from field */
+    memcpy(buff,field+2,flen-2);
+    memcpy(field,buff,flen-2);
+
+    field[flen-2] = '\0';
+    free(buff);
+  }
 
   return 0;
 }
@@ -474,7 +520,17 @@ u_char *get_remote_addr(void) {
 
 /* {{{ handle_post_command */
 int handle_post_command(t_configfile *cfile,const u_char *context,u_char *name,u_char **args,size_t argnum) {
-  return 0;
+  t_conf_opt opt;
+  int ret;
+
+  opt.name = strdup(name);
+  opt.data = &fo_post_conf;
+
+  ret = handle_command(NULL,&opt,context,args,argnum);
+
+  free(opt.name);
+
+  return ret;
 }
 /* }}} */
 
@@ -647,7 +703,8 @@ int main(int argc,char *argv[],char *env[]) {
     if(head) {
       /* {{{ ok, user gave us variables -- lets normalize them */
       if(normalize_cgi_variables(head,"qchar") != 0) {
-        cf_error_message("E_manipulated",NULL);
+        strcpy(ErrorString,"E_manipulated");
+        display_posting_form(head);
         return EXIT_SUCCESS;
       }
       /* }}} */
@@ -850,8 +907,8 @@ int main(int argc,char *argv[],char *env[]) {
         }
         /* }}} */
       }
-      else display_posting_form(head);
     }
+    else display_posting_form(head);
   }
 
   /* cleanup source */

@@ -131,7 +131,7 @@ int cf_run_init_handlers(t_cf_hash *head) {
 /* {{{ cf_run_auth_handlers */
 int cf_run_auth_handlers(t_cf_hash *head) {
   size_t i;
-  int ret;
+  int ret = FLT_DECLINE;
   t_filter_begin func;
   t_handler_config *handler;
 
@@ -160,7 +160,7 @@ int cf_run_connect_init_handlers(t_cf_hash *head,int sock)
   t_handler_config *handler;
   t_filter_connect exec;
   size_t i;
-  int ext = FLT_OK,ret;
+  int ext = FLT_OK,ret = FLT_DECLINE;
 
   if(Modules[CONNECT_INIT_HANDLER].elements) {
     for(i=0;i<Modules[CONNECT_INIT_HANDLER].elements;i++) {
@@ -210,7 +210,7 @@ int cf_run_view_init_handlers(t_cf_hash *head,t_cf_template *tpl_begin,t_cf_temp
   t_handler_config *handler;
   t_filter_init_view fkt;
   size_t i;
-  int ret;
+  int ret = FLT_DECLINE;
 
   if(Modules[VIEW_INIT_HANDLER].elements) {
     for(i=0;i<Modules[VIEW_INIT_HANDLER].elements;i++) {

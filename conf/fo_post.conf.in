@@ -9,7 +9,7 @@
 # $LastChangedBy$
 #
 
-ModulePath "@libdir@/cforum"
+ModulePath "@libdir@/cforum/"
 
 Load "flt_tplmode"
 Load "flt_http"
@@ -18,7 +18,7 @@ Load "flt_visited"
 Load "flt_include"
 Load "flt_httpauth"
 
-Forum "FORUM1" {
+Forum FORUM1 {
  PostingUrl "http://selfforum.teamone.de/\?"
  PostingUrl "http://selfforum.teamone.de/my/\?"
  PostingUrl "/\?"
@@ -40,6 +40,7 @@ Forum "FORUM1" {
  FieldNeeded "qchar" "yes" "yes"
  FieldNeeded "cat" "yes" "no"
 
+ QuotingChars "»» "
 
  PostingAssistantMustValidate "yes"
 

@@ -31,13 +31,20 @@ GetOptions(
 
 usage() if $help;
 
+if(!$messagefile_in || !$messagefile_out) {
+  print STDERR "set --message-file!\n" unless $messagefile_in;
+  print STDERR "set --message-db!\n" unless $messagefile_out;
+
+  usage();
+}
+
 my $db = new BerkeleyDB::Btree(
   -Filename => $messagefile_out,
 	-Flags => DB_CREATE
 ) or die "BDB error: $!";
 
 if(!$lang) {
-  if($msgfile !~ /\.([a-z]{2})\./) {
+  if($messagefile_in !~ /\.([a-z]{2})\./) {
     print STDERR "Could not get language! Please set by --lang!\n";
     exit -1;
   }

@@ -1,6 +1,15 @@
 2005-01-18 Christian Kruse <ckruse@wwwtech.de>
 	* src/template.c: Fixed segfault in cf_tpl_var_convert(),
 		fixed other bug in tpl_cf_var_convert()
+	* conf/errormessages.de.txt: Added several error messages
+	* conf/fo_view.conf.in: Added trailing slash in ModulePath
+	* conf/fo_post.conf.in: Added trailing slash in ModulePath, removed quotes
+		from forum identifier, added QuotingChars
+	* scripts/cf-msgs2db.pl: small bugfixes
+	* src/utils.c: Changed gen_unid() to make better IDs
+	* src/fo_post.c: Lot of debugging and developement
+	* src/handlerrunners.c: Bugfix, used uninitialized value
+	* src/configparser.c: Added QuotingChars directive for fo_post options
 
 2005-01-18 Christian Seiler <self@christian-seiler.de>
 	* src/parsetpl/parsetpl.lex: fixed segfault in generated variable
