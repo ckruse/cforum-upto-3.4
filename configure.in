@@ -289,6 +289,7 @@ AC_TYPE_SIGNAL
 AC_OUTPUT(
 Makefile
 conf/Makefile
+scripts/Makefile
 scripts/fo_userconf
 scripts/fo_usermanagement
 scripts/fo_xmlrpc
