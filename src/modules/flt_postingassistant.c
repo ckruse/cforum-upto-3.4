@@ -225,6 +225,30 @@ int flt_poas_check_newlines(u_char *str) {
 }
 /* }}} */
 
+float flt_poas_check_sig(u_char *str) {
+  float score = 0;
+  register u_char *ptr;
+  u_char *sigstart;
+  int newlines = 0;
+  size_t normal,sig;
+
+  if((sigstart = strstr(str,"_/_SIG_/_")) == NULL) return .0;
+
+  for(ptr=sigstart+9;*ptr;++ptr) {
+    if(*ptr == '[' && cf_strncmp(ptr,"[image:",7) == 0) score += 3.0;
+    else if(*ptr == '<' && cf_strncmp(ptr,"<br />",6) == 0) ++newlines;
+  }
+
+  if(newlines > 4) score += 3.0;
+
+  normal = sigstart - str;
+  sig = ptr - sigstart - 9;
+
+  if(normal < sig) score += 3.0;
+
+  return score;
+}
+
 /* {{{ flt_poas_standardchecks */
 int flt_poas_standardchecks(t_message *p) {
   float score = flt_poas_conf.fds_allowed;
@@ -238,6 +262,8 @@ int flt_poas_standardchecks(t_message *p) {
   score -= flt_poas_check_for_cases(p->content.content);
 
   score -= flt_poas_check_newlines(p->content.content);
+
+  score -= flt_poas_check_sig(p->content.content);
 
   if(p->email.len == 0) score -= 1.0;
 

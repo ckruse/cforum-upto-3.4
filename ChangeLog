@@ -1,3 +1,13 @@
+2005-01-23 Christian Kruse <ckruse@wwwtech.de>
+	* src/modules/flt_postingassistant.c: Implemented several format checks for
+		the	signature
+	* src/swig/typemaps.i: Added file for some basic typemaps
+	* src/swig/CForum-Configparser/CForum-Configparser.i: Moved it to the right
+		directory, added callback function, made it possible to register own
+		configuration options and register a default configuration callback function
+	* src/swig/CForum-Configparser/Makefile.PL: Added Makefile.PL to automize
+		compilation
+
 2005-01-22 Christian Kruse <ckruse@wwwtech.de>
 	* src/modules/flt_posting.c: Fixed bug in variable setting
 

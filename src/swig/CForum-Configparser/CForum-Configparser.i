@@ -23,58 +23,146 @@
 #include "utils.h"
 #include "hashlib.h"
 #include "configparser.h"
+
+static SV *callback = NULL;
+
+typedef struct s_xs_conf {
+  SV *data;
+  SV *callback;
+} t_xs_conf;
+
+/* {{{ xs_callback */
+int xs_callback(t_configfile *file,t_conf_opt *entry,const u_char *context,u_char **args,size_t len) {
+  size_t i;
+  int ret;
+  t_xs_conf *data = (t_xs_conf *)entry->data;
+
+  dSP;
+
+  //ENTER;
+  SAVETMPS;
+
+  PUSHMARK(SP);
+
+  /* put the name (a copy), the context and the userdata (what the user gave us) on the stack */
+  XPUSHs(sv_2mortal(newSVpv(entry->name,strlen(entry->name))));
+  XPUSHs(sv_2mortal(newSVpv(context,strlen(context))));
+  XPUSHs(data->data);
+
+  /* put arguments on the stack */
+  for(i=0;i<len;i++) XPUSHs(sv_2mortal(newSVpv(args[i], strlen(args[i]))));
+
+  PUTBACK;
+
+  /* the user dared it to give us a callback routine. Now, ok, lets go for it then */
+  ret = call_sv(callback,G_SCALAR);
+
+  /* refresh stack */
+  SPAGAIN;
+
+  /* wah! at least one return value. If none, return error */
+  if(ret == 1) i = POPi;
+  else i = 0;
+
+  FREETMPS;
+  LEAVE;
+
+  return i;
+}
+/* }}} */
+
+/* {{{ xs_callback_dflt */
+int xs_callback_dflt(t_configfile *cfile,const u_char *context,u_char *name,u_char **args,size_t len) {
+  size_t i;
+  int ret;
+
+  dSP;
+
+  //ENTER;
+  SAVETMPS;
+
+  PUSHMARK(SP);
+
+  /* put the name (a copy), the context and the userdata (what the user gave us) on the stack */
+  XPUSHs(sv_2mortal(newSVpv(name,strlen(name))));
+  XPUSHs(sv_2mortal(newSVpv(context,strlen(context))));
+
+  /* put arguments on the stack */
+  for(i=0;i<len;++i) XPUSHs(sv_2mortal(newSVpv(args[i], strlen(args[i]))));
+
+  PUTBACK;
+
+  /* the user dared it to give us a callback routine. Now, ok, lets go for it then */
+  ret = call_sv(callback,G_SCALAR);
+
+  /* refresh stack */
+  SPAGAIN;
+
+  /* wah! at least one return value. If none, return error */
+  if(ret == 1) i = POPi;
+  else i = 0;
+
+  FREETMPS;
+  LEAVE;
+
+  return i;
+}
+/* }}} */
+
 %}
 
 %init %{
   cfg_init();
 %}
 
-typedef unsigned char u_char;
+/* include general typemaps */
+%include "../typemaps.i";
 
-/* {{{ typemaps */
-%typemap(in) u_char ** {
-  AV *tempav;
-  I32 len;
+/* {{{ typemap for configuration option */
+%typemap(out) t_conf_opt * {
+  AV *tempav,*tempav1;
+  I32 len,len1;
+  SV  **tv,**tv1;
   int i;
-  SV  **tv;
+  t_xs_conf conf;
+
   if(!SvROK($input)) croak("Argument $argnum is not a reference.");
   if(SvTYPE(SvRV($input)) != SVt_PVAV) croak("Argument $argnum is not an array.");
 
   tempav = (AV*)SvRV($input);
   len = av_len(tempav);
-  $1 = (u_char **)malloc((len+2)*sizeof(u_char *));
+  $1 = (t_conf_opt *)fo_alloc(NULL,len+2,sizeof(t_conf_opt *),FO_ALLOC_MALLOC);
+
   for(i=0;i<=len;++i) {
     tv = av_fetch(tempav, i, 0);
-    $1[i] = (char *) SvPV(*tv,PL_na);
+    if(!SvROK(*tv) || SvTYPE(SvRV(*tv)) != SVt_PVAV) croak("argument $argnum consists not of valid configuration option entries");
+
+    tempav1 = (AV *)SvRV(*tv);
+    len1 = av_len(tempav1);
+    if(len1 != 3) croak("argument $argnum consists not of valid configuration option entries");
+
+    tv1 = av_fetch(tempav1,0,0);
+    $1[i].name = (u_char *)SvPV(*tv,PL_na);
+    $1[i].callback = xs_callback;
+
+    tv1 = av_fetch(tempav1,1,0);
+    if(!SvROK(*tv1) || SvTYPE(SvRV(*tv)) != SVt_PVCV) croak("argument $argnum consists not of valid configuration option entries");
+    conf.callback = *tv1;
+
+    tv1 = av_fetch(tempav1,2,0);
+    $1[i].flags = sv_2iv(*tv1);
+
+    tv1 = av_fetch(tempav1,3,0);
+    conf.data = *tv1;
+
+    $1[i].data = memdup(&conf,sizeof(conf));
   }
 
   $1[i] = NULL;
+
 };
-
-// This cleans up the char ** array after the function call
-%typemap(freearg) u_char ** {
-  free($1);
-}
-
-// Creates a new Perl array and places a NULL-terminated char ** into it
-%typemap(out) u_char ** {
-  AV *myav;
-  SV **svs;
-  int i = 0,len = 0;
-  /* Figure out how many elements we have */
-  while($1[len]) len++;
-  svs = (SV **)malloc(len*sizeof(SV *));
-  for (i = 0; i < len ; i++) {
-    svs[i] = sv_newmortal();
-    sv_setpv((SV*)svs[i],$1[i]);
-  };
-  myav = av_make(len,svs);
-  free(svs);
-  $result = newRV((SV*)myav);
-  sv_2mortal($result);
-  argvi++;
-}
 /* }}} */
+
 
 /* {{{ constants */
 #define CFG_OPT_NEEDED     (0x1<<0)
@@ -100,7 +188,7 @@ typedef struct s_configfile {
 %extend t_configfile {
   t_configfile(char *filename);
   int register_options(t_conf_opt *opts);
-  int read(int mode);
+  int read(int mode,SV *cllbck = NULL);
 }
 
 %{
@@ -114,8 +202,16 @@ int t_configfile_register_options(t_configfile *self,t_conf_opt *opts) {
   return cfg_register_options(self,opts);
 }
 
-int t_configfile_read(t_configfile *self,int mode) {
-  read_config(self,NULL,mode);
+int t_configfile_read(t_configfile *self,int mode,SV *cllbck) {
+  int ret;
+
+  if(cllbck) {
+    callback = cllbck;
+    ret = read_config(self,xs_callback_dflt,mode);
+  }
+  else ret = read_config(self,NULL,mode);
+
+  return ret;
 }
 %}
 /* }}} */
