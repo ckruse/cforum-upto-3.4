@@ -1,3 +1,7 @@
+2005-03-09 Christian Kruse <ckruse@wwwtech.de>
+	* conf/patterns/javascript.pat: Added all methods and objects described in
+		SELFHTML
+
 2005-03-08 Christian Kruse <ckruse@wwwtech.de>
 	* conf/patterns/sql.pat: Added syntax highlighting for SQL, Daniela Koller
 		<dako@wwwtech.de> wrote it
