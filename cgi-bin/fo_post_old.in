@@ -382,9 +382,12 @@ if($cgi->param) {
   if($answer =~ /^200/) {
     if($user_config->{RedirectOnPost} && $user_config->{RedirectOnPost}->[0]->[0] eq 'yes' && $cgi->param('fupto')) {
       my $fupto      = $cgi->param('fupto');
-      my $url        = $UserName ? $fo_default_conf->{UBaseURL}->[0]->[0] : $fo_default_conf->{BaseURL}->[0]->[0];
+      my $url        = $UserName ? $fo_default_conf->{UPostingURL}->[0]->[0] : $fo_default_conf->{PostingURL}->[0]->[0];
 
-      print "Status: 302 Moved Temporarily\015\012Location: $url?t=$tid&m=$mid\015\012\015\012";
+      $url =~ s!\%t!$tid!g;
+      $url =~ s!\%m!$mid!g;
+
+      print "Status: 302 Moved Temporarily\015\012Location: $url\015\012\015\012";
     }
     else {
       my $tpl = new CForum::Template(get_template($fo_default_conf,$user_config,$fo_post_conf->{OkTemplate}->[0]->[0]));

@@ -163,6 +163,14 @@ AC_ARG_WITH(data-dir,
 	[ DATADIR="${localstatedir}/cforum/data" ]
 )
 
+AC_ARG_WITH(document-root,
+  [AC_HELP_STRING(
+    [--with-document-root=DIR],
+    [the document root directory])],
+  [ DOCROOT="${with_document_root}" ],
+  [ AC_MSG_ERROR([document root not given]) ]
+)
+
 AC_ARG_WITH(archive-dir,
   [AC_HELP_STRING(
     [--with-archive-dir=DIR],
@@ -224,6 +232,7 @@ AC_CHECK_LIB(
   AC_MSG_ERROR([idn library cannot be found])
 )
 
+AC_SUBST(DOCROOT)
 AC_SUBST(DATADIR)
 AC_SUBST(PERLMODULES)
 AC_SUBST(CONFIGDIR)
@@ -272,6 +281,9 @@ AC_TYPE_SIGNAL
 AC_OUTPUT(cgi-bin/Makefile
 cgi-bin/fo_post_old
 cgi-bin/fo_userconf
+htdocs/Makefile
+htdocs/archiv/Makefile
+htdocs/my/Makefile
 Makefile
 cgi-shared/Makefile
 cgi-shared/config/Makefile

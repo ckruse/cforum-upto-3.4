@@ -1,5 +1,5 @@
 
-SUBDIRS=src cgi-shared cgi-bin
+SUBDIRS=src cgi-shared cgi-bin htdocs
 
 install-exec-hook:
 	if test ! -d $(bindir)/user/; then \

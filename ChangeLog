@@ -1,4 +1,13 @@
 2004-07-29 Christian Kruse <ckruse@wwwtech.de>
+	* cgi-bin/fo_post_old.in: Bugfix for URL handling
+	* src/serverlib.c: Fixed bug in log message (thread <mid>, posting <tid> -- it
+		has to be the other way round)
+	* src/modules/flt_link.c: several bugfixes
+	* src/modules/flt_posting.c: Implemented 'maximum number of signature lines'
+		feature
+	* cgi-bin/fo_userconf.in: Fixed some bugs (wrong regexes)
+
+2004-07-29 Christian Kruse <ckruse@wwwtech.de>
 	* CREATED 2.0 RC 2 BRANCH
 
 2004-07-29 Christian Kruse <ckruse@wwwtech.de>

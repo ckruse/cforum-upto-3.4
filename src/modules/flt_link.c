@@ -67,8 +67,8 @@ t_message *flt_link_get_next(t_message *msg) {
   t_mod_api is_visited = cf_get_mod_api_ent("is_visited");
 
   if(msg->next) {
-    if(NoVisited) {
-      for(tmp=msg->next;tmp && (is_visited(&tmp->mid) || tmp->invisible == 1 || tmp->may_show == 0);tmp=tmp->next);
+    if(is_visited && NoVisited) {
+      for(tmp=msg->next;tmp && (tmp->invisible == 1 || tmp->may_show == 0 || is_visited(&(tmp->mid)) != NULL);tmp=tmp->next);
       if(tmp) return tmp;
     }
 
@@ -80,13 +80,14 @@ t_message *flt_link_get_next(t_message *msg) {
 }
 
 t_message *flt_link_get_last(t_cl_thread *thread) {
-  t_message *msg;
+  t_message *msg = NULL;
+  thread->messages->prev = NULL;
 
   for(msg=thread->last;msg && (msg->invisible == 1 || msg->may_show == 0);msg=msg->prev);
   return msg;
 }
 
-void my_getlink(t_string *str,u_int64_t mid,u_int64_t tid) {
+void my_getlink(t_string *str,u_int64_t tid,u_int64_t mid,const u_char *aaf,const u_char aafval[]) {
   str->content  = get_link(NULL,tid,mid);
   str->reserved = str->len = strlen(str->content);
   str->reserved += 1;
@@ -104,7 +105,7 @@ int flt_link_set_links_post(t_cf_hash *head,t_configuration *dc,t_configuration 
   u_char *buff;
   t_string str;
   t_name_value *qtype = cfg_get_first_value(&fo_view_conf,"ParamType");
-  u_char aafval[] = *qtype->values[0] == 'Q' ? "&aaf=" : "?aaf=";
+  u_char *aafval = strdup(*qtype->values[0] == 'Q' ? "&aaf=" : "?aaf=");
 
   /* user doesn't want <link> tags */
   if(SetLinks == 0) return FLT_DECLINE;
@@ -113,26 +114,26 @@ int flt_link_set_links_post(t_cf_hash *head,t_configuration *dc,t_configuration 
 
   /* ok, we have to find the previous message */
   if((msg = flt_link_get_previous(thread->threadmsg)) != NULL) {
-    my_getlink(&str,thread->tid,msg->mid);
+    my_getlink(&str,thread->tid,msg->mid,aaf,aafval);
     tpl_cf_setvar(tpl,"prev",str.content,str.len,1);
     str_cleanup(&str);
   }
 
   /* next message... */
   if((msg = flt_link_get_next(thread->threadmsg)) != NULL) {
-    my_getlink(&str,thread->tid,msg->mid);
+    my_getlink(&str,thread->tid,msg->mid,aaf,aafval);
     tpl_cf_setvar(tpl,"next",str.content,str.len,1);
     str_cleanup(&str);
   }
 
-  my_getlink(&str,thread->tid,thread->messages->mid);
+  my_getlink(&str,thread->tid,thread->messages->mid,aaf,aafval);
   tpl_cf_setvar(tpl,"first",str.content,str.len,1);
   str_cleanup(&str);
 
   /* last message... */
   if((msg = flt_link_get_last(thread)) != NULL) {
-    my_getlink(&str,thread->tid,msg->mid);
-    tpl_cf_setvar(tpl,"last",buff,n,1);
+    my_getlink(&str,thread->tid,msg->mid,aaf,aafval);
+    tpl_cf_setvar(tpl,"last",str.content,str.len,1);
     str_cleanup(&str);
   }
   

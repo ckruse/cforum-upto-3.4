@@ -21,13 +21,13 @@
 
  ThreadIndexFile "@DATADIR@/tididx.dat"
 
- BaseURL "/forum/"
- PostingURL "/forum/t/%t/m/%m/"
- UBaseURL "/forum/my/"
- UPostingURL "/forum/my/t/%t/m/%m/"
+ BaseURL "/"
+ PostingURL "/t/%t/m/%m/"
+ UBaseURL "/my/"
+ UPostingURL "/my/t/%t/m/%m/"
 
- ArchivePostingURL "/forum/archive/t/%t/m/%m/"
- ArchiveURL "/forum/archive/"
+ ArchivePostingURL "/archiv/t/%t/m/%m/"
+ ArchiveURL "/archiv/"
 
  PostScript "/cgi-bin/fo_post"
  UPostScript "/cgi-bin/user/fo_post"

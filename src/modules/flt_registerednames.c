@@ -297,7 +297,7 @@ int flt_registerednames_init_module(int sock) {
   }
 
   if((ret = NamesDB->open(NamesDB,NULL,AuthNames,NULL,DB_HASH,DB_CREATE,0644)) != 0) {
-    cf_log(LOG_ERR,__FILE__,__LINE__,"DB->open: %s\n",db_strerror(ret));
+    cf_log(LOG_ERR,__FILE__,__LINE__,"DB->open(%s): %s\n",AuthNames,db_strerror(ret));
     return FLT_EXIT;
   }
 

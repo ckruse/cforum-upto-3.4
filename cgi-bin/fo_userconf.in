@@ -725,9 +725,9 @@ elsif($action eq 'sendpw') {
     if($result) {
       # send mail
       my $body = $fo_userconf_conf->{SMTPBody}->[0]->[0];
-      $body =~ s!\Q{$pass}\E!$result->{$passwdcol}!g;
-      $body =~ s!\Q{$pass}\E!$result->{$emailcol}!g;
-      $body =~ s!\Q{$user}\E!$username!g;
+      $body =~ s!\{\$pass\}!$result->{$passwdcol}!g;
+      $body =~ s!\{\$email\}!$result->{$emailcol}!g;
+      $body =~ s!\{\$user\}!$username!g;
       
       my $smtp = new Net::SMTP($fo_userconf_conf->{SMTPHost}->[0]->[0]);
       $smtp->from($fo_userconf_conf->{SMTPFrom}->[0]->[0]);

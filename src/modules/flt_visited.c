@@ -85,10 +85,10 @@ void *flt_visited_mark_visited(void *vmid) {
   u_char buff[256];
   size_t len;
 
-  memset(&key,0,sizeof(key));
-  memset(&data,0,sizeof(data));
-
   if(Cfg.VisitedFile) {
+    memset(&key,0,sizeof(key));
+    memset(&data,0,sizeof(data));
+
     len = snprintf(buff,256,"%llu",*mid);
     key.data = buff;
     key.size = len;

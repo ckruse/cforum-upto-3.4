@@ -54,7 +54,8 @@ struct {
   int PreviewSwitchType;
   int IframeAsLink;
   int ImageAsLink;
-} Cfg = { 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 0 };
+  int MaxSigLines;
+} Cfg = { 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 0, -1 };
 /* }}} */
 
 typedef struct {
@@ -162,7 +163,7 @@ void msg_to_html(const u_char *msg,const u_char *link,t_string *content,t_string
   const u_char *ptr,*tmp;
         u_char *qchars;
         size_t qclen;
-  int linebrk = 0,quotemode = 0,sig = 0,utf8 = cf_strcmp(cs->values[0],"UTF-8") == 0;
+  int linebrk = 0,quotemode = 0,sig = 0,utf8 = cf_strcmp(cs->values[0],"UTF-8") == 0,line = 0;
   u_int64_t tid,mid;
   u_char *id,*uri,*start,*save,*tmp1;
   int found = 0;
@@ -185,9 +186,11 @@ void msg_to_html(const u_char *msg,const u_char *link,t_string *content,t_string
   for(ptr=msg;*ptr;ptr++) {
     if(cf_strncmp(ptr,"<br />",6) == 0) {
       linebrk = 1;
+      line++;
 
       str_chars_append(content,"<br />",6);
 
+      if(sig && Cfg.MaxSigLines > 0 && line >= Cfg.MaxSigLines) break;
       if(sig == 0 && cite) {
         str_chars_append(cite,"\n",1);
         str_chars_append(cite,qchars,qclen);
@@ -409,7 +412,8 @@ void msg_to_html(const u_char *msg,const u_char *link,t_string *content,t_string
       /* some users don't like sigs */
       if(!Cfg.ShowSig) break;
 
-      sig = 1;
+      sig  = 1;
+      line = 0;
 
       str_chars_append(content,"<br /><span class=\"sig\">",24);
       str_chars_append(content,"-- <br />",9);
@@ -829,7 +833,10 @@ int handle_link(t_configfile *cfile,t_conf_opt *opt,u_char **args,int argnum) {
 
 /* {{{ handle_sig */
 int handle_sig(t_configfile *cfile,t_conf_opt *opt,u_char **args,int argnum) {
-  Cfg.ShowSig = cf_strcmp(args[0],"yes") == 0 ? 1 : 0;
+  if(cf_strcmp(opt->name,"ShowSig") == 0) {
+    Cfg.ShowSig = cf_strcmp(args[0],"yes") == 0 ? 1 : 0;
+  }
+  else Cfg.MaxSigLines = atoi(args[0]);
 
   return 0;
 }
@@ -953,6 +960,7 @@ t_conf_opt config[] = {
   { "Signature",                  handle_greet,    NULL },
   { "PostingLinkTarget",          handle_link,     NULL },
   { "ShowSig",                    handle_sig,      NULL },
+  { "MaxSigLines",                handle_sig,      NULL },
   { "TextBox",                    handle_box,      NULL },
   { "GeneratePreview",            handle_prev,     NULL },
   { "PreviewSwitchType",          handle_prevt,    NULL },
