@@ -42,6 +42,7 @@ typedef struct s_token {
 #define PARSETPL_TOK_AS                  0x19
 #define PARSETPL_TOK_ENDFOREACH          0x20
 #define PARSETPL_TOK_MODIFIER_ESCAPE     0x21
+#define PARSETPL_TOK_LOOPVAR             0x22
 
 #define PARSETPL_INCLUDE_EXT     ".html"
 
@@ -51,6 +52,7 @@ typedef struct s_token {
 #define PARSETPL_ERR_UNTERMINATEDSTRING    -3 
 #define PARSETPL_ERR_UNTERMINATEDTAG       -4 
 #define PARSETPL_ERR_INVALIDTAG            -5
+#define PARSETPL_ERR_NOTINLOOP             -6
 
 static long lineno                   = 0;
 static t_string  string              = { 0, 0, NULL };
@@ -106,6 +108,10 @@ static t_array   foreach_var_stack;
   \$[A-Za-z0-9_]+     {
     str_chars_append(&content_backup,yytext,yyleng);
     return PARSETPL_TOK_VARIABLE;
+  }
+  @[A-Za-z0-9_]+     {
+    str_chars_append(&content_backup,yytext,yyleng);
+    return PARSETPL_TOK_LOOPVAR;
   }
   \}             {
     str_chars_append(&content_backup,yytext,yyleng);
@@ -269,6 +275,76 @@ void append_escaped_string(t_string *dest,t_string *src) {
 }
 
 
+int dereference_variable(t_string *out_str,t_token *var,t_array *data,t_string *c_var) {
+  int level;
+  t_token *token;
+  t_string *arrayidx;
+  
+  str_chars_append(out_str,"v = (t_cf_tpl_variable *)cf_tpl_getvar(tpl,\"",44);
+  str_chars_append(out_str,var->data->content+1,var->data->len-1);
+  str_chars_append(out_str,"\");\n",4);
+  token = NULL;
+  level = 0;
+  // get array indexes
+  while(data->elements) {
+    token = (t_token *)array_element_at(data,0);
+    if(token->type != PARSETPL_TOK_ARRAYSTART) {
+      break;
+    }
+    token = (t_token *)array_shift(data);
+    destroy_token(token); free(token);
+    if(!data->elements) {
+      return PARSETPL_ERR_INVALIDTAG;
+    }
+    token = (t_token *)array_shift(data);
+    if(token->type != PARSETPL_TOK_INTEGER || !data->elements) {
+      destroy_token(token); free(token);
+      return PARSETPL_ERR_INVALIDTAG;
+    }
+    arrayidx = token->data; free(token);
+    token = (t_token *)array_shift(data);
+    if(token->type != PARSETPL_TOK_ARRAYEND) {
+      destroy_token(token); free(token);
+      str_cleanup(arrayidx);
+      free(arrayidx);
+      return PARSETPL_ERR_INVALIDTAG;
+    }
+    destroy_token(token); free(token);
+    str_chars_append(out_str,"if(v && v->type == TPL_VARIABLE_ARRAY) {\n",41);
+    str_chars_append(out_str,"v = (t_cf_tpl_variable *)array_element_at(&v->data.d_array,",59);
+    str_chars_append(out_str,arrayidx->content,arrayidx->len);
+    str_cleanup(arrayidx);
+    free(arrayidx);
+    str_chars_append(out_str,");\n",3);
+    level++;
+  }
+  str_str_append(out_str,c_var);
+  str_chars_append(out_str," = v;\n",6);
+  for(;level > 0;level--) {
+    str_chars_append(out_str,"}\n",2);
+  }
+  return 0;
+}
+
+int dereference_iterator(t_string *out_str,t_token *var,t_array *data,t_string *c_var) {
+  if(strcmp(var->data->content,"@first") && strcmp(var->data->content,"@last") && strcmp(var->data->content,"@iterator")) {
+    return PARSETPL_ERR_INVALIDTAG;
+  }
+  if(!foreach_var_stack.elements) {
+    return PARSETPL_ERR_NOTINLOOP;
+  }
+  if(!strcmp(var->data->content,"@first")) {
+    str_str_append(out_str,c_var);
+    str_chars_append(out_str," = (i == 0) ? 1 : 0;\n",21);
+  } else if(!strcmp(var->data->content,"@last")) {
+    str_str_append(out_str,c_var);
+    str_chars_append(out_str," = (i == va->data.d_array.elements - 1) ? 1 : 0;\n",49);
+  } else if(!strcmp(var->data->content,"@iterator")) {
+    str_str_append(out_str,c_var);
+    str_chars_append(out_str," = i;\n",6);
+  }
+  return 0;
+}
 
 int process_array_assignment(t_array *data,t_string *tmp) {
   t_token *token;
@@ -389,79 +465,80 @@ int process_variable_assignment_tag(t_token *variable,t_array *data) {
 
 int process_variable_print_tag (t_token *variable,t_array *data) {
   t_string tmp;
-  t_string *arrayidx;
+  t_string c_var;
   t_token *token;
-  int level = 0;
   int escape_html = 0;
-  
-  if(data->elements) {
-    token = (t_token *)array_element_at(data,data->elements-1);
-    if(token->type == PARSETPL_TOK_MODIFIER_ESCAPE) {
-      escape_html = 1;
-      token = (t_token *)array_pop(data);
-      destroy_token(token); free(token);
-    }
-  }
+  int ret;
   
   str_init(&tmp);
-  str_chars_append(&tmp,"v = (t_cf_tpl_variable *)cf_tpl_getvar(tpl,\"",44);
-  str_chars_append(&tmp,variable->data->content+1,variable->data->len-1);
-  str_chars_append(&tmp,"\");\n",4);
-  // get array indexes
-  while(data->elements) {
-    token = (t_token *)array_shift(data);
-    if(token->type != PARSETPL_TOK_ARRAYSTART || !data->elements) {
-      destroy_token(token); free(token);
-      str_cleanup(&tmp);
-      return PARSETPL_ERR_INVALIDTAG;
-    }
-    destroy_token(token); free(token);
-    token = (t_token *)array_shift(data);
-    if(token->type != PARSETPL_TOK_INTEGER || !data->elements) {
-      destroy_token(token); free(token);
-      str_cleanup(&tmp);
-      return PARSETPL_ERR_INVALIDTAG;
-    }
-    arrayidx = token->data; free(token);
-    token = (t_token *)array_shift(data);
-    if(token->type != PARSETPL_TOK_ARRAYEND) {
-      destroy_token(token); free(token);
-      str_cleanup(&tmp);
-      str_cleanup(arrayidx);
-      free(arrayidx);
-      return PARSETPL_ERR_INVALIDTAG;
-    }
-    destroy_token(token); free(token);
-    str_chars_append(&tmp,"if(v && v->type == TPL_VARIABLE_ARRAY) {\n",41);
-    str_chars_append(&tmp,"v = (t_cf_tpl_variable *)array_element_at(&v->data.d_array,",59);
-    str_chars_append(&tmp,arrayidx->content,arrayidx->len);
-    str_cleanup(arrayidx);
-    free(arrayidx);
-    str_chars_append(&tmp,");\n",3);
-    level++;
+  str_init(&c_var);
+  str_char_set(&c_var,"vp",2);
+  str_chars_append(&tmp,"{\nt_cf_tpl_variable *vp = NULL;\n",32);
+  ret = dereference_variable(&tmp,variable,data,&c_var);
+  str_cleanup(&c_var);
+  if(ret < 0) {
+    ret = 0;
   }
-  str_chars_append(&tmp,"if(v) {\n",8);
-  str_chars_append(&tmp,"if(v->type != TPL_VARIABLE_STRING) {\n",37);
-  str_chars_append(&tmp,"v = cf_tpl_var_convert(NULL,v,TPL_VARIABLE_STRING);\n}\n",54);
-  str_chars_append(&tmp,"if(v && v->type == TPL_VARIABLE_STRING) {\n",42);
+  if(data->elements) {
+    token = (t_token *)array_shift(data);
+    destroy_token(token); free(token);
+    if(token->type != PARSETPL_TOK_MODIFIER_ESCAPE || data->elements) {
+      str_cleanup(&tmp);
+      return PARSETPL_ERR_INVALIDTAG;
+    }
+    escape_html = 1;
+  }
+  str_chars_append(&tmp,"if(vp) {\n",9);
+  str_chars_append(&tmp,"if(vp->type != TPL_VARIABLE_STRING) {\n",38);
+  str_chars_append(&tmp,"vp = cf_tpl_var_convert(NULL,vp,TPL_VARIABLE_STRING);\n}\n",56);
+  str_chars_append(&tmp,"if(vp && vp->type == TPL_VARIABLE_STRING) {\n",44);
   str_str_append(&output,&tmp);
   str_str_append(&output_mem,&tmp);
   str_cleanup(&tmp);
   
   if(escape_html) {
-    str_chars_append(&output,"print_htmlentities_encoded(v->data.d_string.content,0,stdout);\n}\n}\n",67);
-    str_chars_append(&output_mem,"tmp = htmlentities(v->data.d_string.content,0);\nstr_chars_append(&tpl->parsed,tmp,strlen(tmp));\nfree(tmp);\n}\n}\n",111);
+    str_chars_append(&output,"print_htmlentities_encoded(vp->data.d_string.content,0,stdout);\n}\n}\n",68);
+    str_chars_append(&output_mem,"tmp = htmlentities(vp->data.d_string.content,0);\nstr_chars_append(&tpl->parsed,tmp,strlen(tmp));\nfree(tmp);\n}\n}\n",112);
   } else {
-    str_chars_append(&output,"my_write(v->data.d_string.content);\n}\n}\n",40);
-    str_chars_append(&output_mem,"str_chars_append(&tpl->parsed,v->data.d_string.content,strlen(v->data.d_string.content));\n}\n}\n",94);
+    str_chars_append(&output,"my_write(vp->data.d_string.content);\n}\n}\n",41);
+    str_chars_append(&output_mem,"str_chars_append(&tpl->parsed,vp->data.d_string.content,strlen(vp->data.d_string.content));\n}\n}\n",96);
   }
-  str_chars_append(&output,"if(v && v->temporary) {\ncf_tpl_var_destroy(v); free(v);\n}\n",58);
-  str_chars_append(&output_mem,"if(v && v->temporary) {\ncf_tpl_var_destroy(v); free(v);\n}\n",58);
-  while(level > 0) {
-    str_chars_append(&output,"}\n",2);
-    str_chars_append(&output_mem,"}\n",2);
-    level--;
+  str_chars_append(&output,"if(vp && vp->temporary) {\ncf_tpl_var_destroy(vp); free(vp);\n}\n",62);
+  str_chars_append(&output_mem,"if(vp && vp->temporary) {\ncf_tpl_var_destroy(vp); free(vp);\n}\n",62);
+  str_chars_append(&output,"}\n",2);
+  str_chars_append(&output_mem,"}\n",2);
+  return 0;
+}
+
+int process_iterator_print_tag (t_token *iterator,t_array *data) {
+  t_string tmp;
+  t_string c_var;
+  t_token *token;
+  int ret;
+  
+  str_init(&tmp);
+  str_init(&c_var);
+  str_char_set(&c_var,"iter_var",8);
+  str_chars_append(&tmp,"{\nlong iter_var = 0;\n",21);
+  str_chars_append(&tmp,"char buf[20];\n",14);
+  ret = dereference_iterator(&tmp,iterator,data,&c_var);
+  str_cleanup(&c_var);
+  if(ret < 0) {
+    str_cleanup(&tmp);
+    return ret;
   }
+  if(data->elements) {
+    str_cleanup(&tmp);
+    return PARSETPL_ERR_INVALIDTAG;
+  }
+  str_str_append(&output,&tmp);
+  str_str_append(&output_mem,&tmp);
+  str_cleanup(&tmp);
+  str_chars_append(&output,"printf(\"%ld\",iter_var);\n",24);
+  str_chars_append(&output_mem,"snprintf(buf,19,\"%ld\",iter_var);\n",33);
+  str_chars_append(&output_mem,"str_chars_append(&tpl->parsed,buf,strlen(buf));\n",48);
+  str_chars_append(&output,"}\n",2);
+  str_chars_append(&output_mem,"}\n",2);
   return 0;
 }
 
@@ -625,14 +702,14 @@ int process_foreach_tag(t_array *data) {
     str_init(&tmp);
     str_chars_append(&tmp,"{\n",2);
     str_chars_append(&tmp,"int i = 0;\n",11);
-    str_chars_append(&tmp,"t_cf_tpl_variable *v2 = NULL;\n",30);
+    str_chars_append(&tmp,"t_cf_tpl_variable *va = NULL;\n",30);
     str_chars_append(&tmp,"t_cf_tpl_variable *v3 = NULL;\n",30);
-    str_chars_append(&tmp,"v2 = (t_cf_tpl_variable *)cf_tpl_getvar(tpl,\"",45);
+    str_chars_append(&tmp,"va = (t_cf_tpl_variable *)cf_tpl_getvar(tpl,\"",45);
     str_chars_append(&tmp,var1->data->content+1,var1->data->len-1);
     str_chars_append(&tmp,"\");\n",4);
-    str_chars_append(&tmp,"if(v2 && v2->type == TPL_VARIABLE_ARRAY) {\n",43);
-    str_chars_append(&tmp,"for(i = 0; i < v2->data.d_array.elements; i++) {\n",49);
-    str_chars_append(&tmp,"v3 = (t_cf_tpl_variable*)array_element_at(&v2->data.d_array,i);\n",64);
+    str_chars_append(&tmp,"if(va && va->type == TPL_VARIABLE_ARRAY) {\n",43);
+    str_chars_append(&tmp,"for(i = 0; i < va->data.d_array.elements; i++) {\n",49);
+    str_chars_append(&tmp,"v3 = (t_cf_tpl_variable*)array_element_at(&va->data.d_array,i);\n",64);
     str_chars_append(&tmp,"cf_tpl_setvar(tpl,\"",19);
     str_chars_append(&tmp,var2->data->content+1,var2->data->len-1);
     str_chars_append(&tmp,"\",v3);\n",7);
@@ -650,10 +727,12 @@ int process_foreach_tag(t_array *data) {
 }
 
 int process_if_tag(t_array *data) {
-  t_string tmp;
-  t_string *arrayidx,*compop;
+  t_string tmp,varn;
+  t_string *compop;
   t_token *token;
-  int invert, level;
+  int invert, level, ret;
+  int type1, type2;
+  t_token *tok1 = NULL, *tok2 = NULL;
   
   token = (t_token*)array_shift(data);
   if(token->type == PARSETPL_TOK_ENDIF) {
@@ -661,12 +740,8 @@ int process_if_tag(t_array *data) {
     if(data->elements) {
       return PARSETPL_ERR_INVALIDTAG;
     }
-    str_chars_append(&output,"}\n",2);
-    str_chars_append(&output,"if(v2) {\n",9);
-    str_chars_append(&output,"cf_tpl_var_destroy(v2);\n}\n}\n",27);
-    str_chars_append(&output_mem,"}\n",2);
-    str_chars_append(&output_mem,"if(v2) {\n",9);
-    str_chars_append(&output_mem,"cf_tpl_var_destroy(v2);\n}\n}\n",27);
+    str_chars_append(&output,"}\n}\n",4);
+    str_chars_append(&output_mem,"}\n}\n",4);
     return 0;
   } else if(token->type == PARSETPL_TOK_ELSE) {
     destroy_token(token); free(token);
@@ -682,15 +757,17 @@ int process_if_tag(t_array *data) {
       return PARSETPL_ERR_INVALIDTAG;
     }
     token = (t_token*)array_shift(data);
-    if(token->type != PARSETPL_TOK_WHITESPACE) {
-      // not whitespace
+    if(token->type != PARSETPL_TOK_WHITESPACE || !data->elements) {
+      destroy_token(token); free(token);
       return PARSETPL_ERR_INVALIDTAG;
     }
-    destroy_token(token); free(token);
-    if(!data->elements) {
-      return PARSETPL_ERR_INVALIDTAG;
+    while(token->type == PARSETPL_TOK_WHITESPACE) {
+      destroy_token(token); free(token);
+      if(!data->elements) {
+        return PARSETPL_ERR_INVALIDTAG;
+      }
+      token = (t_token*)array_shift(data);
     }
-    token = (t_token*)array_shift(data);
     if(token->type == PARSETPL_TOK_NOT) {
       invert = 1;
       destroy_token(token); free(token);
@@ -701,128 +778,482 @@ int process_if_tag(t_array *data) {
     } else {
       invert = 0;
     }
-    if(token->type != PARSETPL_TOK_VARIABLE) {
-      destroy_token(token); free(token);
-      return PARSETPL_ERR_INVALIDTAG;
-    }
     str_init(&tmp);
-    str_chars_append(&tmp,"{\nt_cf_tpl_variable *v2 = NULL;\n",32);
-    str_chars_append(&tmp,"v = (t_cf_tpl_variable *)cf_tpl_getvar(tpl,\"",44);
-    str_chars_append(&tmp,token->data->content+1,token->data->len-1);
-    str_chars_append(&tmp,"\");\n",4);
-    destroy_token(token); free(token);
-    token = NULL;
-    level = 0;
-    // get array indexes
-    while(data->elements) {
-      token = (t_token *)array_shift(data);
-      if(token->type != PARSETPL_TOK_ARRAYSTART) {
-        break;
-      }
+    str_chars_append(&tmp,"{\nt_cf_tpl_variable *v1 = NULL;\n",32);
+    str_chars_append(&tmp,"t_cf_tpl_variable *v2 = NULL;\n",30);
+    str_chars_append(&tmp,"long iter_var1 = 0;\n",20);
+    str_chars_append(&tmp,"long iter_var2 = 0;\n",20);
+    str_chars_append(&tmp,"long cmp_res = 0;\n",18);
+    if(token->type == PARSETPL_TOK_VARIABLE) {
+      type1 = PARSETPL_TOK_VARIABLE;
+      str_init(&varn);
+      str_char_set(&varn,"v1",2);
+      ret = dereference_variable(&tmp,token,data,&varn);
       destroy_token(token); free(token);
-      token = (t_token *)array_shift(data);
-      if(token->type != PARSETPL_TOK_INTEGER || !data->elements) {
-        destroy_token(token); free(token);
+      str_cleanup(&varn);
+      if(ret < 0) {
         str_cleanup(&tmp);
         return PARSETPL_ERR_INVALIDTAG;
       }
-      arrayidx = token->data; free(token);
-      token = (t_token *)array_shift(data);
-      if(token->type != PARSETPL_TOK_ARRAYEND) {
-        destroy_token(token); free(token);
-        str_cleanup(&tmp);
-        str_cleanup(arrayidx);
-        free(arrayidx);
-        return PARSETPL_ERR_INVALIDTAG;
-      }
+    } else if (token->type == PARSETPL_TOK_STRING || token->type == PARSETPL_TOK_INTEGER) {
+      type1 = token->type;
+      tok1 = token;
+    } else if (token->type == PARSETPL_TOK_LOOPVAR) {
+      type1 = token->type;
+      str_init(&varn);
+      str_char_set(&varn,"iter_var1",9);
+      ret = dereference_iterator(&tmp,token,data,&varn);
       destroy_token(token); free(token);
-      token = NULL;
-      str_chars_append(&tmp,"if(v && v->type == TPL_VARIABLE_ARRAY) {\n",41);
-      str_chars_append(&tmp,"v = (t_cf_tpl_variable *)array_element_at(&v->data.d_array,",59);
-      str_chars_append(&tmp,arrayidx->content,arrayidx->len);
-      str_cleanup(arrayidx);
-      free(arrayidx);
-      str_chars_append(&tmp,");\n",3);
-      level++;
-    }
-    str_chars_append(&tmp,"v2 = v;\n",8);
-    for(;level > 0;level--) {
-      str_chars_append(&tmp,"}\n",2);
-    }
-    if(!token) {
-      if(invert) {
-        str_chars_append(&tmp,"if(!v2) {\n",10);
-      } else {
-        str_chars_append(&tmp,"if(v2) {\n",9);
+      str_cleanup(&varn);
+      if(ret < 0) {
+        str_cleanup(&tmp);
+        return ret;
       }
     } else {
-      if(invert) { // invalid
-        str_cleanup(&tmp);
-        destroy_token(token); free(token);
-        return PARSETPL_ERR_INVALIDTAG;
-      }
-      // eat white spaces
-      while(token->type == PARSETPL_TOK_WHITESPACE) {
-        destroy_token(token); free(token);
-        if(!data->elements) {
+      str_cleanup(&tmp);
+      return PARSETPL_ERR_INVALIDTAG;
+    }
+    if(!data->elements) {
+      switch(type1) {
+        case PARSETPL_TOK_STRING:
+        case PARSETPL_TOK_INTEGER:
+          str_cleanup(&tmp);
+          destroy_token(tok1); free(tok1);
+          return PARSETPL_ERR_INVALIDTAG;
+        case PARSETPL_TOK_VARIABLE:
+          if(invert) {
+            str_chars_append(&tmp,"if(!v1) {\n",10);
+          } else {
+            str_chars_append(&tmp,"if(v1) {\n",9);
+          }
+          break;
+        case PARSETPL_TOK_LOOPVAR:
+          if(invert) {
+            str_chars_append(&tmp,"if(!iter_var1) {\n",17);
+          } else {
+            str_chars_append(&tmp,"if(iter_var1) {\n",16);
+          }
+          break;
+        default:
+          if(tok1) {
+            destroy_token(tok1); free(tok1);
+          }
           str_cleanup(&tmp);
           return PARSETPL_ERR_INVALIDTAG;
-        }
-        token = (t_token*)array_shift(data);
       }
-      if(!data->elements || token->type != PARSETPL_TOK_COMPARE) {
-        destroy_token(token); free(token);
+      str_str_append(&output,&tmp);
+      str_str_append(&output_mem,&tmp);
+      str_cleanup(&tmp);
+      return 0;
+    }
+    token = (t_token*)array_shift(data);
+    while(token->type == PARSETPL_TOK_WHITESPACE) {
+      destroy_token(token); free(token);
+      if(!data->elements) {
         str_cleanup(&tmp);
+        if(tok1) {
+          destroy_token(tok1); free(tok1);
+        }
         return PARSETPL_ERR_INVALIDTAG;
       }
-      compop = token->data;
-      free(token);
       token = (t_token*)array_shift(data);
-      // eat white spaces
-      while(token->type == PARSETPL_TOK_WHITESPACE) {
-        destroy_token(token); free(token);
-        if(!data->elements) {
-          str_cleanup(&tmp);
-          str_cleanup(compop); free(compop);
-          return PARSETPL_ERR_INVALIDTAG;
-        }
-        token = (t_token*)array_shift(data);
+    }
+    if(!data->elements || token->type != PARSETPL_TOK_COMPARE) {
+      destroy_token(token); free(token);
+      str_cleanup(&tmp);
+      if(tok1) {
+        destroy_token(tok1); free(tok1);
       }
-      if(data->elements || (token->type != PARSETPL_TOK_STRING && token->type != PARSETPL_TOK_INTEGER)) {
-        destroy_token(token); free(token);
+      return PARSETPL_ERR_INVALIDTAG;
+    }
+    compop = token->data;
+    free(token);
+    token = (t_token*)array_shift(data);
+    while(token->type == PARSETPL_TOK_WHITESPACE) {
+      destroy_token(token); free(token);
+      if(!data->elements) {
         str_cleanup(&tmp);
+        if(tok1) {
+          destroy_token(tok1); free(tok1);
+        }
         str_cleanup(compop); free(compop);
         return PARSETPL_ERR_INVALIDTAG;
       }
-      if(token->type == PARSETPL_TOK_STRING) {
-        str_chars_append(&tmp,"v2 = cf_tpl_var_convert(NULL,v2,TPL_VARIABLE_STRING);\n",54);
-        str_chars_append(&tmp,"if(",3);
-        if(compop->content[0] != '!') {
-          str_chars_append(&tmp,"v2 && !",7);
-        } else {
-          str_chars_append(&tmp,"!v2 || ",7);
-        }
-        str_chars_append(&tmp,"strcmp(v2->data.d_string.content,\"",34);
-        append_escaped_string(&tmp,token->data);
-        str_chars_append(&tmp,"\")) {\n",6);
-      } else if(token->type == PARSETPL_TOK_INTEGER) {
-        str_chars_append(&tmp,"v2 = cf_tpl_var_convert(NULL,v2,TPL_VARIABLE_INT);\n",51);
-        str_chars_append(&tmp,"if(",3);
-        if(compop->content[0] != '!') {
-          str_chars_append(&tmp,"v2 && ",6);
-        } else {
-          str_chars_append(&tmp,"!v2 || ",7);
-        }
-        str_chars_append(&tmp,"v2->data.d_int",14);
-        str_str_append(&tmp,compop);
-        str_str_append(&tmp,token->data);
-        str_chars_append(&tmp,") {\n",4);
-      }
-      destroy_token(token); free(token);
-      str_cleanup(compop); free(compop);
+      token = (t_token*)array_shift(data);
     }
+    if(token->type == PARSETPL_TOK_VARIABLE) {
+      type2 = PARSETPL_TOK_VARIABLE;
+      str_init(&varn);
+      str_char_set(&varn,"v2",2);
+      ret = dereference_variable(&tmp,token,data,&varn);
+      destroy_token(token); free(token);
+      str_cleanup(&varn);
+      if(ret < 0) {
+        str_cleanup(&tmp);
+        if(tok1) {
+          destroy_token(tok1); free(tok1);
+        }
+        str_cleanup(compop); free(compop);
+        return PARSETPL_ERR_INVALIDTAG;
+      }
+    } else if (token->type == PARSETPL_TOK_STRING || token->type == PARSETPL_TOK_INTEGER) {
+      type2 = token->type;
+      tok2 = token;
+    } else if (token->type == PARSETPL_TOK_LOOPVAR) {
+      type2 = token->type;
+      str_init(&varn);
+      str_char_set(&varn,"iter_var2",9);
+      ret = dereference_iterator(&tmp,token,data,&varn);
+      destroy_token(token); free(token);
+      str_cleanup(&varn);
+      if(ret < 0) {
+        str_cleanup(&tmp);
+        if(tok1) {
+          destroy_token(tok1); free(tok1);
+        }
+        str_cleanup(compop); free(compop);
+        return ret;
+      }
+    } else {
+      str_cleanup(&tmp);
+      if(tok1) {
+        destroy_token(tok1); free(tok1);
+      }
+      str_cleanup(compop); free(compop);
+      return PARSETPL_ERR_INVALIDTAG;
+    }
+    if(data->elements) {
+      str_cleanup(&tmp);
+      if(tok1) {
+        destroy_token(tok1); free(tok1);
+      }
+      if(tok2) {
+        destroy_token(tok2); free(tok2);
+      }
+      str_cleanup(compop); free(compop);
+      return PARSETPL_ERR_INVALIDTAG;
+    }
+    level = 0;
+    switch(type2) {
+      case PARSETPL_TOK_VARIABLE:
+        switch(type1) {
+          case PARSETPL_TOK_VARIABLE:
+            // if both are arrays, just compare the number of elements
+            str_chars_append(&tmp,"if(!v1 && !v2) {\n",17);
+            if(compop->content[0] == '!') {
+              str_chars_append(&tmp,"cmp_res = 0;\n",13);
+            } else {
+              // two nonexistant variables are the same
+              str_chars_append(&tmp,"cmp_res = 1;\n",13);
+            }
+            str_chars_append(&tmp,"} else ",7);
+            str_chars_append(&tmp,"if((!v1 && v2) || (v1 && !v2)) {\n",33);
+            if(compop->content[0] == '!') {
+              str_chars_append(&tmp,"cmp_res = 1;\n",13);
+            } else {
+              str_chars_append(&tmp,"cmp_res = 0;\n",13);
+            }
+            str_chars_append(&tmp,"} else ",7);
+            str_chars_append(&tmp,"if(v1 && v2 && v1->type == v2->type == TPL_VARIABLE_ARRAY) {\n",61);
+            str_chars_append(&tmp,"cmp_res = (v1->data.d_array.elements == v2->data.d_array.elements) ? ",69);
+            if(compop->content[0] == '!') {
+              str_chars_append(&tmp,"0 : 1;\n",7);
+            } else {
+              str_chars_append(&tmp,"1 : 0;\n",7);
+            }
+            str_chars_append(&tmp,"} else {\n",9);
+            str_chars_append(&tmp,"v1 = (t_cf_tpl_variable *)cf_tpl_var_convert(NULL,v1,v2->type);\n",64);
+            str_chars_append(&tmp,"if(v1 && ((v2->type == TPL_VARIABLE_STRING && !strcmp(v1->data.d_string.content,v2->data.d_string.content)) || (v2->type == TPL_VARIABLE_INT && v1->data.d_int == v2->data.d_int))) {\n",182);
+            if(compop->content[0] == '!') {
+              str_chars_append(&tmp,"cmp_res = 0;\n",13);
+            } else {
+              str_chars_append(&tmp,"cmp_res = 1;\n",13);
+            }
+            str_chars_append(&tmp,"} else {\n",9);
+            if(compop->content[0] == '!') {
+              str_chars_append(&tmp,"cmp_res = 1;\n",13);
+            } else {
+              str_chars_append(&tmp,"cmp_res = 0;\n",13);
+            }
+            str_chars_append(&tmp,"}\n",2);
+            str_chars_append(&tmp,"if(v1 && v1->temporary) cf_tpl_var_destroy(v1);\n",48);
+            str_chars_append(&tmp,"if(v2 && v2->temporary) cf_tpl_var_destroy(v2);\n",48);
+            str_chars_append(&tmp,"}\n",2);
+            break;
+          case PARSETPL_TOK_LOOPVAR:
+            // convert it to integer
+            str_chars_append(&tmp,"v2 = (t_cf_tpl_variable *)cf_tpl_var_convert(NULL,v2,TPL_VARIABLE_INT);\n",72);
+            str_chars_append(&tmp,"if(v2 && v2->data.d_int == iter_var1) {\n",40);
+            if(compop->content[0] == '!') {
+              str_chars_append(&tmp,"cmp_res = 0;\n",13);
+            } else {
+              str_chars_append(&tmp,"cmp_res = 1;\n",13);
+            }
+            str_chars_append(&tmp,"} else {\n",9);
+            if(compop->content[0] == '!') {
+              str_chars_append(&tmp,"cmp_res = 1;\n",13);
+            } else {
+              str_chars_append(&tmp,"cmp_res = 0;\n",13);
+            }
+            str_chars_append(&tmp,"}\n",2);
+            str_chars_append(&tmp,"if(v2 && v2->temporary) cf_tpl_var_destroy(v2);\n",48);
+            break;
+          case PARSETPL_TOK_INTEGER:
+            // convert it to integer
+            str_chars_append(&tmp,"v2 = (t_cf_tpl_variable *)cf_tpl_var_convert(NULL,v2,TPL_VARIABLE_INT);\n",72);
+            str_chars_append(&tmp,"if(v2 && v2->data.d_int == ",24);
+            str_str_append(&tmp,tok1->data);
+            str_chars_append(&tmp,") {\n",4);
+            if(compop->content[0] == '!') {
+              str_chars_append(&tmp,"cmp_res = 0;\n",13);
+            } else {
+              str_chars_append(&tmp,"cmp_res = 1;\n",13);
+            }
+            str_chars_append(&tmp,"} else {\n",9);
+            if(compop->content[0] == '!') {
+              str_chars_append(&tmp,"cmp_res = 1;\n",13);
+            } else {
+              str_chars_append(&tmp,"cmp_res = 0;\n",13);
+            }
+            str_chars_append(&tmp,"}\n",2);
+            str_chars_append(&tmp,"if(v2 && v1->temporary) cf_tpl_var_destroy(v2);\n",48);
+            break;
+          case PARSETPL_TOK_STRING:
+            // convert it to string
+            str_chars_append(&tmp,"v2 = (t_cf_tpl_variable *)cf_tpl_var_convert(NULL,v2,TPL_VARIABLE_STRING);\n",75);
+            str_chars_append(&tmp,"if(v2 && !strcmp(v2->data.d_string.content,\"",44);
+            append_escaped_string(&tmp,tok1->data);
+            str_chars_append(&tmp,"\")) {\n",6);
+            if(compop->content[0] == '!') {
+              str_chars_append(&tmp,"cmp_res = 0;\n",13);
+            } else {
+              str_chars_append(&tmp,"cmp_res = 1;\n",13);
+            }
+            str_chars_append(&tmp,"} else {\n",9);
+            if(compop->content[0] == '!') {
+              str_chars_append(&tmp,"cmp_res = 1;\n",13);
+            } else {
+              str_chars_append(&tmp,"cmp_res = 0;\n",13);
+            }
+            str_chars_append(&tmp,"}\n",2);
+            str_chars_append(&tmp,"if(v2 && v2->temporary) cf_tpl_var_destroy(v2);\n",48);
+            break;
+          default:
+            str_chars_append(&tmp,"cmp_res = 0;\n",13);
+            break;
+        }
+        break;
+      case PARSETPL_TOK_LOOPVAR:
+        switch(type1) {
+          case PARSETPL_TOK_VARIABLE:
+            // convert it to integer
+            str_chars_append(&tmp,"v1 = (t_cf_tpl_variable *)cf_tpl_var_convert(NULL,v1,TPL_VARIABLE_INT);\n",72);
+            str_chars_append(&tmp,"if(v1 && v1->data.d_int == iter_var2) {\n",40);
+            if(compop->content[0] == '!') {
+              str_chars_append(&tmp,"cmp_res = 0;\n",13);
+            } else {
+              str_chars_append(&tmp,"cmp_res = 1;\n",13);
+            }
+            str_chars_append(&tmp,"} else {\n",9);
+            if(compop->content[0] == '!') {
+              str_chars_append(&tmp,"cmp_res = 1;\n",13);
+            } else {
+              str_chars_append(&tmp,"cmp_res = 0;\n",13);
+            }
+            str_chars_append(&tmp,"}\n",2);
+            str_chars_append(&tmp,"if(v1 && v1->temporary) cf_tpl_var_destroy(v1);\n",48);
+            break;
+          case PARSETPL_TOK_LOOPVAR:
+            str_chars_append(&tmp,"if(iter_var1 == iter_var2) {\n",29);
+            if(compop->content[0] == '!') {
+              str_chars_append(&tmp,"cmp_res = 0;\n",13);
+            } else {
+              str_chars_append(&tmp,"cmp_res = 1;\n",13);
+            }
+            str_chars_append(&tmp,"} else {\n",9);
+            if(compop->content[0] == '!') {
+              str_chars_append(&tmp,"cmp_res = 1;\n",13);
+            } else {
+              str_chars_append(&tmp,"cmp_res = 0;\n",13);
+            }
+            str_chars_append(&tmp,"}\n",2);
+            break;
+          case PARSETPL_TOK_INTEGER:
+            str_chars_append(&tmp,"if(",3);
+            str_str_append(&tmp,tok1->data);
+            str_chars_append(&tmp," == iter_var2) {\n",17);
+            if(compop->content[0] == '!') {
+              str_chars_append(&tmp,"cmp_res = 0;\n",13);
+            } else {
+              str_chars_append(&tmp,"cmp_res = 1;\n",13);
+            }
+            str_chars_append(&tmp,"} else {\n",9);
+            if(compop->content[0] == '!') {
+              str_chars_append(&tmp,"cmp_res = 1;\n",13);
+            } else {
+              str_chars_append(&tmp,"cmp_res = 0;\n",13);
+            }
+            str_chars_append(&tmp,"}\n",2);
+            break;
+          case PARSETPL_TOK_STRING:
+            str_chars_append(&tmp,"if(strtol(\"",11);
+            append_escaped_string(&tmp,tok1->data);
+            str_chars_append(&tmp,"\",NULL,10) == iter_var2) {\n",27);
+            if(compop->content[0] == '!') {
+              str_chars_append(&tmp,"cmp_res = 0;\n",13);
+            } else {
+              str_chars_append(&tmp,"cmp_res = 1;\n",13);
+            }
+            str_chars_append(&tmp,"} else {\n",9);
+            if(compop->content[0] == '!') {
+              str_chars_append(&tmp,"cmp_res = 1;\n",13);
+            } else {
+              str_chars_append(&tmp,"cmp_res = 0;\n",13);
+            }
+            str_chars_append(&tmp,"}\n",2);
+            break;
+          default:
+            str_chars_append(&tmp,"cmp_res = 0;\n",13);
+            break;
+        }
+        break;
+      case PARSETPL_TOK_STRING:
+        switch(type1) {
+          case PARSETPL_TOK_VARIABLE:
+            // convert it to string
+            str_chars_append(&tmp,"v1 = (t_cf_tpl_variable *)cf_tpl_var_convert(NULL,v1,TPL_VARIABLE_STRING);\n",75);
+            str_chars_append(&tmp,"if(v1 && !strcmp(v1->data.d_string.content,\"",44);
+            append_escaped_string(&tmp,tok2->data);
+            str_chars_append(&tmp,"\")) {\n",6);
+            if(compop->content[0] == '!') {
+              str_chars_append(&tmp,"cmp_res = 0;\n",13);
+            } else {
+              str_chars_append(&tmp,"cmp_res = 1;\n",13);
+            }
+            str_chars_append(&tmp,"} else {\n",9);
+            if(compop->content[0] == '!') {
+              str_chars_append(&tmp,"cmp_res = 1;\n",13);
+            } else {
+              str_chars_append(&tmp,"cmp_res = 0;\n",13);
+            }
+            str_chars_append(&tmp,"}\n",2);
+            str_chars_append(&tmp,"if(v1 && v1->temporary) cf_tpl_var_destroy(v1);\n",48);
+            break;
+          case PARSETPL_TOK_LOOPVAR:
+            str_chars_append(&tmp,"if(strtol(\"",11);
+            append_escaped_string(&tmp,tok2->data);
+            str_chars_append(&tmp,"\",NULL,10) == iter_var1) {\n",27);
+            if(compop->content[0] == '!') {
+              str_chars_append(&tmp,"cmp_res = 0;\n",13);
+            } else {
+              str_chars_append(&tmp,"cmp_res = 1;\n",13);
+            }
+            str_chars_append(&tmp,"} else {\n",9);
+            if(compop->content[0] == '!') {
+              str_chars_append(&tmp,"cmp_res = 1;\n",13);
+            } else {
+              str_chars_append(&tmp,"cmp_res = 0;\n",13);
+            }
+            str_chars_append(&tmp,"}\n",2);
+            break;
+          case PARSETPL_TOK_STRING:
+          case PARSETPL_TOK_INTEGER:
+            // do compare here
+            if(!strcmp(tok1->data->content,tok2->data->content)) {
+              if(compop->content[0] == '!') {
+                str_chars_append(&tmp,"cmp_res = 0;\n",13);
+              } else {
+                str_chars_append(&tmp,"cmp_res = 1;\n",13);
+              }
+            } else {
+              if(compop->content[0] == '!') {
+                str_chars_append(&tmp,"cmp_res = 1;\n",13);
+              } else {
+                str_chars_append(&tmp,"cmp_res = 0;\n",13);
+              }
+            }
+            break;
+          default:
+            str_chars_append(&tmp,"cmp_res = 0;\n",13);
+            break;
+        }
+        break;
+      case PARSETPL_TOK_INTEGER:
+        switch(type1) {
+          case PARSETPL_TOK_VARIABLE:
+            // convert it to integer
+            str_chars_append(&tmp,"v1 = (t_cf_tpl_variable *)cf_tpl_var_convert(NULL,v1,TPL_VARIABLE_INT);\n",72);
+            str_chars_append(&tmp,"if(v1 && v1->data.d_int == ",27);
+            str_str_append(&tmp,tok2->data);
+            str_chars_append(&tmp,") {\n",4);
+            if(compop->content[0] == '!') {
+              str_chars_append(&tmp,"cmp_res = 0;\n",13);
+            } else {
+              str_chars_append(&tmp,"cmp_res = 1;\n",13);
+            }
+            str_chars_append(&tmp,"} else {\n",9);
+            if(compop->content[0] == '!') {
+              str_chars_append(&tmp,"cmp_res = 1;\n",13);
+            } else {
+              str_chars_append(&tmp,"cmp_res = 0;\n",13);
+            }
+            str_chars_append(&tmp,"}\n",2);
+            str_chars_append(&tmp,"if(v1 && v1->temporary) cf_tpl_var_destroy(v1);\n",48);
+            break;
+          case PARSETPL_TOK_LOOPVAR:
+            str_chars_append(&tmp,"if(",3);
+            str_str_append(&tmp,tok2->data);
+            str_chars_append(&tmp," == iter_var1) {\n",17);
+            if(compop->content[0] == '!') {
+              str_chars_append(&tmp,"cmp_res = 0;\n",13);
+            } else {
+              str_chars_append(&tmp,"cmp_res = 1;\n",13);
+            }
+            str_chars_append(&tmp,"} else {\n",9);
+            if(compop->content[0] == '!') {
+              str_chars_append(&tmp,"cmp_res = 1;\n",13);
+            } else {
+              str_chars_append(&tmp,"cmp_res = 0;\n",13);
+            }
+            str_chars_append(&tmp,"}\n",2);
+            break;
+          case PARSETPL_TOK_STRING:
+          case PARSETPL_TOK_INTEGER:
+            // do compare here
+            if(strtol(tok1->data->content,NULL,10) == strtol(tok2->data->content,NULL,10)) {
+              if(compop->content[0] == '!') {
+                str_chars_append(&tmp,"cmp_res = 0;\n",13);
+              } else {
+                str_chars_append(&tmp,"cmp_res = 1;\n",13);
+              }
+            } else {
+              if(compop->content[0] == '!') {
+                str_chars_append(&tmp,"cmp_res = 1;\n",13);
+              } else {
+                str_chars_append(&tmp,"cmp_res = 0;\n",13);
+              }
+            }
+            break;
+          default:
+            str_chars_append(&tmp,"cmp_res = 0;\n",13);
+            break;
+        }
+        break;
+      default:
+        str_chars_append(&tmp,"cmp_res = 0;\n",13);
+        break;
+    }
+    str_chars_append(&tmp,"if(cmp_res) {\n",14);
     str_str_append(&output,&tmp);
     str_str_append(&output_mem,&tmp);
+    str_cleanup(&tmp);
+    str_cleanup(compop); free(compop);
+    if(tok1) {
+      destroy_token(tok1); free(tok1);
+    }
+    if(tok2) {
+      destroy_token(tok2); free(tok2);
+    }
     return 0;
   } else { // elseif is not supported currently!
     destroy_token(token); free(token);
@@ -883,6 +1314,15 @@ int process_tag(t_array *data) {
       destroy_token(token); free(token);
     }
     destroy_token(variable); free(variable);
+    if (ret < 0) {
+      return ret;
+    }
+    return 0;
+  } else if(rtype == PARSETPL_TOK_LOOPVAR) {
+    token = (t_token *)array_shift(data);
+    // directly output
+    ret = process_iterator_print_tag(token,data);
+    destroy_token(token); free(token);
     if (ret < 0) {
       return ret;
     }

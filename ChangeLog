@@ -1,3 +1,8 @@
+2005-01-19 Christian Seiler <ckruse@wwwtech.de>
+	* src/parsetpl/parsetpl.lex: lot's of feature improvements, it is
+		now possible to access loop variable (@first, @last,
+		@iterator) and the {if}-syntax was made much more flexible
+
 2005-01-18 Christian Kruse <ckruse@wwwtech.de>
 	* src/template.c: Fixed segfault in cf_tpl_var_convert(),
 		fixed other bug in tpl_cf_var_convert()
