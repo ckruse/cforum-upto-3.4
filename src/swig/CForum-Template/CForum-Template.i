@@ -36,7 +36,7 @@ t_cf_tpl_variable *new_t_cf_tpl_variable(int type) {
 }
 
 void t_cf_tpl_variable_setvalue(t_cf_tpl_variable *var,const char *value) {
-  cf_tpl_var_setvalue(var,value);
+  cf_tpl_var_setvalue(var,value,strlen(value));
 }
 
 t_cf_tpl_variable *t_cf_tpl_variable_clone(t_cf_tpl_variable *var) {
@@ -48,7 +48,7 @@ void t_cf_tpl_variable_add(t_cf_tpl_variable *var,t_cf_tpl_variable *element) {
 }
 
 void t_cf_tpl_variable_addvalue(t_cf_tpl_variable *var,const char *value) {
-  cf_tpl_var_addvalue(var,TPL_VARIABLE_STRING,value);
+  cf_tpl_var_addvalue(var,TPL_VARIABLE_STRING,value,(int)strlen(value));
 }
 %}
 /* }}} */
