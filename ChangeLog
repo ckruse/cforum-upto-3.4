@@ -1,3 +1,7 @@
+2004-10-13 Christian Kruse <ckruse@wwwtech.de>
+	* cgi-shared/ForumUtils.pm: Fixed several bugs in message_field() (it's time
+		to change to fo_post.c!)
+
 2004-10-12 Christian Kruse <ckruse@wwwtech.de>
 	* cgi-shared/ForumUtils.pm: Now &x2000;-&x200B;, &x2028;-&x202F; and &nbsp;
 		will be replaced by &x20;

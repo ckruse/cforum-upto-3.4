@@ -235,8 +235,8 @@ sub message_field {
   my $fdcfg   = shift;
   my $archive = shift;
 
-  my $break   = '<br />';
   my $xhtml   = $fdcfg->{XHTMLMode} && $fdcfg->{XHTMLMode}->[0]->[0] eq 'yes';
+  my $break   = $xhtml ? '<br />' : '<br>';
 
   my $base   = $ENV{SCRIPT_NAME};
 
@@ -254,8 +254,8 @@ sub message_field {
       $txt  .= recode($fdcfg,$qchar);
       $qmode = 1;
     }
-    elsif(substr($posting,$i,6) eq '<br />') {
-      $txt .= $xhtml ? '<br />' : '<br>';
+    elsif(substr($posting,$i,6) eq $break) {
+      $txt .= $break;
 
       if($qmode && substr($posting,$i+6,1) ne "\177") {
         $txt .= '</span>';
@@ -330,26 +330,26 @@ sub message_field {
 
   # Phase 2: Ok, we collected the links, lets transform them
   # ... links
-  $posting =~ s!$_!'<a href="'.$1.'">'.($2||$1).'</a>'!eg for map {
+  $posting =~ s!$_!'<a href="'.$Clientlib->htmlentities($1,1).'">'.$Clientlib->htmlentities($2||$1,1).'</a>'!eg for map {
     '\[[Ll][Ii][Nn][Kk]:\s*('.
     quotemeta(recode($fdcfg,$_->[0])).
     ')'.
-    ($_->[1] ? '\s*\@title=('.quotemeta(recode($fdcfg,$_->[1])).')' : '').
+    ($_->[1] ? '\s*\@title=('.quotemeta($_->[1]).')' : '').
     '\s*\]'
   } @links;
 
   # ... images
-  $posting =~ s!$_!'<img src="'.$1.'" border="0" alt="'.($2?$2:'').'">'!eg for map {
+  $posting =~ s!$_!'<img src="'.$Clientlib->htmlentities($1,1).'" border="0" alt="'.$Clientlib->htmlentities($2?$2:'',1).'">'!eg for map {
     '\[[Ii][Mm][Aa][Gg][Ee]:\s*('.
     quotemeta(recode($fdcfg,$_->[0])).
     ')'.
-    ($_->[1] ? '\s*\@alt=('.quotemeta(recode($fdcfg,$_->[1])).')' : '').
+    ($_->[1] ? '\s*\@alt=('.quotemeta($_->[1]).')' : '').
     '\s*\]'
   } @images;
 
   # ... iframes
-  $posting =~ s!$_!<iframe src="$1" width="90%" height="90%"><a href="$1">$1</a></iframe>! for map {
-    '\[[Ii][Ff][Rr][Aa][Mm][Ee]:\s*('.quotemeta(recode($fdcfg,$_->[1])).')\]'
+  $posting =~ s!$_!'<iframe src="'.$Clientlib->htmlentities($1,1).'" width="90%" height="90%"><a href="'.$Clientlib->htmlentities($1,1).'">'.$Clientlib->htmlentities($1,1).'</a></iframe>'!eg for map {
+    '\[[Ii][Ff][Rr][Aa][Mm][Ee]:\s*('.quotemeta($_->[1]).')\]'
   } @iframes;
 
   # return
