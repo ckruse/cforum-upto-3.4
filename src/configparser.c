@@ -462,22 +462,18 @@ int read_config(t_configfile *conf,t_take_default deflt,int mode) {
 
     found = 0;
     if((opt = cf_hash_get(conf->options,directive_name,ptr-ptr1)) != NULL) {
-      /* mark option as seen */
-      opt->flags |= CFG_OPT_SEEN;
 
       if(opt->flags & mode) {
+        /* mark option as seen */
+        opt->flags |= CFG_OPT_SEEN;
+
         if(opt->callback) found = opt->callback(conf,opt,args,argnum);
       }
       else {
-        if(opt->flags) {
-          if((opt->flags & CFG_OPT_SEEN) == 0) {
-            fprintf(stderr,"[%s:%d] Configuration directive %s not allowed in this mode!\n",conf->filename,linenum,directive_name);
-            printf("%d\n",opt->flags);
-            munmap(buff,st.st_size);
-            close(fd);
-            return 1;
-          }
-        }
+        fprintf(stderr,"[%s:%d] Configuration directive %s not allowed in this mode!\n",conf->filename,linenum,directive_name);
+        munmap(buff,st.st_size);
+        close(fd);
+        return 1;
       }
     }
     else {

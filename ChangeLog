@@ -1,3 +1,6 @@
+2004-10-03 Christian Kruse <ckruse@wwwtech.de>
+	* src/configparser.c: Fixed a bug in seen-handling
+
 2004-10-01 Christian Kruse <ckruse@wwwtech.de>
 	* src/modules/flt_category.c: Renamed some functions and variables (module
 		functions and variables have to be prefixed by the module name!)
