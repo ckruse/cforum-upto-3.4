@@ -368,7 +368,7 @@ int flt_xmlarc_validate_thread(const u_char *year,const u_char *month,const u_ch
         str_chars_append(&str,tid,strlen(tid));
         str_char_append(&str,'/');
 
-        printf("Status: 301 Moved Permanently\015\012Location: %s\015\012\015\012",str.content);
+        redirect_with_nice_uri(str.content,1)
         str_cleanup(&str);
 
         return FLT_EXIT;

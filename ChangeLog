@@ -13,6 +13,10 @@
 	* scripts/cf-cleanup.pl.in: Fixed bug in cleanup_deleted()
 	* src/modules/flt_cftp.c: Fixed bug in STAT * commands
 	* conf/modules.de.xml: Removed directive CheckForLinks (no longer supported)
+	* src/utils.[ch]: Added redirect_nice_uri(), this function generates an
+		absolute URI if necessary and removes double slashes
+	* src/modules/flt_xmlarc.c, src/fo_arcview.c: Changed redirection to
+		redirect_nice_uri()
 
 2005-02-08 Christian Kruse <ckruse@wwwtech.de>
 	* configure.in: Added cf-cleanup.pl

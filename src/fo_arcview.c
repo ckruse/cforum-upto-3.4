@@ -711,6 +711,7 @@ void print_thread(t_cl_thread *thr,const u_char *year,const u_char *month,const 
 }
 /* }}} */
 
+/* {{{ show_thread */
 void show_thread(const u_char *year,const u_char *month,const u_char *tid) {
   t_get_thread gt;
   t_thread_last_modified tlm;
@@ -785,6 +786,7 @@ void show_thread(const u_char *year,const u_char *month,const u_char *tid) {
   }
 
 }
+/* }}} */
 
 /**
  * The main function of the forum archive viewer. No command line switches used.
@@ -902,7 +904,7 @@ int main(int argc,char *argv[],char *env[]) {
       str_chars_append(&tmp,pi,strlen(pi));
       str_char_append(&tmp,'/');
 
-      printf("Status: 301 Moved Permanently\015\012Location: %s\015\012\015\012",tmp.content);
+      redirect_with_nice_uri(tmp.content,1);
       str_cleanup(&tmp);
 
       ret = FLT_EXIT;

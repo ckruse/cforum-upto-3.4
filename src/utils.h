@@ -750,6 +750,8 @@ void u_int64_to_str(t_string *str, u_int64_t num);
 u_int64_t str_to_u_int64(register const u_char *ptr);
 /* }}} */
 
+void redirect_with_nice_uri(const u_char *ruri,int perm);
+
 #endif
 
 /* eof */

@@ -232,4 +232,48 @@ ssize_t getdelim(char **lineptr,size_t *n,int delim,FILE *stream) {
 /* }}} */
 #endif
 
+/* {{{ redirect_nice_uri */
+void redirect_with_nice_uri(const u_char *ruri,int perm) {
+  u_char *tmp;
+  register u_char *ptr;
+  t_string uri;
+  int slash = 0;
+
+  str_init(&uri);
+
+  if(cf_strcmp(ruri,"http://",7) != 0) {
+    str_chars_append(&uri,"http://",7);
+
+    tmp = getenv("SERVER_NAME");
+    str_chars_append(&uri,host,strlen(host));
+
+    tmp = getenv("SERVER_PORT");
+    if(cf_strcmp(tmp,"80") != 0) {
+      str_char_append(&uri,':');
+      str_chars_append(&uri,tmp,strlen(tmp));
+    }
+
+    str_char_append(&uri,'/');
+    slash = 1;
+  }
+
+  for(ptr=(u_char *)ruri;*ptr;++ptr) {
+    switch(*ptr) {
+      case '/':
+        if(slash == 0) str_char_append(&uri,'/');
+        slash = 1;
+        break;
+      default:
+        slash = 0;
+        str_char_append(&uri,*ptr),
+    }
+  }
+
+  if(perm) printf("Status: 301 Moved Permanently\015\012");
+  else printf("Status: 302 Moved Temporarily\015\012");
+
+  printf("Location: %s\015\012\015\012",uri.content);
+}
+/* }}} */
+
 /* eof */
