@@ -1,4 +1,6 @@
 2004-06-14 Jan Rieger <jr@occuris.de>
+	* cgi-shared/config/templates/tpl_html4/thread.html:
+	  Removed 'nowrap'
 	* cgi-shared/config/templates/tpl_*/*.html:
 	  Changed all *.teamone.de URLs to the new *.selfhtml.org URLs
 
