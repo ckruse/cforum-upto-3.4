@@ -24,7 +24,6 @@ use CGI::Carp qw/fatalsToBrowser/;
 
 use BerkeleyDB;
 
-use CheckRFC;
 use ForumUtils qw(
   get_error
   rel_uri
@@ -39,9 +38,6 @@ sub execute {
     if($user_config->{VisitedFile} && $user_config->{VisitedFile}->[0]->[0]) {
       if($user_config->{MarkOwnPostingsVisited} && $user_config->{MarkOwnPostingsVisited}->[0]->[0] eq 'yes') {
         my $mid = $cgi->param('new_mid');
-
-        chomp $midline;
-        $midline =~ s/Mid: //;
 
         my $dbfile = new BerkeleyDB::Btree(
           Filename => $user_config->{VisitedFile}->[0]->[0],

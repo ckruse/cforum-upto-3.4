@@ -1,7 +1,7 @@
 
 SUBDIRS=config Plugins docs data
 
-EXTRA_DIST=CheckRFC.pm ForumUtils.pm
+EXTRA_DIST=ForumUtils.pm
 
 install-data-local:
 	if test ! -d $(PERLMODULES); then \

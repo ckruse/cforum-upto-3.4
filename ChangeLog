@@ -1,4 +1,6 @@
-2004-01-09 Christian Kruse <ckruse@wwwtech.de>
-	* src/modules/flt_cftp.c: Bugfix in POST THREAD and POST ANSWER, now a
-		finishing newline will be send
+2005-01-15 Christian Kruse <ckruse@wwwtech.de>
+	* src/modules/flt_directives.c: Bugfix for [ref:], now it supports @title=
+	* cgi-shared/Plugins/MarkOwnVisited.pm: Removed CheckRFC.pm, fixed little bug
+	* cgi-shared/Plugins/PostOkLink.pm: Removed CheckRFC.pm
+	* cgi-shared/Makefile.am: Removed CheckRFC.pm
 
