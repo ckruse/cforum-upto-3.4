@@ -39,6 +39,7 @@
 	* src/fo_post.c: Fixed bug in body_plain2coded(), quoting chars were not
 		entities encoded but body was
 	* src/modules/flt_syntax.c: Bugfix in tokenizer
+	* conf/patterns/php.pat: Added patterns for <?php and ?>
 
 2005-02-08 Christian Kruse <ckruse@wwwtech.de>
 	* configure.in: Added cf-cleanup.pl

@@ -10,6 +10,9 @@ block "default"
   # spezielle bloecke: stay (hier bleiben), pop (verlassen)
   lineend stay
 
+  onregexp "^&lt;\\?(php)?" highlight "operator"
+  onregexp "^\\?&gt;" highlight "operator"
+
   # syntax: onstring <zeichenkette> <neuer-block> <span-klasse>
   # spezielle bloecke: stay (hier bleiben), pop (verlassen, 3. param nicht notwendig),
   #                    highlight (nur string einzeln highlighten)
