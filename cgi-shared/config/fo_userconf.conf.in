@@ -44,6 +44,11 @@
   SQLPort "3360"
   SQLDriver "Pg"
 
+  SMTPHost "localhost"
+  SMTPFrom "cforum@wwwtech.de"
+  SMTPSubject "Passwort fuer den SELFHTML Forumsaccount"
+  SMTPBody "Ihr Passwort lautet fuer den Usernamen {$user} lautet:\n  {$pass}\n\nEs wird empfohlen, dass Passwort zu wechseln.\n"
+
   ModuleConfig "@with_config_dir@/modules.xml"
 </General>
 

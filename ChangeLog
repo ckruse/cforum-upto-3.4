@@ -1,3 +1,8 @@
+2004-07-27 Christian Kruse <ckruse@wwwtech.de>
+	* cgi-bin/fo_userconf: Added 'mail me my password' functionality
+	* cgi-shared/config/fo_userconf.conf.in: Added directives for 'mail me my
+		password' functionality
+
 2004-07-25 Christian Kruse <ckruse@wwwtech.de>
 	* src/modules/flt_scoring.lex: Added the posibility to hide postings by score
 		(e.g. hide all postings which have score smaller than 10)

@@ -403,9 +403,12 @@ else {
   $action = '' unless $action eq 'register';
 }
 
+# {{{ edit user configuration
 if($action eq 'edit') {
   generate_edit_output($cgi,$fo_default_conf,$fo_view_conf,$fo_userconf_conf,$user_config);
 }
+# }}}
+# {{{ save user configuration
 elsif($action eq 'save') {
   my $own_ucfg = dclone($user_config);
 
@@ -567,9 +570,18 @@ elsif($action eq 'save') {
 
   print $cgi->header(-type => 'text/html; charset='.$fo_default_conf->{ExternCharset}->[0]->[0]),$tpl->parseToMem;
 }
+# }}}
+# {{{ change password
 elsif($action eq 'changepw') {
   my $form = 1;
   my $err  = undef;
+
+  my ($table,$usercol,$passwdcol,$emailcol) = (
+    $fo_userconf_conf->{UserTable}->[0]->[0],
+    $fo_userconf_conf->{UserColumn}->[0]->[0],
+    $fo_userconf_conf->{PasswdCol}->[0]->[0],
+    $fo_userconf_conf->{EmailCol}->[0]->[0]
+  );
 
   if($cgi->param('p') && $cgi->param('p1')) {
     my $p = $cgi->param('p');
@@ -599,7 +611,7 @@ elsif($action eq 'changepw') {
 
         # the password and the username are only ASCII, so it doesn't need a recode
         # to another charset
-        my $dbq = $dbh->prepare('UPDATE auth SET passwd = ? WHERE username = ?');
+        my $dbq = $dbh->prepare('UPDATE '.$table.' SET '.$passwdcol.' = ? WHERE '.$usercol.' = ?');
         $dbq->execute($cgi->param('p'),$UserName) or die 'error executing query: '.$dbh->errstr;
         $dbh->disconnect;
       }
@@ -630,6 +642,8 @@ elsif($action eq 'changepw') {
     print $cgi->header(-type => 'text/html; charset='.$fo_default_conf->{ExternCharset}->[0]->[0]),$tpl->parseToMem;
   }
 }
+# }}}
+# {{{ unregister account
 elsif($action eq 'unreg') {
   my $tpl = new CForum::Template(get_template($fo_default_conf,$user_config,$fo_userconf_conf->{Unregister}->[0]->[0]));
   $tpl->setVar('script',recode($fo_default_conf,$fo_default_conf->{UserConfig}->[0]->[0]));
@@ -639,6 +653,8 @@ elsif($action eq 'unreg') {
 
   print $cgi->header(-type => 'text/html; charset='.$fo_default_conf->{ExternCharset}->[0]->[0]),$tpl->parseToMem;
 }
+# }}}
+# {{{ unregister is ok
 elsif($action eq 'unregok') {
   my $connstr = 'DBI:'.$fo_userconf_conf->{SQLDriver}->[0]->[0].':dbname='.$fo_userconf_conf->{SQLDatabase}->[0]->[0].
        ($fo_userconf_conf->{SQLHost} ? ';host='.$fo_userconf_conf->{SQLHost}->[0]->[0] : '').
@@ -646,6 +662,13 @@ elsif($action eq 'unregok') {
 
   my $dbh     = DBI->connect($connstr,$fo_userconf_conf->{SQLUser}->[0]->[0],$fo_userconf_conf->{SQLPass}->[0]->[0]);
         die 'could not connect to database: '.DBI::errstr unless $dbh;
+
+  my ($table,$usercol,$passwdcol,$emailcol) = (
+    $fo_userconf_conf->{UserTable}->[0]->[0],
+    $fo_userconf_conf->{UserColumn}->[0]->[0],
+    $fo_userconf_conf->{PasswdCol}->[0]->[0],
+    $fo_userconf_conf->{EmailCol}->[0]->[0]
+  );
 
   #
   # run config plugins
@@ -656,12 +679,12 @@ elsif($action eq 'unregok') {
 
   my $cfile = get_config_file($fo_default_conf,$UserName);
   my $dir   = $cfile;
-  $dir =~ s!\.conf$!!;
+  $dir =~ s!\.conf$!!; #!;
 
   rmtree($dir) or die $!;
   unlink($cfile) or die $!;
 
-  my $dbq = $dbh->prepare('DELETE FROM auth WHERE username = ?');
+  my $dbq = $dbh->prepare('DELETE FROM '.$table.' WHERE '.$usercol.' = ?');
   $dbq->execute($UserName) or die 'Error in sql: '.$dbh->errstr;
   $dbh->disconnect;
 
@@ -673,8 +696,64 @@ elsif($action eq 'unregok') {
 
   print $cgi->header(-type => 'text/html; charset='.$fo_default_conf->{ExternCharset}->[0]->[0]),$tpl->parseToMem;
 }
+# }}}
+# {{{ send password
 elsif($action eq 'sendpw') {
   if($cgi->param('email')) {
+    my $username = $cgi->param('uname');
+
+    my $connstr = 'DBI:'.$fo_userconf_conf->{SQLDriver}->[0]->[0].':dbname='.$fo_userconf_conf->{SQLDatabase}->[0]->[0].
+       ($fo_userconf_conf->{SQLHost} ? ';host='.$fo_userconf_conf->{SQLHost}->[0]->[0] : '').
+       ($fo_userconf_conf->{SQLPort} ? ';port='.$fo_userconf_conf->{SQLPort}->[0]->[0] : '');
+
+    my $dbh     = DBI->connect($connstr,$fo_userconf_conf->{SQLUser}->[0]->[0],$fo_userconf_conf->{SQLPass}->[0]->[0]);
+        die 'could not connect to database: '.DBI::errstr unless $dbh;
+
+
+    my ($table,$usercol,$passwdcol,$emailcol) = (
+      $fo_userconf_conf->{UserTable}->[0]->[0],
+      $fo_userconf_conf->{UserColumn}->[0]->[0],
+      $fo_userconf_conf->{PasswdCol}->[0]->[0],
+      $fo_userconf_conf->{EmailCol}->[0]->[0]
+    );
+
+    my $dbq = $dbh->prepare('SELECT '.$passwdcol.','.$emailcol.' FROM '.$table.' WHERE username = ?');
+    $dbq->execute($username);
+    my $result = $dbq->fetchrow_hashref;
+
+    if($result) {
+      # send mail
+      my $body = $fo_userconf_conf->{SMTPBody}->[0]->[0];
+      $body =~ s!\Q{$pass}\E!$result->{$passwdcol}!g;
+      $body =~ s!\Q{$pass}\E!$result->{$emailcol}!g;
+      $body =~ s!\Q{$user}\E!$username!g;
+      
+      my $smtp = new Net::SMTP($fo_userconf_conf->{SMTPHost}->[0]->[0]);
+      $smtp->from($fo_userconf_conf->{SMTPFrom}->[0]->[0]);
+      $smtp->to($result->{$emailcol});
+      $smtp->data();
+      $smtp->datasend('From: '.$fo_userconf_conf->{SMTPFrom}->[0]->[0]."\n");
+      $smtp->datasend('To: '.$result->{$emailcol}."\n");
+      $smtp->datasend('Subject: '.$fo_userconf_conf->{SMTPSubject}->[0]->[0]."\n\n");
+      $smtp->datasend($body);
+      $smtp->dataend();
+      $smtp->quit();
+
+      # send user output
+      my $tpl = new CForum::Template(get_template($fo_default_conf,$user_config,$fo_userconf_conf->{SendPassOK}->[0]->[0]));
+      $tpl->setVar('script',recode($fo_default_conf,$fo_default_conf->{UserRegister}->[0]->[0]));
+      $tpl->setVar('forumbase',recode($fo_default_conf,$fo_default_conf->{BaseURL}->[0]->[0]));
+      $tpl->setVar('charset',$fo_default_conf->{ExternCharset}->[0]->[0]);
+      $tpl->setVar('acceptcharset',$fo_default_conf->{ExternCharset}->[0]->[0].', UTF-8');
+    }
+    else {
+      my $tpl = new CForum::Template(get_template($fo_default_conf,$user_config,$fo_userconf_conf->{SendPassErr}->[0]->[0]));
+      $tpl->setVar('script',recode($fo_default_conf,$fo_default_conf->{UserRegister}->[0]->[0]));
+      $tpl->setVar('forumbase',recode($fo_default_conf,$fo_default_conf->{BaseURL}->[0]->[0]));
+      $tpl->setVar('charset',$fo_default_conf->{ExternCharset}->[0]->[0]);
+      $tpl->setVar('acceptcharset',$fo_default_conf->{ExternCharset}->[0]->[0].', UTF-8');
+    }
+
   }
   else {
     my $tpl = new CForum::Template(get_template($fo_default_conf,$user_config,$fo_userconf_conf->{SendPass}->[0]->[0]));
@@ -687,7 +766,9 @@ elsif($action eq 'sendpw') {
     print $cgi->header(-type => 'text/html; charset='.$fo_default_conf->{ExternCharset}->[0]->[0]),$tpl->parseToMem;
   }
 }
+# }}}
 else {
+  # {{{ show options
   if($UserName) {
     my $tpl = new CForum::Template(get_template($fo_default_conf,$user_config,$fo_userconf_conf->{ViewSettings}->[0]->[0])) or die $@;
 
@@ -732,12 +813,21 @@ else {
 
     print $cgi->header(-type => 'text/html; charset='.$fo_default_conf->{ExternCharset}->[0]->[0]),$tpl->parseToMem;
   }
+  # }}}
   else {
+    # {{{ register user
     if($action eq 'register') {
-      my ($user,$passwd,$passwd1) = ($cgi->param('username'),$cgi->param('passwd'),$cgi->param('passwd1'));
+      my ($user,$passwd,$passwd1,$email) = ($cgi->param('username'),$cgi->param('passwd'),$cgi->param('passwd1'),$cgi->param('email'));
 
       my ($min_uname)  = grep { $_->[0] eq 'UserName' } @{$fo_userconf_conf->{MinLength}};
       my ($min_passwd) = grep { $_->[0] eq 'Password' } @{$fo_userconf_conf->{MinLength}};
+
+      my ($table,$usercol,$passwdcol,$emailcol) = (
+        $fo_userconf_conf->{UserTable}->[0]->[0],
+        $fo_userconf_conf->{UserColumn}->[0]->[0],
+        $fo_userconf_conf->{PasswdCol}->[0]->[0],
+        $fo_userconf_conf->{EmailCol}->[0]->[0]
+      );
 
       if(length($user) < $min_uname->[1]) {
         show_register_form(
@@ -787,6 +877,18 @@ else {
         exit;
       }
 
+      if(!is_email($email)) {
+        show_register_form(
+          $cgi,
+          $fo_default_conf,
+          $fo_view_conf,
+          $fo_userconf_conf,
+          $user_config,
+          get_error($fo_default_conf,'email','invalid')
+        );
+        exit;
+      }
+
       if($passwd !~ /^[a-zA-Z0-9!\"§$_<>.%&\\\/()=?-]+$/ || $passwd !~ /\d/ || $passwd !~ /[a-zA-Z]/) {
         show_register_form(
           $cgi,
@@ -831,8 +933,8 @@ else {
       my $dbh = DBI->connect($connstr,$fo_userconf_conf->{SQLUser}->[0]->[0],$fo_userconf_conf->{SQLPass}->[0]->[0]);
       die 'could not connect to database: '.DBI::errstr unless $dbh;
 
-      my $dbq = $dbh->prepare('INSERT INTO auth (username,passwd) VALUES (?,?)');
-      $dbq->execute($user,$passwd) or do {
+      my $dbq = $dbh->prepare('INSERT INTO '.$table.' ('.$usercol.','.$passwdcol.','.$emailcol.') VALUES (?,?,?)');
+      $dbq->execute($user,$passwd,$email) or do {
         show_register_form(
           $cgi,
           $fo_default_conf,
@@ -846,7 +948,7 @@ else {
       $dbh->disconnect;
 
       my $dir = $ufile;
-      $dir =~ s!\.conf$!!;
+      $dir =~ s!\.conf$!!; #!;
 
       mkdir $dir,0771 or die $!;
 
@@ -866,9 +968,12 @@ else {
 
       print $cgi->header(-type => 'text/html; charset='.$fo_default_conf->{ExternCharset}->[0]->[0]),$tpl->parseToMem;
     }
+    # }}}
+    # {{{ show register form
     else {
       show_register_form($cgi,$fo_default_conf,$fo_view_conf,$fo_userconf_conf,$user_config);
     }
+    # }}}
   }
 }
 
