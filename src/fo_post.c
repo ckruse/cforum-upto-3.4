@@ -26,6 +26,7 @@
 #include <dlfcn.h>
 #include <errno.h>
 
+#include <pcre.h>
 #include <sys/types.h>
 
 /* socket includes */
@@ -124,7 +125,7 @@ void display_finishing_screen(t_message *p) {
 /* }}} */
 
 /* {{{ display_posting_form */
-void display_posting_form(t_cf_hash *head,t_message *p) {
+void display_posting_form(t_cf_hash *head,t_message *p,t_cf_tpl_variable *var) {
   /* display him the fucking formular */
   t_cf_template tpl;
   u_char tplname[256],*forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10),*uname = cf_hash_get(GlobalValues,"UserName",8);
@@ -235,6 +236,11 @@ void display_posting_form(t_cf_hash *head,t_message *p) {
   cf_set_variable(&tpl,cs,"unid",buff,len,1);
   cf_tpl_setvalue(&tpl,"qchar",TPL_VARIABLE_STRING,"&#255;",6);
   cf_tpl_appendvalue(&tpl,"qchar",qchars,qclen);
+
+  if(var) {
+    cf_tpl_setvalue(&tpl,"err",TPL_VARIABLE_INT,1);
+    cf_tpl_setvar(&tpl,"errs",var);
+  }
 
   cf_run_post_display_handlers(head,&tpl,p);
 
@@ -375,6 +381,9 @@ int validate_cgi_variables(t_cf_hash *head) {
   t_name_value *cfg;
   t_cf_list_head *list;
   t_cf_list_element *elem;
+  pcre *regexp;
+  u_char *error;
+  int erroffset;
 
   size_t maxlen,minlen,len;
   int fupto = cf_cgi_get(head,"fupto") != NULL,ret = -1;
@@ -441,15 +450,28 @@ int validate_cgi_variables(t_cf_hash *head) {
           case 'e':
             ret = is_valid_mailaddress(value);
             break;
+
           case 'h':
             if(cf_strcmp(cfg->values[1],"http-strict") == 0) ret = is_valid_http_link(value,1);
             else ret = is_valid_http_link(value,0);
             break;
+
           case 'u':
             ret = is_valid_link(value);
             break;
+
           default:
-            continue;
+            if((regexp = pcre_compile(cfg->values[1],0,(const char **)&error,&erroffset,NULL)) == NULL) {
+              fprintf(stderr,"Error in pattern '%s': %s\n",cfg->values[1],error);
+              ret = -1;
+              break;
+            }
+
+            if(pcre_exec(regexp,NULL,value,strlen(value),0,0,NULL,0) < 0) ret = -1;
+            else ret = 0;
+            pcre_free(regexp);
+
+            break;
         }
 
         if(ret == -1) {
@@ -730,6 +752,8 @@ int main(int argc,char *argv[],char *env[]) {
   t_message *p;
   u_char *link;
 
+  t_cf_tpl_variable var;
+
   size_t len;
 
   t_string *str,str1;
@@ -842,11 +866,11 @@ int main(int argc,char *argv[],char *env[]) {
       if(normalize_cgi_variables(head,"qchar") != 0) {
         if(get_thread(&thr,head) == -1) {
           strcpy(ErrorString,"E_manipulated");
-          display_posting_form(head,NULL);
+          display_posting_form(head,NULL,NULL);
         }
         else {
           *ErrorString = '\0';
-          display_posting_form(head,thr.threadmsg);
+          display_posting_form(head,thr.threadmsg,NULL);
           cf_cleanup_thread(&thr);
         }
 
@@ -856,10 +880,10 @@ int main(int argc,char *argv[],char *env[]) {
 
       /* {{{ everything seems to be fine, so lets validate user input */
       if(validate_cgi_variables(head) != 0) {
-        if(get_thread(&thr,head) == -1) display_posting_form(head,NULL);
+        if(get_thread(&thr,head) == -1) display_posting_form(head,NULL,NULL);
         else {
           *ErrorString = '\0';
-          display_posting_form(head,thr.threadmsg);
+          display_posting_form(head,thr.threadmsg,NULL);
           cf_cleanup_thread(&thr);
         }
 
@@ -872,6 +896,17 @@ int main(int argc,char *argv[],char *env[]) {
       str = body_plain2coded(val);
       /* }}} */
 
+      /* lets validate the posting body */
+      if(cf_cgi_get(head,"validate") == NULL) {
+        cf_tpl_var_init(&var,TPL_VARIABLE_ARRAY);
+
+        if((ret = cf_validate_msg(NULL,str->content,&var)) == FLT_ERROR) {
+          cf_cgi_set(head,"validate","no");
+          display_posting_form(head,NULL,&var);
+          return EXIT_SUCCESS;
+        }
+      }
+
       /* {{{ get thread id and message id (if given) */
       tidmid = cf_cgi_get(head,"fupto");
       if(tidmid) {
@@ -881,7 +916,7 @@ int main(int argc,char *argv[],char *env[]) {
 
         if(!tid || !mid) {
           strcpy(ErrorString,"E_manipulated");
-          display_posting_form(head,NULL);
+          display_posting_form(head,NULL,NULL);
           return EXIT_SUCCESS;
         }
       }
@@ -1093,7 +1128,7 @@ int main(int argc,char *argv[],char *env[]) {
         /* }}} */
       }
     }
-    else display_posting_form(head,NULL);
+    else display_posting_form(head,NULL,NULL);
   }
 
   /* cleanup source */

@@ -58,7 +58,7 @@ E_ARCHIVE_GENERIC404: Sie haben einen ungültige URL angegeben.
 E_ARCHIVE_YEARNOTPRESENT: Leider gibt es das von Ihnen ausgewählte Jahr nicht.
 E_ARCHIVE_MONTHNOTPRESENT: Leider gibt es den von Ihnen ausgewählten Monat nicht.
 E_ARCHIVE_THREADNOTPRESENT: Leider gibt es den von Ihnen ausgewählten Thread nicht.
-E_posting_links: Einige [link:]-, [image:]- oder [iframe:]-URIs können nicht umgewandelt werden. Sicher, dass alle URIs korrekt sind?
+E_posting_links: Einige [link:]-, [image:]-, [iframe:]-URIs oder [ref:]-Elemente können nicht umgewandelt werden. Sicher, dass alle URIs korrekt sind?
 E_user_create: Leider konnte der User aus servertechnischen Gründen nicht angelegt werden.
 E_posting_category: Sie haben eine ungültige Kategorie ausgewählt.
 E_posting_charset: Sie haben ein Zeichen eingegeben, dass weder gültiges UTF-8 noch gültiges Latin-1 ist. Vielleicht haben Sie ja Binärzeichen eingegeben?
@@ -83,3 +83,5 @@ E_IMPORT_DATAINVALID: Einige Werte der zu importierenden Daten scheinen nicht va
 E_MUST_AUTH: Für diese Funktion müssen Sie angemeldet sein!
 Send_Answer_Subject: Antwort auf Posting %%bs
 Send_Answer_Body: Hallo\n\nes wurde eine Antwort auf die Nachricht %%bs gepostet.\nNeues Subject: %%s\nAutor: %%a\nURL: %%u\nMy-URL: %%m\nOrginal-Autor: %%oa\nOrginal-Subject: %%os\nOrginal-URL: %%ou\nOrginal-My-URL: %%om\n\nViele Grüsse,\n das Forum\n
+E_CODE_NOLANG: Sie haben in einem [code]-Block keine Sprache angegeben. Die richtige Syntax ist [code lang=sprache]. Sind Sie sicher, dass Sie das Posting so abschicken möchten?
+E_CODE_LANG: Sie haben in einem [code]-Block eine nicht-existierende Sprache angegeben. Sind Sie sicher, dass sie das Posting so abschicken möchten?

@@ -1,3 +1,15 @@
+2005-03-01 Christian Kruse <ckruse@wwwtech.de>
+	* conf/errormessages.de.txt: Added two warnings, changed error message
+	* src/modules/flt_directives.c: Added validator function
+	* src/modules/flt_categorycheck.c, src/modules/flt_checkregisteredname.c,
+		src/modules/flt_postingassistant.c, src/modules/flt_spellcheck.c,
+		src/modules/flt_preview.c: Changed to new display_posting_form() prototype
+	* src/modules/flt_syntax.c: Added validator function
+	* src/fo_post.c, src/fo_post.h: Added body validation, changed prototype for
+		display_posting_form(), added possibility to validate every field by regex
+	* src/defines.h: Added FLT_ERROR return value
+	* src/htmllib.c, src/htmllib.h: Added body validation functions
+
 2005-02-27 Christian Kruse <ckruse@wwwtech.de>
 	* conf/fo_view.conf.in: Removed ReadMode parameter
 	* src/fo_view.c: Removed show_thread() and ReadMode behavior

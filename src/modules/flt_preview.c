@@ -83,7 +83,7 @@ int flt_preview_execute(t_cf_hash *head,t_configuration *dc,t_configuration *pc,
 
       flt_preview_is_preview = 1;
 
-      display_posting_form(head,p);
+      display_posting_form(head,p,NULL);
       return FLT_EXIT;
     }
   }

@@ -358,7 +358,7 @@ int flt_poas_execute(t_cf_hash *head,t_configuration *dc,t_configuration *pc,t_m
     if(flt_poas_standardchecks(p) != 0) {
       cf_cgi_set(head,"assicheck","1");
       strcpy(ErrorString,"E_posting_format");
-      display_posting_form(head,p);
+      display_posting_form(head,p,NULL);
       return FLT_EXIT;
     }
   }
@@ -367,7 +367,7 @@ int flt_poas_execute(t_cf_hash *head,t_configuration *dc,t_configuration *pc,t_m
   if(flt_poas_badwords_check(p) != 0) {
     cf_cgi_set(head,"assicheck","1");
     strcpy(ErrorString,"E_posting_badwords");
-    display_posting_form(head,p);
+    display_posting_form(head,p,NULL);
     return FLT_EXIT;
   }
 
@@ -376,7 +376,7 @@ int flt_poas_execute(t_cf_hash *head,t_configuration *dc,t_configuration *pc,t_m
     if(flt_poas_qp_check(p) != 0) {
       cf_cgi_set(head,"assicheck","1");
       strcpy(ErrorString,"E_posting_quoting");
-      display_posting_form(head,p);
+      display_posting_form(head,p,NULL);
       return FLT_EXIT;
     }
   }

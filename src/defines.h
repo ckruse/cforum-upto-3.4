@@ -68,6 +68,7 @@
 #define FLT_OK       0 /**< Returned by a plugin function if everything as ok. */
 #define FLT_DECLINE -1 /**< Returned by a plugin function if this request is not for the plugin. */
 #define FLT_EXIT    -2 /**< Context dependend. */
+#define FLT_ERROR   -3 /**< Error value */
 
 #define init_modules() memset(&Modules,0,(MOD_MAX+1) * sizeof(t_array)) /**< Initialization macro for the plugins */
 

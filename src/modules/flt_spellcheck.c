@@ -523,7 +523,7 @@ int flt_spellcheck_execute(t_cf_hash *head,t_configuration *dc,t_configuration *
   fclose(ispell_read);
   ipc_dpclose(NULL,&ispell_pid);
   
-  display_posting_form(head,p);
+  display_posting_form(head,p,NULL);
   return FLT_EXIT;
 }
 /* }}} */

@@ -1364,9 +1364,55 @@ int flt_syntax_execute(t_configuration *fdc,t_configuration *fvc,const u_char *d
 }
 /* }}} */
 
+int flt_syntax_validate(t_configuration *fdc,t_configuration *fvc,const u_char *directive,const u_char **parameters,size_t plen,t_cf_tpl_variable *var) {
+  u_char *err,*lang;
+  register u_char *ptr;
+  size_t len;
+
+  struct stat st;
+
+  t_string str;
+
+  if(flt_syntax_active == 0 || plen != 2 || cf_strcmp(parameters[0],"lang") != 0) {
+    if((err = cf_get_error_message("E_CODE_NOLANG",&len)) != NULL) {
+      cf_tpl_var_addvalue(var,TPL_VARIABLE_STRING,err,len);
+      free(err);
+      return FLT_ERROR;
+    }
+  }
+
+  str_init(&str);
+  for(ptr=(u_char *)parameters[1];*ptr;++ptr) {
+    if(isalnum(*ptr)) str_char_append(&str,tolower(*ptr));
+  }
+  lang = str.content;
+
+  /* we got a language, check if it exists */
+  str_init(&str);
+  str_char_set(&str,flt_syntax_patterns_dir,strlen(flt_syntax_patterns_dir));
+  str_char_append(&str,'/');
+  str_chars_append(&str,lang,strlen(lang));
+  str_chars_append(&str,".pat",4);
+
+  if(stat(str.content,&st) == -1) {
+    str_cleanup(&str);
+
+    if((err = cf_get_error_message("E_CODE_LANG",&len)) != NULL) {
+      cf_tpl_var_addvalue(var,TPL_VARIABLE_STRING,err,len);
+      free(err);
+      return FLT_ERROR;
+    }
+  }
+
+  str_cleanup(&str);
+
+  return FLT_DECLINE;
+}
+
 /* {{{ flt_syntax_init */
 int flt_syntax_init(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc) {
   cf_html_register_directive("code",flt_syntax_execute,CF_HTML_DIR_TYPE_ARG|CF_HTML_DIR_TYPE_BLOCK);
+  cf_html_register_validator("code",flt_syntax_validate,CF_HTML_DIR_TYPE_ARG|CF_HTML_DIR_TYPE_BLOCK);
 
   array_init(&flt_syntax_files,sizeof(flt_syntax_pattern_file_t),NULL);
 

@@ -86,7 +86,7 @@ int flt_checkregisteredname_execute(t_cf_hash *head,t_configuration *dc,t_config
 
   if(cf_strncmp(line,"200",3) != 0) {
     strcpy(ErrorString,"E_auth_required");
-    display_posting_form(head,p);
+    display_posting_form(head,p,NULL);
 
     free(line);
     return FLT_EXIT;

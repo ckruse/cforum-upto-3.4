@@ -44,6 +44,7 @@ static u_char *flt_directives_link      = NULL;
 static int flt_directives_imagesaslink  = 0;
 static int flt_directives_iframesaslink = 0;
 static int flt_directives_rel_no_follow = 0;
+static int flt_directives_wbl           = 0;
 
 typedef struct {
   u_char *id;
@@ -441,6 +442,153 @@ int flt_directives_execute(t_configuration *fdc,t_configuration *fvc,const u_cha
 }
 /* }}} */
 
+/* {{{ flt_directives_validate */
+int flt_directives_validate(t_configuration *fdc,t_configuration *fvc,const u_char *directive,const u_char **parameters,size_t plen,t_cf_tpl_variable *var) {
+  u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
+  u_char *parameter = (u_char *)parameters[0];
+
+  u_char *tmp1,*tmp2,*title_alt,*ptr,**list,*err;
+
+  t_flt_directives_ref_uri *uri;
+
+  size_t len,i;
+  u_int64_t tid,mid;
+
+  if(flt_directives_wbl == 0) return FLT_DECLINE;
+
+  while(isspace(*parameter)) ++parameter;
+
+  if(*directive == 'l') {
+    /* {{{ [link:] */
+    if(cf_strcmp(directive,"link") == 0) {
+      if((ptr = strstr(parameter,"@title=")) != NULL) tmp1 = strndup(parameter,ptr-parameter);
+      else tmp1 = (u_char *)parameter;
+
+      len = strlen(tmp1);
+
+      if(is_valid_link(tmp1) != 0) {
+        if(cf_strncmp(tmp1,"..",2) == 0 || *tmp1 == '/' || *tmp1 == '?') {
+          if(!flt_directives_is_relative_uri(tmp1,len)) {
+            if((err = cf_get_error_message("E_posting_links",&len)) != NULL) {
+              cf_tpl_var_addvalue(var,TPL_VARIABLE_STRING,err,len);
+              free(err);
+            }
+
+            return FLT_ERROR;
+          }
+        }
+        else {
+          if((err = cf_get_error_message("E_posting_links",&len)) != NULL) {
+            cf_tpl_var_addvalue(var,TPL_VARIABLE_STRING,err,len);
+            free(err);
+          }
+          return FLT_ERROR;
+        }
+      }
+
+      return FLT_OK;
+    }
+    /* }}} */
+  }
+  else if(*directive == 'i') {
+    /* {{{ [image:] */
+    if(cf_strcmp(directive,"image") == 0) {
+      if((ptr = strstr(parameter,"@alt=")) != NULL) tmp1      = strndup(parameter,ptr-parameter);
+      else tmp1 = (u_char *)parameter;
+
+      len = strlen(tmp1);
+
+      if(is_valid_link(tmp1) != 0) {
+        if(cf_strncmp(tmp1,"..",2) == 0 || *tmp1 == '/' || *tmp1 == '?') {
+          if(!flt_directives_is_relative_uri(tmp1,len)) {
+            if((err = cf_get_error_message("E_posting_links",&len)) != NULL) {
+              cf_tpl_var_addvalue(var,TPL_VARIABLE_STRING,err,len);
+              free(err);
+            }
+            return FLT_ERROR;
+          }
+        }
+        else {
+          if((err = cf_get_error_message("E_posting_links",&len)) != NULL) {
+            cf_tpl_var_addvalue(var,TPL_VARIABLE_STRING,err,len);
+            free(err);
+          }
+          return FLT_ERROR;
+        }
+      }
+
+      return FLT_OK;
+    }
+    /* }}} */
+    /* {{{ [iframe:] */ 
+    else if(cf_strcmp(directive,"iframe") == 0) {
+      if(is_valid_link(parameter) != 0) {
+        if(cf_strncmp(parameter,"..",2) == 0 || *parameter == '/' || *parameter == '?') {
+          len = strlen(parameter);
+
+          if(!flt_directives_is_relative_uri(parameter,len)) {
+            if((err = cf_get_error_message("E_posting_links",&len)) != NULL) {
+              cf_tpl_var_addvalue(var,TPL_VARIABLE_STRING,err,len);
+              free(err);
+            }
+            return FLT_ERROR;
+          }
+        }
+        else {
+          if((err = cf_get_error_message("E_posting_links",&len)) != NULL) {
+            cf_tpl_var_addvalue(var,TPL_VARIABLE_STRING,err,len);
+            free(err);
+          }
+          return FLT_ERROR;
+        }
+      }
+    }
+    /* }}} */
+  }
+  else {
+    /* {{{ [pref:] */
+    if(cf_strcmp(directive,"pref") == 0) {
+      tid = mid = 0;
+
+      if(!flt_directives_is_valid_pref(parameter,&tmp1,&tmp2)) {
+        if((err = cf_get_error_message("E_posting_links",&len)) != NULL) {
+          cf_tpl_var_addvalue(var,TPL_VARIABLE_STRING,err,len);
+          free(err);
+        }
+        return FLT_ERROR;
+      }
+    }
+    /* }}} */
+    /* {{{ [ref:] */
+    else if(cf_strcmp(directive,"ref") == 0) {
+      len   = nsplit(parameter,";",&list,2);
+
+      if(len == 2) {
+        for(i=0;i<flt_directives_ref_uris.elements;i++) {
+          uri = array_element_at(&flt_directives_ref_uris,i);
+
+          if(cf_strcmp(uri->id,list[0]) == 0) return FLT_OK;
+        }
+
+        if(list) {
+          for(i=0;i<len;++i) free(list[i]);
+          free(list);
+        }
+
+        if((err = cf_get_error_message("E_posting_links",&len)) != NULL) {
+          cf_tpl_var_addvalue(var,TPL_VARIABLE_STRING,err,len);
+          free(err);
+        }
+        return FLT_ERROR;
+      }
+    }
+    /* }}} */
+  }
+
+  return FLT_DECLINE;
+}
+/* }}} */
+
 /* {{{ flt_directives_check_for_pref */
 int flt_directives_check_for_pref(const u_char *link,size_t len) {
   size_t i;
@@ -538,10 +686,25 @@ int flt_directives_init(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc) 
   cf_html_register_directive("image",flt_directives_execute,CF_HTML_DIR_TYPE_ARG|CF_HTML_DIR_TYPE_INLINE);
   cf_html_register_directive("iframe",flt_directives_execute,CF_HTML_DIR_TYPE_ARG|CF_HTML_DIR_TYPE_INLINE);
 
+  cf_html_register_validator("link",flt_directives_validate,CF_HTML_DIR_TYPE_ARG|CF_HTML_DIR_TYPE_INLINE);
+  cf_html_register_validator("pref",flt_directives_validate,CF_HTML_DIR_TYPE_ARG|CF_HTML_DIR_TYPE_INLINE);
+  cf_html_register_validator("ref",flt_directives_validate,CF_HTML_DIR_TYPE_ARG|CF_HTML_DIR_TYPE_INLINE);
+  cf_html_register_validator("image",flt_directives_validate,CF_HTML_DIR_TYPE_ARG|CF_HTML_DIR_TYPE_INLINE);
+  cf_html_register_validator("iframe",flt_directives_validate,CF_HTML_DIR_TYPE_ARG|CF_HTML_DIR_TYPE_INLINE);
+
   return FLT_DECLINE;
 }
 
 /* {{{ directive handlers */
+int flt_directives_handle_wbl(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
+  if(flt_directives_fname == NULL) flt_directives_fname = cf_hash_get(GlobalValues,"FORUM_NAME",10);
+  if(!context || cf_strcmp(context,flt_directives_fname) != 0) return 0;
+
+  flt_directives_wbl = cf_strcmp(args[0],"yes") == 0;
+
+  return 0;
+}
+
 int flt_directives_handle_purl(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
   pcre *re;
   pcre_extra *extra;
@@ -720,6 +883,7 @@ t_conf_opt flt_directives_config[] = {
   { "SetRelNoFollow",       flt_directives_handle_rel,      CFG_OPT_CONFIG|CFG_OPT_LOCAL, NULL },
   { "ReferenceURI",         flt_directives_handle_ref,      CFG_OPT_CONFIG|CFG_OPT_LOCAL, NULL },
   { "LinkTemplate",         flt_directives_handle_lt,       CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL,  NULL },
+  { "WarnBadLinks",         flt_directives_handle_wbl,      CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL,  NULL },
   { NULL, NULL, 0, NULL }
 };
 

@@ -38,6 +38,11 @@ typedef struct s_directive_callback {
   int type;
 } t_directive_callback;
 
+typedef struct s_validator_callback {
+  t_directive_validator callback;
+  int type;
+} t_validator_callback;
+
 typedef struct s_html_stack {
   u_char *begin;
   u_char *name;
@@ -46,6 +51,7 @@ typedef struct s_html_stack {
 } t_html_stack_elem;
 
 static t_cf_hash *registered_directives = NULL;
+static t_cf_hash *registered_validators = NULL;
 
 
 /* {{{ run_content_filters */
@@ -76,11 +82,19 @@ int run_inline_directive_filters(const u_char *directive,const u_char **paramete
 }
 /* }}} */
 
+/* {{{ run_validate_inline */
+int run_validate_inline(const u_char *directive,const u_char **parameters,t_cf_tpl_variable *var) {
+  t_validator_callback *cb;
 
+  if((cb = cf_hash_get(registered_validators,(u_char *)directive,strlen(directive))) == NULL) return FLT_DECLINE;
 
-/* {{{ internal functions */
+  if(cb->type & CF_HTML_DIR_TYPE_INLINE) return cb->callback(&fo_default_conf,&fo_view_conf,directive,parameters,1,var);
+  return FLT_DECLINE;
+}
+/* }}} */
 
-int next_line_is_no_quote_line(const u_char *ptr) {
+/* {{{ next_line_is_no_quote_line */
+static int next_line_is_no_quote_line(const u_char *ptr) {
   int eq;
 
   for(;*ptr && ((eq = cf_strncmp(ptr,"<br />",6)) == 0 || *ptr == ' ');ptr++) {
@@ -90,8 +104,10 @@ int next_line_is_no_quote_line(const u_char *ptr) {
   if(*ptr == (u_char)127) return 0;
   return 1;
 }
+/* }}} */
 
-int is_open(const u_char *name,t_array *stack) {
+/* {{{ is_open */
+static int is_open(const u_char *name,t_array *stack) {
   int i;
   t_html_stack_elem *s_el;
 
@@ -102,19 +118,33 @@ int is_open(const u_char *name,t_array *stack) {
 
   return 0;
 }
+/* }}} */
 
-int run_block_directive_filters(const u_char *directive,const u_char **parameters,size_t len,t_string *bcontent,t_string *bcite,t_string *content,t_string *cite,const u_char *qchars,int sig) {
+/* {{{ run_block_directive_filters */
+static int run_block_directive_filters(const u_char *directive,const u_char **parameters,size_t len,t_string *bcontent,t_string *bcite,t_string *content,t_string *cite,const u_char *qchars,int sig) {
   t_directive_callback *cb;
 
   if((cb = cf_hash_get(registered_directives,(u_char *)directive,strlen(directive))) == NULL) return FLT_DECLINE;
 
   if(cb->type & CF_HTML_DIR_TYPE_BLOCK) return cb->callback(&fo_default_conf,&fo_view_conf,directive,parameters,len,bcontent,bcite,content,cite,qchars,sig);
-  return FLT_DECLINE;  
+  return FLT_DECLINE;
 }
+/* }}} */
 
-u_char *parse_message(u_char *start,t_array *stack,t_string *content,t_string *cite,const u_char *qchars,size_t qclen,int utf8,int xml,int max_sig_lines,int show_sig,int linebrk,int sig,int quotemode,int line) {
+/* {{{ run_validate_block_directive */
+static int run_validate_block_directive(const u_char *directive,const u_char **parameters,size_t len,t_cf_tpl_variable *var) {
+  t_validator_callback *cb;
+
+  if((cb = cf_hash_get(registered_validators,(u_char *)directive,strlen(directive))) == NULL) return FLT_DECLINE;
+
+  if(cb->type & CF_HTML_DIR_TYPE_BLOCK) return cb->callback(&fo_default_conf,&fo_view_conf,directive,parameters,len,var);
+  return FLT_DECLINE;
+}
+/* }}} */
+
+/* {{{ parse_message */
+static u_char *parse_message(u_char *start,t_array *stack,t_string *content,t_string *cite,const u_char *qchars,size_t qclen,int utf8,int xml,int max_sig_lines,int show_sig,int linebrk,int sig,int quotemode,int line) {
   const u_char *ptr,*tmp,*ptr1;
-  size_t i;
   int rc,run = 1,sb = 0,fail,ending;
   u_char *directive,*parameter,*safe,*buff,*retval;
   t_string d_content,d_cite,strtmp;
@@ -433,7 +463,280 @@ u_char *parse_message(u_char *start,t_array *stack,t_string *content,t_string *c
 }
 /* }}} */
 
+/* {{{ validate_message */
+int validate_message(t_array *stack,t_cl_thread *thread,const u_char *msg,u_char **pos,t_cf_tpl_variable *var) {
+  const u_char *ptr,*tmp,*ptr1;
+  int rc,run = 1,sb = 0,fail,ending,retval,ret = FLT_OK;
+  u_char *directive,*parameter,*safe,*buff;
+  t_string strtmp;
+  t_html_stack_elem stack_elem,*stack_tmp;
 
+  for(ptr=(u_char *)msg;*ptr && run;++ptr) {
+    switch(*ptr) {
+      case '[':
+        safe = (u_char *)ptr;
+        ending = 0;
+
+        /* [/name] ends a directive */
+        if(*(ptr+1) == '/') {
+          ending = 1;
+          ++ptr;
+        }
+
+        /* ok, parse this directive */
+        for(ptr1=ptr+1,sb=0;*ptr1 && isalpha(*ptr1) && sb == 0 && *ptr1 != '<';++ptr1) {
+          sb = *ptr1 == '[';
+        }
+
+        if(sb) {
+          ptr = safe;
+          goto default_action;
+        }
+
+        /* {{{ end of a directive */
+        if(ending) {
+          directive = strndup(ptr+1,ptr1-ptr-1);
+
+          if(is_open(directive,stack)) {
+            stack_tmp = array_element_at(stack,stack->elements-1);
+
+            /* nesting is ok */
+            if(cf_strcmp(stack_tmp->name,directive) == 0) {
+              free(directive);
+              if(pos) *pos = (u_char *)ptr1;
+              return FLT_OK;
+            }
+            /* nesting error */
+            else {
+              free(directive);
+              return FLT_DECLINE;
+            }
+          }
+          /* not open, ignore it, user error */
+          else {
+            free(directive);
+            ptr = safe;
+            goto default_action;
+          }
+        }
+        /* }}} */
+
+        /* {{{ directive with argument, CForum syntax [name:argument], no ending tag */
+        if(*ptr1 == ':') {
+          tmp = ptr1;
+          str_init(&strtmp);
+
+          /* get directive end, but accept \] as not-end */
+          for(++ptr1;*ptr1 && *ptr1 != ']' && *ptr1 != '<';++ptr1) {
+            if(*ptr1 == '\\' && *(ptr1+1) == ']') {
+              str_char_append(&strtmp,']');
+              ++ptr1;
+            }
+            else str_char_append(&strtmp,*ptr1);
+          }
+
+          if(*ptr1 == ']') {
+            directive = strndup(ptr+1,tmp-ptr-1);
+            buff      = strtmp.content;
+            parameter = htmlentities_decode(buff);
+            free(buff);
+
+            rc = run_validate_inline(directive,(const u_char **)&parameter,var);
+
+            free(directive);
+            free(parameter);
+
+            if(rc == FLT_DECLINE) {
+              ptr = safe;
+              goto default_action;
+            }
+            else ptr = ptr1;
+
+            if(rc == FLT_ERROR) ret = FLT_ERROR;
+          }
+          else {
+            str_cleanup(&strtmp);
+            ptr = safe;
+            goto default_action;
+          }
+        }
+        /* }}} */
+
+        /* {{{ we got [blub=blub] */
+        else if(*ptr1 == '=') {
+          tmp = ptr1;
+
+          for(++ptr1;*ptr1 && *ptr1 != ']' && *ptr1 != '<';++ptr1);
+
+          if(*ptr1 == ']') {
+            directive = strndup(ptr+1,tmp-ptr-1);
+
+            if(cf_hash_get(registered_validators,directive,tmp-ptr-1) == NULL) {
+              free(directive);
+              goto default_action;
+            }
+
+            parameter = strndup(tmp+1,ptr-tmp-1);
+
+            stack_elem.begin   = (u_char *)ptr1;
+            stack_elem.name    = directive;
+            stack_elem.args    = fo_alloc(NULL,1,sizeof(u_char **),FO_ALLOC_MALLOC);
+            stack_elem.args[0] = parameter;
+            stack_elem.argnum  = 1;
+
+            array_push(stack,&stack_elem);
+
+            retval = validate_message(stack,thread,ptr1+1,(u_char **)&ptr,var);
+
+            array_pop(stack);
+
+            if(retval == FLT_ERROR) {
+              /* directive is invalid, get defined state */
+              free(directive);
+              free(parameter);
+              free(stack_elem.args);
+
+              ret = FLT_ERROR;
+              goto default_action;
+            }
+
+            /* ok, go and run directive filters */
+            rc = run_validate_block_directive(directive,(const u_char **)&parameter,1,var);
+
+            if(rc == FLT_ERROR) ret = FLT_ERROR;
+            else if(rc == FLT_DECLINE) {
+              ptr = safe;
+              goto default_action;
+            }
+          }
+          else {
+            ptr = safe;
+            goto default_action;
+          }
+        }
+        /* }}} */
+
+        /* {{{ we got [something something */
+        else if(isspace(*ptr1) || *ptr1 == ']') {
+          directive = strndup(ptr+1,ptr1-ptr-1);
+
+          if(cf_hash_get(registered_validators,directive,ptr1-ptr-1) == NULL) {
+            free(directive);
+            goto default_action;
+          }
+
+          memset(&stack_elem,0,sizeof(stack_elem));
+
+          sb = 0;
+          fail = 0;
+
+          /* ok, we can have multiple arguments in the form of arg=value */
+          while(!sb && *ptr1 != ']') {
+            /* eat up trailing whitespaces */
+            for(++ptr1;isspace(*ptr1) || *ptr1 == '=';++ptr1);
+
+            /* whitespaces are not allowed */
+            for(tmp = ptr1;*ptr1 != '=' && *ptr1 != ']' && *ptr1 != '<' && !isspace(*ptr1);++ptr1);
+
+            if(*ptr1 == '<') {
+              free(directive);
+              if(stack_elem.args) free(stack_elem.args);
+              ptr = safe;
+              goto default_action;
+            }
+
+            stack_elem.args = fo_alloc(stack_elem.args,++stack_elem.argnum,sizeof(*stack_elem.args),FO_ALLOC_REALLOC);
+            stack_elem.args[stack_elem.argnum-1] = strndup(tmp,ptr1-tmp);
+
+            sb = *ptr1 == ']';
+          }
+
+          if(stack_elem.argnum % 2 != 0) fail = 1;
+
+          if(!fail) {
+            stack_elem.name = directive;
+            stack_elem.begin = (u_char *)ptr1;
+            array_push(stack,&stack_elem);
+
+            retval = validate_message(stack,thread,ptr1+1,(u_char **)&ptr,var);
+
+            array_pop(stack);
+
+            if(retval == FLT_ERROR) {
+              /* directive is invalid, get defined state */
+              free(directive);
+              free(stack_elem.args);
+              ptr = safe;
+              ret = FLT_ERROR;
+
+              goto default_action;
+            }
+
+            /* ok, go and run directive filters */
+            rc = run_validate_block_directive(directive,(const u_char **)stack_elem.args,stack_elem.argnum,var);
+
+            if(rc == FLT_ERROR) ret = FLT_ERROR;
+            else if(rc == FLT_DECLINE) {
+              ptr = safe;
+              goto default_action;
+            }
+          }
+          else {
+            ptr = safe;
+            goto default_action;
+          }
+        }
+        /* }}} */
+
+        else {
+          ptr = safe;
+          goto default_action;
+        }
+        break;
+
+      default:
+        default_action:
+        break;
+    }
+  }
+
+  return ret;
+}
+
+/* }}} */
+
+
+/* {{{ cf_html_register_validator */
+int cf_html_register_validator(u_char *name,t_directive_validator filter,int type) {
+  t_validator_callback clbck;
+  size_t len = strlen(name);
+
+  if(!registered_validators) registered_validators = cf_hash_new(NULL);
+  if(cf_hash_get(registered_validators,name,len) != NULL) return -1;
+
+  clbck.type = type;
+  clbck.callback = filter;
+  cf_hash_set(registered_validators,name,len,&clbck,sizeof(clbck));
+
+  return 0;
+}
+/* }}} */
+
+/* {{{ cf_validate_msg */
+int cf_validate_msg(t_cl_thread *thread,const u_char *msg,t_cf_tpl_variable *var) {
+  t_array my_stack;
+  int rc;
+
+  if(registered_validators == NULL) registered_validators = cf_hash_new(NULL);
+
+  array_init(&my_stack,sizeof(t_html_stack_elem),NULL);
+  rc = validate_message(&my_stack,thread,msg,NULL,var);
+
+  array_destroy(&my_stack);
+
+  return rc;
+}
+/* }}} */
 
 /* {{{ cf_html_register_directive */
 int cf_html_register_directive(u_char *name,t_directive_filter filter,int type) {
