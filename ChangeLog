@@ -4,7 +4,7 @@
 	* src/modules/flt_livefilter.c: Fixed typo bug (wrote root, ment
 		root_node)
 	* src/configparser.[ch]: Added list for check directives with the
-		CFG_OPT_NEEDED flag
+		CFG_OPT_NEEDED flag, uniquified handling of error messages
 	* src/listutils.c: Added function for statically add a list member
 	* src/utils.h: Added cf_list_append_static() prototype
 

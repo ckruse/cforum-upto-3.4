@@ -323,7 +323,7 @@ int parse_args(u_char *fname,u_char *line,u_char ***args,int lnum) {
     if(*ptr == (u_char)012 || *ptr == (u_char)0 || *ptr == '#') break; /* end of line or end of file or comment */
 
     if(*ptr != '"') {
-      fprintf(stderr,"%s: unexpected character %d at line %d!\n",fname,*ptr,lnum);
+      fprintf(stderr,"[%s:%d] unexpected character %x!\n",fname,lnum,*ptr);
       return -1;
     }
 
@@ -485,7 +485,7 @@ int read_config(t_configfile *conf,t_take_default deflt,int mode) {
         found = deflt(conf,directive_name,args,argnum);
       }
       else {
-        fprintf(stderr,"%s: Configuration entry for directive %s not found!\n",conf->filename,directive_name);
+        fprintf(stderr,"[%s:%d] Configuration entry for directive %s not found!\n",conf->filename,linenum,directive_name);
         return 1;
       }
     }
@@ -498,7 +498,7 @@ int read_config(t_configfile *conf,t_take_default deflt,int mode) {
       }
     }
     else if(found != -1) {
-      fprintf(stderr,"%s: %s: Callback function returned not 0 or -1!\n",conf->filename,directive_name);
+      fprintf(stderr,"[%s:%d] %s: Callback function returned not 0 or -1!\n",conf->filename,linenum,directive_name);
       return 1;
     }
 
