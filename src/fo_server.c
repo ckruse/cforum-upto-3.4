@@ -50,7 +50,8 @@
 #include "hashlib.h"
 #include "utils.h"
 #include "configparser.h"
-//#include "fo_server.h"
+#include "serverlib.h"
+#include "fo_server.h"
 #include "readline.h"
 /* }}} */
 

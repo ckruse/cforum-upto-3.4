@@ -113,6 +113,15 @@ void cf_rwlock_wrlock(const u_char *file,const int line,t_cf_rwlock *rwlock);
  */
 void cf_rwlock_unlock(const u_char *file,const int line,t_cf_rwlock *rwlock);
 
+
+void cf_cond_init(const u_char *name,t_cf_cond *cond,const pthread_condattr_t *attr);
+void cf_cond_destroy(t_cf_cond *cond);
+void cf_cond_signal(t_cf_cond *cond);
+void cf_cond_broadcast(t_cf_cond *cond);
+void cf_cond_wait(t_cf_cond *cond);
+int cf_cond_timedwait(t_cf_cond *cond,const struct timespec *ts);
+
+
 #endif
 
 /* eof */

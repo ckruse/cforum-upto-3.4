@@ -5,8 +5,60 @@
  * Contains all server library functions
  */
 
-/* {{{ rw list functions */
+/* {{{ Initial comment */
+/*
+ * $LastChangedDate$
+ * $LastChangedRevision$
+ * $LastChangedBy$
+ */
+/* }}} */
 
+/* {{{ includes */
+#include "config.h"
+#include "defines.h"
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <ctype.h>
+#include <string.h>
+
+#include <unistd.h>
+#include <time.h>
+#include <errno.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+
+/* for sockets */
+#include <sys/socket.h>
+#include <netdb.h>
+#include <sys/un.h>
+
+#include <signal.h>
+#include <pthread.h>
+
+#include <stdarg.h>
+
+#ifdef CF_SHARED_MEM
+#include <sys/ipc.h>
+#include <sys/shm.h>
+#include <sys/sem.h>
+
+#include "semaphores.h"
+#endif
+
+#include "cf_pthread.h"
+
+#include "hashlib.h"
+#include "utils.h"
+#include "configparser.h"
+#include "readline.h"
+
+#include "serverlib.h"
+#include "fo_server.h"
+/* }}} */
+
+
+/* {{{ rw list functions */
 /* {{{ cf_rw_list_init */
 void cf_rw_list_init(const u_char *name,t_cf_rw_list_head *head) {
   cf_rwlock_init(name,&head->lock);
@@ -46,8 +98,8 @@ void cf_rw_list_prepend_static(t_cf_rw_list_head *head,void *data,size_t size) {
 }
 /* }}} */
 
-/* {{{ cf_list_insert */
-void cf_list_insert(t_cf_rw_list_head *head,t_cf_list_element *prev,void *data,size_t size) {
+/* {{{ cf_rw_list_insert */
+void cf_rw_list_insert(t_cf_rw_list_head *head,t_cf_list_element *prev,void *data,size_t size) {
   CF_RW_WR(&head->lock);
   cf_list_insert(&head->head,prev,data,size);
   CF_RW_UN(&head->lock);
@@ -76,9 +128,9 @@ void cf_rw_list_delete(t_cf_rw_list_head *head,t_cf_list_element *elem) {
 
 /* {{{ cf_rw_list_destroy */
 void cf_rw_list_destroy(t_cf_rw_list_head *head,void (*destroy)(void *data)) {
-  CF_RW_WR(&head.lock);
+  CF_RW_WR(&head->lock);
   cf_list_destroy(&head->head,destroy);
-  CF_RW_UN(&head.lock);
+  CF_RW_UN(&head->lock);
 
   cf_rwlock_destroy(&head->lock);
 }
@@ -104,7 +156,7 @@ t_forum *cf_register_forum(const u_char *name) {
   forum->shm.ids[1] = atoi(nv->values[1]);
   forum->shm.sem    = atoi(nv->values[2]);
 
-  cf_mutex_init("forum.shm.lock",&forum.shm.lock);
+  cf_mutex_init("forum.shm.lock",&forum->shm.lock);
   #endif
 
   cf_rwlock_init("forum.lock",&forum->lock);
@@ -118,7 +170,7 @@ t_forum *cf_register_forum(const u_char *name) {
   forum->uniques.ids = cf_hash_new(NULL);
   cf_mutex_init("forum.uniques.lock",&forum->uniques.lock);
 
-  cf_hash_set_static(head.forums,name,strlen(name),forum,sizeof(*forum));
+  cf_hash_set_static(head.forums,(u_char *)name,strlen(name),forum);
   return forum;
 }
 /* }}} */
@@ -206,13 +258,18 @@ void cf_log(int mode,const u_char *file,unsigned int line,const u_char *format, 
 
 /* {{{ cf_load_data */
 int cf_load_data(t_forum *forum) {
+  int ret;
+  size_t i;
+  t_data_loading_filter fkt;
+  t_handler_config *handler;
+
   /* all references to this thread are released, so run the archiver plugins */
   if(Modules[DATA_LOADING_HANDLER].elements) {
     ret = FLT_OK;
 
     for(i=0;i<Modules[DATA_LOADING_HANDLER].elements && ret == FLT_DECLINE;i++) {
       handler = array_element_at(&Modules[DATA_LOADING_HANDLER],i);
-      fkt     = (t_dataloading_filter)handler->func;
+      fkt     = (t_data_loading_filter)handler->func;
       ret     = fkt(forum);
     }
   }
@@ -226,7 +283,7 @@ void cf_cleanup_forum(t_forum *forum) {
   t_thread *t,*t1;
   t_posting *p,*p1;
 
-  for(t=forum->threads.threads;t;t=t1) {
+  for(t=forum->threads.list;t;t=t1) {
     for(p=t->postings;p;p=p1) {
 		  str_cleanup(&p->user.name);
 			str_cleanup(&p->subject);
@@ -256,8 +313,8 @@ void cf_cleanup_forum(t_forum *forum) {
 /* {{{ cf_worker */
 void *cf_worker(void *arg) {
   t_cf_list_element *selfelem,*lclient;
-  pthread_t *thread,*self;
-  int run = 1,retries;
+  pthread_t thread,self;
+  int run = 1;
   struct timespec timeout;
   t_cf_client *client;
 
@@ -269,12 +326,12 @@ void *cf_worker(void *arg) {
     /* give main thread time to append us to the worker list */
     usleep(50);
 
-    CF_RW_RD(&head.workers.lock);
-    for(selfelem=head.workers.head.elements;selfelem;selfelem=selfelem->next) {
+    CF_RW_RD(&head.workers.list.lock);
+    for(selfelem=head.workers.list.head.elements;selfelem;selfelem=selfelem->next) {
       thread = (pthread_t)selfelem->data;
       if(thread == self) break;
     }
-    CF_RW_UN(&head.workers.lock);
+    CF_RW_UN(&head.workers.list.lock);
   } while(selfelem == NULL);
   /* }}} */
 
@@ -304,13 +361,13 @@ void *cf_worker(void *arg) {
     }
 
     if(run) {
-      lclient = head.clients.list.head.elements;
+      lclient = head.clients.list.elements;
 
       if(lclient) {
-        head.clients.list.head.elements = lclient->next;
+        head.clients.list.elements = lclient->next;
         head.clients.num--;
 
-        if(!head.clients.list.head.elements) head.clients.list.head.last = NULL;
+        if(!head.clients.list.elements) head.clients.list.last = NULL;
 
         CF_UM(&head.clients.lock);
 
@@ -337,7 +394,7 @@ void *cf_worker(void *arg) {
 /* {{{ cf_setup_socket */
 int cf_setup_socket(struct sockaddr_un *addr) {
   int sock;
-  t_name_value *sockpath = cfg_get_first_value(&fo_default_conf,"SocketName");
+  t_name_value *sockpath = cfg_get_first_value(&fo_default_conf,NULL,"SocketName");
 
   if((sock = socket(AF_LOCAL,SOCK_STREAM,0)) == -1) {
     cf_log(CF_ERR,__FILE__,__LINE__,"socket: %s\n",strerror(errno));
@@ -377,10 +434,10 @@ int cf_setup_socket(struct sockaddr_un *addr) {
 void cf_push_server(int sockfd,struct sockaddr *addr,size_t size,t_worker handler) {
   t_server srv;
 
-  srv->sock   = sock;
-  srv->size   = size;
-  srv->worker = handler;
-  srv->addr   = memdup(addr,size);
+  srv.sock   = sockfd;
+  srv.size   = size;
+  srv.worker = handler;
+  srv.addr   = memdup(addr,size);
 
   CF_LM(&head.servers.lock);
   cf_list_append(&head.servers.list,&srv,sizeof(srv));
@@ -394,8 +451,8 @@ int cf_push_client(int connfd,t_worker handler,int spare_threads,int max_threads
   pthread_t thread;
   t_cf_client client;
 
-  client->worker = worker;
-  client->sock   = sock;
+  client.worker = handler;
+  client.sock   = connfd;
 
   /*
    * we don't care for access synchronization of head.workers.num
@@ -418,7 +475,7 @@ int cf_push_client(int connfd,t_worker handler,int spare_threads,int max_threads
   /* }}} */
 
   /* {{{ are we in very high traffic? */
-  if(head.clients.num >= MAX_THREADS) {
+  if(head.clients.num >= max_threads) {
     CF_UM(&head.clients.lock);
 
     cf_log(CF_STD,__FILE__,__LINE__,"handling request directly...\n");
@@ -438,7 +495,7 @@ int cf_push_client(int connfd,t_worker handler,int spare_threads,int max_threads
     cf_cond_broadcast(&head.clients.cond);
 
     /* uh, high traffic, go sleeping for 20ms (this gives the workers time to work) */
-    if(num >= max_clients - spare_threads * 2) usleep(20);
+    if(num >= max_threads - spare_threads * 2) usleep(20);
   }
 
   return 0;
@@ -472,7 +529,7 @@ void cf_register_thread(t_forum *forum,t_thread *t) {
   CF_RW_WR(&forum->threads.lock);
   if(!forum->threads.threads) forum->threads.threads = cf_hash_new(NULL);
 
-  cf_hash_set(forum->threads.threads,&t->tid,sizeof(t->tid),&t,sizeof(t));
+  cf_hash_set(forum->threads.threads,(u_char *)&t->tid,sizeof(t->tid),&t,sizeof(t));
 
   CF_RW_UN(&forum->threads.lock);
 }
@@ -483,7 +540,7 @@ void cf_unregister_thread(t_forum *forum,t_thread *t) {
   cf_log(CF_DBG,__FILE__,__LINE__,"unregistering thread %llu...\n",t->tid);
 
   CF_RW_WR(&forum->threads.lock);
-  cf_hash_entry_delete(forum->threads.threads,&t->tid,sizeof(t->tid));
+  cf_hash_entry_delete(forum->threads.threads,(u_char *)&t->tid,sizeof(t->tid));
   CF_RW_UN(&forum->threads.lock);
 }
 /* }}} */
@@ -548,7 +605,7 @@ void cf_cftp_handler(int sockfd) {
         else if(cf_strcmp(tokens[0],"SELECT") == 0) {
           if(tnum == 2) {
             CF_RW_RD(&head.lock);
-            forum = cf_hash_get(&head.forums,tokens[1],strlen(tokens[1]));
+            forum = cf_hash_get(head.forums,tokens[1],strlen(tokens[1]));
             CF_RW_UN(&head.lock);
 
             if(forum == NULL) writen(sockfd,"509 Forum does not exist\n",25);
@@ -722,25 +779,21 @@ void cf_cftp_handler(int sockfd) {
 
             if(locked == 0) {
               /* {{{ handler plugin or 500 */
-              else {
-                /* run handlers */
+              CF_RW_RD(&head.lock);
 
-                CF_RW_RD(&head.lock);
+              if(head.protocol_handlers) {
+                CF_RW_UN(&head.lock);
 
-                if(head.protocol_handlers) {
-                  CF_RW_UN(&head.lock);
-
-                  handler = cf_hash_get(head.protocol_handlers,tokens[0],strlen(tokens[0]));
-                  if(handler == NULL) writen(sockfd,"500 What's up?\n",15);
-                  else {
-                    ret = handler(sockfd,forum,(const u_char **)tokens,tnum,tsd);
-                    if(ret == FLT_DECLINE) writen(sockfd,"500 What's up?\n",15);
-                  }
-                }
+                handler = cf_hash_get(head.protocol_handlers,tokens[0],strlen(tokens[0]));
+                if(handler == NULL) writen(sockfd,"500 What's up?\n",15);
                 else {
-                  CF_RW_UN(&head.lock);
-                  writen(sockfd,"500 What's up?\n",15);
+                  ret = handler(sockfd,(const u_char *)forum,(const u_char **)tokens,tnum,tsd);
+                  if(ret == FLT_DECLINE) writen(sockfd,"500 What's up?\n",15);
                 }
+              }
+              else {
+                CF_RW_UN(&head.lock);
+                writen(sockfd,"500 What's up?\n",15);
               }
               /* }}} */
             }
@@ -794,7 +847,7 @@ t_thread *cf_get_thread(t_forum *forum,u_int64_t tid) {
   t_thread **t = NULL;
 
   CF_RW_RD(&forum->threads.lock);
-  if(forum->threads.threads) t = cf_hash_get(forum->threads.threads,&tid,sizeof(tid));
+  if(forum->threads.threads) t = cf_hash_get(forum->threads.threads,(u_char *)&tid,sizeof(tid));
   CF_RW_UN(&forum->threads.lock);
 
   return t ? *t : NULL;
@@ -805,7 +858,7 @@ t_thread *cf_get_thread(t_forum *forum,u_int64_t tid) {
 void *cf_generate_cache(void *arg) {
   t_forum *forum = (t_forum *)arg;
   t_name_value *forums;
-  int i = 0;
+  size_t i = 0;
 
 #ifndef CF_SHARED_MEM
   t_string str1,str2;
@@ -871,9 +924,9 @@ void *cf_generate_cache(void *arg) {
   #else
   if(forum) cf_generate_shared_memory(forum);
   else {
-    forums = cfg_get_first_value(&fo_server_conf,"Forums");
+    forums = cfg_get_first_value(&fo_server_conf,NULL,"Forums");
 
-    for(i=0;i<forums->vallen;i++) {
+    for(i=0;i<forums->valnum;i++) {
       if((forum = cf_hash_get(head.forums,forums->values[i],strlen(forums->values[i]))) != NULL) cf_generate_shared_memory(forum);
     }
   }
@@ -894,7 +947,7 @@ void cf_generate_list(t_forum *forum,t_string *str,int del) {
   str_chars_append(str,"200 Ok\n",7);
 
   CF_RW_RD(&forum->threads.lock);
-  t1 = forum->list;
+  t1 = forum->threads.list;
   CF_RW_UN(&forum->threads.lock);
 
   while(t1) {
@@ -931,7 +984,7 @@ void cf_generate_list(t_forum *forum,t_string *str,int del) {
       str_chars_append(str,p->subject.content,p->subject.len);
 
       /* category */
-      if(p->category) {
+      if(p->category.len) {
         str_chars_append(str,"\nCategory:",10);
         str_chars_append(str,p->category.content,p->category.len);
       }
@@ -1022,56 +1075,56 @@ void cf_generate_shared_memory(t_forum *forum) {
     for(p=t->postings;p;p=p->next) {
       mem_append(&pool,&(p->mid),sizeof(p->mid));
 
-      val = p->subject_len + 1;
+      val = p->subject.len + 1;
       mem_append(&pool,&val,sizeof(val));
-      mem_append(&pool,p->subject,val);
+      mem_append(&pool,p->subject.content,val);
 
-      val = p->category_len + 1;
+      val = p->category.len + 1;
       if(val > 1) {
         mem_append(&pool,&val,sizeof(val));
-        mem_append(&pool,p->category,val);
+        mem_append(&pool,p->category.content,val);
       }
       else {
         val = 0;
         mem_append(&pool,&val,sizeof(val));
       }
 
-      val = p->content_len + 1;
+      val = p->content.len + 1;
       mem_append(&pool,&val,sizeof(val));
-      mem_append(&pool,p->content,val);
+      mem_append(&pool,p->content.content,val);
 
       mem_append(&pool,&(p->date),sizeof(p->date));
       mem_append(&pool,&(p->level),sizeof(p->level));
       mem_append(&pool,&(p->invisible),sizeof(p->invisible));
 
-      val = p->user.name_len + 1;
+      val = p->user.name.len + 1;
       mem_append(&pool,&val,sizeof(val));
-      mem_append(&pool,p->user.name,val);
+      mem_append(&pool,p->user.name.content,val);
 
-      val = p->user.email_len + 1;
+      val = p->user.email.len + 1;
       if(val > 1) {
         mem_append(&pool,&val,sizeof(val));
-        mem_append(&pool,p->user.email,val);
+        mem_append(&pool,p->user.email.content,val);
       }
       else {
         val = 0;
         mem_append(&pool,&val,sizeof(val));
       }
 
-      val = p->user.hp_len + 1;
+      val = p->user.hp.len + 1;
       if(val > 1) {
         mem_append(&pool,&val,sizeof(val));
-        mem_append(&pool,p->user.hp,val);
+        mem_append(&pool,p->user.hp.content,val);
       }
       else {
         val = 0;
         mem_append(&pool,&val,sizeof(val));
       }
 
-      val = p->user.img_len + 1;
+      val = p->user.img.len + 1;
       if(val > 1) {
         mem_append(&pool,&val,sizeof(val));
-        mem_append(&pool,p->user.img,val);
+        mem_append(&pool,p->user.img.content,val);
       }
       else {
         val = 0;
@@ -1116,7 +1169,7 @@ void cf_generate_shared_memory(t_forum *forum) {
     if(forum->shm.ptrs[semval]) {
       if(cf_shmdt(forum->shm.ptrs[semval]) != 0) {
         cf_log(CF_ERR,__FILE__,__LINE__,"shmdt: %s (semval: %d)\n",strerror(errno),semval);
-        CF_UM(&head.shm_lock);
+        CF_UM(&forum->shm.lock);
         mem_cleanup(&pool);
         return;
       }
@@ -1125,7 +1178,7 @@ void cf_generate_shared_memory(t_forum *forum) {
     /* delete the segment */
     if(shmctl(forum->shm.ids[semval],IPC_RMID,NULL) != 0) {
       cf_log(CF_ERR,__FILE__,__LINE__,"shmctl: %s\n",strerror(errno));
-      CF_UM(&head.shm_lock);
+      CF_UM(&forum->shm.lock);
       mem_cleanup(&pool);
       return;
     }
@@ -1145,9 +1198,8 @@ void cf_generate_shared_memory(t_forum *forum) {
 
   mem_cleanup(&pool);
 
-  if(semval == 1) CF_SEM_DOWN(head.shm_sem,0);
-  else CF_SEM_UP(head.shm.sem,0);
-
+  if(semval == 1) CF_SEM_DOWN(forum->shm.sem,0);
+  else CF_SEM_UP(forum->shm.sem,0);
   CF_UM(&forum->shm.lock);
 
   cf_log(CF_DBG,__FILE__,__LINE__,"generated shared memory segment %d\n",semval);
