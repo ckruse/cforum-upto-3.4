@@ -33,18 +33,3 @@
 2004-11-08 Christian Kruse <ckruse@wwwtech.de>
 	* src/modules/flt_posting.c: Added variable $activecolor
 
-2004-11-07 Christian Kruse <ckruse@wwwtech.de>
-	* cgi-shared/ForumUtils.pm: Fixed typo
-	* src/validate.c: Fixed bug in ftp URI validation, added is_valid_file_link()
-		function
-	* src/validate.h: Added is_valid_file_link() function
-	* src/templates/de/tpl_xhtml10/*.html: Mathias Schaefer <molily@selfhtml.org>
-		did a lot of work on the default XHTML templates
-
-
-2004-11-04 Christian Kruse <ckruse@wwwtech.de>
-	* src/templates/{de,fr}/tpl_*/forum_posting.html,
-		src/templates/{de,fr}/tpl_*/forum_begin.html: Fixed a bug, now JS will be
-		included
-	* ChangeLog: deleted old entries
-
