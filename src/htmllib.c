@@ -887,6 +887,8 @@ void cf_gen_threadlist(t_cl_thread *thread,t_cf_hash *head,t_string *threadlist,
           if(msg == thread->messages) str_chars_append(threadlist,ct->values[0],ct_l);
           else str_chars_append(threadlist,cp->values[0],cp_l);
         }
+
+        str_cleanup(&msg->tpl.parsed);
       }
     }
 
