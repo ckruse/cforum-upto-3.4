@@ -17,7 +17,7 @@
 
 #ifndef _CF_HTMLLIB_H
 
-typedef int (*t_directive_filter)(t_configuration *dc,t_configuration *vc,const u_char *directive,const u_char **parameters,size_t plen,t_string *bcnt,t_string *bcite,t_string *content,t_string *cite,const u_char *qchars,int sig);
+typedef int (*t_directive_filter)(t_configuration *dc,t_configuration *vc,t_cl_thread *thr,const u_char *directive,const u_char **parameters,size_t plen,t_string *bcnt,t_string *bcite,t_string *content,t_string *cite,const u_char *qchars,int sig);
 typedef int (*t_content_filter)(t_configuration *dc,t_configuration *vc,t_cl_thread *thr,t_string *content,t_string *cite,const u_char *qchars);
 
 typedef int (*t_directive_validator)(t_configuration *dc,t_configuration *vc,const u_char *directive,const u_char **parameters,size_t plen,t_cf_tpl_variable *var);

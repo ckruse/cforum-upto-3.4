@@ -72,12 +72,12 @@ void run_content_filters(int mode,t_cl_thread *thr,t_string *content,t_string *c
 /* }}} */
 
 /* {{{ run_inline_directive_filters */
-int run_inline_directive_filters(const u_char *directive,const u_char **parameters,t_string *content,t_string *cite,const u_char *qchars,int sig) {
+int run_inline_directive_filters(t_cl_thread *thread,const u_char *directive,const u_char **parameters,t_string *content,t_string *cite,const u_char *qchars,int sig) {
   t_directive_callback *cb;
 
   if((cb = cf_hash_get(registered_directives,(u_char *)directive,strlen(directive))) == NULL) return FLT_DECLINE;
 
-  if(cb->type & CF_HTML_DIR_TYPE_INLINE) return cb->callback(&fo_default_conf,&fo_view_conf,directive,parameters,1,NULL,NULL,content,cite,qchars,sig);
+  if(cb->type & CF_HTML_DIR_TYPE_INLINE) return cb->callback(&fo_default_conf,&fo_view_conf,thread,directive,parameters,1,NULL,NULL,content,cite,qchars,sig);
   return FLT_DECLINE;
 }
 /* }}} */
@@ -121,12 +121,12 @@ static int is_open(const u_char *name,t_array *stack) {
 /* }}} */
 
 /* {{{ run_block_directive_filters */
-static int run_block_directive_filters(const u_char *directive,const u_char **parameters,size_t len,t_string *bcontent,t_string *bcite,t_string *content,t_string *cite,const u_char *qchars,int sig) {
+static int run_block_directive_filters(t_cl_thread *thread,const u_char *directive,const u_char **parameters,size_t len,t_string *bcontent,t_string *bcite,t_string *content,t_string *cite,const u_char *qchars,int sig) {
   t_directive_callback *cb;
 
   if((cb = cf_hash_get(registered_directives,(u_char *)directive,strlen(directive))) == NULL) return FLT_DECLINE;
 
-  if(cb->type & CF_HTML_DIR_TYPE_BLOCK) return cb->callback(&fo_default_conf,&fo_view_conf,directive,parameters,len,bcontent,bcite,content,cite,qchars,sig);
+  if(cb->type & CF_HTML_DIR_TYPE_BLOCK) return cb->callback(&fo_default_conf,&fo_view_conf,thread,directive,parameters,len,bcontent,bcite,content,cite,qchars,sig);
   return FLT_DECLINE;
 }
 /* }}} */
@@ -143,7 +143,7 @@ static int run_validate_block_directive(const u_char *directive,const u_char **p
 /* }}} */
 
 /* {{{ parse_message */
-static u_char *parse_message(u_char *start,t_array *stack,t_string *content,t_string *cite,const u_char *qchars,size_t qclen,int utf8,int xml,int max_sig_lines,int show_sig,int linebrk,int sig,int quotemode,int line) {
+static u_char *parse_message(t_cl_thread *thread,u_char *start,t_array *stack,t_string *content,t_string *cite,const u_char *qchars,size_t qclen,int utf8,int xml,int max_sig_lines,int show_sig,int linebrk,int sig,int quotemode,int line) {
   const u_char *ptr,*tmp,*ptr1;
   int rc,run = 1,sb = 0,fail,ending;
   u_char *directive,*parameter,*safe,*buff,*retval;
@@ -163,7 +163,7 @@ static u_char *parse_message(u_char *start,t_array *stack,t_string *content,t_st
         }
 
         /* ok, parse this directive */
-        for(ptr1=ptr+1,sb=0;*ptr1 && isalpha(*ptr1) && sb == 0 && *ptr1 != '<';++ptr1) {
+        for(ptr1=ptr+1,sb=0;*ptr1 && (isalpha(*ptr1) || (ptr1 != ptr + 1 && isalnum(*ptr1))) && sb == 0 && *ptr1 != '<';++ptr1) {
           sb = *ptr1 == '[';
         }
 
@@ -219,7 +219,7 @@ static u_char *parse_message(u_char *start,t_array *stack,t_string *content,t_st
             parameter = htmlentities_decode(buff);
             free(buff);
 
-            rc = run_inline_directive_filters(directive,(const u_char **)&parameter,content,cite,qchars,sig);
+            rc = run_inline_directive_filters(thread,directive,(const u_char **)&parameter,content,cite,qchars,sig);
 
             free(directive);
             free(parameter);
@@ -265,7 +265,7 @@ static u_char *parse_message(u_char *start,t_array *stack,t_string *content,t_st
             str_init(&d_content);
             str_init(&d_cite);
 
-            retval = parse_message((u_char *)ptr1+1,stack,&d_content,cite ? &d_cite : NULL,qchars,qclen,utf8,xml,max_sig_lines,show_sig,linebrk,sig,quotemode,line);
+            retval = parse_message(thread,(u_char *)ptr1+1,stack,&d_content,cite ? &d_cite : NULL,qchars,qclen,utf8,xml,max_sig_lines,show_sig,linebrk,sig,quotemode,line);
 
             array_pop(stack);
 
@@ -281,7 +281,7 @@ static u_char *parse_message(u_char *start,t_array *stack,t_string *content,t_st
             }
 
             /* ok, go and run directive filters */
-            rc = run_block_directive_filters(directive,(const u_char **)&parameter,1,content,cite,&d_content,cite ? &d_cite : NULL,qchars,sig);
+            rc = run_block_directive_filters(thread,directive,(const u_char **)&parameter,1,content,cite,&d_content,cite ? &d_cite : NULL,qchars,sig);
 
             str_cleanup(&d_content);
             str_cleanup(&d_cite);
@@ -345,7 +345,7 @@ static u_char *parse_message(u_char *start,t_array *stack,t_string *content,t_st
             str_init(&d_content);
             str_init(&d_cite);
 
-            retval = parse_message((u_char *)ptr1+1,stack,&d_content,cite ? &d_cite : NULL,qchars,qclen,utf8,xml,max_sig_lines,show_sig,linebrk,sig,quotemode,line);
+            retval = parse_message(thread,(u_char *)ptr1+1,stack,&d_content,cite ? &d_cite : NULL,qchars,qclen,utf8,xml,max_sig_lines,show_sig,linebrk,sig,quotemode,line);
             array_pop(stack);
 
             if(retval == NULL) {
@@ -359,7 +359,7 @@ static u_char *parse_message(u_char *start,t_array *stack,t_string *content,t_st
             }
 
             /* ok, go and run directive filters */
-            rc = run_block_directive_filters(directive,(const u_char **)stack_elem.args,stack_elem.argnum,content,cite,&d_content,cite ? &d_cite : NULL,qchars,sig);
+            rc = run_block_directive_filters(thread,directive,(const u_char **)stack_elem.args,stack_elem.argnum,content,cite,&d_content,cite ? &d_cite : NULL,qchars,sig);
 
             str_cleanup(&d_content);
             str_cleanup(&d_cite);
@@ -779,7 +779,7 @@ void msg_to_html(t_cl_thread *thread,const u_char *msg,t_string *content,t_strin
   if(cite) str_chars_append(cite,qchars,qclen);
 
   array_init(&my_stack,sizeof(t_html_stack_elem),NULL);
-  parse_message((u_char *)msg,&my_stack,content,cite,qchars,qclen,utf8,xml,max_sig_lines,show_sig,0,0,0,0);
+  parse_message(thread,(u_char *)msg,&my_stack,content,cite,qchars,qclen,utf8,xml,max_sig_lines,show_sig,0,0,0,0);
 
   run_content_filters(POST_CONTENT_FILTER,thread,content,cite,qchars);
 

@@ -206,7 +206,7 @@ void flt_directives_generate_uri(const u_char *uri,const u_char *title,t_string 
 /* }}} */
 
 /* {{{ flt_directives_execute */
-int flt_directives_execute(t_configuration *fdc,t_configuration *fvc,const u_char *directive,const u_char **parameters,size_t plen,t_string *bco,t_string *bci,t_string *content,t_string *cite,const u_char *qchars,int sig) {
+int flt_directives_execute(t_configuration *fdc,t_configuration *fvc,t_cl_thread *thread,const u_char *directive,const u_char **parameters,size_t plen,t_string *bco,t_string *bci,t_string *content,t_string *cite,const u_char *qchars,int sig) {
   u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   size_t len = 0,i,len1 = 0;
   t_name_value *xhtml = cfg_get_first_value(fdc,forum_name,"XHTMLMode");

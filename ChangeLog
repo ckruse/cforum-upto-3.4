@@ -13,6 +13,11 @@
 	* src/fo_post.c: Now the username will be given as flag if poster is a
 		registered user
 	* src/archiver.c: Fixed bug in archiving by bytes
+	* src/modules/flt_directives.c, src/modules/flt_syntax.c: Changed prototypes
+		for directive filters
+	* src/modules/flt_rot13.c: Added rot13 feature
+	* src/htmllib.[ch]: Changed directive filters prototypes, now t_cl_thread will
+		be given to directive filters
 
 2005-03-13 Christian Kruse <ckruse@wwwtech.de>
 	* src/modules/flt_syntax.c: Added - char to word characters

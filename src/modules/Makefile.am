@@ -187,5 +187,8 @@ pkglib_LTLIBRARIES+=flt_threadlist.la
 flt_threadlist_la_SOURCES=flt_threadlist.c
 flt_threadlist_la_LDFLAGS=-module -export-dynamic -avoid-version
 
+pkglib_LTLIBRARIES+=flt_rot13.la
+flt_rot13_la_SOURCES=flt_rot13.c
+flt_rot13_la_LDFLAGS=-module -export-dynamic -avoid-version
 
 # eof

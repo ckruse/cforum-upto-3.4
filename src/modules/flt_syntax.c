@@ -1295,7 +1295,7 @@ int flt_syntax_highlight(t_string *content,t_string *bco,const u_char *lang,cons
 /* }}} */
 
 /* {{{ flt_syntax_execute */
-int flt_syntax_execute(t_configuration *fdc,t_configuration *fvc,const u_char *directive,const u_char **parameters,size_t plen,t_string *bco,t_string *bci,t_string *content,t_string *cite,const u_char *qchars,int sig) {
+int flt_syntax_execute(t_configuration *fdc,t_configuration *fvc,t_cl_thread *thr,const u_char *directive,const u_char **parameters,size_t plen,t_string *bco,t_string *bci,t_string *content,t_string *cite,const u_char *qchars,int sig) {
   t_string str;
   struct stat st;
   u_char *lang,*ptr;
