@@ -527,6 +527,14 @@
         </argument>
       </directive>
 
+      <directive name="UserMail" arguments="1">
+        <argument paramname="usermail" type="text" encode="plain">
+          <validate type="email"/>
+          <question>Welche E-Mail-Adresse soll zum abonnieren von Threads benutzt werden? Beachten Sie: ohne diese Angabe kann die Funktion nicht genutzt werden.</question>
+          <error>Welche E-Mail-Adresse soll zum abonnieren von Threads benutzt werden? Ihre Angabe ist keine syntaktisch korrekte E-Mail-Adresse. Sie können dieses Feld auch leer lassen.</error>
+        </argument>
+      </directive>
+
       <directive name="HomepageUrl" arguments="1">
         <argument paramname="hp" type="text" encode="plain">
           <validate type="http-url"/>

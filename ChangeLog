@@ -13,6 +13,9 @@
 		src/handlerrunners.c: Bugfix for prototype of cf_run_after_post_handlers()
 	* src/fo_post.c: Bugfix for quoting char handling, bugfix for unicode
 		whitespace handling
+	* src/modules/flt_mailonpost.c, conf/modules.de.xml: Added support for
+		UserMail directive, now user can define mail address for abonnements of
+		threads
 
 2005-02-19 Christian Seiler <self@christian-seiler.de>
 	* src/modules/flt_syntax.c: Small bugfixes

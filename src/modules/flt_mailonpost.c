@@ -50,6 +50,7 @@ static u_char *flt_mailonpost_dbname = NULL;
 static u_char *flt_mailonpost_fn     = NULL;
 static u_char *flt_mailonpost_rvrs   = NULL;
 static u_char *flt_mailonpost_udb    = NULL;
+static u_char *flt_mailonpost_uemail = NULL;
 
 struct s_smtp {
   t_string *msg;
@@ -124,7 +125,10 @@ int flt_mailonpost_init_handler(t_cf_hash *head,t_configuration *dc,t_configurat
       /* {{{ get email address; either from CGI parameter or from config file, depends */
       if((email = cf_cgi_get(head,"EMail")) == NULL) {
         if(user == NULL) return FLT_DECLINE;
-        if((v = cfg_get_first_value(vc,flt_mailonpost_fn,"EMail")) == NULL) return FLT_DECLINE;
+        if(flt_mailonpost_uemail) email = flt_mailonpost_uemail;
+        else {
+          if((v = cfg_get_first_value(vc,flt_mailonpost_fn,"EMail")) == NULL) return FLT_DECLINE;
+        }
 
         email = v->values[0];
       }
@@ -435,7 +439,10 @@ int flt_mailonpost_post_handler(t_cf_hash *head,t_configuration *dc,t_configurat
 
   DBT key,data;
 
-  if(!flt_mailonpost_udb || !cf_hash_get(GlobalValues,"UserName",8) || (email = cfg_get_first_value(vc,flt_mailonpost_fn,"EMail")) == NULL || flt_mailonpost_create(&db,flt_mailonpost_udb) == -1) return FLT_DECLINE;
+  if(flt_mailonpost_udb) return FLT_DECLINE;
+  if(cf_hash_get(GlobalValues,"UserName",8) == NULL) return FLT_DECLINE;
+  if((email = cfg_get_first_value(vc,flt_mailonpost_fn,"EMail")) == NULL && flt_mailonpost_uemail == NULL) return FLT_DECLINE;
+  if(flt_mailonpost_create(&db,flt_mailonpost_udb) == -1) return FLT_DECLINE;
 
   memset(&key,0,sizeof(key));
   memset(&data,0,sizeof(data));
@@ -494,6 +501,10 @@ int flt_mailonpost_cmd(t_configfile *cfile,t_conf_opt *opt,const u_char *context
     if(flt_mailonpost_udb) free(flt_mailonpost_udb);
     flt_mailonpost_udb = strdup(args[0]);
   }
+  else if(cf_strcmp(opt->name,"UserMail") == 0) {
+    if(flt_mailonpost_uemail) free(flt_mailonpost_uemail);
+    flt_mailonpost_uemail = strdup(args[0]);
+  }
   else {
     if(flt_mailonpost_from) free(flt_mailonpost_from);
     flt_mailonpost_from = strdup(args[0]);
@@ -516,6 +527,7 @@ t_conf_opt flt_mailonpost_config[] = {
   { "SMTPReverse",  flt_mailonpost_cmd, CFG_OPT_CONFIG|CFG_OPT_LOCAL, NULL },
   { "MailDatabase", flt_mailonpost_cmd, CFG_OPT_CONFIG|CFG_OPT_LOCAL|CFG_OPT_NEEDED, NULL },
   { "MailUserDB",   flt_mailonpost_cmd, CFG_OPT_USER|CFG_OPT_LOCAL,   NULL },
+  { "UserMail",     flt_mailonpost_cmd, CFG_OPT_USER|CFG_OPT_LOCAL,   NULL },
   { NULL, NULL, 0, NULL }
 };
 
