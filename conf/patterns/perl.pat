@@ -3,7 +3,7 @@
 start = "default"
 
 list "symbols" = "(,),{,},:,[,],;,\,"
-list "operators" = "and,x,lt,gt,le,ge,eq,ne,cmp,not,and,or,xor"
+list "operators" = "and,x,lt,gt,le,ge,eq,ne,cmp,not,or,xor"
 list "keywords" = "continue,do,else,elsif,for,foreach,goto,if,last,my,next,package,return,sub,switch,unless,until,use,while,print,split,require,pack,hex,open,close,opendir,closedir,readdir,chomp,chop,exit,vars"
 list "makros" = "__PACKAGE__,SUPER,BEGIN,CHECK,INIT,END,DESTROY"
 
