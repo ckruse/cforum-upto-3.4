@@ -123,7 +123,7 @@ void gen_description(t_string *str,const u_char *descr,t_cl_thread *thread) {
 
 /* {{{ atom_ and rss_head */
 void atom_head(t_string *str,t_cl_thread *thread) {
-  u_char *fn = cf_hash_get(GlobalValues,"FORUM_NAME",10),*tmp = NULL,*tmp1;
+  u_char *fn = cf_hash_get(GlobalValues,"FORUM_NAME",10),*tmp = NULL,*tmp1 = NULL;
   t_name_value *atom_title  = cfg_get_first_value(&fo_feeds_conf,fn,"AtomTitle");
   t_name_value *atom_tgline = cfg_get_first_value(&fo_feeds_conf,fn,"AtomTagline");
   t_name_value *atom_lang   = cfg_get_first_value(&fo_feeds_conf,fn,"FeedLang");
@@ -303,7 +303,7 @@ void atom_thread(t_string *str,t_cl_thread *thread,t_cf_hash *head) {
 
   for(msg=thread->messages;msg;msg=msg->next) {
     if(msg->may_show && msg->invisible == 0) {
-      tmp = cf_get_link(burl->values[0],NULL,thread->tid,thread->messages->mid);
+      tmp = cf_get_link(burl->values[0],NULL,thread->tid,msg->mid);
       tmp1 = htmlentities(tmp,0);
       len1 = strlen(tmp1);
 
@@ -399,7 +399,7 @@ void rss_thread(t_string *str,t_cl_thread *thread,t_cf_hash *head) {
 
   for(msg=thread->messages;msg;msg=msg->next) {
     if(msg->may_show && msg->invisible == 0) {
-      tmp = cf_get_link(burl->values[0],NULL,thread->tid,thread->messages->mid);
+      tmp = cf_get_link(burl->values[0],NULL,thread->tid,msg->mid);
       len = strlen(tmp);
 
       str_chars_append(str,"<item>",6);
