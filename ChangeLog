@@ -1,5 +1,6 @@
 2005-01-18 Christian Kruse <ckruse@wwwtech.de>
-	* src/template.c: Fixed segfault in cf_tpl_var_convert()
+	* src/template.c: Fixed segfault in cf_tpl_var_convert(),
+		fixed other bug in tpl_cf_var_convert()
 
 2005-01-18 Christian Seiler <self@christian-seiler.de>
 	* src/parsetpl/parsetpl.lex: fixed segfault in generated variable

@@ -263,16 +263,13 @@ t_cf_tpl_variable *cf_tpl_var_convert(t_cf_tpl_variable *dest,t_cf_tpl_variable 
   t_cf_tpl_variable *var;
   u_char intbuf[20]; /* this will not be longer than 20 digits */
 
-  if(!dest || !src) return NULL;
+  if(!src) return NULL;
   
   // other conversions are NOT possible
   if(new_type != TPL_VARIABLE_STRING && new_type != TPL_VARIABLE_INT) {
     return NULL;
   }
   if(src->type != TPL_VARIABLE_STRING && src->type != TPL_VARIABLE_INT && src->type != TPL_VARIABLE_ARRAY) {
-    return NULL;
-  }
-  if(src->type == TPL_VARIABLE_ARRAY && new_type != TPL_VARIABLE_INT) {
     return NULL;
   }
   if(!dest) {
