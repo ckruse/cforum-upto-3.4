@@ -476,7 +476,7 @@ elsif($action eq 'save') {
 
         # http-url is a specialization for 'url'
         if($type eq 'http-url') {
-          if(!is_valid_http_link($val) || !validate_input($val,$dname,$fo_userconf_conf)) {
+          if(is_valid_http_link($val) || !validate_input($val,$dname,$fo_userconf_conf)) {
             my $err = get_node_data(($arg->getElementsByTagName('error'))[0]);
             generate_edit_output($cgi,$fo_default_conf,$fo_view_conf,$fo_userconf_conf,$user_config,$err);
             exit;
@@ -484,7 +484,7 @@ elsif($action eq 'save') {
         }
         # url means, *all* urls, inkl. gopher and so on
         elsif($type eq 'url') {
-          if(!is_valid_link($val) || !validate_input($val,$dname,$fo_userconf_conf)) {
+          if(is_valid_link($val) || !validate_input($val,$dname,$fo_userconf_conf)) {
             my $err = get_node_data(($arg->getElementsByTagName('error'))[0]);
             generate_edit_output($cgi,$fo_default_conf,$fo_view_conf,$fo_userconf_conf,$user_config,$err);
             exit;
@@ -492,7 +492,7 @@ elsif($action eq 'save') {
         }
         # email means, input is a mail address
         elsif($type eq 'email') {
-          if(!is_valid_mailaddress($val) || !validate_input($val,$dname,$fo_userconf_conf)) {
+          if(is_valid_mailaddress($val) || !validate_input($val,$dname,$fo_userconf_conf)) {
             my $err = get_node_data(($arg->getElementsByTagName('error'))[0]);
             generate_edit_output($cgi,$fo_default_conf,$fo_view_conf,$fo_userconf_conf,$user_config,$err);
             exit;
