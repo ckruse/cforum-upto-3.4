@@ -27,6 +27,7 @@ new(class,filename)
     t_cf_template *tpl = fo_alloc(NULL,1,sizeof(t_cf_template),FO_ALLOC_CALLOC);
   CODE:
     if((rc = tpl_cf_init(tpl,filename)) != 0) {
+      croak("%s\n",dlerror());
       XSRETURN_UNDEF;
     }
 

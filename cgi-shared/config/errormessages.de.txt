@@ -64,4 +64,3 @@ E_VOTE_AUTH: Sie müssen angemeldet sein, um abzustimmen!
 E_sendpw_error: Leider ist ein interner Fehler aufgetreten.
 E_sendpw_subject: SELFHTML-Forum-Passwort
 E_sendpw_body: Ihr SELFHTML-Forum-Passwort lautet: {$pass}
-

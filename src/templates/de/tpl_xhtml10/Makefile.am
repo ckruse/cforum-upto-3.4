@@ -167,12 +167,12 @@ de_xhtml10_section_la_LDFLAGS=-module -export-dynamic -avoid-version
 pkglib_LTLIBRARIES+=de_xhtml10_sendpass.la
 de_xhtml10_sendpass_la_SOURCES=sendpass.html
 de_xhtml10_sendpass_la_LIBADD=../../../libcfutils.la ../../../libcftemplate.la
-de_xhtml10_section_la_LDFLAGS=-module -export-dynamic -avoid-version
+de_xhtml10_sendpass_la_LDFLAGS=-module -export-dynamic -avoid-version
 
 pkglib_LTLIBRARIES+=de_xhtml10_sendpassok.la
 de_xhtml10_sendpassok_la_SOURCES=sendpassok.html
 de_xhtml10_sendpassok_la_LIBADD=../../../libcfutils.la ../../../libcftemplate.la
-de_xhtml10_section_la_LDFLAGS=-module -export-dynamic -avoid-version
+de_xhtml10_sendpassok_la_LDFLAGS=-module -export-dynamic -avoid-version
 
 
 # eof

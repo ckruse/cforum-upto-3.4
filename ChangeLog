@@ -1,3 +1,20 @@
+2004-08-05 Christian Kruse <ckruse@wwwtech.de>
+	* src/templates/de/tpl_*/Makefile.am: Fixed bug, source file is <tplname>.c,
+		not <tplname>.html
+	* src/templates/de/tpl_*/sendpassok.html,
+		src/templates/de/tpl_*/sendpass.html: There is no user defined view, so I
+		deleted the {if $owncss} tree
+	* src/perl/CForum-Template/Template.xs: Added croak() for error message
+	* cgi-shared/Plugins/Management/SQL.pm: Fixed bug, user column name was
+		written statically in one statement
+	* cgi-bin/fo_usermanagement.in: Fixed bugs (moved the send password part to the
+		unauthorized part, fixed typos, etc, pp)
+
+2004-08-05 Christian Kruse <ckruse@wwwtech.de>
+	* cgi-bin/fo_usermanagement.in: Added umask handling
+	* cgi-shared/config/fo_usermanagement.conf.in: Added umask directive
+	* TODO: Changed TODO list, the todos are not only for 2.0
+
 2004-08-03 Jan Rieger <jr@occuris.de>
 	* src/templates/de/tpl_*/sendpass*.html: Added templates for usermanagement
 
@@ -10,6 +27,7 @@
 		little bit, now it returns the error text, not the fieldname. I also changed
 		error handling and fixed it a little bit
 	* src/templates/de/tpl_*/Makefile.am: added sendpass* to Makefiles
+	* src/clientlib.c: Added another 'deep magic' note
 
 2004-08-02 Christian Kruse <ckruse@wwwtech.de>
 	* cgi-shared/Plugins/Management/SQL.pm: Bugfix, directives are named 'SQL*'!

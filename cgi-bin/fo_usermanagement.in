@@ -46,6 +46,7 @@ use File::Path;
 use ForumUtils qw/read_configuration get_template get_error recode uniquify_params get_config_file create_directory_structure/;
 use CheckRFC;
 
+use Net::SMTP;
 # }}}
 
 # {{{ fatal
@@ -154,6 +155,8 @@ eval "use ".$fo_usermanagement_conf->{ManagementEngine}->[0]->[0] if $fo_userman
 fatal($@) if $@;
 # }}}
 
+umask oct($fo_usermanagement_conf->{Umask}->[0]->[0]) if $fo_usermanagement_conf->{Umask}->[0]->[0];
+
 my $cgi              = new CGI;
 my $action           = $cgi->param('a') || 'view';
 
@@ -167,7 +170,7 @@ if($UserName) {
   $user_config = read_configuration($cfile) or die $!;
 }
 else {
-  $action = '' unless $action eq 'register';
+  $action = '' unless $action eq 'register' || $action eq 'sendpw';
 }
 
 # {{{ validate action
@@ -276,63 +279,6 @@ if($UserName) {
 		}
 	}
 	# }}}
-# {{{ send password
-	elsif($action eq 'sendpw') {
-		if($cgi->param('uname')) {
-			my $username = $cgi->param('uname');
-      my $result = undef;
-      $result = $Management->get_password($fo_default_conf,$fo_usermanagement_conf,$username) if $Management;
-
-			if($result) {
-				# send mail
-				my $body = get_error($fo_default_conf,'sendpw','body');
-				$body =~ s!\{\$pass\}!$result->{pass}!g;
-				$body =~ s!\{\$email\}!$result->{email}!g;
-				$body =~ s!\{\$user\}!$username!g;
-				
-				my $smtp = new Net::SMTP($fo_usermanagement_conf->{SMTPHost}->[0]->[0]);
-				$smtp->from($fo_usermanagement_conf->{SMTPFrom}->[0]->[0]);
-				$smtp->to($result->{email});
-				$smtp->data();
-				$smtp->datasend('From: '.$fo_usermanagement_conf->{SMTPFrom}->[0]->[0]."\n");
-				$smtp->datasend('To: '.$result->{email}."\n");
-        $smtp->datasend('Date: '.(scalar localtime)."\n");
-				$smtp->datasend('Subject: '.get_error($fo_default_conf,'sendpw','subject')."\n\n");
-				$smtp->datasend($body);
-				$smtp->dataend();
-				$smtp->quit();
-
-				# send user output
-				my $tpl = new CForum::Template(get_template($fo_default_conf,$user_config,$fo_usermanagement_conf->{SendPassOK}->[0]->[0]));
-				$tpl->setVar('script',recode($fo_default_conf,$fo_default_conf->{UserRegister}->[0]->[0]));
-				$tpl->setVar('forumbase',recode($fo_default_conf,$fo_default_conf->{BaseURL}->[0]->[0]));
-				$tpl->setVar('charset',$fo_default_conf->{ExternCharset}->[0]->[0]);
-				$tpl->setVar('acceptcharset',$fo_default_conf->{ExternCharset}->[0]->[0].', UTF-8');
-
-        print $cgi->header(-type => 'text/html; charset='.$fo_default_conf->{ExternCharset}->[0]->[0]),$tpl->parseToMem;
-			}
-			else {
-				my $tpl = new CForum::Template(get_template($fo_default_conf,$user_config,$fo_default_conf->{ErrorTemplate}->[0]->[0]));
-				$tpl->setVar('script',recode($fo_default_conf,$fo_default_conf->{UserRegister}->[0]->[0]));
-				$tpl->setVar('forumbase',recode($fo_default_conf,$fo_default_conf->{BaseURL}->[0]->[0]));
-				$tpl->setVar('charset',$fo_default_conf->{ExternCharset}->[0]->[0]);
-        $tpl->setVar('error',get_error($fo_default_conf,'sendpw','error'));
-
-        print $cgi->header(-type => 'text/html; charset='.$fo_default_conf->{ExternCharset}->[0]->[0]),$tpl->parseToMem;
-			}
-		}
-		else {
-			my $tpl = new CForum::Template(get_template($fo_default_conf,$user_config,$fo_usermanagement_conf->{SendPass}->[0]->[0]));
-
-			$tpl->setVar('script',recode($fo_default_conf,$fo_default_conf->{UserRegister}->[0]->[0]));
-			$tpl->setVar('forumbase',recode($fo_default_conf,$fo_default_conf->{BaseURL}->[0]->[0]));
-			$tpl->setVar('charset',$fo_default_conf->{ExternCharset}->[0]->[0]);
-			$tpl->setVar('acceptcharset',$fo_default_conf->{ExternCharset}->[0]->[0].', UTF-8');
-
-			print $cgi->header(-type => 'text/html; charset='.$fo_default_conf->{ExternCharset}->[0]->[0]),$tpl->parseToMem;
-		}
-	}
-	# }}}
 }
 else {
 	# {{{ register user
@@ -406,7 +352,63 @@ else {
 		print $cgi->header(-type => 'text/html; charset='.$fo_default_conf->{ExternCharset}->[0]->[0]),$tpl->parseToMem;
 	}
 	# }}}
-	# {{{ show register form
+  # {{{ send password
+	elsif($action eq 'sendpw') {
+		if($cgi->param('uname')) {
+			my $username = $cgi->param('uname');
+      my $result = undef;
+      $result = $Management->get_password($fo_default_conf,$fo_usermanagement_conf,$username) if $Management;
+
+			if($result) {
+				# send mail
+				my $body = get_error($fo_default_conf,'sendpw','body');
+				$body =~ s!\{\$pass\}!$result->{pass}!g;
+				$body =~ s!\{\$email\}!$result->{email}!g;
+				$body =~ s!\{\$user\}!$username!g;
+				
+				my $smtp = new Net::SMTP($fo_usermanagement_conf->{SMTPHost}->[0]->[0]);
+				$smtp->mail($fo_usermanagement_conf->{SMTPFrom}->[0]->[0]);
+				$smtp->to($result->{email});
+				$smtp->data();
+				$smtp->datasend('From: '.$fo_usermanagement_conf->{SMTPFrom}->[0]->[0]."\n");
+				$smtp->datasend('To: '.$result->{email}."\n");
+				$smtp->datasend('Subject: '.get_error($fo_default_conf,'sendpw','subject')."\n\n");
+				$smtp->datasend($body);
+				$smtp->dataend();
+				$smtp->quit();
+
+				# send user output
+				my $tpl = new CForum::Template(get_template($fo_default_conf,$user_config,$fo_usermanagement_conf->{SendPassOk}->[0]->[0]));
+				$tpl->setVar('script',recode($fo_default_conf,$fo_default_conf->{UserRegister}->[0]->[0]));
+				$tpl->setVar('forumbase',recode($fo_default_conf,$fo_default_conf->{BaseURL}->[0]->[0]));
+				$tpl->setVar('charset',$fo_default_conf->{ExternCharset}->[0]->[0]);
+				$tpl->setVar('acceptcharset',$fo_default_conf->{ExternCharset}->[0]->[0].', UTF-8');
+
+        print $cgi->header(-type => 'text/html; charset='.$fo_default_conf->{ExternCharset}->[0]->[0]),$tpl->parseToMem;
+			}
+			else {
+				my $tpl = new CForum::Template(get_template($fo_default_conf,$user_config,$fo_default_conf->{ErrorTemplate}->[0]->[0]));
+				$tpl->setVar('script',recode($fo_default_conf,$fo_default_conf->{UserRegister}->[0]->[0]));
+				$tpl->setVar('forumbase',recode($fo_default_conf,$fo_default_conf->{BaseURL}->[0]->[0]));
+				$tpl->setVar('charset',$fo_default_conf->{ExternCharset}->[0]->[0]);
+        $tpl->setVar('error',get_error($fo_default_conf,'sendpw','error'));
+
+        print $cgi->header(-type => 'text/html; charset='.$fo_default_conf->{ExternCharset}->[0]->[0]),$tpl->parseToMem;
+			}
+		}
+		else {
+			my $tpl = new CForum::Template(get_template($fo_default_conf,$user_config,$fo_usermanagement_conf->{SendPass}->[0]->[0]));
+
+			$tpl->setVar('script',recode($fo_default_conf,$fo_default_conf->{UserRegister}->[0]->[0]));
+			$tpl->setVar('forumbase',recode($fo_default_conf,$fo_default_conf->{BaseURL}->[0]->[0]));
+			$tpl->setVar('charset',$fo_default_conf->{ExternCharset}->[0]->[0]);
+			$tpl->setVar('acceptcharset',$fo_default_conf->{ExternCharset}->[0]->[0].', UTF-8');
+
+			print $cgi->header(-type => 'text/html; charset='.$fo_default_conf->{ExternCharset}->[0]->[0]),$tpl->parseToMem;
+		}
+	}
+	# }}}
+  # {{{ show register form
 	else {
 		show_register_form($cgi,$fo_default_conf,$fo_usermanagement_conf,$user_config);
 	}

@@ -94,7 +94,7 @@ sub get_password {
 
   my ($table,$usercol,$passwdcol,$emailcol) = sql_data($fuc);
 
-  my $dbq = $dbh->prepare('SELECT '.$passwdcol.','.$emailcol.' FROM '.$table.' WHERE username = ?');
+  my $dbq = $dbh->prepare('SELECT '.$passwdcol.','.$emailcol.' FROM '.$table.' WHERE '.$usercol.' = ?');
   $dbq->execute($uname);
 
   if($dbq->rows) {

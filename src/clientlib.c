@@ -934,6 +934,13 @@ void *cf_get_next_thread_through_shm(void *shm_ptr,t_cl_thread *thr,const u_char
     return NULL;
   }
 
+  /*
+   *
+   * CAUTION! Deep magic begins here! Do not edit if you don't know
+   * what you are doing!
+   *
+   */
+
   /* Uh, oh, we are at the end of the segment */
   if(ptr >= ptr1 + shm_buf.shm_segsz) return NULL;
 

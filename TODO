@@ -1,4 +1,4 @@
-TODO for 2.0 Release:
+TODO:
 
 - Write cleanup code for cfg_cleanup()
 - Define cleanup function for tree in cfg_init()
