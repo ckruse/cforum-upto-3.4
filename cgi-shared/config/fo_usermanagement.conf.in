@@ -1,0 +1,67 @@
+#
+# \file fo_usermanagement.conf
+# \author Christian Kruse, <ckruse@wwwtech.de>
+#
+# The configuration for the user management program
+#
+# $LastChangedDate$
+# $LastChangedRevision$
+# $LastChangedBy$
+#
+
+<Modules>
+  AddModule "Plugins::HTTPAuth"
+</Modules>
+
+<Form>
+  MinLength "UserName" "3"
+  MinLength "Password" "3"
+
+  MaxLength "UserName" "15"
+  MaxLength "Password" "15"
+
+  Validate "Password" "^[a-zA-Z0-9!\"§$_<>.%&\\\/()=?-]+$"
+  Validate "Password" "\d"
+  Validate "Password" "[a-zA-Z]"
+
+  Validate "UserName" "^[\da-z]+$"
+  Validate "email" "email"
+</Form>
+
+<General>
+  ManagementEngine "Plugins::Management::SQL"
+
+  ActivateModules "unregister,register,changepw,sendpw"
+
+  # This means: for files 0644 and for directories 0755
+  Umask "0022"
+
+  SQLUserTable "cforum_users"
+  SQLUserColumn "uname"
+  SQLPasswdColumn "password"
+  SQLEmailColumn "email"
+  SQLUser "forum"
+  SQLPass "9489500"
+  SQLDatabase "forum_users"
+  SQLHost "localhost"
+  SQLPort "3360"
+  SQLDriver "Pg"
+
+  SMTPHost "localhost"
+  SMTPFrom "cforum@wwwtech.de"
+</General>
+
+<Templates>
+  Register "@libdir@/cforum/%s_%s_userregister.so"
+  RegisterOk "@libdir@/cforum/%s_%s_userregok.so"
+
+  ChangePass "@libdir@/cforum/%s_%s_chpass.so"
+  ChangePassOk "@libdir@/cforum/%s_%s_chpassok.so"
+
+  Unregister "@libdir@/cforum/%s_%s_unreg.so"
+  UnregisterOk "@libdir@/cforum/%s_%s_unregok.so"
+
+  SendPass "@libdir@/cforum/%s_%s_sendpass.so"
+  SendPassOk "@libdir@/cforum/%s_%s_sendpass_ok.so"
+</Templates>
+
