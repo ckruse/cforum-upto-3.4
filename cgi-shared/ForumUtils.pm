@@ -180,7 +180,7 @@ sub transform_body {
 
   # after that, we collect all links to postings...
   foreach(@{$pcfg->{PostingUrl}}) {
-    $txt =~ s~\[link:\s*$_->[0]([\dtm=&]+)\]~\[pref:$1\]~g;
+    $txt =~ s~\[link:\s*$_->[0]([\dtm=&]+)(?:#\w+)?\]~\[pref:$1\]~g;
   }
 
   # now transform all links...

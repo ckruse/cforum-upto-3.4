@@ -678,6 +678,23 @@ void cf_cache_destroy(t_cache_entry *ent);
 
 /* }}} */
 
+/* {{{ data utilities */
+/**
+ * This function converts an u_int64_t to a t_string (using str_char_append calls).
+ * \param str The string to use
+ * \param num The u_int64_t to convert
+ */
+void u_int64_to_str(t_string *str, u_int64_t num);
+
+
+/**
+ * This function converts an u_char * to an u_int64_t
+ * \param ptr The u_char * to convert
+ * \return The converted number
+ */
+u_int64_t str_to_u_int64(register const u_char *ptr);
+/* }}} */
+
 #endif
 
 /* eof */

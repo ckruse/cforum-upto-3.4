@@ -202,10 +202,17 @@ void generate_thread_output(t_arc_message *msg,t_string *threads,t_string *threa
   void *ptr = fo_alloc(NULL,1,sizeof(const u_char *) + 2 * sizeof(t_string *),FO_ALLOC_MALLOC);
   int printed = 0;
   u_char *date;
+  t_string strbuffer;
+
+  str_init(&strbuffer);
 
   /* first: set threadlist variables */
-  len = snprintf(buff,256,"m%llu",msg->mid);
-  cf_set_variable(tl_tpl,cs,"mid",buff,len,1);
+  //len = snprintf(buff,256,"m%llu",msg->mid);
+
+  str_char_append(&strbuffer,'m');
+  u_int64_to_str(&strbuffer,msg->mid);
+
+  cf_set_variable(tl_tpl,cs,"mid",strbuffer.content,strbuffer.len,1);
   cf_set_variable(tl_tpl,cs,"subject",msg->subject.content,msg->subject.len,1);
   cf_set_variable(tl_tpl,cs,"author",msg->author.content,msg->author.len,1);
 
@@ -224,9 +231,11 @@ void generate_thread_output(t_arc_message *msg,t_string *threads,t_string *threa
   tl_tpl->parsed.len = 0;
 
   /* after that: set per thread variables */
-  cf_set_variable(pt_tpl,cs,"mid",buff,len,1);
+  cf_set_variable(pt_tpl,cs,"mid",strbuffer.content,strbuffer.len,1);
   cf_set_variable(pt_tpl,cs,"subject",msg->subject.content,msg->subject.len,1);
   cf_set_variable(pt_tpl,cs,"author",msg->author.content,msg->author.len,1);
+
+  strbuffer.len = 0;
 
   /* category */
   if(msg->category.len) cf_set_variable(pt_tpl,cs,"category",msg->category.content,msg->category.len,1);
@@ -543,10 +552,8 @@ void make_thread_tree(t_arc_thread *thread,t_arc_message *msg,GdomeNode *posting
     gdome_str_unref(tmp);
   }
   else {
+    /* uh, oh, posting has no content */
     str_init(&msg->content);
-//    fprintf(stderr,"thread %llu: could not get posting content for message %llu\n",thread->tid,msg->mid);
-//    str_error_message("E_ARCHIVE_ERROR",NULL,15);
-//    exit(0);
   }
 
   for(i=0,len=gdome_nl_length(childs,&e);i<len;i++) {
@@ -801,13 +808,15 @@ void show_month_content(const u_char *year,const u_char *month) {
   t_array ary;
   struct s_arc_content cnt_str,*cnt_str1;
   size_t i;
+  t_string strbuff;
 
   t_cf_template m_tpl,tl_tpl;
   u_char mt_name[256],tl_name[256],buff[256];
 
-  /* generate path to index file */
   str_init(&path);
+  str_init(&strbuff);
 
+  /* generate path to index file */
   str_chars_append(&path,v->values[0],strlen(v->values[0]));
   str_char_append(&path,'/');
   str_chars_append(&path,year,strlen(year));
@@ -854,8 +863,12 @@ void show_month_content(const u_char *year,const u_char *month) {
       if(!(ptr = get_next_token(ptr,file,st.st_size,"<Thread",7))) break;
 
       tid = get_id(ptr,file,st.st_size);
-      len = snprintf(buff,256,"%llu",tid);
-      cf_set_variable(&tl_tpl,cs,"link",buff,len,1);
+      //len = snprintf(buff,256,"%llu",tid);
+
+      str_char_append(&strbuff,'t');
+      u_int64_to_str(&strbuff,tid);
+      cf_set_variable(&tl_tpl,cs,"link",strbuff.content,strbuff.len,1);
+      strbuff.len = 0;
 
       if(!(ptr = get_next_token(ptr,file,st.st_size,"<Message",8))) break;
 
@@ -1229,7 +1242,7 @@ int main(int argc,char *argv[],char *env[]) {
     /* bad, ugly ass! don't fool me! */
     for(len=0;len<pieces;len++) {
       /* we accept an trailing t for the tid */
-      if(len == 3 && *path_infos[len] == 't') {
+      if(len == 2 && *path_infos[len] == 't') {
         if(!is_numeric(path_infos[len]+1)) {
           /* destroy everything */
           for(len=0;len<pieces;len++) {

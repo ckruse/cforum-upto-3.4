@@ -311,6 +311,11 @@ void msg_to_html(const u_char *msg,t_string *content,t_string *cite) {
       }
     }
     else if(cf_strncmp(ptr,"_/_SIG_/_",9) == 0) {
+      if(quotemode) {
+        str_chars_append(content,"</span>",7);
+        quotemode = 0;
+      }
+    
       /* some users don't like sigs */
       if(!Cfg.ShowSig) break;
 

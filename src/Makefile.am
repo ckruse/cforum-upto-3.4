@@ -32,7 +32,7 @@ libcfcharconvert_la_SOURCES=charconvert.c
 libcfcharconvert_la_LIBADD=$(ICONV)
 libcfcharconvert_la_LDFLAGS=-export-dynamic -avoid-version
 
-libcfutils_la_SOURCES=utils.c arrayutils.c listutils.c memoryutils.c stringutils.c treeutils.c cacheutils.c
+libcfutils_la_SOURCES=utils.c arrayutils.c listutils.c memoryutils.c stringutils.c treeutils.c cacheutils.c datautils.c
 libcfutils_la_LIBADD=libcfhashlib.la libcfcharconvert.la
 libcfutils_la_LDFLAGS=-export-dynamic -avoid-version
 
