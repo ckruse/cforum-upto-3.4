@@ -80,7 +80,7 @@ int utf8_to_unicode(const u_char *s,size_t n,u_int32_t *num) {
 
 /* {{{ unicode_to_utf8 */
 int unicode_to_utf8(u_int32_t num, u_char *c,size_t n) {
-  int count;
+  size_t count;
 
   if(num < 0x80)             count = 1;
   else if(num < 0x800)       count = 2;
@@ -212,38 +212,36 @@ u_char *htmlentities_decode(const u_char *string) {
 
   str_init(&new_str);
 
-  if(!string) {
-    return NULL;
-  }
+  if(!string) return NULL;
 
   for(ptr=(u_char *)string;*ptr;ptr++) {
-	  if(*ptr == '&') {
-			if(cf_strncmp(ptr,"&gt;",4) == 0) {
-				str_char_append(&new_str,'>');
-				ptr += 3;
-			}
-			else if(cf_strncmp(ptr,"&lt;",4) == 0) {
-				str_char_append(&new_str,'<');
-				ptr += 3;
-			}
-			else if(cf_strncmp(ptr,"&amp;",5) == 0) {
-				str_char_append(&new_str,'&');
-				ptr += 4;
-			}
-			else if(cf_strncmp(ptr,"&quot;",6) == 0) {
-				str_char_append(&new_str,'"');
-				ptr += 5;
-			}
-			else if(cf_strncmp(ptr,"&#39;",5) == 0) {
-				str_char_append(&new_str,'\'');
-				ptr += 4;
-			}
+    if(*ptr == '&') {
+      if(cf_strncmp(ptr,"&gt;",4) == 0) {
+        str_char_append(&new_str,'>');
+        ptr += 3;
+      }
+      else if(cf_strncmp(ptr,"&lt;",4) == 0) {
+        str_char_append(&new_str,'<');
+        ptr += 3;
+      }
+      else if(cf_strncmp(ptr,"&amp;",5) == 0) {
+        str_char_append(&new_str,'&');
+        ptr += 4;
+      }
+      else if(cf_strncmp(ptr,"&quot;",6) == 0) {
+        str_char_append(&new_str,'"');
+        ptr += 5;
+      }
+      else if(cf_strncmp(ptr,"&#39;",5) == 0) {
+        str_char_append(&new_str,'\'');
+        ptr += 4;
+      }
       else {
         str_char_append(&new_str,*ptr);
       }
-		}
-		else {
-			str_char_append(&new_str,*ptr);
+    }
+    else {
+      str_char_append(&new_str,*ptr);
     }
   }
 

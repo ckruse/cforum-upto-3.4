@@ -187,6 +187,9 @@ t_forum *cf_register_forum(const u_char *name) {
   forum->shm.ids[1] = atoi(nv->values[1]);
   forum->shm.sem    = atoi(nv->values[2]);
 
+  forum->shm.ptrs[0] = NULL;
+  forum->shm.ptrs[1] = NULL;
+
   cf_mutex_init("forum.shm.lock",&forum->shm.lock);
 
   cf_setup_shared_mem(forum);
@@ -208,6 +211,7 @@ t_forum *cf_register_forum(const u_char *name) {
 }
 /* }}} */
 
+/* {{{ cf_destroy_forum */
 void cf_destroy_forum(t_forum *forum) {
   int i;
 
@@ -239,6 +243,7 @@ void cf_destroy_forum(t_forum *forum) {
 
   if(forum->threads.list) cf_cleanup_forumtree(forum);
 }
+/* }}} */
 
 /* {{{ cf_log */
 void cf_log(int mode,const u_char *file,unsigned int line,const u_char *format, ...) {
@@ -343,35 +348,79 @@ int cf_load_data(t_forum *forum) {
 }
 /* }}} */
 
+/* {{{ cf_cleanup_posting */
+void cf_cleanup_posting(t_posting *p) {
+  str_cleanup(&p->user.name);
+  str_cleanup(&p->subject);
+  str_cleanup(&p->unid);
+  str_cleanup(&p->user.ip);
+  str_cleanup(&p->content);
+
+  if(p->category.len)   str_cleanup(&p->category);
+  if(p->user.email.len) str_cleanup(&p->user.email);
+  if(p->user.hp.len)    str_cleanup(&p->user.hp);
+  if(p->user.img.len)   str_cleanup(&p->user.img);
+
+  cf_list_destroy(&p->flags,cf_destroy_flag);
+}
+/* }}} */
+
+/* {{{ cf_cleanup_thread */
+void cf_cleanup_thread(t_thread *t) {
+  t_posting *p,*p1;
+
+  for(p=t->postings;p;p=p1) {
+    cf_cleanup_posting(p);
+
+    p1 = p->next;
+    free(p);
+  }
+
+  cf_rwlock_destroy(&t->lock);
+}
+/* }}} */
+
 /* {{{ cf_cleanup_forumtree */
 void cf_cleanup_forumtree(t_forum *forum) {
   t_thread *t,*t1;
   t_posting *p,*p1;
 
   for(t=forum->threads.list;t;t=t1) {
-    for(p=t->postings;p;p=p1) {
-      str_cleanup(&p->user.name);
-      str_cleanup(&p->subject);
-      str_cleanup(&p->unid);
-      str_cleanup(&p->user.ip);
-      str_cleanup(&p->content);
-
-      if(p->category.len)   str_cleanup(&p->category);
-      if(p->user.email.len) str_cleanup(&p->user.email);
-      if(p->user.hp.len)    str_cleanup(&p->user.hp);
-      if(p->user.img.len)   str_cleanup(&p->user.img);
-
-      p1 = p->next;
-      free(p);
-    }
-
-    cf_rwlock_destroy(&t->lock);
-
+    cf_cleanup_thread(t);
     t1 = t->next;
     free(t);
   }
+}
+/* }}} */
 
-  /** \todo write more cleanup code */
+/* {{{ cf_io_worker */
+void *cf_io_worker(void *arg) {
+  t_name_value *ra = cfg_get_first_value(&fo_server_conf,NULL,"RunArchiver");
+  unsigned tm = atoi(ra->values[0]),
+           rs = 0;
+
+  cf_log(CF_DBG|CF_FLSH,__FILE__,__LINE__,"I/O worker startet...\n");
+
+  while(RUN) {
+    cf_log(CF_DBG|CF_FLSH,__FILE__,__LINE__,"going to sleep()...\n");
+    sleep(1);
+
+    if(++rs >= tm || RUN == 0) {
+      cf_log(CF_DBG|CF_FLSH,__FILE__,__LINE__,"starting cf_run_archiver()...\n");
+      cf_run_archiver();
+
+      cf_log(CF_DBG|CF_FLSH,__FILE__,__LINE__,"starting cf_write_threadlist(NULL)...\n");
+      cf_write_threadlist(NULL);
+
+      rs = 0;
+    }
+  }
+
+  /* we are questioned to go down, so write threadlist */
+  //cf_log(CF_DBG|CF_FLSH,__FILE__,__LINE__,"starting cf_write_threadlist(NULL)...\n");
+  //cf_write_threadlist(NULL);
+
+  return NULL;
 }
 /* }}} */
 
@@ -379,7 +428,6 @@ void cf_cleanup_forumtree(t_forum *forum) {
 void *cf_worker(void *arg) {
   t_cf_list_element *selfelem,*lclient;
   pthread_t thread,self;
-  int run = 1;
   struct timespec timeout;
   t_cf_client *client;
 
@@ -393,7 +441,7 @@ void *cf_worker(void *arg) {
 
     CF_RW_RD(&head.workers.list.lock);
     for(selfelem=head.workers.list.head.elements;selfelem;selfelem=selfelem->next) {
-      thread = (pthread_t)selfelem->data;
+      thread = *((pthread_t *)selfelem->data);
       if(thread == self) break;
     }
     CF_RW_UN(&head.workers.list.lock);
@@ -401,14 +449,14 @@ void *cf_worker(void *arg) {
   /* }}} */
 
 
-  while(run) {
+  while(RUN) {
     /*
      * First, we look, if there are already entries in the queque. Therefore
      * we have to lock it.
      */
     CF_LM(&head.clients.lock);
 
-    while(!head.clients.list.elements && run) {
+    while(!head.clients.list.elements && RUN) {
       /*  ok, no clients seem to exist in the queque. Lets wait for them. */
       CF_UM(&head.clients.lock);
 
@@ -425,7 +473,7 @@ void *cf_worker(void *arg) {
       CF_LM(&head.clients.lock);
     }
 
-    if(run) {
+    if(RUN) {
       lclient = head.clients.list.elements;
 
       if(lclient) {
@@ -451,6 +499,7 @@ void *cf_worker(void *arg) {
     else CF_UM(&head.clients.lock);
   }
 
+  cf_log(CF_DBG|CF_FLSH,__FILE__,__LINE__,"going down...\n");
   return NULL;
 
 }
@@ -1281,10 +1330,12 @@ void cf_generate_shared_memory(t_forum *forum) {
 
     /* delete the segment */
     if(shmctl(forum->shm.ids[semval],IPC_RMID,NULL) != 0) {
-      cf_log(CF_ERR,__FILE__,__LINE__,"shmctl: %s\n",strerror(errno));
-      CF_UM(&forum->shm.lock);
-      mem_cleanup(&pool);
-      return;
+      if(errno != EINVAL) {
+        cf_log(CF_ERR,__FILE__,__LINE__,"shmctl: %s\n",strerror(errno));
+        CF_UM(&forum->shm.lock);
+        mem_cleanup(&pool);
+        return;
+      }
     }
   }
 

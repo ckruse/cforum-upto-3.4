@@ -62,6 +62,7 @@ void cf_list_append_static(t_cf_list_head *head,void *data,size_t size) {
 
   elem->data = data;
   elem->size = size;
+  elem->type = 1;
 
   if(head->last == NULL) {
     head->last = head->elements = elem;
@@ -98,6 +99,7 @@ void cf_list_prepend_static(t_cf_list_head *head,void *data,size_t size) {
 
   elem->data = data;
   elem->size = size;
+  elem->type = 1;
 
   if(head->elements) {
     elem->next = head->elements;
@@ -153,8 +155,8 @@ void cf_list_destroy(t_cf_list_head *head,void (*destroy)(void *data)) {
   for(elem=head->elements;elem;elem=elem1) {
     elem1 = elem->next;
 
-    if(destroy) destroy(elem);
-    free(elem->data);
+    if(destroy) destroy(elem->data);
+    if(elem->type == 0) free(elem->data);
     free(elem);
   }
 }

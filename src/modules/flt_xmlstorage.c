@@ -296,17 +296,20 @@ int flt_xmlstorage_make_forumtree(t_forum *forum) {
   t_string path;
 
   u_char *ctid;
-  unsigned long length,i;
+  unsigned long length = 0,i;
   t_thread *thread;
   t_array ary;
   u_char buff[50];
 
   GdomeException e;
-  GdomeDOMImplementation *di = gdome_di_mkref();
+  GdomeDOMImplementation *di;
   GdomeDocument *doc_index,*doc_thread;
-  GdomeDOMString *thread_str = gdome_str_mkref("Thread");
+  GdomeDOMString *thread_str;
   GdomeNode *n,*n1,*n2,*root;
   GdomeNodeList *nl;
+
+  di = gdome_di_mkref();
+  thread_str = gdome_str_mkref("Thread");
 
   array_init(&ary,sizeof(thread),NULL);
 
@@ -327,7 +330,7 @@ int flt_xmlstorage_make_forumtree(t_forum *forum) {
   path.len -= 9;
 
   nl = gdome_doc_getElementsByTagName(doc_index,thread_str,&e);
-  length = gdome_nl_length(nl,&e);
+  if(nl) length = gdome_nl_length(nl,&e);
 
   for(i=0;i<length;i++) {
     n    = gdome_nl_item(nl,i,&e);
@@ -351,7 +354,7 @@ int flt_xmlstorage_make_forumtree(t_forum *forum) {
     thread->postings = fo_alloc(NULL,1,sizeof(*thread->postings),FO_ALLOC_CALLOC);
     thread->last     = thread->postings;
 
-    flt_xmlstorage_create_threadtree(forum,thread,thread->postings,n2,n1,0);
+    //flt_xmlstorage_create_threadtree(forum,thread,thread->postings,n2,n1,0);
     array_push(&ary,&thread);
 
     cf_register_thread(forum,thread);
@@ -368,8 +371,9 @@ int flt_xmlstorage_make_forumtree(t_forum *forum) {
   }
 
   gdome_str_unref(thread_str);
-  gdome_nl_unref(nl,&e);
+  if(nl) gdome_nl_unref(nl,&e);
   gdome_doc_unref(doc_index,&e);
+  gdome_di_unref(di,&e);
 
   str_cleanup(&path);
 
@@ -609,6 +613,9 @@ t_posting *flt_xmlstorage_stringify_posting(GdomeDocument *doc1,GdomeElement *t1
   u_char buff[50];
   GdomeException e;
 
+  t_cf_list_element *elem;
+  t_posting_flag *flag;
+
   GdomeDOMString *str;
   GdomeCDATASection *cd;
 
@@ -622,6 +629,9 @@ t_posting *flt_xmlstorage_stringify_posting(GdomeDocument *doc1,GdomeElement *t1
   GdomeElement *author1 = xml_create_element(doc1,"Author");
   GdomeElement *author2 = xml_create_element(doc2,"Author");
 
+  GdomeElement *flags1 = xml_create_element(doc1,"Flags");
+  GdomeElement *flags2 = xml_create_element(doc2,"Flags");
+
   GdomeElement *cnt = xml_create_element(doc2,"MessageContent");
   
   gdome_el_appendChild(m1,(GdomeNode *)header1,&e);
@@ -632,9 +642,19 @@ t_posting *flt_xmlstorage_stringify_posting(GdomeDocument *doc1,GdomeElement *t1
 
   gdome_el_appendChild(m2,(GdomeNode *)cnt,&e);
 
-  /* the invisible flag */
+  /* {{{ attributes */
+  /* invisible flag */
   xml_set_attribute(m1,"invisible",p->invisible ? "1" : "0");
   xml_set_attribute(m2,"invisible",p->invisible ? "1" : "0");
+
+  snprintf(buff,50,"m%lld",p->mid);
+  xml_set_attribute(m1,"id",buff);
+
+  /* unique id, id and ip */
+  if(p->unid.len) xml_set_attribute(m1,"unid",p->unid.content);
+
+  xml_set_attribute(m2,"id",buff);
+  xml_set_attribute(m2,"ip",p->user.ip.content);
 
   /* voting attributes */
   (void)snprintf(buff,50,"%d",p->votes_good);
@@ -644,8 +664,9 @@ t_posting *flt_xmlstorage_stringify_posting(GdomeDocument *doc1,GdomeElement *t1
   (void)snprintf(buff,50,"%d",p->votes_bad);
   xml_set_attribute(m1,"votingBad",buff);
   xml_set_attribute(m2,"votingBad",buff);
+  /* }}} */
 
-  /* the name */
+  /* {{{ name */
   elem1 = xml_create_element(doc1,"Name");
   elem2 = xml_create_element(doc2,"Name");
 
@@ -657,8 +678,9 @@ t_posting *flt_xmlstorage_stringify_posting(GdomeDocument *doc1,GdomeElement *t1
 
   gdome_el_unref(elem1,&e);
   gdome_el_unref(elem2,&e);
+  /* }}} */
 
-  /* the email address */
+  /* {{{ email address */
   elem1 = xml_create_element(doc1,"Email");
   elem2 = xml_create_element(doc2,"Email");
 
@@ -672,8 +694,9 @@ t_posting *flt_xmlstorage_stringify_posting(GdomeDocument *doc1,GdomeElement *t1
 
   gdome_el_unref(elem1,&e);
   gdome_el_unref(elem2,&e);
+  /* }}} */
 
-  /* the homepage url */
+  /* {{{ homepage url */
   elem1 = xml_create_element(doc1,"HomepageUrl");
   elem2 = xml_create_element(doc2,"HomepageUrl");
 
@@ -687,8 +710,9 @@ t_posting *flt_xmlstorage_stringify_posting(GdomeDocument *doc1,GdomeElement *t1
 
   gdome_el_unref(elem1,&e);
   gdome_el_unref(elem2,&e);
+  /* }}} */
 
-  /* the image url */
+  /* {{{ image url */
   elem1 = xml_create_element(doc1,"ImageUrl");
   elem2 = xml_create_element(doc2,"ImageUrl");
 
@@ -702,8 +726,9 @@ t_posting *flt_xmlstorage_stringify_posting(GdomeDocument *doc1,GdomeElement *t1
 
   gdome_el_unref(elem1,&e);
   gdome_el_unref(elem2,&e);
+  /* }}} */
 
-  /* category */
+  /* {{{ category */
   elem1 = xml_create_element(doc1,"Category");
   elem2 = xml_create_element(doc2,"Category");
 
@@ -717,8 +742,9 @@ t_posting *flt_xmlstorage_stringify_posting(GdomeDocument *doc1,GdomeElement *t1
 
   gdome_el_unref(elem1,&e);
   gdome_el_unref(elem2,&e);
+  /* }}} */
 
-  /* subject */
+  /* {{{ subject */
   elem1 = xml_create_element(doc1,"Subject");
   elem2 = xml_create_element(doc2,"Subject");
 
@@ -730,8 +756,9 @@ t_posting *flt_xmlstorage_stringify_posting(GdomeDocument *doc1,GdomeElement *t1
 
   gdome_el_unref(elem1,&e);
   gdome_el_unref(elem2,&e);
+  /* }}} */
 
-  /* date */
+  /* {{{ date */
   elem1 = xml_create_element(doc1,"Date");
   elem2 = xml_create_element(doc2,"Date");
 
@@ -745,19 +772,32 @@ t_posting *flt_xmlstorage_stringify_posting(GdomeDocument *doc1,GdomeElement *t1
 
   gdome_el_unref(elem1,&e);
   gdome_el_unref(elem2,&e);
+  /* }}} */
 
-  /* set the id and the ip... */
-  snprintf(buff,50,"m%lld",p->mid);
-  xml_set_attribute(m1,"id",buff);
+  /* {{{ create <Flag> elements */
+  gdome_el_appendChild(header1,(GdomeNode *)flags1,&e);
+  gdome_el_appendChild(header2,(GdomeNode *)flags2,&e);
 
-  if(p->unid.len) xml_set_attribute(m1,"unid",p->unid.content);
+  for(elem=p->flags.elements;elem;elem=elem->next) {
+    flag = (t_posting_flag *)elem->data;
 
-  xml_set_attribute(m2,"id",buff);
-  xml_set_attribute(m2,"ip",p->user.ip.content);
+    elem1 = xml_create_element(doc1,"Flag");
+    xml_set_attribute(elem1,"name",flag->name);
+    xml_set_value(doc1,elem1,flag->val);
 
-  gdome_el_appendChild(t1,(GdomeNode *)m1,&e);
-  gdome_el_appendChild(t2,(GdomeNode *)m2,&e);
+    elem2 = xml_create_element(doc2,"Flag");
+    xml_set_attribute(elem2,"name",flag->name);
+    xml_set_value(doc2,elem2,flag->val);
 
+    gdome_el_appendChild(flags1,(GdomeNode *)elem1,&e);
+    gdome_el_appendChild(flags2,(GdomeNode *)elem2,&e);
+
+    gdome_el_unref(elem1,&e);
+    gdome_el_unref(elem2,&e);
+  }
+  /* }}} */
+
+  /* {{{ content */
   str = gdome_str_mkref_dup(p->content.content);
 
   cd = gdome_doc_createCDATASection(doc2,str,&e);
@@ -765,21 +805,29 @@ t_posting *flt_xmlstorage_stringify_posting(GdomeDocument *doc1,GdomeElement *t1
 
   gdome_cds_unref(cd,&e);
   gdome_str_unref(str);
+
+  gdome_el_appendChild(t1,(GdomeNode *)m1,&e);
+  gdome_el_appendChild(t2,(GdomeNode *)m2,&e);
+  /* }}} */
+
+  /* {{{ cleanup */
+  gdome_el_unref(header1,&e);
+  gdome_el_unref(header2,&e);
+
+  gdome_el_unref(author1,&e);
+  gdome_el_unref(author2,&e);
+
   gdome_el_unref(cnt,&e);
 
+  gdome_el_unref(flags1,&e);
+  gdome_el_unref(flags2,&e);
+  /* }}} */
+
   for(p=p->next;p;) {
-    if(p->level > lvl) {
-      p = flt_xmlstorage_stringify_posting(doc1,m1,doc2,m2,p);
-    }
-    else { /* smaller or equal */
+    if(p->level > lvl) p = flt_xmlstorage_stringify_posting(doc1,m1,doc2,m2,p);
+    else {
       gdome_el_unref(m1,&e);
       gdome_el_unref(m2,&e);
-
-      gdome_el_unref(header1,&e);
-      gdome_el_unref(header2,&e);
-
-      gdome_el_unref(author1,&e);
-      gdome_el_unref(author2,&e);
 
       return p;
     }
@@ -787,12 +835,6 @@ t_posting *flt_xmlstorage_stringify_posting(GdomeDocument *doc1,GdomeElement *t1
 
   gdome_el_unref(m1,&e);
   gdome_el_unref(m2,&e);
-
-  gdome_el_unref(header1,&e);
-  gdome_el_unref(header2,&e);
-
-  gdome_el_unref(author1,&e);
-  gdome_el_unref(author2,&e);
 
   return NULL;
 }
@@ -845,19 +887,42 @@ int flt_xmlstorage_threadlist_writer(t_forum *forum) {
   t_thread *t,*t1;
   u_int64_t ltid,lmid;
   u_char buff[256];
+  pid_t pid;
 
   t_name_value *mpath = cfg_get_first_value(&fo_default_conf,forum->name,"MessagePath");
 
   GdomeException e;
-  GdomeDOMImplementation *impl = gdome_di_mkref();
-  GdomeDocument *doc = xml_create_doc(impl,"Forum",FORUM_DTD);
-  GdomeElement *elm = xml_create_element(doc,"Forum");
+  GdomeDOMImplementation *impl;
+  GdomeDocument *doc;
+  GdomeElement *elm;
+
+  /* we have to fork() because of the fucking memory leaks... */
+  pid = fork();
+  switch(pid) {
+    case -1:
+      cf_log(CF_ERR|CF_FLSH,__FILE__,__LINE__,"FORK() ERROR! %s\n",strerror(errno));
+      return FLT_EXIT;
+
+    case 0:
+      break;
+
+    default:
+      waitpid(pid,NULL,0);
+      return FLT_OK;
+  }
 
   CF_RW_RD(&forum->threads.lock);
   t    = forum->threads.list;
   ltid = forum->threads.last_tid;
   lmid = forum->threads.last_mid;
   CF_RW_UN(&forum->threads.lock);
+
+  /* we exit at this point if no threads are available */
+  if(!t) return FLT_OK;
+
+  impl = gdome_di_mkref();
+  doc = xml_create_doc(impl,"Forum",FORUM_DTD);
+  elm = xml_create_element(doc,"Forum");
 
   snprintf(buff,256,"t%llu",ltid);
   xml_set_attribute(elm,"lastThread",buff);

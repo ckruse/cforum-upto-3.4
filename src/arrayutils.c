@@ -109,7 +109,7 @@ void *array_element_at(t_array *ary,size_t index) {
 
 /* {{{ array_destroy */
 void array_destroy(t_array *ary) {
- size_t i;
+  size_t i;
 
   if(ary->array_destroy) {
     for(i=0;i<ary->elements;i++) {

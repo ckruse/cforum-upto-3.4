@@ -206,5 +206,9 @@ void cf_remove_thread(t_forum *forum,t_thread *t);
 
 void cf_destroy_forum(t_forum *forum);
 void cf_cleanup_forumtree(t_forum *forum);
+void cf_cleanup_thread(t_thread *t);
+void cf_cleanup_posting(t_posting *p);
+
+void *cf_io_worker(void *arg);
 
 /* eof */

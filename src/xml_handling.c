@@ -149,10 +149,14 @@ GdomeNode *xml_get_first_element_by_name(GdomeNode *node,const u_char *name) {
   GdomeException e;
   GdomeDOMString *gdname = gdome_str_mkref_dup(name);
   GdomeNodeList *nl = gdome_el_getElementsByTagName((GdomeElement *)node,gdname,&e);
-  GdomeNode *n = gdome_nl_item(nl,0,&e);
+  GdomeNode *n = NULL;
+
+  if(nl) {
+    n = gdome_nl_item(nl,0,&e);
+    gdome_nl_unref(nl,&e);
+  }
 
   gdome_str_unref(gdname);
-  gdome_nl_unref(nl,&e);
   return n;
 }
 /* }}} */

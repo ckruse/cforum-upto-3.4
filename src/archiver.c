@@ -56,7 +56,7 @@ struct sockaddr_un;
 void cf_run_archiver(void) {
   t_thread *t,*oldest_t,*prev = NULL,**to_archive = NULL;
   long size,threadnum,pnum,max_bytes,max_threads,max_posts;
-  int shall_archive = 0,len = 0,ret = FLT_OK;
+  int shall_archive = 0,len = 0,ret = FLT_OK,j;
   t_name_value *max_bytes_v, *max_posts_v, *max_threads_v, *forums = cfg_get_first_value(&fo_server_conf,NULL,"Forums");
   t_handler_config *handler;
   t_archive_filter fkt;
@@ -153,30 +153,13 @@ void cf_run_archiver(void) {
         }
 
         if(ret == FLT_EXIT) {
-          for(p=to_archive[len-1]->postings;p;p=p1) {
-            str_cleanup(&p->user.name);
-            str_cleanup(&p->user.ip);
-            str_cleanup(&p->subject);
-            str_cleanup(&p->unid);
-            str_cleanup(&p->content);
-
-            if(p->user.email.len) str_cleanup(&p->user.email);
-            if(p->user.img.len) str_cleanup(&p->user.img);
-            if(p->user.hp.len) str_cleanup(&p->user.hp);
-            if(p->category.len) str_cleanup(&p->category);
-
-            cf_list_destroy(&p->flags,cf_destroy_flag);
-
-            p1 = p->next;
-            free(p);
-          }
+          cf_cleanup_thread(to_archive[len-1]);
 
           free(to_archive[len-1]);
           to_archive = fo_alloc(to_archive,--len,sizeof(t_thread *),FO_ALLOC_REALLOC);
         }
       }
     } while(shall_archive);
-
 
     /* after archiving, we re-generate the cache */
     cf_generate_cache(forum);
@@ -186,13 +169,11 @@ void cf_run_archiver(void) {
 
     cf_log(CF_STD|CF_FLSH,__FILE__,__LINE__,"archiver ran for forum %s. Writing threadlists...\n",forum->name);
 
-    cf_write_threadlist(forum);
-
     if(len) {
       cf_archive_threads(forum,to_archive,len);
 
-      for(i=0;i<len;i++) {
-        for(p=to_archive[i]->postings;p;p=p1) {
+      for(j=0;j<len;++j) {
+        for(p=to_archive[j]->postings;p;p=p1) {
           str_cleanup(&p->user.name);
           str_cleanup(&p->user.ip);
           str_cleanup(&p->subject);
@@ -210,9 +191,9 @@ void cf_run_archiver(void) {
           free(p);
         }
 
-        CF_RW_UN(&to_archive[i]->lock);
-        cf_rwlock_destroy(&to_archive[i]->lock);
-        free(to_archive[i]);
+        CF_RW_UN(&to_archive[j]->lock);
+        cf_rwlock_destroy(&to_archive[j]->lock);
+        free(to_archive[j]);
       }
 
       free(to_archive);
@@ -246,21 +227,41 @@ void cf_archive_threads(t_forum *forum,t_thread **to_archive,size_t len) {
 /* {{{ cf_write_threadlist */
 void cf_write_threadlist(t_forum *forum) {
   int ret;
-  size_t i;
+  size_t i,j;
+  t_name_value *forums = cfg_get_first_value(&fo_server_conf,NULL,"Forums");
   t_handler_config *handler;
   t_archive_thrdlst_writer fkt;
 
+  if(forum) {
+    if(Modules[THRDLST_WRITE_HANDLER].elements) {
+      ret = FLT_DECLINE;
 
-  if(Modules[THRDLST_WRITE_HANDLER].elements) {
-    ret = FLT_DECLINE;
+      for(i=0;i<Modules[THRDLST_WRITE_HANDLER].elements && ret == FLT_DECLINE;i++) {
+        handler = array_element_at(&Modules[THRDLST_WRITE_HANDLER],i);
+        fkt     = (t_archive_thrdlst_writer)handler->func;
 
-    for(i=0;i<Modules[THRDLST_WRITE_HANDLER].elements && ret == FLT_DECLINE;i++) {
-      handler = array_element_at(&Modules[THRDLST_WRITE_HANDLER],i);
-      fkt     = (t_archive_thrdlst_writer)handler->func;
-      cf_log(CF_DBG|CF_FLSH,__FILE__,__LINE__,"starting disc writer\n");
-      ret     = fkt(forum);
+        cf_log(CF_DBG|CF_FLSH,__FILE__,__LINE__,"starting disc writer\n");
+        ret     = fkt(forum);
+      }
     }
   }
+  else {
+    if(Modules[THRDLST_WRITE_HANDLER].elements) {
+      for(j=0;j<forums->valnum;++j) {
+        forum = cf_hash_get(head.forums,forums->values[j],strlen(forums->values[j]));
+        ret   = FLT_DECLINE;
+
+        for(i=0;i<Modules[THRDLST_WRITE_HANDLER].elements && ret == FLT_DECLINE;i++) {
+          handler = array_element_at(&Modules[THRDLST_WRITE_HANDLER],i);
+          fkt     = (t_archive_thrdlst_writer)handler->func;
+
+          cf_log(CF_DBG|CF_FLSH,__FILE__,__LINE__,"starting disc writer\n");
+          ret     = fkt(forum);
+        }
+      }
+    }
+  }
+
 }
 /* }}} */
 

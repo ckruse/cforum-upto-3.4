@@ -1,3 +1,24 @@
+2005-01-02 Christian Kruse <ckruse@wwwtech.de>
+	* cf_pthread.h: Removed tabs
+	* src/xml_handling.c: Small bugfixes
+	* src/utils.h: Added type attribute to t_list_element
+	* src/charconvert.c: removed tabs
+	* src/modules/flt_xmlstorage.c: Several bugfixes, did a workaround for memory
+		leak in GDOME2
+	* src/listutils.c: added full support for static values
+	* src/serverlib.c: Bugfixes in worker, shm handling, added destroy routines
+		for threads and postings, wrote some more cleanup code
+	* src/arrayutils.c: Source code format fix
+	* src/serverlib.h: Added cleanup functions for threads and postings
+	* src/archiver.c: removed tabs, bugfixes, added support for
+		cf_write_threadlist(NULL), removed cf_write_threadlist() call from
+		cf_run_archiver()
+	* src/configparser.c: Wrote a lot of cleanup code, fixed memory leaks
+	* src/configparser.h: Added some cleanup functions
+	* src/fo_server.c: Wrote a lot of cleanup code, did some bugfixes, added
+		threadlist and archiver thread
+
+
 2005-01-01 Christian Kruse <ckruse@wwwtech.de>
 	* src/modules/flt_xmlstorage.c: Debugging, now it compiles cleanly
 	* src/fo_server.c, src/serverlib.c: Wrote a lot of cleanup code

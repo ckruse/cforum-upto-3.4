@@ -348,6 +348,12 @@ int parse_args(u_char *fname,u_char *line,u_char ***args,int lnum) {
 }
 /* }}} */
 
+/* {{{ destroy_str_ptr */
+void destroy_str_ptr(void *tmp) {
+  free(*((u_char **)tmp));
+}
+/* }}} */
+
 /* {{{ read_config */
 int read_config(t_configfile *conf,t_take_default deflt,int mode) {
   int fd = open(conf->filename,O_RDONLY);
@@ -368,7 +374,7 @@ int read_config(t_configfile *conf,t_take_default deflt,int mode) {
   t_array ary;
 
   hsh = cf_hash_new(NULL);
-  array_init(&ary,sizeof(u_char **),NULL);
+  array_init(&ary,sizeof(u_char **),destroy_str_ptr);
 
   /* {{{ initializing */
   /*
@@ -536,6 +542,7 @@ int read_config(t_configfile *conf,t_take_default deflt,int mode) {
       str_char_set(&mpath,args[0],strlen(args[0]));
       free(args[0]);
       free(args);
+      free(directive_name);
 
       /* now everything whith this directive has finished. Find end of line... */
       for(;*ptr && *ptr != (u_char)012;++ptr);
@@ -567,6 +574,7 @@ int read_config(t_configfile *conf,t_take_default deflt,int mode) {
 
       free(args[0]);
       free(args);
+      free(directive_name);
 
       /* now everything whith this directive has finished. Find end of line... */
       for(;*ptr && *ptr != (u_char)012;++ptr);
@@ -621,16 +629,16 @@ int read_config(t_configfile *conf,t_take_default deflt,int mode) {
       }
     }
 
-    if(found == 0) {
+    if(found != -1) {
       /* arguments are no longer needed */
-      if(argnum > 0) {
-        for(i=0;i<argnum;i++) free(args[i]);
-        free(args);
+      if(argnum > 0) for(i=1;i<argnum;i++) free(args[i]);
+      free(args[0]);
+      free(args);
+
+      if(found != 0) {
+        fprintf(stderr,"[%s:%d] %s: Callback function returned not 0 or -1!\n",conf->filename,linenum,directive_name);
+        return 1;
       }
-    }
-    else if(found != -1) {
-      fprintf(stderr,"[%s:%d] %s: Callback function returned not 0 or -1!\n",conf->filename,linenum,directive_name);
-      return 1;
     }
 
     free(directive_name);
@@ -673,6 +681,10 @@ int read_config(t_configfile *conf,t_take_default deflt,int mode) {
     }
   }
 
+  str_cleanup(&mpath);
+  cf_hash_destroy(hsh);
+  array_destroy(&ary);
+
   return fatal;
 }
 /* }}} */
@@ -680,79 +692,6 @@ int read_config(t_configfile *conf,t_take_default deflt,int mode) {
 /* {{{ cfg_compare */
 int cfg_compare(t_cf_tree_dataset *dt1,t_cf_tree_dataset *dt2) {
   return strcmp(dt1->key,dt2->key);
-}
-/* }}} */
-
-/* {{{ handle_command
- * Returns: int    FO_CONF_OK or FO_CONF_PARENTHESIS
- * Parameters:
- *   - t_conf_entry *entry   a pointer to the configuration entry
- *   - void *arg             user argument (the configuration variable)
- *
- * this function puts an entry to a configuration structure
- *
- */
-int handle_command(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
-  t_configuration *conf = (t_configuration *)opt->data;
-  t_name_value tmp,*tmp1;
-  t_cf_tree_dataset dt;
-  t_cf_tree *tr;
-  const t_cf_tree_dataset *dt1;
-  t_cf_list_head *head;
-  size_t i;
-  t_cf_list_element *elem;
-  t_internal_config *icfg = NULL;
-
-  tmp.values = args;
-  tmp.valnum = argnum;
-  tmp.name   = strdup(opt->name);
-
-  dt.key = opt->name;
-
-  if(context) {
-    for(elem=conf->forums.elements;elem;elem=elem->next,icfg=NULL) {
-      icfg = (t_internal_config *)elem->data;
-      if(cf_strcmp(icfg->name,context) == 0) break;
-    }
-
-    if(!icfg) {
-      icfg = fo_alloc(NULL,1,sizeof(*icfg),FO_ALLOC_MALLOC);
-      icfg->name = strdup(context);
-      cf_tree_init(&icfg->directives,cfg_compare,NULL);
-      cf_list_append_static(&conf->forums,icfg,sizeof(*icfg));
-    }
-
-    tr = &icfg->directives;
-  }
-  else tr = &conf->global_directives;
-
-
-  if((dt1 = cf_tree_find(tr,tr->root,&dt)) != NULL) {
-    if(opt->flags & CFG_OPT_UNIQUE) {
-      head = dt1->data;
-      tmp1 = head->elements->data;
-
-      for(i=0;i<tmp1->valnum;i++) free(tmp1->values[i]);
-      free(tmp1->values);
-
-      tmp1->values = args;
-    }
-    else {
-      head = dt1->data;
-      cf_list_append(head,&tmp,sizeof(tmp));
-    }
-  }
-  else {
-    head = fo_alloc(NULL,1,sizeof(*head),FO_ALLOC_CALLOC);
-    cf_list_append(head,&tmp,sizeof(tmp));
-
-    dt.key = strdup(opt->name);
-    dt.data = head;
-
-    cf_tree_insert(tr,NULL,&dt);
-  }
-
-  return -1;
 }
 /* }}} */
 
@@ -810,16 +749,107 @@ int add_module(t_configfile *cfile,const u_char *path,const u_char *name) {
 
 /* }}} */
 
-/* {{{ cfg_cleanup
- * Returns: nothing
- * Parameters:
- *   - t_configuration *cfg  the configuration structure
- *
- * this function cleans a configuration structure and frees all mem
- *
- */
+/* {{{ destroy_directive */
+void destroy_directive(void *arg) {
+  t_name_value *val = (t_name_value *)arg;
+  size_t i;
+
+  free(val->name);
+  for(i=0;i<val->valnum;i++) free(val->values[i]);
+  free(val->values);
+}
+/* }}} */
+
+/* {{{ destroy_directive_list */
+void destroy_directive_list(t_cf_tree_dataset *dt) {
+  t_cf_list_head *head = (t_cf_list_head *)dt->data;
+
+  cf_list_destroy(head,destroy_directive);
+
+  free(dt->key);
+  free(dt->data);
+}
+/* }}} */
+
+/* {{{ destroy_forums_list */
+void destroy_forums_list(void *data) {
+  t_internal_config *config = (t_internal_config *)data;
+
+  free(config->name);
+  cf_tree_destroy(&config->directives);
+  free(config);
+}
+/* }}} */
+
+/* {{{ handle_command */
+int handle_command(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
+  t_configuration *conf = (t_configuration *)opt->data;
+  t_name_value tmp,*tmp1;
+  t_cf_tree_dataset dt;
+  t_cf_tree *tr;
+  const t_cf_tree_dataset *dt1;
+  t_cf_list_head *head;
+  size_t i;
+  t_cf_list_element *elem;
+  t_internal_config *icfg = NULL;
+
+  tmp.values = args;
+  tmp.valnum = argnum;
+  tmp.name   = strdup(opt->name);
+
+  dt.key = opt->name;
+
+  if(context) {
+    for(elem=conf->forums.elements;elem;elem=elem->next,icfg=NULL) {
+      icfg = (t_internal_config *)elem->data;
+      if(cf_strcmp(icfg->name,context) == 0) break;
+    }
+
+    if(!icfg) {
+      icfg = fo_alloc(NULL,1,sizeof(*icfg),FO_ALLOC_MALLOC);
+      icfg->name = strdup(context);
+      cf_tree_init(&icfg->directives,cfg_compare,destroy_directive_list);
+      cf_list_append_static(&conf->forums,icfg,sizeof(*icfg));
+    }
+
+    tr = &icfg->directives;
+  }
+  else tr = &conf->global_directives;
+
+
+  if((dt1 = cf_tree_find(tr,tr->root,&dt)) != NULL) {
+    if(opt->flags & CFG_OPT_UNIQUE) {
+      head = dt1->data;
+      tmp1 = head->elements->data;
+
+      for(i=0;i<tmp1->valnum;i++) free(tmp1->values[i]);
+      free(tmp1->values);
+
+      tmp1->values = args;
+    }
+    else {
+      head = dt1->data;
+      cf_list_append(head,&tmp,sizeof(tmp));
+    }
+  }
+  else {
+    head = fo_alloc(NULL,1,sizeof(*head),FO_ALLOC_CALLOC);
+    cf_list_append(head,&tmp,sizeof(tmp));
+
+    dt.key = strdup(opt->name);
+    dt.data = head;
+
+    cf_tree_insert(tr,NULL,&dt);
+  }
+
+  return -1;
+}
+/* }}} */
+
+/* {{{ cfg_cleanup */
 void cfg_cleanup(t_configuration *cfg) {
-/** \todo write cleanup code */
+  cf_tree_destroy(&cfg->global_directives);
+  cf_list_destroy(&cfg->forums,destroy_forums_list);
 }
 /* }}} */
 
@@ -845,7 +875,7 @@ void cfg_destroy_module(void *element) {
 void cleanup_modules(t_array *modules) {
   int i;
 
-  for(i=0;i<MOD_MAX;i++) {
+  for(i=0;i<=MOD_MAX;++i) {
     array_destroy(&modules[i]);
   }
 }
@@ -949,18 +979,19 @@ int cfg_register_options(t_configfile *conf,t_conf_opt *opts) {
 /* {{{ cfg_cleanup_file */
 void cfg_cleanup_file(t_configfile *conf) {
   cf_hash_destroy(conf->options);
+  cf_list_destroy(&conf->options_list,NULL);
   free(conf->filename);
 }
 /* }}} */
 
+/* {{{ cfg_init */
 void cfg_init(void) {
-  /** \todo define cleanup function */
-  cf_tree_init(&fo_default_conf.global_directives,cfg_compare,NULL);
-  cf_tree_init(&fo_server_conf.global_directives,cfg_compare,NULL);
-  cf_tree_init(&fo_view_conf.global_directives,cfg_compare,NULL);
-  cf_tree_init(&fo_arcview_conf.global_directives,cfg_compare,NULL);
-  cf_tree_init(&fo_post_conf.global_directives,cfg_compare,NULL);
-  cf_tree_init(&fo_vote_conf.global_directives,cfg_compare,NULL);
+  cf_tree_init(&fo_default_conf.global_directives,cfg_compare,destroy_directive_list);
+  cf_tree_init(&fo_server_conf.global_directives,cfg_compare,destroy_directive_list);
+  cf_tree_init(&fo_view_conf.global_directives,cfg_compare,destroy_directive_list);
+  cf_tree_init(&fo_arcview_conf.global_directives,cfg_compare,destroy_directive_list);
+  cf_tree_init(&fo_post_conf.global_directives,cfg_compare,destroy_directive_list);
+  cf_tree_init(&fo_vote_conf.global_directives,cfg_compare,destroy_directive_list);
 
   cf_list_init(&fo_default_conf.forums);
   cf_list_init(&fo_server_conf.forums);
@@ -969,5 +1000,17 @@ void cfg_init(void) {
   cf_list_init(&fo_post_conf.forums);
   cf_list_init(&fo_vote_conf.forums);
 }
+/* }}} */
+
+/* {{{ cfg_destroy */
+void cfg_destroy(void) {
+  cfg_cleanup(&fo_default_conf);
+  cfg_cleanup(&fo_server_conf);
+  cfg_cleanup(&fo_view_conf);
+  cfg_cleanup(&fo_arcview_conf);
+  cfg_cleanup(&fo_post_conf);
+  cfg_cleanup(&fo_vote_conf);
+}
+/* }}} */
 
 /* eof */

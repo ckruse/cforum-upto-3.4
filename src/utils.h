@@ -515,6 +515,7 @@ const t_cf_tree_dataset *cf_tree_find(t_cf_tree *tree,t_cf_tree_node *n, t_cf_tr
 typedef struct s_list_element {
   void *data; /**< saved data */
   size_t size; /**< size of the data field */
+  int type;
 
   struct s_list_element *prev; /**< pointer to the previous element */
   struct s_list_element *next; /**< pointer to the next element */

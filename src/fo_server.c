@@ -163,7 +163,6 @@ int main(int argc,char *argv[]) {
       sock,
       connfd,
       status,
-      error = 1,
       daemonize = 0,
       max_threads = 0,
       start_threads = 0,
@@ -319,13 +318,12 @@ int main(int argc,char *argv[]) {
       continue;
     }
 
+    cf_log(CF_STD|CF_FLSH,__FILE__,__LINE__,"Loading data for forum %s...\n",forums->values[i]);
     if(cf_load_data(actforum) == -1) {
       cf_log(CF_ERR,__FILE__,__LINE__,"could not load data for forum %s!\n",forums->values[i]);
-      error = 1;
-      break;
+      exit(-1);
     }
-
-    cf_log(CF_STD|CF_FLSH,__FILE__,__LINE__,"Loaded data for forum %s\n",forums->values[i]);
+    cf_log(CF_STD,__FILE__,__LINE__,"Loaded data for forum %s\n",forums->values[i]);
   }
   /* }}} */
 
@@ -364,58 +362,62 @@ int main(int argc,char *argv[]) {
   cf_generate_cache(NULL);
 
   /* {{{ more initialization (some threading options, starting of the worker threads, etc, pp) */
-  if(error == 0) {
-    #ifdef sun
-    /*
-     * On Solaris 2.5, on a uniprocessor machine threads run not
-     * asynchronously by default. So we increase the thread concurrency
-     * level that threads can run asynchronous. In fact, in concurrency
-     * level six, six threads can run "simultanously".
-     */
-    thr_setconcurrency(6);
-    #endif
+  #ifdef sun
+  /*
+   * On Solaris 2.5, on a uniprocessor machine threads run not
+   * asynchronously by default. So we increase the thread concurrency
+   * level that threads can run asynchronous. In fact, in concurrency
+   * level six, six threads can run "simultanously".
+   */
+  thr_setconcurrency(6);
+  #endif
 
+  pthread_attr_init(&thread_attr);
 
-    pthread_attr_init(&thread_attr);
+  /*
+   * on very high traffic, the server does accept more and more
+   * connections, but does not serve these connection in an
+   * acceptable time. So we experience a little bit with thread
+   * scheduling...
+   */
+  #ifdef _POSIX_THREAD_PRIORITY_SCHEDULING
+  memset(&param,0,sizeof(param));
 
-    /*
-     * on very high traffic, the server does accept more and more
-     * connections, but does not serve these connection in an
-     * acceptable time. So we experience a little bit with thread
-     * scheduling...
-     */
-    #ifdef _POSIX_THREAD_PRIORITY_SCHEDULING
-    memset(&param,0,sizeof(param));
+  param.sched_priority = (sched_get_priority_min(SCHEDULING) + sched_get_priority_max(SCHEDULING)) / 2;
 
-    param.sched_priority = (sched_get_priority_min(SCHEDULING) + sched_get_priority_max(SCHEDULING)) / 2;
+  pthread_setschedparam(pthread_self(),SCHEDULING,&param);
 
-    pthread_setschedparam(pthread_self(),SCHEDULING,&param);
+  param.sched_priority++;
+  pthread_attr_setschedparam(&thread_attr,&param);
+  pthread_attr_setinheritsched(&thread_attr,PTHREAD_INHERIT_SCHED);
+  #endif
 
-    param.sched_priority++;
-    pthread_attr_setschedparam(&thread_attr,&param);
-    pthread_attr_setinheritsched(&thread_attr,PTHREAD_INHERIT_SCHED);
-    #endif
+  /* ok, start worker threads */
+  threads = cfg_get_first_value(&fo_server_conf,NULL,"MinThreads");
+  start_threads = atoi(threads->values[0]);
 
-    /* ok, start worker threads */
-    threads = cfg_get_first_value(&fo_server_conf,NULL,"MinThreads");
-    start_threads = atoi(threads->values[0]);
-
-    for(j=0;j<start_threads;j++) {
-      if((status = pthread_create(&thread,&thread_attr,cf_worker,NULL)) != 0) {
-        cf_log(CF_ERR,__FILE__,__LINE__,"error creating worker thread %u: %s\n",j,strerror(errno));
-        exit(-1);
-      }
-
-      cf_rw_list_append(&head.workers.list,&thread,sizeof(thread));
-      head.workers.num++;
+  for(j=0;j<start_threads;j++) {
+    if((status = pthread_create(&thread,&thread_attr,cf_worker,NULL)) != 0) {
+      cf_log(CF_ERR,__FILE__,__LINE__,"error creating worker thread %u: %s\n",j,strerror(errno));
+      exit(-1);
     }
 
-    /* needed later */
-    threads = cfg_get_first_value(&fo_server_conf,NULL,"SpareThreads");
-    spare_threads = atoi(threads->values[0]);
+    cf_rw_list_append(&head.workers.list,&thread,sizeof(thread));
+    head.workers.num++;
+  }
 
-    threads = cfg_get_first_value(&fo_server_conf,NULL,"MaxThreads");
-    max_threads = atoi(threads->values[0]);
+  /* needed later */
+  threads = cfg_get_first_value(&fo_server_conf,NULL,"SpareThreads");
+  spare_threads = atoi(threads->values[0]);
+
+  threads = cfg_get_first_value(&fo_server_conf,NULL,"MaxThreads");
+  max_threads = atoi(threads->values[0]);
+
+
+  /* start thread for archiver and disk writer */
+  if((status = pthread_create(&thread,&thread_attr,cf_io_worker,NULL)) != 0) {
+    cf_log(CF_ERR|CF_FLSH,__FILE__,__LINE__,"error creating I/O thread: %s\n",strerror(errno));
+    exit(-1);
   }
   /* }}} */
 
@@ -506,6 +508,12 @@ int main(int argc,char *argv[]) {
   cf_list_destroy(&head.clients.list,destroy_client);
   /* }}} */
 
+  /* {{{ ending I/O thread */
+  cf_log(CF_STD|CF_FLSH,__FILE__,__LINE__,"Ending I/O thread, please wait and be patient...\n");
+  pthread_join(thread,NULL);
+  cf_log(CF_STD|CF_FLSH,__FILE__,__LINE__,"I/O thread ended!\n");
+  /* }}} */
+
   /* {{{ destroy forums */
   cf_log(CF_STD|CF_FLSH,__FILE__,__LINE__,"Destroying forums...\n");
 
@@ -543,10 +551,10 @@ int main(int argc,char *argv[]) {
   cleanup_modules(Modules);
 
   remove(pidfile);
+  free(pidfile);
 
   /* also the config */
-  cfg_cleanup(&fo_default_conf);
-  cfg_cleanup(&fo_server_conf);
+  cfg_destroy();
 
   cfg_cleanup_file(&dconf);
   cfg_cleanup_file(&conf);
