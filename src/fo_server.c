@@ -294,7 +294,7 @@ int main(int argc,char *argv[]) {
   /* }}} */
 
   /* {{{ read options from commandline */
-  while((c = getopt_long(argc,argv,"p:c:d:h",server_cmdline_options,NULL)) > 0) {
+  while((c = getopt_long(argc,argv,"p:c:dh",server_cmdline_options,NULL)) > 0) {
     switch(c) {
       case 'p':
         if(!optarg) usage();
