@@ -386,10 +386,11 @@ int read_config(t_configfile *conf,t_take_default deflt,int mode) {
   struct stat st;
   u_char *directive_name;
   u_char **args;
-  int i,found;
+  int i,found,fatal = 0;
   t_conf_opt *opt;
   unsigned int linenum = 0;
   int argnum;
+  t_cf_list_element *lelem;
 
   /*
    * open() could fail :)
@@ -461,15 +462,21 @@ int read_config(t_configfile *conf,t_take_default deflt,int mode) {
 
     found = 0;
     if((opt = cf_hash_get(conf->options,directive_name,ptr-ptr1)) != NULL) {
+      /* mark option as seen */
+      opt->flags |= CFG_OPT_SEEN;
+
       if(opt->flags & mode) {
         if(opt->callback) found = opt->callback(conf,opt,args,argnum);
       }
       else {
         if(opt->flags) {
-          fprintf(stderr,"Configuration directive %s not allowed in this mode!\n",directive_name);
-          munmap(buff,st.st_size);
-          close(fd);
-          return 1;
+          if((opt->flags & CFG_OPT_SEEN) == 0) {
+            fprintf(stderr,"[%s:%d] Configuration directive %s not allowed in this mode!\n",conf->filename,linenum,directive_name);
+            printf("%d\n",opt->flags);
+            munmap(buff,st.st_size);
+            close(fd);
+            return 1;
+          }
         }
       }
     }
@@ -509,7 +516,19 @@ int read_config(t_configfile *conf,t_take_default deflt,int mode) {
   close(fd);
   munmap(buff,st.st_size);
 
-  return 0;
+  for(lelem=conf->options_list.elements;lelem;lelem = lelem->next) {
+    opt = (t_conf_opt *)lelem->data;
+    if(opt->flags & CFG_OPT_NEEDED) {
+      if(opt->flags & mode) {
+        if((opt->flags & CFG_OPT_SEEN) == 0) {
+          fatal = 1;
+          fprintf(stderr,"missing configuration entry %s in %s\n",opt->name,conf->filename);
+        }
+      }
+    }
+  }
+
+  return fatal;
 }
 /* }}} */
 
@@ -717,6 +736,7 @@ t_cf_list_head *cfg_get_value(t_configuration *cfg,const u_char *name) {
 void cfg_init_file(t_configfile *conf,u_char *filename) {
   conf->filename = strdup(filename);
   conf->options  = cf_hash_new(NULL);
+  cf_list_init(&conf->options_list);
 }
 /* }}} */
 
@@ -730,7 +750,14 @@ int cfg_register_options(t_configfile *conf,t_conf_opt *opts) {
       return -1;
     }
 
-    cf_hash_set(conf->options,(u_char *)opts[i].name,strlen(opts[i].name),&opts[i],sizeof(opts[i]));
+    /*
+     * be sure that seen has not been set, yet -- programmers have really
+     * silly ideas, sometimes
+     */
+    opts[i].flags &= ~CFG_OPT_SEEN;
+
+    cf_hash_set_static(conf->options,(u_char *)opts[i].name,strlen(opts[i].name),&opts[i]);
+    cf_list_append_static(&conf->options_list,&opts[i],sizeof(opts[i]));
   }
 
   return 0;

@@ -1,3 +1,13 @@
+2004-09-27 Christian Kruse <ckruse@wwwtech.de>
+	* src/modules/flt_tipoftheday.c: Deleted CFG_OPT_NEEDED flag and added
+		additional check for TipOfTheDayIndex configuration entry
+	* src/modules/flt_livefilter.c: Fixed typo bug (wrote root, ment
+		root_node)
+	* src/configparser.[ch]: Added list for check directives with the
+		CFG_OPT_NEEDED flag
+	* src/listutils.c: Added function for statically add a list member
+	* src/utils.h: Added cf_list_append_static() prototype
+
 2004-09-26 Christian Kruse <ckrsue@wwwtech.de>
 	* src/configparser.c: Added QuotingChars directive for fo_arcview
 	* src/charconvert.c: Added folding hooks ({{{ and }}})

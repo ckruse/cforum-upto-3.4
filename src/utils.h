@@ -545,6 +545,16 @@ void cf_list_init(t_cf_list_head *head);
 void cf_list_append(t_cf_list_head *head,void *data,size_t size);
 
 /**
+ * This function appends an element to a list _and_does_not_copy_it_ but
+ * safes the data argument as a reference
+ * \param head The list header variable for this list
+ * \param data The data to append
+ * \param size The size of the data
+ */
+
+void cf_list_append_static(t_cf_list_head *head,void *data,size_t size);
+
+/**
  * This function prepends an element to a list
  * \param head The list header variable for this list
  * \param data The data to prepend

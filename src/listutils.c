@@ -56,6 +56,24 @@ void cf_list_append(t_cf_list_head *head,void *data,size_t size) {
 }
 /* }}} */
 
+/* {{{ cf_list_append_static */
+void cf_list_append_static(t_cf_list_head *head,void *data,size_t size) {
+  t_cf_list_element *elem = fo_alloc(NULL,1,sizeof(*elem),FO_ALLOC_CALLOC);
+
+  elem->data = data;
+  elem->size = size;
+
+  if(head->last == NULL) {
+    head->last = head->elements = elem;
+  }
+  else {
+    head->last->next = elem;
+    elem->prev       = head->last;
+    head->last       = elem;
+  }
+}
+/* }}} */
+
 /* {{{ cf_list_prepend */
 void cf_list_prepend(t_cf_list_head *head,void *data,size_t size) {
   t_cf_list_element *elem = fo_alloc(NULL,1,sizeof(*elem),FO_ALLOC_CALLOC);

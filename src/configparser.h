@@ -46,10 +46,12 @@ typedef int (*t_take)(t_configfile *cfile,t_conf_opt *entry,u_char **args,int le
  */
 typedef int (*t_take_default)(t_configfile *cfile,u_char *name,u_char **args,int len);
 
-#define CFG_OPT_NEEDED  0x1 /**< directive _must_ exist */
-#define CFG_OPT_CONFIG  0x2 /**< directive may exist in fo_*.conf */
-#define CFG_OPT_USER    0x4 /**< directive may exist in user config */
-#define CFG_OPT_UNIQUE  0x8 /**< directive is unique, not multiple */
+#define CFG_OPT_NEEDED  (0x1<<0) /**< directive _must_ exist */
+#define CFG_OPT_CONFIG  (0x1<<1) /**< directive may exist in fo_*.conf */
+#define CFG_OPT_USER    (0x1<<2) /**< directive may exist in user config */
+#define CFG_OPT_UNIQUE  (0x1<<3) /**< directive is unique, not multiple */
+
+#define CFG_OPT_SEEN    (0x1<<4) /**< flag internally used for marking as "seen" */
 
 #define CFG_MODE_CONFIG CFG_OPT_CONFIG /**< We are in configuration mode */
 #define CFG_MODE_USER   CFG_OPT_USER   /**< We are in user configuration mode */
@@ -66,6 +68,7 @@ struct s_conf_opt {
 struct s_configfile {
   u_char *filename; /**< The filename */
   t_cf_hash *options; /**< The configuration options */
+  t_cf_list_head options_list; /**< A list of all configuration option names, used for CFG_OPT_NEEDED */
 };
 
 /** A list of name-value-pairs */

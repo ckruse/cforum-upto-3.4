@@ -317,7 +317,7 @@ int flt_lf_parse_string(u_char *str,u_char **pos,t_cf_template *tpl,t_flt_lf_nod
       case TOK_RPAREN:
         free(current);
 
-        if(root->prec != PREC_PAREN) {
+        if(root_node->prec != PREC_PAREN) {
           flt_lf_success = 0;
           return 1;
         }
