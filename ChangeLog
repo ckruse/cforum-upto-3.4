@@ -10,7 +10,7 @@
 	* src/htmllib.h: Interface of the new directive parser API
 	* docs/admin.tex: Began to write an installation tutorial
 	* src/modules/flt_latex.c: Added plugin to support [latex]. Works basically,
-		has some small minor bugs
+		seems to be bug free
 
 2005-01-28 Christian Kruse <ckruse@wwwtech.de>
 	* src/modules/flt_categorycheck.c: Added plugin to check if a valid category

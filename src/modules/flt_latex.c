@@ -59,7 +59,7 @@ static struct {
 } flt_latex_cfg = { NULL, NULL, NULL, NULL, NULL, FLT_LATEX_PNG };
 
 /* {{{ flt_latex_create_cache */
-int flt_latex_create_cache(const u_char *cnt) {
+int flt_latex_create_cache(const u_char *cnt,const u_char *our_sum) {
   u_char *envp[] = {
     flt_latex_cfg.path_env,
     NULL
@@ -68,7 +68,7 @@ int flt_latex_create_cache(const u_char *cnt) {
   int fds[2];
   char c,sum[33],buff[512];
   ssize_t n;
-  t_string mml,path;
+  t_string mml,path,path1;
 
   FILE *fd;
   pid_t pid;
@@ -120,6 +120,7 @@ int flt_latex_create_cache(const u_char *cnt) {
 
   str_init(&mml);
   str_init(&path);
+  str_init(&path1);
 
   while((n = read(fds[0],buff,512)) > 0) str_chars_append(&mml,buff,n);
 
@@ -133,12 +134,16 @@ int flt_latex_create_cache(const u_char *cnt) {
   }
 
   str_char_set(&path,flt_latex_cfg.cache_path,strlen(flt_latex_cfg.cache_path));
-  str_chars_append(&path,sum,32);
+  str_char_set(&path1,flt_latex_cfg.cache_path,strlen(flt_latex_cfg.cache_path));
+  str_chars_append(&path,our_sum,32);
+  str_chars_append(&path1,sum,32);
   str_chars_append(&path,".mml",4);
+  str_chars_append(&path1,".png",4);
 
   if((fd = fopen(path.content,"w")) == NULL) {
     str_cleanup(&mml);
     str_cleanup(&path);
+    str_cleanup(&path1);
 
     close(fds[0]);
     waitpid(pid,NULL,0);
@@ -148,8 +153,13 @@ int flt_latex_create_cache(const u_char *cnt) {
   fwrite(mml.content,1,mml.len,fd);
   fclose(fd);
 
+  path.len -= 4;
+  str_chars_append(&path,".png",4);
+  rename(path1.content,path.content);
+
   str_cleanup(&mml);
   str_cleanup(&path);
+  str_cleanup(&path1);
 
   close(fds[0]);
   waitpid(pid,NULL,0);
@@ -170,6 +180,7 @@ void flt_latex_create_md5_sum(u_char *str,size_t len,u_char *res) {
 }
 /* }}} */
 
+/* {{{ flt_latex_get_mml */
 int flt_latex_get_mml(t_string *which,u_char *sum) {
   t_string path;
   FILE *fd;
@@ -197,6 +208,7 @@ int flt_latex_get_mml(t_string *which,u_char *sum) {
 
   return 0;
 }
+/* }}} */
 
 int flt_latex_execute(t_configuration *fdc,t_configuration *fvc,const u_char *directive,const u_char **parameters,size_t plen,t_string *bco,t_string *bci,t_string *content,t_string *cite,const u_char *qchars,int sig) {
   u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
@@ -218,7 +230,7 @@ int flt_latex_execute(t_configuration *fdc,t_configuration *fvc,const u_char *di
   str_chars_append(&str,".png",4);
 
   if(stat(str.content,&st) == -1) {
-    if(flt_latex_create_cache(content->content) == -1) return FLT_DECLINE;
+    if(flt_latex_create_cache(content->content,sum) == -1) return FLT_DECLINE;
   }
 
   switch(flt_latex_cfg.mode) {
