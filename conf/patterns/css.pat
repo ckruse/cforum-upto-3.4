@@ -22,9 +22,9 @@ block "default"
   onregexp "^#\\w[\\w_-]*" highlight "id-selector"
   onregexp "^\\.\\w[\\w_-]*" highlight "class-selector"
   onregexp "^:lang\\([\\w_-]+\\)" highlight "pseudo-class-selector"
-  onregexp "^:(first-child|link|visited|active|hover|focus|first|last|left|right)" highlight "pseudo-class-selector"
   onregexp "^:(first-line|first-letter|before|after)" highlight "pseudo-element-selector"
-  onregexp "^:[\w_-]+" highlight "invalid-pseudo-selector"
+  onregexp "^:(first-child|link|visited|active|hover|focus|first|last|left|right)" highlight "pseudo-class-selector"
+  onregexp "^:[\\w_-]+" highlight "invalid-pseudo-selector"
   onregexp "^\\w[\\w_-]*" highlight "element-selector"
 
   onregexp "^(&gt;|\\*|\\+|,)" highlight "symbol"
@@ -143,15 +143,15 @@ end
 
 block "string"
   lineend stay
-  
-  onstring "\\&quot;" stay
+
+  onstring "\\&quot;" highlight "escaped"
   onstring "&quot;" pop
 end
 
 block "sqstring"
   lineend stay
-  
-  onstring "\\'" stay
+
+  onstring "\\'" highlight "escaped"
   onstring "'" pop
 end
 

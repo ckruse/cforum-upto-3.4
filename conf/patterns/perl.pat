@@ -39,12 +39,47 @@ block "default"
 
   # syntax: onregexp <regexp> <neuer-block> <span-klasse>
   onregexp "^\\$+[a-zA-Z_][a-zA-Z0-9_]*" highlight "variable"
-  
+  onregexp "^@[a-zA-Z_][a-zA-Z0-9_]*" highlight "variable-array"
+  onregexp "^%[a-zA-Z_][a-zA-Z0-9_]*" highlight "variable-hash"
+
+  onstring "${" "var-block" "variable-complex"
+  onstring "@{" "var-block" "variable-complex"
+  onstring "%{" "var-block" "variable-hash-complex"
+
   # syntax onregexpafter <vorher-regexp> <regexp-zu-matchen> <neuer-block> <span-klasse>
   # vorher-regexp wird auf das zeichen davor angewandt
   onregexpafter "^[^a-zA-Z0-9]" "^0[0-7]+\\.?[0-7]*" highlight "octnumber"
   onregexpafter "^[^a-zA-Z0-9]" "^0[xX][0-9A-Fa-f]+\\.?[0-9A-Fa-f]*" highlight "hexnumber"
   onregexpafter "^[^a-zA-Z0-9]" "^[0-9]+\\.?[0-9]*" highlight "number"
+end
+
+block "var-block"
+  lineend stay
+
+  onstring "&quot;" "string" "string"
+  onstring "'" "sqstring" "string"
+
+  onstringlist "keywords" highlight "keyword"
+  onstringlist "operators" highlight "operator"
+
+  onregexp "^(-&gt;|\\+\\+|--|\\*\\*|!|~|\\+|-|=~|!~|\\*|/|%|\\+|-|\\.|&lt;&lt;|&gt;&gt;|&lt;|&gt;|&lt;=|&gt;=|==|!=|&lt;=&gt;|&amp;|\\||\\^|&amp;&amp;|\\|\\||\\.\\.|\\.\\.\\.|=|\\+=|-=|\\*=|/=|\\*\\*=|\\^=|,|=&gt;)" highlight "operator"
+  onstringlist "symbols" highlight "symbol"
+  onstringlist "makros" highlight "makro"
+
+  onregexp "^\\$+[a-zA-Z_][a-zA-Z0-9_]*" highlight "variable"
+  onregexp "^@[a-zA-Z_][a-zA-Z0-9_]*" highlight "variable-array"
+  onregexp "^%[a-zA-Z_][a-zA-Z0-9_]*" highlight "variable-hash"
+
+  onstring "${" "var-block" "variable-complex"
+  onstring "@{" "var-block" "variable-complex"
+  onstring "%{" "var-block" "variable-hash-complex"
+
+  onregexpafter "^[^a-zA-Z0-9]" "^0[0-7]+\\.?[0-7]*" highlight "octnumber"
+  onregexpafter "^[^a-zA-Z0-9]" "^0[xX][0-9A-Fa-f]+\\.?[0-9A-Fa-f]*" highlight "hexnumber"
+  onregexpafter "^[^a-zA-Z0-9]" "^[0-9]+\\.?[0-9]*" highlight "number"
+
+  onstring "{" "var-block" "block"
+  onstring "}" pop
 end
 
 block "qw("
