@@ -228,6 +228,17 @@ void str_error_message(const u_char *msg,FILE *out,int rd, ...);
 u_char *get_error_message(const u_char *msg,int rd,size_t *len, ...);
 
 /**
+ * This function creates a date string. It's more general than get_time(),
+ * actually get_time() is a wrapper around it
+ * \param fmt Date format
+ * \param locale The date locale
+ * \param len In this variable the length of the string will be stored
+ * \param date The date itself
+ * \return NULL on failure, the date string on success
+ */
+u_char *general_get_time(u_char *fmt,u_char *locale,int *len,time_t *date);
+
+/**
  * This function creates a date string
  * \param cfg The configuration structure
  * \param symbol The configuration symbol. E.g. "DateFormatThreadView"
@@ -338,8 +349,10 @@ void cleanup_struct(t_cl_thread *thr);
  * \param head The CGI hash
  * \param thr The thread structure
  * \param tpl The template structure
+ * \param vc The alternative configuration file
+ * \return The last return value of the filter
  */
-int handle_posting_filters(t_cf_hash *head,t_cl_thread *thr,t_cf_template *tpl);
+int handle_posting_filters(t_cf_hash *head,t_cl_thread *thr,t_cf_template *tpl,t_configuration *vc);
 
 /**
  * This function gets a message from the server

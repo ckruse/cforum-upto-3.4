@@ -98,4 +98,17 @@ pkglib_LTLIBRARIES+=flt_tipoftheday.la
 flt_tipoftheday_la_SOURCES=flt_tipoftheday.c
 flt_tipoftheday_la_LDFLAGS=-module -export-dynamic -avoid-version
 
+pkglib_LTLIBRARIES+=flt_postingassistant.la
+flt_postingassistant_la_SOURCES=flt_postingassistant.c
+flt_postingassistant_la_LDFLAGS=-module -export-dynamic -avoid-version
+
+pkglib_LTLIBRARIES+=flt_remotesignature.la
+flt_remotesignature_la_SOURCES=flt_remotesignature.c
+flt_remotesignature_la_LIBADD=$(LIBWWW_LIBS)
+flt_remotesignature_la_LDFLAGS=-module -export-dynamic -avoid-version
+
+pkglib_LTLIBRARIES+=flt_preview.la
+flt_preview_la_SOURCES=flt_preview.c
+flt_preview_la_LDFLAGS=-module -export-dynamic -avoid-version
+
 # eof

@@ -49,7 +49,7 @@
 /**
  * Dummy function, for ignoring unknown directives
  */
-int ignre(t_configfile *cf,u_char **args,int argnum) {
+int ignre(t_configfile *cf,u_char *name,u_char **args,int argnum) {
   return 0;
 }
 
@@ -188,7 +188,7 @@ void send_posting(t_cf_hash *head,void *shm_ptr,u_int64_t tid,u_int64_t mid) {
   len = snprintf(buff,128,"%d",thread.msg_len-1);
   tpl_cf_setvar(&thread.messages->tpl,"answers",buff,len,0);
 
-  if(handle_posting_filters(head,&thread,&tpl) != FLT_EXIT) {
+  if(handle_posting_filters(head,&thread,&tpl,&fo_view_conf) != FLT_EXIT) {
     tpl_cf_parse(&tpl);
   }
 

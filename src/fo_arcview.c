@@ -51,7 +51,7 @@
 
 /* {{{ Dummy function, for ignoring unknown directives */
 #ifndef DOXYGEN
-int ignre(t_configfile *cf,u_char **args,int argnum) {
+int ignre(t_configfile *cf,u_char *name,u_char **args,int argnum) {
   return 0;
 }
 #endif

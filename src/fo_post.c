@@ -39,6 +39,8 @@
 #include <sys/shm.h>
 #endif
 
+#include <signal.h>
+
 #include "readline.h"
 #include "hashlib.h"
 #include "utils.h"
@@ -49,15 +51,6 @@
 #include "clientlib.h"
 #include "validate.h"
 #include "fo_post.h"
-/* }}} */
-
-/* {{{ ignre */
-/**
- * Dummy function, for ignoring unknown directives
- */
-int ignre(t_configfile *cf,u_char **args,int argnum) {
-  return 0;
-}
 /* }}} */
 
 /* {{{ run_after_post_filters */
@@ -160,11 +153,16 @@ void display_posting_form(t_cf_hash *head) {
   /* display him the fucking formular */
   t_cf_template tpl;
   u_char tplname[256];
-  t_name_value *tt = cfg_get_first_value(&fo_post_conf,"ThreadTemplate");
-  t_name_value *cs = cfg_get_first_value(&fo_default_conf,"ExternCharset");
+  t_name_value *tt  = cfg_get_first_value(&fo_post_conf,"ThreadTemplate");
+  t_name_value *cs  = cfg_get_first_value(&fo_default_conf,"ExternCharset");
+  t_cf_list_head *cats = cfg_get_value(&fo_default_conf,"Category");
+  t_cf_list_element *catelem;
+  t_name_value *catnm;
   size_t len;
   u_char *val;
-
+  u_char *cat = NULL,*tmp;
+  t_string catstr;
+  
   if(!tt) {
     str_error_message("E_TPL_NOT_FOUND",NULL,15);
     return;
@@ -177,6 +175,28 @@ void display_posting_form(t_cf_hash *head) {
     return;
   }
 
+  /* set categories */
+  str_init(&catstr);
+  if(head) cat = cf_cgi_get(head,"cat");
+  for(catelem=cats->elements;catelem;catelem=catelem->next) {
+    catnm = catelem->data;
+    tmp   = charset_convert_entities(catnm->values[0],strlen(catnm->values[0]),"UTF-8",cs->values[0],&len);
+
+    str_chars_append(&catstr,"<option value=\"",15);
+    str_chars_append(&catstr,tmp,len);
+    str_char_append(&catstr,'"');
+
+    if(cat && cf_strcmp(cat,catnm->values[0]) == 0) str_chars_append(&catstr," selected",9);
+
+    str_char_append(&catstr,'>');
+    str_chars_append(&catstr,tmp,len);
+    str_chars_append(&catstr,"</option>\n",10);
+
+    free(tmp);
+  }
+  tpl_cf_setvar(&tpl,"cats",catstr.content,catstr.len,0);
+  str_cleanup(&catstr);
+
   if(*ErrorString) {
     val = get_error_message(ErrorString,strlen(ErrorString),&len);
     cf_set_variable(&tpl,cs,"error",val,len,1);
@@ -187,7 +207,7 @@ void display_posting_form(t_cf_hash *head) {
   }
   else {
     /* run filters... */
-    if(handle_posting_filters(head,NULL,&tpl) != FLT_EXIT) {
+    if(handle_posting_filters(head,NULL,&tpl,&fo_post_conf) != FLT_EXIT) {
       if(*ErrorString) {
         val = get_error_message(ErrorString,strlen(ErrorString),&len);
         cf_set_variable(&tpl,cs,"error",val,len,1);
@@ -291,7 +311,7 @@ int validate_cgi_variables(t_cf_hash *head) {
          * to exist in a particular case (FieldNeeded has two parameters)
          */
         if((cf_strcmp(cfg->values[2],"yes") == 0 && fupto) || (cf_strcmp(cfg->values[1],"yes") == 0 && !fupto)) {
-          strcpy(ErrorString,"E_field_missing");
+          snprintf(ErrorString,50,"E_%s_missing",cfg->values[0]);
           return -1;
         }
       }
@@ -612,6 +632,72 @@ u_char *get_remote_addr(void) {
 }
 /* }}} */
 
+/* {{{ handle_post_command */
+int handle_post_command(t_configfile *cfile,u_char *name,u_char **args,int argnum) {
+  t_name_value tmp;
+  t_cf_tree_dataset dt;
+  const t_cf_tree_dataset *dt1;
+  t_cf_list_head *head;
+
+  tmp.values = args;
+  tmp.valnum = argnum;
+  tmp.name   = strdup(name);
+
+  dt.key = name;
+
+  if((dt1 = cf_tree_find(&fo_post_conf.directives,fo_post_conf.directives.root,&dt)) != NULL) {
+    head = dt1->data;
+    cf_list_append(head,&tmp,sizeof(tmp));
+  }
+  else {
+    head = fo_alloc(NULL,1,sizeof(*head),FO_ALLOC_CALLOC);
+    cf_list_append(head,&tmp,sizeof(tmp));
+
+    dt.key = strdup(name);
+    dt.data = head;
+
+    cf_tree_insert(&fo_post_conf.directives,NULL,&dt);
+  }
+
+  return -1;
+}
+/* }}} */
+
+/* {{{ signal handler for bad signals */
+void sighandler(int segnum) {
+  FILE *fd = fopen(PROTOCOL_FILE,"a");
+  u_char buff[10],*uname = NULL,*qs = NULL;
+
+  if(fd) {
+    qs    = getenv("QUERY_STRING");
+    if(GlobalValues) uname = cf_hash_get(GlobalValues,"UserName",8);
+    
+    switch(segnum) {
+      case SIGSEGV:
+        snprintf(buff,10,"SIGSEGV");
+        break;
+      case SIGILL:
+        snprintf(buff,10,"SIGILL");
+        break;
+      case SIGFPE:
+        snprintf(buff,10,"SIGFPE");
+        break;
+      case SIGBUS:
+        snprintf(buff,10,"SIGBUS");
+        break;
+      default:
+        snprintf(buff,10,"UKNOWN");
+        break;
+    }
+
+    fprintf(fd,"fo_view: Got signal %s!\nUsername: %s\nQuery-String: %s\n----\n",buff,uname?uname:(u_char *)"(null)",qs?qs:(u_char *)"(null)");
+    fclose(fd);
+  }
+
+  exit(0);
+}
+/* }}} */
+
 /* {{{ main */
 /**
  * The main function of the forum poster. No command line switches used.
@@ -628,8 +714,8 @@ int main(int argc,char *argv[],char *env[]) {
 
   int ret;
   u_char  *ucfg,*val,buff[256];
-  t_array *cfgfiles = get_conf_file(wanted,2);
-  t_cf_hash *head = cf_cgi_new();
+  t_array *cfgfiles;
+  t_cf_hash *head;
   t_configfile conf,dconf,uconf;
   t_name_value *cs = NULL,*cfg_val;
   u_char *UserName;
@@ -648,17 +734,27 @@ int main(int argc,char *argv[],char *env[]) {
   void *shm;
   #endif
 
-  int sock;
+  int sock,new_thread = 0;
   rline_t rl;
+
+  /* set signal handler for SIGSEGV (for error reporting) */
+  signal(SIGSEGV,sighandler);
+  signal(SIGILL,sighandler);
+  signal(SIGFPE,sighandler);
+  signal(SIGBUS,sighandler);
+
+  head = cf_cgi_new();
 
   memset(&rl,0,sizeof(rl));
   str_init(&str1);
 
-  if(!cfgfiles) {
+  if((cfgfiles = get_conf_file(wanted,2)) == NULL) {
     return EXIT_FAILURE;
   }
 
   init_modules();
+  cf_init();
+  cfg_init();
 
   sock = 0;
 
@@ -717,7 +813,7 @@ int main(int argc,char *argv[],char *env[]) {
       free(conf.filename);
       conf.filename = ucfg;
 
-      if(read_config(&conf,ignre) != 0) {
+      if(read_config(&conf,handle_post_command) != 0) {
         fprintf(stderr,"config file error!\n");
 
         cfg_cleanup_file(&conf);
@@ -744,8 +840,6 @@ int main(int argc,char *argv[],char *env[]) {
   }
 
   cs = cfg_get_first_value(&fo_default_conf,"ExternCharset");
-  printf("exit\n");
-  exit(0);
 
   if(ret != FLT_EXIT) {
     /* fine -- lets spit out http headers */
@@ -766,18 +860,18 @@ int main(int argc,char *argv[],char *env[]) {
           /* go and normalize the posting body */
           val = cf_cgi_get(head,"body");
           str = body_plain2coded(val);
-          printf("%s\n\n\n<br><br><br>%s\n",val,str->content);
-          printf("blahr\n");
-          exit(0);
 
           tidmid = cf_cgi_get(head,"fupto");
-          tid = strtoull(tidmid,(char **)&tidmid,10);
-          mid = strtoull(tidmid+1,NULL,10);
+          if(tidmid) {
+            tid = strtoull(tidmid,(char **)&tidmid,10);
+            mid = strtoull(tidmid+1,NULL,10);
 
-          if(!tid || !mid) {
-            display_posting_form(head);
-            return EXIT_SUCCESS;
+            if(!tid || !mid) {
+              display_posting_form(head);
+              return EXIT_SUCCESS;
+            }
           }
+          else new_thread = 1;
 
           /* ok, everythings fine: all fields, all fields are long enough. Go and get parent posting */
           #ifdef CF_SHARED_MEM
@@ -792,11 +886,11 @@ int main(int argc,char *argv[],char *env[]) {
           #endif
           else {
             #ifdef CF_SHARED_MEM
-            if(cf_get_message_through_shm(shm,&thr,NULL,tid,mid,CF_KILL_DELETED) == -1) {
+            if(new_thread == 0 && cf_get_message_through_shm(shm,&thr,NULL,tid,mid,CF_KILL_DELETED) == -1) {
               str_error_message(ErrorString,NULL,strlen(ErrorString));
             }
             #else
-            if(cf_get_message_through_sock(sock,&rl,&thr,NULL,tid,mid,CF_KILL_DELETED) == -1) {
+            if(new_thread == 0 && cf_get_message_through_sock(sock,&rl,&thr,NULL,tid,mid,CF_KILL_DELETED) == -1) {
               str_error_message(ErrorString,NULL,strlen(ErrorString));
             }
             #endif
@@ -816,12 +910,14 @@ int main(int argc,char *argv[],char *env[]) {
                 p->subject     = strdup(thr.threadmsg->subject);
                 p->subject_len = thr.threadmsg->subject_len;
               }
+              else p->subject_len = strlen(p->subject);
 
               /* we inherit category */
               if((p->category = cf_cgi_get(head,"cat")) == NULL) {
                 p->category     = strdup(thr.threadmsg->category);
                 p->category_len = thr.threadmsg->category_len;
               }
+              else p->category_len = strlen(p->category);
 
               p->email = cf_cgi_get(head,"EMail");
               if(p->email) p->email_len = strlen(p->email);
@@ -833,7 +929,7 @@ int main(int argc,char *argv[],char *env[]) {
               if(p->img) p->img_len = strlen(p->img);
 
               p->date        = time(NULL);
-              p->level       = thr.threadmsg->level + 1;
+              if(new_thread == 0) p->level = thr.threadmsg->level + 1;
               p->may_show    = 1;
               p->invisible   = 0;
 
@@ -874,13 +970,17 @@ int main(int argc,char *argv[],char *env[]) {
                 }
 
                 if(p->hp) {
-                  str_chars_append(&str1,"\nHomepageUrl:",13);
-                  str_chars_append(&str1,p->hp,p->hp_len);
+                  if(cf_strcmp(p->hp,"http://")) {
+                    str_chars_append(&str1,"\nHomepageUrl:",13);
+                    str_chars_append(&str1,p->hp,p->hp_len);
+                  }
                 }
 
                 if(p->img) {
-                  str_chars_append(&str1,"\nImageUrl:",10);
-                  str_chars_append(&str1,p->img,p->img_len);
+                  if(cf_strcmp(p->img,"http://")) {
+                    str_chars_append(&str1,"\nImageUrl:",10);
+                    str_chars_append(&str1,p->img,p->img_len);
+                  }
                 }
 
                 str_chars_append(&str1,"\nBody:",6);
@@ -929,7 +1029,7 @@ int main(int argc,char *argv[],char *env[]) {
 
                       if(cfg_val && cf_strcmp(cfg_val->values[0],"yes") == 0) {
                         cfg_val = cfg_get_first_value(&fo_default_conf,UserName ? "BaseURL" : "UBaseURL");
-                        printf("Status: 302 Moved Temporarily\015\012Location: %s\015\012\015\012",cfg_val->values[0]);
+                        printf("Status: 302 Moved Temporarily\015\012Location: %s?t=%llu&m=%llu\015\012\015\012",cfg_val->values[0],tid,mid);
                       }
                       else {
                         display_finishing_screen(p);
@@ -969,6 +1069,7 @@ int main(int argc,char *argv[],char *env[]) {
   free(cfgfiles);
 
   cleanup_modules(Modules);
+  cf_fini();
 
   if(head) {
     cf_hash_destroy(head);

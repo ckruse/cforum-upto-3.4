@@ -436,7 +436,7 @@ int read_config(t_configfile *conf,t_take_default deflt) {
     }
     else {
       if(deflt) {
-        found = deflt(conf,args,argnum);
+        found = deflt(conf,directive_name,args,argnum);
       }
       else {
         fprintf(stderr,"%s: Configuration entry for directive %s not found!\n",conf->filename,directive_name);
@@ -496,7 +496,7 @@ int handle_command(t_configfile *cfile,t_conf_opt *opt,u_char **args,int argnum)
 
   dt.key = opt->name;
 
-  if((dt1 = cf_tree_find(&conf->directives,NULL,&dt)) != NULL) {
+  if((dt1 = cf_tree_find(&conf->directives,conf->directives.root,&dt)) != NULL) {
     head = dt1->data;
     cf_list_append(head,&tmp,sizeof(tmp));
   }
@@ -656,7 +656,7 @@ t_cf_list_head *cfg_get_value(t_configuration *cfg,const u_char *name) {
 
   dt1.key = (void *)name;
 
-  if((dt = cf_tree_find(&cfg->directives,NULL,&dt1)) != NULL) return dt->data;
+  if((dt = cf_tree_find(&cfg->directives,cfg->directives.root,&dt1)) != NULL) return dt->data;
 
   return NULL;
 }

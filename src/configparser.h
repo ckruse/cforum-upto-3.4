@@ -44,7 +44,7 @@ typedef int (*t_take)(t_configfile *cfile,t_conf_opt *entry,u_char **args,int le
  * \param len The length of the directives array
  * \return 0 on success, any other value for failure
  */
-typedef int (*t_take_default)(t_configfile *cfile,u_char **args,int len);
+typedef int (*t_take_default)(t_configfile *cfile,u_char *name,u_char **args,int len);
 
 /** This describes the structure of a config file */
 struct s_conf_opt {

@@ -1,3 +1,14 @@
+2004-07-03 Christian Kruse <ckruse@wwwtech.de>
+	* src/fo_view.c, src/configparser.[ch], src/fo_arcview.c: Changed behavior
+		of the default action (now, the directive name is part of the parameters)
+	* src/clientlib.[ch], src/fo_view.c: Changed behavior of
+		handle_posting_filters(), now the alternative configuration object is
+		given as a param (and not fixed to fo_view_conf)
+	* src/modules/flt_posting.c: Several bugfixes for fo_post mode
+	* src/modules/Makefile.am: Added flt_postingassistant and
+		flt_remotesignature
+	* src/fo_post.c: Lots of bugfixes, lots of changes to new APIs
+
 2004-07-02 Christian Kruse <ckruse@wwwtech.de>
 	* src/fo_arcview.c: Bugfix: equivalent URIs (but not equal!) have been
 		cached multiple times, made caching configurable, made compression level
@@ -5,6 +16,8 @@
 		9 means maximum compression)
 	* cgi-shared/config/fo_arcview.conf.in, src/configparser.c: Added caching
 		directives
+	* src/configparser.c: Bugfix in cf_tree_find() calls. Why has it been
+		working till yet?!
 
 2004-07-01 Christian Kruse <ckruse@wwwtech.de>
 	* src/fo_arcview.c: Bugfix with invisible postings handling

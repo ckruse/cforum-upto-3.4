@@ -230,6 +230,13 @@ int flt_poas_handle(t_configfile *cfile,t_conf_opt *opt,u_char **args,int argnum
 }
 
 void flt_poas_finish(void) {
+  long i;
+
+  if(flt_poas_conf.bws) {
+    for(i=0;i<flt_poas_conf.bws_len;i++) free(flt_poas_conf.bws[i]);
+  }
+  free(flt_poas_conf.bws);
+
 }
 
 t_conf_opt flt_poas_config[] = {
@@ -247,7 +254,7 @@ t_handler_config flt_poas_handlers[] = {
   { 0, NULL }
 };
 
-t_module_config flt_poas = {
+t_module_config flt_postingassistant = {
   flt_poas_config,
   flt_poas_handlers,
   NULL,

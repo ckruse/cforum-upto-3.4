@@ -69,13 +69,15 @@ u_char *convert(const u_char *in,size_t len,size_t *olen,const t_name_value *cs)
 /* {{{ replace_placeholders */
 void replace_placeholders(const u_char *str,t_string *appender,t_cl_thread *thread) {
   register u_char *ptr = (u_char *)str;
-  register u_char *ptr1;
+  register u_char *ptr1 = NULL;
   u_char *name,*tmp;
   size_t len;
   t_name_value *cs = cfg_get_first_value(&fo_default_conf,"ExternCharset");
 
-  for(ptr1 = thread->threadmsg->author;*ptr1;ptr1++) {
-    if(isspace(*ptr1)) break;
+  if(thread) {
+    for(ptr1 = thread->threadmsg->author;*ptr1;ptr1++) {
+      if(isspace(*ptr1)) break;
+    }
   }
 
   for(;*ptr;ptr++) {
@@ -84,18 +86,30 @@ void replace_placeholders(const u_char *str,t_string *appender,t_cl_thread *thre
       ptr += 1;
     }
     else if(cf_strncmp(ptr,"{$name}",7) == 0) {
-      name = htmlentities_charset_convert(thread->threadmsg->author,"UTF-8",cs->values[0],&len,0);
+      if(thread) name = htmlentities_charset_convert(thread->threadmsg->author,"UTF-8",cs->values[0],&len,0);
+      else {
+        name = strdup("alle");
+        len  = 4;
+      }
+
       str_chars_append(appender,name,len);
       ptr += 6;
       free(name);
     }
     else if(cf_strncmp(ptr,"{$vname}",8) == 0) {
+      tmp = NULL;
       ptr += 7;
-      tmp = strndup(thread->threadmsg->author,ptr1-thread->threadmsg->author);
-      name = htmlentities_charset_convert(tmp,"UTF-8",cs->values[0],&len,0);
+      if(thread) {
+        tmp = strndup(thread->threadmsg->author,ptr1-thread->threadmsg->author);
+        name = htmlentities_charset_convert(tmp,"UTF-8",cs->values[0],&len,0);
+      }
+      else {
+        name = strdup("alle");
+        len  = 4;
+      }
       str_chars_append(appender,name,len);
       free(name);
-      free(tmp);
+      if(tmp) free(tmp);
     }
     else {
       str_chars_append(appender,ptr,1);
@@ -482,16 +496,16 @@ int execute_filter(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cl_
 
   /* user values */
   if(name && *name->values[0]) {
-    cf_set_variable(tpl,cs,"aname",name->values[0],strlen(name->values[0]),1);
+    cf_set_variable(tpl,cs,thread?"aname":"Name",name->values[0],strlen(name->values[0]),1);
   }
   if(email && *email->values[0]) {
-    cf_set_variable(tpl,cs,"aemail",email->values[0],strlen(email->values[0]),1);
+    cf_set_variable(tpl,cs,thread?"aemail":"EMail",email->values[0],strlen(email->values[0]),1);
   }
   if(hpurl && *hpurl->values[0]) {
-    cf_set_variable(tpl,cs,"aurl",hpurl->values[0],strlen(hpurl->values[0]),1);
+    cf_set_variable(tpl,cs,thread?"aurl":"HomepageURL",hpurl->values[0],strlen(hpurl->values[0]),1);
   }
   if(imgurl && *imgurl->values[0]) {
-    cf_set_variable(tpl,cs,"aimg",imgurl->values[0],strlen(imgurl->values[0]),1);
+    cf_set_variable(tpl,cs,thread?"aimg":"ImageURL",imgurl->values[0],strlen(imgurl->values[0]),1);
   }
 
   tpl_cf_setvar(tpl,"qchar","&#255;",6,0);
@@ -549,7 +563,7 @@ int execute_filter(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cl_
    * lines above, so we use tpl_cf_setvar() instead of cf_set_variable()
    */
   if(thread) tpl_cf_setvar(tpl,"message",content.content,content.len,0);
-  if(Cfg.DoQuote && thread) tpl_cf_setvar(tpl,"cite",cite.content,cite.len,0);
+  if(Cfg.DoQuote || !thread) tpl_cf_setvar(tpl,"cite",cite.content,cite.len,0);
 
   cf_set_variable(tpl,cs,"action",ps->values[0],strlen(ps->values[0]),1);
 

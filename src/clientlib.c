@@ -559,16 +559,20 @@ void cleanup_struct(t_cl_thread *thr) {
  */
 u_char *get_link(u_int64_t tid,u_int64_t mid) {
   t_name_value *vs = cfg_get_first_value(&fo_default_conf,cf_hash_get(GlobalValues,"UserName",8) ? "UBaseURL" : "BaseURL");
-  u_char *buff = NULL;
-  size_t len;
+  t_string buff;
+
+  str_init(&buff);
 
   if(vs) {
-    len = 50 + strlen(vs->values[0]);
-    buff = fo_alloc(NULL,len,1,FO_ALLOC_MALLOC);
-    snprintf(buff,len,"%s?t=%lld&m=%lld",vs->values[0],tid,mid);
+    str_chars_append(&buff,vs->values[0],strlen(vs->values[0]));
+    str_chars_append(&buff,"/t",2);
+    u_int64_to_str(&buff,tid);
+    str_chars_append(&buff,"/m",2);
+    u_int64_to_str(&buff,mid);
+    str_char_append(&buff,'/');
   }
 
-  return buff;
+  return buff.content;
 }
 /* }}} */
 
@@ -670,7 +674,7 @@ int handle_thread(t_cl_thread *thr,t_cf_hash *head,int mode) {
 /* }}} */
 
 /* {{{ handle_posting_filters */
-int handle_posting_filters(t_cf_hash *head,t_cl_thread *thr,t_cf_template *tpl) {
+int handle_posting_filters(t_cf_hash *head,t_cl_thread *thr,t_cf_template *tpl,t_configuration *vc) {
   int ret = FLT_OK;
   t_handler_config *handler;
   size_t i;
@@ -680,11 +684,31 @@ int handle_posting_filters(t_cf_hash *head,t_cl_thread *thr,t_cf_template *tpl) 
     for(i=0;i<Modules[POSTING_HANDLER].elements && (ret == FLT_OK || ret == FLT_DECLINE);i++) {
       handler = array_element_at(&Modules[POSTING_HANDLER],i);
       fkt     = (t_filter_posting)handler->func;
-      ret     = fkt(head,&fo_default_conf,&fo_view_conf,thr,tpl);
+      ret     = fkt(head,&fo_default_conf,vc,thr,tpl);
     }
   }
 
   return ret;
+}
+/* }}} */
+
+/* {{{ general_get_time */
+u_char *general_get_time(u_char *fmt,u_char *locale,int *len,time_t *date) {
+  u_char *buff;
+  struct tm *tptr;
+  size_t ln;
+
+  if(!setlocale(LC_TIME,locale)) {
+    return NULL;
+  }
+
+  ln    = strlen(fmt) + 256;
+  buff  = fo_alloc(NULL,ln,1,FO_ALLOC_MALLOC);
+  tptr  = localtime(date);
+
+  *len = strftime(buff,ln,fmt,tptr);
+
+  return buff;
 }
 /* }}} */
 
@@ -700,27 +724,12 @@ int handle_posting_filters(t_cf_hash *head,t_cl_thread *thr,t_cf_template *tpl) 
 u_char *get_time(t_configuration *cfg,const u_char *symbol,int *len,time_t *date) {
   t_name_value *symb = cfg_get_first_value(cfg,symbol);
   t_name_value *loc  = cfg_get_first_value(&fo_default_conf,"DateLocale");
-  u_char *buff;
-  int ln = 0;
-  struct tm *tptr;
 
   if(!symb || !loc) {
     return NULL;
   }
 
-  if(!setlocale(LC_TIME,loc->values[0])) {
-    return NULL;
-  }
-
-  ln = strlen(symb->values[0]) + 50;
-  buff = fo_alloc(NULL,ln,1,FO_ALLOC_MALLOC);
-  if(!buff) return NULL;
-
-  tptr  = localtime(date);
-
-  *len = strftime(buff,(size_t)ln,symb->values[0],tptr);
-
-  return buff;
+  return general_get_time(symb->values[0],loc->values[0],len,date);
 }
 /* }}} */
 
@@ -977,7 +986,7 @@ int cf_get_message_through_sock(int sock,rline_t *tsd,t_cl_thread *thr,const u_c
 
   memset(thr,0,sizeof(*thr));
 
-  len  = snprintf(buff,128,"GET POSTING t%lld m%lld invisible=%d\n",tid,mid,del);
+  len  = snprintf(buff,128,"GET POSTING t%llu m%llu invisible=%d\n",tid,mid,del);
   writen(sock,buff,len);
 
   line = readline(sock,tsd);
