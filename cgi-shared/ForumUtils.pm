@@ -333,12 +333,21 @@ sub message_field {
 
   # we want all posting refs to be transformed to links
   unless(defined $archive) {
+    my $posturl;
     if($main::UserName) {
-      $posting =~ s!\[pref:((?:[\dtm=]|&amp;)+)\]!<a href="$fdcfg->{UBaseUrl}?$1">?$1</a>!g;
+      $posturl = $fdcfg->{UPostingURL}->[0]->[0];
     }
     else {
-      $posting =~ s!\[pref:((?:[\dtm=]|&amp;)+)\]!<a href="$fdcfg->{BaseUrl}?$1">?$1</a>!g;
+      $posturl = $fdcfg->{PostingURL}->[0]->[0];
     }
+
+    $posting =~ s{\[pref:t=(\d+);m=(\d+)\]}{
+      my $txt = $posturl;
+      my ($tid,$mid) = ($1,$2);
+      $txt =~ s!\%t!$tid!g;
+      $txt =~ s!\%m!$mid!g;
+      $txt;
+    }eg;
   }
 
   # return

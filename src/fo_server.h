@@ -44,6 +44,9 @@ typedef struct s_posting {
   u_int16_t level; /**< The level of the posting */
   u_int16_t invisible; /**< The visibility flag of the posting */
 
+  u_int32_t votes_bad;
+  u_int32_t votes_good;
+
   /** the name, email, homepage, image and ip as strings in an extra struct */
   struct {
     u_char *name; /**< The name of the poster */

@@ -39,18 +39,6 @@
 #include "clientlib.h"
 /* }}} */
 
-/* {{{ flt_handle404_cmp */
-int flt_handle404_cmp(const void *elem1,const void *elem2) {
-  u_int64_t *tid = (u_int64_t *)elem1;
-  t_tid_index *id = (t_tid_index *)elem2;
-
-  if(*tid >= id->start && *tid <= id->end) return 0;
-  if(*tid < id->start) return -1;
-
-  return 1;
-}
-/* }}} */
-
 int flt_handle404_execute(t_cf_hash *head,t_configuration *dc,t_configuration *vc,u_int64_t tid,u_int64_t mid) {
   t_name_value *v    = cfg_get_first_value(&fo_default_conf,"ThreadIndexFile");
   t_name_value *aurl = cfg_get_first_value(&fo_default_conf,"ArchiveURL");
@@ -60,6 +48,7 @@ int flt_handle404_execute(t_cf_hash *head,t_configuration *dc,t_configuration *v
   DBT key,data;
   u_char ctid[50];
   size_t len;
+  int ret;
 
   if(stat(v->values[0],&st) == -1) return FLT_DECLINE;
 

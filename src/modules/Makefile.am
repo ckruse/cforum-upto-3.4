@@ -116,5 +116,9 @@ pkglib_LTLIBRARIES+=flt_handle404.la
 flt_handle404_la_SOURCES=flt_handle404.c
 flt_handle404_la_LDFLAGS=-module -export-dynamic -avoid-version
 
+pkglib_LTLIBRARIES+=flt_voting.la
+flt_voting_la_SOURCES=flt_voting.c
+flt_voting_la_LDFLAGS=-module -export-dynamic -avoid-version
+
 
 # eof

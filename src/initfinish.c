@@ -565,11 +565,15 @@ void make_thread_tree(GdomeNode *posting_newdoc, GdomeNode *posting_index, Gdome
   GdomeDOMString    *str_id    = gdome_str_mkref("id");
   GdomeDOMString    *str_ip    = gdome_str_mkref("ip");
   GdomeDOMString    *str_invi  = gdome_str_mkref("invisible");
+  GdomeDOMString    *str_gv    = gdome_str_mkref("votingGood");
+  GdomeDOMString    *str_bv    = gdome_str_mkref("votingBad");
   GdomeDOMString    *str_unid  = gdome_str_mkref("unid");
   GdomeNode         *invi      = gdome_nnm_getNamedItem(atts,str_invi,&exc);
   GdomeNode         *id        = gdome_nnm_getNamedItem(atts,str_id,&exc);
   GdomeNode         *ip        = gdome_nnm_getNamedItem(atts,str_ip,&exc);
   GdomeNode         *unid      = gdome_nnm_getNamedItem(atts_ind,str_unid,&exc);
+  GdomeNode         *good_v    = gdome_nnm_getNamedItem(atts,str_gv,&exc);
+  GdomeNode         *bad_v     = gdome_nnm_getNamedItem(atts,str_bv,&exc);
   GdomeNode         *fcnt      = NULL;
   GdomeDOMString    *tmp       = NULL;
 
@@ -585,6 +589,18 @@ void make_thread_tree(GdomeNode *posting_newdoc, GdomeNode *posting_index, Gdome
   else {
     cf_log(LOG_ERR,__FILE__,__LINE__,"could not get posting id for thread t%lld, posting %d!\n",thread->tid,pos);
     exit(0);
+  }
+
+  if(good_v) {
+    GdomeDOMString *tmp = gdome_n_nodeValue(good_v,&exc);
+    post->votes_good = atoi(tmp->str);
+    gdome_str_unref(tmp);
+  }
+
+  if(bad_v) {
+    GdomeDOMString *tmp = gdome_n_nodeValue(bad_v,&exc);
+    post->votes_bad = atoi(tmp->str);
+    gdome_str_unref(tmp);
   }
 
   if(unid) {
@@ -680,9 +696,7 @@ void make_thread_tree(GdomeNode *posting_newdoc, GdomeNode *posting_index, Gdome
     gdome_n_unref(element_in,&exc);
   }
 
-  if(fcnt) {
-    gdome_n_unref(fcnt,&exc);
-  }
+  if(fcnt) gdome_n_unref(fcnt,&exc);
 
   gdome_n_unref(invi,&exc);
   gdome_str_unref(str_ip);
@@ -690,6 +704,8 @@ void make_thread_tree(GdomeNode *posting_newdoc, GdomeNode *posting_index, Gdome
   gdome_nnm_unref(atts,&exc);
   gdome_str_unref(str_id);
   gdome_str_unref(str_invi);
+  gdome_str_unref(str_gv);
+  gdome_str_unref(str_bv);
   gdome_n_unref(id,&exc);
   gdome_nl_unref(childs_nd,&exc);
   gdome_nl_unref(childs_in,&exc);

@@ -126,6 +126,15 @@ t_posting *stringify_posting(GdomeDocument *doc1,GdomeElement *t1,GdomeDocument 
   xml_set_attribute(m1,"invisible",p->invisible ? "1" : "0");
   xml_set_attribute(m2,"invisible",p->invisible ? "1" : "0");
 
+  /* voting attributes */
+  (void)snprintf(buff,50,"%d",p->votes_good);
+  xml_set_attribute(m1,"votingGood",buff);
+  xml_set_attribute(m2,"votingGood",buff);
+
+  (void)snprintf(buff,50,"%d",p->votes_bad);
+  xml_set_attribute(m1,"votingBad",buff);
+  xml_set_attribute(m2,"votingBad",buff);
+
   /* the name */
   elem1 = xml_create_element(doc1,"Name");
   elem2 = xml_create_element(doc2,"Name");

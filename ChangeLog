@@ -1,3 +1,12 @@
+2004-07-19 Christian Kruse <ckruse@wwwtech.de>
+	* src/initfinish.c, src/xml_handling.c: Added votingGood and votingBad
+		attributes
+	* src/modules/flt_voting.c: Added voting functionallity for the protocol stack
+	* src/modules/Makefile.am: Added flt_voting.c
+
+2004-07-17 Christian Kruse <ckruse@wwwtech.de>
+	* cgi-shared/ForumUtils.pm: Now _really_ fixed bug for [pref:]
+
 2004-07-16 Christian Kruse <ckruse@wwwtech.de>
 	* src/Makefile.am: Added berkeley DB for fo_tid_index and fo_threadlookup
 	* src/fo_tid_index.c, src/fo_threadlookup.c: Changed to BerkeleyDB
