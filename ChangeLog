@@ -1,6 +1,6 @@
 2005-02-01 Christian Kruse <ckruse@wwwtech.de>
 	* src/clientlib.c: Fixed a _really_ nasty bug in cf_get_error_message()
-	(doubly free()d a dynamically allocated buffer)
+		(doubly free()d a dynamically allocated buffer)
 	* src/modules/flt_directives.c: Small bugfix in [ref:] handling
 	* src/defines.h: Added CF_BUFSIZ (nice for debugging memory problems)
 	* src/stringutils.c: Replaced BUFSIZ by CF_BUFSIZ
