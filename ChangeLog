@@ -4,6 +4,7 @@
 2005-02-06 Christian Kruse <ckruse@wwwtech.de>
 	* conf/errormessages.de.txt: Patrick Canterino fixed some typos
 	* conf/patterns/perl.pat: Corrected some misstakes in the patterns
+	* conf/patterns/php.pat: Corrected some misstakes
 	* src/modules/flt_xmlstorage.c: Fixed a really nasty bug in reading the stored
 		XML!
 	* src/modules/flt_syntax.c: Implemented first version of syntax highlighting

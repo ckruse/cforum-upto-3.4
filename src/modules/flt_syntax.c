@@ -639,16 +639,35 @@ flt_syntax_list_t *flt_syntax_list_by_name(flt_syntax_pattern_file_t *file,const
   return NULL;
 }
 
-int flt_syntax_doit(flt_syntax_pattern_file_t *file,flt_syntax_block_t *block,u_char *text,size_t len,t_string *cnt,u_char **pos,int xhtml) {
-  u_char *ptr,*tmpchar;
-  size_t i;
+/* {{{ flt_syntax_extra_arg */
+t_string *flt_syntax_extra_arg(t_string *str,const u_char *extra_arg) {
+  t_string *target = fo_alloc(NULL,1,sizeof(*target),FO_ALLOC_CALLOC);
+  register u_char *ptr;
+
+  for(ptr=str->content;*ptr;++ptr) {
+    if(*ptr == '$' && *(ptr+1) == '$') {
+      str_chars_append(target,extra_arg,strlen(extra_arg));
+      ++ptr;
+      continue;
+    }
+
+    str_char_append(target,*ptr);
+  }
+
+  return target;
+}
+/* }}} */
+
+int flt_syntax_doit(flt_syntax_pattern_file_t *file,flt_syntax_block_t *block,u_char *text,size_t len,t_string *cnt,u_char **pos,const u_char *extra_arg,int xhtml) {
+  u_char *ptr,*tmpchar,*priv_extra;
+  size_t i,x;
   flt_syntax_statement_t *statement;
   t_string *str,*tmpstr;
   int rc,matched;
   flt_syntax_block_t *tmpblock;
   flt_syntax_list_t *tmplist;
   flt_syntax_preg_t *tmppreg;
-  int stdvec[12];
+  int stdvec[42];
 
   if(!block) {
     if((block = flt_syntax_block_by_name(file,file->start)) == NULL) {
@@ -670,11 +689,6 @@ int flt_syntax_doit(flt_syntax_pattern_file_t *file,flt_syntax_block_t *block,u_
       *pos = ptr + (xhtml ? 6 : 4);
       return 0;
     }
-    else if(*ptr == '<') {
-      for(;*ptr && *ptr != '>';++ptr) str_char_append(cnt,*ptr);
-      str_char_append(cnt,*ptr);
-      continue;
-    }
 
     for(i=0,matched=0;i<block->statement.elements && matched == 0;++i) {
       statement = array_element_at(&block->statement,i);
@@ -682,36 +696,38 @@ int flt_syntax_doit(flt_syntax_pattern_file_t *file,flt_syntax_block_t *block,u_
       switch(statement->type) {
         case FLT_SYNTAX_ONSTRING:
           /* {{{ onstring */
-          str = array_element_at(&statement->args,0);
-          if(cf_strncmp(str->content,ptr,str->len) == 0) {
+          tmpstr = array_element_at(&statement->args,0);
+          if(extra_arg) tmpstr = flt_syntax_extra_arg(tmpstr,extra_arg);
+
+          if(cf_strncmp(tmpstr->content,ptr,tmpstr->len) == 0) {
             matched = 1;
 
             str = array_element_at(&statement->args,1);
 
             if(cf_strcmp(str->content,"highlight") == 0) {
               str = array_element_at(&statement->args,2);
-              
+
               str_chars_append(cnt,"<span class=\"",13);
               str_str_append(cnt,str);
               str_chars_append(cnt,"\">",2);
 
-              str = array_element_at(&statement->args,0);
-              str_str_append(cnt,str);
+              str_str_append(cnt,tmpstr);
               str_chars_append(cnt,"</span>",7);
 
-              ptr += str->len - 1;
+              ptr += tmpstr->len - 1;
             }
             else if(cf_strcmp(str->content,"pop") == 0) {
-              str = array_element_at(&statement->args,0);
-              *pos = ptr + str->len;
-              str_str_append(cnt,str);
+              *pos = ptr + tmpstr->len;
+              str_str_append(cnt,tmpstr);
+              if(extra_arg) {
+                str_cleanup(tmpstr);
+                free(tmpstr);
+              }
               return 0;
             }
             else if(cf_strcmp(str->content,"stay") == 0) {
-              str = array_element_at(&statement->args,0);
-              str_str_append(cnt,str);
-              ptr += str->len - 1;
-              matched = 1;
+              str_str_append(cnt,tmpstr);
+              ptr += tmpstr->len - 1;
             }
             else {
               str = array_element_at(&statement->args,2);
@@ -726,14 +742,18 @@ int flt_syntax_doit(flt_syntax_pattern_file_t *file,flt_syntax_block_t *block,u_
                 return 1;
               }
 
-              str = array_element_at(&statement->args,0);
-              str_str_append(cnt,str);
+              str_str_append(cnt,tmpstr);
 
-              tmpchar = ptr + str->len;
-              if(flt_syntax_doit(file,tmpblock,text,len,cnt,&tmpchar,xhtml) != 0) return 1;
+              tmpchar = ptr + tmpstr->len;
+              if(flt_syntax_doit(file,tmpblock,text,len,cnt,&tmpchar,NULL,xhtml) != 0) return 1;
               ptr = tmpchar - 1;
               str_chars_append(cnt,"</span>",7);
             }
+          }
+
+          if(extra_arg) {
+            str_cleanup(tmpstr);
+            free(tmpstr);
           }
           /* }}} */
           break;
@@ -788,7 +808,7 @@ int flt_syntax_doit(flt_syntax_pattern_file_t *file,flt_syntax_block_t *block,u_
               str = array_element_at(&statement->args,0);
               str_str_append(cnt,str);
               tmpchar = ptr + str->len;
-              if(flt_syntax_doit(file,tmpblock,text,len,cnt,&tmpchar,xhtml) != 0) return 1;
+              if(flt_syntax_doit(file,tmpblock,text,len,cnt,&tmpchar,NULL,xhtml) != 0) return 1;
               ptr = tmpchar - 1;
               str_chars_append(cnt,"</span>",7);
             }
@@ -797,11 +817,10 @@ int flt_syntax_doit(flt_syntax_pattern_file_t *file,flt_syntax_block_t *block,u_
           break;
 
         case FLT_SYNTAX_ONREGEXP:
+          /* {{{ onregexp */
           tmppreg = array_element_at(&statement->pregs,0);
-          printf("matching on '%s'\n",ptr);
           if(pcre_exec(tmppreg->re,tmppreg->extra,ptr,len-(text-ptr),0,0,stdvec,12) >= 0) {
             matched = 1;
-            printf("blub\n"),
 
             str = array_element_at(&statement->args,0);
             if(cf_strcmp(str->content,"highlight") == 0) {
@@ -833,6 +852,7 @@ int flt_syntax_doit(flt_syntax_pattern_file_t *file,flt_syntax_block_t *block,u_
               str_str_append(cnt,str);
               str_chars_append(cnt,"\">",2);
 
+              str = array_element_at(&statement->args,0);
               if((tmpblock = flt_syntax_block_by_name(file,str->content)) == NULL) {
                 fprintf(stderr,"Could not find block %s!\n",str->content);
                 return 1;
@@ -840,19 +860,117 @@ int flt_syntax_doit(flt_syntax_pattern_file_t *file,flt_syntax_block_t *block,u_
 
               str_chars_append(cnt,ptr+stdvec[0],stdvec[1]-stdvec[0]);
               tmpchar = ptr + (stdvec[1] - stdvec[0]);
-              if(flt_syntax_doit(file,tmpblock,text,len,cnt,&tmpchar,xhtml) != 0) return 1;
+              if(flt_syntax_doit(file,tmpblock,text,len,cnt,&tmpchar,NULL,xhtml) != 0) return 1;
               ptr = tmpchar - 1;
               str_chars_append(cnt,"</span>",7);
             }
           }
+          /* }}} */
+          break;
 
         case FLT_SYNTAX_ONREGEXP_BACKREF:
+          /* {{{ onregexp_backref */
+          tmppreg = array_element_at(&statement->pregs,0);
+          if(pcre_exec(tmppreg->re,tmppreg->extra,ptr,len-(text-ptr),0,0,stdvec,42) >= 0) {
+            matched = 1;
+
+            str = array_element_at(&statement->args,2);
+
+            str_chars_append(cnt,"<span class=\"",13);
+            str_str_append(cnt,str);
+            str_chars_append(cnt,"\">",2);
+
+            str = array_element_at(&statement->args,0);
+            if((tmpblock = flt_syntax_block_by_name(file,str->content)) == NULL) {
+              fprintf(stderr,"Could not find block %s!\n",str->content);
+              return 1;
+            }
+
+            str = array_element_at(&statement->args,1);
+
+            priv_extra = NULL;
+            str_chars_append(cnt,ptr+stdvec[0],stdvec[1]-stdvec[0]);
+            tmpchar = ptr + (stdvec[1] - stdvec[0]);
+
+            if(pcre_get_substring((const char *)ptr,stdvec,42,atoi(str->content),(const char **)&priv_extra) < 0) break;
+            if(flt_syntax_doit(file,tmpblock,text,len,cnt,&tmpchar,priv_extra,xhtml) != 0) return 1;
+
+            pcre_free_substring(priv_extra);
+            ptr = tmpchar - 1;
+            str_chars_append(cnt,"</span>",7);
+          }
+          /* }}} */
+          break;
         case FLT_SYNTAX_ONREGEXP_AFTER:
+          tmppreg = array_element_at(&statement->pregs,0);
+          if(pcre_exec(tmppreg->re,tmppreg->extra,ptr,len-(text-ptr),0,0,stdvec,42) >= 0) {
+            x = stdvec[1] - stdvec[0];
+            tmppreg = array_element_at(&statement->pregs,1);
+
+            if(pcre_exec(tmppreg->re,tmppreg->extra,ptr+x,len-(text-ptr),0,0,stdvec,42) >= 0) {
+              matched = 1;
+              str_chars_append(cnt,ptr,x);
+              ptr += x;
+
+              str = array_element_at(&statement->args,0);
+              if(cf_strcmp(str->content,"highlight") == 0) {
+                tmpchar = strndup(ptr+stdvec[0],stdvec[1]-stdvec[0]);
+
+                str = array_element_at(&statement->args,1);
+                str_chars_append(cnt,"<span class=\"",13);
+                str_str_append(cnt,str);
+                str_chars_append(cnt,"\">",2);
+
+                str_chars_append(cnt,tmpchar,stdvec[1]-stdvec[0]);
+                str_chars_append(cnt,"</span>",7);
+
+                ptr += stdvec[1] - stdvec[0] - 1;
+              }
+              else if(cf_strcmp(str->content,"pop") == 0) {
+                str_chars_append(cnt,ptr+stdvec[0],stdvec[1]-stdvec[0]);
+                *pos = ptr + (stdvec[1] - stdvec[0]);
+                return 0;
+              }
+              else if(cf_strcmp(str->content,"stay") == 0) {
+                str_chars_append(cnt,ptr+stdvec[0],stdvec[1]-stdvec[0]);
+                ptr += stdvec[1] - stdvec[0];
+              }
+              else {
+                str = array_element_at(&statement->args,1);
+
+                str_chars_append(cnt,"<span class=\"",13);
+                str_str_append(cnt,str);
+                str_chars_append(cnt,"\">",2);
+
+                str = array_element_at(&statement->args,0);
+                if((tmpblock = flt_syntax_block_by_name(file,str->content)) == NULL) {
+                  fprintf(stderr,"Could not find block %s!\n",str->content);
+                  return 1;
+                }
+
+                str_chars_append(cnt,ptr+stdvec[0],stdvec[1]-stdvec[0]);
+                tmpchar = ptr + (stdvec[1] - stdvec[0]);
+                if(flt_syntax_doit(file,tmpblock,text,len,cnt,&tmpchar,NULL,xhtml) != 0) return 1;
+                ptr = tmpchar - 1;
+                str_chars_append(cnt,"</span>",7);
+              }
+            }
+          }
           break;
       }
     }
 
-    if(matched == 0) str_char_append(cnt,*ptr);
+    if(matched == 0) {
+      if(*ptr == '&') {
+        for(;*ptr != ';';++ptr) str_char_append(cnt,*ptr);
+        str_char_append(cnt,*ptr);
+      }
+      else if(*ptr == '<') {
+        for(;*ptr && *ptr != '>';++ptr) str_char_append(cnt,*ptr);
+        str_char_append(cnt,*ptr);
+      }
+      else str_char_append(cnt,*ptr);
+    }
   }
 
   return 0;
@@ -883,7 +1001,7 @@ int flt_syntax_highlight(t_string *content,t_string *bco,const u_char *lang,cons
   file = array_element_at(&flt_syntax_files,flt_syntax_files.elements-1);
 
   str_init(&code);
-  if(flt_syntax_doit(file,NULL,content->content,content->len,&code,&pos,cf_strcmp(xmlm->values[0],"yes") == 0) != 0) {
+  if(flt_syntax_doit(file,NULL,content->content,content->len,&code,&pos,NULL,cf_strcmp(xmlm->values[0],"yes") == 0) != 0) {
     str_cleanup(&code);
     return 1;
   }

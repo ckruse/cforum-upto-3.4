@@ -21,7 +21,12 @@ block "default"
   onstring "&quot;" "string" "string"
   onstring "'" "sqstring" "string"
 
-  onregexp_backref "<<(\\w+)" "heredoc" 1 "heredoc"
+  onregexp_backref "^&lt;&lt;(\\w+)" "heredoc" 1 "string"
+
+  onstring "qw(" "qw(" "string"
+  onstring "qw{" "qw{" "string"
+  onstring "qw[" "qw[" "string"
+  onregexp_backref "^qw(.)" "qw" 1 "string"
 
   # TODO: qr,qx,regexps, etc
 
@@ -32,13 +37,29 @@ block "default"
   onstringlist "makros" highlight "makro"
 
   # syntax: onregexp <regexp> <neuer-block> <span-klasse>
-  onregexp "\\$+[a-zA-Z_][a-zA-Z0-9_]*" highlight "variable"
+  onregexp "^\\$+[a-zA-Z_][a-zA-Z0-9_]*" highlight "variable"
   
   # syntax onregexpafter <vorher-regexp> <regexp-zu-matchen> <neuer-block> <span-klasse>
   # vorher-regexp wird auf das zeichen davor angewandt
-  onregexpafter "[^a-zA-Z0-9]" "0[0-7]+" highlight "octnumber"
-  onregexpafter "[^a-zA-Z0-9]" "0[xX][0-9A-Fa-f]+" highlight "hexnumber"
-  onregexpafter "[^a-zA-Z0-9]" "[0-9]+" highlight "number"
+  onregexpafter "^[^a-zA-Z0-9]" "^0[0-7]+" highlight "octnumber"
+  onregexpafter "^[^a-zA-Z0-9]" "^0[xX][0-9A-Fa-f]+" highlight "hexnumber"
+  onregexpafter "^[^a-zA-Z0-9]" "^[0-9]+" highlight "number"
+end
+
+block "qw("
+  onstring ")" pop
+end
+
+block "qw{"
+  onstring "}" pop
+end
+
+block "qw["
+  onstring "]" pop
+end
+
+block "qw"
+  onstring "$$" pop
 end
 
 block "onelinecomment"
@@ -48,9 +69,17 @@ end
 block "heredoc"
   lineend stay
 
-  # TODO: code highlighting
+  onstring "\\\\\\\\" highlight "escaped"
+  onstring "\\\\\&quot;" highlight "escaped"
 
-  onregexp "^$$" pop
+  onregexp "^\\\\[0-7]{1,3}" highlight "escaped"
+  onregexp "^\\\\x[0-9A-Fa-f]{1,2}" highlight "escaped"
+  onregexp "^\\\\[nrt$]" highlight "escaped"
+  onregexp "^\\$+[a-zA-Z_][a-zA-Z0-9_]*(\\[[a-zA-Z0-9_]*\\])*" highlight "variable"
+  onregexp "^\\$\\{+[a-zA-Z_][a-zA-Z0-9_]*(\\[[a-zA-Z0-9_]*\\])*\}" highlight "variable"
+
+  onstring "<br>$$<br>" pop
+  onstring "<br />$$<br />" pop
 end
 
 block "string"
@@ -59,12 +88,11 @@ block "string"
   onstring "\\\\\\\\" highlight "escaped"
   onstring "\\\\\&quot;" highlight "escaped"
 
-  onregexp "abc" highlight "escaped"
-#  onregexp "\\\\[0-7]{1,3}" highlight "escaped"
-#  onregexp "\\\\x[0-9A-Fa-f]{1,2}" highlight "escaped"
-#  onregexp "\\\\[nrt$]" highlight "escaped"
-#  onregexp "\\$+[a-zA-Z_][a-zA-Z0-9_]*(\\[[a-zA-Z0-9_]*\\])*" highlight "variable"
-#  onregexp "\\$\\{+[a-zA-Z_][a-zA-Z0-9_]*(\\[[a-zA-Z0-9_]*\\])*\}" highlight "variable"
+  onregexp "^\\\\[0-7]{1,3}" highlight "escaped"
+  onregexp "^\\\\x[0-9A-Fa-f]{1,2}" highlight "escaped"
+  onregexp "^\\\\[nrt$]" highlight "escaped"
+  onregexp "^\\$+[a-zA-Z_][a-zA-Z0-9_]*(\\[[a-zA-Z0-9_]*\\])*" highlight "variable"
+  onregexp "^\\$\\{+[a-zA-Z_][a-zA-Z0-9_]*(\\[[a-zA-Z0-9_]*\\])*\}" highlight "variable"
 
   onstring "&quot;" pop
 end
