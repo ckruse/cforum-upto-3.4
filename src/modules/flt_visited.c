@@ -185,7 +185,6 @@ int flt_visited_execute_filter(t_cf_hash *head,t_configuration *dc,t_configurati
           }
 
           cleanup_struct(&thread);
-          printf("marked thread visited\n");
 
           if(Cfg.resp_204) {
             printf("Status: 204 No Content\015\012\015\012");
