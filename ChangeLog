@@ -3,6 +3,8 @@
 		<dako@wwwtech.de> wrote it
 	* conf/patterns/javascript.pat: Small bugfix, added onstringlist "symbols"
 	* src/modules/flt_syntax.c: Now all regexes are case-insensitive
+	* conf/patterns/perl.pat, conf/patterns/c.pat, conf/patterns/javascript.pat,
+		conf/patterns/php.pat: Fixed bugs in highlighting escaped values
 
 2005-03-07 Christian Kruse <ckruse@wwwtech.de>
 	* src/utils.c: Fixed nasty bug in cf_make_path()
