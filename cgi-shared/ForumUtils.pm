@@ -184,7 +184,10 @@ sub transform_body {
 
   # after that, we collect all links to postings...
   foreach(@{$pcfg->{PostingUrl}}) {
-    $txt =~ s{\[link:\s*$_->[0]([\dtm=&]+)(?:#\w+)?\]}{my $tidpid = $1; $tidpid =~ s!&!;!; '[pref:'.$tidpid.']'}eg;
+    $txt =~ s{\[link:\s*$_->[0]([\dtm=&]+)(?:#\w+)?(\@title=[^\[\]<]+)\]}{
+      my $tidpid = $1;
+      my $title = $2;
+      $tidpid =~ s!&(?:amp;)?!;!; '[pref:'.$tidpid.($title||'').']'}eg;
   }
 
   # encode to html (entities, and so on -- if we do it once,
@@ -283,12 +286,12 @@ sub message_field {
     $posturl = $fdcfg->{PostingURL}->[0]->[0];
   }
 
-  $posting =~ s{\[pref:t=(\d+);m=(\d+)\]}{
+  $posting =~ s{\[pref:t=(\d+);m=(\d+)(?:\@title=([^\[\]<]+))?\]}{
     my $txt = $posturl;
-    my ($tid,$mid) = ($1,$2);
+    my ($tid,$mid,$title) = ($1,$2,$3);
     $txt =~ s!\%t!$tid!g;
     $txt =~ s!\%m!$mid!g;
-    '<a href="'.$txt.'">'.$txt.'</a>';
+    '<a href="'.$txt.'">'.($title||$txt).'</a>';
   }eg;
 
 
@@ -298,7 +301,7 @@ sub message_field {
   # (efficience analysis is relly nice :-)
 
   my @links = ();
-  while($posting =~ /\[[Ll][Ii][Nn][Kk]:\s*([^\]\s]+?)\s*(?:\@title=([^\]]+)\s*)?\]/g) {
+  while($posting =~ /\[[Ll][Ii][Nn][Kk]:\s*([^\]\s]+?)\s*(?:\@title=([^\[\]<]+)\s*)?\]/g) {
     my ($uri,$title) = ($1,$2);
     next if
       !is_valid_link($uri) &&
@@ -309,7 +312,7 @@ sub message_field {
   }
 
   my @images = ();
-  while($posting =~ /\[[Ii][Mm][Aa][Gg][Ee]:\s*([^\]\s]+?)\s*(?:\@alt=([^\]]+)\s*)?\]/g) {
+  while($posting =~ /\[[Ii][Mm][Aa][Gg][Ee]:\s*([^\]\s]+?)\s*(?:\@alt=([^\[\]<]+)\s*)?\]/g) {
     my ($uri,$alt) = ($1,$2);
     next if
       !is_valid_http_link($uri,CForum::Validator::VALIDATE_STRICT) &&
@@ -319,7 +322,7 @@ sub message_field {
   }
 
   my @iframes = ();
-  while($posting =~ /\[[Ii][Ff][Rr][Aa][Mm][Ee]:\s*([^\]\s]+)\s*\]/g) {
+  while($posting =~ /\[[Ii][Ff][Rr][Aa][Mm][Ee]:\s*([^\[\]<\s]+)\s*\]/g) {
     my $uri = $1;
     next if
       !is_valid_http_link($uri,CForum::Validator::VALIDATE_STRICT) &&
