@@ -142,8 +142,12 @@ int flt_oc_execute_filter(t_cf_hash *head,t_configuration *dc,t_configuration *v
   u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   t_mod_api is_visited;
 
-  if(mode & CF_MODE_THREADVIEW) return FLT_DECLINE;
   if(mode & CF_MODE_PRE) return FLT_DECLINE;
+
+  i = sprintf(buff,"t%llu",thread->tid);
+  cf_tpl_setvalue(&thread->messages->tpl,"unanch",TPL_VARIABLE_STRING,buff,i);
+
+  if(mode & CF_MODE_THREADVIEW) return FLT_DECLINE;
   if(ThreadsOpenByDefault == -1) return FLT_DECLINE;
 
   if(UserName) vs = cfg_get_first_value(dc,forum_name,"UBaseURL");
@@ -158,9 +162,6 @@ int flt_oc_execute_filter(t_cf_hash *head,t_configuration *dc,t_configuration *v
   if(UseJavaScript) {
     if(ThreadsOpenByDefault && OpenThreadIfNew == 0) cf_tpl_setvalue(&thread->messages->tpl,"UseJavaScript",TPL_VARIABLE_STRING,"1",1);
   }
-
-  i = sprintf(buff,"t%lld",thread->tid);
-  cf_tpl_setvalue(&thread->messages->tpl,"unanch",TPL_VARIABLE_STRING,buff,i);
 
   if(cl) { /* threads are closed by default! */
     for(i=0;i<sclen;i++) {

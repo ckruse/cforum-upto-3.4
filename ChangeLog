@@ -32,6 +32,10 @@
 	* src/defines.h: Added new handler hook number
 	* src/handlerrunners.c: Added new handler runner
 	* src/modules/flt_syntax.c: Fixed bug in onstringlist
+	* src/modules/flt_visited.c: Small bugfix in variable setting
+	* src/modules/flt_posting.c: Changed threadlist algorithm to use t_string
+	* src/modules/flt_openclose.c: Small bugfix
+	* src/htmllib.c: Changed directive parser, now it is more strict but faster
 
 2005-02-08 Christian Kruse <ckruse@wwwtech.de>
 	* configure.in: Added cf-cleanup.pl

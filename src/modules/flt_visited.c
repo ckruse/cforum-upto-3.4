@@ -368,12 +368,13 @@ int flt_visited_set_link(t_cf_hash *head,t_configuration *dc,t_configuration *vc
   int UserName = cf_hash_get(GlobalValues,"UserName",8) != NULL;
   u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   t_name_value *x = cfg_get_first_value(dc,forum_name,UserName?"UBaseURL":"BaseURL");
+  t_name_value *cs = cfg_get_first_value(dc,forum_name,"ExternCharset");
   size_t len;
   t_message *msg = cf_msg_get_first_visible(thr->messages);
 
   if(Cfg.VisitedFile && Cfg.HighlightVisitedPostings) {
     len = snprintf(buff,512,"%s?mv=%llu",x->values[0],thr->tid);
-    cf_tpl_setvalue(&msg->tpl,"mvlink",TPL_VARIABLE_STRING,buff,len);
+    cf_set_variable(&msg->tpl,cs,"mvlink",buff,len,1);
   }
 
   return FLT_OK;

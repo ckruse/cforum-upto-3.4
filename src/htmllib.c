@@ -133,7 +133,7 @@ u_char *parse_message(u_char *start,t_array *stack,t_string *content,t_string *c
         }
 
         /* ok, parse this directive */
-        for(ptr1=ptr+1,sb=0;*ptr1 && *ptr1 != ':' && *ptr1 != '=' && *ptr1 != ']' && !isspace(*ptr1) && sb == 0 && *ptr1 != '<';++ptr1) {
+        for(ptr1=ptr+1,sb=0;*ptr1 && isalnum(*ptr1) && sb == 0 && *ptr1 != '<';++ptr1) {
           sb = *ptr1 == '[';
         }
 

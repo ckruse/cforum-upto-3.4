@@ -129,7 +129,7 @@ int flt_posting_execute_filter(t_cf_hash *head,t_configuration *dc,t_configurati
          qclen,
          msgcntlen;
 
-  t_string cite,content;
+  t_string cite,content,threadlist;
 
   int level = 0,
       slvl = -1,
@@ -266,7 +266,7 @@ int flt_posting_execute_filter(t_cf_hash *head,t_configuration *dc,t_configurati
     cf_run_view_handlers(thread,head,CF_MODE_THREADVIEW|CF_MODE_POST);
     /* }}} */
 
-    cf_tpl_setvalue(tpl,"threadlist",TPL_VARIABLE_STRING,"",0);
+    str_init(&threadlist);
     for(msg=thread->messages;msg;msg=msg->next) {
       if((msg->may_show && msg->invisible == 0) || ShowInvisible == 1) {
         if(slvl == -1) slvl = msg->level;
@@ -290,33 +290,35 @@ int flt_posting_execute_filter(t_cf_hash *head,t_configuration *dc,t_configurati
         }
 
         if(msg->level < level) {
-          for(;level>msg->level;level--) cf_tpl_appendvalue(tpl,"threadlist","</ul></li>",10);
+          for(;level>msg->level;level--) str_chars_append(&threadlist,"</ul></li>",10);
         }
 
         level = msg->level;
 
         if(msg->next && cf_msg_has_answers(msg)) { /* this message has at least one answer */
-          cf_tpl_appendvalue(tpl,"threadlist","<li>",4);
+          str_chars_append(&threadlist,"<li>",4);
 
           cf_tpl_parse_to_mem(&msg->tpl);
-          cf_tpl_appendvalue(tpl,"threadlist",msg->tpl.parsed.content,msg->tpl.parsed.len-1);
+          str_str_append(&threadlist,&msg->tpl.parsed);
 
-          cf_tpl_appendvalue(tpl,"threadlist","<ul>",4);
+          str_chars_append(&threadlist,"<ul>",4);
 
           level++;
         }
         else {
-          cf_tpl_appendvalue(tpl,"threadlist","<li>",4);
+          str_chars_append(&threadlist,"<li>",4);
 
           cf_tpl_parse_to_mem(&msg->tpl);
-          cf_tpl_appendvalue(tpl,"threadlist",msg->tpl.parsed.content,msg->tpl.parsed.len-1);
-
-          cf_tpl_appendvalue(tpl,"threadlist","</li>",5);
+          str_str_append(&threadlist,&msg->tpl.parsed);
+          str_chars_append(&threadlist,"</li>",5);
         }
       }
     }
 
-    for(;level > 0 && level>slvl;level--) cf_tpl_appendvalue(tpl,"threadlist","</ul></li>",10);
+    for(;level > 0 && level>slvl;level--) str_chars_append(&threadlist,"</ul></li>",10);
+
+    cf_tpl_setvalue(tpl,"threadlist",TPL_VARIABLE_STRING,threadlist.content,threadlist.len);
+    str_cleanup(&threadlist);
   }
   /* }}} */
 
