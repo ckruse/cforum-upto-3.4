@@ -13,6 +13,8 @@
 	* conf/fo_view.conf.in: Added ReadMode, added template directives
 	* src/modules/flt_list.c: Added plugin for list read mode
 	* src/modules/flt_nested.c: Added plugin for nested read mode
+	* src/modules/flt_cgiconfig.c: Renamed flt_threadlist to flt_cgiconfig (better
+		name)
 
 2005-03-15 Christian Kruse <ckruse@wwwtech.de>
 	* conf/patterns/Makefile.am: Added complete list of pattern files to install
