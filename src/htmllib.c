@@ -788,13 +788,13 @@ void msg_to_html(t_cl_thread *thread,const u_char *msg,t_string *content,t_strin
 /* }}} */
 
 /* {{{ cf_gen_threadlist */
-void cf_gen_threadlist(t_cl_thread *thread,t_cf_hash *head,t_string *threadlist,const u_char *type,const u_char *linktpl) {
+int cf_gen_threadlist(t_cl_thread *thread,t_cf_hash *head,t_string *threadlist,const u_char *type,const u_char *linktpl,int mode) {
   t_message *msg;
   int ShowInvisible = cf_hash_get(GlobalValues,"ShowInvisible",13) == NULL ? 0 : 1;
 
   u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10), *date, *link;
 
-  int slvl = -1,level = 0;
+  int slvl = -1,level = 0,ret;
 
   t_name_value *dft = cfg_get_first_value(&fo_view_conf,forum_name,"DateFormatThreadList"),
     *ot  = cfg_get_first_value(&fo_view_conf,forum_name,"OpenThread"),
@@ -818,7 +818,7 @@ void cf_gen_threadlist(t_cl_thread *thread,t_cf_hash *head,t_string *threadlist,
   str_init(threadlist);
 
   if(cf_strcmp(type,"none") != 0) {
-    if(cf_strcmp(type,"partitial") == 0) {
+    if(cf_strcmp(type,"partitial") == 0 && mode == CF_MODE_THREADVIEW) {
       for(msg=thread->messages;msg && msg->mid != thread->threadmsg->mid;msg=msg->next) msg->may_show = 0;
 
       level = msg->level;
@@ -827,12 +827,29 @@ void cf_gen_threadlist(t_cl_thread *thread,t_cf_hash *head,t_string *threadlist,
       for(msg=msg->next;msg && msg->level > level;msg=msg->next);
       for(;msg;msg=msg->next) msg->may_show = 0;
     }
-    else cf_tpl_setvalue(&thread->threadmsg->tpl,"active",TPL_VARIABLE_STRING,"1",1);
+    else if(mode == CF_MODE_THREADVIEW) cf_tpl_setvalue(&thread->threadmsg->tpl,"active",TPL_VARIABLE_INT,1);
+    else if(mode == CF_MODE_THREADLIST) {
+      cf_tpl_setvalue(&thread->messages->tpl,"start",TPL_VARIABLE_INT,1);
+      cf_tpl_setvalue(&thread->messages->tpl,"msgnum",TPL_VARIABLE_INT,thread->msg_len);
+      cf_tpl_setvalue(&thread->messages->tpl,"answers",TPL_VARIABLE_INT,thread->msg_len-1);
+    }
 
     /* {{{ run handlers in pre and post mode */
-    cf_run_view_handlers(thread,head,CF_MODE_THREADVIEW|CF_MODE_PRE);
-    for(msg=thread->messages;msg;msg=msg->next) cf_run_view_list_handlers(msg,head,thread->tid,CF_MODE_THREADVIEW);
-    cf_run_view_handlers(thread,head,CF_MODE_THREADVIEW|CF_MODE_POST);
+    if(mode == CF_MODE_THREADLIST) {
+      ret = cf_run_view_handlers(thread,head,CF_MODE_THREADLIST|CF_MODE_PRE);
+      if(ret == FLT_OK || ret == FLT_DECLINE || ShowInvisible) {
+        for(msg=thread->messages;msg;msg=msg->next) cf_run_view_list_handlers(msg,head,thread->tid,mode);
+        ret = cf_run_view_handlers(thread,head,mode|CF_MODE_POST);
+
+        if(ret == FLT_EXIT && !ShowInvisible) return FLT_EXIT;
+      }
+
+    }
+    else {
+      cf_run_view_handlers(thread,head,mode|CF_MODE_PRE);
+      for(msg=thread->messages;msg;msg=msg->next) cf_run_view_list_handlers(msg,head,thread->tid,mode);
+      cf_run_view_handlers(thread,head,mode|CF_MODE_POST);
+    }
     /* }}} */
 
     for(msg=thread->messages;msg;msg=msg->next) {

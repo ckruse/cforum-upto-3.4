@@ -169,7 +169,7 @@ int cf_run_connect_init_handlers(t_cf_hash *head,int sock)
       exec    = (t_filter_connect)handler->func;
       ret     = exec(head,&fo_default_conf,&fo_view_conf,sock);
 
-      if(ret == FLT_EXIT) ext = 1;
+      if(ret == FLT_EXIT) ext = FLT_EXIT;
     }
   }
 

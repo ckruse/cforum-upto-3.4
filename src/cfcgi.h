@@ -114,6 +114,14 @@ void cf_cgi_destroy(t_cf_hash *hash);
  */
 u_int32_t cf_cgi_path_info_parsed(u_char ***infos);
 
+/**
+ * This function parses the cookies
+ * \param hash A hash to save cookies in
+ */
+void cf_cgi_parse_cookies(t_cf_hash *hash);
+
+void cf_cgi_destroy_entry(void *data);
+
 #endif
 
 /* eof */

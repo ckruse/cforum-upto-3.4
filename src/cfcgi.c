@@ -192,6 +192,60 @@ t_cf_hash *cf_cgi_parse_path_info_nv(t_cf_hash *hash) {
 }
 /* }}} */
 
+/* {{{ cf_cgi_parse_cookies */
+void cf_cgi_parse_cookies(t_cf_hash *hash) {
+  u_char *cookies = getenv("HTTP_COOKIE");
+  u_char *pos = cookies,*pos1 = cookies;
+  u_char *name = NULL,*value = NULL;
+  int len = 0,namlen = 0,vallen = 0;
+
+  if(cookies) {
+    while((pos = strstr(pos1,"=")) != NULL) {
+      for(;*pos && isspace(*pos);++pos);
+
+      namlen = pos - pos1;
+      *pos   = 0;
+      name   = cf_cgi_url_decode(pos1,namlen);
+      *pos   = '=';
+
+      pos1 = strstr(pos,";");
+      if(!pos1) break;
+
+      vallen  = pos1 - pos;
+      *pos1   = 0;
+      value   = cf_cgi_url_decode(pos+1,vallen);
+      *pos1++ = ';';
+
+      for(pos = name;*pos && isspace(*pos);++pos);
+
+      if(!_cf_cgi_save_param(hash,name,namlen,value)) {
+        free(name);
+        free(value);
+
+        fprintf(stderr,"%s[%d]: out of memory!\n",__FILE__,__LINE__);
+        return;
+      }
+    }
+
+    if(pos && *pos) {
+      len   = strlen(pos+1);
+      value = cf_cgi_url_decode(pos+1,len);
+
+      for(pos = name;*pos && isspace(*pos);++pos);
+
+      if(!_cf_cgi_save_param(hash,pos,namlen,value)) {
+        free(name);
+        free(value);
+
+        fprintf(stderr,"%s[%d]: out of memory!\n",__FILE__,__LINE__);
+        return;
+      }
+    }
+  }
+
+}
+/* }}} */
+
 /* {{{ cf_cgi_url_decode
  * Returns: u_char *         the url decoded string
  * Parameters:
@@ -277,6 +331,8 @@ u_char *cf_cgi_url_encode(const u_char *str,size_t len) {
 int _cf_cgi_save_param(t_cf_hash *hash,u_char *name,int namlen,u_char *value) {
   t_cf_cgi_param *ent,*ent1;
 
+  namlen = strlen(name);
+
   ent = cf_hash_get(hash,name,namlen);
   if(!ent) {
     ent        = fo_alloc(NULL,1,sizeof(t_cf_cgi_param),FO_ALLOC_CALLOC);
@@ -288,6 +344,8 @@ int _cf_cgi_save_param(t_cf_hash *hash,u_char *name,int namlen,u_char *value) {
 
     /* we make a copy, so we do not need it again */
     free(ent);
+
+    ent = cf_hash_get(hash,name,strlen(name));
   }
   else {
     ent1            = fo_alloc(NULL,1,sizeof(t_cf_cgi_param),FO_ALLOC_CALLOC);
@@ -395,9 +453,7 @@ void cf_cgi_destroy_entry(void *data) {
 u_char *cf_cgi_get(t_cf_hash *hash,u_char *name) {
   t_cf_cgi_param *p = cf_hash_get(hash,name,strlen(name));
 
-  if(p) {
-    return p->value;
-  }
+  if(p) return p->value;
 
   return NULL;
 }

@@ -234,7 +234,7 @@ int flt_posting_execute_filter(t_cf_hash *head,t_configuration *dc,t_configurati
   free(qchars);
 
   if(cf_strcmp(st->values[0],"none") != 0) {
-    cf_gen_threadlist(thread,head,&threadlist,st->values[0],NULL);
+    cf_gen_threadlist(thread,head,&threadlist,st->values[0],NULL,CF_MODE_THREADVIEW);
     cf_tpl_setvalue(tpl,"threadlist",TPL_VARIABLE_STRING,threadlist.content,threadlist.len);
     str_cleanup(&threadlist);
   }

@@ -132,7 +132,7 @@ int flt_list_execute_filter(t_cf_hash *head,t_configuration *dc,t_configuration 
   cf_tpl_setvar(tpl,"threads",&array);
 
   if(cf_strcmp(st->values[0],"none") != 0) {
-    cf_gen_threadlist(thread,head,&threadlist,st->values[0],lt->values[0]);
+    cf_gen_threadlist(thread,head,&threadlist,st->values[0],lt->values[0],CF_MODE_THREADVIEW);
     cf_tpl_setvalue(tpl,"threadlist",TPL_VARIABLE_STRING,threadlist.content,threadlist.len);
     str_cleanup(&threadlist);
   }

@@ -1,3 +1,15 @@
+2005-04-01 Christian Kruse <ckruse@wwwtech.de>
+	* src/fo_view.c: Now using cf_gen_threadlist()
+	* src/modules/flt_directives.c: Added parameter check to avoid parser bug; bug
+		has to be fixed!
+	* src/modules/flt_list.c, src/modules/flt_nested.c, src/modules/flt_posting.c:
+		Changed cf_gen_threadlist() call
+	* src/modules/flt_openclose.c: Did a lot of bugfixes (e.g. #666, #665, #664)
+		and implemented an XMLHttpRequest mode
+	* src/cfcgi.[ch]: Added cookie parser
+	* src/handlerrunners.c: Bugfix; now it returns FLT_OK or FLT_EXIT, not 0 or 1
+	* src/htmllib.[ch]: Changed behavior of cf_gen_threadlist()
+
 2005-03-31 Christian Kruse <ckruse@wwwtech.de>
 	* src/perl/Plugins/ImportExport.pm: Fixed a bug in import function, empty
 		values should not be validated

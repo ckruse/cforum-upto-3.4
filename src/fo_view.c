@@ -43,6 +43,7 @@
 #include "cfcgi.h"
 #include "template.h"
 #include "clientlib.h"
+#include "htmllib.h"
 #include "fo_view.h"
 /* }}} */
 
@@ -345,6 +346,8 @@ void show_threadlist(void *shm_ptr,t_cf_hash *head)
   size_t i;
   int del = cf_hash_get(GlobalValues,"ShowInvisible",13) == NULL ? CF_KILL_DELETED : CF_KEEP_DELETED;
 
+  t_string tlist;
+
   #ifndef CF_NO_SORTING
   t_array threads;
   #endif
@@ -474,24 +477,9 @@ void show_threadlist(void *shm_ptr,t_cf_hash *head)
     {
       if(thread.messages) {
         if((thread.messages->invisible == 0 && thread.messages->may_show) || del == CF_KEEP_DELETED) {
-          cf_tpl_setvalue(&thread.messages->tpl,"start",TPL_VARIABLE_INT,1);
-          cf_tpl_setvalue(&thread.messages->tpl,"msgnum",TPL_VARIABLE_INT,thread.msg_len);
-          cf_tpl_setvalue(&thread.messages->tpl,"answers",TPL_VARIABLE_INT,thread.msg_len-1);
-
-          /* first: run VIEW_HANDLER handlers in pre-mode */
-          ret = cf_run_view_handlers(&thread,head,CF_MODE_THREADLIST|CF_MODE_PRE);
-
-          if(ret == FLT_OK || ret == FLT_DECLINE || del == CF_KEEP_DELETED) {
-            /* run list handlers */
-            for(msg=thread.messages;msg;msg=msg->next) cf_run_view_list_handlers(msg,head,thread.tid,CF_MODE_THREADLIST);
-
-            /* after that, run VIEW_HANDLER handlers in post-mode */
-            ret = cf_run_view_handlers(&thread,head,CF_MODE_THREADLIST|CF_MODE_POST);
-
-            /* if thread is still visible print it out */
-            if(ret == FLT_OK || ret == FLT_DECLINE || del == CF_KEEP_DELETED) print_thread_structure(&thread,head);
-          }
-
+          str_init(&tlist);
+          if(cf_gen_threadlist(&thread,head,&tlist,"full",NULL,CF_MODE_THREADLIST) != FLT_EXIT) fwrite(tlist.content,1,tlist.len,stdout);
+          str_cleanup(&tlist);
           cf_cleanup_thread(&thread);
         }
       }
@@ -522,23 +510,9 @@ void show_threadlist(void *shm_ptr,t_cf_hash *head)
         threadp = array_element_at(&threads,i);
 
         if((threadp->messages->invisible == 0 && threadp->messages->may_show) || del == CF_KEEP_DELETED) {
-          cf_tpl_setvalue(&threadp->messages->tpl,"start",TPL_VARIABLE_INT,1);
-          cf_tpl_setvalue(&threadp->messages->tpl,"msgnum",TPL_VARIABLE_INT,threadp->msg_len);
-          cf_tpl_setvalue(&threadp->messages->tpl,"answers",TPL_VARIABLE_INT,threadp->msg_len-1);
-
-          /* first: run VIEW_HANDLER handlers in pre-mode */
-          ret = cf_run_view_handlers(threadp,head,CF_MODE_THREADLIST|CF_MODE_PRE);
-
-          if(ret == FLT_OK || ret == FLT_DECLINE || del == CF_KEEP_DELETED) {
-            /* run list handlers */
-            for(msg=threadp->messages;msg;msg=msg->next) cf_run_view_list_handlers(msg,head,threadp->tid,CF_MODE_THREADLIST);
-
-            /* after that, run VIEW_HANDLER handlers in post-mode */
-            ret = cf_run_view_handlers(threadp,head,CF_MODE_THREADLIST|CF_MODE_POST);
-
-            /* if thread is still visible print it out */
-            if(ret == FLT_OK || ret == FLT_DECLINE || del == CF_KEEP_DELETED) print_thread_structure(threadp,head);
-          }
+          str_init(&tlist);
+          if(cf_gen_threadlist(threadp,head,&tlist,"full",NULL,CF_MODE_THREADLIST) != FLT_EXIT) fwrite(tlist.content,1,tlist.len,stdout);
+          str_cleanup(&tlist);
         }
       }
 

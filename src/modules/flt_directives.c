@@ -260,6 +260,7 @@ int flt_directives_execute(t_configuration *fdc,t_configuration *fvc,t_cl_thread
   t_string tmpstr;
   u_char *parameter = (u_char *)parameters[0];
 
+  if(!parameter) return FLT_DECLINE;
   while(isspace(*parameter)) ++parameter;
 
   if(*directive == 'l') {
