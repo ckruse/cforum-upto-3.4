@@ -15,6 +15,7 @@
 	* src/templates/{de,fr}/tpl_*/forum_begin.html: Added motd variable
 	* src/modules/flt_motd.c: Added message of the day filter
 	* cgi-shared/Plugins/Management/Makefile.am: Ups, forget makefile template
+	* cgi-shared/config/fo_usermanagement.conf.in: Ups, forget configfile template
 
 2004-08-05 Christian Kruse <ckruse@wwwtech.de>
 	* cgi-bin/fo_usermanagement.in: Added umask handling
