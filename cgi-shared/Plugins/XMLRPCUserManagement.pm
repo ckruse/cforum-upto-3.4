@@ -24,6 +24,7 @@ sub VERSION {(q$Revision$ =~ /([\d.]+)\s*$/)[0] or '0.0'}
 
 use ForumUtils qw/read_configuration get_template get_error recode uniquify_params get_config_file create_directory_structure fatal/;
 
+use File::Path;
 use CGI;
 use CGI::Carp qw/fatalsToBrowser/;
 

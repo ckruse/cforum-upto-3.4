@@ -40,7 +40,6 @@ use CGI::Carp qw/fatalsToBrowser/;
 
 use DBI;
 
-use File::Path;
 use Frontier::Responder;
 
 use ForumUtils qw/read_configuration get_template get_error recode uniquify_params get_config_file create_directory_structure fatal/;
