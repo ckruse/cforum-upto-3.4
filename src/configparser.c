@@ -90,7 +90,7 @@ t_conf_opt default_options[] = {
   { "<LocaleConfig>", NULL, 0, NULL},
   { "DateLocale",               handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG, &fo_default_conf },
   { "Language",                 handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG, &fo_default_conf },
-  { "LocaleDir",                handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG, &fo_default_conf },
+  { "MessagesDatabase",         handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG, &fo_default_conf },
   { "</LocaleConfig>", NULL, 0, NULL },
 
   { "<Users>", NULL, 0, NULL },

@@ -1,0 +1,63 @@
+E_NO_SOCK: L'interface de connexion n'a malheureusement pas pu être établie.
+E_NO_CONN: Aucune connexion au serveur n'a malheureuseument pu être établie.
+E_TPL_NOT_FOUND: Le modèle (template) n'a malheureusement pas pu être trouvé. Veuillez vous adresser à l'administrateur-système.
+E_NO_THREADLIST: La liste des discussions n'a malheureusement pas pu être réclamée. Veuillez vous adresser à l'administrateur-système.
+E_COMMUNICATION: Une erreur de communication avec le serveur est survenue. Veuillez vous adresser à votre administrateur système.
+E_DATA_FAILURE: Les données transmises par le serveur sont erronées pour une raison quelconque.
+E_DATA_FAILURE: Données manquantes ou erronées.
+E_UNAME_INVALID: Le nom d'utilisateur est invalide.
+E_PW_TOO_SHORT: Le mot de passe est trop court.
+E_PW_DISACCORD: Les mots de passe ne correspondent pas.
+E_PW_INVALID: Le mot de passe n'est pas valide.
+E_ADDUSER_FAILED: Le nom d'utilisateur mentionné existe déjà. Veuillez en choisir un autre.
+E_CONFIG_ERR: Il semble y avoir une erreur de configuration ou le vérificateur syntaxique de configuration est obsolète.
+E_IO_ERR: Une erreur de fichier est malheureusement survenue.
+E_name_short: Vous avez mentionné un nom trop court.
+E_name_long: Vous avez mentionné un nom trop long.
+E_name_invalid: Êtes-vous certain de vouloir signer sous un nom pareil?
+E_subject_short: Vous avez mentionné un intitulé de message trop court.
+E_subject_long: Vous avez mentionné un intitulé de message trop long.
+E_subject_invalid: Êtes-vous certain de vouloir poster cet intitulé?
+E_body_short: Avez vous si peu à dire?
+E_body_long: Maintenant c'est un peu long.
+E_email: Votre adresse électronique paraît être invalide.
+E_manipulated: Données falsifiées ou manquantes. Les données semblent avoir été trafiquées d'une manière quelconque.
+E_image: L'URL du graphique semble être invalide.
+E_homepage: L'URL de votre page d'accueil semble être invalide.
+E_cat: Veuillez choisir une catégorie!
+E_unid: Les données semblent avoir été trafiquées...
+E_server: Le serveur a renvoyé: 
+E_field_missing: Les données semblent être incomplètes.
+E_posting_format: Le format de votre message semble n'être pas correct (par exemple passages à la ligne manquants, ponctuation absente, pas d'accents). Ce genre de messages n'est pas le bienvenu, car leur lecture est souvent difficile. Êtes-vous certain de vouloir poster le message sous cette forme?
+E_posting_badwords: Votre message semble contenir plus de mots grossiers qu'il n'est permis.
+E_posting_quoting: Plus de 25% des lignes de votre message proviennent d'une citation. Êtes-vous certain de vouloir poster le message sous cette forme?
+E_uname_short: Le nom d'utilisateur doit comporter au moins %d caractères.
+E_pass_short: Le mot de passe doit comporter au moins %d caractères.
+E_pass_match: Les mots de passe ne correspondent pas!
+E_uname_invalid: Le nom d'utilisateur est invalide!
+E_pass_invalid: Le mot de passe est invalide!
+E_uname_exists: Le nom d'utilisateur existe déjà!
+E_auth_required: Pour pouvoir poster votre message sous ce nom, il vous faut vous authentifier!
+E_FO_403: Accès refusé.
+E_FO_404: Le message que vous réclamez n'a pas pu être trouvé.
+E_FO_500: Il n'a malheureusement pas pu être donné suite à votre requête en raison de problèmes techniques côté serveur.
+E_FO_501: Le numéro d'identification (ID) de la discussion ou du message semble manquer.
+E_FO_502: Il semblerait que vous ayez envoyé votre message en double.
+E_FO_503: Une requête invalide a été envoyée au serveur.
+E_FO_504: L'authentification a malheureusement échoué. Il est possible que vous essayez d'enregistrer un nom qui a déjà été enregistré ou que vous ayez simplement oublié d'entrer toutes les informations nécessaires.
+E_FO_505: Le serveur semble être quelque peu surchargé. Veuillez réessayer plus tard.
+E_FO_506: Le serveur vient d'être redémarré. Veuillez réessayer plus tard.
+E_FO_507: Le serveur semble être quelque peu surchargé. Veuillez réessayer plus tard.
+E_FO_600: Le forum est bloqué pour des raisons administratives ou techniques. Veuillez réessayer plus tard.
+E_ARCHIVE_ERROR: Une erreur interne est malheureusement survenue.
+E_ARCHIVE_YEARNOTPRESENT: L'année que vous avez choisie n'existe malheureusement pas dans les archives.
+E_ARCHIVE_MONTHNOTPRESENT: Le mois que vous avez choisi n'existe malheureusement pas dans les archives.
+E_ARCHIVE_THREADNOTPRESENT: La discussion que vous avez choisie n'existe malheureusement pas dans les archives.
+E_posting_links: Certaines URIs d'éléments [link:]-, [image:]- ou [iframe:] ne peuvent pas être rectifiées. êtes-vous certains que toutes les URIs sont correctes?
+E_user_create: L'utilisateur n'a pas pu être créé suite à des problèmes techniques du serveur.
+E_posting_category: Le sujet que vous avez choisi n'est pas valide.
+E_posting_category: Sie haben eine ungültige Kategorie ausgewählt.
+E_posting_charset: Vous avez entré un caractère qui ne peut pas être représenté par le jeu de caractères ISO-8859-1. Peut-être avez-vous entré du code binaire ou un signe euro.
+E_POST_NOT_ALLOWED: La rédaction de nouveaux messages n'est provisoirement pas permise.
+
+

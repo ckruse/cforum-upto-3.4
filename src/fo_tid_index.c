@@ -143,7 +143,7 @@ void index_month(char *year,char *month) {
       str_chars_append(&str,ym,ym_len);
 
       data.data = str.content;
-      data.size = str.len;
+      data.size = str.len + 1;
 
       Tdb->del(Tdb,NULL,&key,0);
       if((ret = Tdb->put(Tdb,NULL,&key,&data,0)) != 0) {

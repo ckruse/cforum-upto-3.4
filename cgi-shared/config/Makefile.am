@@ -1,5 +1,3 @@
-SUBDIRS=locale
-
 EXTRA_DIST=fo_arcview.conf \
   fo_default.conf \
   fo_post.conf \

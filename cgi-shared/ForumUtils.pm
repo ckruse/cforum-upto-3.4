@@ -44,7 +44,7 @@ use Unicode::MapUTF8 qw(from_utf8 to_utf8);
 # needed because of this fucking Windows-1252
 use Text::Iconv;
 
-use Locale::gettext;
+use BerkeleyDB;
 use POSIX qw/setlocale/;
 
 use HTML::Entities;
@@ -53,6 +53,8 @@ use CForum::Template;
 use CheckRFC;
 
 use POSIX qw/setlocale strftime LC_ALL/;
+
+my $Msgs = undef;
 
 # }}}
 
@@ -473,13 +475,17 @@ sub get_error {
   my ($dcfg,$err) = (shift,shift);
   my $variant     = shift || '';
 
-	my $id = $variant ? $err.'_'.$variant : $err;
+	unless($Msgs) {
+	  $Msgs = new BerkeleyDB::Btree(
+      -Filename => $dcfg->{MessagesDatabase}->[0]->[0],
+      -Flags => DB_RDONLY
+    ) or return 'Bad database error, go away';
+	}
 
-  setlocale(LC_MESSAGES,$dcfg->{Language}->[0]->[0]);
-	bindtextdomain("messages",$dcfg->{LocaleDir}->[0]->[0]);
-	textdomain("messages");
+	my $id = $dcfg->{Language}->[0]->[0].'_'.($variant ? $err.'_'.$variant : $err);
 
-	return gettext($id);
+	my $msg = $Msgs->db_get($id);
+	return $msg||$id;
 }
 # }}}
 

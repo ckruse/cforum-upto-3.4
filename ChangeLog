@@ -1,3 +1,14 @@
+2004-07-31 Christian Kruse <ckruse@wwwtech.de>
+	* src/clientlib.c: Changed messages system to BerkeleyDB
+	* cgi-shared/config/locale/: Removed due to the crazyness of the gettext
+		system
+	* cgi-shared/config/errormessages.*: Involved the new language system
+	* scripts/: Moved all distribution scripts to scripts/
+	* scripts/msgs2db.pl.in: Involved a script to convert messages.*.txt (plain text)
+		to BDB
+	* scr/templates/{de,fr}/tpl_*/Makefile.am: Changed path to scripts/ directory
+	* cgi-shared/ForumUtils.pm: Went to new messages API
+
 2004-07-30 Christian Kruse <ckruse@wwwtech.de>
 	* TODO: actualized
 	* cgi-shared/config/locale/: Added gettext usage for error messages
@@ -13,6 +24,8 @@
 		multi language API
 	* cgi-shared/config/fo_*.in, cgi-shared/config/modules.*.xml: Changed to new
 		multi language api
+	* src/fo_tid_index.c: Fixed a bug in db->put() handling (data string was one
+		character to small, so the \0 byte wasn't added)
 
 2004-07-29 Christian Kruse <ckruse@wwwtech.de>
 	* cgi-bin/fo_post_old.in: Bugfix for URL handling

@@ -54,7 +54,7 @@ libcfvalidate_la_LIBADD=libcfutils.la $(IDN)
 libcfvalidate_la_LDFLAGS=-export-dynamic -avoid-version
 
 libcfclientlib_la_SOURCES=clientlib.c shm_locking.c semaphores.c
-libcfclientlib_la_LIBADD=libcfutils.la libcfreadline.la libcfcharconvert.la libcftemplate.la
+libcfclientlib_la_LIBADD=libcfutils.la libcfreadline.la libcfcharconvert.la libcftemplate.la $(BDB_LIB)
 libcfclientlib_la_LDFLAGS=-export-dynamic -avoid-version
 
 libserverlib_la_SOURCES=serverlib.c shm_locking.c semaphores.c archiver.c cf_pthread.c xml_handling.c

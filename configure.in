@@ -308,13 +308,7 @@ cgi-shared/config/fo_view.conf
 cgi-shared/config/fo_server.conf
 cgi-shared/config/fo_vote.conf
 Doxyfile
-cgi-shared/config/locale/Makefile
-cgi-shared/config/locale/de/Makefile
-cgi-shared/config/locale/en/Makefile
-cgi-shared/config/locale/fr/Makefile
-cgi-shared/config/locale/de/LC_MESSAGES/Makefile
-cgi-shared/config/locale/en/LC_MESSAGES/Makefile
-cgi-shared/config/locale/fr/LC_MESSAGES/Makefile
+scripts/msgs2db.pl
 )
 
 dnl eof

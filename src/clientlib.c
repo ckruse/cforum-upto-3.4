@@ -38,7 +38,7 @@
 
 #include <pwd.h>
 
-#include <libintl.h>
+#include <db.h>
 
 #ifdef CF_SHARED_MEM
 #include <sys/ipc.h>
@@ -66,6 +66,8 @@ t_cf_hash *APIEntries = NULL;
 
 /* error string */
 u_char ErrorString[50];
+
+DB *Msgs = NULL;
 
 #ifdef CF_SHARED_MEM
 /* {{{ Shared memory functions */
@@ -275,36 +277,162 @@ void cf_set_variable(t_cf_template *tpl,t_name_value *cs,u_char *vname,const u_c
  */
 void str_error_message(const u_char *err,FILE *out, ...) {
   t_name_value *v = cfg_get_first_value(&fo_default_conf,"ErrorTemplate");
-  t_name_value *loc_dir = cfg_get_first_value(&fo_default_conf,"LocaleDir");
-  t_name_value *loc = cfg_get_first_value(&fo_default_conf,"Language");
+  t_name_value *db = cfg_get_first_value(&fo_default_conf,"MessagesDatabase");
+  t_name_value *lang = cfg_get_first_value(&fo_default_conf,"Language");
   t_name_value *cs = cfg_get_first_value(&fo_default_conf,"ExternCharset");
   t_cf_template tpl;
   u_char tplname[256];
+  u_char errname[256];
   va_list ap;
 
   u_char *buff = NULL,ibuff[256];
   register u_char *ptr;
   t_string msg;
 
-  int ivar;
+  int ivar,ret;
   u_char *svar;
 
   size_t size;
 
-  if(v && loc_dir && loc) {
+  DBT key,value;
+
+  if(v && db && lang) {
     generate_tpl_name(tplname,256,v);
     tpl_cf_init(&tpl,tplname);
 
-    bind_textdomain_codeset("messages","UTF-8");
-    bindtextdomain("messages",loc_dir->values[0]);
-    textdomain("messages");
-
     if(tpl.tpl) {
-      setlocale(LC_MESSAGES,loc->values[0]);
       str_init(&msg);
-      buff = gettext(err);
 
-      va_start(ap,out);
+      if(Msgs == NULL) {
+        if((ret = db_create(&Msgs,NULL,0)) == 0) {
+          if((ret = Msgs->open(Msgs,NULL,db->values[0],NULL,DB_BTREE,0,0)) != 0) {
+            fprintf(stderr,"DB->open(%s) error: %s\n",db->values[0],db_strerror(ret));
+          }
+        }
+        else fprintf(stderr,"db_create() error: %s\n",db_strerror(ret));
+      }
+
+      if(Msgs) {
+        memset(&key,0,sizeof(key));
+        memset(&value,0,sizeof(value));
+
+        size = snprintf(errname,256,"%s_%s",lang->values[0],err);
+
+        key.data = errname;
+        key.size = size;
+
+        if(Msgs->get(Msgs,NULL,&key,&value,0) == 0) {
+          buff = value.data;
+        }
+      }
+
+      if(buff) {
+        va_start(ap,out);
+
+        for(ptr=buff;*ptr;ptr++) {
+          if(*ptr == '%') {
+            ptr++;
+
+            switch(*ptr) {
+              case '%':
+                str_char_append(&msg,*ptr);
+                break;
+
+              case 's':
+                svar = va_arg(ap,u_char *);
+                str_chars_append(&msg,svar,strlen(svar));
+                break;
+
+              case 'd':
+                ivar = va_arg(ap,int);
+                size = snprintf(ibuff,50,"%d",ivar);
+                str_chars_append(&msg,ibuff,50);
+                break;
+
+              default:
+                str_char_append(&msg,*ptr);
+                break;
+            }
+          }
+          else {
+            str_char_append(&msg,*ptr);
+          }
+        }
+
+        va_end(ap);
+
+        cf_set_variable(&tpl,cs,"error",msg.content,msg.len,1);
+        str_cleanup(&msg);
+
+        if(out) {
+          tpl_cf_parse_to_mem(&tpl);
+          fwrite(tpl.parsed.content,1,tpl.parsed.len,out);
+        }
+        else {
+          tpl_cf_parse(&tpl);
+        }
+
+        tpl_cf_finish(&tpl);
+      }
+      else {
+        printf("Sorry, internal error, cannot do anything. Perhaps you should kick your system administrator.\n");
+      }
+    }
+    else {
+      printf("Sorry, could not find template file. I got error %s\n",err);
+    }
+  }
+  else {
+    printf("Sorry, but I could not find my configuration.\nI got error %s\n",err);
+  }
+}
+/* }}} */
+
+/* {{{ get_error_message */
+u_char *get_error_message(const u_char *err,size_t *len, ...) {
+  t_name_value *db = cfg_get_first_value(&fo_default_conf,"MessagesDatabase");
+  t_name_value *lang = cfg_get_first_value(&fo_default_conf,"Language");
+  va_list ap;
+
+  u_char *buff = NULL,ibuff[256],errname[256];
+  register u_char *ptr;
+  t_string msg;
+
+  int ivar,ret;
+  u_char *svar;
+
+  size_t size;
+
+  DBT key,value;
+
+  if(db && lang) {
+    str_init(&msg);
+
+    if(Msgs == NULL) {
+      if((ret = db_create(&Msgs,NULL,0)) == 0) {
+        if((ret = Msgs->open(Msgs,NULL,db->values[0],NULL,DB_BTREE,0,0)) != 0) {
+          fprintf(stderr,"DB->open(%s) error: %s\n",db->values[0],db_strerror(ret));
+        }
+      }
+      else fprintf(stderr,"db_create() error: %s\n",db_strerror(ret));
+    }
+
+    if(Msgs) {
+      memset(&key,0,sizeof(key));
+      memset(&value,0,sizeof(value));
+
+      size = snprintf(errname,256,"%s_%s",lang->values[0],err);
+
+      key.data = errname;
+      key.size = size;
+
+      if(Msgs->get(Msgs,NULL,&key,&value,0) == 0) {
+        buff = value.data;
+      }
+    }
+
+    if(buff) {
+      va_start(ap,len);
 
       for(ptr=buff;*ptr;ptr++) {
         if(*ptr == '%') {
@@ -337,89 +465,9 @@ void str_error_message(const u_char *err,FILE *out, ...) {
       }
 
       va_end(ap);
-
-      cf_set_variable(&tpl,cs,"error",msg.content,msg.len,1);
-      str_cleanup(&msg);
-
-      if(out) {
-        tpl_cf_parse_to_mem(&tpl);
-        fwrite(tpl.parsed.content,1,tpl.parsed.len,out);
-      }
-      else {
-        tpl_cf_parse(&tpl);
-      }
-
-      tpl_cf_finish(&tpl);
+      if(len) *len = msg.len;
+      return msg.content;
     }
-    else {
-      printf("Sorry, could not find template file. I got error %s\n",err);
-    }
-  }
-  else {
-    printf("Sorry, but I could not find my configuration.\nI got error %s\n",err);
-  }
-}
-/* }}} */
-
-/* {{{ get_error_message */
-u_char *get_error_message(const u_char *err,size_t *len, ...) {
-  t_name_value *loc_dir = cfg_get_first_value(&fo_default_conf,"LocaleDir");
-  t_name_value *loc = cfg_get_first_value(&fo_default_conf,"Language");
-  va_list ap;
-
-  u_char *buff = NULL,ibuff[256];
-  register u_char *ptr;
-  t_string msg;
-
-  int ivar;
-  u_char *svar;
-
-  size_t size;
-
-  if(loc_dir && loc) {
-    bind_textdomain_codeset("messages","UTF-8");
-    bindtextdomain("messages",loc_dir->values[0]);
-    textdomain("messages");
-
-    setlocale(LC_MESSAGES,loc->values[0]);
-    str_init(&msg);
-    buff = gettext(err);
-
-    va_start(ap,len);
-
-    for(ptr=buff;*ptr;ptr++) {
-      if(*ptr == '%') {
-        ptr++;
-
-        switch(*ptr) {
-          case '%':
-            str_char_append(&msg,*ptr);
-            break;
-
-          case 's':
-            svar = va_arg(ap,u_char *);
-            str_chars_append(&msg,svar,strlen(svar));
-            break;
-
-          case 'd':
-            ivar = va_arg(ap,int);
-            size = snprintf(ibuff,50,"%d",ivar);
-            str_chars_append(&msg,ibuff,50);
-            break;
-
-          default:
-            str_char_append(&msg,*ptr);
-            break;
-        }
-      }
-      else {
-        str_char_append(&msg,*ptr);
-      }
-    }
-
-    va_end(ap);
-    if(len) *len = msg.len;
-    return msg.content;
   }
 
   return NULL;

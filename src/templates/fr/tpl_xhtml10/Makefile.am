@@ -2,7 +2,7 @@
 SUFFIXES=.html
 
 .html.c:
-	${top_builddir}/template_gen.pl $<
+	${top_builddir}/scripts/template_gen.pl $<
 
 pkglib_LTLIBRARIES+=fr_xhtml10_arcmonthlist.la
 fr_xhtml10_arcmonthlist_la_SOURCES=arcmonthlist.c

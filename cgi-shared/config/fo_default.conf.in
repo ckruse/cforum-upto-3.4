@@ -45,7 +45,7 @@
 <LocaleConfig>
  DateLocale "de_DE.ISO8859-1"
  Language "de"
- LocaleDir "@CONFIGDIR@/locale"
+ MessagesDatabase "@DATADIR@/messages.db"
 </LocaleConfig>
 
 <Categories>
