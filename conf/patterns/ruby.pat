@@ -1,10 +1,14 @@
 start = "default"
 
-list "symbols" = "(,),\,,;"
-list "keywords" = "BEGIN,class,ensure,nil,self,when,END,def,false,not,super,while,alias,defined,for,or,then,yield,and,do,if,redo,true,begin,else,in,rescue,undef,break,elsif,module,retry,unless,case,end, next,return,until"
+list "symbols" = "(,),\,,;,@,$"
+list "keywords" = "BEGIN,class,ensure,nil,self,when,END,def,false,not,super,while,alias,defined,for,or,then,yield,and,do,if,redo,true,begin,else,in,rescue,undef,break,elsif,module,retry,unless,case,end, next,return,until,require,include,loop"
 list "makros" = "self,nil,true,false,__FILE__,__LINE__"
 
 block "default"
+  lineend stay
+
+  onregexp "^(\\.|=|::|\\[|\\]|\\*\\*|-|\\+|!|~|\\*|/|%|&lt;&lt;|&gt;&gt;|&amp;|\\||\\^|&gt;|&gt;=|&lt;|&lt;=|&lt;=&gt;|==|===|!=|=~|!~|&amp;&amp;|\\|\\||\\.\\.|\\.\\.\\.|\\+=|-=|\\*=|%=|/=|&lt;&lt;=|&gt;&gt;=|\\|=|&amp;=|\\^=|\\*\\*=)" highlight "operator"
+
   onstring "&quot;" "string" "string"
   onstring "'" "sqstring" "string"
   onstring "`" "exec" "string"
@@ -14,8 +18,6 @@ block "default"
   onstringlist "symbols" highlight "symbol"
   onstringlist "keywords" highlight "keyword"
   onstringlist "makros" highlight "makro"
-
-  onregexp "^(::|\\[|\\]|\\*\\*|-|\\+|!|~|\\*|/|%|&lt;&lt;|&gt;&gt;|&amp;|\\||\\^|&gt;|&gt;=|&lt;|&lt;=|&lt;=&gt;|==|===|!=|=~|!~|&amp;&amp;|\\|\\||\\.\\.|\\.\\.\\.|\\+=|-=|\\*=|%=|/=|&lt;&lt;=|&gt;&gt;=|\\|=|&amp;=|\\^=|\\*\\*=)" highlight "operator"
 
   onregexpafter "^[^a-zA-Z0-9]" "^0[0-7](\\.[0-7]*|[0-7]+)" highlight "octnumber"
   onregexpafter "^[^a-zA-Z0-9]" "^0[xX][0-9A-Fa-f](\\.[0-9A-Fa-f]+|[0-9A-Fa-f]*)" highlight "hexnumber"
@@ -42,6 +44,8 @@ block "heredoc"
 end
 
 block "exec"
+  lineend stay
+
   onstring "\\\\" highlight "escaped"
   onstring "\\`" highlight "escaped"
 
@@ -53,6 +57,8 @@ block "exec"
 end
 
 block "string"
+  lineend stay
+
   onstring "\\\\" highlight "escaped"
   onstring "\\&quot;" highlight "escaped"
 
@@ -64,6 +70,8 @@ block "string"
 end
 
 block "sqstring"
+  lineend stay
+
   onstring "\\\\" highlight "escaped"
   onstring "\\'" highlight "escaped"
 
