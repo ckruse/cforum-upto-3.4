@@ -115,10 +115,11 @@ zu linken. Am besten geht das mit folgendem Script:
 
 \begin{verbatim}
 for file in /usr/local/bin/fo_* do;
-  ln -s \$file .
+  ln -s $file .
 done
 rm fo_server
 \end{verbatim}
+%$
 
 Dieses Script ist ein einfaches Shellscript, dass Sie per Cut-and-paste im \texttt{cgi-bin}-Verzeichnis einfach eingeben
 können. Es legt für jedes \texttt{fo\_}-Programm in \texttt{/usr/local/bin/} einen symbolischen Link im aktuellen
@@ -187,7 +188,7 @@ fo_server -c /usr/local/etc/cforum/ -d
 \end{verbatim}
 
 Jetzt sollte das Forum automatisch laufen. Nun müssen Sie nur noch die Templates installieren. Beispiel-Templates finden Sie
-im Download-Verzeichnis des Classic Forums (http://wwwtech.de/cforum/download/). Diese werden mit dem Script \texttt{cf-compile_templates.pl}
+im Download-Verzeichnis des Classic Forums (http://wwwtech.de/cforum/download/). Diese werden mit dem Script \texttt{cf-compile\_templates.pl}
 übersetzt:
 
 \begin{verbatim}
