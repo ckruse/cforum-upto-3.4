@@ -1,3 +1,15 @@
+2004-11-26 Christian Kruse <ckruse@wwwtech.de>
+	* src/cf_pthread.c: Fixed several bugs (now it compiles cleanly)
+	* src/serverlib.c: Fixed several bugs which caused crashes of the server
+	* src/serverlib.h: Added void *cf_worker(void *)
+	* src/archiver.c, archiver.h: Deleted nearly all functions; the archiver has
+		to be written	nearly new
+	* src/configparser.c: Fixed bugs in directive management, fixed behavior of
+		CFG_OPT_NEEDED
+	* src/fo_recovery.c: Removed xml_handling.h
+	* src/fo_server.c: Fixed several bugs, added validation of the Forums
+		directive
+
 2004-11-24 Christian Kruse <ckruse@wwwtech.de>
 	* *: Merged 2.1 differences back to the trunk
 
