@@ -29,10 +29,10 @@ MaxThreads "120"
 
 # We want logfiles to be 2MB max
 LogMaxSize "2097152"
-ErrorLog "@with_log_dir@/fo_errors"
-StdLog "@with_log_dir@/fo_stdlog"
+ErrorLog "@localstatedir@/cf_errors"
+StdLog "@localstatedir@/cf_stdlog"
 
-PIDFile "@with_log_dir@/fo_pid"
+PIDFile "@localstatedir@/fo_pid"
 
 # external interface
 ExternPort "6666"
@@ -41,8 +41,8 @@ ExternPort "6666"
 Forums "FORUM1"
 
 Forum FORUM1 {
- MessagePath "@with_message_dir@"
- ArchivePath "@with_archive_dir@"
+ MessagePath "@sharedstatedir@/cforum/messages/forum1/"
+ ArchivePath "@sharedstatedir@/cforum/archive/forum1/"
 
  SortThreads "ascending"
  SortMessages "ascending"
@@ -52,7 +52,7 @@ Forum FORUM1 {
  MainFileMaxPostings "2000"
  MainFileMaxThreads "150"
 
- AuthNames "@DATADIR@/registered_names.db"
+ AuthNames "@sharedstatedir@/cforum/registered_names_forum1.db"
 }
 
 

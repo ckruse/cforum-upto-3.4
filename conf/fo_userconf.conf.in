@@ -30,21 +30,21 @@ Forum FORUM1 {
   MinVal "AutoReload"   "2"
   MaxVal "AutoReload"   "30"
 
-  ModuleConfig "@CONFIGDIR@/modules.%s.xml"
+  ModuleConfig "@sysconfdir@/cforum/modules.%s.xml"
 
   FromUntilFormat "%d. %m. %Y, %H:%M"
 
-  Edit "@libdir@/cforum/%s_%s_useredit.so"
-  EditEntry "@libdir@/cforum/%s_%s_setting.so"
-  SectEntry "@libdir@/cforum/%s_%s_section.so"
-  PageEntry "@libdir@/cforum/%s_%s_pageentry.so"
-  EditOk "@libdir@/cforum/%s_%s_usereditok.so"
-  UpDown "@libdir@/cforum/%s_%s_updown.so"
-  ImportForm "@libdir@/cforum/%s_%s_importform.so"
-  ImportOk "@libdir@/cforum/%s_%s_importok.so"
+  Edit "@sysconfdir@/cforum/templates/forum1/%s_%s_useredit.so"
+  EditEntry "@sysconfdir@/cforum/templates/forum1/%s_%s_setting.so"
+  SectEntry "@sysconfdir@/cforum/templates/forum1/%s_%s_section.so"
+  PageEntry "@sysconfdir@/cforum/templates/forum1/%s_%s_pageentry.so"
+  EditOk "@sysconfdir@/cforum/templates/forum1/%s_%s_usereditok.so"
+  UpDown "@sysconfdir@/cforum/templates/forum1/%s_%s_updown.so"
+  ImportForm "@sysconfdir@/cforum/templates/forum1/%s_%s_importform.so"
+  ImportOk "@sysconfdir@/cforum/templates/forum1/%s_%s_importok.so"
 
-  ViewSettings "@libdir@/cforum/%s_%s_usersettings.so"
+  ViewSettings "@sysconfdir@/cforum/templates/forum1/%s_%s_usersettings.so"
 
-  FatalTemplate "@libdir@/cforum/%s_%s_fatal.so"
+  FatalTemplate "@sysconfdir@/cforum/templates/forum1/%s_%s_fatal.so"
 }
 

@@ -8,6 +8,9 @@ use Config;
 my $PERL = '@PERL@';
 my $SWIG = '@SWIG@';
 
+my $prefix = "@prefix@";
+my $exec_prefix = "@exec_prefix@";
+
 system $SWIG,'-perl5','-shadow','CForum-Validator.i';
 system $PERL,'-pi','-e','s!\@EXPORT = qw\( \);!\@EXPORT_OK = qw(
   is_valid_link
@@ -29,7 +32,7 @@ WriteMakefile(
     NAME              => 'CForum::Validator',
     PREREQ_PM         => {},
     AUTHOR            => 'Christian Kruse <ckruse@wwwtech.de>',
-    LIBS              => ['-L@libdir@/cforum/ -lcfvalidate -lcfutils'],
+    LIBS              => ["-L@libdir@/cforum/ -L../../.libs/ -lcfvalidate -lcfutils"],
     DEFINE            => '',
     INC               => '-I. -I../../',
     C                 => ['CForum-Validator_wrap.c'],

@@ -25,10 +25,11 @@ Load "flt_syntax"
 Load "flt_checkregisteredname"
 
 Forum FORUM1 {
- PostingUrl "http://selfforum.teamone.de/\?"
- PostingUrl "http://selfforum.teamone.de/my/\?"
- PostingUrl "/\?"
- PostingUrl "\?"
+ PostingUrl "^http://wwwtech.de/cforum/forum/\\?"
+ PostingUrl "^http://wwwtech.de/cforum/forum/my/\\?"
+ PostingUrl "^/cforum/forum/\\?"
+ PostingUrl "^/cforum/forum/my/\\?"
+ PostingUrl "^\./\\?"
 
  FieldConfig "Name"     "60"     "2"
  FieldConfig "subject"  "64"     "4"
@@ -39,7 +40,7 @@ Forum FORUM1 {
  FieldConfig "cat"      "18"     "3"
 
  FieldNeeded "Name" "yes" "yes"
-# FieldNeeded "EMail" "yes" "yes"
+ FieldNeeded "EMail" "yes" "yes"
  FieldNeeded "subject" "yes" "no"
  FieldNeeded "body" "yes" "yes"
  FieldNeeded "unid" "yes" "yes"
@@ -87,9 +88,9 @@ Forum FORUM1 {
  Image "noe" "/images/16.gif" "Noe!"
  Image "board" "/images/17.gif" "Board?"
 
- ThreadTemplate "@libdir@/cforum/%s_%s_thread.so"
- FatalTemplate "@libdir@/cforum/%s_%s_fatal.so"
- OkTemplate "@libdir@/cforum/%s_%s_post_ok.so"
+ ThreadTemplate "@sysconfdir@/cforum/templates/forum1/%s_%s_thread.so"
+ FatalTemplate "@sysconfdir@/cforum/templates/forum1/%s_%s_fatal.so"
+ OkTemplate "@sysconfdir@/cforum/templates/forum1/%s_%s_post_ok.so"
 }
 
 

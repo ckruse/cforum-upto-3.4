@@ -61,6 +61,7 @@
 
 
 /* {{{ cf_setup_shared_mem */
+#ifdef CF_SHARED_MEM
 void cf_setup_shared_mem(t_forum *forum) {
   union semun smn;
   unsigned short x = 0;
@@ -88,6 +89,7 @@ void cf_setup_shared_mem(t_forum *forum) {
     exit(-1);
   }
 }
+#endif
 /* }}} */
 
 /* {{{ cf_register_forum */
@@ -1173,16 +1175,16 @@ void *cf_generate_cache(void *arg) {
     forum->date.visible            = time(NULL);
     forum->date.invisible          = time(NULL);
 
-    forum->fresh = 1;
+    forum->cache.fresh = 1;
 
     CF_RW_UN(&forum->lock);
   }
   /* }}} */
   /* {{{ make cache for all forums */
   else {
-    forums = cfg_get_first_value(&fo_server_conf,"Forums");
+    forums = cfg_get_first_value(&fo_server_conf,NULL,"Forums");
 
-    for(i=0;i<forums->vallen;i++) {
+    for(i=0;i<forums->valnum;i++) {
       if((forum = cf_hash_get(head.forums,forums->values[i],strlen(forums->values[i]))) != NULL) {
         str_init(&str1);
         str_init(&str2);
@@ -1203,7 +1205,7 @@ void *cf_generate_cache(void *arg) {
         forum->date.visible            = time(NULL);
         forum->date.invisible          = time(NULL);
 
-        forum->fresh = 1;
+        forum->cache.fresh = 1;
 
         CF_RW_UN(&forum->lock);
       }

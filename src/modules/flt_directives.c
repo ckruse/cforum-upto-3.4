@@ -123,7 +123,7 @@ int flt_directives_is_relative_uri(const u_char *tmp,size_t len) {
 /* {{{ flt_directives_generate_uri */
 void flt_directives_generate_uri(const u_char *uri,const u_char *title,t_string *content,t_string *cite,int sig,t_configuration *dc,t_configuration *vc) {
   u_char *tmp2 = NULL;
-  size_t len = 0,len1,i;
+  size_t len = 0,len1 = 0,i;
   t_flt_directives_lt_tok *tok;
   u_char *new_uri = NULL;
   t_handler_config *handler;

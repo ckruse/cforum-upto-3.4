@@ -32,24 +32,24 @@ Forum FORUM1 {
 
  EnableCache "yes"
  CacheLevel "6"
- CacheDir "/home/ckruse/dev/c/cforum/cgi-shared/data/cache/"
+ CacheDir "@sharedstatedir@/cforum/cache/forum1/"
 
- TemplatesFrameset "@libdir@/cforum/%s_%s_frameset.so" "@libdir@/cforum/%s_%s_blank.so"
+ TemplatesFrameset "@sysconfdir@/cforum/templates/forum1/%s_%s_frameset.so" "@sysconfdir@/cforum/templates/forum1/%s_%s_blank.so"
 
- FatalTemplate "@libdir@/cforum/%s_%s_fatal.so"
+ FatalTemplate "@sysconfdir@/cforum/templates/forum1/%s_%s_fatal.so"
 
- YearsTemplate "@libdir@/cforum/%s_%s_arcyears.so"
- YearListTemplate "@libdir@/cforum/%s_%s_arcyearlist.so"
+ YearsTemplate "@sysconfdir@/cforum/templates/forum1/%s_%s_arcyears.so"
+ YearListTemplate "@sysconfdir@/cforum/templates/forum1/%s_%s_arcyearlist.so"
 
- MonthsTemplate "@libdir@/cforum/%s_%s_arcmonths.so"
- MonthsListTemplate "@libdir@/cforum/%s_%s_arcmonthlist.so"
+ MonthsTemplate "@sysconfdir@/cforum/templates/forum1/%s_%s_arcmonths.so"
+ MonthsListTemplate "@sysconfdir@/cforum/templates/forum1/%s_%s_arcmonthlist.so"
 
- ThreadListMonthTemplate "@libdir@/cforum/%s_%s_arcthreadlist_month.so"
+ ThreadListMonthTemplate "@sysconfdir@/cforum/templates/forum1/%s_%s_arcthreadlist_month.so"
 
- ThreadTemplate "@libdir@/cforum/%s_%s_arcthread.so"
- ThreadListTemplate "@libdir@/cforum/%s_%s_arcthreadlist.so"
- PerThreadTemplate "@libdir@/cforum/%s_%s_arcperthread.so"
+ ThreadTemplate "@sysconfdir@/cforum/templates/forum1/%s_%s_arcthread.so"
+ ThreadListTemplate "@sysconfdir@/cforum/templates/forum1/%s_%s_arcthreadlist.so"
+ PerThreadTemplate "@sysconfdir@/cforum/templates/forum1/%s_%s_arcperthread.so"
 
- UpDownTemplate "@libdir@/cforum/%s_%s_updown.so"
+ UpDownTemplate "@sysconfdir@/cforum/templates/forum1/%s_%s_updown.so"
 }
 

@@ -32,7 +32,7 @@ BEGIN {
   $methods = {};
 }
 
-use lib ("@PERLMODULES@","@libdir@");
+use lib "@libdir@";
 
 sub VERSION {(q$Revision$ =~ /([\d.]+)\s*$/)[0] or '0.0'}
 

@@ -349,7 +349,7 @@ void show_month_content(const u_char *year,const u_char *month) {
   t_get_threadlist gt;
   t_month_last_modified mt;
 
-  int cache_level,do_cache,show_invisible = cf_hash_get(GlobalValues,"ShowInvisible",13) != NULL;
+  int cache_level = 0,do_cache = 0,show_invisible = cf_hash_get(GlobalValues,"ShowInvisible",13) != NULL;
   size_t i,len,len1;
   time_t last_modified;
 
@@ -809,7 +809,7 @@ int main(int argc,char *argv[],char *env[]) {
   t_string tmp;
 
   size_t len;
-  int ret;
+  int ret = 0;
 
   /* set signal handler for SIGSEGV (for error reporting) */
   signal(SIGSEGV,sighandler);

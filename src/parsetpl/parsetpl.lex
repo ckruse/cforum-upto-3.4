@@ -538,7 +538,7 @@ int process_array_assignment(t_array *data,t_string *tmp) {
 
 int process_variable_assignment_tag(t_token *variable,t_array *data) {
   t_string tmp;
-  t_token *token;
+  t_token *token = NULL;
   t_string varn;
   char buf[20];
   int ret;

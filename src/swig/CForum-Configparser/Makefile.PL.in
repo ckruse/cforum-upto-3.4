@@ -8,6 +8,9 @@ use Config;
 my $PERL = '@PERL@';
 my $SWIG = '@SWIG@';
 
+my $prefix = "@prefix@";
+my $exec_prefix = "@exec_prefix@";
+
 system $SWIG,'-perl5','-shadow','CForum-Configparser.i';
 system $PERL,'-pi','-e','s!\@EXPORT = qw\( \);!\@EXPORT_OK = qw(
   get_conf_file
@@ -45,7 +48,7 @@ WriteMakefile(
     NAME              => 'CForum::Configparser',
     PREREQ_PM         => {},
     AUTHOR            => 'Christian Kruse <ckruse@wwwtech.de>',
-    LIBS              => ['-L@libdir@/cforum/ -lcfconfigparser -lcfhashlib -lcfutils'],
+    LIBS              => ["-L@libdir@/cforum/ -L../../.libs/ -lcfconfigparser -lcfhashlib -lcfutils"],
     DEFINE            => '',
     INC               => '-I. -I../../',
     C                 => ['CForum-Configparser_wrap.c'],

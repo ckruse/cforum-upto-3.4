@@ -1,1 +1,0 @@
-<$ print $text; $> (von <$ print $name; if $mail then print " (<a href=\"mailto:".$mail."\">".$mail."</a>)"; endif; if $uri then print " in <a href=\"".$uri."\">".$uri."</a>"; $>)

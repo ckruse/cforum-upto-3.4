@@ -1,3 +1,27 @@
+2005-02-11 Christian Kruse <ckruse@wwwtech.de>
+	* conf/Makefile.am: Changed installation path, added patterns/ directory to
+		SUBDIRS
+	* conf/fo_server.conf.in, conf/fo_view.conf.in,
+		conf/fo_usermanagement.conf.in, conf/fo_vote.conf.in,
+		conf/fo_default.conf.in, conf/fo_userconf.conf.in, conf/fo_post.conf.in,
+		conf/fo_arcview.conf.in: Changed a lot of substitution values
+	* configure.in: Added repair.pl to repair path names in config files, removed
+		some configure options no longer needed
+	* src/modules/flt_directives.c: Small bugfix (used uninitialized value)
+	* src/serverlib.c: Small bugfixes in not-shm code
+	* src/perl/Plugins/Makefile.am, src/perl/Plugins/Management/Makefile.am,
+		src/perl/Makefile.am: Changed installation path
+	* src/fo_arcview.c: Several small bugfixes because of uninitialized values
+	* src/swig/Makefile.in: Changed LIB pathes
+	* src/swig/CForum-Template/Makefile.PL.in,
+		src/swig/CForum-Configparser/Makefile.PL.in,
+		src/swig/CForum-Validator/Makefile.PL.in,
+		src/swig/CForum-Clientlib/Makefile.PL.in: Fixed bugs in -L argument
+	* src/parsetpl/parsetpl.lex: Fixed bug because of uninitialized values
+	* src/configparser.c: Removed very old configuration option ErrorMessages
+	* scripts/fo_usermanagement.in, scripts/cf-cleanup.pl.in,
+		scripts/fo_userconf.in, scripts/fo_xmlrpc.in: Fixed "use lib" handling
+
 2005-02-10 Christian Seiler <self@christian-seiler.de>
 	* src/ipcutils.c: added to repository, implemented ipc_dpopen and
 		ipc_dpclose functions

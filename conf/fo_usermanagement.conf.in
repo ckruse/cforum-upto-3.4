@@ -47,18 +47,18 @@ Forum FORUM1 {
   SMTPHost "localhost"
   SMTPFrom "cforum@wwwtech.de"
 
-  Register "@libdir@/cforum/%s_%s_userregister.so"
-  RegisterOk "@libdir@/cforum/%s_%s_userregok.so"
+  Register "@sysconfdir@/cforum/templates/forum1/%s_%s_userregister.so"
+  RegisterOk "@sysconfdir@/cforum/templates/forum1/%s_%s_userregok.so"
 
-  ChangePass "@libdir@/cforum/%s_%s_chpass.so"
-  ChangePassOk "@libdir@/cforum/%s_%s_chpassok.so"
+  ChangePass "@sysconfdir@/cforum/templates/forum1/%s_%s_chpass.so"
+  ChangePassOk "@sysconfdir@/cforum/templates/forum1/%s_%s_chpassok.so"
 
-  Unregister "@libdir@/cforum/%s_%s_unreg.so"
-  UnregisterOk "@libdir@/cforum/%s_%s_unregok.so"
+  Unregister "@sysconfdir@/cforum/templates/forum1/%s_%s_unreg.so"
+  UnregisterOk "@sysconfdir@/cforum/templates/forum1/%s_%s_unregok.so"
 
-  SendPass "@libdir@/cforum/%s_%s_sendpass.so"
-  SendPassOk "@libdir@/cforum/%s_%s_sendpassok.so"
+  SendPass "@sysconfdir@/cforum/templates/forum1/%s_%s_sendpass.so"
+  SendPassOk "@sysconfdir@/cforum/templates/forum1/%s_%s_sendpassok.so"
   
-  FatalTemplate "@libdir@/cforum/%s_%s_fatal.so"
+  FatalTemplate "@sysconfdir@/cforum/templates/forum1/%s_%s_fatal.so"
 }
 

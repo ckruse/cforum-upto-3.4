@@ -8,6 +8,9 @@ use Config;
 my $PERL = '@PERL@';
 my $SWIG = '@SWIG@';
 
+my $prefix = "@prefix@";
+my $exec_prefix = "@exec_prefix@";
+
 system $SWIG,'-perl5','-shadow','CForum-Template.i';
 open DAT,'>>','Template.pm';
 print DAT <<PL;
@@ -27,7 +30,7 @@ WriteMakefile(
     NAME              => 'CForum::Template',
     PREREQ_PM         => {},
     AUTHOR            => 'Christian Kruse <ckruse@wwwtech.de>',
-    LIBS              => ['-L@libdir@/cforum/ -lcftemplate -lcfhashlib -lcfutils'],
+    LIBS              => ["-L@libdir@/cforum/ -L../../.libs/ -lcftemplate -lcfhashlib -lcfutils"],
     DEFINE            => '',
     INC               => '-I. -I../../',
     C                 => ['CForum-Template_wrap.c'],

@@ -56,12 +56,12 @@ Forum FORUM1 {
  MotdFile "/etc/motd"
  EnableMotd "yes"
 
- TemplatesFrameset      "@libdir@/cforum/%s_%s_frameset.so" "@libdir@/cforum/%s_%s_blank.so"
+ TemplatesFrameset      "@sysconfdir@/cforum/templates/forum1/%s_%s_frameset.so" "@sysconfdir@/cforum/templates/forum1/%s_%s_blank.so"
 
- TemplateForumBegin     "@libdir@/cforum/%s_%s_forum_begin.so"
- TemplateForumEnd       "@libdir@/cforum/%s_%s_forum_end.so"
- TemplateForumThread    "@libdir@/cforum/%s_%s_forum_thread.so"
- TemplatePosting        "@libdir@/cforum/%s_%s_forum_posting.so"
+ TemplateForumBegin     "@sysconfdir@/cforum/templates/forum1/%s_%s_forum_begin.so"
+ TemplateForumEnd       "@sysconfdir@/cforum/templates/forum1/%s_%s_forum_end.so"
+ TemplateForumThread    "@sysconfdir@/cforum/templates/forum1/%s_%s_forum_thread.so"
+ TemplatePosting        "@sysconfdir@/cforum/templates/forum1/%s_%s_forum_posting.so"
 
  # Date format
  #

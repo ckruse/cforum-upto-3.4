@@ -1,3 +1,5 @@
+SUBDIRS=patterns
+
 EXTRA_DIST=fo_arcview.conf \
   fo_default.conf \
   fo_post.conf \
@@ -16,12 +18,12 @@ EXTRA_DIST=fo_arcview.conf \
 
 
 install-data-local:
-	if test ! -d $(CONFIGDIR); then \
-		$(MKDIR) -p $(CONFIGDIR); \
+	if test ! -d $(sysconfdir)/cforum; then \
+		$(MKDIR) -p $(sysconfdir)/cforum; \
 	fi; \
 	for file in $(EXTRA_DIST); do \
-	  if test ! -f $(CONFIGDIR)/$$file; then \
-		  $(INSTALL_DATA) $$file $(CONFIGDIR)/$$file; \
+	  if test ! -f $(sysconfdir)/cforum/$$file; then \
+		  $(INSTALL_DATA) $$file $(sysconfdir)/cforum/$$file; \
 		fi; \
 	done
 

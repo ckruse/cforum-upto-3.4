@@ -2,12 +2,11 @@
 
 PERL = @PERL@
 libdir = @libdir@
-PERLMODULES = @PERLMODULES@
 
 SUBDIRS=CForum-Clientlib CForum-Configparser CForum-Template CForum-Validator
 
 all:
-	for dir in $(SUBDIRS); do cd $$dir; $(PERL) Makefile.PL LIB=$(PERLMODULES); cd ..; done;
+	for dir in $(SUBDIRS); do cd $$dir; $(PERL) Makefile.PL LIB=$(libdir)/cforum; cd ..; done;
 	for dir in $(SUBDIRS); do cd $$dir; make; cd ..; done;
 
 install:
