@@ -16,7 +16,7 @@
 		patterns
 	* conf/patterns/html.pat: Fixed several bugs in pattern file
 	* src/modules/flt_syntax.c: Implemented pattern elements used by html pattern
-		matching
+		matching, invented *_start constructs
 	* src/arrayutils.c: Fixed small bug in array_element_at()
 	* src/modules/flt_posting.c: Fixed bug in replacing {$vname}
 	* src/fo_post.c: Fixed bug in body_plain2coded(), it is [msg:], not [message:]

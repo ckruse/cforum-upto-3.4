@@ -60,6 +60,7 @@ typedef struct {
 
 typedef struct {
   int type;
+  int start;
 
   t_array args;
   t_array pregs;
@@ -342,7 +343,10 @@ int flt_syntax_load(const u_char *path,const u_char *lang) {
       }
 
       /* {{{ onstring <zeichenkette> <neuer-block> <span-klasse> */
-      else if(cf_strcmp(str.content,"onstring") == 0) {
+      else if(cf_strcmp(str.content,"onstring") == 0 || cf_strcmp(str.content,"onstring_start") == 0) {
+        if(cf_strcmp(str.content,"onstring_start") == 0) statement.start = 1;
+        else statement.start = 0;
+
         str_cleanup(&str);
 
         if((type = flt_syntax_next_token(line,&pos,&str)) != FLT_SYNTAX_TOK_STR) {
@@ -382,7 +386,10 @@ int flt_syntax_load(const u_char *path,const u_char *lang) {
       }
       /* }}} */
       /* {{{ onstringlist <listen-name> <neuer-block> <span-klasse> */
-      else if(cf_strcmp(str.content,"onstringlist") == 0) {
+      else if(cf_strcmp(str.content,"onstringlist") == 0 || cf_strcmp(str.content,"onstringlist_start") == 0) {
+        if(cf_strcmp(str.content,"onstringlist_start") == 0) statement.start = 1;
+        else statement.start = 0;
+
         str_cleanup(&str);
 
         statement.type = FLT_SYNTAX_ONSTRINGLIST;
@@ -422,7 +429,10 @@ int flt_syntax_load(const u_char *path,const u_char *lang) {
       }
       /* }}} */
       /* {{{ onregexp <regexp> <neuer-block> <span-klasse> */
-      else if(cf_strcmp(str.content,"onregexp") == 0) {
+      else if(cf_strcmp(str.content,"onregexp") == 0 || cf_strcmp(str.content,"onregexp_start") == 0) {
+        if(cf_strcmp(str.content,"onregexp_start") == 0) statement.start = 1;
+        else statement.start = 0;
+
         str_cleanup(&str);
         statement.type = FLT_SYNTAX_ONREGEXP;
 
@@ -475,7 +485,10 @@ int flt_syntax_load(const u_char *path,const u_char *lang) {
       }
       /* }}} */
       /* {{{ onregexp_backref <pattern> <block> <backreference number> <span-klasse> */
-      else if(cf_strcmp(str.content,"onregexp_backref") == 0) {
+      else if(cf_strcmp(str.content,"onregexp_backref") == 0 || cf_strcmp(str.content,"onregexp_backref_start") == 0) {
+        if(cf_strcmp(str.content,"onregexp_backref_start") == 0) statement.start = 1;
+        else statement.start = 0;
+
         str_cleanup(&str);
         statement.type = FLT_SYNTAX_ONREGEXP_BACKREF;
 
@@ -526,7 +539,10 @@ int flt_syntax_load(const u_char *path,const u_char *lang) {
       }
       /* }}} */
       /* {{{ onregexpafter <vorher-regexp> <regexp-zu-matchen> <neuer-block> <span-klasse> */
-      else if(cf_strcmp(str.content,"onregexpafter") == 0) {
+      else if(cf_strcmp(str.content,"onregexpafter") == 0 || cf_strcmp(str.content,"onregexpafter_start") == 0) {
+        if(cf_strcmp(str.content,"onregexpafter_start") == 0) statement.start = 1;
+        else statement.start = 0;
+
         str_cleanup(&str);
         statement.type = FLT_SYNTAX_ONREGEXP_AFTER;
 
@@ -595,7 +611,10 @@ int flt_syntax_load(const u_char *path,const u_char *lang) {
       }
       /* }}} */
       /* {{{ onregexpafter_backref <vorher-regexp> <regexp-zu-matchen> <neuer-block> <backref-nummer> <span-klasse> */
-      else if(cf_strcmp(str.content,"onregexpafter_backref") == 0) {
+      else if(cf_strcmp(str.content,"onregexpafter_backref") == 0 || cf_strcmp(str.content,"onregexpafter_backref_start") == 0) {
+        if(cf_strcmp(str.content,"onregexpafter_backref_start") == 0) statement.start = 1;
+        else statement.start = 0;
+
         str_cleanup(&str);
         statement.type = FLT_SYNTAX_ONREGEXP_AFTER_BACKREF;
 
@@ -763,6 +782,7 @@ int flt_syntax_doit(flt_syntax_pattern_file_t *file,flt_syntax_block_t *block,u_
   flt_syntax_list_t *tmplist;
   flt_syntax_preg_t *tmppreg;
   int stdvec[42],priv_pops = 0;
+  int start = 1;
 
   if(!block) {
     if((block = flt_syntax_block_by_name(file,file->start)) == NULL) {
@@ -796,6 +816,8 @@ int flt_syntax_doit(flt_syntax_pattern_file_t *file,flt_syntax_block_t *block,u_
 
     for(i=0,matched=0;i<block->statement.elements && matched == 0;++i) {
       statement = array_element_at(&block->statement,i);
+
+      if(statement->start && start == 0) continue;
 
       switch(statement->type) {
         case FLT_SYNTAX_ONSTRING:
@@ -1176,6 +1198,7 @@ int flt_syntax_doit(flt_syntax_pattern_file_t *file,flt_syntax_block_t *block,u_
       }
       else str_char_append(cnt,*ptr);
     }
+    else start = 0;
   }
 
   return 0;
