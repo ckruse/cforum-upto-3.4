@@ -9,7 +9,7 @@ block "default"
   onstringlist "symbols" highlight "symbol"
   onstringlist "keywords" highlight "keyword"
 
-  onregexp "^(=|&gt;|&lt;|!|~|\\?|:|\\.|==|&lt;=|&gt;=|!=|&amp;&amp;|\\|\\||\\+\\+|--|\\+|-|\\*|/|&amp;|\\||\\^|%|&lt;&lt;|&gt;&gt;|&gt;&gt;&gt;|\\+=|-=|\\*=|/=|&amp;=|\\|=|\\^=|%=|&lt;&lt;=|&gt;&gt;=|&gt;&gt;&gt;=" highlight "operator"
+  onregexp "^(=|&gt;|&lt;|!|~|\\?|:|\\.|==|&lt;=|&gt;=|!=|&amp;&amp;|\\|\\||\\+\\+|--|\\+|-|\\*|/|&amp;|\\||\\^|%|&lt;&lt;|&gt;&gt;|&gt;&gt;&gt;|\\+=|-=|\\*=|/=|&amp;=|\\|=|\\^=|%=|&lt;&lt;=|&gt;&gt;=|&gt;&gt;&gt;=)" highlight "operator"
 
   onstring "&quot;" "string" "string"
   onstring "'" "sqstring" "string"
