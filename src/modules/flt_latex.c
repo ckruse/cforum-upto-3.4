@@ -334,7 +334,8 @@ void flt_latex_nohtml(const u_char *cnt,t_string *str) {
 }
 /* }}} */
 
-int flt_latex_execute(t_configuration *fdc,t_configuration *fvc,const u_char *directive,const u_char **parameters,size_t plen,t_string *bco,t_string *bci,t_string *content,t_string *cite,const u_char *qchars,int sig) {
+/* {{{ flt_latex_execute */
+int flt_latex_execute(t_configuration *fdc,t_configuration *fvc,t_cl_thread *thread,const u_char *directive,const u_char **parameters,size_t plen,t_string *bco,t_string *bci,t_string *content,t_string *cite,const u_char *qchars,int sig) {
   u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   u_char sum[33];
   int obj = 0,exist;
@@ -421,6 +422,7 @@ int flt_latex_execute(t_configuration *fdc,t_configuration *fvc,const u_char *di
 
   return FLT_DECLINE;
 }
+/* }}} */
 
 int flt_latex_init(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc) {
   cf_html_register_directive("latex",flt_latex_execute,CF_HTML_DIR_TYPE_ARG|CF_HTML_DIR_TYPE_BLOCK);

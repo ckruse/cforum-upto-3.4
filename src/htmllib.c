@@ -787,6 +787,119 @@ void msg_to_html(t_cl_thread *thread,const u_char *msg,t_string *content,t_strin
 }
 /* }}} */
 
+/* {{{ cf_gen_threadlist */
+void cf_gen_threadlist(t_cl_thread *thread,t_cf_hash *head,t_string *threadlist,const u_char *type) {
+  t_message *msg;
+  int ShowInvisible = cf_hash_get(GlobalValues,"ShowInvisible",13) == NULL ? 0 : 1;
 
+  u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10), *date, *link;
+
+  int slvl = -1,level;
+
+  t_name_value *dft = cfg_get_first_value(&fo_view_conf,forum_name,"DateFormatThreadList"),
+    *ot  = cfg_get_first_value(&fo_view_conf,forum_name,"OpenThread"),
+    *op  = cfg_get_first_value(&fo_view_conf,forum_name,"OpenPosting"),
+    *ost = cfg_get_first_value(&fo_view_conf,forum_name,"OpenSubtree"),
+    *cst = cfg_get_first_value(&fo_view_conf,forum_name,"CloseSubtree"),
+    *cp  = cfg_get_first_value(&fo_view_conf,forum_name,"ClosePosting"),
+    *ct  = cfg_get_first_value(&fo_view_conf,forum_name,"CloseThread"),
+    *locale = cfg_get_first_value(&fo_default_conf,forum_name,"DateLocale"),
+    *cs = cfg_get_first_value(&fo_default_conf,forum_name,"ExternCharset");
+
+  size_t len,
+    ot_l  = strlen(ot->values[0]),
+    op_l  = strlen(op->values[0]),
+    ost_l = strlen(ost->values[0]),
+    cst_l = strlen(cst->values[0]),
+    cp_l  = strlen(cp->values[0]),
+    ct_l  = strlen(ct->values[0]);
+
+
+  str_init(threadlist);
+
+  if(cf_strcmp(type,"none") != 0) {
+    if(cf_strcmp(type,"partitial") == 0) {
+      for(msg=thread->messages;msg && msg->mid != thread->threadmsg->mid;msg=msg->next) msg->may_show = 0;
+
+      level = msg->level;
+      msg->may_show = 0;
+
+      for(msg=msg->next;msg && msg->level > level;msg=msg->next);
+      for(;msg;msg=msg->next) msg->may_show = 0;
+    }
+    else cf_tpl_setvalue(&thread->threadmsg->tpl,"active",TPL_VARIABLE_STRING,"1",1);
+
+    /* {{{ run handlers in pre and post mode */
+    cf_run_view_handlers(thread,head,CF_MODE_THREADVIEW|CF_MODE_PRE);
+    for(msg=thread->messages;msg;msg=msg->next) cf_run_view_list_handlers(msg,head,thread->tid,CF_MODE_THREADVIEW);
+    cf_run_view_handlers(thread,head,CF_MODE_THREADVIEW|CF_MODE_POST);
+    /* }}} */
+
+    for(msg=thread->messages;msg;msg=msg->next) {
+      if((msg->may_show && msg->invisible == 0) || ShowInvisible == 1) {
+        if(slvl == -1) slvl = msg->level;
+
+        date = cf_general_get_time(dft->values[0],locale->values[0],&len,&msg->date);
+        link = cf_get_link(NULL,forum_name,thread->tid,msg->mid);
+
+        cf_set_variable(&msg->tpl,cs,"author",msg->author.content,msg->author.len,1);
+        cf_set_variable(&msg->tpl,cs,"title",msg->subject.content,msg->subject.len,1);
+
+        if(msg->category.len) cf_set_variable(&msg->tpl,cs,"category",msg->category.content,msg->category.len,1);
+
+        if(date) {
+          cf_set_variable(&msg->tpl,cs,"time",date,len,1);
+          free(date);
+        }
+
+        if(link) {
+          cf_set_variable(&msg->tpl,cs,"link",link,strlen(link),1);
+          free(link);
+        }
+
+        if(msg->level < level) {
+          for(;level>msg->level;level--) {
+            str_chars_append(threadlist,cst->values[0],cst_l);
+            str_chars_append(threadlist,cp->values[0],cp_l);
+          }
+        }
+
+        level = msg->level;
+
+        if(msg->next && cf_msg_has_answers(msg)) { /* this message has at least one answer */
+          if(msg == thread->messages) str_chars_append(threadlist,ot->values[0],ot_l);
+          else str_chars_append(threadlist,op->values[0],op_l);
+
+          cf_tpl_parse_to_mem(&msg->tpl);
+          str_str_append(threadlist,&msg->tpl.parsed);
+
+          str_chars_append(threadlist,ost->values[0],ost_l);
+
+          level++;
+        }
+        else {
+          if(msg == thread->messages) str_chars_append(threadlist,ot->values[0],ot_l);
+          else str_chars_append(threadlist,op->values[0],op_l);
+
+          cf_tpl_parse_to_mem(&msg->tpl);
+          str_str_append(threadlist,&msg->tpl.parsed);
+
+          if(msg == thread->messages) str_chars_append(threadlist,ct->values[0],ct_l);
+          else str_chars_append(threadlist,cp->values[0],cp_l);
+        }
+      }
+    }
+
+    for(;level > 1 && level>slvl+1;level--) {
+      str_chars_append(threadlist,cst->values[0],cst_l);
+      str_chars_append(threadlist,cp->values[0],cp_l);
+    }
+    if(level == 1 || level == slvl+1) {
+      str_chars_append(threadlist,cst->values[0],cst_l);
+      str_chars_append(threadlist,ct->values[0],ct_l);
+    }
+  }
+}
+/* }}} */
 
 /* eof */

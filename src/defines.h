@@ -62,8 +62,9 @@
 #define URL_REWRITE_HANDLER     21
 #define THREAD_SORTING_HANDLER  22
 #define THRDLST_WRITTEN_HANDLER 23
+#define PERPOST_VAR_HANDLER     24
 
-#define MOD_MAX                23 /**< The maximum hook value. */
+#define MOD_MAX                24 /**< The maximum hook value. */
 
 #define FLT_OK       0 /**< Returned by a plugin function if everything as ok. */
 #define FLT_DECLINE -1 /**< Returned by a plugin function if this request is not for the plugin. */

@@ -109,11 +109,12 @@ int flt_link_set_links_post(t_cf_hash *head,t_configuration *dc,t_configuration 
   size_t n;
   u_char *buff;
   t_string str;
-  t_name_value *qtype = cfg_get_first_value(&fo_view_conf,forum_name,"ParamType");
-  t_name_value *cs = cfg_get_first_value(&fo_default_conf,forum_name,"ExternCharset");
+  t_name_value *qtype = cfg_get_first_value(&fo_view_conf,forum_name,"ParamType"),
+    *cs = cfg_get_first_value(&fo_default_conf,forum_name,"ExternCharset"),
+    *rm = cfg_get_first_value(vc,forum_name,"ReadMode");
 
   /* user doesn't want <link> tags */
-  if(SetLinks == 0) return FLT_DECLINE;
+  if(SetLinks == 0 || cf_strcmp(rm->values[0],"thread") != 0) return FLT_DECLINE;
 
   str_init(&str);
 

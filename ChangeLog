@@ -1,3 +1,18 @@
+2005-03-16 Christian Kruse <ckruse@wwwtech.de>
+	* src/fo_view.c: Added support for different read modes
+	* src/clientlib.[ch]: Added cf_set_variable_hash()
+	* src/modules/flt_link.c: Now runs only in thread read mode
+	* src/modules/flt_votingvariables.c, src/modules/flt_admin.c,
+		src/modules/flt_posting.c: Changed to new API for setting per-thread
+		variables
+	* src/modules/flt_latex.c: Small API bugfix
+	* src/defines.h: Added PERPOST_VAR_HANDLER handler hook
+	* src/handlerrunners.c: Added cf_run_perpost_var_handlers()
+	* src/htmllib.c: Added cf_gen_threadlist()
+	* src/configparser.c: Added ReadMode directive, added template directives
+	* conf/fo_view.conf.in: Added ReadMode, added template directives
+	* src/modules/flt_list.c: Added plugin for list read mode
+
 2005-03-15 Christian Kruse <ckruse@wwwtech.de>
 	* conf/patterns/Makefile.am: Added complete list of pattern files to install
 		them automaticly

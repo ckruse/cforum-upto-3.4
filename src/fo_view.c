@@ -168,8 +168,9 @@ void show_posting(t_cf_hash *head,void *shm_ptr,u_int64_t tid,u_int64_t mid)
          *UserName = cf_hash_get(GlobalValues,"UserName",8),
          *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
 
-  t_name_value *fo_thread_tpl  = NULL,
-               *fo_posting_tpl = cfg_get_first_value(&fo_view_conf,forum_name,"TemplatePosting"),
+  t_name_value *fo_thread_tpl  = cfg_get_first_value(&fo_view_conf,forum_name,"TemplateForumThread"),
+               *rm             = cfg_get_first_value(&fo_view_conf,forum_name,"ReadMode"),
+               *fo_posting_tpl = NULL,
                *cs             = cfg_get_first_value(&fo_default_conf,forum_name,"ExternCharset"),
                *fbase          = NULL,
                *name           = cfg_get_first_value(&fo_view_conf,NULL,"Name"),
@@ -186,7 +187,15 @@ void show_posting(t_cf_hash *head,void *shm_ptr,u_int64_t tid,u_int64_t mid)
 
   memset(&thread,0,sizeof(thread));
 
-  fo_thread_tpl = cfg_get_first_value(&fo_view_conf,forum_name,"TemplateForumThread");
+  if(cf_strcmp(rm->values[0],"thread") == 0) fo_posting_tpl = cfg_get_first_value(&fo_view_conf,forum_name,"TemplatePosting");
+  else if(cf_strcmp(rm->values[0],"list") == 0) fo_posting_tpl = cfg_get_first_value(&fo_view_conf,forum_name,"TemplateForumList");
+  else if(cf_strcmp(rm->values[0],"nested") == 0) fo_posting_tpl = cfg_get_first_value(&fo_view_conf,forum_name,"TemplateForumNested");
+  else {
+    printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
+    cf_error_message("E_CONFIG_ERR",NULL);
+    fprintf(stderr,"Invalid ReadMode %s! Must be thread, list or nested!\n",rm->values[0]);
+    return;
+  }
 
   /* {{{ init and get message from server */
   #ifndef CF_SHARED_MEM

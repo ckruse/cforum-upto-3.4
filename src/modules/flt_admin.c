@@ -166,22 +166,36 @@ int flt_admin_posting_setvars(t_cf_hash *head,t_configuration *dc,t_configuratio
   u_char *UserName = cf_hash_get(GlobalValues,"UserName",8);
   int ShowInvisible = cf_hash_get(GlobalValues,"ShowInvisible",13) != NULL;
 
-  t_cf_list_element *elem;
-  t_cf_post_flag *flag;
-
   if(flt_admin_is_admin(UserName)) {
     cf_tpl_setvalue(tpl,"admin",TPL_VARIABLE_STRING,"1",1);
     if(ShowInvisible) cf_tpl_setvalue(tpl,"aaf",TPL_VARIABLE_STRING,"1",1);
 
-    cf_tpl_setvalue(tpl,"ip",TPL_VARIABLE_STRING,thread->threadmsg->remote_addr.content,thread->threadmsg->remote_addr.len);
+    return FLT_OK;
+  }
+
+  return FLT_DECLINE;
+}
+/* }}} */
+
+/* {{{ flt_admin_setvars_thread */
+int flt_admin_setvars_thread(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cl_thread *thread,t_message *msg,t_cf_tpl_variable *hash) {
+  u_char *UserName = cf_hash_get(GlobalValues,"UserName",8);
+
+  t_cf_list_element *elem;
+  t_cf_post_flag *flag;
+
+  if(flt_admin_is_admin(UserName)) {
+    cf_tpl_hashvar_setvalue(hash,"ip",TPL_VARIABLE_STRING,thread->threadmsg->remote_addr.content,thread->threadmsg->remote_addr.len);
 
     for(elem=thread->threadmsg->flags.elements;elem;elem=elem->next) {
       flag = (t_cf_post_flag *)elem->data;
       if(cf_strcmp(flag->name,"UserName") == 0) {
-        cf_tpl_setvalue(tpl,"uname",TPL_VARIABLE_STRING,flag->val,strlen(flag->val));
+        cf_tpl_hashvar_setvalue(hash,"uname",TPL_VARIABLE_STRING,flag->val,strlen(flag->val));
         break;
       }
     }
+
+    return FLT_OK;
   }
 
   return FLT_DECLINE;
@@ -305,6 +319,7 @@ t_handler_config flt_admin_handlers[] = {
   { VIEW_INIT_HANDLER,    flt_admin_setvars },
   { VIEW_LIST_HANDLER,    flt_admin_posthandler },
   { POSTING_HANDLER,      flt_admin_posting_setvars },
+  { PERPOST_VAR_HANDLER,  flt_admin_setvars_thread },
   { 0, NULL }
 };
 

@@ -331,4 +331,23 @@ int cf_run_post_display_handlers(t_cf_hash *head,t_cf_template *tpl,t_message *p
 }
 /* }}} */
 
+/* {{{ cf_run_perpost_var_handlers */
+int cf_run_perpost_var_handlers(t_cf_hash *head,t_cl_thread *thread,t_message *msg,t_cf_tpl_variable *hash) {
+  int ret = FLT_OK;
+  t_handler_config *handler;
+  size_t i;
+  t_filter_perpost_var fkt;
+
+  if(Modules[PERPOST_VAR_HANDLER].elements) {
+    for(i=0;i<Modules[PERPOST_VAR_HANDLER].elements && (ret == FLT_OK || ret == FLT_DECLINE);i++) {
+      handler = array_element_at(&Modules[PERPOST_VAR_HANDLER],i);
+      fkt     = (t_filter_perpost_var)handler->func;
+      ret     = fkt(head,&fo_default_conf,&fo_view_conf,thread,msg,hash);
+    }
+  }
+
+  return ret;
+}
+/* }}} */
+
 /* eof */

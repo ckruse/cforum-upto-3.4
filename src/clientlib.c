@@ -272,6 +272,52 @@ void cf_set_variable(t_cf_template *tpl,t_name_value *cs,u_char *vname,const u_c
 }
 /* }}} */
 
+/* {{{ cf_set_variable_hash */
+void cf_set_variable_hash(t_cf_tpl_variable *hash,t_name_value *cs,u_char *key,const u_char *val,size_t len,int html) {
+  u_char *tmp;
+  size_t len1;
+
+  if(cs) {
+    if(cf_strcmp(cs->values[0],"UTF-8")) {
+      if(html) {
+        tmp = htmlentities_charset_convert(val,"UTF-8",cs->values[0],&len1,0);
+        html = 0;
+      }
+      else tmp = charset_convert_entities(val,len,"UTF-8",cs->values[0],&len1);
+
+      /* This should only happen if we use charset_convert() -- and we should not use it. */
+      if(!tmp) {
+        tmp = htmlentities(val,0);
+        len1 = strlen(val);
+      }
+
+      cf_tpl_hashvar_setvalue(hash,key,TPL_VARIABLE_STRING,tmp,len1);
+      free(tmp);
+    }
+    /* ExternCharset is also UTF-8 */
+    else {
+      if(html) {
+        tmp = htmlentities(val,0);
+        len = strlen(tmp);
+
+        cf_tpl_hashvar_setvalue(hash,key,TPL_VARIABLE_STRING,tmp,len);
+        free(tmp);
+      }
+      else cf_tpl_hashvar_setvalue(hash,key,TPL_VARIABLE_STRING,val,len);
+    }
+  }
+  else {
+    if(html) {
+      tmp = htmlentities(val,0);
+      len = strlen(tmp);
+
+      cf_tpl_hashvar_setvalue(hash,key,TPL_VARIABLE_STRING,tmp,len);
+      free(tmp);
+    }
+    else cf_tpl_hashvar_setvalue(hash,key,TPL_VARIABLE_STRING,val,len);
+  }
+}
+/* }}} */
 
 
 /* {{{ cf_error_message */

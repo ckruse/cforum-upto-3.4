@@ -230,6 +230,7 @@ typedef int (*t_post_display_filter)(t_cf_hash *,t_configuration *,t_configurati
 
 typedef int (*t_filter_urlrewrite)(t_configuration *,t_configuration *,const u_char *,u_char **);
 
+typedef int (*t_filter_perpost_var)(t_cf_hash *,t_configuration *,t_configuration *,t_cl_thread *,t_message *,t_cf_tpl_variable *);
 
 /**
  * In this hash global values can be saved,
@@ -302,6 +303,8 @@ void cf_gen_tpl_name(u_char *buff,size_t len,const u_char *name);
  * \param html 1 if output should be html escaped, 0 if not
  */
 void cf_set_variable(t_cf_template *tpl,t_name_value *cs,u_char *vname,const u_char *val,size_t len,int html);
+
+void cf_set_variable_hash(t_cf_tpl_variable *hash,t_name_value *cs,u_char *key,const u_char *val,size_t len,int html);
 
 
 /**
@@ -507,6 +510,7 @@ int cf_run_post_filters(t_cf_hash *head,t_message *p,int sock);
  */
 int cf_run_post_display_handlers(t_cf_hash *head,t_cf_template *tpl,t_message *p);
 
+int cf_run_perpost_var_handlers(t_cf_hash *head,t_cl_thread *thread,t_message *msg,t_cf_tpl_variable *hash);
 
 
 /**

@@ -43,6 +43,7 @@ Forum FORUM1 {
  ThreadsOpenByDefault    "yes"
  DoQuote                 "yes"
  QuotingChars            "»» "
+ ReadMode                "thread" # thread, list, nested
  ShowThread              "partitial" # full, partitial, none
 # VIPList                 "Cheatah,Stefan Einspender,Stefan Muenz"
 # VIPColors               "#FF00FF" "#0000FF"
@@ -65,6 +66,9 @@ Forum FORUM1 {
  TemplateForumBegin     "@sysconfdir@/cforum/templates/forum1/%s_%s_forum_begin.so"
  TemplateForumEnd       "@sysconfdir@/cforum/templates/forum1/%s_%s_forum_end.so"
  TemplateForumThread    "@sysconfdir@/cforum/templates/forum1/%s_%s_forum_thread.so"
+ TemplateForumList      "@sysconfdir@/cforum/templates/forum1/%s_%s_forum_list.so"
+ TemplateForumNested    "@sysconfdir@/cforum/templates/forum1/%s_%s_forum_nested.so"
+
  TemplatePosting        "@sysconfdir@/cforum/templates/forum1/%s_%s_forum_posting.so"
 
  TemplateForumList      "@sysconfdir@/cforum/templates/forum1/%s_%s_forum_posting_list.so"

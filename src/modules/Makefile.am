@@ -62,6 +62,10 @@ flt_posting_la_SOURCES=flt_posting.c
 flt_posting_la_LIBADD=../libcfvalidate.la
 flt_posting_la_LDFLAGS=-module -export-dynamic -avoid-version
 
+pkglib_LTLIBRARIES+=flt_list.la
+flt_list_la_SOURCES=flt_list.c
+flt_list_la_LDFLAGS=-module -export-dynamic -avoid-version
+
 pkglib_LTLIBRARIES+=flt_registerednames.la
 flt_registerednames_la_SOURCES=flt_registerednames.c
 flt_registerednames_la_LIBADD=$(BDB_LIB)
