@@ -1,3 +1,8 @@
+2005-01-20 Christian Seiler <self@christian-seiler.de>
+	* src/template.h: added cf_tpl_var_clone prototype
+	* src/template.c: added cf_tpl_var_clone function, bugfix in
+		cf_tpl_var_add
+
 2005-01-19 Christian Kruse <ckruse@wwwtech.de>
 	* conf/fo_server.conf.in: Corrected ModulePath
 	* conf/errormessages.de.txt: Added some error messages, corrected some typos

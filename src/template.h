@@ -126,6 +126,13 @@ void cf_tpl_var_setvalue(t_cf_tpl_variable *var,...);
 t_cf_tpl_variable *cf_tpl_var_convert(t_cf_tpl_variable *dest,t_cf_tpl_variable *src,unsigned short new_type);
 
 /**
+ * This function clones a template variable with all subvariables if this is an array.
+ * \param var The variable that is to be cloned
+ * \returns The cloned variable.
+ */
+t_cf_tpl_variable *cf_tpl_var_clone(t_cf_tpl_variable *var);
+
+/**
  * This function adds an element to an array
  * \param var The array variable structure
  * \param element The new element that is to be added

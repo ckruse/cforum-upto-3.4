@@ -317,6 +317,49 @@ t_cf_tpl_variable *cf_tpl_var_convert(t_cf_tpl_variable *dest,t_cf_tpl_variable 
 }
 
 /*
+ * Returns: The cloned variable
+ * Parameters:
+ *   - t_cf_tpl_variable *var     a pointer to the variable structure
+ *
+ * this function clones a template variable and all subvariables
+ *
+ */
+t_cf_tpl_variable *cf_tpl_var_clone(t_cf_tpl_variable *var) {
+  t_cf_tpl_variable *new_var, *tmp_var;
+  long i;
+  
+  if(!var || (var->type != TPL_VARIABLE_STRING && var->type != TPL_VARIABLE_INT && var->type != TPL_VARIABLE_ARRAY)) {
+    return NULL;
+  }
+  
+  new_var = (t_cf_tpl_variable *)fo_alloc(NULL,sizeof(t_cf_tpl_variable),1,FO_ALLOC_MALLOC);
+  cf_tpl_var_init(new_var,var->type);
+  
+  switch(var->type) {
+    case TPL_VARIABLE_STRING:
+      str_str_set(&new_var->data.d_string,&var->data.d_string);
+      break;
+    case TPL_VARIABLE_INT:
+      new_var->data.d_int = var->data.d_int;
+      break;
+    case TPL_VARIABLE_ARRAY:
+      for(i = 0; i < var->data.d_array.elements; i++) {
+        tmp_var = cf_tpl_var_clone((t_cf_tpl_variable *)array_element_at(&var->data.d_array,i));
+        if(!tmp_var) {
+          cf_tpl_var_destroy(new_var);
+          free(new_var);
+          return NULL;
+        }
+        tmp_var->temporary = 1;
+        cf_tpl_var_add(new_var,tmp_var);
+      }
+      break;
+  }
+  
+  return new_var;
+}
+
+/*
  * Returns: The destination variable that contains the converted value
  * Parameters:
  *   - t_cf_tpl_variable *var     a pointer to the variable structure
@@ -326,13 +369,18 @@ t_cf_tpl_variable *cf_tpl_var_convert(t_cf_tpl_variable *dest,t_cf_tpl_variable 
  *
  */
 void cf_tpl_var_add(t_cf_tpl_variable *var,t_cf_tpl_variable *element) {
+  int tmp = 0;
   if(var->type != TPL_VARIABLE_ARRAY) {
     return;
   }
+  if(element->temporary) {
+    tmp = 1;
+  }
+  element->temporary = 0;
   array_push(&var->data.d_array,element);
   // cleanup if it's temporary
-  if(element->temporary) {
-    cf_tpl_var_destroy(element);
+  if(tmp) {
+    // don't destroy the var, only free it
     free(element);
   }
 }
