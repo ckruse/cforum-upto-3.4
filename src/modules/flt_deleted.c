@@ -91,7 +91,7 @@ int flt_deleted_execute(t_cf_hash *head,t_configuration *dc,t_configuration *vc,
         }
         else {
           if(Cfg.CheckBoxes) {
-            tpl_cf_setvar(,"delcheckbox","1",1,0);
+            tpl_cf_setvar(&msg->tpl,"delcheckbox","1",1,0);
             tpl_cf_setvar(&msg->tpl,"deltid",buff,len,0);
           }
 

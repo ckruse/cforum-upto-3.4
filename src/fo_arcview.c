@@ -204,7 +204,6 @@ void generate_thread_output(t_cl_thread *cl_thread, t_arc_message *msg,t_string 
   u_char *date;
   t_string strbuffer;
   t_name_value *vs = cfg_get_first_value(&fo_default_conf,"ArchivePostingURL"),
-               *cs = cfg_get_first_value(&fo_default_conf,"ExternCharset"),
                *qc = cfg_get_first_value(&fo_arcview_conf,"QuotingChars"),
                *ms = cfg_get_first_value(&fo_arcview_conf,"MaxSigLines"),
                *ss = cfg_get_first_value(&fo_arcview_conf,"ShowSig");
