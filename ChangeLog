@@ -11,6 +11,7 @@
 		Corrected some values.
 	* cgi-bin/fo_usermanagement.in: Fixed bug that inhibited new registrations,
 		always assigned $userconfig when in /my.
+	* cgi-bin/fo_userconf.in Always assign $userconfig in /my.
 
 2004-08-05 Christian Kruse <ckruse@wwwtech.de>
 	* src/templates/de/tpl_*/Makefile.am: Fixed bug, source file is <tplname>.c,

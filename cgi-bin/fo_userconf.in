@@ -300,6 +300,7 @@ sub generate_edit_output {
 
   $tpl->setVar('p',$page) if $page;
   $tpl->setVar('forumbase',recode($fo_default_conf,$fo_default_conf->{UBaseURL}->[0]->[0]));
+  $tpl->setVar('userconfig',recode($fo_default_conf,$fo_default_conf->{UserConfig}->[0]->[0]));
   $tpl->setVar('script',recode($fo_default_conf,$fo_default_conf->{UserConfig}->[0]->[0]));
   $tpl->setVar('editcontent',$txt);
   $tpl->setVar('error',recode($fo_default_conf,$err)) if defined $err;
@@ -560,6 +561,7 @@ elsif($action eq 'save') {
   my $tpl = new CForum::Template(get_template($fo_default_conf,$user_config,$fo_userconf_conf->{EditOk}->[0]->[0])) or die $!;
 
   $tpl->setVar('forumbase',recode($fo_default_conf,$fo_default_conf->{UBaseURL}->[0]->[0]));
+  $tpl->setVar('userconfig',recode($fo_default_conf,$fo_default_conf->{UserConfig}->[0]->[0]));
   $tpl->setVar('script',recode($fo_default_conf,$fo_default_conf->{UserConfig}->[0]->[0]));
   $tpl->setVar('charset',$fo_default_conf->{ExternCharset}->[0]->[0]);
   $tpl->setVar('acceptcharset',$fo_default_conf->{ExternCharset}->[0]->[0].', UTF-8');
@@ -572,6 +574,7 @@ else {
   my $tpl = new CForum::Template(get_template($fo_default_conf,$user_config,$fo_userconf_conf->{ViewSettings}->[0]->[0])) or die $@;
 
   $tpl->setVar('forumbase',recode($fo_default_conf,$fo_default_conf->{UBaseURL}->[0]->[0]));
+  $tpl->setVar('userconfig',recode($fo_default_conf,$fo_default_conf->{UserConfig}->[0]->[0]));
   $tpl->setVar('script',recode($fo_default_conf,$fo_default_conf->{UserConfig}->[0]->[0]));
 
   foreach my $modconf (@{$fo_userconf_conf->{ModuleConfig}}) {
