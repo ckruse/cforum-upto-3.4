@@ -122,7 +122,8 @@ int flt_posting_execute_filter(t_cf_hash *head,t_configuration *dc,t_configurati
                *ss = cfg_get_first_value(vc,forum_name,"ShowSig"),
                *locale = cfg_get_first_value(dc,forum_name,"DateLocale"),
                *df = cfg_get_first_value(vc,forum_name,"DateFormatThreadView"),
-               *dft = cfg_get_first_value(vc,forum_name,"DateFormatThreadList");
+               *dft = cfg_get_first_value(vc,forum_name,"DateFormatThreadList"),
+               *v;
 
   size_t len,
          qclen,
@@ -174,6 +175,11 @@ int flt_posting_execute_filter(t_cf_hash *head,t_configuration *dc,t_configurati
   len = gen_unid(buff,50);
   cf_tpl_setvalue(tpl,"unid",TPL_VARIABLE_STRING,buff,len);
   /* }}} */
+
+  if((v = cfg_get_first_value(vc,forum_name,"Name")) != NULL) cf_set_variable(tpl,cs,"aname",v->values[0],strlen(v->values[0]),1);
+  if((v = cfg_get_first_value(vc,forum_name,"EMail")) != NULL) cf_set_variable(tpl,cs,"aemail",v->values[0],strlen(v->values[0]),1);
+  if((v = cfg_get_first_value(vc,forum_name,"HomepageUrl")) != NULL) cf_set_variable(tpl,cs,"aurl",v->values[0],strlen(v->values[0]),1);
+  if((v = cfg_get_first_value(vc,forum_name,"ImageUrl")) != NULL) cf_set_variable(tpl,cs,"aimg",v->values[0],strlen(v->values[0]),1);
 
   /* {{{ set title, name, email, homepage, time and category */
   cf_set_variable(tpl,cs,"title",thread->threadmsg->subject.content,thread->threadmsg->subject.len,1);
