@@ -84,6 +84,7 @@ CFLAGS='-O3 -fexpensive-optimizations -fomit-frame-pointer -pipe' \
   --with-log-dir=/home/ckruse/www/cforum/cgi-shared/logs/ \
   --with-proto-file=/home/ckruse/www/cforum/cgi-shared/logs/proto.txt \
   --with-data-dir=/home/ckruse/www/cforum/cgi-shared/data/ \
+  --with-document-root=/home/ckruse/www/cforum/htdocs/forum/ \
   --enable-shared-mem
 \end{verbatim}
 
@@ -148,14 +149,22 @@ für \textbf{alle} Requests abgeschaltet wird. Das kann allerdings auch zu einem 
 Jetzt fehlt eigentlich nur noch die Konfiguration des Forums selber. Dazu ist es ratsam (in der Regel allerdings nicht zwingend
 notwendig) sich jede einzelne Konfigurationsdatei anzusehen und jede Option auf Ihre Richtigkeit zu überprüfen. In den folgenden
 Kapiteln werden die meisten Konfigurationsdirektiven vorgestellt. Jedoch sollten Sie eigentlich auch selbsterklärend sein. Wie
-auch immer, sind alle Konfigurationsdateien geprüft, können Sie den Forenserver mit folgendem Befehl starten:
+auch immer, sind alle Konfigurationsdateien geprüft, muss noch die Datenbank-Datei für die (Fehler)meldungen erstellt werden. Das
+kann ganz einfach mit dem folgenden Befehl geschehen:
+
+\begin{verbatim}
+export CF_CONF_DIR="/home/ckruse/www/cforum/cgi-shared/config/"
+./scripts/msgs2db.pl
+\end{verbatim}
+
+Danach können Sie den Forenserver mit folgendem Befehl starten:
 
 \begin{verbatim}
 export CF_CONF_DIR="/home/ckruse/www/cforum/cgi-shared/config/"
 /home/ckruse/www/cforum/cgi-bin/fo_server
 \end{verbatim}
 
-Danach sollte das Forum fast automatisch laufen, Sie sollten den Foren-Server nur alle paar Tage beenden, um die Logfiles
+Jetzt sollte das Forum fast automatisch laufen, Sie sollten den Foren-Server nur alle paar Tage beenden, um die Logfiles
 zu löschen oder zu verschieben und dann wieder starten, sonst werden die Dateien zu gross.
 
 \section{Fehlersuche}
@@ -217,6 +226,21 @@ options SHMMAXPGS=4096
 Die maximale Größe der Segmente wird durch \texttt{SHMMAXPGS} in Seiten angegeben. Sie sehen also, dass die Nutzung von
 Shared Memory ein zweischneidiges Schwert sein kann.
 
+\section{Locales}
+\label{locale}
+
+Als \textit{Locale} werden grob gesagt die Sprachdateien eines Unix-Systems bezeichnet. Sprachdateien helfen, die Arbeitsumgebung
+des Benutzers zu lokalisieren. Die Locales sind in der Regel in \texttt{/usr/share/locale} gespeichert. Suchen Sie sich das richtige
+Locale für ihre Sprache heraus, aber achten Sie darauf, dass es ein UTF-8-codiertes Locale ist (meist durch den Zusatz \texttt{.UTF-8}
+oder \texttt{\_UTF-8} gekennzeichnet). Sollte das passende Locale nicht existieren, können sie es auch erstellen, dazu gibt es den
+Befehl \texttt{localedef}. Um ein deutsches Locale in UTF-8-Kodierung zu erstellen, können Sie (als \texttt{root}) folgenden Befehl
+verwenden:
+
+\begin{verbatim}
+cd /usr/share/i18n/locales
+localedef -i de_DE -f UTF-8 de_DE.UTF-8
+\end{verbatim}
+
 \section{Konfigurations-Dateien}
 
 \subsection{Konfigurationsdatei \texttt{fo\_default.conf}}
@@ -224,19 +248,579 @@ Diese Konfigurationsdatei ist die Haupt-Konfigurationsdatei des Classic Forums. 
 Programmen und Scripten geparsed und ausgewertet. Sie enthält lediglich globale
 Konfigurations-Daten, die für alle Scripte notwendig sind.
 
+\begin{tabular}{l|p{10cm}}
+Name&TemplateMode\\
+Typ&Pflicht\\
+Parameter&Name des Standard-Themes\\
+Beschreibung&Das Classic Forum ist \textit{themable}. Das bedeutet, dass Benutzer das Forum in verschiedenen Design-Ansichten betrachten können. Mit diesem Parameter wird der Name des Standard-Themes angegeben.\\
+\end{tabular}
+
+\begin{tabular}{l|p{10cm}}
+Name&XHTMLMode\\
+Typ&Pflicht\\
+Parameter&yes oder no\\
+Beschreibung&Diese Direktive legt fest, ob das Standard-Theme XHTML ist.\\
+\end{tabular}
+
+\begin{tabular}{l|p{10cm}}
+Name&MessagePath\\
+Typ&Pflicht\\
+Parameter&Pfad zu den aktuellen Nachrichten-Dateien\\
+Beschreibung&Diese Direktive legt fest, wo die Nachrichten-Dateien des Forums gespeichert werden sollen.\\
+\end{tabular}
+
+\begin{tabular}{l|p{10cm}}
+Name&ArchivePath\\
+Typ&Pflicht\\
+Parameter&Pfad zu den Archiv-Dateien\\
+Beschreibung&Diese Direktive legt fest, wo die Archiv-Dateien abgelegt werden sollen.\\
+\end{tabular}
+
+\begin{tabular}{l|p{10cm}}
+Name&SocketName\\
+Typ&Pflicht\\
+Parameter&Pfad zum Serversocket\\
+Beschreibung&Dieser Parameter legt fest, wo der UNIX-Domain-Socket für das Forum angelegt werden soll.\\
+\end{tabular}
+
+\begin{tabular}{l|p{10cm}}
+Name&ErrorTemplate\\
+Typ&Pflicht\\
+Parameter&Pfad zum Fehler-Template\\
+Beschreibung&Diese Direktive legt das Standard-Template für Fehlermeldungen fest.\\
+\end{tabular}
+
+\begin{tabular}{l|p{10cm}}
+Name&ThreadIndexFile\\
+Typ&Pflicht\\
+Parameter&Pfad zur Index-Datei der Thread-IDs\\
+Beschreibung&Die Thread-Dateien des Forums werden indiziert, damit im Falle der Archivierung von Postings noch darauf verweisende Links automatisch an die richtige Archiv-URL weitergeleitet werden können.\\
+\end{tabular}
+
+\begin{tabular}{l|p{10cm}}
+Name&BaseURL\\
+Typ&Pflicht\\
+Parameter&URL\\
+Beschreibung&Um verschiedene Links zu generieren benötigt das Forum verschiedene URLs. Dazu gehört auch die Basis-URL, die URL mit der Hauptseite des Forums für unangemeldete Benutzer.\\
+\end{tabular}
+
+\begin{tabular}{l|p{10cm}}
+Name&PostingURL\\
+Typ&Pflicht\\
+Parameter&URL\\
+Beschreibung&Diese Direktive beschreibt ein URL-Schema zu Postings für unangemeldete Benutzer.\\
+\end{tabular}
+
+\begin{tabular}{l|p{10cm}}
+Name&UBaseURL\\
+Typ&Pflicht\\
+Parameter&URL\\
+Beschreibung&Diese URL gibt die Basis-URL für angemeldete User an.\\
+\end{tabular}
+
+\begin{tabular}{l|p{10cm}}
+Name&UPostingURL\\
+Typ&Pflicht\\
+Parameter&URL\\
+Beschreibung&Diese Direktive beschreibt ein URL-Schema zu Postings für unangemeldete Benutzer.\\
+\end{tabular}
+
+\begin{tabular}{l|p{10cm}}
+Name&VoteURL\\
+Typ&Pflicht\\
+Parameter&URL\\
+Beschreibung&Diese URL beschreibt die Lage des Voting-Programms.\\
+\end{tabular}
+
+\begin{tabular}{l|p{10cm}}
+Name&ArchivePostingURL\\
+Typ&Pflicht\\
+Parameter&URL\\
+Beschreibung&Diese Direktive beschreibt ein URL-Template für Archiv-Postings. Wird eine solche URL aufgerufen, so wird der Thread in der Index-Datei nachgeschlagen und der User wird mit einem 301-Redirect an die richtige Position im Archiv umgeleitet.\\
+\end{tabular}
+
+\begin{tabular}{l|p{10cm}}
+Name&ArchiveURL\\
+Typ&Pflicht\\
+Parameter&URL\\
+Beschreibung&Diese Direktive beschreibt die Basis-URL für das Archiv.\\
+\end{tabular}
+
+\begin{tabular}{l|p{10cm}}
+Name&PostScript\\
+Typ&Pflicht\\
+Parameter&URL\\
+Beschreibung&Diese Direktive beschreibt die Lage des Posting-Programms für unangemeldete Benutzer.\\
+\end{tabular}
+
+\begin{tabular}{l|p{10cm}}
+Name&UPostScript\\
+Typ&Pflicht\\
+Parameter&URL\\
+Beschreibung&Diese Direktive beschreibt die Lage des Posting-Programms für angemeldete Benutzer.\\
+\end{tabular}
+
+\begin{tabular}{l|p{10cm}}
+Name&UserConfig\\
+Typ&Pflicht\\
+Parameter&URL\\
+Beschreibung&Diese Direktive beschreibt die Lage des Konfigurationsscripts für die Benutzer-Konfiguration\\
+\end{tabular}
+
+\begin{tabular}{l|p{10cm}}
+Name&UserRegister\\
+Typ&Pflicht\\
+Parameter&URL\\
+Beschreibung&Beschreibt die Lage des Anmelde-Scripts für Benutzer\\
+\end{tabular}
+
+\begin{tabular}{l|p{10cm}}
+Name&UserManagement\\
+Typ&Pflicht\\
+Parameter&URL\\
+Beschreibung&Beschreibt die Lage des Management-Scripts für Benutzer (z. B. zum abmelden des Accounts)\\
+\end{tabular}
+
+\begin{tabular}{l|p{10cm}}
+Name&SharedMemIds\\
+Typ&Pflicht wenn mit Shared-Memory-Support kompiliert\\
+Parameter&3 systemweit eindeutige IDs\\
+Beschreibung&Mit dieser Direktive werden die zwei IDs für das Shared-Memory-Segment definiert sowie eine ID für die Semaphore, die von den Shared-Memory-Algorithmen des Forums gebraucht werden. Sie müssen systemweit eindeutig sein!\\
+\end{tabular}
+
+\begin{tabular}{l|p{10cm}}
+Name&ExternCharset\\
+Typ&Pflicht\\
+Parameter&Characterset\\
+Beschreibung&Hiermit wird der externe Charset des Forums definiert. Intern wird mit UTF-8 gearbeitet, aber zur externen Kommunikation kann auch ein anderer Charset benutzt werden. Es wird dann erwartet, dass alle Eingaben der User in diesem Charset oder in UTF-8 codiert sind.\\
+\end{tabular}
+
+\begin{tabular}{l|p{10cm}}
+Name&AuthMode\\
+Typ&Pflicht\\
+Parameter&Authentifizierungsmethode\\
+Beschreibung&Diese Direktive beschreibt die Authentifizierungs-Methode, mit der das Forum arbeitet. Aktuell wird nur HTTP Authentification (``http'') unterstützt.\\
+\end{tabular}
+
+\begin{tabular}{l|p{10cm}}
+Name&DateLocale\\
+Typ&Pflicht\\
+Parameter&Locale\\
+Beschreibung&Hiermit wird das Datums-``Locale'' des Forums definiert. Bzgl. der Locales schauen Sie ins Kapitel Locales, S. \pageref{locale}\\
+\end{tabular}
+
+\begin{tabular}{l|p{10cm}}
+Name&Language\\
+Typ&Pflicht\\
+Parameter&Sprach-Name\\
+Beschreibung&Hiermit wird die Sprache des Forums angegeben. Aktuell existiert leider nur eine deutsche Version.\\
+\end{tabular}
+
+\begin{tabular}{l|p{10cm}}
+Name&MessagesDatabase\\
+Typ&Pflicht\\
+Parameter&Pfad zur Nachrichten-Datenbankdatei\\
+Beschreibung&Hiermit muss die Lage der Nachrichten-Datenbank, in der die Fehlermeldungen und dergleichen definiert sind, angegeben werden. Diese Nachrichten-Datenbank muss vorher mit dem Script ``msgs2db.pl'' erstellt werden.\\
+\end{tabular}
+
+\begin{tabular}{l|p{10cm}}
+Name&Category\\
+Typ&Optional\\
+Parameter&Kategorie-Name\\
+Beschreibung&Mit dieser Option können die Kategorien des Forums angegeben werden.\\
+\end{tabular}
+
+\begin{tabular}{l|p{10cm}}
+Name&ConfigDirectory\\
+Typ&Pflicht\\
+Parameter&Pfad zum Basis-Verzeichnis für User-Konfigurationsdateien\\
+Beschreibung&Hiermit wird angegeben, wo die Userkonfigurationen gespeichert werden sollen.\\
+\end{tabular}
 
 \subsection{Konfigurations-Datei \texttt{fo\_server.conf}}
 
 Diese Konfigurations-Datei konfiguriert den Forums-Server. In ihr sind rein Server-spezifische
-Einstellungen aufgehoben.
+Einstellungen aufgehoben.\\
+\\
+\begin{tabular}{l|p{10cm}}
+Name&AddFilter\\
+Typ&Optional\\
+Parameter&Vollständiger Pfad zum Plugin sowie Konfigurationsvariable (Modulname ohne Pfad und .so)\\
+Beschreibung&Diese Direktive lädt ein Plugin in den Server.\\
+\end{tabular}
+\begin{tabular}{l|p{10cm}}
+Name&SortThreads\\
+Typ&Pflicht\\
+Parameter&1 oder 2, 1 für aufsteigend, 2 für absteigend\\
+Beschreibung&Diese Direktive zeigt an, wie die Threadliste sortiert werden soll\\
+\end{tabular}
+\begin{tabular}{l|p{10cm}}
+Name&SortMessages\\
+Typ&Pflicht\\
+Parameter&1 oder 2, 1 für aufsteigend, 2 für absteigend\\
+Beschreibung&Diese Direktive zeigt an, wie die Nachrichten innerhalb eines Threads sortiert werden sollen\\
+\end{tabular}
+\begin{tabular}{l|p{10cm}}
+Name&RunArchiver\\
+Typ&Pflicht\\
+Parameter&Intervall in Sekunden, in denen der Archiver laufen soll\\
+Beschreibung&Diese Direktive gibt an, in welchem Intervall die Threads auf die Festplatte geschrieben werden sollen\\
+\end{tabular}
+\begin{tabular}{l|p{10cm}}
+Name&ErrorLog\\
+Typ&Pflicht\\
+Parameter&Pfad zur Errorlog-Datei\\
+Beschreibung&Diese Direktive bestimmt, wo die Errorlog-Datei des Forums liegen soll\\
+\end{tabular}
+\begin{tabular}{l|p{10cm}}
+Name&StdLog\\
+Typ&Pflicht\\
+Parameter&Pfad zur Log-Datei\\
+Beschreibung&Diese Direktive bestimmt, wo die Standard-Logdatei des Forums liegen soll\\
+\end{tabular}
+\begin{tabular}{l|p{10cm}}
+Name&PIDFile\\
+Typ&Pflicht\\
+Parameter&Pfad zur PID-Datei\\
+Beschreibung&Diese Direktive bestimmt, wo die Datei liegen soll, die die Prozess-ID des Forum-Servers enthält\\
+\end{tabular}
+\begin{tabular}{l|p{10cm}}
+Name&MainFileMaxBytes\\
+Typ&Pflicht\\
+Parameter&Maximale Größe der Hauptdatei in Bytes\\
+Beschreibung&Diese Direktive gibt an, wie gross die Hauptdatei des Forums maximal werden darf, bevor der Archiver anspringt. Sie bezieht sich \textbf{nicht} auf die HTML-Daten und dergleichen, sondern ausschliesslich auf die Daten der Threads und Postings ohne HTML-Overhead.\\
+\end{tabular}
+\begin{tabular}{l|p{10cm}}
+Name&MainFileMaxPostings\\
+Typ&Pflicht\\
+Parameter&Maximale Anzahl Postings in der Hauptdatei\\
+Beschreibung&Diese Direktive gibt an, wieviele Postings maximal in der Hauptdatei sein dürfen, bevor der Archiver anspringt.\\
+\end{tabular}
+\begin{tabular}{l|p{10cm}}
+Name&MainFileMaxThreads\\
+Typ&Pflicht\\
+Parameter&Maximale Anzahl Threads in der Hauptdatei\\
+Beschreibung&Diese Direktive gibt an, wieviele Threads maximal in der Hauptdatei sein dürfen, bevor der Archiver anspringt.\\
+\end{tabular}
+\begin{tabular}{l|p{10cm}}
+Name&AuthNames\\
+Typ&Pflicht wenn Plugin geladen\\
+Parameter&Pfad zur Datenbank-Datei\\
+Beschreibung&Diese Direktive gehört zum Plugin \texttt{flt\_registerednames} und gibt an, wo die Datenbank-Datei für registrierte Benutzernamen liegen soll.\\
+\end{tabular}
+\begin{tabular}{l|p{10cm}}
+Name&ExternPort\\
+Typ&Pflicht wenn Plugin geladen\\
+Parameter&Portnummer\\
+Beschreibung&Diese Direktive gehört zum Plugin \texttt{flt\_extern} und beschreibt, an welchem Port das Plugin lauschen soll.\\
+\end{tabular}
+\begin{tabular}{l|p{10cm}}
+Name&ExternInterface\\
+Typ&Optional\\
+Parameter&Interface-Adresse\\
+Beschreibung&Diese Direktive gehört zum Plugin \texttt{flt\_extern} und beschreibt, an welches Interface sich das Plugin binden soll. Ist diese Direktive nicht vorhanden, bindet es sich an alle Interfaces.\\
+\end{tabular}
 
 \subsection{Konfigurationsdatei \texttt{fo\_arcview.conf}}
 Diese Konfigurations-Datei konfiguriert den Forums-Archivviewer. Im wesentlichen sind das Angaben
 von Templates und ansonsten nicht viel mehr.
 
+\begin{tabular}{l|p{10cm}}
+Name&AddFilter\\
+Typ&Optional\\
+Parameter&Vollständiger Pfad zum Plugin sowie Konfigurationsvariable (Modulname ohne Pfad und .so)\\
+Beschreibung&Diese Direktive lädt ein Plugin\\
+\end{tabular}
+
+\begin{tabular}{l|p{10cm}}
+Name&SortYearList\\
+Typ&Pflicht\\
+Parameter&Sortier-Reihenfolge, ``up'' oder ``down''\\
+Beschreibung&Diese Direktive gibt die Reihenfolge an, in der die Jahresliste sortiert werden soll.\\
+\end{tabular}
+
+\begin{tabular}{l|p{10cm}}
+Name&SortMonthList\\
+Typ&Pflicht\\
+Parameter&Sortier-Reihenfolge, ``up'' oder ``down''\\
+Beschreibung&Diese Direktive gibt die Reihenfolge an, in der die Monate sortiert werden sollen.\\
+\end{tabular}
+
+\begin{tabular}{l|p{10cm}}
+Name&QuotingChars\\
+Typ&Pflicht\\
+Parameter&Zeichenfolge\\
+Beschreibung&Gibt die Standard-Zeichenfolge für die Kennzeichnung von Zitaten an.\\
+\end{tabular}
+
+\begin{tabular}{l|p{10cm}}
+Name&DateFormatList\\
+Typ&Pflicht\\
+Parameter&Datum-Formatangabe\\
+Beschreibung&Gibt das Datumsformat für die Threadliste in einer Monatsansicht an.\\
+\end{tabular}
+
+\begin{tabular}{l|p{10cm}}
+Name&DateFormatViewList\\
+Typ&Optional\\
+Parameter&Datum-Formatangabe\\
+Beschreibung&Gibt das Datumsformat für die Threadansicht an.\\
+\end{tabular}
+
+\begin{tabular}{l|p{10cm}}
+Name&EnableCache\\
+Typ&Pflicht\\
+Parameter&``yes'' oder ``no''\\
+Beschreibung&Gibt an, ob das Caching für den Archiv-Viewer aktiviert werden soll.\\
+\end{tabular}
+
+\begin{tabular}{l|p{10cm}}
+Name&CacheLevel\\
+Typ&Pflicht\\
+Parameter&Komprimierungslevel von 0-9\\
+Beschreibung&Gibt an, wie stark der Cache komprimiert werden soll. 1 ist die niedrigste Komprimierungsstufe, 9 ist die Stärkste. 0 bedeutet, dass nicht komprimiert werden soll.\\
+\end{tabular}
+
+\begin{tabular}{l|p{10cm}}
+Name&CacheDir\\
+Typ&Pflicht\\
+Parameter&Pfad zum Basis-Verzeichnis für den Cache\\
+Beschreibung&Gibt den Pfad an, wo die Cache-Dateien abgelegt werden sollen.\\
+\end{tabular}
+
+\begin{tabular}{l|p{10cm}}
+Name&FatalTemplate\\
+Typ&Pflicht\\
+Parameter&Template-Pfad\\
+Beschreibung&Gibt das Template an, mit dem fatale Fehler angezeigt werden sollen.
+\end{tabular}
+
+\begin{tabular}{l|p{10cm}}
+Name&YearsTemplate\\
+Typ&Pflicht\\
+Parameter&Template-Pfad\\
+Beschreibung&Gibt das Template an, mit dem die Jahresliste angezeigt wird.\\
+\end{tabular}
+
+\begin{tabular}{l|p{10cm}}
+Name&YearListTemplate\\
+Typ&Pflicht\\
+Parameter&Template-Pfad\\
+Beschreibung&Gibt das Template-Snippet an, das benutzt wird, um einen Jahres-Eintrag in der Liste zu generieren.\\
+\end{tabular}
+
+\begin{tabular}{l|p{10cm}}
+Name&MonthsTemplate\\
+Typ&Pflicht\\
+Parameter&Template-Pfad\\
+Beschreibung&Gibt das Template an, mit dem die Monats-Liste und die Thread-Liste angezeigt wird.\\
+\end{tabular}
+
+\begin{tabular}{l|p{10cm}}
+Name&MonthsListTemplate\\
+Typ&Optional\\
+Parameter&Template-Pfad\\
+Beschreibung&Gibt das Template-Snippet an, das benutzt wird, um einen Monats-Eintrag in der Monatsliste zu generieren.\\
+\end{tabular}
+
+\begin{tabular}{l|p{10cm}}
+Name&ThreadListMonthTemplate\\
+Typ&Pflicht\\
+Parameter&Template-Pfad\\
+Beschreibung&Gibt das Template-Snippet an, das benutzt wird, um einen Thread-Eintrag in der Threadliste zu generieren.\\
+\end{tabular}
+
+\begin{tabular}{l|p{10cm}}
+Name&ThreadTemplate\\
+Typ&Pflicht\\
+Parameter&Template-Pfad\\
+Beschreibung&Gibt das Template an, das benutzt wird um einen Thread im Archiv anzuzeigen.\\
+\end{tabular}
+
+\begin{tabular}{l|p{10cm}}
+Name&ThreadListTemplate\\
+Typ&Pflicht\\
+Parameter&Template-Pfad\\
+Beschreibung&Gibt das Template an, das benutzt wird, um einen Eintrag in der Thread-Liste für die Anzeige eines Threads zu generieren.\\
+\end{tabular}
+
+\begin{tabular}{l|p{10cm}}
+Name&PerThreadTemplate\\
+Typ&Pflicht\\
+Parameter&Template-Pfad\\
+Beschreibung&Gibt das Template an, mit dem eine Nachricht in der Thread-Ansicht generiert wird.\\
+\end{tabular}
+
+\begin{tabular}{l|p{10cm}}
+Name&UpDownTemplate\\
+Typ&Pflicht\\
+Parameter&Template-Pfad\\
+Beschreibung&Gibt das Template an, das benutzt wird, um einen ``Nachrichten-Trenner'' zu generieren.\\
+\end{tabular}
+
 \subsection{Konfigurationsdatei fo\_post.conf}
 
+Diese Konfigurationsdatei enthält die Einstellungen für das Posting-Script.
+
+\begin{tabular}{l|p{10cm}}
+Name&PostingUrl\\
+Typ&Optional\\
+Parameter&URI\\
+Beschreibung&Definiert ein Pattern, das benutzt wird um zu bestimmen, ob eine durch [link:] referenzierte URI eine Posting-URL ist.\\
+\end{tabular}
+
+\begin{tabular}{l|p{10cm}}
+Name&FieldConfig\\
+Typ&Optional\\
+Parameter&Feld-Name, maximale Länge, minimale Länge\\
+Beschreibung&Definiert, wie ein durch das Posting-Formular übertragenes Feld validiert wird. Der erste Parameter gibt den Namen des Felds an, der zweite Parameter gibt die maximale Länge des Feldes an und der dritte Parameter gibt die minimale Länge des Feldes an.\\
+\end{tabular}
+
+\begin{tabular}{l|p{10cm}}
+Name&FieldNeeded\\
+Typ&Pflicht\\
+Parameter&Feld-Name\\
+Beschreibung&Gibt ein Feld an, dass zwangsläufig übermittelt werden muss.\\
+\end{tabular}
+
+\begin{tabular}{l|p{10cm}}
+Name&AddPlugin\\
+Typ&Optional\\
+Parameter&Plugin-Name\\
+Beschreibung&Diese Direktive lädt ein Plugin. Das Namensmuster ist ``Plugin::Name''\\
+\end{tabular}
+
+\begin{tabular}{l|p{10cm}}
+Name&Image\\
+Typ&Optional\\
+Parameter&Name der Nachricht, URI zum Bild, alt-Text\\
+Beschreibung&Diese Direktive gibt [msg:]-Einträge an. Der erste Parameter ist der Name des Eintrags, der zweite Parameter gibt die URI zum Bild an und der dritte Parameter gibt den alt-Text an.\\
+\end{tabular}
+
+\begin{tabular}{l|p{10cm}}
+Name&ThreadTemplate\\
+Typ&Pflicht\\
+Parameter&Template-Pfad\\
+Beschreibung&Diese Direktive gibt das Template an, das benutzt wird, um einen Posting-Vorgang (annehmen der Nachricht, eventuelle nicht-fatale Fehlermeldungen, Vorschau, ...) zu bearbeiten.\\
+\end{tabular}
+
+\begin{tabular}{l|p{10cm}}
+Name&FatalTemplate\\
+Typ&Pflicht\\
+Parameter&Template-Pfad\\
+Beschreibung&Diese Direktive gibt das Template an, das für fatale Fehler benutzt wird.\\
+\end{tabular}
+
+\begin{tabular}{l|p{10cm}}
+Name&OkTemplate\\
+Typ&Pflicht\\
+Parameter&Template-Pfad\\
+Beschreibung&Diese Direktive gibt das Template an, dass für die Bestätigungs-Seite nach einem Posting-Vorgang benutzt wird.\\
+\end{tabular}
+
+
 \subsection{Konfigurationsdatei \texttt{fo\_userconf.conf}}
+
+Diese Konfigurationsdatei wird benutzt, um das Userkonfigurationsprogramm zu konfigurieren.
+
+\begin{tabular}{l|p{10cm}}
+Name&AddModule\\
+Typ&Optional\\
+Parameter&Plugin-Name\\
+Beschreibung&Diese Direktive lädt ein Plugin. Das Namensschema ist ``Plugins::Name''\\
+\end{tabular}
+
+\begin{tabular}{l|p{10cm}}
+Name&MinLength\\
+Typ&Optional\\
+Parameter&Feldname und minimale Länge\\
+Beschreibung&Diese Direktive validiert ein übermitteltes Feld. Der erste Parameter gibt den Namen des Feldes an, der zweite Parameter gibt die minimale Länge an.\\
+\end{tabular}
+
+\begin{tabular}{l|p{10cm}}
+Name&MaxLength\\
+Typ&Optional\\
+Parameter&Feldname und maximale Länge\\
+Beschreibung&Diese Direktive gibt die maximale Länge eines übermittelten Feldes an. Der erste Parameter gibt den Namen des Feldes an, der zweite Parameter die maximale Länge.\\
+\end{tabular}
+
+\begin{tabular}{l|p{10cm}}
+Name&MinVal\\
+Typ&Optional\\
+Parameter&Feldname und minimalen Wert\\
+Beschreibung&Diese Direktive gibt den minimalen Wert für ein übermitteltes Feld an. Erster Parameter: Feldname, zweiter Parameter: minimaler Wert.\\
+\end{tabular}
+
+\begin{tabular}{l|p{10cm}}
+Name&MaxVal\\
+Typ&Optional\\
+Parameter&Feldname und maximalen Wert\\
+Beschreibung&Diese Direktive gibt den maximalen Wert für ein übermitteltes Feld an. Erster Parameter: Feldname, zweiter Parameter: maximaler Wert.\\
+\end{tabular}
+
+\begin{tabular}{l|p{10cm}}
+Name&ModuleConfig\\
+Typ&Pflicht\\
+Parameter&Pfad zur Beschreibungsdatei für die Konfigurationsdirektiven\\
+Beschreibung&Diese Direktive gibt den Pfad zur XML-Datei an, aus der die möglichen Konfigurationsdirektiven gelesen werden.\\
+\end{tabular}
+
+\begin{tabular}{l|p{10cm}}
+Name&FromUntilFormat\\
+Typ&Pflicht\\
+Parameter&\\
+Beschreibung&\\
+\end{tabular}
+
+\begin{tabular}{l|p{10cm}}
+Name&Edit\\
+Typ&Pflicht\\
+Parameter&Template-Pfad\\
+Beschreibung&\\
+\end{tabular}
+
+\begin{tabular}{l|p{10cm}}
+Name&EditEntry\\
+Typ&Pflicht\\
+Parameter&Template-Pfad\\
+Beschreibung&\\
+\end{tabular}
+
+\begin{tabular}{l|p{10cm}}
+Name&SectEntry\\
+Typ&Pflicht\\
+Parameter&Template-Pfad\\
+Beschreibung&\\
+\end{tabular}
+
+\begin{tabular}{l|p{10cm}}
+Name&PageEntry\\
+Typ&Pflicht\\
+Parameter&Template-Pfad\\
+Beschreibung&\\
+\end{tabular}
+
+\begin{tabular}{l|p{10cm}}
+Name&EditOk\\
+Typ&Pflicht\\
+Parameter&Template-Pfad\\
+Beschreibung&\\
+\end{tabular}
+
+\begin{tabular}{l|p{10cm}}
+Name&UpDown\\
+Typ&Pflicht\\
+Parameter&Template-Pfad\\
+Beschreibung&\\
+\end{tabular}
+
+\begin{tabular}{l|p{10cm}}
+Name&ViewSettings\\
+Typ&Pflicht\\
+Parameter&Template-Pfad\\
+Beschreibung&\\
+\end{tabular}
+
 
 \subsection{Konfigurationsdatei \texttt{fo\_view.conf}}
 
