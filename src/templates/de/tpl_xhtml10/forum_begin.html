@@ -180,7 +180,7 @@ function snap(obj) {
 {endif}{if $motd}
 {$motd}
 
-{endif}{if $aaf}<p style="border:1px solid red;">Sie befinden sich im Administrationsmodus. Nachdem Sie ein Posting gelöscht haben, sollten Sie die L&ouml;schung <img src="http://src.selfhtml.org/serverdok.gif" width="15" height="10" alt="bereichs&uuml;bergreifende Seite" />&nbsp;<a href="https://developer.selfhtml.org/tools/deletions/">dokumentieren</a>!</p>
+{endif}{if $aaf}<p style="border:1px solid red;">Sie befinden sich im Administrationsmodus. Nachdem Sie ein Posting gelÃ¶scht haben, sollten Sie die L&ouml;schung <img src="http://src.selfhtml.org/serverdok.gif" width="15" height="10" alt="bereichs&uuml;bergreifende Seite" />&nbsp;<a href="https://developer.selfhtml.org/tools/deletions/">dokumentieren</a>!</p>
 
 {endif}</td>
 </tr>
@@ -195,7 +195,7 @@ function snap(obj) {
 
 <p>Der Live-Filter filtert die Thread-Liste nach Kriterien, die Sie in diesem Text-Feld angeben k&ouml;nnen. Die Bedienungsweise wird in der <img src="http://src.selfhtml.org/dok.gif" width="15" height="10" alt="Seite" />&nbsp;<a href="/live_syntax.html"{if $frame} target="_top"{endif}>Syntax-Beschreibung</a> erkl&auml;rt.</p>
 
-<form method="get" action="{$ubase}" accept-charset="{$charset},UTF-8">
+<form method="get" action="{$ubase}" accept-charset="UTF-8">
 <p><label for="filterstring">Filter-String:</label> <input type="text" name="lf" id="filterstring" value="{$lf}" size="50" /> <input type="submit" value="Filtern!" /></p>
 </form>
 

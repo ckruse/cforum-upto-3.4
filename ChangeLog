@@ -4,4 +4,15 @@
 	* src/templates/de/tpl_html4/forum_begin.html,
 		src/templates/de/tpl_xhtml10/forum_begin.html: Added link for »mark all
 		visited« functionality
+	* src/templates/de/tpl_*/sendpass.html,
+		src/templates/de/tpl_*/chpass.html,
+		src/templates/de/tpl_*/userregister.html,
+		src/templates/de/tpl_*/useredit.html,
+		src/templates/de/tpl_*/forum_posting.html,
+		src/templates/de/tpl_*/forum_begin.html,
+		src/templates/de/tpl_*/thread.html: Converted to UTF-8, changed
+		accept-charset to accept-charset="UTF-8"
+	* cgi-shared/config/fo_default.conf.in: Changed locale and ExternCharset to
+		UTF-8
+
 

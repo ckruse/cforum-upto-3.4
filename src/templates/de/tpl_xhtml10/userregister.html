@@ -61,7 +61,7 @@
 
 {endif}<h2 id="registrierung">Benutzer-Registrierung</h2>
 
-<form method="post" action="{$script}" accept-charset="{$charset},UTF-8" id="registrierungsformular">
+<form method="post" action="{$script}" accept-charset="UTF-8" id="registrierungsformular">
 
 <table>
 <tr>
@@ -70,11 +70,11 @@
 </tr>
 <tr>
 <th><label for="email">E-Mail</label></th>
-<td><input type="text" name="email" id="email" value="{$email}" /> (Muss eine gültige E-Mail-Adresse sein. Wird nur dazu verwendet, dem User eventuell ein Passwort zuzuschicken oder einen Warn-Hinweis, wenn der Account zu lange nicht benutzt wurde!)</td>
+<td><input type="text" name="email" id="email" value="{$email}" /> (Muss eine gÃ¼ltige E-Mail-Adresse sein. Wird nur dazu verwendet, dem User eventuell ein Passwort zuzuschicken oder einen Warn-Hinweis, wenn der Account zu lange nicht benutzt wurde!)</td>
 </tr>
 <tr>
 <th><label for="Password">Passwort:</label></th>
-<td><input type="password" name="Password" id="Password" value="" /> (Darf die Zeichen <code>a-zA-Z0-9!&quot;§$_&lt;&gt;.%&amp;\/()=?-</code> enthalten, muss mindestens einen Buchstaben, mindestens eine Zahl enthalten und mindestens 5 Zeichen lang sein)</td>
+<td><input type="password" name="Password" id="Password" value="" /> (Darf die Zeichen <code>a-zA-Z0-9!&quot;Â§$_&lt;&gt;.%&amp;\/()=?-</code> enthalten, muss mindestens einen Buchstaben, mindestens eine Zahl enthalten und mindestens 5 Zeichen lang sein)</td>
 </tr>
 <tr>
 <th><label for="Password1">Passwort-Wiederholung:</label></th>

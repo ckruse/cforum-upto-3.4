@@ -162,7 +162,7 @@
       </tr>
     </table>{endif}{if $do_spellcheck}
     <h2 class="sh2"><a class="an" name="rechtschreibpruefung">Rechtschreibpr&uuml;fung</a></h2>
-    <form method="post" action="{$script}" accept-charset="{$charset},UTF-8">{if $fupto}
+    <form method="post" action="{$script}" accept-charset="UTF-8">{if $fupto}
       <input type="hidden" name="fupto" value="{$fupto}">{endif}{if $assicheck}
       <input type="hidden" name="assicheck" value="1">{endif}
       <input type="hidden" name="unid" value="{$unid}">
@@ -182,7 +182,7 @@
     <p>{$err}</p>{else}
     <h2 class="sh2"><a class="an" name="{if $fupto}antworten{else}verfassen{endif}">{if $fupto}Antwort verfassen{else}Neue Nachricht verfassen{endif}</a></h2>{if !$fupto}
     <p>Mit einer neuen Nachricht wird auch ein neues Thema (neuer Thread) gestartet. Das ist sinnvoll, um eine Frage zu stellen oder eine neue Diskussion zu entfachen.</p>{endif}{endif}
-    <form method="post" action="{$script}" accept-charset="{$charset},UTF-8">{if $fupto}
+    <form method="post" action="{$script}" accept-charset="UTF-8">{if $fupto}
       <input type="hidden" name="fupto" value="{$fupto}">{endif}{if $assicheck}
       <input type="hidden" name="assicheck" value="1">{endif}
       <input type="hidden" name="unid" value="{$unid}">
