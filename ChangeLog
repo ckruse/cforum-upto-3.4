@@ -1,3 +1,10 @@
+2004-10-29 Christian Kruse <ckruse@wwwtech.de>
+	* src/templates/fr/tpl_html4/forum_posting.html,
+		src/templates/fr/tpl_xhtml10/forum_posting.html,
+		src/templates/de/tpl_html4/forum_posting.html,
+		src/templates/de/tpl_xhtml10/forum_posting.html: Fixed bug in stylesheet
+		including
+
 2004-10-27 Christian Kruse <ckruse@wwwtech.de>
 	* src/htmllib.c: Fixed a bug in directive parsing
 	* branches/2.1/src/modules/flt_directives.c,
