@@ -9,35 +9,20 @@
 # $LastChangedBy$
 #
 
-<Filters>
-  AddFilter "@libdir@/cforum/flt_tid_index.so" "flt_tid_index"
-  AddFilter "@libdir@/cforum/flt_cftp.so" "flt_cftp"
-  AddFilter "@libdir@/cforum/flt_registerednames.so" "flt_registerednames"
-#  AddFilter "@libdir@/cforum/flt_nntp.so" "flt_nntp"
-  AddFilter "@libdir@/cforum/flt_extern.so" "flt_extern"
-  AddFilter "@libdir@/cforum/flt_voting.so" "flt_voting"
-</Filters>
 
-<General>
- SortThreads "2" # 1 or 2
- SortMessages "2" # 1 or 2
+ModulePath "@libdir@"
 
- RunArchiver "1800"
+Load "flt_tid_index"
+Load "flt_cftp"
+Load "flt_registerednames"
+#Load "flt_nntp"
+Load "flt_extern"
+Load "flt_voting"
 
- ErrorLog "@with_log_dir@/fo_errors"
- StdLog "@with_log_dir@/fo_stdlog"
+ErrorLog "@with_log_dir@/fo_errors"
+StdLog "@with_log_dir@/fo_stdlog"
 
- PIDFile "@with_log_dir@/fo_pid"
-</General>
-
-<Archiving>
- ArchiveOnVote "10" # archive on 10% votings
- MainFileMaxBytes "250000" # archive at 250k bytes
- MainFileMaxPostings "2000"
- MainFileMaxThreads "150"
-</Archiving>
-
-AuthNames "@DATADIR@/registered_names.db"
+PIDFile "@with_log_dir@/fo_pid"
 
 # external interface
 ExternPort "6666"
@@ -45,4 +30,20 @@ ExternPort "6666"
 
 #NNTPPort "2048"
 #NNTPHost "teamone.de"
+
+Forum FORUM1 {
+ SortThreads "ascending"
+ SortMessages "ascending"
+
+ RunArchiver "1800"
+
+ ArchiveOnVote "10" # archive on 10% votings
+ MainFileMaxBytes "250000" # archive at 250k bytes
+ MainFileMaxPostings "2000"
+ MainFileMaxThreads "150"
+
+ AuthNames "@DATADIR@/registered_names.db"
+}
+
+
 

@@ -43,7 +43,7 @@
 /* }}} */
 
 int flt_tidx_module(t_thread *thr) {
-  t_name_value *v = cfg_get_first_value(&fo_default_conf,"ThreadIndexFile");
+  t_name_value *v = cfg_get_first_value(&fo_default_conf,NULL,"ThreadIndexFile");
   struct stat st;
   struct tm t;
   DB *db;

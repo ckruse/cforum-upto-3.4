@@ -77,7 +77,7 @@ static void *shm_ptr       = NULL; /**< Shared memory pointer */
 static int   shm_lock_sem  = -1;   /**< semaphore showing which shared memory segment we shall use */
 
 void *reget_shm_ptr() {
-  t_name_value *shm  = cfg_get_first_value(&fo_default_conf,"SharedMemIds");
+  t_name_value *shm  = cfg_get_first_value(&fo_default_conf,NULL,"SharedMemIds");
   unsigned short val;
 
   if(shm_ptr) {
@@ -103,7 +103,7 @@ void *reget_shm_ptr() {
 }
 
 void *get_shm_ptr() {
-  t_name_value *shm  = cfg_get_first_value(&fo_default_conf,"SharedMemIds");
+  t_name_value *shm  = cfg_get_first_value(&fo_default_conf,NULL,"SharedMemIds");
   unsigned short val;
 
   if(shm_lock_sem == -1) {
@@ -153,7 +153,7 @@ u_char *get_uconf_name(const u_char *uname) {
   u_char *path,*name;
   u_char *ptr;
   struct stat sb;
-  t_name_value *confpath = cfg_get_first_value(&fo_default_conf,"ConfigDirectory");
+  t_name_value *confpath = cfg_get_first_value(&fo_default_conf,NULL,"ConfigDirectory");
 
   if(!uname) return NULL;
 
@@ -193,7 +193,7 @@ u_char *get_uconf_name(const u_char *uname) {
 int set_us_up_the_socket(void) {
   int sock;
   struct sockaddr_un addr;
-  t_name_value *sockpath = cfg_get_first_value(&fo_default_conf,"SocketName");
+  t_name_value *sockpath = cfg_get_first_value(&fo_default_conf,NULL,"SocketName");
 
   if(sockpath) {
     memset(&addr,0,sizeof(addr));
@@ -226,8 +226,8 @@ void generate_tpl_name(u_char buff[],int len,t_name_value *v) {
 
 /* {{{ gen_tpl_name */
 void gen_tpl_name(u_char buff[],int len,const u_char *name) {
-  t_name_value *vn = cfg_get_first_value(&fo_default_conf,"TemplateMode");
-  t_name_value *lang = cfg_get_first_value(&fo_default_conf,"Language");
+  t_name_value *vn = cfg_get_first_value(&fo_default_conf,NULL,"TemplateMode");
+  t_name_value *lang = cfg_get_first_value(&fo_default_conf,NULL,"Language");
 
   snprintf(buff,len,name,lang->values[0],vn->values[0]);
 }
@@ -277,10 +277,10 @@ void cf_set_variable(t_cf_template *tpl,t_name_value *cs,u_char *vname,const u_c
  *
  */
 void str_error_message(const u_char *err,FILE *out, ...) {
-  t_name_value *v = cfg_get_first_value(&fo_default_conf,"ErrorTemplate");
-  t_name_value *db = cfg_get_first_value(&fo_default_conf,"MessagesDatabase");
-  t_name_value *lang = cfg_get_first_value(&fo_default_conf,"Language");
-  t_name_value *cs = cfg_get_first_value(&fo_default_conf,"ExternCharset");
+  t_name_value *v = cfg_get_first_value(&fo_default_conf,NULL,"ErrorTemplate");
+  t_name_value *db = cfg_get_first_value(&fo_default_conf,NULL,"MessagesDatabase");
+  t_name_value *lang = cfg_get_first_value(&fo_default_conf,NULL,"Language");
+  t_name_value *cs = cfg_get_first_value(&fo_default_conf,NULL,"ExternCharset");
   t_cf_template tpl;
   u_char tplname[256];
   u_char errname[256];
@@ -391,8 +391,8 @@ void str_error_message(const u_char *err,FILE *out, ...) {
 
 /* {{{ get_error_message */
 u_char *get_error_message(const u_char *err,size_t *len, ...) {
-  t_name_value *db = cfg_get_first_value(&fo_default_conf,"MessagesDatabase");
-  t_name_value *lang = cfg_get_first_value(&fo_default_conf,"Language");
+  t_name_value *db = cfg_get_first_value(&fo_default_conf,NULL,"MessagesDatabase");
+  t_name_value *lang = cfg_get_first_value(&fo_default_conf,NULL,"Language");
   va_list ap;
 
   u_char *buff = NULL,ibuff[256],errname[256];
@@ -590,7 +590,7 @@ u_char *get_link(const u_char *link,u_int64_t tid,u_int64_t mid) {
   str_init(&buff);
 
   if(link == NULL)  {
-    vs = cfg_get_first_value(&fo_default_conf,cf_hash_get(GlobalValues,"UserName",8) ? "UPostingURL" : "PostingURL");
+    vs = cfg_get_first_value(&fo_default_conf,NULL,cf_hash_get(GlobalValues,"UserName",8) ? "UPostingURL" : "PostingURL");
     if(vs) link = vs->values[0];
   }
 
@@ -808,8 +808,8 @@ u_char *general_get_time(u_char *fmt,u_char *locale,int *len,time_t *date) {
  *
  */
 u_char *get_time(t_configuration *cfg,const u_char *symbol,int *len,time_t *date) {
-  t_name_value *symb = cfg_get_first_value(cfg,symbol);
-  t_name_value *loc  = cfg_get_first_value(&fo_default_conf,"DateLocale");
+  t_name_value *symb = cfg_get_first_value(cfg,NULL,symbol);
+  t_name_value *loc  = cfg_get_first_value(&fo_default_conf,NULL,"DateLocale");
 
   if(!symb || !loc) {
     return NULL;

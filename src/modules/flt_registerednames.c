@@ -72,7 +72,7 @@ u_char *transform(const u_char *val) {
   while(isspace(str.content[str.len-1])) str.len--;
   str.content[str.len] = '\0';
 
-  return ptr;
+  return str.content;
 }
 
 int check_auth(u_char *name,u_char *pass) {
@@ -306,7 +306,7 @@ int flt_registerednames_init_module(int sock) {
   return FLT_OK;
 }
 
-int flt_registerednames_handle_command(t_configfile *cf,t_conf_opt *opt,u_char **args,int argnum) {
+int flt_registerednames_handle_command(t_configfile *cf,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
   if(argnum == 1) {
     if(AuthNames) free(AuthNames);
     AuthNames = strdup(args[0]);

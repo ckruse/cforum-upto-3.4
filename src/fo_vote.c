@@ -149,7 +149,7 @@ int main(int argc,char *argv[],char *env[]) {
   }
 
   head   = cf_cgi_new();
-  dbname = cfg_get_first_value(&fo_vote_conf,"VotingDatabase");
+  dbname = cfg_get_first_value(&fo_vote_conf,NULL,"VotingDatabase");
 
   /* first action: authorization modules */
   if(Modules[AUTH_HANDLER].elements) {

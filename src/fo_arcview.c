@@ -51,7 +51,7 @@
 
 /* {{{ Dummy function, for ignoring unknown directives */
 #ifndef DOXYGEN
-int ignre(t_configfile *cf,u_char *name,u_char **args,int argnum) {
+int ignre(t_configfile *cf,const u_char *context,u_char *name,u_char **args,size_t argnum) {
   return 0;
 }
 #endif
@@ -67,7 +67,7 @@ int ignre(t_configfile *cf,u_char *name,u_char **args,int argnum) {
  */
 size_t get_month_name(int month,u_char **name) {
   struct tm tm;
-  t_name_value *v = cfg_get_first_value(&fo_default_conf,"DateLocale");
+  t_name_value *v = cfg_get_first_value(&fo_default_conf,NULL,"DateLocale");
   if(!v) return 0;
 
   *name = fo_alloc(NULL,BUFSIZ,1,FO_ALLOC_MALLOC);
@@ -203,7 +203,7 @@ void generate_thread_output(t_arc_message *msg,t_string *threads,t_string *threa
   int printed = 0;
   u_char *date;
   t_string strbuffer;
-  t_name_value *vs = cfg_get_first_value(&fo_default_conf,"ArchivePostingURL");
+  t_name_value *vs = cfg_get_first_value(&fo_default_conf,NULL,"ArchivePostingURL");
 
   str_init(&strbuffer);
 
@@ -312,17 +312,17 @@ void generate_thread_output(t_arc_message *msg,t_string *threads,t_string *threa
  * \param show_invisible If true invisible messages will be printed (only affecting if user is an administrator)
  */
 void print_thread_structure(t_arc_thread *thr,const u_char *year,const u_char *month,int admin,int show_invisible) {
-  t_name_value *main_tpl_cfg       = cfg_get_first_value(&fo_arcview_conf,"ThreadTemplate");
-  t_name_value *threadlist_tpl_cfg = cfg_get_first_value(&fo_arcview_conf,"ThreadListTemplate");
-  t_name_value *per_thread_tpl_cfg = cfg_get_first_value(&fo_arcview_conf,"PerThreadTemplate");
-  t_name_value *up_down_tpl_cfg    = cfg_get_first_value(&fo_arcview_conf,"UpDownTemplate");
-  t_name_value *ecache = cfg_get_first_value(&fo_arcview_conf,"EnableCache");
+  t_name_value *main_tpl_cfg       = cfg_get_first_value(&fo_arcview_conf,NULL,"ThreadTemplate");
+  t_name_value *threadlist_tpl_cfg = cfg_get_first_value(&fo_arcview_conf,NULL,"ThreadListTemplate");
+  t_name_value *per_thread_tpl_cfg = cfg_get_first_value(&fo_arcview_conf,NULL,"PerThreadTemplate");
+  t_name_value *up_down_tpl_cfg    = cfg_get_first_value(&fo_arcview_conf,NULL,"UpDownTemplate");
+  t_name_value *ecache = cfg_get_first_value(&fo_arcview_conf,NULL,"EnableCache");
   t_name_value *cache  = NULL,*clevel = NULL;
   u_char pi[256];
   u_char *username = cf_hash_get(GlobalValues,"UserName",8);
-  t_name_value *forumpath = cfg_get_first_value(&fo_default_conf,username?"UBaseURL":"BaseURL");
+  t_name_value *forumpath = cfg_get_first_value(&fo_default_conf,NULL,username?"UBaseURL":"BaseURL");
 
-  t_name_value *cs = cfg_get_first_value(&fo_default_conf,"ExternCharset");
+  t_name_value *cs = cfg_get_first_value(&fo_default_conf,NULL,"ExternCharset");
 
   u_char main_tpl_name[256],threadlist_tpl_name[256],per_thread_tpl_name[256],up_down_tpl_name[256];
   t_cf_template main_tpl,threadlist_tpl,per_thread_tpl,up_down_tpl;
@@ -333,8 +333,8 @@ void print_thread_structure(t_arc_thread *thr,const u_char *year,const u_char *m
   t_string threadlist,threads;
 
   if(ecache && *ecache->values[0] == 'y') {
-    cache  = cfg_get_first_value(&fo_arcview_conf,"CacheDir");
-    ecache = cfg_get_first_value(&fo_arcview_conf,"CacheLevel");
+    cache  = cfg_get_first_value(&fo_arcview_conf,NULL,"CacheDir");
+    ecache = cfg_get_first_value(&fo_arcview_conf,NULL,"CacheLevel");
 
     if(clevel) cache_level = atoi(clevel->values[0]);
     else       cache_level = 6;
@@ -694,7 +694,7 @@ void create_thread_structure(GdomeDocument *doc,t_arc_thread *thr) {
  * \param tid The thread id
  */
 void show_thread(const u_char *year,const u_char *month,const u_char *tid) {
-  t_name_value *apath = cfg_get_first_value(&fo_default_conf,"ArchivePath");
+  t_name_value *apath = cfg_get_first_value(&fo_default_conf,NULL,"ArchivePath");
   struct stat st;
   t_string path;
   t_arc_thread thr;
@@ -702,7 +702,7 @@ void show_thread(const u_char *year,const u_char *month,const u_char *tid) {
   u_char *uname = cf_hash_get(GlobalValues,"UserName",8);
   int admin = uname ? (int)is_admin(uname) : 0;
   int show_invisible = cf_hash_get(GlobalValues,"ShowInvisible",13) != NULL;
-  t_name_value *cache  = cfg_get_first_value(&fo_arcview_conf,"CacheDir");
+  t_name_value *cache  = cfg_get_first_value(&fo_arcview_conf,NULL,"CacheDir");
   t_cache_entry *ent;
   u_char pi[256];
 
@@ -812,16 +812,16 @@ int month_cnt_cmp(const void *arg1,const void *arg2) {
  * \param month The month
  */
 void show_month_content(const u_char *year,const u_char *month) {
-  t_name_value *v      = cfg_get_first_value(&fo_default_conf,"ArchivePath");
-  t_name_value *cs     = cfg_get_first_value(&fo_default_conf,"ExternCharset");
-  t_name_value *m_tp   = cfg_get_first_value(&fo_arcview_conf,"MonthsTemplate");
-  t_name_value *tl_tp  = cfg_get_first_value(&fo_arcview_conf,"ThreadListMonthTemplate");
+  t_name_value *v      = cfg_get_first_value(&fo_default_conf,NULL,"ArchivePath");
+  t_name_value *cs     = cfg_get_first_value(&fo_default_conf,NULL,"ExternCharset");
+  t_name_value *m_tp   = cfg_get_first_value(&fo_arcview_conf,NULL,"MonthsTemplate");
+  t_name_value *tl_tp  = cfg_get_first_value(&fo_arcview_conf,NULL,"ThreadListMonthTemplate");
   t_name_value *cache  = NULL;
   t_name_value *clevel = NULL;
-  t_name_value *ecache = cfg_get_first_value(&fo_arcview_conf,"EnableCache");
+  t_name_value *ecache = cfg_get_first_value(&fo_arcview_conf,NULL,"EnableCache");
   int show_invisible = cf_hash_get(GlobalValues,"ShowInvisible",13) != NULL;
   u_char *username = cf_hash_get(GlobalValues,"UserName",8);
-  t_name_value *forumpath = cfg_get_first_value(&fo_default_conf,username?"UBaseURL":"BaseURL");
+  t_name_value *forumpath = cfg_get_first_value(&fo_default_conf,NULL,username?"UBaseURL":"BaseURL");
 
   t_cache_entry *ent;
   t_string path,mstr;
@@ -841,8 +841,8 @@ void show_month_content(const u_char *year,const u_char *month) {
   u_char mt_name[256],tl_name[256],buff[256];
 
   if(ecache && *ecache->values[0] == 'y') {
-    cache  = cfg_get_first_value(&fo_arcview_conf,"CacheDir");
-    ecache = cfg_get_first_value(&fo_arcview_conf,"CacheLevel");
+    cache  = cfg_get_first_value(&fo_arcview_conf,NULL,"CacheDir");
+    ecache = cfg_get_first_value(&fo_arcview_conf,NULL,"CacheLevel");
 
     if(ecache) cache_level = atoi(ecache->values[0]);
     else       cache_level = 6;
@@ -1010,12 +1010,12 @@ void show_month_content(const u_char *year,const u_char *month) {
  * \param year The year
  */
 void show_year_content(const u_char *year) {
-  t_name_value *v   = cfg_get_first_value(&fo_default_conf,"ArchivePath");
-  t_name_value *mt  = cfg_get_first_value(&fo_arcview_conf,"MonthsTemplate");
-  t_name_value *mlt = cfg_get_first_value(&fo_arcview_conf,"MonthsListTemplate");
-  t_name_value *cs  = cfg_get_first_value(&fo_default_conf,"ExternCharset");
+  t_name_value *v   = cfg_get_first_value(&fo_default_conf,NULL,"ArchivePath");
+  t_name_value *mt  = cfg_get_first_value(&fo_arcview_conf,NULL,"MonthsTemplate");
+  t_name_value *mlt = cfg_get_first_value(&fo_arcview_conf,NULL,"MonthsListTemplate");
+  t_name_value *cs  = cfg_get_first_value(&fo_default_conf,NULL,"ExternCharset");
   u_char *username = cf_hash_get(GlobalValues,"UserName",8);
-  t_name_value *forumpath = cfg_get_first_value(&fo_default_conf,username?"UBaseURL":"BaseURL");
+  t_name_value *forumpath = cfg_get_first_value(&fo_default_conf,NULL,username?"UBaseURL":"BaseURL");
 
   t_cf_template mt_tpl,mlt_tpl;
 
@@ -1090,13 +1090,13 @@ void show_year_content(const u_char *year) {
  * Function for showing a list of years
  */
 void show_year_list(void) {
-  t_name_value *ap = cfg_get_first_value(&fo_default_conf,"ArchivePath");
+  t_name_value *ap = cfg_get_first_value(&fo_default_conf,NULL,"ArchivePath");
   t_array *ary = read_dir_content(ap->values[0]);
   u_char *username = cf_hash_get(GlobalValues,"UserName",8);
-  t_name_value *forumpath = cfg_get_first_value(&fo_default_conf,username?"UBaseURL":"BaseURL");
+  t_name_value *forumpath = cfg_get_first_value(&fo_default_conf,NULL,username?"UBaseURL":"BaseURL");
 
-  t_name_value *yt  = cfg_get_first_value(&fo_arcview_conf,"YearsTemplate");
-  t_name_value *ylt = cfg_get_first_value(&fo_arcview_conf,"YearListTemplate");
+  t_name_value *yt  = cfg_get_first_value(&fo_arcview_conf,NULL,"YearsTemplate");
+  t_name_value *ylt = cfg_get_first_value(&fo_arcview_conf,NULL,"YearListTemplate");
 
   t_cf_template years,year;
   u_char buff[10],yt_name[256],ylt_name[256];
@@ -1287,7 +1287,7 @@ int main(int argc,char *argv[],char *env[]) {
     }
   }
 
-  cs = cfg_get_first_value(&fo_default_conf,"ExternCharset");
+  cs = cfg_get_first_value(&fo_default_conf,NULL,"ExternCharset");
 
   if(ret != FLT_EXIT) {
     printf("Content-Type: text/html; charset=%s\015\012",cs?cs->values[0]?cs->values[0]:(u_char *)"UTF-8":(u_char *)"UTF-8");

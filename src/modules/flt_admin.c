@@ -151,7 +151,7 @@ int flt_admin_setvars(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc,t_c
 }
 
 int flt_admin_init(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc) {
-  t_name_value *v = cfg_get_first_value(dc,"Administrators");
+  t_name_value *v = cfg_get_first_value(dc,NULL,"Administrators");
   u_char *val = NULL;
   u_char *UserName = cf_hash_get(GlobalValues,"UserName",8);
 
@@ -182,7 +182,7 @@ int flt_admin_posthandler(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc
   size_t l;
   u_char *UserName = cf_hash_get(GlobalValues,"UserName",8);
   int ShowInvisible = cf_hash_get(GlobalValues,"ShowInvisible",13) != NULL;
-  t_name_value *link_pattern = cfg_get_first_value(dc,"UPostingURL");
+  t_name_value *link_pattern = cfg_get_first_value(dc,NULL,"UPostingURL");
 
   if(flt_admin_is_admin(UserName)) {
     tpl_cf_setvar(&msg->tpl,"admin","1",1,0);

@@ -99,7 +99,7 @@ int is_thread(const char *path) {
  * \param month The month
  */
 void index_month(char *year,char *month) {
-  t_name_value *apath = cfg_get_first_value(&fo_default_conf,"ArchivePath");
+  t_name_value *apath = cfg_get_first_value(&fo_default_conf,NULL,"ArchivePath");
   char path[256],path1[256],ym[256];
   t_tid_index midx;
   struct stat st;
@@ -174,7 +174,7 @@ void index_month(char *year,char *month) {
  * \param year The year
  */
 void do_year(char *year) {
-  t_name_value *apath = cfg_get_first_value(&fo_default_conf,"ArchivePath");
+  t_name_value *apath = cfg_get_first_value(&fo_default_conf,NULL,"ArchivePath");
   char path[256];
 
   DIR *months;
@@ -238,14 +238,8 @@ int main(int argc,char *argv[],char *envp[]) {
     return EXIT_FAILURE;
   }
 
-  if((ent = cfg_get_first_value(&fo_default_conf,"ArchivePath")) == NULL) {
-    fprintf(stderr,"error getting archive path\n");
-    return EXIT_FAILURE;
-  }
-  if((idxfile = cfg_get_first_value(&fo_default_conf,"ThreadIndexFile")) == NULL) {
-    fprintf(stderr,"error getting index file\n");
-    return EXIT_FAILURE;
-  }
+  ent = cfg_get_first_value(&fo_default_conf,NULL,"ArchivePath");
+  idxfile = cfg_get_first_value(&fo_default_conf,NULL,"ThreadIndexFile");
 
   /* {{{ open database */
   if((ret = db_create(&Tdb,NULL,0)) != 0) {

@@ -49,10 +49,6 @@ pkglib_LTLIBRARIES+=flt_livefilter.la
 flt_livefilter_la_SOURCES=flt_livefilter.c
 flt_livefilter_la_LDFLAGS=-module -export-dynamic -avoid-version
 
-pkglib_LTLIBRARIES+=flt_nntp.la
-flt_nntp_la_SOURCES=flt_nntp.c
-flt_nntp_la_LDFLAGS=-module -export-dynamic -avoid-version
-
 pkglib_LTLIBRARIES+=flt_openclose.la
 flt_openclose_la_SOURCES=flt_openclose.c
 flt_openclose_la_LDFLAGS=-module -export-dynamic -avoid-version

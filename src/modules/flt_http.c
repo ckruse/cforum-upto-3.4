@@ -286,7 +286,7 @@ int flt_http_execute(t_cf_hash *head,t_configuration *dc,t_configuration *vc,voi
   return FLT_DECLINE;
 }
 
-int flt_http_handle_command(t_configfile *cfile,t_conf_opt *opt,u_char **args,int argnum) {
+int flt_http_handle_command(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
   u_char *ptr = NULL;
 
   if(argnum == 1) {

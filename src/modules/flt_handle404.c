@@ -98,8 +98,8 @@ void flt_handle404_gen_url(u_char *buff,u_char *aurl,u_char *url,u_int64_t tid,u
 }
 
 int flt_handle404_execute(t_cf_hash *head,t_configuration *dc,t_configuration *vc,u_int64_t tid,u_int64_t mid) {
-  t_name_value *v    = cfg_get_first_value(&fo_default_conf,"ThreadIndexFile");
-  t_name_value *aurl = cfg_get_first_value(&fo_default_conf,"ArchiveURL");
+  t_name_value *v    = cfg_get_first_value(&fo_default_conf,NULL,"ThreadIndexFile");
+  t_name_value *aurl = cfg_get_first_value(&fo_default_conf,NULL,"ArchiveURL");
   struct stat st;
   u_char *port = getenv("SERVER_PORT");
   DB *db;

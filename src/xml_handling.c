@@ -285,7 +285,7 @@ t_posting *stringify_posting(GdomeDocument *doc1,GdomeElement *t1,GdomeDocument 
 
 /* {{{ stringify_thread_and_write_to_disk */
 void stringify_thread_and_write_to_disk(GdomeDocument *doc1,t_thread *t) {
-  t_name_value *mpath = cfg_get_first_value(&fo_default_conf,"MessagePath");
+  t_name_value *mpath = cfg_get_first_value(&fo_default_conf,NULL,"MessagePath");
   GdomeException e;
   u_char buff[256];
   GdomeDOMImplementation *impl = gdome_di_mkref();

@@ -44,7 +44,7 @@ int flt_motd_execute(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_c
   FILE *fd;
   struct stat st;
   u_char *txt;
-  t_name_value *cs = cfg_get_first_value(dc,"ExternCharset");
+  t_name_value *cs = cfg_get_first_value(dc,NULL,"ExternCharset");
 
   if(MOTD_File && MOTD_enable) {
     if(stat(MOTD_File,&st) != -1) {
@@ -64,7 +64,7 @@ int flt_motd_execute(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_c
 }
 
 
-int flt_motd_handle(t_configfile *cfile,t_conf_opt *opt,u_char **args,int argnum) {
+int flt_motd_handle(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
   if(cf_strcmp(opt->name,"MotdFile") == 0) {
     MOTD_File = strdup(args[0]);
   }

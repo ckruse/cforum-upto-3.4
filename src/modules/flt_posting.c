@@ -38,7 +38,7 @@
 #include "htmllib.h"
 /* }}} */
 
-/* {{{ struct Cfg */
+/* {{{ struct flt_posting_cfg */
 struct {
   u_char *Hi;
   u_char *Bye;
@@ -52,7 +52,7 @@ struct {
   int PreviewSwitchType;
   int IframeAsLink;
   int ImageAsLink;
-} Cfg = { NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 0 };
+} flt_posting_cfg = { NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 0 };
 /* }}} */
 
 typedef struct {
@@ -68,7 +68,7 @@ void replace_placeholders(const u_char *str,t_string *appender,t_cl_thread *thre
   register u_char *ptr1 = NULL;
   u_char *name,*tmp;
   size_t len;
-  t_name_value *cs = cfg_get_first_value(&fo_default_conf,"ExternCharset");
+  t_name_value *cs = cfg_get_first_value(&fo_default_conf,NULL,"ExternCharset");
 
   if(thread) {
     for(ptr1 = thread->threadmsg->author;*ptr1;ptr1++) {
@@ -118,13 +118,13 @@ void replace_placeholders(const u_char *str,t_string *appender,t_cl_thread *thre
 int flt_posting_execute_filter(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cl_thread *thread,t_cf_template *tpl) {
   /* {{{ variables */
   t_name_value *ps,
-               *cs = cfg_get_first_value(dc,"ExternCharset"),
-               *rm = cfg_get_first_value(vc,"ReadMode"),
-               *dq = cfg_get_first_value(vc,"DoQuote"),
-               *st = cfg_get_first_value(vc,"ShowThread"),
-               *qc = cfg_get_first_value(vc,"QuotingChars"),
-               *ms = cfg_get_first_value(vc,"MaxSigLines"),
-               *ss = cfg_get_first_value(vc,"ShowSig");
+               *cs = cfg_get_first_value(dc,NULL,"ExternCharset"),
+               *rm = cfg_get_first_value(vc,NULL,"ReadMode"),
+               *dq = cfg_get_first_value(vc,NULL,"DoQuote"),
+               *st = cfg_get_first_value(vc,NULL,"ShowThread"),
+               *qc = cfg_get_first_value(vc,NULL,"QuotingChars"),
+               *ms = cfg_get_first_value(vc,NULL,"MaxSigLines"),
+               *ss = cfg_get_first_value(vc,NULL,"ShowSig");
 
   u_char buff[256],
         *tmp,
@@ -159,19 +159,19 @@ int flt_posting_execute_filter(t_cf_hash *head,t_configuration *dc,t_configurati
     qclen  = strlen(qchars);
   }
 
-  if(UserName) ps = cfg_get_first_value(dc,"UPostScript");
-  else         ps = cfg_get_first_value(dc,"PostScript");
+  if(UserName) ps = cfg_get_first_value(dc,NULL,"UPostScript");
+  else         ps = cfg_get_first_value(dc,NULL,"PostScript");
 
   /* {{{ set some standard variables in thread mode */
-  if(Cfg.TWidth) tpl_cf_setvar(tpl,"twidth",Cfg.TWidth,strlen(Cfg.TWidth),1);
-  if(Cfg.THeight) tpl_cf_setvar(tpl,"theight",Cfg.THeight,strlen(Cfg.THeight),1);
-  if(Cfg.Preview) tpl_cf_setvar(tpl,"preview","1",1,0);
+  if(flt_posting_cfg.TWidth) tpl_cf_setvar(tpl,"twidth",flt_posting_cfg.TWidth,strlen(flt_posting_cfg.TWidth),1);
+  if(flt_posting_cfg.THeight) tpl_cf_setvar(tpl,"theight",flt_posting_cfg.THeight,strlen(flt_posting_cfg.THeight),1);
+  if(flt_posting_cfg.Preview) tpl_cf_setvar(tpl,"preview","1",1,0);
 
-  if(Cfg.PreviewSwitchType == 0) tpl_cf_setvar(tpl,"previewswitchtype","checkbox",8,0);
-  else if(Cfg.PreviewSwitchType == 1) tpl_cf_setvar(tpl,"previewswitchtype","button",6,0);
+  if(flt_posting_cfg.PreviewSwitchType == 0) tpl_cf_setvar(tpl,"previewswitchtype","checkbox",8,0);
+  else if(flt_posting_cfg.PreviewSwitchType == 1) tpl_cf_setvar(tpl,"previewswitchtype","button",6,0);
 
-  if(Cfg.ActiveColorF && *Cfg.ActiveColorF) cf_set_variable(tpl,cs,"activecolorf",Cfg.ActiveColorF,strlen(Cfg.ActiveColorF),1);
-  if(Cfg.ActiveColorB && *Cfg.ActiveColorB) cf_set_variable(tpl,cs,"activecolorb",Cfg.ActiveColorB,strlen(Cfg.ActiveColorB),1);
+  if(flt_posting_cfg.ActiveColorF && *flt_posting_cfg.ActiveColorF) cf_set_variable(tpl,cs,"activecolorf",flt_posting_cfg.ActiveColorF,strlen(flt_posting_cfg.ActiveColorF),1);
+  if(flt_posting_cfg.ActiveColorB && *flt_posting_cfg.ActiveColorB) cf_set_variable(tpl,cs,"activecolorb",flt_posting_cfg.ActiveColorB,strlen(flt_posting_cfg.ActiveColorB),1);
 
   cf_set_variable(tpl,cs,"action",ps->values[0],strlen(ps->values[0]),1);
 
@@ -333,10 +333,10 @@ int flt_posting_execute_filter(t_cf_hash *head,t_configuration *dc,t_configurati
 /* {{{ standard directives ([link:], [ref:], [iframe:], [image:], [pref:]) */
 int flt_posting_directives(t_configuration *fdc,t_configuration *fvc,const u_char *directive,const u_char *parameter,t_string *content,t_string *cite,const u_char *qchars,int sig) {
   size_t len,i,len1;
-  t_name_value *xhtml = cfg_get_first_value(fdc,"XHTMLMode");
+  t_name_value *xhtml = cfg_get_first_value(fdc,NULL,"XHTMLMode");
   u_int64_t tid,mid;
   u_char *ptr,*tmp1 = NULL,**list = NULL,*title_alt = NULL;
-  t_name_value *vs = cfg_get_first_value(fdc,cf_hash_get(GlobalValues,"UserName",8) ? "UPostingURL" : "PostingURL");
+  t_name_value *vs = cfg_get_first_value(fdc,NULL,cf_hash_get(GlobalValues,"UserName",8) ? "UPostingURL" : "PostingURL");
   t_ref_uri *uri;
 
   if(*directive == 'l') {
@@ -357,9 +357,9 @@ int flt_posting_directives(t_configuration *fdc,t_configuration *fvc,const u_cha
         str_chars_append(content,"<a href=\"",9);
         str_chars_append(content,tmp1,len);
 
-        if(Cfg.link) {
+        if(flt_posting_cfg.link) {
           str_chars_append(content,"\" target=\"",10);
-          str_chars_append(content,Cfg.link,strlen(Cfg.link));
+          str_chars_append(content,flt_posting_cfg.link,strlen(flt_posting_cfg.link));
         }
 
         str_chars_append(content,"\">",2);
@@ -393,13 +393,13 @@ int flt_posting_directives(t_configuration *fdc,t_configuration *fvc,const u_cha
       }
 
       if(is_valid_http_link(tmp1,1) == 0) {
-        if(Cfg.ImageAsLink) {
+        if(flt_posting_cfg.ImageAsLink) {
           str_chars_append(content,"<a href=\"",9);
           str_chars_append(content,tmp1,len);
 
-          if(Cfg.link) {
+          if(flt_posting_cfg.link) {
             str_chars_append(content,"\" target=\"",10);
-            str_chars_append(content,Cfg.link,strlen(Cfg.link));
+            str_chars_append(content,flt_posting_cfg.link,strlen(flt_posting_cfg.link));
           }
 
           str_chars_append(content,"\">",2);
@@ -435,13 +435,13 @@ int flt_posting_directives(t_configuration *fdc,t_configuration *fvc,const u_cha
       if(is_valid_http_link(parameter,1) == 0) {
         len = strlen(parameter);
 
-        if(Cfg.IframeAsLink) {
+        if(flt_posting_cfg.IframeAsLink) {
           str_chars_append(content,"<a href=\"",9);
           str_chars_append(content,parameter,len);
 
-          if(Cfg.link) {
+          if(flt_posting_cfg.link) {
             str_chars_append(content,"\" target=\"",10);
-            str_chars_append(content,Cfg.link,strlen(Cfg.link));
+            str_chars_append(content,flt_posting_cfg.link,strlen(flt_posting_cfg.link));
           }
 
           str_chars_append(content,"\">",2);
@@ -454,9 +454,9 @@ int flt_posting_directives(t_configuration *fdc,t_configuration *fvc,const u_cha
           str_chars_append(content,"\" width=\"90%\" height=\"90%\"><a href=\"",36);
           str_chars_append(content,parameter,len);
 
-          if(Cfg.link) {
+          if(flt_posting_cfg.link) {
             str_chars_append(content,"\" target=\"",10);
-            str_chars_append(content,Cfg.link,strlen(Cfg.link));
+            str_chars_append(content,flt_posting_cfg.link,strlen(flt_posting_cfg.link));
           }
 
           str_chars_append(content,"\">",2);
@@ -496,9 +496,9 @@ int flt_posting_directives(t_configuration *fdc,t_configuration *fvc,const u_cha
         str_chars_append(content,"<a href=\"",9);
         str_chars_append(content,tmp1,strlen(tmp1));
 
-        if(Cfg.link) {
+        if(flt_posting_cfg.link) {
           str_chars_append(content,"\" target=\"",10);
-          str_chars_append(content,Cfg.link,strlen(Cfg.link));
+          str_chars_append(content,flt_posting_cfg.link,strlen(flt_posting_cfg.link));
         }
 
         str_chars_append(content,"\">",2);
@@ -524,9 +524,9 @@ int flt_posting_directives(t_configuration *fdc,t_configuration *fvc,const u_cha
             str_chars_append(content,uri->uri,strlen(uri->uri));
             str_chars_append(content,list[1],strlen(list[1]));
 
-            if(Cfg.link) {
+            if(flt_posting_cfg.link) {
               str_chars_append(content,"\" target=\"",10);
-              str_chars_append(content,Cfg.link,strlen(Cfg.link));
+              str_chars_append(content,flt_posting_cfg.link,strlen(flt_posting_cfg.link));
             }
 
             str_chars_append(content,"\">",2);
@@ -570,17 +570,17 @@ int flt_posting_post_cnt(t_configuration *dc,t_configuration *vc,t_cl_thread *th
   u_char *tmp;
 
   if(cite) {
-    cs = cfg_get_first_value(dc,"ExternCharset");
+    cs = cfg_get_first_value(dc,NULL,"ExternCharset");
 
-    if(Cfg.Bye) {
-      if(cf_strcasecmp(cs->values[0],"utf-8") == 0 || (tmp = htmlentities_charset_convert(Cfg.Bye,"UTF-8",cs->values[0],NULL,0)) == NULL) tmp = strdup(Cfg.Bye);
+    if(flt_posting_cfg.Bye) {
+      if(cf_strcasecmp(cs->values[0],"utf-8") == 0 || (tmp = htmlentities_charset_convert(flt_posting_cfg.Bye,"UTF-8",cs->values[0],NULL,0)) == NULL) tmp = strdup(flt_posting_cfg.Bye);
       str_char_append(cite,'\n');
       replace_placeholders(tmp,cite,thr);
 
       free(tmp);
     }
-    if(Cfg.Signature) {
-      if(cf_strcasecmp(cs->values[0],"utf-8") == 0 || (tmp = htmlentities_charset_convert(Cfg.Signature,"UTF-8",cs->values[0],NULL,0)) == NULL) tmp = strdup(Cfg.Signature);
+    if(flt_posting_cfg.Signature) {
+      if(cf_strcasecmp(cs->values[0],"utf-8") == 0 || (tmp = htmlentities_charset_convert(flt_posting_cfg.Signature,"UTF-8",cs->values[0],NULL,0)) == NULL) tmp = strdup(flt_posting_cfg.Signature);
       str_chars_append(cite,"\n-- \n",5);
       replace_placeholders(tmp,cite,thr);
 
@@ -598,10 +598,10 @@ int flt_posting_pre_cnt(t_configuration *dc,t_configuration *vc,t_cl_thread *thr
   u_char *tmp;
 
   if(cite) {
-    if(Cfg.Hi) {
-      cs = cfg_get_first_value(dc,"ExternCharset");
+    if(flt_posting_cfg.Hi) {
+      cs = cfg_get_first_value(dc,NULL,"ExternCharset");
 
-      if(cf_strcasecmp(cs->values[0],"utf-8") == 0 || (tmp = htmlentities_charset_convert(Cfg.Hi,"UTF-8",cs->values[0],NULL,0)) == NULL) tmp = strdup(Cfg.Hi);
+      if(cf_strcasecmp(cs->values[0],"utf-8") == 0 || (tmp = htmlentities_charset_convert(flt_posting_cfg.Hi,"UTF-8",cs->values[0],NULL,0)) == NULL) tmp = strdup(flt_posting_cfg.Hi);
       replace_placeholders(tmp,cite,thr);
       free(tmp);
 
@@ -614,63 +614,63 @@ int flt_posting_pre_cnt(t_configuration *dc,t_configuration *vc,t_cl_thread *thr
 /* }}} */
 
 /* {{{ module configuration */
-/* {{{ handle_greet */
-int handle_greet(t_configfile *cfile,t_conf_opt *opt,u_char **args,int argnum) {
+/* {{{ flt_posting_handle_greet */
+int flt_posting_handle_greet(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
   u_char *tmp = strdup(args[0]);
 
   if(cf_strcmp(opt->name,"Hi") == 0) {
-    if(Cfg.Hi) free(Cfg.Hi);
-    Cfg.Hi          = tmp;
+    if(flt_posting_cfg.Hi) free(flt_posting_cfg.Hi);
+    flt_posting_cfg.Hi          = tmp;
   }
   else if(cf_strcmp(opt->name,"Bye") == 0) {
-    if(Cfg.Bye) free(Cfg.Bye);
-    Cfg.Bye         = tmp;
+    if(flt_posting_cfg.Bye) free(flt_posting_cfg.Bye);
+    flt_posting_cfg.Bye         = tmp;
   }
   else if(cf_strcmp(opt->name,"Signature") == 0) {
-    if(Cfg.Signature) free(Cfg.Signature);
-    Cfg.Signature   = tmp;
+    if(flt_posting_cfg.Signature) free(flt_posting_cfg.Signature);
+    flt_posting_cfg.Signature   = tmp;
   }
 
   return 0;
 }
 /* }}} */
 
-/* {{{ handle_link */
-int handle_link(t_configfile *cfile,t_conf_opt *opt,u_char **args,int argnum) {
-  if(Cfg.link) free(Cfg.link);
-  Cfg.link = strdup(args[0]);
+/* {{{ flt_posting_handle_link */
+int flt_posting_handle_link(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
+  if(flt_posting_cfg.link) free(flt_posting_cfg.link);
+  flt_posting_cfg.link = strdup(args[0]);
 
   return 0;
 }
 /* }}} */
 
-/* {{{ handle_box */
-int handle_box(t_configfile *cfile,t_conf_opt *opt,u_char **args,int argnum) {
-  if(Cfg.TWidth) free(Cfg.TWidth);
-  if(Cfg.THeight) free(Cfg.THeight);
+/* {{{ flt_posting_handle_box */
+int flt_posting_handle_box(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
+  if(flt_posting_cfg.TWidth) free(flt_posting_cfg.TWidth);
+  if(flt_posting_cfg.THeight) free(flt_posting_cfg.THeight);
 
-  Cfg.TWidth  = strdup(args[0]);
-  Cfg.THeight = strdup(args[1]);
-
-  return 0;
-}
-/* }}} */
-
-/* {{{ handle_prev */
-int handle_prev(t_configfile *cfile,t_conf_opt *opt,u_char **args,int argnum) {
-  Cfg.Preview = cf_strcmp(args[0],"yes") == 0;
+  flt_posting_cfg.TWidth  = strdup(args[0]);
+  flt_posting_cfg.THeight = strdup(args[1]);
 
   return 0;
 }
 /* }}} */
 
-/* {{{ handle_prevt */
-int handle_prevt(t_configfile *cfile,t_conf_opt *opt,u_char **args,int argnum) {
+/* {{{ flt_posting_handle_prev */
+int flt_posting_handle_prev(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
+  flt_posting_cfg.Preview = cf_strcmp(args[0],"yes") == 0;
+
+  return 0;
+}
+/* }}} */
+
+/* {{{ flt_posting_handle_prevt */
+int flt_posting_handle_prevt(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
   if(cf_strcmp(args[0],"button") == 0) {
-    Cfg.PreviewSwitchType = 1;
+    flt_posting_cfg.PreviewSwitchType = 1;
   }
   else if(cf_strcmp(args[0],"checkbox") == 0) {
-    Cfg.PreviewSwitchType = 0;
+    flt_posting_cfg.PreviewSwitchType = 0;
   }
   else {
     fprintf(stderr,"Error: wrong value for PreviewSwitchType\n");
@@ -681,28 +681,28 @@ int handle_prevt(t_configfile *cfile,t_conf_opt *opt,u_char **args,int argnum) {
 }
 /* }}} */
 
-/* {{{ handle_actpcol */
-int handle_actpcol(t_configfile *cfile,t_conf_opt *opt,u_char **args,int argnum) {
-  if(Cfg.ActiveColorF) free(Cfg.ActiveColorF);
-  if(Cfg.ActiveColorB) free(Cfg.ActiveColorB);
+/* {{{ flt_posting_handle_actpcol */
+int flt_posting_handle_actpcol(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
+  if(flt_posting_cfg.ActiveColorF) free(flt_posting_cfg.ActiveColorF);
+  if(flt_posting_cfg.ActiveColorB) free(flt_posting_cfg.ActiveColorB);
 
-  Cfg.ActiveColorF = strdup(args[0]);
-  Cfg.ActiveColorB = strdup(args[1]);
+  flt_posting_cfg.ActiveColorF = strdup(args[0]);
+  flt_posting_cfg.ActiveColorB = strdup(args[1]);
 
   return 0;
 }
 /* }}} */
 
-/* {{{ handle_iframe */
-int handle_iframe(t_configfile *cfile,t_conf_opt *opt,u_char **args,int argnum) {
-  Cfg.IframeAsLink = cf_strcmp(args[0],"yes") == 0;
+/* {{{ flt_posting_handle_iframe */
+int flt_posting_handle_iframe(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
+  flt_posting_cfg.IframeAsLink = cf_strcmp(args[0],"yes") == 0;
   return 0;
 }
 /* }}} */
 
-/* {{{ handle_image */
-int handle_image(t_configfile *cfile,t_conf_opt *opt,u_char **args,int argnum) {
-  Cfg.ImageAsLink = cf_strcmp(args[0],"yes") == 0;
+/* {{{ flt_posting_handle_image */
+int flt_posting_handle_image(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
+  flt_posting_cfg.ImageAsLink = cf_strcmp(args[0],"yes") == 0;
   return 0;
 }
 /* }}} */
@@ -713,8 +713,8 @@ void flt_posting_cleanup_entry(void *e) {
   free(uri->id);
 }
 
-/* {{{ handle_ref */
-int handle_ref(t_configfile *cfile,t_conf_opt *opt,u_char **args,int argnum) {
+/* {{{ flt_posting_handle_ref */
+int flt_posting_handle_ref(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
   t_ref_uri uri;
 
   uri.id  = strdup(args[0]);
@@ -730,29 +730,29 @@ int handle_ref(t_configfile *cfile,t_conf_opt *opt,u_char **args,int argnum) {
 
 /* {{{ cleanup */
 void cleanup(void) {
-  if(Cfg.Hi)           free(Cfg.Hi);
-  if(Cfg.Bye)          free(Cfg.Bye);
-  if(Cfg.Signature)    free(Cfg.Signature);
-  if(Cfg.link)         free(Cfg.link);
-  if(Cfg.ActiveColorF) free(Cfg.ActiveColorF);
-  if(Cfg.ActiveColorB) free(Cfg.ActiveColorB);
+  if(flt_posting_cfg.Hi)           free(flt_posting_cfg.Hi);
+  if(flt_posting_cfg.Bye)          free(flt_posting_cfg.Bye);
+  if(flt_posting_cfg.Signature)    free(flt_posting_cfg.Signature);
+  if(flt_posting_cfg.link)         free(flt_posting_cfg.link);
+  if(flt_posting_cfg.ActiveColorF) free(flt_posting_cfg.ActiveColorF);
+  if(flt_posting_cfg.ActiveColorB) free(flt_posting_cfg.ActiveColorB);
   if(ref_uris.element_size > 0) array_destroy(&ref_uris);
 }
 /* }}} */
 
 /* {{{ t_conf_opt config[] */
 t_conf_opt config[] = {
-  { "Hi",                         handle_greet,    CFG_OPT_CONFIG|CFG_OPT_USER,                NULL },
-  { "Bye",                        handle_greet,    CFG_OPT_CONFIG|CFG_OPT_USER,                NULL },
-  { "Signature",                  handle_greet,    CFG_OPT_CONFIG|CFG_OPT_USER,                NULL },
-  { "PostingLinkTarget",          handle_link,     CFG_OPT_CONFIG|CFG_OPT_USER,                NULL },
-  { "TextBox",                    handle_box,      CFG_OPT_CONFIG|CFG_OPT_USER,                NULL },
-  { "GeneratePreview",            handle_prev,     CFG_OPT_CONFIG|CFG_OPT_USER,                NULL },
-  { "PreviewSwitchType",          handle_prevt,    CFG_OPT_CONFIG|CFG_OPT_USER,                NULL },
-  { "ActivePostingColor",         handle_actpcol,  CFG_OPT_CONFIG|CFG_OPT_USER,                NULL },
-  { "ShowIframeAsLink",           handle_iframe,   CFG_OPT_CONFIG|CFG_OPT_USER,                NULL },
-  { "ShowImageAsLink",            handle_image,    CFG_OPT_CONFIG|CFG_OPT_USER,                NULL },
-  { "ReferenceURI",               handle_ref,      CFG_OPT_CONFIG|CFG_OPT_USER,                NULL },
+  { "Hi",                         flt_posting_handle_greet,    CFG_OPT_CONFIG|CFG_OPT_USER,                NULL },
+  { "Bye",                        flt_posting_handle_greet,    CFG_OPT_CONFIG|CFG_OPT_USER,                NULL },
+  { "Signature",                  flt_posting_handle_greet,    CFG_OPT_CONFIG|CFG_OPT_USER,                NULL },
+  { "PostingLinkTarget",          flt_posting_handle_link,     CFG_OPT_CONFIG|CFG_OPT_USER,                NULL },
+  { "TextBox",                    flt_posting_handle_box,      CFG_OPT_CONFIG|CFG_OPT_USER,                NULL },
+  { "GeneratePreview",            flt_posting_handle_prev,     CFG_OPT_CONFIG|CFG_OPT_USER,                NULL },
+  { "PreviewSwitchType",          flt_posting_handle_prevt,    CFG_OPT_CONFIG|CFG_OPT_USER,                NULL },
+  { "ActivePostingColor",         flt_posting_handle_actpcol,  CFG_OPT_CONFIG|CFG_OPT_USER,                NULL },
+  { "ShowIframeAsLink",           flt_posting_handle_iframe,   CFG_OPT_CONFIG|CFG_OPT_USER,                NULL },
+  { "ShowImageAsLink",            flt_posting_handle_image,    CFG_OPT_CONFIG|CFG_OPT_USER,                NULL },
+  { "ReferenceURI",               flt_posting_handle_ref,      CFG_OPT_CONFIG|CFG_OPT_USER,                NULL },
   { NULL, NULL, 0, NULL }
 };
 /* }}} */

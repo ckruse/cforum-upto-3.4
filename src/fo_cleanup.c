@@ -206,7 +206,7 @@ int cleanup_visited_file(int sock,struct stat *st,t_string *str) {
  * \param sock The socket to the server
  */
 int cleanup_files(int sock) {
-  t_name_value *v = cfg_get_first_value(&fo_default_conf,"ConfigDirectory");
+  t_name_value *v = cfg_get_first_value(&fo_default_conf,NULL,"ConfigDirectory");
   DIR *udir = opendir(v->values[0]),*d_char1,*d_char2,*d_char3;
   struct dirent *dp,*char1,*char2,*char3;
   t_string str;

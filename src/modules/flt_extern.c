@@ -317,7 +317,7 @@ int flt_extern_register_server(int sock) {
   return FLT_OK;
 }
 
-int flt_extern_handle(t_configfile *cf,t_conf_opt *opt,u_char **args,int argnum) {
+int flt_extern_handle(t_configfile *cf,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
   if(cf_strcmp(opt->name,"ExternPort") == 0)           Extern_port      = atoi(args[0]);
   else if(cf_strcmp(opt->name,"ExternInterface") == 0) Extern_interface = strdup(args[0]);
 

@@ -84,8 +84,8 @@ int next_line_is_no_quote_line(const u_char *ptr) {
 
 /* {{{ msg_to_html */
 void msg_to_html(t_cl_thread *thread,const u_char *msg,t_string *content,t_string *cite,u_char *quote_chars,int max_sig_lines,int show_sig) {
-  t_name_value *cs   = cfg_get_first_value(&fo_default_conf,"ExternCharset");
-  t_name_value *xmlm = cfg_get_first_value(&fo_default_conf,"XHTMLMode");
+  t_name_value *cs   = cfg_get_first_value(&fo_default_conf,NULL,"ExternCharset");
+  t_name_value *xmlm = cfg_get_first_value(&fo_default_conf,NULL,"XHTMLMode");
   const u_char *ptr,*tmp,*ptr1;
   u_char *qchars;
   size_t qclen;

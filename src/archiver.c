@@ -53,7 +53,7 @@
 
 /* {{{ cf_delete_threadfile */
 void cf_delete_threadfile(t_thread *t) {
-  t_name_value *msgdir = cfg_get_first_value(&fo_default_conf,"MessagePath");
+  t_name_value *msgdir = cfg_get_first_value(&fo_default_conf,NULL,"MessagePath");
   u_char buff[256];
 
   snprintf(buff,256,"%s/t%lld.xml",msgdir->values[0],t->tid);
@@ -128,7 +128,7 @@ void cf_archive_threads(t_thread **to_archive,int len) {
   GdomeException e;
   GdomeDOMImplementation *impl = gdome_di_mkref();
   GdomeDocument *doc1          = NULL,*doc2;
-  t_name_value  *apath         = cfg_get_first_value(&fo_default_conf,"ArchivePath");
+  t_name_value  *apath         = cfg_get_first_value(&fo_default_conf,NULL,"ArchivePath");
 
   GdomeDOMString *str_thread   = gdome_str_mkref("Thread");
 
@@ -294,14 +294,14 @@ void cf_run_archiver_and_write_to_disk(void) {
   t_posting *oldest,*newest_in_t;
   long size,threadnum,pnum,max_bytes,max_threads,max_posts;
   int shall_archive = 0,len = 0,ret = FLT_OK;
-  t_name_value *max_bytes_v     = cfg_get_first_value(&fo_server_conf,"MainFileMaxBytes");
-  t_name_value *max_posts_v     = cfg_get_first_value(&fo_server_conf,"MainFileMaxPostings");
-  t_name_value *max_threads_v   = cfg_get_first_value(&fo_server_conf,"MainFileMaxThreads");
+  t_name_value *max_bytes_v     = cfg_get_first_value(&fo_server_conf,NULL,"MainFileMaxBytes");
+  t_name_value *max_posts_v     = cfg_get_first_value(&fo_server_conf,NULL,"MainFileMaxPostings");
+  t_name_value *max_threads_v   = cfg_get_first_value(&fo_server_conf,NULL,"MainFileMaxThreads");
   GdomeDOMImplementation *impl = gdome_di_mkref();
   GdomeException e;
   GdomeDocument *doc           = xml_create_doc(impl,FORUM_DTD);
   GdomeElement *el             = gdome_doc_documentElement(doc,&e);
-  t_name_value  *mpath         = cfg_get_first_value(&fo_default_conf,"MessagePath");
+  t_name_value  *mpath         = cfg_get_first_value(&fo_default_conf,NULL,"MessagePath");
   u_char buff[256];
   pid_t pid;
   int status;

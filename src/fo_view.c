@@ -49,7 +49,7 @@
 /**
  * Dummy function, for ignoring unknown directives
  */
-int ignre(t_configfile *cf,u_char *name,u_char **args,int argnum) {
+int ignre(t_configfile *cf,const u_char *context,u_char *name,u_char **args,size_t argnum) {
   return 0;
 }
 
@@ -85,7 +85,7 @@ void print_thread_structure(t_cl_thread *thread,t_cf_hash *head) {
   int level = 0,len = 0;
   u_char *date,*link;
   int printed = 0,rc = 0;
-  t_name_value *cs = cfg_get_first_value(&fo_default_conf,"ExternCharset");
+  t_name_value *cs = cfg_get_first_value(&fo_default_conf,NULL,"ExternCharset");
   int ShowInvisible = cf_hash_get(GlobalValues,"ShowInvisible",13) == NULL ? 0 : 1;
 
   for(msg=thread->messages;msg;msg=msg->next) {
@@ -168,26 +168,26 @@ void send_posting(t_cf_hash *head,void *shm_ptr,u_int64_t tid,u_int64_t mid) {
   rline_t tsd;
   #endif
   t_name_value *fo_thread_tpl;
-  t_name_value *fo_posting_tpl = cfg_get_first_value(&fo_view_conf,"TemplatePosting");
+  t_name_value *fo_posting_tpl = cfg_get_first_value(&fo_view_conf,NULL,"TemplatePosting");
   t_cf_template tpl;
   u_char fo_thread_tplname[256],fo_posting_tplname[256];
   size_t len;
   char buff[128];
   int del = cf_hash_get(GlobalValues,"ShowInvisible",13) == NULL ? CF_KILL_DELETED : CF_KEEP_DELETED;
-  t_name_value *cs = cfg_get_first_value(&fo_default_conf,"ExternCharset");
+  t_name_value *cs = cfg_get_first_value(&fo_default_conf,NULL,"ExternCharset");
   u_char *UserName = cf_hash_get(GlobalValues,"UserName",8);
-  t_name_value *rm = cfg_get_first_value(&fo_view_conf,"ReadMode");
+  t_name_value *rm = cfg_get_first_value(&fo_view_conf,NULL,"ReadMode");
 
   /* user definable variables */
   t_name_value *fbase     = NULL;
-  t_name_value *name      = cfg_get_first_value(&fo_view_conf,"Name");
-  t_name_value *email     = cfg_get_first_value(&fo_view_conf,"EMail");
-  t_name_value *hpurl     = cfg_get_first_value(&fo_view_conf,"HomepageUrl");
-  t_name_value *imgurl    = cfg_get_first_value(&fo_view_conf,"ImageUrl");
+  t_name_value *name      = cfg_get_first_value(&fo_view_conf,NULL,"Name");
+  t_name_value *email     = cfg_get_first_value(&fo_view_conf,NULL,"EMail");
+  t_name_value *hpurl     = cfg_get_first_value(&fo_view_conf,NULL,"HomepageUrl");
+  t_name_value *imgurl    = cfg_get_first_value(&fo_view_conf,NULL,"ImageUrl");
 
-  if(cf_strcmp(rm->values[0],"thread") == 0)          fo_thread_tpl = cfg_get_first_value(&fo_view_conf,"TemplateForumThread");
-  else if(cf_strcmp(rm->values[0],"threadlist") == 0) fo_thread_tpl = cfg_get_first_value(&fo_view_conf,"TemplateForumThreadList");
-  else if(cf_strcmp(rm->values[0],"list") == 0)       fo_thread_tpl = cfg_get_first_value(&fo_view_conf,"TemplateForumList");
+  if(cf_strcmp(rm->values[0],"thread") == 0)          fo_thread_tpl = cfg_get_first_value(&fo_view_conf,NULL,"TemplateForumThread");
+  else if(cf_strcmp(rm->values[0],"threadlist") == 0) fo_thread_tpl = cfg_get_first_value(&fo_view_conf,NULL,"TemplateForumThreadList");
+  else if(cf_strcmp(rm->values[0],"list") == 0)       fo_thread_tpl = cfg_get_first_value(&fo_view_conf,NULL,"TemplateForumList");
 
 
   /* {{{ init and get message from server */
@@ -231,8 +231,8 @@ void send_posting(t_cf_hash *head,void *shm_ptr,u_int64_t tid,u_int64_t mid) {
   tpl_cf_setvar(&tpl,"charset",cs->values[0],strlen(cs->values[0]),0);
 
   UserName = cf_hash_get(GlobalValues,"UserName",8);
-  if(UserName) fbase = cfg_get_first_value(&fo_default_conf,"UBaseURL");
-  else         fbase = cfg_get_first_value(&fo_default_conf,"BaseURL");
+  if(UserName) fbase = cfg_get_first_value(&fo_default_conf,NULL,"UBaseURL");
+  else         fbase = cfg_get_first_value(&fo_default_conf,NULL,"BaseURL");
 
   cf_set_variable(&tpl,cs,"forumbase",fbase->values[0],strlen(fbase->values[0]),1);
 
@@ -283,10 +283,10 @@ void send_threadlist(void *shm_ptr,t_cf_hash *head) {
   void *ptr,*ptr1;
   #endif
 
-  t_name_value *fo_begin_tpl  = cfg_get_first_value(&fo_view_conf,"TemplateForumBegin");
-  t_name_value *fo_end_tpl    = cfg_get_first_value(&fo_view_conf,"TemplateForumEnd");
-  t_name_value *fo_thread_tpl = cfg_get_first_value(&fo_view_conf,"TemplateForumThread");
-  t_name_value *cs            = cfg_get_first_value(&fo_default_conf,"ExternCharset");
+  t_name_value *fo_begin_tpl  = cfg_get_first_value(&fo_view_conf,NULL,"TemplateForumBegin");
+  t_name_value *fo_end_tpl    = cfg_get_first_value(&fo_view_conf,NULL,"TemplateForumEnd");
+  t_name_value *fo_thread_tpl = cfg_get_first_value(&fo_view_conf,NULL,"TemplateForumThread");
+  t_name_value *cs            = cfg_get_first_value(&fo_default_conf,NULL,"ExternCharset");
   t_cf_template tpl_begin,tpl_end;
   u_char fo_begin_tplname[256],fo_end_tplname[256],fo_thread_tplname[256],buff[128],*ltime;
   time_t tm;
@@ -361,12 +361,8 @@ void send_threadlist(void *shm_ptr,t_cf_hash *head) {
     ltime = get_time(&fo_view_conf,"DateFormatLoadTime",&len,&tm);
 
     UserName = cf_hash_get(GlobalValues,"UserName",8);
-    if(UserName) {
-      fbase     = cfg_get_first_value(&fo_default_conf,"UBaseURL");
-    }
-    else {
-      fbase     = cfg_get_first_value(&fo_default_conf,"BaseURL");
-    }
+    if(UserName) fbase = cfg_get_first_value(&fo_default_conf,NULL,"UBaseURL");
+    else         fbase = cfg_get_first_value(&fo_default_conf,NULL,"BaseURL");
 
     if(tpl_cf_init(&tpl_begin,fo_begin_tplname) != 0) {
       printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs?cs->values[0]?cs->values[0]:(u_char *)"UTF-8":(u_char *)"UTF-8");
@@ -561,7 +557,7 @@ int main(int argc,char *argv[],char *env[]) {
     return EXIT_FAILURE;
   }
 
-  pt = cfg_get_first_value(&fo_view_conf,"ParamType");
+  pt = cfg_get_first_value(&fo_view_conf,NULL,"ParamType");
   head = cf_cgi_new();
   if(*pt->values[0] == 'P') cf_cgi_parse_path_info_nv(head);
 
@@ -614,7 +610,7 @@ int main(int argc,char *argv[],char *env[]) {
     }
   }
 
-  cs = cfg_get_first_value(&fo_default_conf,"ExternCharset");
+  cs = cfg_get_first_value(&fo_default_conf,NULL,"ExternCharset");
 
   if(ret != FLT_EXIT) {
     /* now, we need a socket connection */

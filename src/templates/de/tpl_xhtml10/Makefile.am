@@ -4,7 +4,7 @@ SUFFIXES=.html
 .html.c:
 	${top_builddir}/scripts/template_gen.pl $<
 
-pkglib_LTLIBRARIES+=de_xhtml10_arcmonthlist.la
+pkglib_LTLIBRARIES=de_xhtml10_arcmonthlist.la
 de_xhtml10_arcmonthlist_la_SOURCES=arcmonthlist.c
 de_xhtml10_arcmonthlist_la_LIBADD=../../../libcfutils.la ../../../libcftemplate.la
 de_xhtml10_arcmonthlist_la_LDFLAGS=-module -export-dynamic -avoid-version

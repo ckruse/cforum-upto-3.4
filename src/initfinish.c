@@ -293,8 +293,8 @@ void quicksort_threads(t_thread **list,long low,long high) {
  * \param head The head variable
  */
 void sort_threadlist(t_head *head) {
-  t_name_value *sort_thr_v = cfg_get_first_value(&fo_server_conf,"SortThreads");
-  t_name_value *sort_msg_v = cfg_get_first_value(&fo_server_conf,"SortMessages");
+  t_name_value *sort_thr_v = cfg_get_first_value(&fo_server_conf,NULL,"SortThreads");
+  t_name_value *sort_msg_v = cfg_get_first_value(&fo_server_conf,NULL,"SortMessages");
   int threadnum = 0,reser = 0,i,sort_thr,sort_msg;
   t_thread **list = NULL,*tmp;
   t_posting *p,*p1;
@@ -375,7 +375,7 @@ void make_forumtree(t_configuration *cfg,t_head *head) {
   GdomeDocument          *doc;
   GdomeElement           *el;
   GdomeNodeList          *nl;
-  t_name_value           *msgpath        = cfg_get_first_value(cfg,"MessagePath");
+  t_name_value           *msgpath        = cfg_get_first_value(cfg,NULL,"MessagePath");
   GdomeDOMImplementation *impl           = gdome_di_mkref();
   GdomeDOMString *thread_str             = gdome_str_mkref("Thread");
   GdomeDOMString         *tmpstr,*tmpstr1;

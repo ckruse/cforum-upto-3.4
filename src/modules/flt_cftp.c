@@ -40,8 +40,8 @@
 /* }}} */
 
 int flt_cftp_handler(int sockfd,const u_char **tokens,int tnum,rline_t *tsd) {
-  t_name_value *sort_t_v = cfg_get_first_value(&fo_server_conf,"SortThreads"),
-               *sort_m_v = cfg_get_first_value(&fo_server_conf,"SortMessages");
+  t_name_value *sort_t_v = cfg_get_first_value(&fo_server_conf,NULL,"SortThreads"),
+               *sort_m_v = cfg_get_first_value(&fo_server_conf,NULL,"SortMessages");
   int sort_m = atoi(sort_m_v->values[0]),
       sort_t = atoi(sort_t_v->values[0]),
       ret;

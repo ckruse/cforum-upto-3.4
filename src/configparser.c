@@ -59,47 +59,39 @@ t_array Modules[MOD_MAX+1];
 
 /* {{{ forum default config options */
 t_conf_opt default_options[] = {
-  { "<General>", NULL, 0, NULL },
-  { "ExternCharset",            handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG, &fo_default_conf },
-  { "TemplateMode",             handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG, &fo_default_conf },
-  { "XHTMLMode",                handle_command,   CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_UNIQUE, &fo_default_conf },
-  { "MessagePath",              handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG, &fo_default_conf },
-  { "ArchivePath",              handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG, &fo_default_conf },
-  { "ThreadIndexFile",          handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG, &fo_default_conf },
-  { "SocketName",               handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG, &fo_default_conf },
-  { "BaseURL",                  handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG, &fo_default_conf },
-  { "UBaseURL",                 handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG, &fo_default_conf },
-  { "PostingURL",               handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG, &fo_default_conf },
-  { "UPostingURL",              handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG, &fo_default_conf },
-  { "ArchiveURL",               handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG, &fo_default_conf },
-  { "ArchivePostingURL",        handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG, &fo_default_conf },
-  { "ErrorTemplate",            handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG, &fo_default_conf },
-  { "ErrorMessages",            handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG, &fo_default_conf },
-  { "PostScript",               handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG, &fo_default_conf },
-  { "UPostScript",              handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG, &fo_default_conf },
-  { "UserConfig",               handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG, &fo_default_conf },
-  { "UserManagement",           handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG, &fo_default_conf },
-  { "UserRegister",             handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG, &fo_default_conf },
-  { "SharedMemIds",             handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG, &fo_default_conf },
-  { "Administrators",           handle_command,   CFG_OPT_CONFIG,                &fo_default_conf },
-  { "AuthMode",                 handle_command,   CFG_OPT_CONFIG,                &fo_default_conf },
-  { "</General>", NULL, 0, NULL },
+  { "ExternCharset",            handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_default_conf },
+  { "TemplateMode",             handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_default_conf },
+  { "XHTMLMode",                handle_command,   CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_UNIQUE|CFG_OPT_LOCAL, &fo_default_conf },
+  { "MessagePath",              handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_default_conf },
+  { "ArchivePath",              handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_default_conf },
+  { "ThreadIndexFile",          handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_default_conf },
+  { "SocketName",               handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_default_conf },
+  { "BaseURL",                  handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_default_conf },
+  { "UBaseURL",                 handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_default_conf },
+  { "PostingURL",               handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_default_conf },
+  { "UPostingURL",              handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_default_conf },
+  { "ArchiveURL",               handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_default_conf },
+  { "ArchivePostingURL",        handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_default_conf },
+  { "ErrorTemplate",            handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_default_conf },
+  { "ErrorMessages",            handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_default_conf },
+  { "PostScript",               handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_default_conf },
+  { "UPostScript",              handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_default_conf },
+  { "UserConfig",               handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_default_conf },
+  { "UserManagement",           handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_default_conf },
+  { "UserRegister",             handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_default_conf },
+  { "SharedMemIds",             handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_default_conf },
+  { "Administrators",           handle_command,   CFG_OPT_CONFIG|CFG_OPT_LOCAL,                &fo_default_conf },
+  { "AuthMode",                 handle_command,   CFG_OPT_CONFIG|CFG_OPT_LOCAL,                &fo_default_conf },
 
-  { "<Categories>", NULL, 0, NULL },
-  { "Category",                 handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG, &fo_default_conf },
-  { "</Categories>", NULL, 0, NULL },
+  { "Categories",               handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_default_conf },
 
-  { "<LocaleConfig>", NULL, 0, NULL},
-  { "DateLocale",               handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG, &fo_default_conf },
-  { "Language",                 handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG, &fo_default_conf },
-  { "MessagesDatabase",         handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG, &fo_default_conf },
-  { "</LocaleConfig>", NULL, 0, NULL },
+  { "DateLocale",               handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_default_conf },
+  { "Language",                 handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_default_conf },
+  { "MessagesDatabase",         handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_default_conf },
 
-  { "<Users>", NULL, 0, NULL },
-  { "ConfigDirectory",          handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG, &fo_default_conf },
-  { "InactivityDelete",         handle_command,   CFG_OPT_CONFIG,                &fo_default_conf },
-  { "SendMailBeforeDelete",     handle_command,   CFG_OPT_CONFIG,                &fo_default_conf },
-  { "</Users>", NULL, 0, NULL },
+  { "ConfigDirectory",          handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_default_conf },
+  { "InactivityDelete",         handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_default_conf },
+  { "SendMailBeforeDelete",     handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_default_conf },
 
   { NULL, NULL, 0, NULL }
 };
@@ -108,39 +100,35 @@ t_conf_opt default_options[] = {
 /* {{{ forum client config options */
 t_conf_opt fo_view_options[] = {
   { "<ForumBehavior>", NULL, 0, NULL },
-  { "DoQuote",                    handle_command,   CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_UNIQUE,                &fo_view_conf },
-  { "QuotingChars",               handle_command,   CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_NEEDED|CFG_OPT_UNIQUE, &fo_view_conf },
-  { "ShowThread",                 handle_command,   CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_UNIQUE,                &fo_view_conf },
-  { "ShowFlags",                  handle_command,   CFG_OPT_CONFIG,                                            &fo_view_conf },
-  { "ReadMode",                   handle_command,   CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_NEEDED|CFG_OPT_UNIQUE, &fo_view_conf },
-  { "ParamType",                  handle_command,   CFG_OPT_CONFIG|CFG_OPT_NEEDED,                             &fo_view_conf },
-  { "ShowSig",                    handle_command,   CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_UNIQUE,                &fo_view_conf },
-  { "MaxSigLines",                handle_command,   CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_UNIQUE,                &fo_view_conf },
+  { "DoQuote",                    handle_command,   CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_UNIQUE|CFG_OPT_GLOBAL, &fo_view_conf },
+  { "QuotingChars",               handle_command,   CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_NEEDED|CFG_OPT_UNIQUE|CFG_OPT_GLOBAL, &fo_view_conf },
+  { "ShowThread",                 handle_command,   CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_UNIQUE|CFG_OPT_GLOBAL, &fo_view_conf },
+  { "ShowFlags",                  handle_command,   CFG_OPT_CONFIG|CFG_OPT_GLOBAL,                             &fo_view_conf },
+  { "ReadMode",                   handle_command,   CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_NEEDED|CFG_OPT_UNIQUE|CFG_OPT_GLOBAL, &fo_view_conf },
+  { "ParamType",                  handle_command,   CFG_OPT_CONFIG|CFG_OPT_NEEDED|CFG_OPT_GLOBAL,              &fo_view_conf },
+  { "ShowSig",                    handle_command,   CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_UNIQUE|CFG_OPT_GLOBAL, &fo_view_conf },
+  { "MaxSigLines",                handle_command,   CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_UNIQUE|CFG_OPT_GLOBAL, &fo_view_conf },
   { "</ForumBehavior>", NULL, 0, NULL },
 
   { "<Templates>", NULL, 0, NULL },
-  { "TemplateForumBegin",         handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG, &fo_view_conf },
-  { "TemplateForumEnd",           handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG, &fo_view_conf },
-  { "TemplateForumThread",        handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG, &fo_view_conf },
-  { "TemplatePosting",            handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG, &fo_view_conf },
+  { "TemplateForumBegin",         handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_GLOBAL, &fo_view_conf },
+  { "TemplateForumEnd",           handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_GLOBAL, &fo_view_conf },
+  { "TemplateForumThread",        handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_GLOBAL, &fo_view_conf },
+  { "TemplatePosting",            handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_GLOBAL, &fo_view_conf },
   { "</Templates>", NULL, 0, NULL },
 
   { "<DateConfig>", NULL, 0, NULL },
-  { "DateFormatThreadList",       handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG, &fo_view_conf },
-  { "DateFormatThreadView",       handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG, &fo_view_conf },
-  { "DateFormatLoadTime",         handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG, &fo_view_conf },
+  { "DateFormatThreadList",       handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_GLOBAL, &fo_view_conf },
+  { "DateFormatThreadView",       handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_GLOBAL, &fo_view_conf },
+  { "DateFormatLoadTime",         handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_GLOBAL, &fo_view_conf },
   { "</DateConfig>", NULL, 0, NULL},
 
   { "<Form>", NULL, 0, NULL },
-  { "Name",                       handle_command,   CFG_OPT_USER|CFG_OPT_UNIQUE, &fo_view_conf },
-  { "EMail",                      handle_command,   CFG_OPT_USER|CFG_OPT_UNIQUE, &fo_view_conf },
-  { "HomepageUrl",                handle_command,   CFG_OPT_USER|CFG_OPT_UNIQUE, &fo_view_conf },
-  { "ImageUrl",                   handle_command,   CFG_OPT_USER|CFG_OPT_UNIQUE, &fo_view_conf },
+  { "Name",                       handle_command,   CFG_OPT_USER|CFG_OPT_UNIQUE|CFG_OPT_GLOBAL, &fo_view_conf },
+  { "EMail",                      handle_command,   CFG_OPT_USER|CFG_OPT_UNIQUE|CFG_OPT_GLOBAL, &fo_view_conf },
+  { "HomepageUrl",                handle_command,   CFG_OPT_USER|CFG_OPT_UNIQUE|CFG_OPT_GLOBAL, &fo_view_conf },
+  { "ImageUrl",                   handle_command,   CFG_OPT_USER|CFG_OPT_UNIQUE|CFG_OPT_GLOBAL, &fo_view_conf },
   { "</Form>", NULL, 0, NULL },
-
-  { "<Filters>", NULL, 0, NULL },
-  { "AddFilter",                  add_module,       CFG_OPT_CONFIG,              &Modules      },
-  { "</Filters>", NULL, 0, NULL },
 
   { NULL, NULL, 0, NULL }
 };
@@ -149,21 +137,20 @@ t_conf_opt fo_view_options[] = {
 /* {{{ Posting configuration options */
 t_conf_opt fo_post_options[] = {
   {  "<General>", NULL, 0, NULL },
-  {  "AddFilter",                 add_module,       CFG_OPT_CONFIG, &Modules      },
-  {  "PostingUrl",                handle_command,   CFG_OPT_CONFIG,              &fo_post_conf },
-  {  "FieldConfig",               handle_command,   CFG_OPT_CONFIG,              &fo_post_conf },
-  {  "FieldNeeded",               handle_command,   CFG_OPT_CONFIG,              &fo_post_conf },
-  {  "RedirectOnPost",            handle_command,   CFG_OPT_CONFIG,              &fo_post_conf },
+  {  "PostingUrl",                handle_command,   CFG_OPT_CONFIG|CFG_OPT_GLOBAL, &fo_post_conf },
+  {  "FieldConfig",               handle_command,   CFG_OPT_CONFIG|CFG_OPT_GLOBAL, &fo_post_conf },
+  {  "FieldNeeded",               handle_command,   CFG_OPT_CONFIG|CFG_OPT_GLOBAL, &fo_post_conf },
+  {  "RedirectOnPost",            handle_command,   CFG_OPT_CONFIG|CFG_OPT_GLOBAL, &fo_post_conf },
   {  "</General>", NULL, 0, NULL },
 
   {  "<Images>", NULL, 0, NULL },
-  {  "Image",                     handle_command,   CFG_OPT_CONFIG,              &fo_post_conf },
+  {  "Image",                     handle_command,   CFG_OPT_CONFIG|CFG_OPT_GLOBAL, &fo_post_conf },
   {  "</Images>", NULL, 0, NULL },
 
   {  "<Templates>", NULL, 0, NULL },
-  {  "ThreadTemplate",            handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG, &fo_post_conf },
-  {  "FatalTemplate",             handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG, &fo_post_conf },
-  {  "OkTemplate",                handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG, &fo_post_conf },
+  {  "ThreadTemplate",            handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_GLOBAL, &fo_post_conf },
+  {  "FatalTemplate",             handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_GLOBAL, &fo_post_conf },
+  {  "OkTemplate",                handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_GLOBAL, &fo_post_conf },
   {  "</Templates>", NULL, 0, NULL },
 
   {  NULL, NULL, 0, NULL }
@@ -172,25 +159,21 @@ t_conf_opt fo_post_options[] = {
 
 /* {{{ fo_server config options */
 t_conf_opt fo_server_options[] = {
-  { "<General>", NULL, 0, NULL },
-  { "SortThreads",          handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG, &fo_server_conf },
-  { "SortMessages",         handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG, &fo_server_conf },
-  { "RunArchiver",          handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG, &fo_server_conf },
-  { "ErrorLog",             handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG, &fo_server_conf },
-  { "StdLog",               handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG, &fo_server_conf },
-  { "PIDFile",              handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG, &fo_server_conf },
-  { "</General>",NULL,0,NULL },
+  { "RunArchiver",          handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_GLOBAL, &fo_server_conf },
+  { "ErrorLog",             handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_GLOBAL, &fo_server_conf },
+  { "StdLog",               handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_GLOBAL, &fo_server_conf },
+  { "PIDFile",              handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_GLOBAL, &fo_server_conf },
+  { "MaxThreads",           handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_GLOBAL, &fo_server_conf },
+  { "MinThreads",           handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_GLOBAL, &fo_server_conf },
+  { "MinSpareThreads",      handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_GLOBAL, &fo_server_conf },
+  { "MaxSpareThreads",      handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_GLOBAL, &fo_server_conf },
 
-  { "<Archiving>", NULL, 0, NULL },
-  { "ArchiveOnVote",        handle_command,   CFG_OPT_CONFIG,              &fo_server_conf },
-  { "MainFileMaxBytes",     handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG, &fo_server_conf },
-  { "MainFileMaxPostings",  handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG, &fo_server_conf },
-  { "MainFileMaxThreads",   handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG, &fo_server_conf },
-  { "</Archiving>", NULL, 0, NULL },
-
-  { "<Filters>", NULL, 0, NULL},
-  { "AddFilter",            add_module,       CFG_OPT_CONFIG,              &Modules        },
-  { "</Filters>", NULL, 0, NULL },
+  { "SortThreads",          handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_server_conf },
+  { "SortMessages",         handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_server_conf },
+  { "ArchiveOnVote",        handle_command,   CFG_OPT_CONFIG|CFG_OPT_LOCAL,                &fo_server_conf },
+  { "MainFileMaxBytes",     handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_server_conf },
+  { "MainFileMaxPostings",  handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_server_conf },
+  { "MainFileMaxThreads",   handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_server_conf },
 
   { NULL, NULL, 0, NULL }
 };
@@ -198,32 +181,28 @@ t_conf_opt fo_server_options[] = {
 
 /* {{{ archiv viewer options */
 t_conf_opt fo_arcview_options[] = {
-  { "<Filters>", NULL, 0, NULL },
-  { "AddFilter",               add_module,       CFG_OPT_CONFIG,                  &Modules        },
-  { "</Filters>", NULL, 0, NULL },
-
   { "<General>", NULL, 0, NULL },
-  { "SortYearList",            handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG,   &fo_arcview_conf },
-  { "SortMonthList",           handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG,   &fo_arcview_conf },
-  { "DateFormatList",          handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG,   &fo_arcview_conf },
-  { "DateFormatViewList",      handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG,   &fo_arcview_conf },
-  { "EnableCache",             handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG,   &fo_arcview_conf },
-  { "CacheLevel",              handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG,   &fo_arcview_conf },
-  { "CacheDir",                handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG,   &fo_arcview_conf },
-  { "QuotingChars",            handle_command,   CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_NEEDED|CFG_OPT_UNIQUE, &fo_arcview_conf },
+  { "SortYearList",            handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_GLOBAL,   &fo_arcview_conf },
+  { "SortMonthList",           handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_GLOBAL,   &fo_arcview_conf },
+  { "DateFormatList",          handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_GLOBAL,   &fo_arcview_conf },
+  { "DateFormatViewList",      handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_GLOBAL,   &fo_arcview_conf },
+  { "EnableCache",             handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_GLOBAL,   &fo_arcview_conf },
+  { "CacheLevel",              handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_GLOBAL,   &fo_arcview_conf },
+  { "CacheDir",                handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_GLOBAL,   &fo_arcview_conf },
+  { "QuotingChars",            handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_GLOBAL,   &fo_arcview_conf },
   { "</General>", NULL, 0, NULL },
 
   { "<Templates>", NULL, 0, NULL },
-  { "FatalTemplate",           handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG,   &fo_arcview_conf },
-  { "YearsTemplate",           handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG,   &fo_arcview_conf },
-  { "YearListTemplate",        handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG,   &fo_arcview_conf },
-  { "MonthsTemplate",          handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG,   &fo_arcview_conf },
-  { "MonthsListTemplate",      handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG,   &fo_arcview_conf },
-  { "ThreadListMonthTemplate", handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG,   &fo_arcview_conf },
-  { "ThreadTemplate",          handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG,   &fo_arcview_conf },
-  { "ThreadListTemplate",      handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG,   &fo_arcview_conf },
-  { "PerThreadTemplate",       handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG,   &fo_arcview_conf },
-  { "UpDownTemplate",          handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG,   &fo_arcview_conf },
+  { "FatalTemplate",           handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_GLOBAL,   &fo_arcview_conf },
+  { "YearsTemplate",           handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_GLOBAL,   &fo_arcview_conf },
+  { "YearListTemplate",        handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_GLOBAL,   &fo_arcview_conf },
+  { "MonthsTemplate",          handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_GLOBAL,   &fo_arcview_conf },
+  { "MonthsListTemplate",      handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_GLOBAL,   &fo_arcview_conf },
+  { "ThreadListMonthTemplate", handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_GLOBAL,   &fo_arcview_conf },
+  { "ThreadTemplate",          handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_GLOBAL,   &fo_arcview_conf },
+  { "ThreadListTemplate",      handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_GLOBAL,   &fo_arcview_conf },
+  { "PerThreadTemplate",       handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_GLOBAL,   &fo_arcview_conf },
+  { "UpDownTemplate",          handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_GLOBAL,   &fo_arcview_conf },
   { "</Templates>", NULL, 0, NULL },
 
   { NULL, NULL, 0, NULL }
@@ -232,12 +211,8 @@ t_conf_opt fo_arcview_options[] = {
 
 /* {{{ vote options */
 t_conf_opt fo_vote_options[] = {
-  { "<Filters>", NULL, 0, NULL },
-  { "AddFilter",                add_module,       CFG_OPT_CONFIG,                  &Modules        },
-  { "</Filters>", NULL, 0, NULL },
-
   { "<General>", NULL, 0, NULL },
-  { "VotingDatabase",           handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG,   &fo_vote_conf    },
+  { "VotingDatabase",           handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_GLOBAL,   &fo_vote_conf },
   { "</General>", NULL, 0, NULL },
 
   { NULL, NULL, 0, NULL }
@@ -315,7 +290,8 @@ int parse_args(u_char *fname,u_char *line,u_char ***args,int lnum) {
 
   *args = NULL;
 
-  while(len < 2) {
+  /* read until end-of-line */
+  while(1) {
     /*
      * skip trailing whitespaces
      */
@@ -391,6 +367,8 @@ int read_config(t_configfile *conf,t_take_default deflt,int mode) {
   unsigned int linenum = 0;
   int argnum;
   t_cf_list_element *lelem;
+  u_char *context = NULL;
+  t_string mpath;
 
   /*
    * open() could fail :)
@@ -413,6 +391,8 @@ int read_config(t_configfile *conf,t_take_default deflt,int mode) {
   }
 
   ptr = buff;
+
+  str_init(&mpath);
 
   /*
    * loop through the hole file
@@ -446,13 +426,89 @@ int read_config(t_configfile *conf,t_take_default deflt,int mode) {
     ptr1 = ptr;
 
     /* now we got the end of the directive */
-    for(;*ptr && !isspace(*ptr);ptr++);
+    for(;*ptr && !isspace(*ptr);++ptr);
 
     /* eof */
     if(!*ptr) break;
 
-    directive_name = memdup(ptr1,ptr-ptr1+1);
-    directive_name[ptr-ptr1] = '\0';
+    /* {{{ we got an eoc (end-of-context) */
+    if(*ptr1 == '}') {
+      if(!context) {
+        fprintf(stderr,"[%s:%d] Context closed but not open!\n",conf->filename,linenum);
+        close(fd);
+        munmap(buff,st.st_size);
+        return 1;
+      }
+
+      free(context);
+      context = NULL;
+
+      continue;
+    }
+    /* }}} */
+
+    directive_name = strndup(ptr1,ptr-ptr1);
+
+    /* {{{ hey, we got a context line -- read context */
+    if(cf_strcmp(directive_name,"Forum") == 0) {
+      for(;*ptr && isspace(*ptr);++ptr);
+      if(!*ptr) {
+        fprintf(stderr,"[%s:%d] unexpected EOF!\n",conf->filename,linenum);
+        close(fd);
+        munmap(buff,st.st_size);
+        return 1;
+      }
+
+      if(!isalnum(*ptr)) {
+        fprintf(stderr,"[%s:%d] Config file syntax error!\n",conf->filename,linenum);
+        close(fd);
+        munmap(buff,st.st_size);
+        return 1;
+      }
+
+      ptr1 = ptr;
+
+      for(;*ptr && isalnum(*ptr);++ptr);
+      if(!*ptr) {
+        fprintf(stderr,"[%s:%d] unexpected EOF!\n",conf->filename,linenum);
+        close(fd);
+        munmap(buff,st.st_size);
+        return 1;
+      }
+
+
+      if(!isspace(*ptr) && *ptr != '{') {
+        fprintf(stderr,"[%s:%d] Config file syntax error!\n",conf->filename,linenum);
+        close(fd);
+        munmap(buff,st.st_size);
+        return 1;
+      }
+
+      if(context) {
+        fprintf(stderr,"[%s:%d] Configuration file syntax error, no nesting contexts allowed!\n",conf->filename,linenum);
+        close(fd);
+        munmap(buff,st.st_size);
+        return 1;
+      }
+
+      context = strndup(ptr1,ptr-ptr1);
+      free(directive_name);
+
+      for(;*ptr && isspace(*ptr);++ptr);
+
+      if(*ptr != '{') {
+        fprintf(stderr,"[%s:%d] Configuration file syntax error!\n",conf->filename,linenum);
+        close(fd);
+        munmap(buff,st.st_size);
+        return 1;
+      }
+
+      /* ok, go to next character (last was }) */
+      ++ptr;
+
+      continue;
+    }
+    /* }}} */
 
     if((argnum = parse_args(conf->filename,ptr,&args,linenum)) == -1) {
       close(fd);
@@ -460,29 +516,94 @@ int read_config(t_configfile *conf,t_take_default deflt,int mode) {
       return 1;
     }
 
+    /* {{{ we got module path */
+    if(cf_strcmp(directive_name,"ModulePath") == 0) {
+      if(argnum != 1) {
+        fprintf(stderr,"[%s:%d] Hey, wrong argument count for ModulePath!",conf->filename,linenum);
+        close(fd);
+        munmap(buff,st.st_size);
+        return 1;
+      }
+
+      str_char_set(&mpath,args[0],strlen(args[0]));
+      free(args[0]);
+      free(args);
+
+      /* now everything whith this directive has finished. Find end of line... */
+      for(;*ptr && *ptr != (u_char)012;ptr++);
+
+      continue;
+    }
+    /* }}} */
+
+    /* {{{ we got a »Load« directive -- go and load the module */
+    if(cf_strcmp(directive_name,"Load") == 0) {
+      if(argnum != 1) {
+        fprintf(stderr,"[%s:%d] Hey, wrong argument count for ModulePath!",conf->filename,linenum);
+        close(fd);
+        munmap(buff,st.st_size);
+        return 1;
+      }
+
+      i = mpath.len;
+      str_chars_append(&mpath,args[0],strlen(args[0]));
+      str_chars_append(&mpath,".so",3);
+
+      if(add_module(conf,mpath.content,args[0]) != 0) {
+        close(fd);
+        munmap(buff,st.st_size);
+        return 1;
+      }
+
+      mpath.len = i;
+
+      free(args[0]);
+      free(args);
+
+      /* now everything whith this directive has finished. Find end of line... */
+      for(;*ptr && *ptr != (u_char)012;ptr++);
+
+      continue;
+    }
+    /* }}} */
+
     found = 0;
     if((opt = cf_hash_get(conf->options,directive_name,ptr-ptr1)) != NULL) {
-      /* mark option as seen */
-      opt->flags |= CFG_OPT_SEEN;
-
-      if(opt->flags & mode) {
-        if(opt->callback) found = opt->callback(conf,opt,args,argnum);
+      /* {{{ is the directive allowed? */
+      if(context && opt->flags) {
+        if((opt->flags & CFG_OPT_LOCAL) == 0) {
+          fprintf(stderr,"[%s:%d] Configuration directive %s not allowed in local context!\n",conf->filename,linenum,directive_name);
+          close(fd);
+          munmap(buff,st.st_size);
+          return 1;
+        }
       }
       else {
-        if(opt->flags) {
-          if((opt->flags & CFG_OPT_SEEN) == 0) {
-            fprintf(stderr,"[%s:%d] Configuration directive %s not allowed in this mode!\n",conf->filename,linenum,directive_name);
-            printf("%d\n",opt->flags);
-            munmap(buff,st.st_size);
-            close(fd);
-            return 1;
-          }
+        if((opt->flags & CFG_OPT_GLOBAL) == 0) {
+          fprintf(stderr,"[%s:%d] Configuration directive %s not allowed in global context!\n",conf->filename,linenum,directive_name);
+          close(fd);
+          munmap(buff,st.st_size);
+          return 1;
         }
+      }
+      /* }}} */
+
+      if((opt->flags & mode)) {
+        /* mark option as seen */
+        opt->flags |= CFG_OPT_SEEN;
+
+        if(opt->callback) found = opt->callback(conf,opt,context,args,argnum);
+      }
+      else {
+        fprintf(stderr,"[%s:%d] Configuration directive %s not allowed in this mode!\n",conf->filename,linenum,directive_name);
+        munmap(buff,st.st_size);
+        close(fd);
+        return 1;
       }
     }
     else {
       if(deflt) {
-        found = deflt(conf,directive_name,args,argnum);
+        found = deflt(conf,directive_name,context,args,argnum);
       }
       else {
         fprintf(stderr,"[%s:%d] Configuration entry for directive %s not found!\n",conf->filename,linenum,directive_name);
@@ -532,6 +653,12 @@ int read_config(t_configfile *conf,t_take_default deflt,int mode) {
 }
 /* }}} */
 
+/* {{{ cfg_compare */
+int cfg_compare(t_cf_tree_dataset *dt1,t_cf_tree_dataset *dt2) {
+  return strcmp(dt1->key,dt2->key);
+}
+/* }}} */
+
 /* {{{ handle_command
  * Returns: int    FO_CONF_OK or FO_CONF_PARENTHESIS
  * Parameters:
@@ -541,13 +668,16 @@ int read_config(t_configfile *conf,t_take_default deflt,int mode) {
  * this function puts an entry to a configuration structure
  *
  */
-int handle_command(t_configfile *cfile,t_conf_opt *opt,u_char **args,int argnum) {
+int handle_command(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
   t_configuration *conf = (t_configuration *)opt->data;
   t_name_value tmp,*tmp1;
   t_cf_tree_dataset dt;
+  t_cf_tree *tr;
   const t_cf_tree_dataset *dt1;
   t_cf_list_head *head;
-  int i;
+  size_t i;
+  t_cf_list_element *elem;
+  t_internal_config *icfg = NULL;
 
   tmp.values = args;
   tmp.valnum = argnum;
@@ -555,7 +685,24 @@ int handle_command(t_configfile *cfile,t_conf_opt *opt,u_char **args,int argnum)
 
   dt.key = opt->name;
 
-  if((dt1 = cf_tree_find(&conf->directives,conf->directives.root,&dt)) != NULL) {
+  if(context) {
+    for(elem=conf->forums.elements;elem;elem=elem->next,icfg=NULL) {
+      icfg = (t_internal_config *)elem->data;
+      if(cf_strcmp(icfg->name,context) == 0) break;
+    }
+
+    if(!icfg) {
+      icfg = fo_alloc(NULL,1,sizeof(*icfg),FO_ALLOC_MALLOC);
+      icfg->name = strdup(context);
+      cf_tree_init(&icfg->directives,cfg_compare,NULL);
+    }
+
+    tr = &icfg->directives;
+  }
+  else tr = &conf->global_directives;
+
+
+  if((dt1 = cf_tree_find(tr,tr->root,&dt)) != NULL) {
     if(opt->flags & CFG_OPT_UNIQUE) {
       head = dt1->data;
       tmp1 = head->elements->data;
@@ -577,7 +724,7 @@ int handle_command(t_configfile *cfile,t_conf_opt *opt,u_char **args,int argnum)
     dt.key = strdup(opt->name);
     dt.data = head;
 
-    cf_tree_insert(&conf->directives,NULL,&dt);
+    cf_tree_insert(tr,NULL,&dt);
   }
 
   return -1;
@@ -585,33 +732,31 @@ int handle_command(t_configfile *cfile,t_conf_opt *opt,u_char **args,int argnum)
 /* }}} */
 
 /* {{{ add_module */
-
-int add_module(t_configfile *cfile,t_conf_opt *opt,u_char **args,int argnum) {
-  t_array *modules = (t_array *)opt->data;
-  void *mod = dlopen(args[0],RTLD_LAZY);
+int add_module(t_configfile *cfile,const u_char *path,const u_char *name) {
+  t_array *modules = Modules;
+  void *mod = dlopen(path,RTLD_LAZY);
+  void *mod_cfg_p;
   char *error;
   t_module module = { NULL, NULL, NULL };
+  t_module_config *mod_cfg;
+  int i;
+
 
   if(mod) {
-    void *mod_cfg_p = dlsym(mod,args[1]);
+    mod_cfg_p = dlsym(mod,name);
 
-    if((error = (char *)dlerror()) == NULL) {
-      t_module_config *mod_cfg = (t_module_config *)mod_cfg_p;
-      int i;
+    if((error = (u_char *)dlerror()) == NULL) {
+      mod_cfg = (t_module_config *)mod_cfg_p;
 
       if(!mod_cfg_p) {
         fprintf(stderr,"ERROR: cannot load plugin configuration!\n");
         return -1;
       }
 
-      if(mod_cfg->cfgopts) {
-        cfg_register_options(cfile,mod_cfg->cfgopts);
-      }
+      if(mod_cfg->cfgopts) cfg_register_options(cfile,mod_cfg->cfgopts);
 
       /* register the module in the module list */
-      if(!modules[0].element_size) {
-        array_init(&modules[0],sizeof(t_module),cfg_destroy_module);
-      }
+      if(!modules[0].element_size) array_init(&modules[0],sizeof(t_module),cfg_destroy_module);
 
       module.module = mod;
       module.cfg    = mod_cfg;
@@ -620,9 +765,7 @@ int add_module(t_configfile *cfile,t_conf_opt *opt,u_char **args,int argnum) {
 
       /* register all handlers */
       for(i=0;mod_cfg->handlers[i].handler;i++) {
-        if(!modules[mod_cfg->handlers[i].handler].element_size) {
-          array_init(&modules[mod_cfg->handlers[i].handler],sizeof(t_handler_config),NULL);
-        }
+        if(!modules[mod_cfg->handlers[i].handler].element_size) array_init(&modules[mod_cfg->handlers[i].handler],sizeof(t_handler_config),NULL);
 
         array_push(&modules[mod_cfg->handlers[i].handler],&mod_cfg->handlers[i]);
       }
@@ -652,23 +795,6 @@ int add_module(t_configfile *cfile,t_conf_opt *opt,u_char **args,int argnum) {
  */
 void cfg_cleanup(t_configuration *cfg) {
 /** \todo write cleanup code */
-#if 0
-  int i,j;
-  t_name_value *ent = cfg->directives,*entlast = cfg->directives;
-
-  for(j=0;j<cfg->len;j++,ent=entlast) {
-    entlast = ent->next;
-
-    free(ent->name);
-
-    if(ent->valnum > 0) {
-      for(i=0;i<ent->valnum;i++) free(ent->values[i]);
-      free(ent->values);
-    }
-
-    free(ent);
-  }
-#endif
 }
 /* }}} */
 
@@ -701,15 +827,31 @@ void cleanup_modules(t_array *modules) {
 /* }}} */
 
 /* {{{ cfg_get_first_value */
-t_name_value *cfg_get_first_value(t_configuration *cfg,const u_char *name) {
+t_name_value *cfg_get_first_value(t_configuration *cfg,const u_char *context,const u_char *name) {
   t_name_value *ent;
   const t_cf_tree_dataset *dt;
   t_cf_tree_dataset dt1;
   t_cf_list_head *head;
+  t_cf_tree *tr;
+  t_cf_list_element *elem;
+  t_internal_config *icfg = NULL;
 
   dt1.key = (void *)name;
 
-  if((dt = cf_tree_find(&cfg->directives,cfg->directives.root,&dt1)) != NULL) {
+  if(context) {
+    for(elem=cfg->forums.elements;elem;elem=elem->next,icfg=NULL) {
+      icfg = (t_internal_config *)elem->data;
+      if(cf_strcmp(icfg->name,context) == 0) break;
+    }
+
+    if(!icfg) return NULL;
+
+    tr = &icfg->directives;
+  }
+  else tr = &cfg->global_directives;
+
+
+  if((dt = cf_tree_find(tr,tr->root,&dt1)) != NULL) {
     head = dt->data;
     return head->elements->data;
   }
@@ -719,14 +861,30 @@ t_name_value *cfg_get_first_value(t_configuration *cfg,const u_char *name) {
 /* }}} */
 
 /* {{{ cfg_get_value */
-t_cf_list_head *cfg_get_value(t_configuration *cfg,const u_char *name) {
+t_cf_list_head *cfg_get_value(t_configuration *cfg,const u_char *context,const u_char *name) {
   t_name_value *ent;
   const t_cf_tree_dataset *dt;
   t_cf_tree_dataset dt1;
+  t_cf_list_element *elem;
+  t_internal_config *icfg = NULL;
+  t_cf_tree *tr;
 
   dt1.key = (void *)name;
 
-  if((dt = cf_tree_find(&cfg->directives,cfg->directives.root,&dt1)) != NULL) return dt->data;
+  if(context) {
+    for(elem=cfg->forums.elements;elem;elem=elem->next,icfg=NULL) {
+      icfg = (t_internal_config *)elem->data;
+      if(cf_strcmp(icfg->name,context) == 0) break;
+    }
+
+    if(!icfg) return NULL;
+
+    tr = &icfg->directives;
+  }
+  else tr = &cfg->global_directives;
+
+
+  if((dt = cf_tree_find(tr,tr->root,&dt1)) != NULL) return dt->data;
 
   return NULL;
 }
@@ -771,18 +929,21 @@ void cfg_cleanup_file(t_configfile *conf) {
 }
 /* }}} */
 
-int cfg_compare(t_cf_tree_dataset *dt1,t_cf_tree_dataset *dt2) {
-  return strcmp(dt1->key,dt2->key);
-}
-
 void cfg_init(void) {
   /** \todo define cleanup function */
-  cf_tree_init(&fo_default_conf.directives,cfg_compare,NULL);
-  cf_tree_init(&fo_server_conf.directives,cfg_compare,NULL);
-  cf_tree_init(&fo_view_conf.directives,cfg_compare,NULL);
-  cf_tree_init(&fo_arcview_conf.directives,cfg_compare,NULL);
-  cf_tree_init(&fo_post_conf.directives,cfg_compare,NULL);
-  cf_tree_init(&fo_vote_conf.directives,cfg_compare,NULL);
+  cf_tree_init(&fo_default_conf.global_directives,cfg_compare,NULL);
+  cf_tree_init(&fo_server_conf.global_directives,cfg_compare,NULL);
+  cf_tree_init(&fo_view_conf.global_directives,cfg_compare,NULL);
+  cf_tree_init(&fo_arcview_conf.global_directives,cfg_compare,NULL);
+  cf_tree_init(&fo_post_conf.global_directives,cfg_compare,NULL);
+  cf_tree_init(&fo_vote_conf.global_directives,cfg_compare,NULL);
+
+  cf_list_init(&fo_default_conf.forums);
+  cf_list_init(&fo_server_conf.forums);
+  cf_list_init(&fo_view_conf.forums);
+  cf_list_init(&fo_arcview_conf.forums);
+  cf_list_init(&fo_post_conf.forums);
+  cf_list_init(&fo_vote_conf.forums);
 }
 
 /* eof */

@@ -205,7 +205,7 @@ int flt_poas_execute(t_cf_hash *head,t_configuration *dc,t_configuration *pc,t_m
   return FLT_DECLINE;
 }
 
-int flt_poas_handle(t_configfile *cfile,t_conf_opt *opt,u_char **args,int argnum) {
+int flt_poas_handle(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
   switch(*opt->name) {
     case 'P':
       flt_poas_conf.poas_must_validate = cf_strcmp(args[0],"yes") == 0;

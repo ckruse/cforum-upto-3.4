@@ -297,9 +297,9 @@ int main(int argc,char *argv[]) {
   /* }}} */
 
   /* {{{ more initialization */
-  sort_m_v = cfg_get_first_value(&fo_server_conf,"SortMessages");
+  sort_m_v = cfg_get_first_value(&fo_server_conf,NULL,"SortMessages");
   sort_m   = atoi(sort_m_v->values[0]);
-  mpath    = cfg_get_first_value(&fo_default_conf,"MessagePath");
+  mpath    = cfg_get_first_value(&fo_default_conf,NULL,"MessagePath");
 
   #ifdef CF_SHARED_MEM
   cf_mutex_init("head.shm_lock",&head.shm_lock);
@@ -311,7 +311,7 @@ int main(int argc,char *argv[]) {
 
 
   /* ok, first lets read the backup file */
-  if((backup_file = cfg_get_first_value(&fo_server_conf,"BackupFile")) == NULL) {
+  if((backup_file = cfg_get_first_value(&fo_server_conf,NULL,"BackupFile")) == NULL) {
     fprintf(stderr,"Sorry, could not find backup file\n");
     exit(-1);
   }

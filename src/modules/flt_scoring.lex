@@ -212,7 +212,7 @@ int flt_scoring_execute(t_cf_hash *head,t_configuration *dc,t_configuration *vc,
 /* }}} */
 
 /* {{{ flt_scoring_parse */
-int flt_scoring_parse(t_configfile *cf,t_conf_opt *opt,u_char **args,int argnum) {
+int flt_scoring_parse(t_configfile *cf,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
   u_char *error,*ptr;
   struct s_scoring_filter filter;
   int err_offset,ret;
@@ -257,7 +257,7 @@ int flt_scoring_parse(t_configfile *cf,t_conf_opt *opt,u_char **args,int argnum)
 /* }}} */
 
 /* {{{ flt_scoring_cols */
-int flt_scoring_cols(t_configfile *cf,t_conf_opt *opt,u_char **args,int argnum) {
+int flt_scoring_cols(t_configfile *cf,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
   u_char *arg = args[0];
   size_t len = strlen(args[0]);
   u_char *ptr, *col;
@@ -299,7 +299,7 @@ int flt_scoring_cols(t_configfile *cf,t_conf_opt *opt,u_char **args,int argnum) 
 /* }}} */
 
 /* {{{ flt_scoring_hide */
-int flt_scoring_hide(t_configfile *cf,t_conf_opt *opt,u_char **args,int argnum) {
+int flt_scoring_hide(t_configfile *cf,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
   flt_scoring_hide_score = atoi(args[0]);
   flt_scoring_hide_score_set = 1;
   return 0;
@@ -307,7 +307,7 @@ int flt_scoring_hide(t_configfile *cf,t_conf_opt *opt,u_char **args,int argnum) 
 /* }}} */
 
 /* {{{ flt_scoring_vals */
-int flt_scoring_vals(t_configfile *cf,t_conf_opt *opt,u_char **args,int argnum) {
+int flt_scoring_vals(t_configfile *cf,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
   if(cf_strcmp(opt->name,"ScoringMaxValue") == 0) flt_scoring_max_val = strtol(args[0],NULL,10);
   else flt_scoring_min_val = strtol(args[0],NULL,10);
 
@@ -316,7 +316,7 @@ int flt_scoring_vals(t_configfile *cf,t_conf_opt *opt,u_char **args,int argnum) 
 /* }}} */
 
 /* {{{ flt_scoring_ignore */
-int flt_scoring_ignore(t_configfile *cf,t_conf_opt *opt,u_char **args,int argnum) {
+int flt_scoring_ignore(t_configfile *cf,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
   flt_scoring_ign = cf_strcmp(args[0],"yes") == 0;
   return 0;
 }

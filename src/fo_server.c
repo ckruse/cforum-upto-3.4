@@ -106,7 +106,7 @@ void terminate(int n) {
  * \return Returns always NULL
  */
 void *archiver_and_writer(void *arg) {
-  t_name_value *v = cfg_get_first_value(&fo_server_conf,"RunArchiver");
+  t_name_value *v = cfg_get_first_value(&fo_server_conf,NULL,"RunArchiver");
   int val = atoi(v->values[0]);
 #ifdef _POSIX_THREAD_PRIORITY_SCHEDULING
   struct sched_param param;
@@ -151,7 +151,7 @@ void setup_server_infos(void) {
   /*
    * First, lets get the path to the pid file
    */
-  pidfile = cfg_get_first_value(&fo_server_conf,"PIDFile");
+  pidfile = cfg_get_first_value(&fo_server_conf,NULL,"PIDFile");
   if(!pidfile) {
     fprintf(stderr,"I need a pid file!\n");
     exit(-1);
@@ -427,10 +427,10 @@ int main(int argc,char *argv[]) {
    * let's go sure that no other server is running at this configuration
    */
   setup_server_infos();
-  pidfile = cfg_get_first_value(&fo_server_conf,"PIDFile");
+  pidfile = cfg_get_first_value(&fo_server_conf,NULL,"PIDFile");
 
   #ifdef CF_SHARED_MEM
-  shm      = cfg_get_first_value(&fo_default_conf,"SharedMemIds");
+  shm      = cfg_get_first_value(&fo_default_conf,NULL,"SharedMemIds");
 
   if(create_shm_sem(shm) != 0) return EXIT_FAILURE;
 

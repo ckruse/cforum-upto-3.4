@@ -41,8 +41,8 @@ int flt_tplmode_execute(t_cf_hash *head,t_configuration *dc,t_configuration *vc)
   t_name_value *v,*v1;
 
   if(TPLMode) {
-    v1 = cfg_get_first_value(dc,"XHTMLMode");
-    v  = cfg_get_first_value(dc,"TemplateMode");
+    v1 = cfg_get_first_value(dc,NULL,"XHTMLMode");
+    v  = cfg_get_first_value(dc,NULL,"TemplateMode");
 
     free(v->values[0]);
 
@@ -63,7 +63,7 @@ int flt_tplmode_execute(t_cf_hash *head,t_configuration *dc,t_configuration *vc)
   return FLT_DECLINE;
 }
 
-int flt_tplmode_handle(t_configfile *cfile,t_conf_opt *opt,u_char **args,int argnum) {
+int flt_tplmode_handle(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
   if(TPLMode) free(TPLMode);
   TPLMode = strdup(args[0]);
 

@@ -43,7 +43,7 @@ static const u_char *symbols[] = {
   "TOK_RPAREN"
 };
 
-#define flt_lf_get_type(x) (symbols[x])
+#define flt_livefilter_get_type(x) (symbols[x])
 
 #define PREC_ID    60
 #define PREC_EQ    50 /* =, != */
@@ -68,17 +68,17 @@ typedef struct s_node {
   u_char *content;
 
   struct s_node *left,*right,*parent,*argument;
-} t_flt_lf_node;
+} t_flt_livefilter_node;
 
-static t_flt_lf_node *flt_lf_first = NULL;
-static int flt_lf_active = 0;
+static t_flt_livefilter_node *flt_livefilter_first = NULL;
+static int flt_livefilter_active = 0;
 
-static t_string flt_lf_str = { 0, 0, NULL };
+static t_string flt_livefilter_str = { 0, 0, NULL };
 
-static int flt_lf_success = 1;
+static int flt_livefilter_success = 1;
 
 /* {{{ case_strstr */
-u_char *flt_lf_case_strstr(const u_char *haystack,const u_char *needle) {
+u_char *flt_livefilter_case_strstr(const u_char *haystack,const u_char *needle) {
   size_t len1 = strlen(haystack);
   size_t len2 = strlen(needle);
   size_t i;
@@ -94,31 +94,31 @@ u_char *flt_lf_case_strstr(const u_char *haystack,const u_char *needle) {
 }
 /* }}} */
 
-/* {{{ flt_lf_read_string */
-int flt_lf_read_string(register u_char *ptr) {
-  str_init(&flt_lf_str);
+/* {{{ flt_livefilter_read_string */
+int flt_livefilter_read_string(register u_char *ptr) {
+  str_init(&flt_livefilter_str);
 
   for(;*ptr;ptr++) {
     switch(*ptr) {
       case '\\':
         switch(*(++ptr)) {
           case 'n':
-            str_char_append(&flt_lf_str,'\n');
+            str_char_append(&flt_livefilter_str,'\n');
             break;
           case 't':
-            str_char_append(&flt_lf_str,'\t');
+            str_char_append(&flt_livefilter_str,'\t');
             break;
           case '"':
-            str_char_append(&flt_lf_str,'"');
+            str_char_append(&flt_livefilter_str,'"');
             break;
           default:
-            str_char_append(&flt_lf_str,*ptr);
+            str_char_append(&flt_livefilter_str,*ptr);
             break;
         }
       case '"':
         return 0;
       default:
-        str_char_append(&flt_lf_str,*ptr);
+        str_char_append(&flt_livefilter_str,*ptr);
     }
   }
 
@@ -126,8 +126,8 @@ int flt_lf_read_string(register u_char *ptr) {
 }
 /* }}} */
 
-/* {{{ flt_lf_scanner */
-int flt_lf_scanner(u_char *str,u_char **pos) {
+/* {{{ flt_livefilter_scanner */
+int flt_livefilter_scanner(u_char *str,u_char **pos) {
   register u_char *ptr = *pos;
   int ret;
 
@@ -142,24 +142,24 @@ int flt_lf_scanner(u_char *str,u_char **pos) {
       case '=':
         if(*(ptr + 1) == '~') {
           *pos = ptr + 2;
-          str_char_set(&flt_lf_str,ptr,2);
+          str_char_set(&flt_livefilter_str,ptr,2);
           return TOK_CONTAINS;
         }
         else {
           *pos = ptr + 1;
-          str_char_set(&flt_lf_str,ptr,1);
+          str_char_set(&flt_livefilter_str,ptr,1);
           return TOK_EQ;
         }
       case '(':
-        str_char_set(&flt_lf_str,ptr,1);
+        str_char_set(&flt_livefilter_str,ptr,1);
         *pos = ptr + 1;
         return TOK_LPAREN;
       case ')':
-        str_char_set(&flt_lf_str,ptr,1);
+        str_char_set(&flt_livefilter_str,ptr,1);
         *pos = ptr + 1;
         return TOK_RPAREN;
       case '!':
-        str_char_set(&flt_lf_str,ptr,2);
+        str_char_set(&flt_livefilter_str,ptr,2);
         *pos = ptr + 2;
 
         if(*(ptr + 1) == '~') {
@@ -169,19 +169,19 @@ int flt_lf_scanner(u_char *str,u_char **pos) {
           return TOK_NE;
         }
       case '|':
-        str_char_set(&flt_lf_str,ptr,1);
+        str_char_set(&flt_livefilter_str,ptr,1);
         *pos = ptr + 1;
         return TOK_OR;
       case '&':
-        str_char_set(&flt_lf_str,ptr,1);
+        str_char_set(&flt_livefilter_str,ptr,1);
         *pos = ptr + 1;
         return TOK_AND;
       case '"':
         /* read string */
-        if((ret = flt_lf_read_string(ptr+1)) != 0) return ret;
+        if((ret = flt_livefilter_read_string(ptr+1)) != 0) return ret;
 
         /* safe new position */
-        *pos = ptr + flt_lf_str.len + 2;
+        *pos = ptr + flt_livefilter_str.len + 2;
 
         /* return token */
         return TOK_STR;
@@ -197,7 +197,7 @@ int flt_lf_scanner(u_char *str,u_char **pos) {
           for(;*ptr && isalnum(*ptr);ptr++);
 
           /* safe identifier */
-          str_char_set(&flt_lf_str,*pos,ptr - *pos);
+          str_char_set(&flt_livefilter_str,*pos,ptr - *pos);
 
           /* set position */
           *pos = ptr;
@@ -206,7 +206,7 @@ int flt_lf_scanner(u_char *str,u_char **pos) {
           return TOK_ID;
         }
         else {
-          flt_lf_success = 0;
+          flt_livefilter_success = 0;
           return TOK_EOS;
         }
     }
@@ -216,13 +216,13 @@ int flt_lf_scanner(u_char *str,u_char **pos) {
 }
 /* }}} */
 
-/* {{{ flt_lf_insert_node */
-t_flt_lf_node *flt_lf_insert_node(t_flt_lf_node *cur,t_flt_lf_node *tok,t_flt_lf_node *root) {
-  t_flt_lf_node *n = cur;
+/* {{{ flt_livefilter_insert_node */
+t_flt_livefilter_node *flt_livefilter_insert_node(t_flt_livefilter_node *cur,t_flt_livefilter_node *tok,t_flt_livefilter_node *root) {
+  t_flt_livefilter_node *n = cur;
 
   if(!cur) {
     if(root) root->argument = tok;
-    else     flt_lf_first = tok;
+    else     flt_livefilter_first = tok;
     return tok;
   }
 
@@ -245,7 +245,7 @@ t_flt_lf_node *flt_lf_insert_node(t_flt_lf_node *cur,t_flt_lf_node *tok,t_flt_lf
 
     if(!cur) {
       if(root) root->argument = tok;
-      else     flt_lf_first = tok;
+      else     flt_livefilter_first = tok;
       tok->left         = n;
       tok->left->parent = tok;
     }
@@ -269,13 +269,13 @@ t_flt_lf_node *flt_lf_insert_node(t_flt_lf_node *cur,t_flt_lf_node *tok,t_flt_lf
 }
 /* }}} */
 
-/* {{{ flt_lf_parse_string */
-int flt_lf_parse_string(u_char *str,u_char **pos,t_cf_template *tpl,t_flt_lf_node *node,t_flt_lf_node *root_node,t_configuration *dc) {
+/* {{{ flt_livefilter_parse_string */
+int flt_livefilter_parse_string(u_char *str,u_char **pos,t_cf_template *tpl,t_flt_livefilter_node *node,t_flt_livefilter_node *root_node,t_configuration *dc) {
   int ret = 0;
-  t_flt_lf_node *current = NULL;
-  t_name_value *cs = cfg_get_first_value(dc,"ExternCharset");
+  t_flt_livefilter_node *current = NULL;
+  t_name_value *cs = cfg_get_first_value(dc,NULL,"ExternCharset");
 
-  while((ret = flt_lf_scanner(str,pos)) > 0) {
+  while((ret = flt_livefilter_scanner(str,pos)) > 0) {
     current       = fo_alloc(NULL,1,sizeof(*current),FO_ALLOC_CALLOC);
     current->type = ret;
 
@@ -284,27 +284,27 @@ int flt_lf_parse_string(u_char *str,u_char **pos,t_cf_template *tpl,t_flt_lf_nod
       case TOK_ID:
         current->prec = PREC_ID;
 
-        if(cf_strcasecmp(flt_lf_str.content,"true") == 0 && ret == TOK_ID) {
+        if(cf_strcasecmp(flt_livefilter_str.content,"true") == 0 && ret == TOK_ID) {
           current->content = (u_char *)1;
-          str_cleanup(&flt_lf_str);
+          str_cleanup(&flt_livefilter_str);
         }
-        else if(cf_strcasecmp(flt_lf_str.content,"false") == 0 && ret == TOK_ID) {
+        else if(cf_strcasecmp(flt_livefilter_str.content,"false") == 0 && ret == TOK_ID) {
           current->content = (u_char *)0;
-          str_cleanup(&flt_lf_str);
+          str_cleanup(&flt_livefilter_str);
         }
         else {
           if(cf_strcmp(cs->values[0],"UTF-8")) {
-            if((current->content = charset_convert(flt_lf_str.content,flt_lf_str.len,cs->values[0],"UTF-8",NULL)) == NULL) {
-              current->content = flt_lf_str.content;
-              str_init(&flt_lf_str);
+            if((current->content = charset_convert(flt_livefilter_str.content,flt_livefilter_str.len,cs->values[0],"UTF-8",NULL)) == NULL) {
+              current->content = flt_livefilter_str.content;
+              str_init(&flt_livefilter_str);
             }
             else {
-              str_cleanup(&flt_lf_str);
+              str_cleanup(&flt_livefilter_str);
             }
           }
           else {
-            current->content = flt_lf_str.content;
-            str_init(&flt_lf_str);
+            current->content = flt_livefilter_str.content;
+            str_init(&flt_livefilter_str);
           }
         }
 
@@ -312,13 +312,13 @@ int flt_lf_parse_string(u_char *str,u_char **pos,t_cf_template *tpl,t_flt_lf_nod
       case TOK_LPAREN:
         current->prec     = PREC_PAREN;
         current->argument = fo_alloc(NULL,1,sizeof(*current->argument),FO_ALLOC_CALLOC);
-        if((ret = flt_lf_parse_string(str,pos,tpl,NULL,current,dc)) != 0) return ret;
+        if((ret = flt_livefilter_parse_string(str,pos,tpl,NULL,current,dc)) != 0) return ret;
         break;
       case TOK_RPAREN:
         free(current);
 
         if(root_node->prec != PREC_PAREN) {
-          flt_lf_success = 0;
+          flt_livefilter_success = 0;
           return 1;
         }
 
@@ -338,25 +338,25 @@ int flt_lf_parse_string(u_char *str,u_char **pos,t_cf_template *tpl,t_flt_lf_nod
         break;
     }
 
-    node = flt_lf_insert_node(node,current,root_node);
+    node = flt_livefilter_insert_node(node,current,root_node);
   }
 
   return 0;
 }
 /* }}} */
 
-/* {{{ flt_lf_form */
-int flt_lf_form(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cf_template *begin,t_cf_template *end) {
+/* {{{ flt_livefilter_form */
+int flt_livefilter_form(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cf_template *begin,t_cf_template *end) {
   u_char *filter_str,*pos;
 
-  if(flt_lf_active) {
+  if(flt_livefilter_active) {
     tpl_cf_setvar(begin,"livefilter","1",1,0);
 
     if(head) {
       if((filter_str = cf_cgi_get(head,"lf")) != NULL) {
         cf_hash_set(GlobalValues,"openclose",9,"0",1);
         pos = filter_str;
-        flt_lf_parse_string(filter_str,&pos,begin,NULL,NULL,dc);
+        flt_livefilter_parse_string(filter_str,&pos,begin,NULL,NULL,dc);
         tpl_cf_setvar(begin,"lf",filter_str,strlen(filter_str),1);
       }
     }
@@ -368,8 +368,8 @@ int flt_lf_form(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cf_tem
 }
 /* }}} */
 
-/* {{{ flt_lf_evaluate */
-u_char *flt_lf_evaluate(t_flt_lf_node *n,t_message *msg,u_int64_t tid) {
+/* {{{ flt_livefilter_evaluate */
+u_char *flt_livefilter_evaluate(t_flt_livefilter_node *n,t_message *msg,u_int64_t tid) {
   u_char *l = NULL,*r = NULL;
   u_char buff[50];
   u_char *ret = NULL;
@@ -379,8 +379,8 @@ u_char *flt_lf_evaluate(t_flt_lf_node *n,t_message *msg,u_int64_t tid) {
 
   switch(n->type) {
     case TOK_CONTAINS:
-      l = flt_lf_evaluate(n->left,msg,tid);
-      r = flt_lf_evaluate(n->right,msg,tid);
+      l = flt_livefilter_evaluate(n->left,msg,tid);
+      r = flt_livefilter_evaluate(n->right,msg,tid);
 
       if(l == NULL && r == NULL) {
         ret = (u_char *)1;
@@ -394,7 +394,7 @@ u_char *flt_lf_evaluate(t_flt_lf_node *n,t_message *msg,u_int64_t tid) {
             ret = NULL;
           }
           else {
-            if(flt_lf_case_strstr(l,r)) {
+            if(flt_livefilter_case_strstr(l,r)) {
               ret = (u_char *)1;
             }
             else {
@@ -407,8 +407,8 @@ u_char *flt_lf_evaluate(t_flt_lf_node *n,t_message *msg,u_int64_t tid) {
       return ret;
 
     case TOK_CONTAINS_NOT:
-      l = flt_lf_evaluate(n->left,msg,tid);
-      r = flt_lf_evaluate(n->right,msg,tid);
+      l = flt_livefilter_evaluate(n->left,msg,tid);
+      r = flt_livefilter_evaluate(n->right,msg,tid);
 
       if(l == NULL && r == NULL) {
         ret = NULL;
@@ -422,7 +422,7 @@ u_char *flt_lf_evaluate(t_flt_lf_node *n,t_message *msg,u_int64_t tid) {
             ret = (u_char *)1;
           }
           else {
-            if(flt_lf_case_strstr(l,r)) {
+            if(flt_livefilter_case_strstr(l,r)) {
               ret = NULL;
             }
             else {
@@ -435,8 +435,8 @@ u_char *flt_lf_evaluate(t_flt_lf_node *n,t_message *msg,u_int64_t tid) {
       return ret;
 
     case TOK_EQ:
-      l = flt_lf_evaluate(n->left,msg,tid);
-      r = flt_lf_evaluate(n->right,msg,tid);
+      l = flt_livefilter_evaluate(n->left,msg,tid);
+      r = flt_livefilter_evaluate(n->right,msg,tid);
 
       if(l == NULL && r == NULL) {
         ret = (u_char *)1; /* true: both undefined */
@@ -466,8 +466,8 @@ u_char *flt_lf_evaluate(t_flt_lf_node *n,t_message *msg,u_int64_t tid) {
       return ret;
 
     case TOK_NE:
-      l = flt_lf_evaluate(n->left,msg,tid);
-      r = flt_lf_evaluate(n->right,msg,tid);
+      l = flt_livefilter_evaluate(n->left,msg,tid);
+      r = flt_livefilter_evaluate(n->right,msg,tid);
 
       if(l == NULL && r == NULL) {
         ret = NULL;      /* false: both are undefined */
@@ -497,11 +497,11 @@ u_char *flt_lf_evaluate(t_flt_lf_node *n,t_message *msg,u_int64_t tid) {
       return ret;
 
     case TOK_OR:
-      l = flt_lf_evaluate(n->left,msg,tid);
+      l = flt_livefilter_evaluate(n->left,msg,tid);
       if(l) ret = (u_char *)1;
 
       if(!ret) {
-        r = flt_lf_evaluate(n->right,msg,tid);
+        r = flt_livefilter_evaluate(n->right,msg,tid);
         if(r) ret = (u_char *)1;
       }
 
@@ -511,8 +511,8 @@ u_char *flt_lf_evaluate(t_flt_lf_node *n,t_message *msg,u_int64_t tid) {
       return ret;
 
     case TOK_AND:
-      l = flt_lf_evaluate(n->left,msg,tid);
-      r = flt_lf_evaluate(n->right,msg,tid);
+      l = flt_livefilter_evaluate(n->left,msg,tid);
+      r = flt_livefilter_evaluate(n->right,msg,tid);
 
       if(!l && !r) {
         ret = (u_char *)1; /* true: both are undefined */
@@ -583,7 +583,7 @@ u_char *flt_lf_evaluate(t_flt_lf_node *n,t_message *msg,u_int64_t tid) {
       return strdup(n->content);
     case TOK_LPAREN:
       if(n->argument) {
-        ret = flt_lf_evaluate(n->argument,msg,tid);
+        ret = flt_livefilter_evaluate(n->argument,msg,tid);
       }
       else ret = NULL;
       return ret;
@@ -593,11 +593,11 @@ u_char *flt_lf_evaluate(t_flt_lf_node *n,t_message *msg,u_int64_t tid) {
 }
 /* }}} */
 
-/* {{{ flt_lf_filter */
-int flt_lf_filter(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_message *msg,u_int64_t tid,int mode) {
-  if(flt_lf_active) {
-    if(flt_lf_first && flt_lf_success) {
-      if(flt_lf_evaluate(flt_lf_first,msg,tid) == 0) {
+/* {{{ flt_livefilter_filter */
+int flt_livefilter_filter(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_message *msg,u_int64_t tid,int mode) {
+  if(flt_livefilter_active) {
+    if(flt_livefilter_first && flt_livefilter_success) {
+      if(flt_livefilter_evaluate(flt_livefilter_first,msg,tid) == 0) {
         msg->may_show = 0;
       }
     }
@@ -609,38 +609,38 @@ int flt_lf_filter(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_mess
 }
 /* }}} */
 
-/* {{{ flt_lf_handle_command */
-int flt_lf_handle_command(t_configfile *cf,t_conf_opt *opt,u_char **args,int argnum) {
-  flt_lf_active = cf_strcmp(args[0],"yes") == 0;
+/* {{{ flt_livefilter_handle_command */
+int flt_livefilter_handle_command(t_configfile *cf,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
+  flt_livefilter_active = cf_strcmp(args[0],"yes") == 0;
   return 0;
 }
 /* }}} */
 
-/* {{{ flt_lf_cleanup */
-void flt_lf_cleanup(void) {
+/* {{{ flt_livefilter_cleanup */
+void flt_livefilter_cleanup(void) {
   /* \todo Implement cleanup code (I'm a bad guy) */
 }
 /* }}} */
 
 /* {{{ module config */
-t_conf_opt config[] = {
-  { "ActivateLiveFilter", flt_lf_handle_command, CFG_OPT_CONFIG|CFG_OPT_USER, NULL },
+t_conf_opt flt_livefilter_config[] = {
+  { "ActivateLiveFilter", flt_livefilter_handle_command, CFG_OPT_CONFIG|CFG_OPT_USER, NULL },
   { NULL, NULL, 0, NULL }
 };
 
-t_handler_config handlers[] = {
-  { VIEW_INIT_HANDLER, flt_lf_form },
-  { VIEW_LIST_HANDLER, flt_lf_filter },
+t_handler_config flt_livefilter_handlers[] = {
+  { VIEW_INIT_HANDLER, flt_livefilter_form },
+  { VIEW_LIST_HANDLER, flt_livefilter_filter },
   { 0, NULL }
 };
 
 t_module_config flt_livefilter = {
-  config,
-  handlers,
+  flt_livefilter_config,
+  flt_livefilter_handlers,
   NULL,
   NULL,
   NULL,
-  flt_lf_cleanup
+  flt_livefilter_cleanup
 };
 /* }}} */
 

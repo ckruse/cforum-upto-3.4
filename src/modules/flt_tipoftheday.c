@@ -62,7 +62,7 @@ int flt_tipoftheday_execute(t_cf_hash *cgi,t_configuration *dc,t_configuration *
       if((fd = fopen(TOTD_File,"r")) != NULL) {
         if(fseek(fd,(long)offset,SEEK_SET) != -1) {
           if((linelen = getline((char **)&line,&bufflen,fd)) != -1) {
-            cs = cfg_get_first_value(dc,"ExternCharset");
+            cs = cfg_get_first_value(dc,NULL,"ExternCharset");
             cf_set_variable(top,cs,"tipoftheday",line,linelen-1,0);
 
             free(line);
@@ -77,7 +77,7 @@ int flt_tipoftheday_execute(t_cf_hash *cgi,t_configuration *dc,t_configuration *
   return FLT_DECLINE;
 }
 
-int flt_tipoftheday_confighandler(t_configfile *cf,t_conf_opt *opt,u_char **args,int argnum) {
+int flt_tipoftheday_confighandler(t_configfile *cf,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
   if(cf_strcmp(opt->name,"TipOfTheDayFile") == 0) {
     TOTD_File = strdup(args[0]);
   }

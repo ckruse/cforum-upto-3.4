@@ -64,7 +64,7 @@ int flt_deleted_execute(t_cf_hash *head,t_configuration *dc,t_configuration *vc,
 
   if(mode == 0) {
     if(UserName) {
-      url = cfg_get_first_value(dc,"UBaseURL");
+      url = cfg_get_first_value(dc,NULL,"UBaseURL");
 
       if(Cfg.DeletedFile) {
         memset(&key,0,sizeof(key));
@@ -236,8 +236,8 @@ int flt_deleted_del_thread(t_cf_hash *head,t_configuration *dc,t_configuration *
 }
 /* }}} */
 
-/* {{{ flt_del_init_handler */
-int flt_del_init_handler(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc) {
+/* {{{ flt_deleted_init_handler */
+int flt_deleted_init_handler(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc) {
   int ret;
 
   if(Cfg.DeletedFile) {
@@ -258,8 +258,8 @@ int flt_del_init_handler(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc)
 }
 /* }}} */
 
-/* {{{ flt_del_view_init_handler */
-int flt_del_view_init_handler(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cf_template *begin,t_cf_template *end) {
+/* {{{ flt_deleted_view_init_handler */
+int flt_deleted_view_init_handler(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cf_template *begin,t_cf_template *end) {
   if(end && Cfg.CheckBoxes && Cfg.DeletedFile) {
     if(head && cf_cgi_get(head,"nd") != NULL) tpl_cf_setvar(begin,"delnodelete","1",1,0);
 
@@ -271,8 +271,8 @@ int flt_del_view_init_handler(t_cf_hash *head,t_configuration *dc,t_configuratio
 }
 /* }}} */
 
-/* {{{ flt_del_handle_command */
-int flt_del_handle_command(t_configfile *cf,t_conf_opt *opt,u_char **args,int argnum) {
+/* {{{ flt_deleted_handle_command */
+int flt_deleted_handle_command(t_configfile *cf,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
   long i;
 
   if(cf_strcmp(opt->name,"BlackList") == 0) {
@@ -309,8 +309,8 @@ int flt_del_handle_command(t_configfile *cf,t_conf_opt *opt,u_char **args,int ar
 }
 /* }}} */
 
-/* {{{ flt_del_cleanup */
-void flt_del_cleanup(void) {
+/* {{{ flt_deleted_cleanup */
+void flt_deleted_cleanup(void) {
   long i;
   if(Cfg.BLlen) {
     for(i=0;i<Cfg.BLlen;i++) {
@@ -370,33 +370,33 @@ time_t flt_deleted_lm(t_cf_hash *head,t_configuration *dc,t_configuration *vc,vo
 /* }}} */
 
 /* {{{ module config */
-t_conf_opt config[] = {
-  { "BlackList",               flt_del_handle_command, CFG_OPT_CONFIG|CFG_OPT_USER, NULL },
-  { "ShowBlacklistFollowups",  flt_del_handle_command, CFG_OPT_CONFIG|CFG_OPT_USER, NULL },
-  { "ShowFrom",                flt_del_handle_command, CFG_OPT_CONFIG|CFG_OPT_USER, NULL },
-  { "ShowUntil",               flt_del_handle_command, CFG_OPT_CONFIG|CFG_OPT_USER, NULL },
-  { "DeletedFile",             flt_del_handle_command, CFG_OPT_USER|CFG_OPT_NEEDED, NULL },
-  { "DeletedUseCheckboxes",    flt_del_handle_command, CFG_OPT_CONFIG|CFG_OPT_USER, NULL },
-  { "DelThreadResponse204",    flt_del_handle_command, CFG_OPT_CONFIG|CFG_OPT_USER, NULL },
+t_conf_opt flt_deleted_config[] = {
+  { "BlackList",               flt_deleted_handle_command, CFG_OPT_CONFIG|CFG_OPT_USER, NULL },
+  { "ShowBlacklistFollowups",  flt_deleted_handle_command, CFG_OPT_CONFIG|CFG_OPT_USER, NULL },
+  { "ShowFrom",                flt_deleted_handle_command, CFG_OPT_CONFIG|CFG_OPT_USER, NULL },
+  { "ShowUntil",               flt_deleted_handle_command, CFG_OPT_CONFIG|CFG_OPT_USER, NULL },
+  { "DeletedFile",             flt_deleted_handle_command, CFG_OPT_USER|CFG_OPT_NEEDED, NULL },
+  { "DeletedUseCheckboxes",    flt_deleted_handle_command, CFG_OPT_CONFIG|CFG_OPT_USER, NULL },
+  { "DelThreadResponse204",    flt_deleted_handle_command, CFG_OPT_CONFIG|CFG_OPT_USER, NULL },
   { NULL, NULL, 0, NULL }
 };
 
-t_handler_config handlers[] = {
-  { VIEW_INIT_HANDLER,    flt_del_view_init_handler },
-  { INIT_HANDLER,         flt_del_init_handler      },
-  { CONNECT_INIT_HANDLER, flt_deleted_del_thread    },
-  { VIEW_HANDLER,         flt_deleted_execute       },
-  { VIEW_LIST_HANDLER,    flt_deleted_pl_filter     },
+t_handler_config flt_deleted_handlers[] = {
+  { VIEW_INIT_HANDLER,    flt_deleted_view_init_handler },
+  { INIT_HANDLER,         flt_deleted_init_handler      },
+  { CONNECT_INIT_HANDLER, flt_deleted_del_thread        },
+  { VIEW_HANDLER,         flt_deleted_execute           },
+  { VIEW_LIST_HANDLER,    flt_deleted_pl_filter         },
   { 0, NULL }
 };
 
 t_module_config flt_deleted = {
-  config,
-  handlers,
+  flt_deleted_config,
+  flt_deleted_handlers,
   flt_deleted_validate,
   flt_deleted_lm,
   NULL,
-  flt_del_cleanup
+  flt_deleted_cleanup
 };
 /*  }}} */
 

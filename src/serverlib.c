@@ -314,11 +314,11 @@ void cf_log(int mode,const u_char *file,int line,const u_char *format,...) {
   }
 
   if(!head.std) {
-    v = cfg_get_first_value(&fo_server_conf,"StdLog");
+    v = cfg_get_first_value(&fo_server_conf,NULL,"StdLog");
     head.std = fopen(v->values[0],"a");
   }
   if(!head.err) {
-    v = cfg_get_first_value(&fo_server_conf,"ErrorLog");
+    v = cfg_get_first_value(&fo_server_conf,NULL,"ErrorLog");
     head.err = fopen(v->values[0],"a");
   }
 
@@ -380,7 +380,7 @@ void cf_log(int mode,const u_char *file,int line,const u_char *format,...) {
  */
 int cf_set_us_up_the_socket(struct sockaddr_un *addr) {
   int sock;
-  t_name_value *sockpath = cfg_get_first_value(&fo_default_conf,"SocketName");
+  t_name_value *sockpath = cfg_get_first_value(&fo_default_conf,NULL,"SocketName");
 
   if(!sockpath) {
     cf_log(LOG_ERR,__FILE__,__LINE__,"could not find socket path!\n");
@@ -1085,7 +1085,7 @@ void cf_generate_shared_memory() {
   t_mem_pool pool;
   t_thread *t,*t1;
   t_posting *p;
-  t_name_value *v = cfg_get_first_value(&fo_default_conf,"SharedMemIds");
+  t_name_value *v = cfg_get_first_value(&fo_default_conf,NULL,"SharedMemIds");
   u_int32_t val;
   time_t tm = time(NULL);
   unsigned short semval;

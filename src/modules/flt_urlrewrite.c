@@ -453,7 +453,7 @@ int execute_filter(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cl_
 }
 
 
-int add_rewriterule(t_configfile *cfile,t_conf_opt *opt,u_char **args,int argnum) {
+int add_rewriterule(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
   t_urlrewrite **n_rewrites;
   t_urlrewrite *n_rewrite;
   int alloc_type;

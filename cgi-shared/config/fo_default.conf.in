@@ -9,8 +9,7 @@
 # $LastChangedBy$
 #
 
-
-<General>
+Forum "FORUM1" {
  TemplateMode "html4"
  MessagePath "@with_message_dir@"
  ArchivePath "@with_archive_dir@"
@@ -41,53 +40,16 @@
  ExternCharset "ISO-8859-15"
 
  AuthMode "http"
-</General>
 
-<LocaleConfig>
  DateLocale "de_DE.ISO8859-1"
  Language "de"
  MessagesDatabase "@DATADIR@/messages.db"
-</LocaleConfig>
 
-<Categories>
- Category "ASP"
- Category "BROWSER"
- Category "CGI"
- Category "CSS"
- Category "DATENBANK"
- Category "DESIGN"
- Category "DHTML"
- Category "E-MAIL"
- Category "FTP"
- Category "GRAFIK"
- Category "HTML"
- Category "HTTP"
- Category "INTERNET-ANBINDUNG"
- Category "JAVA"
- Category "JAVASCRIPT"
- Category "MEINUNG"
- Category "MENSCHELEI"
- Category "PERL"
- Category "PHP"
- Category "PROGRAMMIERTECHNIK"
- Category "PROJEKTVERWALTUNG"
- Category "PROVIDER"
- Category "RECHT"
- Category "SERVER"
- Category "SOFTWARE"
- Category "SONSTIGES"
- Category "VB-SCRIPT"
- Category "XML"
- Category "XML-DERIVAT"
- Category "XSL"
- Category "ZUR INFO"
- Category "ZU DIESEM FORUM"
-</Categories>
+ Categories "ASP" "BROWSER" "CGI" "CSS" "DATENBANK" "DESIGN" "DHTML" "E-MAIL" "FTP" "GRAFIK" "HTML" "HTTP" "INTERNET-ANBINDUNG" "JAVA" "JAVASCRIPT" "MEINUNG" "MENSCHELEI" "PERL" "PHP" "PROGRAMMIERTECHNIK" "PROJEKTVERWALTUNG" "PROVIDER" "RECHT" "SERVER" "SOFTWARE" "SONSTIGES" "VB-SCRIPT" "XML" "XML-DERIVAT" "XSL" "ZUR INFO" "ZU DIESEM FORUM"
 
-<Users>
  ConfigDirectory "@CONFIGDIR@/users/"
  InactivityDelete "50"
  SendMailBeforeDelete "yes"
-</Users>
+}
 
-
+# eof

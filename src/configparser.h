@@ -31,11 +31,12 @@ typedef struct s_configfile t_configfile;
  * This type of function is expected as a callback function
  * \param cfile The configuration file structure
  * \param entry The configuration option entry
+ * \param context The context of this entry in the configfile
  * \param args The directive arguments
  * \param len The length of the arguments array
  * \return 0 on success, any other value for failure
  */
-typedef int (*t_take)(t_configfile *cfile,t_conf_opt *entry,u_char **args,int len);
+typedef int (*t_take)(t_configfile *cfile,t_conf_opt *entry,const u_char *context,u_char **args,size_t len);
 
 /**
  * This type of function is expected as a standard callback function (if no configuration directive entry could be found)
@@ -44,14 +45,17 @@ typedef int (*t_take)(t_configfile *cfile,t_conf_opt *entry,u_char **args,int le
  * \param len The length of the directives array
  * \return 0 on success, any other value for failure
  */
-typedef int (*t_take_default)(t_configfile *cfile,u_char *name,u_char **args,int len);
+typedef int (*t_take_default)(t_configfile *cfile,const u_char *context,u_char *name,u_char **args,size_t len);
 
-#define CFG_OPT_NEEDED  (0x1<<0) /**< directive _must_ exist */
-#define CFG_OPT_CONFIG  (0x1<<1) /**< directive may exist in fo_*.conf */
-#define CFG_OPT_USER    (0x1<<2) /**< directive may exist in user config */
-#define CFG_OPT_UNIQUE  (0x1<<3) /**< directive is unique, not multiple */
+#define CFG_OPT_NEEDED     (0x1<<0) /**< directive _must_ exist */
+#define CFG_OPT_CONFIG     (0x1<<1) /**< directive may exist in fo_*.conf */
+#define CFG_OPT_USER       (0x1<<2) /**< directive may exist in user config */
+#define CFG_OPT_UNIQUE     (0x1<<3) /**< directive is unique, not multiple */
+#define CFG_OPT_GLOBAL     (0x1<<4) /**< directive is global only, not usable in context */
+#define CFG_OPT_LOCAL      (0x1<<5) /**< directive is context-local only, not usable in global */
+#define CFG_OPT_NOOVERRIDE (0x1<<6)
 
-#define CFG_OPT_SEEN    (0x1<<4) /**< flag internally used for marking as "seen" */
+#define CFG_OPT_SEEN       (0x1<<7) /**< flag internally used for marking as "seen" */
 
 #define CFG_MODE_CONFIG CFG_OPT_CONFIG /**< We are in configuration mode */
 #define CFG_MODE_USER   CFG_OPT_USER   /**< We are in user configuration mode */
@@ -76,15 +80,21 @@ typedef struct s_name_value {
   u_char *name; /**< The name of the directive */
 
   u_char **values; /**< The value array of this struct */
-  int valnum; /**< The size of the values array */
+  size_t valnum; /**< The size of the values array */
 } t_name_value;
 
 /***** NEW config parser API *****/
 
 /** A structure to save configuration data */
 typedef struct s_configuration {
-  t_cf_tree directives;
+  t_cf_list_head forums;
+  t_cf_tree global_directives;
 } t_configuration;
+
+typedef struct s_internal_config {
+  u_char *name;
+  t_cf_tree directives;
+} t_internal_config;
 
 /* module API */
 
@@ -205,21 +215,21 @@ void cleanup_modules(t_array *modules);
  * This function handles a configuration entry.
  * \param cfile The configuration file structure
  * \param opt The configuration option entry
+ * \param context The context of the entry in the file
  * \param args The argument list
  * \param argnum The length of the argument list
  * \return 0 on success, any other value on error
  */
-int handle_command(t_configfile *cfile,t_conf_opt *opt,u_char **args,int argnum);
+int handle_command(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum);
 
 /**
  * This function adds a plugin into the program space
  * \param cfile The configuration file structure
- * \param opt The configuration option entry
- * \param args The argument list
- * \param argnum The number of arguments
+ * \param path The path to the module
+ * \param name The name of the module
  * \return 0 on success, any other value on error
  */
-int add_module(t_configfile *cfile,t_conf_opt *opt,u_char **args,int argnum);
+int add_module(t_configfile *cfile,const u_char *path,const u_char *name);
 
 /**
  * This function cleans up a configuration file structure
@@ -233,7 +243,7 @@ void cfg_cleanup(t_configuration *cfg);
  * \param name The configuration entry name
  * \return NULL if not found, the t_cf_list_head structure on success
  */
-t_cf_list_head *cfg_get_value(t_configuration *cfg,const u_char *name);
+t_cf_list_head *cfg_get_value(t_configuration *cfg,const u_char *context,const u_char *name);
 
 /**
  * This function returns the first configuration entry of a configuration
@@ -242,7 +252,7 @@ t_cf_list_head *cfg_get_value(t_configuration *cfg,const u_char *name);
  * \param name The configuration entry name
  * \return NULL if not found, the t_name_value structure on success
  */
-t_name_value *cfg_get_first_value(t_configuration *cfg,const u_char *name);
+t_name_value *cfg_get_first_value(t_configuration *cfg,const u_char *context,const u_char *name);
 
 /**
  * destructor function for the modules array
