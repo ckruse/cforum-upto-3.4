@@ -118,7 +118,7 @@ sub validate_parameters {
     }
 
     if(exists $cfg->{Validate}) {
-      my @validate = grep { $_[0] eq $name } @{$cfg->{Validate}};
+      my @validate = grep { $_->[0] eq $name } @{$cfg->{Validate}};
 
       foreach my $validate (@validate) {
         if($validate) {
