@@ -332,7 +332,7 @@
       <directive name="UseJavaScript" arguments="1">
         <argument paramname="usejs" type="radio" encode="plain">
           <validate>^(?:yes|no)$</validate>
-          <question>Soll JavaScript zum öffnen/schliessen der Threads genutzt werden? Die Option wird automatisch mit &quot;nein&quot; überschrieben, wenn sie Threads per Default schliessen lassen.</question>
+          <question>Soll JavaScript zum öffnen/schliessen der Threads genutzt werden?</question>
           <error>Soll JavaScript zum öffnen/schliessen der Threads genutzt werden? Bitte geben Sie &quot;Ja&quot; oder &quot;Nein&quot; an!</error>
           <formvalues>
             <value val="yes" default="yes">Ja</value>
@@ -410,11 +410,35 @@
         </argument>
       </directive>
 
+      <directive name="DeletedUseXMLHttp" arguments="1">
+        <argument paramname="deletedusexmlhttp" type="radio" encode="plain">
+          <validate>^(?:yes|no)$</validate>
+          <question>Soll JavaScript benutzt werden, um Threads auszublenden?</question>
+          <error>Soll JavaScript zum Ausblenden von Threads benutzt werden? Bitte geben Sie &quot;Ja&quot; oder &quot;Nein&quot; ein!</error>
+          <formvalues>
+            <value val="yes">Ja</value>
+            <value val="no" default="yes">Nein</value>
+          </formvalues>
+        </argument>
+      </directive>
+
       <directive name="HighlightVisitedPostings" arguments="1">
         <argument paramname="highlightvisi" type="radio" encode="plain">
           <validate>^(yes|no)$</validate>
           <question>Sollen bereits besuchte Nachrichten serverseitig markiert werden?</question>
           <error>Sollen bereits besuchte Nachrichten serverseitig markiert werden? Bitte geben Sie &quot;Ja&quot; oder &quot;Nein&quot; an!</error>
+          <formvalues>
+            <value val="yes">Ja</value>
+            <value val="no" default="yes">Nein</value>
+          </formvalues>
+        </argument>
+      </directive>
+
+      <directive name="MarkThreadVisitedInLN" arguments="1">
+        <argument paramname="markvisitedinln" type="radio" encode="plain">
+          <validate>^(yes|no)$</validate>
+          <question>Soll in der Listen- und Nested-Ansicht der komplette Thread als gelesen markiert werden?</question>
+          <error>Soll in der Listen- und Nested-Ansicht der komplette Thread als gelesen markiert werden? Bitte geben Sie &quot;Ja&quot; oder &quot;Nein&quot; an!</error>
           <formvalues>
             <value val="yes">Ja</value>
             <value val="no" default="yes">Nein</value>

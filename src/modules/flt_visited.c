@@ -54,7 +54,8 @@ struct {
   int mark_visited;
   int resp_204;
   int mark_all_visited;
-} Cfg = { 0, NULL, NULL, NULL, NULL, 0, 0, 0 };
+  int mark_visited_in_ln;
+} Cfg = { 0, NULL, NULL, NULL, NULL, 0, 0, 0, 0 };
 
 static u_char *flt_visited_fn = NULL;
 
@@ -103,7 +104,7 @@ void *flt_visited_mark_visited_api(void *vmid) {
     key.data = buff;
     key.size = len;
 
-    if((ret = Cfg.db->put(Cfg.db,NULL,&key,&data,DB_NODUPDATA|DB_NOOVERWRITE)) != 0) {
+    if((ret = Cfg.db->put(Cfg.db,NULL,&key,&data,0)) != 0) {
       if(ret != DB_KEYEXIST) {
         fprintf(stderr,"DB error: %s\n",db_strerror(ret));
         return NULL;
@@ -131,6 +132,7 @@ int flt_visited_execute_filter(t_cf_hash *head,t_configuration *dc,t_configurati
 #endif
 {
   u_char *uname = cf_hash_get(GlobalValues,"UserName",8);
+  u_char *fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   u_char *cmid;
   u_char *ctid;
   u_int64_t mid,tid;
@@ -142,6 +144,7 @@ int flt_visited_execute_filter(t_cf_hash *head,t_configuration *dc,t_configurati
   DBT key,data;
   char buff[256],*mav;
   size_t len;
+  t_name_value *rm = cfg_get_first_value(vc,fn,"ReadMode");
 
   if(uname && Cfg.VisitedFile) {
     memset(&key,0,sizeof(key));
@@ -164,6 +167,8 @@ int flt_visited_execute_filter(t_cf_hash *head,t_configuration *dc,t_configurati
       cmid = cf_cgi_get(head,"m");
       ctid = cf_cgi_get(head,"mv");
 
+      if((cf_strcmp(rm->values[0],"list") == 0 || cf_strcmp(rm->values[0],"nested") == 0) && ctid == NULL) ctid = cf_cgi_get(head,"t");
+
       /* we shall mark a whole thread visited */
       if(ctid) {
         tid = str_to_u_int64(ctid);
@@ -184,7 +189,7 @@ int flt_visited_execute_filter(t_cf_hash *head,t_configuration *dc,t_configurati
             key.data = buff;
             key.size = len;
 
-            if(Cfg.db->put(Cfg.db,NULL,&key,&data,DB_NODUPDATA|DB_NOOVERWRITE) == 0) {
+            if(Cfg.db->put(Cfg.db,NULL,&key,&data,0) == 0) {
               snprintf(buff,256,"%s.tm",Cfg.VisitedFile);
               remove(buff);
               if((fd = open(buff,O_CREAT|O_TRUNC|O_WRONLY)) != -1) close(fd);
@@ -210,7 +215,7 @@ int flt_visited_execute_filter(t_cf_hash *head,t_configuration *dc,t_configurati
           key.data = buff;
           key.size = len;
 
-          Cfg.db->put(Cfg.db,NULL,&key,&data,DB_NODUPDATA|DB_NOOVERWRITE);
+          Cfg.db->put(Cfg.db,NULL,&key,&data,0);
           snprintf(buff,256,"%s.tm",Cfg.VisitedFile);
           remove(buff);
           if((fd = open(buff,O_CREAT|O_TRUNC|O_WRONLY)) != -1) close(fd);
@@ -228,7 +233,7 @@ int flt_visited_execute_filter(t_cf_hash *head,t_configuration *dc,t_configurati
 /* {{{ flt_visited_set_col */
 int flt_visited_set_col(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cf_template *begin,t_cf_template *end) {
   if(Cfg.VisitedPostingsColorF || Cfg.VisitedPostingsColorB) {
-    cf_tpl_setvalue(begin,"visitedcol",TPL_VARIABLE_STRING,"1",1);
+    cf_tpl_setvalue(begin,"visitedcol",TPL_VARIABLE_INT,1);
 
     if(Cfg.VisitedPostingsColorF && *Cfg.VisitedPostingsColorF) {
       cf_tpl_setvalue(begin,"visitedcolfg",TPL_VARIABLE_STRING,Cfg.VisitedPostingsColorF,strlen(Cfg.VisitedPostingsColorF));
@@ -265,7 +270,7 @@ int flt_visited_mark_visited(t_cf_hash *head,t_configuration *dc,t_configuration
     key.size = len;
 
     if(Cfg.mark_all_visited) {
-      if(Cfg.db->put(Cfg.db,NULL,&key,&data,DB_NODUPDATA|DB_NOOVERWRITE) == 0) {
+      if(Cfg.db->put(Cfg.db,NULL,&key,&data,0) == 0) {
         snprintf(buff,256,"%s.tm",Cfg.VisitedFile);
         remove(buff);
         if((fd = open(buff,O_CREAT|O_TRUNC|O_WRONLY)) != -1) close(fd);
@@ -274,7 +279,7 @@ int flt_visited_mark_visited(t_cf_hash *head,t_configuration *dc,t_configuration
       memset(&data,0,sizeof(data));
     }
 
-    if(Cfg.db->get(Cfg.db,NULL,&key,&data,0) == 0) cf_tpl_setvalue(&msg->tpl,"visited",TPL_VARIABLE_STRING,"1",1);
+    if(Cfg.db->get(Cfg.db,NULL,&key,&data,0) == 0) cf_tpl_setvalue(&msg->tpl,"visited",TPL_VARIABLE_INT,1);
 
     return FLT_OK;
   }
@@ -416,6 +421,9 @@ int flt_visit_handle_command(t_configfile *cf,t_conf_opt *opt,const u_char *cont
   else if(cf_strcmp(opt->name,"MarkThreadResponse204") == 0) {
     Cfg.resp_204 = cf_strcmp(args[0],"yes") == 0;
   }
+  else if(cf_strcmp(opt->name,"MarkThreadVisitedInLN") == 0) {
+    Cfg.mark_visited_in_ln = cf_strcmp(args[0],"yes") == 0;
+  }
 
   return 0;
 }
@@ -444,6 +452,7 @@ t_conf_opt flt_visited_config[] = {
   { "VisitedFile",              flt_visit_handle_command, CFG_OPT_USER|CFG_OPT_LOCAL|CFG_OPT_NEEDED, NULL },
   { "MarkOwnPostsVisited",      flt_visit_handle_command, CFG_OPT_USER|CFG_OPT_LOCAL,                NULL },
   { "MarkThreadResponse204",    flt_visit_handle_command, CFG_OPT_USER|CFG_OPT_CONFIG|CFG_OPT_LOCAL, NULL },
+  { "MarkThreadVisitedInLN",    flt_visit_handle_command, CFG_OPT_USER|CFG_OPT_LOCAL,                NULL },
   { NULL, NULL, 0, NULL }
 };
 

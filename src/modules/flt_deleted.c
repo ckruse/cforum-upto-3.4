@@ -93,7 +93,9 @@ int flt_deleted_execute(t_cf_hash *head,t_configuration *dc,t_configuration *vc,
           }
           else {
             len = snprintf(buff,256,"?a=u&dt=%llu",thread->tid);
-            cf_tpl_setvalue(&thread->messages->tpl,"undel",TPL_VARIABLE_STRING,buff,len);
+            cf_tpl_setvalue(&thread->messages->tpl,"deleted_undel_link",TPL_VARIABLE_STRING,buff,len);
+
+            for(msg=thread->messages;msg;msg=msg->next) cf_tpl_setvalue(&msg->tpl,"undel",TPL_VARIABLE_INT,1);
           }
         }
         else {
@@ -110,10 +112,12 @@ int flt_deleted_execute(t_cf_hash *head,t_configuration *dc,t_configuration *vc,
       }
     }
     else {
-      len = snprintf(buff,150,"%s?a=d&dt=%lld",url->values[0],thread->tid);
-      cf_tpl_setvalue(&msg->tpl,"dellink",TPL_VARIABLE_STRING,buff,len);
+      if(mode & CF_MODE_THREADVIEW) {
+        len = snprintf(buff,150,"%s?a=d&dt=%lld",url->values[0],thread->tid);
+        cf_tpl_setvalue(&msg->tpl,"dellink",TPL_VARIABLE_STRING,buff,len);
 
-      if(Cfg.xml_http) cf_tpl_setvalue(&msg->tpl,"DeletedUseXMLHttp",TPL_VARIABLE_INT,1);
+        if(Cfg.xml_http) cf_tpl_setvalue(&msg->tpl,"DeletedUseXMLHttp",TPL_VARIABLE_INT,1);
+      }
     }
 
     return FLT_OK;
@@ -286,13 +290,17 @@ int flt_del_init_handler(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc)
 
 /* {{{ flt_deleted_view_init_handler */
 int flt_del_view_init_handler(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cf_template *begin,t_cf_template *end) {
-  if(end && Cfg.CheckBoxes && Cfg.DeletedFile) {
-    if(head && cf_cgi_get(head,"nd") != NULL) cf_tpl_setvalue(begin,"delnodelete",TPL_VARIABLE_STRING,"1",1);
+  u_char *val;
 
-    cf_tpl_setvalue(begin,"delcheckbox",TPL_VARIABLE_INT,1);
-    cf_tpl_setvalue(end,"delcheckbox",TPL_VARIABLE_INT,1);
+  if(Cfg.DeletedFile) {
+    if(end && Cfg.CheckBoxes) {
+      cf_tpl_setvalue(begin,"delcheckbox",TPL_VARIABLE_INT,1);
+      cf_tpl_setvalue(end,"delcheckbox",TPL_VARIABLE_INT,1);
+    }
+
+    if(head && (val = cf_cgi_get(head,"a")) != NULL && cf_strcmp(val,"nd") == 0) cf_tpl_setvalue(begin,"delnodelete",TPL_VARIABLE_INT,1);
+    if(Cfg.xml_http) cf_tpl_setvalue(begin,"DeletedUseXMLHttp",TPL_VARIABLE_INT,1);
   }
-  if(Cfg.xml_http) cf_tpl_setvalue(begin,"DeletedUseXMLHttp",TPL_VARIABLE_INT,1);
 
   return FLT_DECLINE;
 }

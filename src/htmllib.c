@@ -213,7 +213,7 @@ static u_char *parse_message(t_cl_thread *thread,u_char *start,t_array *stack,t_
             else str_char_append(&strtmp,*ptr1);
           }
 
-          if(*ptr1 == ']') {
+          if(*ptr1 == ']' && strtmp.len) {
             directive = strndup(ptr+1,tmp-ptr-1);
             buff      = strtmp.content;
             parameter = htmlentities_decode(buff,NULL);
@@ -466,7 +466,7 @@ static u_char *parse_message(t_cl_thread *thread,u_char *start,t_array *stack,t_
 /* {{{ validate_message */
 int validate_message(t_array *stack,t_cl_thread *thread,const u_char *msg,u_char **pos,t_cf_tpl_variable *var) {
   const u_char *ptr,*tmp,*ptr1;
-  int rc,run = 1,sb = 0,fail,ending,retval,ret = FLT_OK;
+  int rc,run = 1,sb = 0,fail,ending,retval,ret = 1;
   u_char *directive,*parameter,*safe,*buff;
   t_string strtmp;
   t_html_stack_elem stack_elem,*stack_tmp;
@@ -599,6 +599,14 @@ int validate_message(t_array *stack,t_cl_thread *thread,const u_char *msg,u_char
               ret = FLT_ERROR;
               goto default_action;
             }
+            else if(retval == FLT_DECLINE || ret == 1) {
+              /* directive is invalid, get defined state */
+              free(directive);
+              free(parameter);
+              free(stack_elem.args);
+
+              goto default_action;
+            }
 
             /* ok, go and run directive filters */
             rc = run_validate_block_directive(directive,(const u_char **)&parameter,1,var);
@@ -668,6 +676,13 @@ int validate_message(t_array *stack,t_cl_thread *thread,const u_char *msg,u_char
               free(stack_elem.args);
               ptr = safe;
               ret = FLT_ERROR;
+
+              goto default_action;
+            }
+            else if(retval == FLT_DECLINE || retval == 1) {
+              free(directive);
+              free(stack_elem.args);
+              ptr = safe;
 
               goto default_action;
             }

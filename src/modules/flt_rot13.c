@@ -54,14 +54,14 @@ int flt_rot13_execute(t_configuration *fdc,t_configuration *fvc,t_cl_thread *thr
   int un = cf_hash_get(GlobalValues,"UserName",8) != NULL;
   t_name_value *v = cfg_get_first_value(fdc,forum_name,un ? "UPostingURL" : "PostingURL");
 
-  if(!thread) return FLT_DECLINE;
+  if(flt_rot13_decoded == 0 || !thread) {
+    if(thread) {
+      link = cf_advanced_get_link(v->values[0],thread->tid,thread->threadmsg->mid,NULL,1,&l,"rot13","decoded");
 
-  if(flt_rot13_decoded == 0) {
-    link = cf_advanced_get_link(v->values[0],thread->tid,thread->threadmsg->mid,NULL,1,&l,"rot13","decoded");
-
-    str_chars_append(bco,"<a href=\"",9);
-    str_chars_append(bco,link,l);
-    str_chars_append(bco,"\">",2);
+      str_chars_append(bco,"<a href=\"",9);
+      str_chars_append(bco,link,l);
+      str_chars_append(bco,"\">",2);
+    }
 
     for(ptr=content->content,b1=*ptr;*ptr;++ptr,b1=*ptr) {
       if(*ptr == '<') {
@@ -78,7 +78,7 @@ int flt_rot13_execute(t_configuration *fdc,t_configuration *fvc,t_cl_thread *thr
       str_char_append(bco,b1);
     }
 
-    str_chars_append(bco,"</a>",4);
+    if(thread) str_chars_append(bco,"</a>",4);
   }
   else str_str_append(bco,content);
 

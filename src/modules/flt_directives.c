@@ -125,6 +125,7 @@ int flt_directives_is_relative_uri(const u_char *tmp,size_t len) {
 }
 /* }}} */
 
+/* {{{ flt_directives_replace */
 void flt_directives_replace(t_string *content,const u_char *str,const u_char *uri,size_t ulen,const u_char *escaped,size_t eulen,const u_char *title,size_t tlen) {
   register u_char *ptr;
 
@@ -154,6 +155,7 @@ void flt_directives_replace(t_string *content,const u_char *str,const u_char *ur
     }
   }
 }
+/* }}} */
 
 /* {{{ flt_directives_generate_uri */
 void flt_directives_generate_uri(const u_char *uri,const u_char *title,t_string *content,t_string *cite,int sig,t_configuration *dc,t_configuration *vc,int icons) {
@@ -208,10 +210,15 @@ void flt_directives_generate_uri(const u_char *uri,const u_char *title,t_string 
         if((tok = array_element_at(&flt_directives_lt_toks,i)) != NULL) {
           switch(tok->type) {
             case FLT_DIRECTIVES_TOK_TITLE:
+              str_chars_append(content,"<span class=\"lnk-title\">",24);
               str_chars_append(content,title,len1);
+              str_chars_append(content,"</span>",7);
               break;
+
             case FLT_DIRECTIVES_TOK_URI:
+              str_chars_append(content,"<span class=\"lnk-uri\">",22);
               str_chars_append(content,tmp2,len);
+              str_chars_append(content,"</span>",7);
               break;
             default:
               str_chars_append(content,tok->tok,tok->type);
@@ -260,7 +267,7 @@ int flt_directives_execute(t_configuration *fdc,t_configuration *fvc,t_cl_thread
   t_string tmpstr;
   u_char *parameter = (u_char *)parameters[0];
 
-  if(!parameter) return FLT_DECLINE;
+  //if(!parameter) return FLT_DECLINE;
   while(isspace(*parameter)) ++parameter;
 
   if(*directive == 'l') {

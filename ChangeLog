@@ -1,11 +1,17 @@
 2005-04-02 Christian Kruse <ckruse@wwwtech.de>
 	* src/fo_view.c: Removed print_thread_structure()
-	* src/modules/flt_deleted.c: Added support for XMLHttpRequest() for deletion
+	* src/modules/flt_deleted.c: Added support for XMLHttpRequest() for deletion,
+		fixed #674, #672, #671
 	* src/modules/flt_openclose.c: Added folding markers
 	* src/modules/flt_admin.c: Fixed a bug; I used thread->messages-> instead of
 		msg->
 	* src/fo_feeds.c: Fixed bug #688
-	* src/htmllib.c: Fixed bug in cf_gen_threadlist()
+	* src/htmllib.c: Fixed bug in cf_gen_threadlist(), fixed #680
+	* src/modules/flt_directives.c: Fixed bug #687
+	* src/modules/flt_visited.c: Fixed bug #641
+	* src/modules/flt_rot13.c: Fixed bug #677
+	* conf/modules.de.xml: Added DeletedUseXMLHttp and MarkThreadVisitedInLN
+		directives
 
 2005-04-01 Christian Kruse <ckruse@wwwtech.de>
 	* src/fo_view.c: Now using cf_gen_threadlist()
