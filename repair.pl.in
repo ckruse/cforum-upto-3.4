@@ -1,0 +1,33 @@
+#!/usr/bin/perl
+
+
+my %vars = ();
+
+$prefix = "@prefix@";
+$exec_prefix = "@exec_prefix@";
+
+$vars{prefix} = "@prefix@";
+$vars{exec_prefix} = "@exec_prefix@";
+
+
+my $top_srcdir = "@top_srcdir@";
+
+opendir DIR,'conf' or die "$top_srcdir: $!";
+
+while(my $f = readdir DIR) {
+  next unless $f =~ /\.conf$/;
+  local $/;
+
+  open DAT,'<',"conf/$f" or die "conf/$f: $!";
+  my $cnt = <DAT>;
+  close DAT;
+
+  $cnt =~ s!\$\{(\w+?)\}!$vars{$1}?$vars{$1}:''!eg;
+
+  open DAT,'>',"conf/$f" or die "conf/$f: $!";
+  print DAT $cnt;
+  close DAT;
+}
+
+closedir DIR;
+

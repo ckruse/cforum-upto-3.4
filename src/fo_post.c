@@ -484,7 +484,7 @@ int get_message_url(const u_char *msgstr,t_name_value **v) {
 /* {{{ body_plain2coded */
 t_string *body_plain2coded(const u_char *text) {
   u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
-  u_char *body;
+  u_char *body,*safe;
   t_string *str = fo_alloc(NULL,1,sizeof(*str),FO_ALLOC_CALLOC);
   u_char *ptr,*end,*tmp,*qchars;
   t_name_value *v;
@@ -511,8 +511,11 @@ t_string *body_plain2coded(const u_char *text) {
         str_char_append(str,'\012');
 
         if(cf_strncmp(ptr+1,qchars,len) == 0) {
-          str_char_append(str,(u_char)127);
-          ptr += len - 1;
+          for(++ptr;*ptr && cf_strncmp(ptr,qchars,len) == 0;ptr+=len) {
+            str_char_append(str,(u_char)127);
+          }
+
+          --ptr;
         }
 
         break;

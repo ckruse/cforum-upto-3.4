@@ -23,6 +23,10 @@
 		scripts/fo_userconf.in, scripts/fo_xmlrpc.in: Fixed "use lib" handling
 	* scripts/Makefile.am: Added start script cforum.sh to EXTRA_DIST variable
 	* scripts/cforum.sh.in: Added start script for forum server
+	* conf/patterns/Makefile.am: Makefile for installing pattern files
+	* src/fo_post.c: Bugfix for quote chars
+	* repair.pl.in: Added script to fix config files (gets rid of this f***
+		${prefix} and ${exec_prefix})
 
 2005-02-10 Christian Seiler <self@christian-seiler.de>
 	* src/ipcutils.c: added to repository, implemented ipc_dpopen and
