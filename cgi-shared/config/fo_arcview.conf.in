@@ -33,6 +33,8 @@
 
  DateFormatList "%d. %m. %Y"
  DateFormatViewList "%d. %m. %Y, %H:%M"
+
+ CacheDir "/home/ckruse/dev/c/cforum/cgi-shared/data/cache/"
 </General>
 
 <Templates>

@@ -193,6 +193,7 @@ t_conf_opt fo_arcview_options[] = {
   { "SortMonthList",        handle_command,   &fo_arcview_conf },
   { "DateFormatList",       handle_command,   &fo_arcview_conf },
   { "DateFormatViewList",   handle_command,   &fo_arcview_conf },
+  { "CacheDir",             handle_command,   &fo_arcview_conf },
   { "</General>",           NULL,             NULL },
 
   { "<Templates>",             NULL,             NULL },

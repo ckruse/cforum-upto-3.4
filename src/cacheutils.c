@@ -32,6 +32,8 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
+#include <sys/mman.h>
+#include <fcntl.h>
 
 #include "charconvert.h"
 #include "utils.h"
@@ -44,12 +46,13 @@
  * \param uri The URI of the entry
  * \param fname The target string
  */
-void cf_cache_genname(u_char *base,u_char *uri,t_string *fname) {
+void cf_cache_genname(const u_char *base,const u_char *uri,t_string *fname) {
   str_init(fname);
   str_char_set(fname,base,strlen(base));
-  str_chars_append(fname,uri,strlen(uri));
 
-  if((fname->content+fname->len) == '/') str_chars_append(fname,"idx",3);
+  if(*(fname->content+fname->len-1) != '/') str_char_append(fname,'/');
+  str_chars_append(fname,uri,strlen(uri));
+  if(*(fname->content+fname->len-1) == '/') str_chars_append(fname,"idx",3);
 }
 /* }}} */
 
@@ -100,7 +103,7 @@ int cf_cache_outdated_date(const u_char *base,const u_char *uri,time_t date) {
  * \param path The path
  * \return -1 on error, 0 on success
  */
-int cf_cache_create_path(const u_char *path) {
+int cf_cache_create_path(u_char *path) {
   register u_char *ptr = path+1;
   int ret;
 

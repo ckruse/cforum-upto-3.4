@@ -304,6 +304,8 @@ void print_thread_structure(t_arc_thread *thr,const u_char *year,const u_char *m
   t_name_value *threadlist_tpl_cfg = cfg_get_first_value(&fo_arcview_conf,"ThreadListTemplate");
   t_name_value *per_thread_tpl_cfg = cfg_get_first_value(&fo_arcview_conf,"PerThreadTemplate");
   t_name_value *up_down_tpl_cfg    = cfg_get_first_value(&fo_arcview_conf,"UpDownTemplate");
+  t_name_value *cache  = cfg_get_first_value(&fo_arcview_conf,"CacheDir");
+  u_char *pi = getenv("PATH_INFO");
 
   t_name_value *cs = cfg_get_first_value(&fo_default_conf,"ExternCharset");
 
@@ -346,7 +348,9 @@ void print_thread_structure(t_arc_thread *thr,const u_char *year,const u_char *m
   tpl_cf_setvar(&main_tpl,"threads",threads.content,threads.len,0);
   tpl_cf_setvar(&main_tpl,"threadlist",threadlist.content,threadlist.len,0);
 
-  tpl_cf_parse(&main_tpl);
+  tpl_cf_parse_to_mem(&main_tpl);
+  cf_cache(cache->values[0],pi,main_tpl.parsed.content,main_tpl.parsed.len);
+  fwrite(main_tpl.parsed.content,1,main_tpl.parsed.len,stdout);
 
   tpl_cf_finish(&main_tpl);
   tpl_cf_finish(&threadlist_tpl);
@@ -672,13 +676,14 @@ void show_thread(const u_char *year,const u_char *month,const u_char *tid) {
   u_char *uname = cf_hash_get(GlobalValues,"UserName",8);
   int admin = uname ? (int)is_admin(uname) : 0;
   int show_invisible = cf_hash_get(GlobalValues,"ShowInvisible",13) != NULL;
+  t_name_value *cache  = cfg_get_first_value(&fo_arcview_conf,"CacheDir");
+  t_cache_entry *ent;
+  u_char *pi = getenv("PATH_INFO");
 
   GdomeException e;
   GdomeDocument *doc;
   GdomeDOMImplementation *impl;
 
-  /* no further headers (at the moment) */
-  fwrite("\015\012",1,2,stdout);
 
   memset(&thr,0,sizeof(thr));
 
@@ -695,28 +700,39 @@ void show_thread(const u_char *year,const u_char *month,const u_char *tid) {
   str_chars_append(&path,".xml",4);
 
   if(stat(path.content,&st) == -1) {
+    printf("Status: 404 Not Found\015\012\015\012");
     str_error_message("E_ARCHIVE_THREADNOTPRESENT",NULL,26);
     return;
   }
 
-  impl = gdome_di_mkref();
-  if((doc = gdome_di_createDocFromURI(impl,path.content,GDOME_LOAD_PARSING,&e)) == NULL) {
-    str_error_message("E_ARCHIVE_THREADNOTPRESENT",NULL,26);
+  if(cf_cache_outdated(cache->values[0],pi,path.content) == -1 || (ent = cf_get_cache(cache->values[0],pi)) == NULL) {
+    impl = gdome_di_mkref();
+    if((doc = gdome_di_createDocFromURI(impl,path.content,GDOME_LOAD_PARSING,&e)) == NULL) {
+      printf("Status: 404 Not Found\015\012\015\012");
+      str_error_message("E_ARCHIVE_THREADNOTPRESENT",NULL,26);
+      gdome_di_unref(impl,&e);
+      return;
+    }
+
+    /* no further headers (at the moment) */
+    fwrite("\015\012",1,2,stdout);
+
+    thr.tid = strtoull(*tid == 't' ? tid+1 : tid,NULL,10);
+    create_thread_structure(doc,&thr);
+
+    gdome_doc_unref(doc,&e);
     gdome_di_unref(impl,&e);
-    return;
-  }
 
-  thr.tid = strtoull(*tid == 't' ? tid+1 : tid,NULL,10);
-  create_thread_structure(doc,&thr);
-
-  gdome_doc_unref(doc,&e);
-  gdome_di_unref(impl,&e);
-
-  if(thr.msgs->invisible == 0 || (admin == 1 && show_invisible == 1)) {
-    print_thread_structure(&thr,year,month,admin,show_invisible);
+    if(thr.msgs->invisible == 0 || (admin == 1 && show_invisible == 1)) {
+      print_thread_structure(&thr,year,month,admin,show_invisible);
+    }
+    else {
+      str_error_message("E_FO_404",NULL,8);
+    }
   }
   else {
-    str_error_message("E_FO_404",NULL,8);
+    fwrite(ent->ptr,1,ent->size,stdout);
+    cf_cache_destroy(ent);
   }
 }
 /* }}} */
@@ -732,9 +748,11 @@ void show_month_content(const u_char *year,const u_char *month) {
   t_name_value *cs     = cfg_get_first_value(&fo_default_conf,"ExternCharset");
   t_name_value *m_tp   = cfg_get_first_value(&fo_arcview_conf,"MonthsTemplate");
   t_name_value *tl_tp  = cfg_get_first_value(&fo_arcview_conf,"ThreadListMonthTemplate");
+  t_name_value *cache  = cfg_get_first_value(&fo_arcview_conf,"CacheDir");
+  t_cache_entry *ent;
   t_string path;
   struct stat st;
-  u_char *ptr,*file,*tmp1,*tmp2;
+  u_char *ptr,*file,*tmp1,*tmp2,*pi = getenv("PATH_INFO");
   int fd;
   u_int64_t tid;
   time_t date;
@@ -742,10 +760,6 @@ void show_month_content(const u_char *year,const u_char *month) {
 
   t_cf_template m_tpl,tl_tpl;
   u_char mt_name[256],tl_name[256],buff[256];
-
-  /* no additional headers */
-  fwrite("\015\012",1,2,stdout);
-
 
   /* generate path to index file */
   str_init(&path);
@@ -758,96 +772,107 @@ void show_month_content(const u_char *year,const u_char *month) {
   str_chars_append(&path,"/index.xml",10);
 
   if(stat(path.content,&st) == -1) {
+    printf("Status: 404 Not Found\015\012\015\012");
     perror("stat");
     str_error_message("E_ARCHIVE_MONTHNOTPRESENT",NULL,25);
     return;
   }
 
+  /* no additional headers */
+  fwrite("\015\012",1,2,stdout);
 
-  /* get templates */
-  generate_tpl_name(mt_name,256,m_tp);
-  generate_tpl_name(tl_name,256,tl_tp);
+  if(cf_cache_outdated(cache->values[0],pi,path.content) == -1 || (ent = cf_get_cache(cache->values[0],pi)) == NULL) {
+    /* get templates */
+    generate_tpl_name(mt_name,256,m_tp);
+    generate_tpl_name(tl_name,256,tl_tp);
 
-  if(tpl_cf_init(&m_tpl,mt_name) != 0 || tpl_cf_init(&tl_tpl,tl_name) != 0) {
-    str_error_message("E_CONFIG_ERR",NULL,12);
-    return;
-  }
-
-
-  /* open file for mmap */
-  if((fd = open(path.content,O_RDONLY)) == -1) {
-    perror("open");
-    str_error_message("E_ARCHIVE_MONTHNOTPRESENT",NULL,25);
-    return;
-  }
-
-  if((caddr_t)(file = ptr = mmap(0,st.st_size,PROT_READ,MAP_FILE|MAP_SHARED,fd,0)) == (caddr_t)-1) {
-    perror("mmap");
-    str_error_message("E_ARCHIVE_MONTHNOTPRESENT",NULL,25);
-    return;
-  }
-
-  for(;ptr < file + st.st_size;ptr++) {
-    if(!(ptr = get_next_token(ptr,file,st.st_size,"<Thread",7))) break;
-    tid = get_id(ptr,file,st.st_size);
-    len = snprintf(buff,256,"%llu",tid);
-    cf_set_variable(&tl_tpl,cs,"link",buff,len,1);
-
-    if(!(ptr = get_next_token(ptr,file,st.st_size,"<Message",8))) break;
-
-    /* we need: date, category, tid, subject, author */
-    for(++ptr;ptr < file + st.st_size;ptr++) {
-      if(*ptr == '<') {
-        if(cf_strncmp(ptr,"<Name>",6) == 0) {
-          tmp2 = get_next_token(ptr,file,st.st_size,"</Name>",7);
-          tmp1 = strndup(ptr+6,tmp2-ptr-6);
-          cf_set_variable(&tl_tpl,cs,"author",tmp1,tmp2-ptr-6,0);
-          free(tmp1);
-        }
-        else if(cf_strncmp(ptr,"<Category",9) == 0) {
-          if(cf_strncmp(ptr,"<Category/>",11) == 0) {
-            tpl_cf_freevar(&tl_tpl,"cat");
-          }
-          else {
-            tmp2 = get_next_token(ptr,file,st.st_size,"</Category>",11);
-            tmp1 = strndup(ptr+10,tmp2-ptr-10);
-            cf_set_variable(&tl_tpl,cs,"cat",tmp1,tmp2-ptr-10,1);
-            free(tmp1);
-          }
-        }
-        else if(cf_strncmp(ptr,"<Subject>",9) == 0) {
-          tmp2 = get_next_token(ptr,file,st.st_size,"</Subject>",10);
-          tmp1 = strndup(ptr+9,tmp2-ptr-9);
-          cf_set_variable(&tl_tpl,cs,"subject",tmp1,tmp2-ptr-9,0);
-          free(tmp1);
-        }
-        else if(cf_strncmp(ptr,"<Date",5) == 0) {
-          ptr += 15;
-          date = strtol(ptr,NULL,10);
-          tmp1 = get_time(&fo_arcview_conf,"DateFormatList",&len,&date);
-          cf_set_variable(&tl_tpl,cs,"date",tmp1,len,1);
-          free(tmp1);
-        }
-        /* baba, finished */
-        else if(cf_strncmp(ptr,"<Message",8) == 0 || cf_strncmp(ptr,"</Message>",10) == 0) break;
-      }
+    if(tpl_cf_init(&m_tpl,mt_name) != 0 || tpl_cf_init(&tl_tpl,tl_name) != 0) {
+      str_error_message("E_CONFIG_ERR",NULL,12);
+      return;
     }
 
-    tpl_cf_parse_to_mem(&tl_tpl);
+    /* open file for mmap */
+    if((fd = open(path.content,O_RDONLY)) == -1) {
+      perror("open");
+      str_error_message("E_ARCHIVE_MONTHNOTPRESENT",NULL,25);
+      return;
+    }
+
+    if((caddr_t)(file = ptr = mmap(0,st.st_size,PROT_READ,MAP_FILE|MAP_SHARED,fd,0)) == (caddr_t)-1) {
+      perror("mmap");
+      str_error_message("E_ARCHIVE_MONTHNOTPRESENT",NULL,25);
+      return;
+    }
+
+    for(;ptr < file + st.st_size;ptr++) {
+      if(!(ptr = get_next_token(ptr,file,st.st_size,"<Thread",7))) break;
+      tid = get_id(ptr,file,st.st_size);
+      len = snprintf(buff,256,"%llu",tid);
+      cf_set_variable(&tl_tpl,cs,"link",buff,len,1);
+
+      if(!(ptr = get_next_token(ptr,file,st.st_size,"<Message",8))) break;
+
+      /* we need: date, category, tid, subject, author */
+      for(++ptr;ptr < file + st.st_size;ptr++) {
+        if(*ptr == '<') {
+          if(cf_strncmp(ptr,"<Name>",6) == 0) {
+            tmp2 = get_next_token(ptr,file,st.st_size,"</Name>",7);
+            tmp1 = strndup(ptr+6,tmp2-ptr-6);
+            cf_set_variable(&tl_tpl,cs,"author",tmp1,tmp2-ptr-6,0);
+            free(tmp1);
+          }
+          else if(cf_strncmp(ptr,"<Category",9) == 0) {
+            if(cf_strncmp(ptr,"<Category/>",11) == 0) {
+              tpl_cf_freevar(&tl_tpl,"cat");
+            }
+            else {
+              tmp2 = get_next_token(ptr,file,st.st_size,"</Category>",11);
+              tmp1 = strndup(ptr+10,tmp2-ptr-10);
+              cf_set_variable(&tl_tpl,cs,"cat",tmp1,tmp2-ptr-10,1);
+              free(tmp1);
+            }
+          }
+          else if(cf_strncmp(ptr,"<Subject>",9) == 0) {
+            tmp2 = get_next_token(ptr,file,st.st_size,"</Subject>",10);
+            tmp1 = strndup(ptr+9,tmp2-ptr-9);
+            cf_set_variable(&tl_tpl,cs,"subject",tmp1,tmp2-ptr-9,0);
+            free(tmp1);
+          }
+          else if(cf_strncmp(ptr,"<Date",5) == 0) {
+            ptr += 15;
+            date = strtol(ptr,NULL,10);
+            tmp1 = get_time(&fo_arcview_conf,"DateFormatList",&len,&date);
+            cf_set_variable(&tl_tpl,cs,"date",tmp1,len,1);
+            free(tmp1);
+          }
+          /* baba, finished */
+          else if(cf_strncmp(ptr,"<Message",8) == 0 || cf_strncmp(ptr,"</Message>",10) == 0) break;
+        }
+      }
+
+      tpl_cf_parse_to_mem(&tl_tpl);
+    }
+
+    munmap(file,st.st_size);
+
+    len = get_month_name(atoi(month),&tmp1);
+    tpl_cf_setvar(&m_tpl,"month",tmp1,len,1);
+    cf_set_variable(&m_tpl,cs,"year",year,strlen(year),1);
+
+    tpl_cf_setvar(&m_tpl,"charset",cs->values[0],strlen(cs->values[0]),0);
+    tpl_cf_setvar(&m_tpl,"threads",tl_tpl.parsed.content,tl_tpl.parsed.len,0);
+
+    tpl_cf_parse_to_mem(&m_tpl);
+    cf_cache(cache->values[0],pi,m_tpl.parsed.content,m_tpl.parsed.len);
+    fwrite(m_tpl.parsed.content,1,m_tpl.parsed.len,stdout);
+
+    tpl_cf_finish(&tl_tpl);
+    tpl_cf_finish(&m_tpl);
   }
-
-  munmap(file,st.st_size);
-
-  len = get_month_name(atoi(month),&tmp1);
-  tpl_cf_setvar(&m_tpl,"month",tmp1,len,1);
-  cf_set_variable(&m_tpl,cs,"year",year,strlen(year),1);
-
-  tpl_cf_setvar(&m_tpl,"charset",cs->values[0],strlen(cs->values[0]),0);
-  tpl_cf_setvar(&m_tpl,"threads",tl_tpl.parsed.content,tl_tpl.parsed.len,0);
-  tpl_cf_parse(&m_tpl);
-
-  tpl_cf_finish(&tl_tpl);
-  tpl_cf_finish(&m_tpl);
+  else {
+    fwrite(ent->ptr,1,ent->size,stdout);
+    cf_cache_destroy(ent);
+  }
 }
 /* }}} */
 
