@@ -194,18 +194,23 @@ int cf_push_server(int sockfd,struct sockaddr *addr,int size,t_worker handler) {
  * This function inserts a client into the client queque
  */
 int cf_push_client(int connfd,t_worker handler) {
-  int status;
+  int status,
+      percentage;
 
   /*
    * lock the queque
    */
   CF_LM(&head.clients.lock);
 
+  /* get usage percentage */
+  percentage = (100 * (head.clients.clientnum + 1)) / head.clients.workers;
+
   /*
-   * check if there are enough workers; we say, there have to be 3 clients per worker
-   * but not more than MAX_WORKERS_NUM workers
+   * check if there are enough workers; the percentage of
+   * usage when to create new workers is defined in
+   * fo_server.h
    */
-  while(head.clients.workers <= 0 || (head.clients.clientnum / head.clients.workers >= 3 && head.clients.workers <= MAX_WORKERS_NUM)) {
+  while(head.clients.workers == 0 || (percentage >= CREATE_WORKERS_NUM && head.clients.workers <= MAX_WORKERS_NUM)) {
     /* create workers if there are not enough */
     if((status = pthread_create(&head.workers[head.clients.workers],NULL,cf_worker,NULL)) != 0) {
       cf_log(LOG_ERR,__FILE__,__LINE__,"pthread_create: %s\n",strerror(status));
@@ -214,11 +219,11 @@ int cf_push_client(int connfd,t_worker handler) {
     }
 
     cf_log(LOG_STD,__FILE__,__LINE__,"created worker %d now!\n",++head.clients.workers);
+    percentage = (100 * (head.clients.clientnum + 1)) / head.clients.workers;
   }
 
-
   /* is there very high traffic? */
-  if(head.clients.clientnum > MAX_CLIENT_NUM) {
+  if(percentage > MAX_CLIENT_NUM) {
     CF_UM(&head.clients.lock);
 
     cf_log(LOG_STD,__FILE__,__LINE__,"handling request directly...\n");
@@ -256,7 +261,7 @@ int cf_push_client(int connfd,t_worker handler) {
     CF_LM(&head.clients.lock);
 
     /* check for priority settings */
-    if(head.clients.clientnum > CLIENT_PRIORITY_NUM) {
+    if(percentage > CLIENT_PRIORITY_NUM) {
       CF_UM(&head.clients.lock);
 
       cf_log(LOG_STD,__FILE__,__LINE__,"yielding server thread...\n");

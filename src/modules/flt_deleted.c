@@ -50,9 +50,11 @@ struct {
   int CheckBoxes;
   DB *db;
   int DoDelete;
-} Cfg = { NULL, 0, 0, 0, 0, NULL, 0, NULL, 1 };
+  int resp_204;
+} Cfg = { NULL, 0, 0, 0, 0, NULL, 0, NULL, 1, 0 };
 
-int execute_filter(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cl_thread *thread,int mode) {
+/* {{{ flt_deleted_execute */
+int flt_deleted_execute(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cl_thread *thread,int mode) {
   t_name_value *url;
   u_char *UserName = cf_hash_get(GlobalValues,"UserName",8);
   DBT key,data;
@@ -102,8 +104,10 @@ int execute_filter(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cl_
 
   return FLT_DECLINE;
 }
+/* }}} */
 
-int posting_list_filter(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_message *msg,u_int64_t tid,int mode) {
+/* {{{ flt_deleted_pl_filter */
+int flt_deleted_pl_filter(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_message *msg,u_int64_t tid,int mode) {
   long i;
 
   if(Cfg.BLlen) {
@@ -140,11 +144,13 @@ int posting_list_filter(t_cf_hash *head,t_configuration *dc,t_configuration *vc,
 
   return FLT_OK;
 }
+/* }}} */
 
+/* {{{ flt_deleted_del_thread */
 #ifndef CF_SHARED_MEM
-int delete_thread(t_cf_hash *head,t_configuration *dc,t_configuration *vc,int sock) {
+int flt_deleted_del_thread(t_cf_hash *head,t_configuration *dc,t_configuration *vc,int sock) {
 #else
-int delete_thread(t_cf_hash *head,t_configuration *dc,t_configuration *vc,void *sock) {
+int flt_deleted_del_thread(t_cf_hash *head,t_configuration *dc,t_configuration *vc,void *sock) {
 #endif
   u_char *c_tid,*qs,*a;
   u_int64_t tid;
@@ -192,6 +198,11 @@ int delete_thread(t_cf_hash *head,t_configuration *dc,t_configuration *vc,void *
 
             cf_hash_entry_delete(head,"t",1);
             cf_hash_entry_delete(head,"a",1);
+
+            if(Cfg.resp_204) {
+              printf("Status: 204 No Content\015\012\015\012");
+              return FLT_EXIT;
+            }
           }
         }
         else if(cf_strcmp(a,"nd") == 0) {
@@ -223,7 +234,9 @@ int delete_thread(t_cf_hash *head,t_configuration *dc,t_configuration *vc,void *
 
   return FLT_DECLINE;
 }
+/* }}} */
 
+/* {{{ flt_del_init_handler */
 int flt_del_init_handler(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc) {
   int ret;
 
@@ -243,10 +256,12 @@ int flt_del_init_handler(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc)
 
   return FLT_DECLINE;
 }
+/* }}} */
 
+/* {{{ flt_del_view_init_handler */
 int flt_del_view_init_handler(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cf_template *begin,t_cf_template *end) {
   if(end && Cfg.CheckBoxes && Cfg.DeletedFile) {
-    if(cf_cgi_get(head,"nd") != NULL) tpl_cf_setvar(begin,"delnodelete","1",1,0);
+    if(head && cf_cgi_get(head,"nd") != NULL) tpl_cf_setvar(begin,"delnodelete","1",1,0);
 
     tpl_cf_setvar(begin,"delcheckbox","1",1,0);
     tpl_cf_setvar(end,"delcheckbox","1",1,0);
@@ -254,7 +269,9 @@ int flt_del_view_init_handler(t_cf_hash *head,t_configuration *dc,t_configuratio
 
   return FLT_DECLINE;
 }
+/* }}} */
 
+/* {{{ flt_del_handle_command */
 int flt_del_handle_command(t_configfile *cf,t_conf_opt *opt,u_char **args,int argnum) {
   long i;
 
@@ -284,10 +301,15 @@ int flt_del_handle_command(t_configfile *cf,t_conf_opt *opt,u_char **args,int ar
   else if(cf_strcmp(opt->name,"DeletedUseCheckboxes") == 0) {
     Cfg.CheckBoxes = cf_strcmp(args[0],"yes") == 0;
   }
+  else if(cf_strcmp(opt->name,"DelThreadResponse204") == 0) {
+    Cfg.resp_204 = cf_strcmp(args[0],"yes") == 0;
+  }
 
   return 0;
 }
+/* }}} */
 
+/* {{{ flt_del_cleanup */
 void flt_del_cleanup(void) {
   long i;
   if(Cfg.BLlen) {
@@ -301,7 +323,9 @@ void flt_del_cleanup(void) {
 
   if(Cfg.db) Cfg.db->close(Cfg.db,0);
 }
+/* }}} */
 
+/* {{{ flt_deleted_validate */
 #ifndef CF_SHARED_MEM
 int flt_deleted_validate(t_cf_hash *head,t_configuration *dc,t_configuration *vc,time_t last_modified,int sock) {
 #else
@@ -323,7 +347,9 @@ int flt_deleted_validate(t_cf_hash *head,t_configuration *dc,t_configuration *vc
 
   return FLT_OK;
 }
+/* }}} */
 
+/* {{{ flt_deleted_lm */
 #ifndef CF_SHARED_MEM
 time_t flt_deleted_lm(t_cf_hash *head,t_configuration *dc,t_configuration *vc,int sock) {
 #else
@@ -341,7 +367,9 @@ time_t flt_deleted_lm(t_cf_hash *head,t_configuration *dc,t_configuration *vc,vo
 
   return -1;
 }
+/* }}} */
 
+/* {{{ module config */
 t_conf_opt config[] = {
   { "BlackList",               flt_del_handle_command, CFG_OPT_CONFIG|CFG_OPT_USER, NULL },
   { "ShowBlacklistFollowups",  flt_del_handle_command, CFG_OPT_CONFIG|CFG_OPT_USER, NULL },
@@ -349,15 +377,16 @@ t_conf_opt config[] = {
   { "ShowUntil",               flt_del_handle_command, CFG_OPT_CONFIG|CFG_OPT_USER, NULL },
   { "DeletedFile",             flt_del_handle_command, CFG_OPT_USER|CFG_OPT_NEEDED, NULL },
   { "DeletedUseCheckboxes",    flt_del_handle_command, CFG_OPT_CONFIG|CFG_OPT_USER, NULL },
+  { "DelThreadResponse204",    flt_del_handle_command, CFG_OPT_CONFIG|CFG_OPT_USER, NULL },
   { NULL, NULL, 0, NULL }
 };
 
 t_handler_config handlers[] = {
   { VIEW_INIT_HANDLER,    flt_del_view_init_handler },
   { INIT_HANDLER,         flt_del_init_handler      },
-  { CONNECT_INIT_HANDLER, delete_thread             },
-  { VIEW_HANDLER,         execute_filter            },
-  { VIEW_LIST_HANDLER,    posting_list_filter       },
+  { CONNECT_INIT_HANDLER, flt_deleted_del_thread    },
+  { VIEW_HANDLER,         flt_deleted_execute       },
+  { VIEW_LIST_HANDLER,    flt_deleted_pl_filter     },
   { 0, NULL }
 };
 
@@ -369,5 +398,6 @@ t_module_config flt_deleted = {
   NULL,
   flt_del_cleanup
 };
+/*  }}} */
 
 /* eof */

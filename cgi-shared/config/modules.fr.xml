@@ -233,7 +233,7 @@
         </argument>
       </directive>
 
-      <directive name="DeletedUseCheckbox" arguments="1">
+      <directive name="DeletedUseCheckboxes" arguments="1">
         <argument paramname="deletedusecheckbox" type="radio" encode="plain">
           <validate>^(?:yes|no)$</validate>
           <question>Est-ce que des cases à cocher (checkbox) doivent être utilisées pour masquer l'affichage de discussions?</question>

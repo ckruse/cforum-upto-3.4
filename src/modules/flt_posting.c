@@ -354,7 +354,7 @@ int flt_posting_directives(t_configuration *fdc,t_configuration *fvc,const u_cha
         str_chars_append(content,parameter,len);
         str_chars_append(content,"</a>",4);
 
-        if(cite) {
+        if(cite && sig == 0) {
           str_chars_append(cite,"[link:",6);
           str_chars_append(cite,parameter,len);
           str_char_append(cite,']');
@@ -392,7 +392,7 @@ int flt_posting_directives(t_configuration *fdc,t_configuration *fvc,const u_cha
           else str_chars_append(content,"\">",2);
         }
 
-        if(cite) {
+        if(cite && sig == 0) {
           str_chars_append(cite,"[image:",7);
           str_chars_append(cite,parameter,len);
           str_char_append(cite,']');
@@ -436,7 +436,7 @@ int flt_posting_directives(t_configuration *fdc,t_configuration *fvc,const u_cha
           str_chars_append(content,"</a></iframe>",13);
         }
 
-        if(cite) {
+        if(cite && sig == 0) {
           str_chars_append(cite,"[iframe:",8);
           str_chars_append(cite,parameter,len);
           str_char_append(cite,']');

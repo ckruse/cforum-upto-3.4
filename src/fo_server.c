@@ -264,17 +264,23 @@ int create_shm_sem(t_name_value *shm) {
  * \return It returns EXIT_SUCCESS on success and EXIT_FAILURE on failure.
  */
 int main(int argc,char *argv[]) {
-  int sockfd,size,status,connfd,ret = 0,i;
+  int i,
+      size,
+      sockfd,
+      status,
+      connfd,
+      ret = 0;
+
   u_char *fname;
   t_array *fnames;
   struct sockaddr_un *addr = fo_alloc(NULL,1,sizeof(struct sockaddr_un),FO_ALLOC_CALLOC);
-  t_configfile default_conf,server_conf;
+  t_configfile default_conf,
+               server_conf;
   pthread_t thr;
   t_name_value *pidfile;
   fd_set rfds;
   struct timeval timeout;
   pthread_attr_t attr;
-
   size_t hi;
   t_handler_config *handler;
   t_server_init_filter fkt;
@@ -616,8 +622,7 @@ int main(int argc,char *argv[]) {
   #ifdef CF_SHARED_MEM
   cf_log(LOG_STD,__FILE__,__LINE__,"destroying shared memory and semaphores...\n");
 
-  if(head.shm_sem >= 0)
-    if(semctl(head.shm_sem,0,IPC_RMID,NULL) == -1) cf_log(LOG_ERR,__FILE__,__LINE__,"semctl: %s\n",strerror(errno));
+  if(head.shm_sem >= 0) if(semctl(head.shm_sem,0,IPC_RMID,NULL) == -1) cf_log(LOG_ERR,__FILE__,__LINE__,"semctl: %s\n",strerror(errno));
 
   for(i=0;i<2;i++) {
     if(head.shm_ids[i] >= 0) {

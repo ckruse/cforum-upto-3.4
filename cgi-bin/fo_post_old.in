@@ -35,8 +35,8 @@ use CGI::Carp qw/fatalsToBrowser/;
 
 use CForum::Template;
 use CForum::Clientlib;
+use CForum::Validator;
 
-use CheckRFC;
 use ForumUtils qw(
   read_configuration
   generate_unid
@@ -194,9 +194,9 @@ sub check_input {
     }
   }
 
-  return get_error($dcfg,'image','invalid') if $cgi->param('ImageUrl') && $cgi->param('ImageUrl') ne 'http://' && !is_URL($cgi->param('ImageUrl'));
-  return get_error($dcfg,'homepage','invalid') if $cgi->param('HomepageUrl') && $cgi->param('HomepageUrl') ne 'http://' && !is_URL($cgi->param('HomepageUrl'));
-  return get_error($dcfg,'email','invalid') if $cgi->param('EMail') && !is_email($cgi->param('EMail'));
+  return get_error($dcfg,'image','invalid') if $cgi->param('ImageUrl') && $cgi->param('ImageUrl') ne 'http://' && !is_valid_http_link($cgi->param('ImageUrl'),CForum::Validator::VALIDATE_STRICT);
+  return get_error($dcfg,'homepage','invalid') if $cgi->param('HomepageUrl') && $cgi->param('HomepageUrl') ne 'http://' && is_valid_http_link($cgi->param('HomepageUrl'));
+  return get_error($dcfg,'email','invalid') if $cgi->param('EMail') && is_valid_mailaddress($cgi->param('EMail'));
 
   return 0;
 }
@@ -398,12 +398,7 @@ if($cgi->param) {
         $txt = $cgi->param('newbody');
       }
       else {
-        $txt = $clientlib->charset_convert_entities(
-          $cgi->param('newbody'),
-          length($cgi->param('newbody')),
-          "UTF-8",
-          $fo_default_conf->{ExternCharset}->[0]->[0]
-        );
+        $txt = $clientlib->htmlentities_charset_convert($cgi->param('newbody'),"UTF-8", $fo_default_conf->{ExternCharset}->[0]->[0],0);
       }
 
       $tpl->setVar(body => message_field($txt,$cgi->param('qchar'),$fo_default_conf));

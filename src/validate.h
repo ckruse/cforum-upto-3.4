@@ -46,7 +46,7 @@ int is_valid_http_link(const u_char *link,int strict);
 /**
  * Validation function for a mail address
  * \param addr The mail address
- * \¶eturn 0 if the address is valid, -1 if it isn't
+ * \return 0 if the address is valid, -1 if it isn't
  */
 int is_valid_mailaddress(const u_char *addr);
 

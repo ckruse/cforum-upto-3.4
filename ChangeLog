@@ -1,3 +1,44 @@
+2004-09-13 Christian Kruse <ckruse@wwwtech.de>
+	* configure.in: Added src/perl/CForum-Validator/Makefile.PL in AC_OUTPUT()
+	* src/cf_pthread.c: Added configparser.h and readline.h for inclusion
+	* src/fo_server.h: Added some defines for heavy load handling
+	* src/fo_post.c: Deleted comma in str_error_message() call
+	* src/defines.h: Added new thread handler
+	* src/modules/flt_cftp.c: Added two handlers (NEW_THREAD_HANDLER and
+		NEW_POST_HANDLER), improved the filter (locking bug, all variables are now
+		defined in function header. So there is no need to create a new stack in
+		if() statement)
+	* src/modules/flt_deleted.c: Renamed some function names, added 204 response
+	* src/modules/flt_visited.c: Renamed some function names, added 204 response
+	* src/modules/flt_posting.c: Corrected some bugs in cite handling
+	* src/modules/Makefile.am: Added flt_safe.c
+	* src/modules/flt_safe.c: Added fo_server plugin for fail safe. It writes all
+		new threads and postings to a file on disk in a binary format
+	* src/validate.c: corrected some bugs in validation
+	* src/htmllib.c: corrected some bugs in HTML creation
+	* src/serverlib.c: Changed heavy load behavior
+	* src/validate.h: Changed ¶ to r (spelling misstake)
+	* src/serverlib.h: Added two new function pointer types
+	* src/perl/CForum-Validator/Validator.xs: Changed second parameter of
+		is_valid_http_link() to the default value of false
+	* src/fo_arcview.c: Fixed bug, now setting {$year}
+	* src/fo_server.c: Some format corrections
+	* cgi-shared/Plugins/PostingAssistant.pm, cgi-shared/ForumUtils.pm: Changed to
+		new behavior of HTML creation, changed to CForum::Validator
+	* cgi-shared/config/fo_usermanagement.conf.in: Fixed masquerading bugs
+	* cgi-shared/config/modules.de.xml: Added OwnJSFile directive, fixed spelling
+		misstake
+	* cgi-shared/config/Makefile.am: Added errormessages.{de,fr}.txt
+	* cgi-shared/config/modules.fr.xml: Fixed spelling misstake
+	* cgi-bin/fo_usermanagement.in: Changed to CForum::Validate
+	* cgi-bin/fo_post_old.in: Changed to CForum::Validate, fixed bug in entity
+		masquerading
+	* cgi-bin/fo_userconf.in: Changed to CForum::Validate
+
+2004-08-15 Christian Kruse <ckruse@wwwtech.de>
+	* src/perl/CForum-Validator/: Added a perl interface to the URL validation
+		functions of the Classic Forum
+
 2004-08-13 Christian Kruse <ckruse@wwwtech.de>
 	* CREATED 2.1 BRANCH
 

@@ -40,12 +40,29 @@
 /* }}} */
 
 int flt_cftp_handler(int sockfd,const u_char **tokens,int tnum,rline_t *tsd) {
-  t_name_value *sort_t_v = cfg_get_first_value(&fo_server_conf,"SortThreads");
-  t_name_value *sort_m_v = cfg_get_first_value(&fo_server_conf,"SortMessages");
+  t_name_value *sort_t_v = cfg_get_first_value(&fo_server_conf,"SortThreads"),
+               *sort_m_v = cfg_get_first_value(&fo_server_conf,"SortMessages");
+  int sort_m = atoi(sort_m_v->values[0]),
+      sort_t = atoi(sort_t_v->values[0]),
+      ret;
+  size_t i,
+         l,
+         len,
+         err,
+         one = 1;
+  t_handler_config *handler;
+  u_int64_t tid,
+            mid;
+  t_thread *t,
+           *t1;
+  t_posting *p,
+            *p1;
+  t_string str;
+  u_char buff[512];
+  t_srv_new_post_filter pfkt;
+  t_srv_new_thread_filter tfkt;
 
-  int sort_m = atoi(sort_m_v->values[0]);
-  int sort_t = atoi(sort_t_v->values[0]);
-
+  /* {{{ get */
   if(cf_strcmp(tokens[0],"GET") == 0) {
     if(tnum >= 2) {
       cf_log(LOG_DBG,__FILE__,__LINE__,"%s %s\n",tokens[0],tokens[1]);
@@ -74,8 +91,8 @@ int flt_cftp_handler(int sockfd,const u_char **tokens,int tnum,rline_t *tsd) {
           writen(sockfd,"500 Syntax error\n",17);
         }
         else {
-          u_int64_t tid = strtoull(tokens[2]+1,NULL,10);
-          u_int64_t mid = strtoull(tokens[3]+1,NULL,10);
+          tid = strtoull(tokens[2]+1,NULL,10),
+          mid = strtoull(tokens[3]+1,NULL,10);
 
           cf_send_posting(sockfd,tid,mid,tnum == 5 && cf_strcmp(tokens[4],"invisible=1") == 0);
         }
@@ -84,9 +101,6 @@ int flt_cftp_handler(int sockfd,const u_char **tokens,int tnum,rline_t *tsd) {
 
       /* {{{ GET LASTMODIFIED */
       else if(cf_strcmp(tokens[1],"LASTMODIFIED") == 0) {
-        u_char buff[50];
-        int l;
-
         CF_RW_RD(&head.lock);
 
         if(tnum == 3 && *tokens[2] == '1') {
@@ -104,12 +118,6 @@ int flt_cftp_handler(int sockfd,const u_char **tokens,int tnum,rline_t *tsd) {
 
       /* {{{ GET MIDLIST */
       else if(cf_strcmp(tokens[1],"MIDLIST") == 0) {
-        t_string str;
-        t_thread *t,*t1;
-        t_posting *p;
-        char buff[256];
-        size_t len;
-
         str_init(&str);
         str_chars_append(&str,"200 List Follows\n",17);
 
@@ -141,12 +149,14 @@ int flt_cftp_handler(int sockfd,const u_char **tokens,int tnum,rline_t *tsd) {
       }
     }
   }
+  /* }}} */
+  /* {{{ stat */
   else if(cf_strcmp(tokens[0],"STAT") == 0) {
     if(tnum != 4) return FLT_DECLINE;
 
     /* {{{ STAT THREAD */
     if(cf_strcmp(tokens[1],"THREAD") == 0) {
-      u_int64_t tid = strtoull(tokens[2]+1,NULL,10);
+      tid = strtoull(tokens[2]+1,NULL,10);
 
       if(cf_get_thread(tid)) {
         writen(sockfd,"200 Exists\n",11);
@@ -159,9 +169,6 @@ int flt_cftp_handler(int sockfd,const u_char **tokens,int tnum,rline_t *tsd) {
 
     /* {{{ STAT POST */
     else if(cf_strcmp(tokens[1],"POST") == 0) {
-      u_int64_t tid,mid;
-      t_thread *t;
-
       tid = strtoull(tokens[2]+1,NULL,10);
       mid = strtoull(tokens[3]+1,NULL,10);
 
@@ -178,17 +185,14 @@ int flt_cftp_handler(int sockfd,const u_char **tokens,int tnum,rline_t *tsd) {
     }
 
   }
+  /* }}} */
+  /* {{{ post */
   else if(cf_strcmp(tokens[0],"POST") == 0) {
     if(tnum < 2) return FLT_DECLINE;
 
     /* {{{ POST ANSWER */
     if(cf_strcmp(tokens[1],"ANSWER") == 0) {
-      t_posting *p = fo_alloc(NULL,1,sizeof(t_posting),FO_ALLOC_CALLOC),*p1;
-      t_thread *t;
-      u_int64_t tid,mid;
-      int err = 0,one = 1;
-      u_char buff[512];
-      size_t len;
+      p = fo_alloc(NULL,1,sizeof(t_posting),FO_ALLOC_CALLOC);
 
       if(tnum != 4) {
         writen(sockfd,"500 Sorry\n",10);
@@ -255,6 +259,14 @@ int flt_cftp_handler(int sockfd,const u_char **tokens,int tnum,rline_t *tsd) {
                 len = snprintf(buff,512,"200 Ok\nTid: %llu\nMid: %llu\n",t->tid,p->mid);
                 writen(sockfd,buff,len);
 
+                if(Modules[NEW_POST_HANDLER].elements) {
+                  for(i=0;i<Modules[NEW_POST_HANDLER].elements;i++) {
+                    handler = array_element_at(&Modules[NEW_POST_HANDLER],i);
+                    pfkt    = (t_srv_new_post_filter)handler->func;
+                    ret     = pfkt(&fo_default_conf,&fo_server_conf,t->tid,p);
+                  }
+                }
+
                 CF_RW_UN(&t->lock);
                 cf_generate_cache(NULL);
               }
@@ -294,11 +306,8 @@ int flt_cftp_handler(int sockfd,const u_char **tokens,int tnum,rline_t *tsd) {
 
     /* {{{ POST THREAD */
     else if(cf_strcmp(tokens[1],"THREAD") == 0) {
-      t_posting *p = fo_alloc(NULL,1,sizeof(t_posting),FO_ALLOC_CALLOC);
-      t_thread  *t = fo_alloc(NULL,1,sizeof(t_thread),FO_ALLOC_CALLOC),*t1;
-      int err = 0,one = 1;
-      u_char buff[512];
-      size_t len;
+      p = fo_alloc(NULL,1,sizeof(t_posting),FO_ALLOC_CALLOC);
+      t = fo_alloc(NULL,1,sizeof(t_thread),FO_ALLOC_CALLOC);
 
       if(cf_read_posting(p,sockfd,tsd)) {
         CF_RW_RD(&head.lock);
@@ -327,12 +336,11 @@ int flt_cftp_handler(int sockfd,const u_char **tokens,int tnum,rline_t *tsd) {
         }
 
         if(err == 0) {
-          u_char buff[50];
-
           CF_RW_WR(&head.lock);
 
           snprintf(buff,50,"t%lld",head.tid+1);
           cf_rwlock_init(buff,&t->lock);
+          CF_RW_WR(&t->lock);
 
           t->postings  = p;
           t->last      = p;
@@ -367,7 +375,16 @@ int flt_cftp_handler(int sockfd,const u_char **tokens,int tnum,rline_t *tsd) {
 
           CF_RW_UN(&head.lock);
 
+          if(Modules[NEW_THREAD_HANDLER].elements) {
+            for(i=0;i<Modules[NEW_THREAD_HANDLER].elements;i++) {
+              handler = array_element_at(&Modules[NEW_THREAD_HANDLER],i);
+              tfkt    = (t_srv_new_thread_filter)handler->func;
+              ret     = tfkt(&fo_default_conf,&fo_server_conf,t);
+            }
+          }
+
           cf_register_thread(t);
+          CF_RW_UN(&t->lock);
 
           len = snprintf(buff,512,"200 Ok\nTid: %llu\nMid: %llu\n",t->tid,p->mid);
           writen(sockfd,buff,len);
@@ -406,6 +423,7 @@ int flt_cftp_handler(int sockfd,const u_char **tokens,int tnum,rline_t *tsd) {
     }
     /* }}} */
   }
+  /* }}} */
   else if(cf_strcmp(tokens[0],"PING") == 0) {
     writen(sockfd,"200 PONG!\n",10);
   }

@@ -94,7 +94,7 @@ bool is_valid_mailto_link(url)
     }
     XSRETURN_YES;
 
-bool is_valid_http_link(url,strict)
+bool is_valid_http_link(url,strict=FALSE)
     const u_char *url
     bool strict
   CODE:

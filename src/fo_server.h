@@ -93,10 +93,11 @@ typedef struct s_client {
   struct s_client *next; /**< A pointer to the next element in the queque */
 } t_client;
 
-#define INITIAL_WORKERS_NUM 40 /**< The number of initial workers */
-#define MAX_WORKERS_NUM     45 /**< The number of maximum workers */
-#define CLIENT_PRIORITY_NUM 43 /**< The number of clients when to change the priority settings */
-#define MAX_CLIENT_NUM      45 /**< The number of clients when to handle a request directly, not by the queque. */
+#define INITIAL_WORKERS_NUM 40  /**< The number of initial workers */
+#define MAX_WORKERS_NUM     80  /**< The number of maximum workers */
+#define CREATE_WORKERS_NUM  90  /**< The percentage of usage when to create a new worker */
+#define CLIENT_PRIORITY_NUM 110 /**< The percentage of usage when to change the priority settings */
+#define MAX_CLIENT_NUM      115 /**< The percentage of usage when to handle a request directly, not by the queque. */
 
 /** This struct is used to manage a client queque */
 typedef struct s_client_queque {

@@ -1073,6 +1073,7 @@ void show_year_content(const u_char *year) {
   tpl_cf_setvar(&mt_tpl,"charset",cs->values[0],strlen(cs->values[0]),0);
   tpl_cf_setvar(&mt_tpl,"months",mlt_tpl.parsed.content,mlt_tpl.parsed.len,0);
   tpl_cf_setvar(&mt_tpl,"forumbase",forumpath->values[0],strlen(forumpath->values[0]),1);
+  tpl_cf_setvar(&mt_tpl,"year",year,strlen(year),0);
 
   tpl_cf_parse(&mt_tpl);
 
@@ -1345,10 +1346,12 @@ int main(int argc,char *argv[],char *env[]) {
     }
   }
 
-  for(i=0;i<pieces;i++) {
-    free(path_infos[i]);
+  if(pieces) {
+    for(i=0;i<pieces;i++) {
+      free(path_infos[i]);
+    }
+    free(path_infos);
   }
-  free(path_infos);
 
   array_destroy(cfgfiles);
   free(cfgfiles);

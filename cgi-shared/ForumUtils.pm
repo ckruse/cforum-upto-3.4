@@ -49,8 +49,7 @@ use HTML::Entities;
 
 use CForum::Template;
 use CForum::Clientlib;
-
-use CheckRFC;
+use CForum::Validator;
 
 use POSIX qw/setlocale strftime LC_ALL/;
 
@@ -183,63 +182,18 @@ sub transform_body {
   # first we transform all newlines to \n
   $txt =~ s/\015\012|\015|\012/\n/g;
 
-  # after that, we collect all links to postings...
-  foreach(@{$pcfg->{PostingUrl}}) {
-    $txt =~ s{\[link:\s*$_->[0]([\dtm=&]+)(?:#\w+)?\]}{my $tidpid = $1; $tidpid =~ s!&!;!; '[pref:'.$tidpid.']'}eg;
-  }
-
-  # now transform all links...
-  my @links = ();
-  push @links,[$1, $2] while $txt =~ /\[([Ll][Ii][Nn][Kk]):\s*([^\]\s]+)\s*\]/g;
-  @links = grep {
-    is_URL($_->[1] => qw(http ftp news nntp telnet gopher mailto))
-      or is_URL(($_->[1] =~ /^[Vv][Ii][Ee][Ww]-[Ss][Oo][Uu][Rr][Cc][Ee]:(.+)/)[0] || '' => 'http')
-      or ($_->[1] =~ m<^(?:\.?\.?/(?!/)|\?)> and is_URL(rel_uri($_ -> [1],$base) => 'http'))
-    } @links;
-
-  # lets collect all images
-  my @images = ();
-  push @images, [$1, $2] while $txt =~ /\[([Ii][Mm][Aa][Gg][Ee]):\s*([^\]\s]+)\s*\]/g;
-  @images = grep {
-    is_URL($_->[1] => 'strict_http')
-      or ($_->[1] =~ m<^(?:\.?\.?/(?!/)|\?)> and is_URL(rel_uri($_->[1], $base) => 'http'))
-  } @images;
-
-  # lets collect all iframes
-  my @iframes;
-  push @iframes,[$1, $2] while $txt =~ /\[([Ii][Ff][Rr][Aa][Mm][Ee]):\s*([^\]\s]+)\s*\]/g;
-  @iframes = grep {
-    is_URL($_ -> [1] => 'http')
-    or ($_ -> [1] =~ m<^(?:\.?\.?/(?!/)|\?)> and is_URL (rel_uri($_ -> [1], $base) => 'http'))
-  } @iframes;
-
   # encode to html
   $txt = recode($dcfg,$txt);
 
   # now transform...
 
-  # ... links
-  $txt =~ s!$_!<a href="$1">$1</a>!g for map {
-    '\[[Ll][Ii][Nn][Kk]:\s*('.quotemeta(recode($dcfg,$_->[1])).')\]'
-  } @links;
-
-  # ... images
-  $txt =~ s!$_!<img src="$1" border="0" alt="">!g for map {
-    '\[[Ii][Mm][Aa][Gg][Ee]:\s*('.quotemeta(recode($dcfg,$_->[1])).')\]'
-  } @images;
-
-  # ... iframes
-  $txt =~ s!$_!<iframe src="$1" width="90%" height="90%"><a href="$1">$1</a></iframe>! for map {
-    '\[[Ii][Ff][Rr][Aa][Mm][Ee]:\s*('.quotemeta(recode($dcfg,$_->[1])).')\]'
-  } @iframes;
-
   # ... messages
   foreach(@{$pcfg->{Image}}) {
     my ($name,$url,$alt) = (quotemeta $_->[0],recode($dcfg,$_->[1]),recode($dcfg,$_->[2]));
-    $txt =~ s!\[[mM][sS][gG]:\s*$name\]!<img src="$url" alt="$alt">!g;
+    $txt =~ s!\[[mM][sS][gG]:\s*$name\]![image:$url]!g;
   }
 
-  # now transform all quoting characters to \177
+  # ... all quoting characters to \177
   my $len = length $qchars;
   $txt =~ s!^((?:\Q$qchars\E)+)!"\177" x (length($1)/$len)!gem if $len;
 
@@ -256,7 +210,7 @@ sub transform_body {
   $txt =~ s!\n!<br />!g;
 
   # transform more than one space to &nbsp; (ascii art, etc)
-  $txt =~ s/(\s\s+)/('&nbsp;' x (length($1)-1)) . ' '/eg;
+  $txt =~ s/(\s\s+)/'&nbsp;' x length($1)/eg;
 
   # spaces after a <br /> have to be &nbsp;
   $txt =~ s!(?:^|(<br(?:\s*/)?>))\s!($1?$1:'').'&nbsp;'!eg;
@@ -354,6 +308,44 @@ sub message_field {
       '<a href="'.$txt.'">'.$txt.'</a>';
     }eg;
   }
+
+  my @links = ();
+  push @links,[$1, $2] while $txt =~ /\[([Ll][Ii][Nn][Kk]):\s*([^\]\s]+)\s*\]/g;
+  @links = grep {
+    is_valid_url($_->[1])
+      or is_valid_http_url(($_->[1] =~ /^[Vv][Ii][Ee][Ww]-[Ss][Oo][Uu][Rr][Cc][Ee]:(.+)/)[0],CForum::Validator::VALIDATE_STRICT)
+      or ($_->[1] =~ m<^(?:\.?\.?/(?!/)|\?)> and is_valid_http_url(rel_uri($_ -> [1],$base)))
+  } @links;
+
+  my @images = ();
+  push @images, [$1, $2] while $txt =~ /\[([Ii][Mm][Aa][Gg][Ee]):\s*([^\]\s]+)\s*\]/g;
+  @images = grep {
+    is_valid_http_url($_->[1],CForum::Validator::VALIDATE_STRICT)
+      or ($_->[1] =~ m<^(?:\.?\.?/(?!/)|\?)> and is_valid_http_url(rel_uri($_->[1], $base),CForum::Validator::VALIDATE_STRICT)) #/
+  } @images;
+
+  my @iframes;
+  push @iframes,[$1, $2] while $txt =~ /\[([Ii][Ff][Rr][Aa][Mm][Ee]):\s*([^\]\s]+)\s*\]/g;
+  @iframes = grep {
+    is_valid_http_url($_->[1],CForum::Validator::VALIDATE_STRICT)
+    or ($_ -> [1] =~ m<^(?:\.?\.?/(?!/)|\?)> and is_valid_http_url(rel_uri($_->[1], $base),CForum::Validator::VALIDATE_STRICT)) #/
+  } @iframes;
+
+  # Ok, we collected the links, lets transform them
+  # ... links
+  $txt =~ s!$_!<a href="$1">$1</a>!g for map {
+    '\[[Ll][Ii][Nn][Kk]:\s*('.quotemeta(recode($dcfg,$_->[1])).')\]'
+  } @links;
+
+  # ... images
+  $txt =~ s!$_!<img src="$1" border="0" alt="">!g for map {
+    '\[[Ii][Mm][Aa][Gg][Ee]:\s*('.quotemeta(recode($dcfg,$_->[1])).')\]'
+  } @images;
+
+  # ... iframes
+  $txt =~ s!$_!<iframe src="$1" width="90%" height="90%"><a href="$1">$1</a></iframe>! for map {
+    '\[[Ii][Ff][Rr][Aa][Mm][Ee]:\s*('.quotemeta(recode($dcfg,$_->[1])).')\]'
+  } @iframes;
 
   # return
   #
