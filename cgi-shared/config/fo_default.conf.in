@@ -9,7 +9,7 @@
 # $LastChangedBy$
 #
 
-Forum "FORUM1" {
+Forum FORUM1 {
  TemplateMode "html4"
  XHTMLMode "no"
 
@@ -26,6 +26,8 @@ Forum "FORUM1" {
  PostingURL "?t=%t&m=%m"
  UBaseURL "/my/"
  UPostingURL "/my/?t=%t&m=%m"
+
+ VoteURL "/cgi-bin/user/fo_vote"
 
  ArchivePostingURL "/archiv/t/%t/m/%m/"
  ArchiveURL "/archiv/"

@@ -9,6 +9,11 @@
 	* src/fo_recovery.c: Removed xml_handling.h
 	* src/fo_server.c: Fixed several bugs, added validation of the Forums
 		directive
+	* cgi-shared/config/fo_default.conf.in: Fixed bug in Forum context directive,
+		added VoteURL directive
+	* cgi-shared/config/fo_server.conf.in: Moved several directives to global
+		context
+
 
 2004-11-24 Christian Kruse <ckruse@wwwtech.de>
 	* *: Merged 2.1 differences back to the trunk
