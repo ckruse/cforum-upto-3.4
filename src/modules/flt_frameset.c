@@ -64,14 +64,14 @@ int flt_frameset_execute_filter(t_cf_hash *head,t_configuration *dc,t_configurat
   if(!head) {
     cf_gen_tpl_name(buff,256,TplFrameset);
 
-    if(tpl_cf_init(&tpl,buff) == 0) {
+    if(cf_tpl_init(&tpl,buff) == 0) {
       printf("Content-Type: text/html; charset=%s\n\n",cs->values[0]);
 
-      tpl_cf_setvar(&tpl,"script",x->values[0],strlen(x->values[0]),0);
-      tpl_cf_setvar(&tpl,"charset",cs->values[0],strlen(cs->values[0]),0);
-      tpl_cf_parse(&tpl);
+      cf_tpl_setvalue(&tpl,"script",TPL_VARIABLE_STRING,x->values[0],strlen(x->values[0]));
+      cf_tpl_setvalue(&tpl,"charset",TPL_VARIABLE_STRING,cs->values[0],strlen(cs->values[0]));
+      cf_tpl_parse(&tpl);
 
-      tpl_cf_finish(&tpl);
+      cf_tpl_finish(&tpl);
       return FLT_EXIT;
     }
     else {
@@ -88,11 +88,11 @@ int flt_frameset_execute_filter(t_cf_hash *head,t_configuration *dc,t_configurat
         cf_gen_tpl_name(buff,256,TplBlank);
 
         printf("Content-Type: text/html; charset=%s\n\n",cs->values[0]);
-        if(tpl_cf_init(&tpl,buff) == 0) {
-          tpl_cf_setvar(&tpl,"charset",cs->values[0],strlen(cs->values[0]),0);
+        if(cf_tpl_init(&tpl,buff) == 0) {
+          cf_tpl_setvalue(&tpl,"charset",TPL_VARIABLE_STRING,cs->values[0],strlen(cs->values[0]));
 
-          tpl_cf_parse(&tpl);
-          tpl_cf_finish(&tpl);
+          cf_tpl_parse(&tpl);
+          cf_tpl_finish(&tpl);
         }
         else printf("Sorry! Could not find template file!\n");
 
@@ -112,10 +112,10 @@ int flt_frameset_execute_filter(t_cf_hash *head,t_configuration *dc,t_configurat
 
 int flt_frameset_set_cf_variables(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cf_template *top,t_cf_template *end) {
   if(ShallFrameset) {
-    tpl_cf_setvar(top,"target","view",4,0);
-    tpl_cf_setvar(top,"frame","1",1,0);
+    cf_tpl_setvalue(top,"target",TPL_VARIABLE_STRING,"view",4);
+    cf_tpl_setvalue(top,"frame",TPL_VARIABLE_STRING,"1",1);
 
-    tpl_cf_setvar(end,"target","view",4,0);
+    cf_tpl_setvalue(end,"target",TPL_VARIABLE_STRING,"view",4);
 
     return FLT_OK;
   }
@@ -125,7 +125,7 @@ int flt_frameset_set_cf_variables(t_cf_hash *head,t_configuration *dc,t_configur
 
 int flt_frameset_set_posting_vars(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cl_thread *thr,t_cf_template *tpl) {
   if(ShallFrameset) {
-    tpl_cf_setvar(tpl,"frame","1",1,0);
+    cf_tpl_setvalue(tpl,"frame",TPL_VARIABLE_STRING,"1",1);
     return FLT_OK;
   }
 
@@ -134,8 +134,8 @@ int flt_frameset_set_posting_vars(t_cf_hash *head,t_configuration *dc,t_configur
 
 int flt_frameset_set_list_vars(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_message *msg,u_int64_t tid,int mode) {
   if(ShallFrameset) {
-    tpl_cf_setvar(&msg->tpl,"frameset","1",1,0);
-    if(mode == 0) tpl_cf_setvar(&msg->tpl,"target","view",4,0);
+    cf_tpl_setvalue(&msg->tpl,"frameset",TPL_VARIABLE_STRING,"1",1);
+    if(mode & CF_MODE_THREADLIST) cf_tpl_setvalue(&msg->tpl,"target",TPL_VARIABLE_STRING,"view",4);
     return FLT_OK;
   }
 

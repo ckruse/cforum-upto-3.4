@@ -94,8 +94,8 @@ int cf_get_next_thread_through_sock(int sock,rline_t *tsd,t_cl_thread *thr,const
         thr->tid                = str_to_u_int64(line+8);
 
         if(tplname) {
-          tpl_cf_init(&thr->last->tpl,tplname);
-          tpl_cf_setvar(&thr->last->tpl,"start","1",1,0);
+          cf_tpl_init(&thr->last->tpl,tplname);
+          cf_tpl_setvalue(&thr->last->tpl,"start",TPL_VARIABLE_STRING,"1",1);
         }
       }
       else if(cf_strncmp(line,"MSG m",5) == 0) {
@@ -116,7 +116,7 @@ int cf_get_next_thread_through_sock(int sock,rline_t *tsd,t_cl_thread *thr,const
 
         thr->msg_len++;
 
-        if(tplname) tpl_cf_init(&thr->last->tpl,tplname);
+        if(tplname) cf_tpl_init(&thr->last->tpl,tplname);
       }
       else if(cf_strncmp(line,"Flag:",5) == 0) {
         chtmp = strstr(line+5,"=");
@@ -217,7 +217,7 @@ void *cf_get_next_thread_through_shm(void *shm_ptr,t_cl_thread *thr,const u_char
     }
 
     if(!thr->newest) thr->newest = thr->last;
-    if(tplname) tpl_cf_init(&thr->last->tpl,tplname);
+    if(tplname) cf_tpl_init(&thr->last->tpl,tplname);
 
     /* {{{ message id */
     thr->last->mid = *((u_int64_t *)ptr);
@@ -352,13 +352,13 @@ void *cf_get_next_thread_through_shm(void *shm_ptr,t_cl_thread *thr,const u_char
 
   if(tplname) {
     if(thr->messages) {
-      tpl_cf_setvar(&thr->messages->tpl,"start","1",1,0);
+      cf_tpl_setvalue(&thr->messages->tpl,"start",TPL_VARIABLE_STRING,"1",1);
 
       len = snprintf(buff,128,"%d",thr->msg_len);
-      tpl_cf_setvar(&thr->messages->tpl,"msgnum",buff,len,0);
+      cf_tpl_setvalue(&thr->messages->tpl,"msgnum",TPL_VARIABLE_STRING,buff,len);
 
       len = snprintf(buff,128,"%d",thr->msg_len-1);
-      tpl_cf_setvar(&thr->messages->tpl,"answers",buff,len,0);
+      cf_tpl_setvalue(&thr->messages->tpl,"answers",TPL_VARIABLE_STRING,buff,len);
     }
   }
 

@@ -112,7 +112,7 @@ void send_ok_output(t_cf_hash *head,t_name_value *cs) {
   mid   = str_to_u_int64(cmid);
   link  = cf_get_link(NULL,forum_name,tid,mid);
 
-  if(tpl_cf_init(&tpl,tpl_name) != 0) {
+  if(cf_tpl_init(&tpl,tpl_name) != 0) {
     printf("500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
     cf_error_message("E_TPL_NOT_FOUND",NULL);
     return;
@@ -128,8 +128,8 @@ void send_ok_output(t_cf_hash *head,t_name_value *cs) {
   free(link);
 
   printf("Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
-  tpl_cf_parse(&tpl);
-  tpl_cf_finish(&tpl);
+  cf_tpl_parse(&tpl);
+  cf_tpl_finish(&tpl);
 }
 /* }}} */
 

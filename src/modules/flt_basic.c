@@ -65,11 +65,11 @@ int flt_basic_execute(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_
   if(UserName) {
     ucfg = cfg_get_first_value(dc,forum_name,"UserConfig");
 
-    tpl_cf_setvar(begin,"authed","1",1,0);
+    cf_tpl_setvalue(begin,"authed",TPL_VARIABLE_STRING,"1",1);
     cf_set_variable(begin,cs,"userconfig",ucfg->values[0],strlen(ucfg->values[0]),1);
 
     if((Cfg.FontColor && *Cfg.FontColor) || (Cfg.FontSize && *Cfg.FontSize) || (Cfg.FontFamily && *Cfg.FontFamily)) {
-      tpl_cf_setvar(begin,"font","1",1,0);
+      cf_tpl_setvalue(begin,"font",TPL_VARIABLE_STRING,"1",1);
 
       if(Cfg.FontColor && *Cfg.FontColor) {
         cf_set_variable(begin,cs,"fontcolor",Cfg.FontColor,strlen(Cfg.FontColor),1);
@@ -112,7 +112,7 @@ int flt_basic_handle_posting(t_cf_hash *head,t_configuration *dc,t_configuration
 
   if(UserName) {
     if((Cfg.FontColor && *Cfg.FontColor) || (Cfg.FontSize && *Cfg.FontSize) || (Cfg.FontFamily && *Cfg.FontFamily) || (Cfg.QuoteColorF && *Cfg.QuoteColorF) || (Cfg.QuoteColorB && *Cfg.QuoteColorB)) {
-      tpl_cf_setvar(tpl,"font","1",1,0);
+      cf_tpl_setvalue(tpl,"font",TPL_VARIABLE_STRING,"1",1);
 
       if(Cfg.FontColor && *Cfg.FontColor)     cf_set_variable(tpl,cs,"fontcolor",Cfg.FontColor,strlen(Cfg.FontColor),1);
       if(Cfg.FontSize && *Cfg.FontSize)       cf_set_variable(tpl,cs,"fontsize",Cfg.FontSize,strlen(Cfg.FontSize),1);

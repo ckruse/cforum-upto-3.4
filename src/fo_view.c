@@ -103,14 +103,14 @@ void print_thread_structure(t_cl_thread *thread,t_cf_hash *head) {
 
       if(msg->next && cf_msg_has_answers(msg)) { /* this message has at least one answer */
         printf("<li>");
-        tpl_cf_parse(&msg->tpl);
+        cf_tpl_parse(&msg->tpl);
         printf("<ul>");
 
         ++level;
       }
       else {
         printf("<li>");
-        tpl_cf_parse(&msg->tpl);
+        cf_tpl_parse(&msg->tpl);
         printf("</li>");
       }
     }
@@ -173,7 +173,7 @@ void show_posting(t_cf_hash *head,void *shm_ptr,u_int64_t tid,u_int64_t mid)
   cf_gen_tpl_name(fo_thread_tplname,256,fo_thread_tpl->values[0]);
   cf_gen_tpl_name(fo_posting_tplname,256,fo_posting_tpl->values[0]);
 
-  if(tpl_cf_init(&tpl,fo_posting_tplname) != 0) {
+  if(cf_tpl_init(&tpl,fo_posting_tplname) != 0) {
     cf_error_message("E_TPL_NOT_FOUND",NULL);
     return;
   }
@@ -199,7 +199,7 @@ void show_posting(t_cf_hash *head,void *shm_ptr,u_int64_t tid,u_int64_t mid)
   /* }}} */
 
   /* {{{ set standard variables */
-  tpl_cf_setvar(&tpl,"charset",cs->values[0],strlen(cs->values[0]),0);
+  cf_tpl_setvalue(&tpl,"charset",TPL_VARIABLE_STRING,cs->values[0],strlen(cs->values[0]));
 
   UserName = cf_hash_get(GlobalValues,"UserName",8);
   if(UserName) fbase = cfg_get_first_value(&fo_default_conf,forum_name,"UBaseURL");
@@ -214,16 +214,16 @@ void show_posting(t_cf_hash *head,void *shm_ptr,u_int64_t tid,u_int64_t mid)
   if(imgurl && *imgurl->values[0]) cf_set_variable(&tpl,cs,"aimg",imgurl->values[0],strlen(imgurl->values[0]),1);
 
   len = snprintf(buff,128,"%d",thread.msg_len);
-  tpl_cf_setvar(&thread.messages->tpl,"msgnum",buff,len,0);
+  cf_tpl_setvalue(&thread.messages->tpl,"msgnum",TPL_VARIABLE_STRING,buff,len);
 
   len = snprintf(buff,128,"%d",thread.msg_len-1);
-  tpl_cf_setvar(&thread.messages->tpl,"answers",buff,len,0);
+  cf_tpl_setvalue(&thread.messages->tpl,"answers",TPL_VARIABLE_STRING,buff,len);
   /* }}} */
 
   printf("Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
 
-  if(cf_run_posting_handlers(head,&thread,&tpl,&fo_view_conf) != FLT_EXIT) tpl_cf_parse(&tpl);
-  tpl_cf_finish(&tpl);
+  if(cf_run_posting_handlers(head,&thread,&tpl,&fo_view_conf) != FLT_EXIT) cf_tpl_parse(&tpl);
+  cf_tpl_finish(&tpl);
 
   cf_cleanup_thread(&thread);
 }
@@ -351,7 +351,7 @@ void show_threadlist(void *shm_ptr,t_cf_hash *head)
     /* {{{ more initialization */
     fbase    = cfg_get_first_value(&fo_default_conf,forum_name,UserName ? "UBaseURL" : "BaseURL");
 
-    if(tpl_cf_init(&tpl_begin,fo_begin_tplname) != 0) {
+    if(cf_tpl_init(&tpl_begin,fo_begin_tplname) != 0) {
       printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
 
       cf_error_message("E_TPL_NOT_FOUND",NULL);
@@ -359,7 +359,7 @@ void show_threadlist(void *shm_ptr,t_cf_hash *head)
     }
     cf_set_variable(&tpl_begin,cs,"forumbase",fbase->values[0],strlen(fbase->values[0]),1);
 
-    if(tpl_cf_init(&tpl_end,fo_end_tplname) != 0) {
+    if(cf_tpl_init(&tpl_end,fo_end_tplname) != 0) {
       printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
 
       cf_error_message("E_TPL_NOT_FOUND",NULL);
@@ -367,7 +367,7 @@ void show_threadlist(void *shm_ptr,t_cf_hash *head)
     }
 
     cf_set_variable(&tpl_end,cs,"forumbase",fbase->values[0],strlen(fbase->values[0]),1);
-    tpl_cf_setvar(&tpl_begin,"charset",cs->values[0],strlen(cs->values[0]),0);
+    cf_tpl_setvalue(&tpl_begin,"charset",TPL_VARIABLE_STRING,cs->values[0],strlen(cs->values[0]));
     /* }}} */
 
     /* run some plugins */
@@ -392,8 +392,8 @@ void show_threadlist(void *shm_ptr,t_cf_hash *head)
     /* ok, seems to be all right, send headers */
     printf("Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
 
-    tpl_cf_parse(&tpl_begin);
-    tpl_cf_finish(&tpl_begin);
+    cf_tpl_parse(&tpl_begin);
+    cf_tpl_finish(&tpl_begin);
 
     #ifdef CF_NO_SORTING
 
@@ -405,13 +405,13 @@ void show_threadlist(void *shm_ptr,t_cf_hash *head)
     {
       if(thread.messages) {
         if((thread.messages->invisible == 0 && thread.messages->may_show) || del == CF_KEEP_DELETED) {
-          tpl_cf_setvar(&thread.messages->tpl,"start","1",1,0);
+          cf_tpl_setvalue(&thread.messages->tpl,"start",TPL_VARIABLE_STRING,"1",2);
 
           len = snprintf(buff,128,"%d",thread.msg_len);
-          tpl_cf_setvar(&thread.messages->tpl,"msgnum",buff,len,0);
+          cf_tpl_setvalue(&thread.messages->tpl,"msgnum",TPL_VARIABLE_STRING,buff,len);
 
           len = snprintf(buff,128,"%d",thread.msg_len-1);
-          tpl_cf_setvar(&thread.messages->tpl,"answers",buff,len,0);
+          cf_tpl_setvalue(&thread.messages->tpl,"answers",TPL_VARIABLE_STRING,buff,len);
 
           /* first: run VIEW_HANDLER handlers in pre-mode */
           ret = cf_run_view_handlers(&thread,head,CF_MODE_THREADLIST|CF_MODE_PRE);
@@ -457,13 +457,13 @@ void show_threadlist(void *shm_ptr,t_cf_hash *head)
         threadp = array_element_at(&threads,i);
 
         if((threadp->messages->invisible == 0 && threadp->messages->may_show) || del == CF_KEEP_DELETED) {
-          tpl_cf_setvar(&threadp->messages->tpl,"start","1",1,0);
+          cf_tpl_setvalue(&threadp->messages->tpl,"start",TPL_VARIABLE_STRING,"1",1);
 
           len = snprintf(buff,128,"%d",threadp->msg_len);
-          tpl_cf_setvar(&threadp->messages->tpl,"msgnum",buff,len,0);
+          cf_tpl_setvalue(&threadp->messages->tpl,"msgnum",TPL_VARIABLE_STRING,buff,len);
 
           len = snprintf(buff,128,"%d",thread.msg_len-1);
-          tpl_cf_setvar(&threadp->messages->tpl,"answers",buff,len,0);
+          cf_tpl_setvalue(&threadp->messages->tpl,"answers",TPL_VARIABLE_STRING,buff,len);
 
           /* first: run VIEW_HANDLER handlers in pre-mode */
           ret = cf_run_view_handlers(threadp,head,CF_MODE_THREADLIST|CF_MODE_PRE);
@@ -497,8 +497,8 @@ void show_threadlist(void *shm_ptr,t_cf_hash *head)
     }
     #endif
 
-    tpl_cf_parse(&tpl_end);
-    tpl_cf_finish(&tpl_end);
+    cf_tpl_parse(&tpl_end);
+    cf_tpl_finish(&tpl_end);
   }
 }
 /* }}} */

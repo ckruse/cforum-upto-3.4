@@ -238,16 +238,16 @@ void cf_set_variable(t_cf_template *tpl,t_name_value *cs,u_char *vname,const u_c
       else tmp = charset_convert_entities(val,len,"UTF-8",cs->values[0],&len1);
 
       /* This should only happen if we use charset_convert() -- and we should not use it. */
-      if(!tmp) tpl_cf_setvar(tpl,vname,val,len,html);
+      if(!tmp) cf_tpl_setvalue(tpl,vname,TPL_VARIABLE_STRING,val,len);
       else {
-        tpl_cf_setvar(tpl,vname,tmp,len1,html);
+        cf_tpl_setvalue(tpl,vname,TPL_VARIABLE_STRING,tmp,len1);
         free(tmp);
       }
     }
     /* ExternCharset is also UTF-8 */
-    else tpl_cf_setvar(tpl,vname,val,len,html);
+    else cf_tpl_setvalue(tpl,vname,TPL_VARIABLE_STRING,val,len);
   }
-  else tpl_cf_setvar(tpl,vname,val,len,html);
+  else cf_tpl_setvalue(tpl,vname,TPL_VARIABLE_STRING,val,len);
 }
 /* }}} */
 
@@ -279,7 +279,7 @@ void cf_error_message(const u_char *err,FILE *out, ...) {
 
   if(v && db && lang) {
     cf_gen_tpl_name(tplname,256,v->values[0]);
-    tpl_cf_init(&tpl,tplname);
+    cf_tpl_init(&tpl,tplname);
     cf_set_variable(&tpl,cs,"forumbase",vs->values[0],strlen(vs->values[0]),1);
 
     if(tpl.tpl) {
@@ -347,14 +347,14 @@ void cf_error_message(const u_char *err,FILE *out, ...) {
         str_cleanup(&msg);
 
         if(out) {
-          tpl_cf_parse_to_mem(&tpl);
+          cf_tpl_parse_to_mem(&tpl);
           fwrite(tpl.parsed.content,1,tpl.parsed.len,out);
         }
         else {
-          tpl_cf_parse(&tpl);
+          cf_tpl_parse(&tpl);
         }
 
-        tpl_cf_finish(&tpl);
+        cf_tpl_finish(&tpl);
       }
       else printf("Sorry, internal error, cannot do anything. Perhaps you should kick your system administrator.\n");
     }

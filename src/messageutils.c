@@ -156,7 +156,7 @@ void cf_cleanup_message(t_message *msg) {
   if(msg->hp.len) str_cleanup(&msg->hp);
   if(msg->img.len) str_cleanup(&msg->img);
 
-  if(msg->tpl.tpl) tpl_cf_finish(&msg->tpl);
+  if(msg->tpl.tpl) cf_tpl_finish(&msg->tpl);
 
   if(msg->flags.elements) cf_list_destroy(&msg->flags,cf_destroy_flag);
 }

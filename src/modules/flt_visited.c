@@ -221,13 +221,13 @@ int flt_visited_execute_filter(t_cf_hash *head,t_configuration *dc,t_configurati
 /* {{{ flt_visited_set_col */
 int flt_visited_set_col(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cf_template *begin,t_cf_template *end) {
   if(Cfg.VisitedPostingsColorF || Cfg.VisitedPostingsColorB) {
-    tpl_cf_setvar(begin,"visitedcol","1",1,0);
+    cf_tpl_setvalue(begin,"visitedcol",TPL_VARIABLE_STRING,"1",1);
 
     if(Cfg.VisitedPostingsColorF && *Cfg.VisitedPostingsColorF) {
-      tpl_cf_setvar(begin,"visitedcolfg",Cfg.VisitedPostingsColorF,strlen(Cfg.VisitedPostingsColorF),0);
+      cf_tpl_setvalue(begin,"visitedcolfg",TPL_VARIABLE_STRING,Cfg.VisitedPostingsColorF,strlen(Cfg.VisitedPostingsColorF));
     }
     if(Cfg.VisitedPostingsColorB && *Cfg.VisitedPostingsColorB) {
-      tpl_cf_setvar(begin,"visitedcolbg",Cfg.VisitedPostingsColorB,strlen(Cfg.VisitedPostingsColorB),0);
+      cf_tpl_setvalue(begin,"visitedcolbg",TPL_VARIABLE_STRING,Cfg.VisitedPostingsColorB,strlen(Cfg.VisitedPostingsColorB));
     }
   }
 
@@ -268,7 +268,7 @@ int flt_visited_mark_visited(t_cf_hash *head,t_configuration *dc,t_configuration
     }
 
     if(Cfg.db->get(Cfg.db,NULL,&key,&data,0) == 0) {
-      tpl_cf_setvar(&msg->tpl,"visited","1",1,0);
+      cf_tpl_setvalue(&msg->tpl,"visited",TPL_VARIABLE_STRING,"1",1);
     }
 
     return FLT_OK;
@@ -373,7 +373,7 @@ int flt_visited_set_link(t_cf_hash *head,t_configuration *dc,t_configuration *vc
 
   if(Cfg.VisitedFile && Cfg.HighlightVisitedPostings) {
     len = snprintf(buff,512,"%s?mv=%llu",x->values[0],thr->tid);
-    tpl_cf_setvar(&msg->tpl,"mvlink",buff,len,1);
+    cf_tpl_setvalue(&msg->tpl,"mvlink",TPL_VARIABLE_STRING,buff,len);
   }
 
   return FLT_OK;

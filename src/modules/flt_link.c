@@ -124,25 +124,25 @@ int flt_link_set_links_post(t_cf_hash *head,t_configuration *dc,t_configuration 
   /* ok, we have to find the previous message */
   if((msg = flt_link_get_previous(thread->threadmsg)) != NULL) {
     flt_link_getlink(&str,thread->tid,msg->mid,aaf,aafval,forum_name);
-    tpl_cf_setvar(tpl,"prev",str.content,str.len,1);
+    cf_tpl_setvalue(tpl,"prev",TPL_VARIABLE_STRING,str.content,str.len);
     str_cleanup(&str);
   }
 
   /* next message... */
   if((msg = flt_link_get_next(thread->threadmsg)) != NULL) {
     flt_link_getlink(&str,thread->tid,msg->mid,aaf,aafval,forum_name);
-    tpl_cf_setvar(tpl,"next",str.content,str.len,1);
+    cf_tpl_setvalue(tpl,"next",TPL_VARIABLE_STRING,str.content,str.len);
     str_cleanup(&str);
   }
 
   flt_link_getlink(&str,thread->tid,thread->messages->mid,aaf,aafval,forum_name);
-  tpl_cf_setvar(tpl,"first",str.content,str.len,1);
+  cf_tpl_setvalue(tpl,"first",TPL_VARIABLE_STRING,str.content,str.len);
   str_cleanup(&str);
 
   /* last message... */
   if((msg = flt_link_get_last(thread)) != NULL) {
     flt_link_getlink(&str,thread->tid,msg->mid,aaf,aafval,forum_name);
-    tpl_cf_setvar(tpl,"last",str.content,str.len,1);
+    cf_tpl_setvalue(tpl,"last",TPL_VARIABLE_STRING,str.content,str.len,1);
     str_cleanup(&str);
   }
   

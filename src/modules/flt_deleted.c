@@ -89,23 +89,23 @@ int flt_deleted_execute(t_cf_hash *head,t_configuration *dc,t_configuration *vc,
           }
           else {
             len = snprintf(buff,256,"?a=u&t=%llu",thread->tid);
-            tpl_cf_setvar(&thread->messages->tpl,"undel",buff,len,1);
+            cf_tpl_setvalue(&thread->messages->tpl,"undel",TPL_VARIABLE_STRING,buff,len);
           }
         }
         else {
           if(Cfg.CheckBoxes) {
-            tpl_cf_setvar(&msg->tpl,"delcheckbox","1",1,0);
-            tpl_cf_setvar(&msg->tpl,"deltid",buff,len,0);
+            cf_tpl_setvalue(&msg->tpl,"delcheckbox",TPL_VARIABLE_STRING,"1",1);
+            cf_tpl_setvalue(&msg->tpl,"deltid",TPL_VARIABLE_STRING,buff,len);
           }
 
           len = snprintf(buff,150,"%s?a=d&t=%lld",url->values[0],thread->tid);
-          tpl_cf_setvar(&msg->tpl,"dellink",buff,len,1);
+          cf_tpl_setvalue(&msg->tpl,"dellink",TPL_VARIABLE_STRING,buff,len);
         }
       }
     }
     else {
       len = snprintf(buff,150,"%s?a=d&t=%lld",url->values[0],thread->tid);
-      tpl_cf_setvar(&msg->tpl,"dellink",buff,len,1);
+      cf_tpl_setvalue(&msg->tpl,"dellink",TPL_VARIABLE_STRING,buff,len);
     }
 
     return FLT_OK;
@@ -276,10 +276,10 @@ int flt_del_init_handler(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc)
 /* {{{ flt_deleted_view_init_handler */
 int flt_del_view_init_handler(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cf_template *begin,t_cf_template *end) {
   if(end && Cfg.CheckBoxes && Cfg.DeletedFile) {
-    if(head && cf_cgi_get(head,"nd") != NULL) tpl_cf_setvar(begin,"delnodelete","1",1,0);
+    if(head && cf_cgi_get(head,"nd") != NULL) cf_tpl_setvalue(begin,"delnodelete",TPL_VARIABLE_STRING,"1",1);
 
-    tpl_cf_setvar(begin,"delcheckbox","1",1,0);
-    tpl_cf_setvar(end,"delcheckbox","1",1,0);
+    cf_tpl_setvalue(begin,"delcheckbox",TPL_VARIABLE_STRING,"1",1);
+    cf_tpl_setvalue(end,"delcheckbox",TPL_VARIABLE_STRING,"1",1);
   }
 
   return FLT_DECLINE;

@@ -150,26 +150,26 @@ int flt_oc_execute_filter(t_cf_hash *head,t_configuration *dc,t_configuration *v
   // get me the list of opened threads
   if(!sclen && head) flt_oc_parse_query_string(head,cl);
 
-  tpl_cf_setvar(&thread->messages->tpl,"openclose","1",1,0);
+  cf_tpl_setvalue(&thread->messages->tpl,"openclose",TPL_VARIABLE_STRING,"1",1);
 
   /* user wants to use java script */
   if(UseJavaScript) {
-    if(ThreadsOpenByDefault && OpenThreadIfNew == 0) tpl_cf_setvar(&thread->messages->tpl,"UseJavaScript","1",1,0);
+    if(ThreadsOpenByDefault && OpenThreadIfNew == 0) cf_tpl_setvalue(&thread->messages->tpl,"UseJavaScript",TPL_VARIABLE_STRING,"1",1);
   }
 
   i = sprintf(buff,"t%lld",thread->tid);
-  tpl_cf_setvar(&thread->messages->tpl,"unanch",buff,i,0);
+  cf_tpl_setvalue(&thread->messages->tpl,"unanch",TPL_VARIABLE_STRING,buff,i);
 
   if(cl) { /* threads are closed by default! */
     for(i=0;i<sclen;i++) {
       if(saved_threads[i] == thread->tid) {
-        tpl_cf_setvar(&thread->messages->tpl,"open","1",1,0);
+        cf_tpl_setvalue(&thread->messages->tpl,"open",TPL_VARIABLE_STRING,"1",1);
         i = sprintf(buff,"%s?t=%lld&a=close",vs->values[0],thread->tid);
-        tpl_cf_setvar(&thread->messages->tpl,"link_oc",buff,i,1);
+        cf_tpl_setvalue(&thread->messages->tpl,"link_oc",TPL_VARIABLE_STRING,buff,i);
 
         if(Cgi.len) {
-          tpl_cf_appendvar(&thread->messages->tpl,"link_oc","&o=",7);
-          tpl_cf_appendvar(&thread->messages->tpl,"link_oc",Cgi.content,Cgi.len);
+          cf_tpl_appendvalue(&thread->messages->tpl,"link_oc","&o=",7);
+          cf_tpl_appendvalue(&thread->messages->tpl,"link_oc",Cgi.content,Cgi.len);
         }
 
         return FLT_DECLINE; /* thread is open */
@@ -187,13 +187,13 @@ int flt_oc_execute_filter(t_cf_hash *head,t_configuration *dc,t_configuration *v
         for(msg=thread->messages;msg;msg=msg->next) {
           /* Thread has at least one not yet visited messages -- leave it open */
           if(is_visited(&(msg->mid)) == NULL && msg->invisible == 0 && msg->may_show == 1) {
-            tpl_cf_setvar(&thread->messages->tpl,"open","1",1,0);
+            cf_tpl_setvalue(&thread->messages->tpl,"open",TPL_VARIABLE_STRING,"1",1);
             i = snprintf(buff,500,"%s?t=%lld&a=close",vs->values[0],thread->tid);
-            tpl_cf_setvar(&thread->messages->tpl,"link_oc",buff,i,1);
+            cf_tpl_setvalue(&thread->messages->tpl,"link_oc",TPL_VARIABLE_STRING,buff,i);
 
             if(Cgi.len) {
-              tpl_cf_appendvar(&thread->messages->tpl,"link_oc","&o=",7);
-              tpl_cf_appendvar(&thread->messages->tpl,"link_oc",Cgi.content,Cgi.len);
+              cf_tpl_appendvalue(&thread->messages->tpl,"link_oc","&o=",7);
+              cf_tpl_appendvalue(&thread->messages->tpl,"link_oc",Cgi.content,Cgi.len);
             }
 
             return FLT_DECLINE;
@@ -203,11 +203,11 @@ int flt_oc_execute_filter(t_cf_hash *head,t_configuration *dc,t_configuration *v
     }
 
     i = sprintf(buff,"%s?t=%lld&a=open",vs->values[0],thread->tid);
-    tpl_cf_setvar(&thread->messages->tpl,"link_oc",buff,i,1);
+    cf_tpl_setvalue(&thread->messages->tpl,"link_oc",TPL_VARIABLE_STRING,buff,i,1);
 
     if(Cgi.len) {
-      tpl_cf_appendvar(&thread->messages->tpl,"link_oc","&o=",7);
-      tpl_cf_appendvar(&thread->messages->tpl,"link_oc",Cgi.content,Cgi.len);
+      cf_tpl_appendvalue(&thread->messages->tpl,"link_oc","&o=",7);
+      cf_tpl_appendvalue(&thread->messages->tpl,"link_oc",Cgi.content,Cgi.len);
     }
 
     msg = thread->messages->next;
@@ -222,11 +222,11 @@ int flt_oc_execute_filter(t_cf_hash *head,t_configuration *dc,t_configuration *v
     for(i=0;i<sclen;i++) {
       if(thread->tid == saved_threads[i]) { /* this thread is closed */
         i = sprintf(buff,"%s?t=%lld&a=open",vs->values[0],thread->tid);
-        tpl_cf_setvar(&thread->messages->tpl,"link_oc",buff,i,1);
+        cf_tpl_setvalue(&thread->messages->tpl,"link_oc",TPL_VARIABLE_STRING,buff,i,1);
 
         if(Cgi.len) {
-          tpl_cf_appendvar(&thread->messages->tpl,"link_oc","&o=",7);
-          tpl_cf_appendvar(&thread->messages->tpl,"link_oc",Cgi.content,Cgi.len);
+          cf_tpl_appendvalue(&thread->messages->tpl,"link_oc","&o=",7);
+          cf_tpl_appendvalue(&thread->messages->tpl,"link_oc",Cgi.content,Cgi.len);
         }
 
         msg = thread->messages->next;
@@ -241,13 +241,13 @@ int flt_oc_execute_filter(t_cf_hash *head,t_configuration *dc,t_configuration *v
     }
 
     /* this thread must be open */
-    tpl_cf_setvar(&thread->messages->tpl,"open","1",1,0);
+    cf_tpl_setvalue(&thread->messages->tpl,"open",TPL_VARIABLE_STRING,"1",1);
     i = sprintf(buff,"%s?t=%lld&a=close",vs->values[0],thread->tid);
-    tpl_cf_setvar(&thread->messages->tpl,"link_oc",buff,i,1);
+    cf_tpl_setvalue(&thread->messages->tpl,"link_oc",TPL_VARIABLE_STRING,buff,i);
 
     if(Cgi.len) {
-      tpl_cf_appendvar(&thread->messages->tpl,"link_oc","&o=",7);
-      tpl_cf_appendvar(&thread->messages->tpl,"link_oc",Cgi.content,Cgi.len);
+      cf_tpl_appendvalue(&thread->messages->tpl,"link_oc","&o=",7);
+      cf_tpl_appendvalue(&thread->messages->tpl,"link_oc",Cgi.content,Cgi.len);
     }
   }
 
@@ -260,7 +260,7 @@ int flt_oc_set_js(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cf_t
   /* user wants to use java script */
   if(UseJavaScript) {
     if(ThreadsOpenByDefault && OpenThreadIfNew == 0) {
-      tpl_cf_setvar(begin,"UseJavaScript","1",1,0);
+      cf_tpl_setvalue(begin,"UseJavaScript",TPL_VARIABLE_STRING,"1",1);
       return FLT_OK;
     }
   }

@@ -43,15 +43,15 @@ int flt_threadreturnanchor_post(t_cf_hash *head,t_configuration *dc,t_configurat
   size_t len;
 
   if(ThreadReturnAnchor) {
-    path = tpl_cf_getvar(tpl, "forumbase");
+    path = cf_tpl_getvar(tpl, "forumbase");
     if (!path) return 1;
 
     str_init(&new_path);
-    str_str_set(&new_path,path->data);
+    str_str_set(&new_path,&path->data.d_string);
     str_char_append(&new_path,'#');
     len = snprintf(buf, 50, "t%llu", thread->tid);
     str_chars_append(&new_path,buf,len);
-    tpl_cf_setvar(tpl,"forumreturn",new_path.content,new_path.len,0);
+    cf_tpl_setvalue(tpl,"forumreturn",TPL_VARIABLE_STRING,new_path.content,new_path.len);
     str_cleanup(&new_path);
 
     return FLT_OK;

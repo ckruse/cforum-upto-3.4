@@ -351,14 +351,14 @@ int flt_lf_form(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cf_tem
   u_char *filter_str,*pos;
 
   if(flt_lf_active) {
-    tpl_cf_setvar(begin,"livefilter","1",1,0);
+    cf_tpl_setvalue(begin,"livefilter",TPL_VARIABLE_STRING,"1",1);
 
     if(head) {
       if((filter_str = cf_cgi_get(head,"lf")) != NULL) {
         cf_hash_set(GlobalValues,"openclose",9,"0",1);
         pos = filter_str;
         flt_lf_parse_string(filter_str,&pos,begin,NULL,NULL,dc);
-        tpl_cf_setvar(begin,"lf",filter_str,strlen(filter_str),1);
+        cf_tpl_setvalue(begin,"lf",TPL_VARIABLE_STRING,filter_str,strlen(filter_str));
       }
     }
 

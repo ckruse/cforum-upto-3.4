@@ -137,15 +137,15 @@ int flt_admin_setvars(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc,t_c
   int ShowInvisible = cf_hash_get(GlobalValues,"ShowInvisible",13) != NULL;
 
   if(flt_admin_is_admin(UserName)) {
-    tpl_cf_setvar(top,"admin","1",1,0);
+    cf_tpl_setvalue(top,"admin",TPL_VARIABLE_STRING,"1",1);
 
-    if(ShowInvisible) tpl_cf_setvar(top,"aaf","1",1,0);
+    if(ShowInvisible) cf_tpl_setvalue(top,"aaf",TPL_VARIABLE_STRING,"1",1);
 
     if(my_errno) {
       len = snprintf(buff,256,"E_FO_%d",my_errno);
       msg = cf_get_error_message(buff,&len1);
       if(msg) {
-        tpl_cf_setvar(top,"flt_admin_errmsg",msg+len+1,len1-len-1,1);
+        cf_tpl_setvalue(top,"flt_admin_errmsg",TPL_VARIABLE_STRING,msg,len1);
         free(msg);
       }
     }
@@ -195,24 +195,24 @@ int flt_admin_posthandler(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc
   t_name_value *link_pattern = cfg_get_first_value(dc,forum_name,"UPostingURL");
 
   if(flt_admin_is_admin(UserName)) {
-    tpl_cf_setvar(&msg->tpl,"admin","1",1,0);
+    cf_tpl_setvalue(&msg->tpl,"admin",TPL_VARIABLE_STRING,"1",1);
 
     if(ShowInvisible) {
-      tpl_cf_setvar(&msg->tpl,"aaf","1",1,0);
+      cf_tpl_setvalue(&msg->tpl,"aaf",TPL_VARIABLE_STRING,"1",1);
 
       link = cf_advanced_get_link(link_pattern->values[0],tid,msg->mid,"aaf=1&faa=archive",17,&l);
-      tpl_cf_setvar(&msg->tpl,"archive_link",link,l,1);
+      cf_tpl_setvalue(&msg->tpl,"archive_link",TPL_VARIABLE_STRING,link,l);
       free(link);
 
       if(msg->invisible == 0) {
         link = cf_advanced_get_link(link_pattern->values[0],tid,msg->mid,"aaf=1&faa=del",13,&l);
-        tpl_cf_setvar(&msg->tpl,"visible","1",1,0);
-        tpl_cf_setvar(&msg->tpl,"del_link",link,l,1);
+        cf_tpl_setvalue(&msg->tpl,"visible",TPL_VARIABLE_STRING,"1",1);
+        cf_tpl_setvalue(&msg->tpl,"del_link",TPL_VARIABLE_STRING,link,l);
         free(link);
       }
       else {
         link = cf_advanced_get_link(link_pattern->values[0],tid,msg->mid,"aaf=1&faa=undel",15,&l);
-        tpl_cf_setvar(&msg->tpl,"undel_link",link,l,1);
+        cf_tpl_setvalue(&msg->tpl,"undel_link",TPL_VARIABLE_STRING,link,l);
         free(link);
       }
     }

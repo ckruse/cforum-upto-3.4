@@ -102,22 +102,22 @@ int flt_lh_execute_filter(t_cf_hash *head,t_configuration *dc,t_configuration *v
 
   if(Cfg.VIPList) {
     tmp = flt_lh_tolwer(msg->author.content,&len);
-    if(cf_hash_get(Cfg.VIPList,tmp,len)) tpl_cf_setvar(&msg->tpl,"vip","1",1,0);
+    if(cf_hash_get(Cfg.VIPList,tmp,len)) cf_tpl_setvalue(&msg->tpl,"vip",TPL_VARIABLE_STRING,"1",1);
     free(tmp);
   }
 
   if(Cfg.WhiteList) {
     tmp = flt_lh_tolwer(msg->author.content,&len);
-    if(cf_hash_get(Cfg.WhiteList,tmp,len)) tpl_cf_setvar(&msg->tpl,"whitelist","1",1,0);
+    if(cf_hash_get(Cfg.WhiteList,tmp,len)) cf_tpl_setvalue(&msg->tpl,"whitelist",TPL_VARIABLE_STRING,"1",1);
     free(tmp);
   }
 
   if(Cfg.HighlightCategories && msg->category.len) {
-    if(cf_hash_get(Cfg.HighlightCategories,msg->category.content,msg->category.len)) tpl_cf_setvar(&msg->tpl,"cathigh","1",1,0);
+    if(cf_hash_get(Cfg.HighlightCategories,msg->category.content,msg->category.len)) cf_tpl_setvalue(&msg->tpl,"cathigh",TPL_VARIABLE_STRING,"1",1);
   }
 
   if(Cfg.HighlightOwnPostings && uname) {
-    if(cf_strcasecmp(msg->author.content,uname->values[0]) == 0) tpl_cf_setvar(&msg->tpl,"ownposting","1",1,0);
+    if(cf_strcasecmp(msg->author.content,uname->values[0]) == 0) cf_tpl_setvalue(&msg->tpl,"ownposting",TPL_VARIABLE_STRING,"1",1);
   }
 
   return FLT_OK;
@@ -145,28 +145,28 @@ int flt_lh_set_colors(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_
   t_name_value *cs = cfg_get_first_value(dc,NULL,"ExternCharset");
 
   if(Cfg.VIPColorF || Cfg.VIPColorB) {
-    tpl_cf_setvar(begin,"vipcol","1",1,0);
+    cf_tpl_setvalue(begin,"vipcol",TPL_VARIABLE_STRING,"1",1);
 
     if(Cfg.VIPColorF && *Cfg.VIPColorF) cf_set_variable(begin,cs,"vipcolfg",Cfg.VIPColorF,strlen(Cfg.VIPColorF),1);
     if(Cfg.VIPColorB && *Cfg.VIPColorB) cf_set_variable(begin,cs,"vipcolbg",Cfg.VIPColorB,strlen(Cfg.VIPColorB),1);
   }
 
   if(Cfg.WhiteListColorF || Cfg.WhiteListColorB) {
-    tpl_cf_setvar(begin,"wlcol","1",1,0);
+    cf_tpl_setvalue(begin,"wlcol",TPL_VARIABLE_STRING,"1",1);
 
     if(Cfg.WhiteListColorF && *Cfg.WhiteListColorF) cf_set_variable(begin,cs,"wlcolfg",Cfg.WhiteListColorF,strlen(Cfg.WhiteListColorF),0);
     if(Cfg.WhiteListColorB && *Cfg.WhiteListColorB) cf_set_variable(begin,cs,"wlcolbg",Cfg.WhiteListColorB,strlen(Cfg.WhiteListColorB),0);
   }
 
   if(Cfg.OwnPostingsColorF || Cfg.OwnPostingsColorB) {
-    tpl_cf_setvar(begin,"colorown","1",1,0);
+    cf_tpl_setvalue(begin,"colorown",TPL_VARIABLE_STRING,"1",1);
 
     if(Cfg.OwnPostingsColorF && *Cfg.OwnPostingsColorF) cf_set_variable(begin,cs,"colorownfg",Cfg.OwnPostingsColorF,strlen(Cfg.OwnPostingsColorF),1);
     if(Cfg.OwnPostingsColorB && *Cfg.OwnPostingsColorB) cf_set_variable(begin,cs,"colorownbg",Cfg.OwnPostingsColorB,strlen(Cfg.OwnPostingsColorB),1);
   }
 
   if(Cfg.CategoryHighlightColorF || Cfg.CategoryHighlightColorB) {
-    tpl_cf_setvar(begin,"cathighcolor","1",1,0);
+    cf_tpl_setvalue(begin,"cathighcolor",TPL_VARIABLE_STRING,"1",1);
 
     if(Cfg.CategoryHighlightColorF && *Cfg.CategoryHighlightColorF) cf_set_variable(begin,cs,"cathighcolorfg",Cfg.CategoryHighlightColorF,strlen(Cfg.CategoryHighlightColorF),1);
     if(Cfg.CategoryHighlightColorB && *Cfg.CategoryHighlightColorB) cf_set_variable(begin,cs,"cathighcolorbg",Cfg.CategoryHighlightColorB,strlen(Cfg.CategoryHighlightColorB),1);

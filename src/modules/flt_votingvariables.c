@@ -51,10 +51,10 @@ int flt_votingvariables_execute_filter(t_cf_hash *head,t_configuration *dc,t_con
   size_t len;
 
   if(flt_vv_Config.activate) {
-    tpl_cf_setvar(tpl,"votes","1",1,0);
+    cf_tpl_setvalue(tpl,"votes",TPL_VARIABLE_STRING,"1",1);
 
     if(UserName) {
-      tpl_cf_setvar(tpl,"votes_link","1",1,0);
+      cf_tpl_setvalue(tpl,"votes_link",TPL_VARIABLE_STRING,"1",1);
 
       tmp = cf_advanced_get_link(v->values[0],thread->tid,thread->threadmsg->mid,"a=good",6,&len);
       cf_set_variable(tpl,cs,"vote_link_good",tmp,len,1);
@@ -64,13 +64,13 @@ int flt_votingvariables_execute_filter(t_cf_hash *head,t_configuration *dc,t_con
     }
 
     if(flt_vv_Config.show_votes) {
-      tpl_cf_setvar(tpl,"show_votes","1",1,0);
+      cf_tpl_setvalue(tpl,"show_votes",TPL_VARIABLE_STRING,"1",1);
 
       len = snprintf(buff,512,"%lu",(unsigned long)thread->threadmsg->votes_good);
-      tpl_cf_setvar(tpl,"votes_good",buff,len,0);
+      cf_tpl_setvalue(tpl,"votes_good",TPL_VARIABLE_STRING,buff,len);
 
       len = snprintf(buff,512,"%lu",(unsigned long)thread->threadmsg->votes_bad);
-      tpl_cf_setvar(tpl,"votes_bad",buff,len,0);
+      cf_tpl_setvalue(tpl,"votes_bad",TPL_VARIABLE_STRING,buff,len);
     }
 
     return FLT_OK;

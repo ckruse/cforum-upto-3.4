@@ -8,6 +8,15 @@
 	* scripts/msgs2db.pl: Invented Getopt::Long for easier handling
 	* scripts/indextips.pl: Invented Getopt::Long for easier handling
 	* bootstrap: Moved to new directory structure
+	* src/fo_view.c, src/clientlib.c, src/modules/flt_threadreturnanchor.c,
+		src/modules/flt_livefilter.c, src/modules/flt_deleted.c,
+		src/modules/flt_basic.c, src/modules/flt_link.c,
+		src/modules/flt_votingvariables.c, src/modules/flt_listhighlight.c,
+		src/modules/flt_frameset.c, src/modules/flt_visited.c,
+		src/modules/flt_scoring.lex, src/modules/flt_include.c,
+		src/modules/flt_posting.c, src/modules/flt_openclose.c,
+		src/modules/flt_admin.c, src/fo_vote.c, src/communication.c,
+		src/messageutils.c: Moved to new template engine API
 
 2005-01-16 Christian Seiler <self@christian-seiler.de>
 	* src/template.c, src/template.h: Lot's of changes to support loops

@@ -43,16 +43,16 @@ int flt_include_exec_list(t_cf_hash *head,t_configuration *dc,t_configuration *v
   int rc = FLT_DECLINE;
 
   if(CSSUri) {
-    tpl_cf_setvar(begin,"owncss",CSSUri,strlen(CSSUri),1);
+    cf_tpl_setvalue(begin,"owncss",TPL_VARIABLE_STRING,CSSUri,strlen(CSSUri));
 
-    if(CSS_Overwrite) tpl_cf_setvar(begin,"cssoverwrite","1",1,0);
+    if(CSS_Overwrite) cf_tpl_setvalue(begin,"cssoverwrite",TPL_VARIABLE_STRING,"1",1);
 
     rc = FLT_OK;
   }
 
   if(JSFile) {
     rc = FLT_OK;
-    tpl_cf_setvar(begin,"ownjs",JSFile,strlen(JSFile),1);
+    cf_tpl_setvalue(begin,"ownjs",TPL_VARIABLE_STRING,JSFile,strlen(JSFile));
   }
 
   if(XSLTUri) {
@@ -60,11 +60,11 @@ int flt_include_exec_list(t_cf_hash *head,t_configuration *dc,t_configuration *v
 
     /* list mode */
     if(end) {
-      if(XSLTUri[0]) tpl_cf_setvar(begin,"ownxslt",XSLTUri[0],strlen(XSLTUri[0]),1);
+      if(XSLTUri[0]) cf_tpl_setvalue(begin,"ownxslt",TPL_VARIABLE_STRING,XSLTUri[0],strlen(XSLTUri[0]));
     }
     /* posting mode */
     else {
-      if(XSLTUri[1]) tpl_cf_setvar(begin,"ownxslt",XSLTUri[1],strlen(XSLTUri[1]),1);
+      if(XSLTUri[1]) cf_tpl_setvalue(begin,"ownxslt",TPL_VARIABLE_STRING,XSLTUri[1],strlen(XSLTUri[1]));
     }
   }
 

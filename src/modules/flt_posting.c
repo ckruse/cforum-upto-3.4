@@ -155,15 +155,15 @@ int flt_posting_execute_filter(t_cf_hash *head,t_configuration *dc,t_configurati
   else         ps = cfg_get_first_value(dc,forum_name,"PostScript");
 
   /* {{{ set some standard variables in thread mode */
-  if(flt_posting_cfg.TWidth) tpl_cf_setvar(tpl,"twidth",flt_posting_cfg.TWidth,strlen(flt_posting_cfg.TWidth),1);
-  if(flt_posting_cfg.THeight) tpl_cf_setvar(tpl,"theight",flt_posting_cfg.THeight,strlen(flt_posting_cfg.THeight),1);
-  if(flt_posting_cfg.Preview) tpl_cf_setvar(tpl,"preview","1",1,0);
+  if(flt_posting_cfg.TWidth) cf_tpl_setvalue(tpl,"twidth",TPL_VARIABLE_STRING,flt_posting_cfg.TWidth,strlen(flt_posting_cfg.TWidth));
+  if(flt_posting_cfg.THeight) cf_tpl_setvalue(tpl,"theight",TPL_VARIABLE_STRING,flt_posting_cfg.THeight,strlen(flt_posting_cfg.THeight));
+  if(flt_posting_cfg.Preview) cf_tpl_setvalue(tpl,"preview",TPL_VARIABLE_STRING,"1",1);
 
-  if(flt_posting_cfg.PreviewSwitchType == 0) tpl_cf_setvar(tpl,"previewswitchtype","checkbox",8,0);
-  else if(flt_posting_cfg.PreviewSwitchType == 1) tpl_cf_setvar(tpl,"previewswitchtype","button",6,0);
+  if(flt_posting_cfg.PreviewSwitchType == 0) cf_tpl_setvalue(tpl,"previewswitchtype",TPL_VARIABLE_STRING,"checkbox",8);
+  else if(flt_posting_cfg.PreviewSwitchType == 1) cf_tpl_setvalue(tpl,"previewswitchtype",TPL_VARIABLE_STRING,"button",6);
 
   if(flt_posting_cfg.ActiveColorF || flt_posting_cfg.ActiveColorB) {
-    tpl_cf_setvar(tpl,"activecolor","1",1,0);
+    cf_tpl_setvalue(tpl,"activecolor",TPL_VARIABLE_STRING,"1",1);
 
     if(flt_posting_cfg.ActiveColorF && *flt_posting_cfg.ActiveColorF) cf_set_variable(tpl,cs,"activecolorf",flt_posting_cfg.ActiveColorF,strlen(flt_posting_cfg.ActiveColorF),1);
     if(flt_posting_cfg.ActiveColorB && *flt_posting_cfg.ActiveColorB) cf_set_variable(tpl,cs,"activecolorb",flt_posting_cfg.ActiveColorB,strlen(flt_posting_cfg.ActiveColorB),1);
@@ -171,14 +171,14 @@ int flt_posting_execute_filter(t_cf_hash *head,t_configuration *dc,t_configurati
 
   cf_set_variable(tpl,cs,"action",ps->values[0],strlen(ps->values[0]),1);
 
-  tpl_cf_setvar(tpl,"qchar","&#255;",6,0);
-  tpl_cf_appendvar(tpl,"qchar",qchars,qclen);
+  cf_tpl_setvalue(tpl,"qchar",TPL_VARIABLE_STRING,"&#255;",6);
+  cf_tpl_appendvalue(tpl,"qchar",qchars,qclen);
 
   len = sprintf(buff,"%llu,%llu",thread->tid,thread->threadmsg->mid);
-  tpl_cf_setvar(tpl,"fupto",buff,len,0);
+  cf_tpl_setvalue(tpl,"fupto",TPL_VARIABLE_STRING,buff,len);
 
   len = gen_unid(buff,50);
-  tpl_cf_setvar(tpl,"unid",buff,len,1);
+  cf_tpl_setvalue(tpl,"unid",TPL_VARIABLE_STRING,buff,len);
   /* }}} */
 
   /* {{{ set title, name, email, homepage, time and category */
@@ -202,7 +202,7 @@ int flt_posting_execute_filter(t_cf_hash *head,t_configuration *dc,t_configurati
     if((msg = cf_msg_get_parent(thread->threadmsg)) != NULL) {
       tmp = cf_general_get_time(df->values[0],locale->values[0],&len,&msg->date);
 
-      tpl_cf_setvar(tpl,"messagebefore","1",1,0);
+      cf_tpl_setvalue(tpl,"messagebefore",TPL_VARIABLE_STRING,"1",1);
       cf_set_variable(tpl,cs,"b_name",msg->author.content,msg->author.len,1);
       cf_set_variable(tpl,cs,"b_title",msg->subject.content,msg->subject.len,1);
       cf_set_variable(tpl,cs,"b_time",tmp,len,1);
@@ -238,8 +238,8 @@ int flt_posting_execute_filter(t_cf_hash *head,t_configuration *dc,t_configurati
     ss ? cf_strcmp(ss->values[0],"yes") == 0 : 0
   );
 
-  tpl_cf_setvar(tpl,"message",content.content,content.len,0);
-  if(cf_strcmp(dq->values[0],"yes") == 0) tpl_cf_setvar(tpl,"cite",cite.content,cite.len,0);
+  cf_tpl_setvalue(tpl,"message",TPL_VARIABLE_STRING,content.content,content.len);
+  if(cf_strcmp(dq->values[0],"yes") == 0) cf_tpl_setvalue(tpl,"cite",TPL_VARIABLE_STRING,cite.content,cite.len);
   /* }}} */
 
   str_cleanup(&cite);
@@ -258,7 +258,7 @@ int flt_posting_execute_filter(t_cf_hash *head,t_configuration *dc,t_configurati
       for(msg=msg->next;msg && msg->level > level;msg=msg->next);
       for(;msg;msg=msg->next) msg->may_show = 0;
     }
-    else tpl_cf_setvar(&thread->threadmsg->tpl,"active","1",1,0);
+    else cf_tpl_setvalue(&thread->threadmsg->tpl,"active",TPL_VARIABLE_STRING,"1",1);
 
     /* {{{ run handlers in pre and post mode */
     cf_run_view_handlers(thread,head,CF_MODE_THREADVIEW|CF_MODE_PRE);
@@ -266,7 +266,7 @@ int flt_posting_execute_filter(t_cf_hash *head,t_configuration *dc,t_configurati
     cf_run_view_handlers(thread,head,CF_MODE_THREADVIEW|CF_MODE_POST);
     /* }}} */
 
-    tpl_cf_setvar(tpl,"threadlist","",0,0);
+    cf_tpl_setvalue(tpl,"threadlist",TPL_VARIABLE_STRING,"",0);
     for(msg=thread->messages;msg;msg=msg->next) {
       if((msg->may_show && msg->invisible == 0) || ShowInvisible == 1) {
         if(slvl == -1) slvl = msg->level;
@@ -290,33 +290,33 @@ int flt_posting_execute_filter(t_cf_hash *head,t_configuration *dc,t_configurati
         }
 
         if(msg->level < level) {
-          for(;level>msg->level;level--) tpl_cf_appendvar(tpl,"threadlist","</ul></li>",10);
+          for(;level>msg->level;level--) cf_tpl_appendvalue(tpl,"threadlist","</ul></li>",10);
         }
 
         level = msg->level;
 
         if(msg->next && cf_msg_has_answers(msg)) { /* this message has at least one answer */
-          tpl_cf_appendvar(tpl,"threadlist","<li>",4);
+          cf_tpl_appendvalue(tpl,"threadlist","<li>",4);
 
-          tpl_cf_parse_to_mem(&msg->tpl);
-          tpl_cf_appendvar(tpl,"threadlist",msg->tpl.parsed.content,msg->tpl.parsed.len-1);
+          cf_tpl_parse_to_mem(&msg->tpl);
+          cf_tpl_appendvalue(tpl,"threadlist",msg->tpl.parsed.content,msg->tpl.parsed.len-1);
 
-          tpl_cf_appendvar(tpl,"threadlist","<ul>",4);
+          cf_tpl_appendvalue(tpl,"threadlist","<ul>",4);
 
           level++;
         }
         else {
-          tpl_cf_appendvar(tpl,"threadlist","<li>",4);
+          cf_tpl_appendvalue(tpl,"threadlist","<li>",4);
 
-          tpl_cf_parse_to_mem(&msg->tpl);
-          tpl_cf_appendvar(tpl,"threadlist",msg->tpl.parsed.content,msg->tpl.parsed.len-1);
+          cf_tpl_parse_to_mem(&msg->tpl);
+          cf_tpl_appendvalue(tpl,"threadlist",msg->tpl.parsed.content,msg->tpl.parsed.len-1);
 
-          tpl_cf_appendvar(tpl,"threadlist","</li>",5);
+          cf_tpl_appendvalue(tpl,"threadlist","</li>",5);
         }
       }
     }
 
-    for(;level > 0 && level>slvl;level--) tpl_cf_appendvar(tpl,"threadlist","</ul></li>",10);
+    for(;level > 0 && level>slvl;level--) cf_tpl_appendvalue(tpl,"threadlist","</ul></li>",10);
   }
   /* }}} */
 
