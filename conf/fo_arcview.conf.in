@@ -19,7 +19,11 @@ Load "flt_directives"
 Load "flt_syntax"
 Load "flt_xmlarc"
 
+PatternsDirectory "@sysconfdir@/cforum/patterns/"
+
 Forum FORUM1 {
+  ArchivePath "@localstatedir@/cforum/archive/forum1/"
+
  SortYearList "ascending" # ascending/descending
  SortMonthList "descending" # ascending/descending
  SortThreadList "ascending" # ascending/descending
@@ -39,17 +43,9 @@ Forum FORUM1 {
  FatalTemplate "@sysconfdir@/cforum/templates/forum1/%s_%s_fatal.so"
 
  YearsTemplate "@sysconfdir@/cforum/templates/forum1/%s_%s_arcyears.so"
- YearListTemplate "@sysconfdir@/cforum/templates/forum1/%s_%s_arcyearlist.so"
-
  MonthsTemplate "@sysconfdir@/cforum/templates/forum1/%s_%s_arcmonths.so"
- MonthsListTemplate "@sysconfdir@/cforum/templates/forum1/%s_%s_arcmonthlist.so"
-
- ThreadListMonthTemplate "@sysconfdir@/cforum/templates/forum1/%s_%s_arcthreadlist_month.so"
 
  ThreadTemplate "@sysconfdir@/cforum/templates/forum1/%s_%s_arcthread.so"
  ThreadListTemplate "@sysconfdir@/cforum/templates/forum1/%s_%s_arcthreadlist.so"
- PerThreadTemplate "@sysconfdir@/cforum/templates/forum1/%s_%s_arcperthread.so"
-
- UpDownTemplate "@sysconfdir@/cforum/templates/forum1/%s_%s_updown.so"
 }
 

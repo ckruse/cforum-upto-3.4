@@ -1,3 +1,9 @@
+2005-03-15 Christian Kruse <ckruse@wwwtech.de>
+	* conf/patterns/Makefile.am: Added complete list of pattern files to install
+		them automaticly
+	* conf/fo_arcview.conf.in: Removed old config directives, added ArchivePath
+		and PatternsDirectory
+
 2005-03-14 Christian Kruse <ckruse@wwwtech.de>
 	* src/fo_view.c: Now setting the forum base is based on cf_get_link()
 	* src/clientlib.[ch]: Changed behavior and prototype of cf_general_get_link()
