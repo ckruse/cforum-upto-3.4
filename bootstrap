@@ -41,12 +41,12 @@ AUTOHEADER_FILES="config.h.in"
 AUTOMAKE="automake --add-missing --copy"
 AUTOMAKE_FILES="config.sub stamp-h.in ltmain.sh missing mkinstalldirs install-sh config.guess"
 CONFIG_AUX_DIR="."
-CONFIG_FILES="stamp-h ltconfig"
+CONFIG_FILES="stamp-h ltconfig conf/fo_arcview.conf conf/fo_post.conf conf/fo_userconf.conf conf/fo_view.conf conf/fo_xmlrpc.conf conf/fo_default.conf conf/fo_server.conf conf/fo_usermanagement.conf conf/fo_vote.conf"
 CONFIG_HEADER="src/config.h"
 LIBTOOLIZE="libtoolize --force --copy"
 LIBTOOLIZE_FILES="config.sub ltmain.sh config.guess"
 RM="rm --verbose"
-SUBDIRS="cgi-shared/config/fo_default.conf src src/modules src/templates src/templates/tpl_html4 src/templates/tpl_xhtml10 Doxyfile cgi-shared/config/fo_arcview.conf . cgi-shared/config/fo_post.conf cgi-shared/config/fo_server.conf cgi-shared/config/fo_userconf.conf cgi-shared/config/fo_view.conf cgi-shared/ cgi-shared/config cgi-shared/Plugins cgi-shared/docs cgi-shared/data cgi-shared/data/messages"
+SUBDIRS=". src/perl/Plugins/Management src/perl/Plugins src/parsetpl src/modules src src/templates/de/tpl_xhtml10 src/templates/de/tpl_html4 src/templates/de src/templates/en src/templates/fr/tpl_xhtml10 src/templates/fr/tpl_html4 src/templates/fr src/templates conf scripts "
 
 
 # These are files created by configure, so we'll always clean them
