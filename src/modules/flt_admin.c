@@ -178,11 +178,11 @@ int flt_admin_init(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc) {
 
 int flt_admin_posthandler(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc,t_message *msg,u_int64_t tid,int mode) {
   u_char buff[256];
-	u_char *link;
+  u_char *link;
   size_t l;
   u_char *UserName = cf_hash_get(GlobalValues,"UserName",8);
   int ShowInvisible = cf_hash_get(GlobalValues,"ShowInvisible",13) != NULL;
-	t_name_value *link_pattern = cfg_get_first_value(dc,"UPostingURL");
+  t_name_value *link_pattern = cfg_get_first_value(dc,"UPostingURL");
 
   if(flt_admin_is_admin(UserName)) {
     tpl_cf_setvar(&msg->tpl,"admin","1",1,0);
@@ -192,18 +192,18 @@ int flt_admin_posthandler(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc
 
       link = advanced_get_link(link_pattern->values[0],tid,msg->mid,"aaf=1&faa=archive",17,&l);
       tpl_cf_setvar(&msg->tpl,"archive_link",link,l,1);
-			free(link);
+      free(link);
 
       if(msg->invisible == 0) {
-			  link = advanced_get_link(link_pattern->values[0],tid,msg->mid,"aaf=1&faa=del",13,&l);
+        link = advanced_get_link(link_pattern->values[0],tid,msg->mid,"aaf=1&faa=del",13,&l);
         tpl_cf_setvar(&msg->tpl,"visible","1",1,0);
         tpl_cf_setvar(&msg->tpl,"del_link",link,l,1);
-				free(link);
+        free(link);
       }
       else {
-			  link = advanced_get_link(link_pattern->values[0],tid,msg->mid,"aaf=1&faa=undel",15,&l);
+        link = advanced_get_link(link_pattern->values[0],tid,msg->mid,"aaf=1&faa=undel",15,&l);
         tpl_cf_setvar(&msg->tpl,"undel_link",link,l,1);
-				free(link);
+        free(link);
       }
     }
 

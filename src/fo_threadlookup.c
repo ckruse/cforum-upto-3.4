@@ -66,6 +66,66 @@ int is_tid(const u_char *c) {
 }
 /* }}} */
 
+/* {{{ gen_archive_url */
+void gen_archive_url(u_char *buff,u_char *aurl,u_char *url,u_int64_t tid,u_int64_t mid) {
+  register u_char *ptr = buff,*ptr1;
+  int slash = 1;
+  u_char *server,*port;
+  size_t len;
+
+  server = getenv("SERVER_NAME");
+  port   = getenv("SERVER_NAME");
+
+
+  if(!port || cf_strcmp(port,"80") == 0) len = snprintf(ptr,256,"http://%s/",server);
+  else len = snprintf(ptr,256,"http://%s:%s/",server,port);
+  ptr += len;
+
+  for(ptr1=aurl;*ptr1;ptr1++) {
+    if(*ptr1 == '/') {
+      if(slash == 0) {
+        *ptr++ = '/';
+      }
+      slash++;
+    }
+    else {
+      *ptr++ = *ptr1;
+      slash = 0;
+    }
+  }
+
+  if(slash == 0) {
+    *ptr++ = '/';
+    slash = 1;
+  }
+
+  /* ok, append normal URI */
+  for(ptr1=url;*ptr1;ptr1++) {
+    if(*ptr1 == '/') {
+      if(slash == 0) {
+        *ptr++ = '/';
+      }
+      slash++;
+    }
+    else {
+      *ptr++ = *ptr1;
+      slash = 0;
+    }
+  }
+
+  if(slash == 0) *ptr++ = '/';
+
+  /* now, append tid */
+  len = sprintf(ptr,"t%llu/",tid);
+  ptr += len;
+
+  if(mid) len = sprintf(ptr,"#m%llu",mid);
+  ptr += len;
+
+  *ptr = '\0';
+}
+/* }}} */
+
 /* {{{ main */
 /**
  * Main function
@@ -79,18 +139,16 @@ int main(int argc,char *argv[],char *envp[]) {
   t_array *cfgfiles;
   u_char *file;
   t_configfile dconf;
-  u_int64_t tid;
-  u_char *ctid;
+  u_int64_t tid,mid = 0;
+  u_char *ctid,buff[256];
   struct stat st;
   t_name_value *v;
   t_name_value *archive_path;
-  u_char *port = getenv("SERVER_PORT");
   t_array infos;
   DB *Tdb;
   DBT key,data;
   int ret;
   size_t len;
-  t_string str;
 
   static const u_char *wanted[] = {
     "fo_default"
@@ -163,6 +221,7 @@ int main(int argc,char *argv[],char *envp[]) {
 
   /* {{{ get URLs */
   tid = strtoull(ctid,NULL,10);
+  if(infos.elements == 4) mid = strtoull(*((u_char **)array_element_at(&infos,3)),NULL,10);
 
   memset(&key,0,sizeof(key));
   memset(&data,0,sizeof(data));
@@ -185,27 +244,9 @@ int main(int argc,char *argv[],char *envp[]) {
   /* }}} */
 
   /* {{{ redirect */
-  printf("Status: 302 Moved Temporarily\015\012");
-  
-  str_init (&str);
-  str_char_set (&str, data.data, data.size);
-
-  if(!port || cf_strcmp(port,"80") == 0) {
-    if(infos.elements == 4) {
-      printf("Location: http://%s%s/%s/t%s/#m%s\015\012\015\012",getenv("SERVER_NAME"),archive_path->values[0],(u_char *)str.content,ctid,*((char **)array_element_at(&infos,3)));
-    }
-    else {
-      printf("Location: http://%s%s/%s/t%s/\015\012\015\012",getenv("SERVER_NAME"),archive_path->values[0],(u_char *)str.content,ctid);
-    }
-  }
-  else {
-    if(infos.elements == 4) {
-      printf("Location: http://%s:%s%s/%s/t%s/#m%s\015\012\015\012",getenv("SERVER_NAME"),getenv("SERVER_PORT"),archive_path->values[0],(u_char *)str.content,ctid,*((char **)array_element_at(&infos,3)));
-    }
-    else {
-      printf("Location: http://%s:%s%s/%s/t%s/\015\012\015\012",getenv("SERVER_NAME"),getenv("SERVER_PORT"),archive_path->values[0],(u_char *)str.content,ctid);
-    }
-  }
+  printf("Status: 301 Moved Permanently\015\012");
+  gen_archive_url(buff,archive_path->values[0],data.data,tid,mid);
+  printf("Location: %s\015\012\015\012",buff);
   /* }}} */
 
   /* {{{ cleanup */

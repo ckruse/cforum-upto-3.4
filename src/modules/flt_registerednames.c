@@ -252,8 +252,8 @@ int flt_registerednames_handler(int connfd,const u_char **tokens,int tnum,rline_
           }
 
         }
-				else if(cf_strncmp(tokens[1],"GET",3) == 0) {
-				  names[0] = transform(cf_hash_get(infos,"Name",4));
+        else if(cf_strncmp(tokens[1],"GET",3) == 0) {
+          names[0] = transform(cf_hash_get(infos,"Name",4));
           key.data = names[0];
           key.size = strlen(names[0]);
 
@@ -261,7 +261,7 @@ int flt_registerednames_handler(int connfd,const u_char **tokens,int tnum,rline_
             writen(connfd,"504 Auth required\n",18);
           }
 
-				}
+        }
         else {
           writen(connfd,"503 Sorry, I do not understand\n",31);
         }
@@ -274,8 +274,8 @@ int flt_registerednames_handler(int connfd,const u_char **tokens,int tnum,rline_
     }
 
     if(infos) cf_hash_destroy(infos);
-		if(names[0]) free(names[0]);
-		if(names[1]) free(names[1]);
+    if(names[0]) free(names[0]);
+    if(names[1]) free(names[1]);
 
     return FLT_OK;
   }

@@ -38,17 +38,6 @@ int ShallFrameset = 0;
 u_char *TplFrameset;
 u_char *TplBlank;
 
-void gen_tpl_name(u_char buff[256],u_char *tpl) {
-  t_name_value *vn = cfg_get_first_value(&fo_default_conf,"TemplateMode");
-
-  if(vn) {
-    snprintf(buff,256,tpl,vn->values[0]);
-  }
-  else {
-    snprintf(buff,256,tpl,"");
-  }
-}
-
 /*
  * Returns: int   one of the FLT_* values
  * Parameters:
@@ -65,21 +54,20 @@ int execute_filter(t_cf_hash *head,t_configuration *dc,t_configuration *vc) {
   u_char buff[256];
   u_char *UserName = cf_hash_get(GlobalValues,"UserName",8);
   t_name_value *cs = cfg_get_first_value(dc,"ExternCharset");
+  t_name_value *x = cfg_get_first_value(dc,UserName?"UBaseURL":"BaseURL");
+  t_cf_template tpl;
+  u_char *action = NULL;
 
   if(!ShallFrameset) {
     return FLT_DECLINE;
   }
 
   if(!head) {
-    gen_tpl_name(buff,TplFrameset);
+    gen_tpl_name(buff,256,TplFrameset);
 
-    if(buff) {
-      t_name_value *x = cfg_get_first_value(dc,UserName?"UBaseURL":"BaseURL");
-      t_cf_template tpl;
-
+    if(tpl_cf_init(&tpl,buff) == 0) {
       printf("Content-Type: text/html; charset=%s\n\n",cs->values[0]);
 
-      tpl_cf_init(&tpl,buff);
       tpl_cf_setvar(&tpl,"script",x->values[0],strlen(x->values[0]),0);
       tpl_cf_setvar(&tpl,"charset",cs->values[0],strlen(cs->values[0]),0);
       tpl_cf_parse(&tpl);
@@ -94,28 +82,18 @@ int execute_filter(t_cf_hash *head,t_configuration *dc,t_configuration *vc) {
     }
   }
   else {
-    u_char *action = NULL;
-    if(head) {
-      action = cf_cgi_get(head,"a");
-    }
+    if(head) action = cf_cgi_get(head,"a");
 
     if(action) {
       if(cf_strcmp(action,"b") == 0) {
-        gen_tpl_name(buff,TplBlank);
+        gen_tpl_name(buff,256,TplBlank);
 
         printf("Content-Type: text/html; charset=%s\n\n",cs->values[0]);
-        if(buff) {
-          t_cf_template tpl;
-          tpl_cf_init(&tpl,buff);
+        if(tpl_cf_init(&tpl,buff) == 0) {
           tpl_cf_setvar(&tpl,"charset",cs->values[0],strlen(cs->values[0]),0);
 
-          if(tpl.tpl) {
-            tpl_cf_parse(&tpl);
-            tpl_cf_finish(&tpl);
-          }
-          else {
-            printf("Sorry! Could not find template file!\n");
-          }
+          tpl_cf_parse(&tpl);
+          tpl_cf_finish(&tpl);
         }
         else {
           printf("Sorry! Could not find template file!\n");

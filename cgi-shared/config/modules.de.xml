@@ -514,11 +514,56 @@
         </argument>
       </directive>
 
-      <directive name="ScoringStartColor" arguments="1">
-        <argument paramname="scoringfilterstart" type="text" encode="plain">
-          <validate>#[0-9a-fA-f]{3,6}</validate>
-          <question>Mit welcher Farbe soll der Scoring-Filter beginnen? Vorgeschlagen wird hier #F70000 (127 Rot).</question>
-          <error>Mit welcher Farbe soll der Scoring-Filter beginnen? Bitte geben Sie eine korrekte Farbe an!</error>
+      <directive name="ScoringMinValue" arguments="1">
+        <argument paramname="scoringminval" type="text" encode="plain">
+          <validate>^-?\d+$</validate>
+          <question>Welche Punktzahl soll als die maximal schlechteste angesehen werden?</question>
+          <error>Welche Punktzahl soll als die maximal schlechteste angesehen werden? Bitte geben Sie eine korrekte Zahl an!</error>
+        </argument>
+      </directive>
+
+      <directive name="ScoringMaxValue" arguments="1">
+        <argument paramname="scoringmaxval" type="text" encode="plain">
+          <validate>^-?\d+$</validate>
+          <question>Welche Punktzahl soll als die maximal beste angesehen werden?</question>
+          <error>Welche Punktzahl soll als die maximal beste angesehen werden? Bitte geben Sie eine korrekte Zahl an!</error>
+        </argument>
+      </directive>
+
+
+      <directive name="ScoringNormalColor" arguments="1">
+        <argument paramname="scoringnormalcol" type="text" encode="plain">
+          <validate>^#[0-9a-fA-f]{3,6}$</validate>
+          <question>Mit welcher Farbe sollen neutral gepunktete Postings gefärbt werden?</question>
+          <error>Mit welcher Farbe sollen neutral gepunktete Postings gefärbt werden? Bitte geben Sie eine korrekte Farbe an!</error>
+        </argument>
+      </directive>
+
+      <directive name="ScoringMaxColor" arguments="1">
+        <argument paramname="scoringmaxcol" type="text" encode="plain">
+          <validate>^#[0-9a-fA-f]{3,6}$</validate>
+          <question>Mit welcher Farbe sollen maximal gut gepunktete Postings gefärbt werden?</question>
+          <error>Mit welcher Farbe sollen maximal gut gepunktete Postings gefärbt werden? Bitte geben Sie eine korrekte Farbe an!</error>
+        </argument>
+      </directive>
+
+      <directive name="ScoringMinColor" arguments="1">
+        <argument paramname="scoringmincol" type="text" encode="plain">
+          <validate>^#[0-9a-fA-f]{3,6}$</validate>
+          <question>Mit welcher Farbe sollen maximal schlecht gepunktete Postings gefärbt werden?</question>
+          <error>Mit welcher Farbe sollen maximal schlecht gepunktete Postings gefärbt werden? Bitte geben Sie eine korrekte Farbe an!</error>
+        </argument>
+      </directive>
+
+      <directive name="ScoringIgnoreNoneMatch" arguments="1">
+        <argument paramname="scoringignoreifnonematch" type="radio" encode="plain">
+          <validate>^(yes|no)$</validate>
+          <question>Sollen Postings, die auf keines der Filter-Kriterien passen, ignoriert werden?</question>
+          <error>Sollen Postings, die auf keines der Filter-Kriterien passen, ignoriert werden?</error>
+          <formvalues>
+            <value val="yes" default="yes">Ja</value>
+            <value val="no">Nein</value>
+          </formvalues>
         </argument>
       </directive>
 

@@ -215,20 +215,18 @@ int set_us_up_the_socket(void) {
 }
 /* }}} */
 
-/* {{{ generate_tpl_name
- * Returns: nothing
- * Parameters:
- *   - u_char msg[256]    the buffer to sprint into
- *   - t_name_value *v   the configfile
- *
- * this function spits out an error message
- *
- */
+/* {{{ generate_tpl_name */
 void generate_tpl_name(u_char buff[],int len,t_name_value *v) {
+  gen_tpl_name(buff,len,v->values[0]);
+}
+/* }}} */
+
+/* {{{ gen_tpl_name */
+void gen_tpl_name(u_char buff[],int len,const u_char *name) {
   t_name_value *vn = cfg_get_first_value(&fo_default_conf,"TemplateMode");
   t_name_value *lang = cfg_get_first_value(&fo_default_conf,"Language");
 
-  snprintf(buff,len,v->values[0],lang->values[0],vn->values[0]);
+  snprintf(buff,len,name,lang->values[0],vn->values[0]);
 }
 /* }}} */
 

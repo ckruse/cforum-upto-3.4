@@ -54,10 +54,10 @@ PRIVATE int tracer(const char * fmt, va_list pArgs) {
 }
 
 PRIVATE int terminate_handler(HTRequest *request, HTResponse *response, void *param, int status)  {
-	/* we're not handling other requests */
-	HTEventList_stopLoop ();
+  /* we're not handling other requests */
+  HTEventList_stopLoop ();
  
-	/* stop here */
+  /* stop here */
   return HT_ERROR;
 }
 
@@ -83,22 +83,22 @@ u_char *get_url(const u_char *url) {
   /* Add our own filter to handle termination */
   HTNet_addAfter(terminate_handler, NULL, NULL, HT_ALL, HT_FILTER_LAST);
 
-	cwd = HTGetCurrentDirectoryURL();
-	absolute_url = HTParse(url, cwd, PARSE_ALL);
-	chunk = HTLoadToChunk(absolute_url, request);
+  cwd = HTGetCurrentDirectoryURL();
+  absolute_url = HTParse(url, cwd, PARSE_ALL);
+  chunk = HTLoadToChunk(absolute_url, request);
 
   HT_FREE(absolute_url);
-	HT_FREE(cwd);
+  HT_FREE(cwd);
 
-	/* If chunk != NULL then we have the data */
-	if (chunk) {
+  /* If chunk != NULL then we have the data */
+  if (chunk) {
     /* Go into the event loop... */
     HTEventList_loop(request);
 
     /* print the chunk result */
     string = HTChunk_toCString(chunk);
   }
-	
+  
   /* Clean up the request */
   HTRequest_delete(request);
 

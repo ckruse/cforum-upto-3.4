@@ -57,7 +57,7 @@ typedef int (*t_take_default)(t_configfile *cfile,u_char *name,u_char **args,int
 struct s_conf_opt {
   u_char *name; /**< The name of the configuration directive */
   t_take callback; /**< The callback function */
-	u_int32_t flags; /**< Flags for this entry */
+  u_int32_t flags; /**< Flags for this entry */
   void *data; /**< User defined data */
 };
 

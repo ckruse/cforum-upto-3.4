@@ -156,7 +156,7 @@ t_cf_hash *cf_cgi_parse_path_info_nv(t_cf_hash *hash) {
   start = name = value = NULL;
 
   if(pi) {
-	  if(hash == NULL) hash = cf_hash_new(cf_cgi_destroy_entry);
+    if(hash == NULL) hash = cf_hash_new(cf_cgi_destroy_entry);
 
     for(ptr=pi;*ptr;ptr++) {
       if(*ptr == '/') {

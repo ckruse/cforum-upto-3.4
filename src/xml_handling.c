@@ -373,12 +373,12 @@ u_char *get_node_value(GdomeNode *n) {
       GdomeDOMString *y = gdome_n_nodeValue(n,&exc);
 
       if(y) {
-	u_char *z = strdup(y->str);
+        u_char *z = strdup(y->str);
 
-	gdome_n_unref(x,&exc);
-	gdome_str_unref(y);
+        gdome_n_unref(x,&exc);
+        gdome_str_unref(y);
 
-	return z;
+        return z;
       }
     }
 

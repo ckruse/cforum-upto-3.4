@@ -1145,7 +1145,7 @@ void sighandler(int segnum) {
 
   if(fd) {
     qs    = getenv("QUERY_STRING");
-		pi    = getenv("PATH_INFO");
+    pi    = getenv("PATH_INFO");
 
     if(GlobalValues) uname = cf_hash_get(GlobalValues,"UserName",8);
     

@@ -337,6 +337,14 @@ t_message *prev_subtree(t_message *msg);
  */
 void generate_tpl_name(u_char buff[],int len,t_name_value *v);
 
+/**
+ * This function generates a template name
+ * \param buff The buffer in which the name should be saved
+ * \param len The maximal length of the buffer
+ * \param name The template name string
+ */
+void gen_tpl_name(u_char buff[],int len,const u_char *name);
+
 #ifdef CF_SHARED_MEM
 /**
  * This function gets a pointer to the shared memory segment
