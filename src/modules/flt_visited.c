@@ -52,7 +52,8 @@ struct {
   DB *db;
   int mark_visited;
   int resp_204;
-} Cfg = { 0, NULL, NULL, NULL, NULL, 0, 0 };
+  int mark_all_visited;
+} Cfg = { 0, NULL, NULL, NULL, NULL, 0, 0, 0 };
 
 /* {{{ module api function, checks if message has been visited */
 void *flt_visited_is_visited(void *vmid) {
@@ -240,7 +241,7 @@ int mark_visited(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_messa
   DBT key,data;
   u_char buff[256];
   size_t len;
-
+  int fd;
 
   if(uname && Cfg.VisitedFile && Cfg.HighlightVisitedPostings) {
     memset(&key,0,sizeof(key));
@@ -249,6 +250,16 @@ int mark_visited(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_messa
     len = snprintf(buff,256,"%llu",msg->mid);
     key.data = buff;
     key.size = len;
+
+    if(Cfg.mark_all_visited) {
+      if(Cfg.db->put(Cfg.db,NULL,&key,&data,DB_NODUPDATA|DB_NOOVERWRITE) == 0) {
+        snprintf(buff,256,"%s.tm",Cfg.VisitedFile);
+        remove(buff);
+        if((fd = open(buff,O_CREAT|O_TRUNC|O_WRONLY)) != -1) close(fd);
+      }
+
+      memset(&data,0,sizeof(data));
+    }
 
     if(Cfg.db->get(Cfg.db,NULL,&key,&data,0) == 0) {
       tpl_cf_setvar(&msg->tpl,"visited","1",1,0);
@@ -335,6 +346,7 @@ time_t flt_visited_lm(t_cf_hash *head,t_configuration *dc,t_configuration *vc,vo
 /* {{{ flt_visited_init_handler */
 int flt_visited_init_handler(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc) {
   int ret;
+  u_char *mav;
 
   if(Cfg.VisitedFile) {
     if((ret = db_create(&Cfg.db,NULL,0)) != 0) {
@@ -348,6 +360,10 @@ int flt_visited_init_handler(t_cf_hash *cgi,t_configuration *dc,t_configuration 
     }
 
     return FLT_OK;
+  }
+
+  if(cgi && (mav = cf_cgi_get(cgi,"mav")) != NULL) {
+    if(*mav == '1') Cfg.mark_all_visited = 1;
   }
 
   return FLT_DECLINE;

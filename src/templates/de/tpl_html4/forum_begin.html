@@ -169,7 +169,8 @@
                   <a href="http://aktuell.de.selfhtml.org/live/chat.htm" onclick="if (!window.Chat) return true; Chat(); return false;"{if $frame} target="_top"{endif}>Chat</a><br>
                 </p>
                 <p>
-                  <b>Optionen:</b><br>{if $authed}{if $delnodelete}
+                  <b>Optionen:</b><br>{if $authed}
+                  <a href="{$ubase}?mav=1">Alle Threads als gelesen markieren</a><br>{if $delnodelete}
                   <a href="{$ubase}">Threads wieder ausblenden</a>{else}<a href="{$ubase}?a=nd">Ausgeblendete Threads anzeigen</a>{endif}{endif}
                   <a href="{$userconfig}"{if $frame} target="_top"{endif}>{if $authed}Benutzer-Einstellungen{else}Benutzer-Registrierung{endif}</a><br>{if !$authed}
                   <a href="{$ubase}"{if $frame} target="_top"{endif}>Benutzerspezifische Ansicht</a><br>{endif}{if $admin}{if $aaf}

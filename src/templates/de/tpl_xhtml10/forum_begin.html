@@ -140,7 +140,8 @@ function snap(obj) {
 <h2>Optionen:</h2>
 
 <ul>
-{if $authed}{if $delnodelete}<li id="optionen-threads-ausblenden"><a href="{$ubase}">Threads wieder ausblenden</a></li>
+{if $authed}
+<li id="threads-gelesen-markieren"><a href="{$ubase}?mav=1">Alle Threads als gelesen markieren</a></li>{if $delnodelete}<li id="optionen-threads-ausblenden"><a href="{$ubase}">Threads wieder ausblenden</a></li>
 {else}<li id="optionen-threads-einblenden"><a href="{$ubase}?a=nd">Ausgeblendete Threads anzeigen</a></li>
 {endif}{endif}<li id="optionen-myadmin"><a href="{$userconfig}"{if $frame} target="_top"{endif}>{if $authed}Benutzer-Einstellungen{else}Benutzer-Registrierung{endif}</a></li>
 {if !$authed}<li id="optionen-my"><a href="{$ubase}"{if $frame} target="_top"{endif}>Benutzerspezifische Ansicht</a></li>
