@@ -19,7 +19,7 @@ end
 block "tag"
   lineend stay
   onregexp_start "^[A-Za-z][A-Za-z_0-9]+" highlight "name"
-  onregexpafter "^\\s" "^[A-Za-z]" "tagattr" "attribute"
+  onregexp "^[A-Za-z]" "tagattr" "attribute"
   onstring "&gt;" pop
 end
 

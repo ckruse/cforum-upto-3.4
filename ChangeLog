@@ -1,3 +1,6 @@
+2005-03-05 Christian Seiler <self@christian-seiler.de>
+	* conf/patterns/html.pat: Fixed small bug
+
 2005-02-04 Christian Kruse <ckruse@wwwtech.de>
 	* src/fo_post.c, src/fo_feeds.c: Fixed two small compile errors in
 		non-shm-mode
