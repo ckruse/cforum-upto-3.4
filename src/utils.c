@@ -265,7 +265,7 @@ void redirect_with_nice_uri(const u_char *ruri,int perm) {
         break;
       default:
         slash = 0;
-        str_char_append(&uri,*ptr),
+        str_char_append(&uri,*ptr);
     }
   }
 
