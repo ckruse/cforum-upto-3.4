@@ -18,34 +18,49 @@
 #include "config.h"
 #include "defines.h"
 
-#include <db.h>
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
 #include <time.h>
 
+#include <pthread.h>
+
 #include <sys/stat.h>
 #include <sys/types.h>
 
-#include <pthread.h>
+#include <db.h>
+
+struct sockaddr_un;
 
 #include "cf_pthread.h"
 
-#include "readline.h"
 #include "hashlib.h"
 #include "utils.h"
 #include "configparser.h"
 #include "readline.h"
-#include "fo_server.h"
+
+#include "serverutils.h"
 #include "serverlib.h"
+#include "fo_server.h"
 /* }}} */
 
-static DB *NamesDB = NULL;
-static u_char *AuthNames = NULL;
+typedef struct s_names_db {
+  DB *NamesDB;
+  u_char *AuthNames;
+} t_names_db;
 
-u_char *transform(const u_char *val) {
+static t_cf_hash *flt_rn_namesdb = NULL;
+
+void flt_registerednames_cleanup_hash(void *arg) {
+  t_names_db *ndb = (t_names_db *)arg;
+
+  ndb->NamesDB->close(ndb->NamesDB,0);
+  free(ndb->AuthNames);
+}
+
+/* {{{ flt_registerednames_transform */
+u_char *flt_registerednames_transform(const u_char *val) {
   register u_char *ptr = (u_char *)val;
   register int ws = 0;
   t_string str;
@@ -75,8 +90,10 @@ u_char *transform(const u_char *val) {
 
   return str.content;
 }
+/* }}} */
 
-int check_auth(u_char *name,u_char *pass) {
+/* {{{ flt_registerednames_check_auth */
+int flt_registerednames_check_auth(t_names_db *ndb,u_char *name,u_char *pass) {
   DBT key,data;
   int ret;
 
@@ -86,8 +103,8 @@ int check_auth(u_char *name,u_char *pass) {
   key.data = name;
   key.size = strlen(name);
 
-  if((ret = NamesDB->get(NamesDB,NULL,&key,&data,0)) != 0) {
-    if(ret != DB_NOTFOUND) cf_log(LOG_ERR,__FILE__,__LINE__,"db->get: %s\n",db_strerror(ret));
+  if((ret = ndb->NamesDB->get(ndb->NamesDB,NULL,&key,&data,0)) != 0) {
+    if(ret != DB_NOTFOUND) cf_log(CF_ERR,__FILE__,__LINE__,"db->get: %s\n",db_strerror(ret));
     return ret == DB_NOTFOUND ? 0 : -1;
   }
 
@@ -96,17 +113,16 @@ int check_auth(u_char *name,u_char *pass) {
 
   return 1;
 }
+/* }}} */
 
-unsigned long long hashval(DB *db,u_char *key,size_t length) {
-  return lookup(key,length,0);
-}
-
-int flt_registerednames_handler(int connfd,const u_char **tokens,int tnum,rline_t *tsd) {
+/* {{{ flt_registerednames_handler */
+int flt_registerednames_handler(int connfd,t_forum *forum,const u_char **tokens,int tnum,rline_t *tsd) {
   u_char *ln = NULL,*tmp,*names[2] = { NULL, NULL },*pass = NULL;
   long llen;
   t_cf_hash *infos;
   DBT key,data;
   int ret;
+  t_names_db *ndb = cf_hash_get(flt_rn_namesdb,forum->name,strlen(forum->name));
 
   memset(&key,0,sizeof(key));
   memset(&data,0,sizeof(data));
@@ -141,34 +157,35 @@ int flt_registerednames_handler(int connfd,const u_char **tokens,int tnum,rline_
 
     if(ln) {
       if(tnum == 2 || tnum == 3) {
+	/* {{{ AUTH CHECK */
         if(cf_strncmp(tokens[1],"CHECK",5) == 0) {
-          names[0] = transform(cf_hash_get(infos,"Name",4));
+          names[0] = flt_registerednames_transform(cf_hash_get(infos,"Name",4));
           pass     = cf_hash_get(infos,"Pass",4);
 
           if(!names[0]) {
             writen(connfd,"503 Bad request\n",16);
           }
           else {
-            if(check_auth(names[0],pass) == 0) writen(connfd,"200 Ok\n",7);
+            if(flt_registerednames_check_auth(ndb,names[0],pass) == 0) writen(connfd,"200 Ok\n",7);
             else writen(connfd,"504 Auth required\n",18);
           }
         }
         else if(cf_strncmp(tokens[1],"DELETE",6) == 0) {
-          names[0] = transform(cf_hash_get(infos,"Name",4));
+          names[0] = flt_registerednames_transform(cf_hash_get(infos,"Name",4));
           pass     = cf_hash_get(infos,"Pass",4);
 
           if(!names[0] || (!pass && tnum != 3)) {
             writen(connfd,"504 Auth required\n",18);
           }
           else {
-            if(tnum != 3 && check_auth(names[0],pass) != 0) {
+            if(tnum != 3 && flt_registerednames_check_auth(ndb,names[0],pass) != 0) {
               writen(connfd,"504 Auth required\n",18);
             }
             else {
               key.data = names[0];
               key.size = strlen(names[0]);
-              if((ret = NamesDB->del(NamesDB,NULL,&key,0)) != 0) {
-                if(ret != DB_NOTFOUND) cf_log(LOG_ERR,__FILE__,__LINE__,"DB->del: %s\n",db_strerror(ret));
+              if((ret = ndb->NamesDB->del(ndb->NamesDB,NULL,&key,0)) != 0) {
+                if(ret != DB_NOTFOUND) cf_log(CF_ERR,__FILE__,__LINE__,"DB->del: %s\n",db_strerror(ret));
                 writen(connfd,"504 Auth required\n",18);
               }
               else {
@@ -177,9 +194,11 @@ int flt_registerednames_handler(int connfd,const u_char **tokens,int tnum,rline_
             }
           }
         }
+	/* }}} */
+	/* {{{ AUTH SET */
         else if(cf_strncmp(tokens[1],"SET",3) == 0) {
-          names[0] = transform(cf_hash_get(infos,"Name",4));
-          names[1] = transform(cf_hash_get(infos,"New-Name",8));
+          names[0] = flt_registerednames_transform(cf_hash_get(infos,"Name",4));
+          names[1] = flt_registerednames_transform(cf_hash_get(infos,"New-Name",8));
           pass     = cf_hash_get(infos,"Pass",4);
 
           if(!names[1] || !pass) {
@@ -187,20 +206,20 @@ int flt_registerednames_handler(int connfd,const u_char **tokens,int tnum,rline_
           }
           else {
             if(names[0]) {
-              if(check_auth(names[0],pass) == 0) {
+              if(flt_registerednames_check_auth(ndb,names[0],pass) == 0) {
                 /* check if registered and set auth */
                 key.data = names[1];
                 key.size = strlen(names[1]);
 
-                if((ret = NamesDB->get(NamesDB,NULL,&key,&data,0)) == 0) {
+                if((ret = ndb->NamesDB->get(ndb->NamesDB,NULL,&key,&data,0)) == 0) {
                   writen(connfd,"504 Auth required\n",18);
                 }
                 else {
                   if(ret == DB_NOTFOUND) {
                     data.data = pass;
                     data.size = strlen(pass)+1; // don't forget the terminating \0
-                    if((ret = NamesDB->put(NamesDB,NULL,&key,&data,0)) != 0) {
-                      cf_log(LOG_ERR,__FILE__,__LINE__,"DB->put: %s\n",db_strerror(ret));
+                    if((ret = ndb->NamesDB->put(ndb->NamesDB,NULL,&key,&data,0)) != 0) {
+                      cf_log(CF_ERR,__FILE__,__LINE__,"DB->put: %s\n",db_strerror(ret));
                       writen(connfd,"504 Auth required\n",18);
                     }
                     else {
@@ -209,13 +228,13 @@ int flt_registerednames_handler(int connfd,const u_char **tokens,int tnum,rline_
                       key.data = names[0];
                       key.size = strlen(names[0]);
 
-                      if((ret = NamesDB->del(NamesDB,NULL,&key,0)) != 0) {
-                        if(ret != DB_NOTFOUND) cf_log(LOG_ERR,__FILE__,__LINE__,"ALERT! DB->del failed: %s\n",db_strerror(ret));
+                      if((ret = ndb->NamesDB->del(ndb->NamesDB,NULL,&key,0)) != 0) {
+                        if(ret != DB_NOTFOUND) cf_log(CF_ERR,__FILE__,__LINE__,"ALERT! DB->del failed: %s\n",db_strerror(ret));
                       }
                     }
                   }
                   else {
-                    cf_log(LOG_ERR,__FILE__,__LINE__,"DB->get: %s\n",db_strerror(ret));
+                    cf_log(CF_ERR,__FILE__,__LINE__,"DB->get: %s\n",db_strerror(ret));
                     writen(connfd,"504 Auth required\n",18);
                   }
                 }
@@ -229,15 +248,15 @@ int flt_registerednames_handler(int connfd,const u_char **tokens,int tnum,rline_
               key.data = names[1];
               key.size = strlen(names[1]);
 
-              if((ret = NamesDB->get(NamesDB,NULL,&key,&data,0)) == 0) {
+              if((ret = ndb->NamesDB->get(ndb->NamesDB,NULL,&key,&data,0)) == 0) {
                 writen(connfd,"504 Auth required\n",18);
               }
               else {
                 if(ret == DB_NOTFOUND) {
                   data.data = pass;
                   data.size = strlen(pass)+1;
-                  if((ret = NamesDB->put(NamesDB,NULL,&key,&data,0)) != 0) {
-                    cf_log(LOG_ERR,__FILE__,__LINE__,"DB->put: %s\n",db_strerror(ret));
+                  if((ret = ndb->NamesDB->put(ndb->NamesDB,NULL,&key,&data,0)) != 0) {
+                    cf_log(CF_ERR,__FILE__,__LINE__,"DB->put: %s\n",db_strerror(ret));
                     writen(connfd,"504 Auth required\n",18);
                   }
                   else {
@@ -245,7 +264,7 @@ int flt_registerednames_handler(int connfd,const u_char **tokens,int tnum,rline_
                   }
                 }
                 else {
-                  cf_log(LOG_ERR,__FILE__,__LINE__,"DB->get: %s\n",db_strerror(ret));
+                  cf_log(CF_ERR,__FILE__,__LINE__,"DB->get: %s\n",db_strerror(ret));
                   writen(connfd,"504 Auth required\n",18);
                 }
               }
@@ -253,16 +272,19 @@ int flt_registerednames_handler(int connfd,const u_char **tokens,int tnum,rline_
           }
 
         }
+	/* }}} */
+	/* {{{ AUTH GET */
         else if(cf_strncmp(tokens[1],"GET",3) == 0) {
-          names[0] = transform(cf_hash_get(infos,"Name",4));
+          names[0] = flt_registerednames_transform(cf_hash_get(infos,"Name",4));
           key.data = names[0];
           key.size = strlen(names[0]);
 
-          if((ret = NamesDB->get(NamesDB,NULL,&key,&data,0)) == 0) {
+          if((ret = ndb->NamesDB->get(ndb->NamesDB,NULL,&key,&data,0)) == 0) {
             writen(connfd,"504 Auth required\n",18);
           }
 
         }
+	/* }}} */
         else {
           writen(connfd,"503 Sorry, I do not understand\n",31);
         }
@@ -283,45 +305,67 @@ int flt_registerednames_handler(int connfd,const u_char **tokens,int tnum,rline_
 
   return FLT_DECLINE;
 }
+/* }}} */
 
+/* {{{ flt_registerednames_init_module */
 int flt_registerednames_init_module(int sock) {
   int ret;
+  t_names_db *ndb;
+  t_name_value *forums = cfg_get_first_value(&fo_server_conf,NULL,"Forums");
+  size_t i;
 
-  if(!AuthNames) {
-    cf_log(LOG_ERR,__FILE__,__LINE__,"I need a database to save the names in!\n");
+  if(!flt_rn_namesdb) {
+    cf_log(CF_ERR,__FILE__,__LINE__,"I need a database to save the names in!\n");
     return FLT_EXIT;
   }
 
-  if((ret = db_create(&NamesDB,NULL,0)) != 0) {
-    cf_log(LOG_ERR,__FILE__,__LINE__,"db_create: %s\n",db_strerror(ret));
-    return FLT_EXIT;
-  }
+  for(i=0;i<forums->valnum;++i) {
+    if((ndb = cf_hash_get(flt_rn_namesdb,forums->values[i],strlen(forums->values[i]))) == NULL) {
+      cf_log(CF_ERR,__FILE__,__LINE__,"could not get AuthNames database for forum %s!\n",forums->values[i]);
+      return FLT_EXIT;
+    }
 
-  if((ret = NamesDB->open(NamesDB,NULL,AuthNames,NULL,DB_HASH,DB_CREATE,0644)) != 0) {
-    cf_log(LOG_ERR,__FILE__,__LINE__,"DB->open(%s): %s\n",AuthNames,db_strerror(ret));
-    return FLT_EXIT;
+    if((ret = db_create(&ndb->NamesDB,NULL,0)) != 0) {
+      cf_log(CF_ERR,__FILE__,__LINE__,"db_create: %s\n",db_strerror(ret));
+      return FLT_EXIT;
+    }
+
+    if((ret = ndb->NamesDB->open(ndb->NamesDB,NULL,ndb->AuthNames,NULL,DB_BTREE,DB_CREATE,0644)) != 0) {
+      cf_log(CF_ERR,__FILE__,__LINE__,"DB->open(%s): %s\n",ndb->AuthNames,db_strerror(ret));
+      return FLT_EXIT;
+    }
   }
 
   cf_register_protocol_handler("AUTH",flt_registerednames_handler);
 
   return FLT_OK;
 }
+/* }}} */
 
+/* {{{ flt_registerednames_handle_command */
 int flt_registerednames_handle_command(t_configfile *cf,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
+  t_names_db *ndb,ndb1;
+
+  if(flt_rn_namesdb == NULL) flt_rn_namesdb = cf_hash_new(flt_registerednames_cleanup_hash);
+
   if(argnum == 1) {
-    if(AuthNames) free(AuthNames);
-    AuthNames = strdup(args[0]);
+    if((ndb = cf_hash_get(flt_rn_namesdb,(u_char *)context,strlen(context))) == NULL) ndb1.AuthNames = strdup(args[0]);
+    else {
+      free(ndb->AuthNames);
+      ndb->AuthNames = strdup(args[0]);
+    }
   }
   else {
-    cf_log(LOG_ERR,__FILE__,__LINE__,"flt_registerednames: expecting one argument for directive AuthNames!\n");
+    cf_log(CF_ERR,__FILE__,__LINE__,"flt_registerednames: expecting one argument for directive AuthNames!\n");
+    return 1;
   }
 
   return 0;
 }
+/* }}} */
 
 void flt_registerednames_cleanup(void) {
-  if(AuthNames) free(AuthNames);
-  if(NamesDB)   NamesDB->close(NamesDB,0);
+  if(flt_rn_namesdb) cf_hash_destroy(flt_rn_namesdb);
 }
 
 t_conf_opt flt_registerednames_config[] = {
