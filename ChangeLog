@@ -1,3 +1,6 @@
+2005-02-22 Christian Kruse <ckruse@wwwtech.de>
+	* src/modules/flt_mailonpost.c: Fixed bug in checkbox, now it should work
+
 2005-02-21 Christian Kruse <ckruse@wwwtech.de>
 	* conf/fo_usermanagement.conf.in, conf/modules.de.xml, src/fo_view.c,
 		src/clientlib.h, src/modules/flt_livefilter.c, src/modules/flt_deleted.c,
