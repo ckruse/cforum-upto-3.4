@@ -29,6 +29,8 @@
 
 #include <pthread.h>
 
+#include <db.h>
+
 #include "cf_pthread.h"
 
 #include "hashlib.h"
@@ -40,71 +42,81 @@
 #include "fo_tid_index.h"
 /* }}} */
 
-int cmp(const void *t,const void *elem) {
-  const struct tm *tm = (const struct tm *)t;
-  const t_tid_index *idx = (const t_tid_index *)elem;
-
-  if(tm->tm_year + 1900 > idx->year) return 1;
-  if(tm->tm_year + 1900 < idx->year) return -1;
-  if(tm->tm_mon + 1 > idx->month) return 1;
-  if(tm->tm_mon + 1 < idx->month) return -1;
-
-  return 0;
-}
-
 int flt_tidx_module(t_thread *thr) {
   t_name_value *v = cfg_get_first_value(&fo_default_conf,"ThreadIndexFile");
-  t_array index;
-  FILE *fd;
   struct stat st;
-  t_tid_index *idx;
   struct tm t;
-
-  array_init(&index,sizeof(t_tid_index),NULL);
+  DB *db;
+  DBT key,data;
+  int ret;
+  t_string str;
+  u_char buff[256];
+  u_char tid[50];
+  size_t len,tlen;
 
   if(!v) return FLT_DECLINE;
   if(stat(v->values[0],&st) == -1) return FLT_DECLINE;
 
-  index.array    = fo_alloc(NULL,1,st.st_size,FO_ALLOC_MALLOC);
-  index.reserved = st.st_size;
-  index.elements = st.st_size / sizeof(t_tid_index);
-
-  if((fd = fopen(v->values[0],"r")) == NULL) {
-    free(index.array);
-    return FLT_DECLINE;
-  }
-  fread(index.array,sizeof(t_tid_index),st.st_size/sizeof(t_tid_index),fd);
-  fclose(fd);
-
   if(localtime_r(&thr->postings->date,&t) == NULL) {
-    free(index.array);
     return FLT_DECLINE;
   }
 
-  if((idx = array_bsearch(&index,&t,cmp)) == NULL) {
-    t_tid_index id;
+  /* {{{ open database */
+  if((ret = db_create(&db,NULL,0)) != 0) {
+    cf_log(LOG_ERR,__FILE__,__LINE__,"DB error: %s\n",db_strerror(ret));
+    return FLT_DECLINE;
+  }
 
-    id.year  = t.tm_year + 1900;
-    id.month = t.tm_mon  + 1;
+  if((ret = db->open(db,NULL,v->values[0],NULL,DB_BTREE,DB_CREATE,0644)) != 0) {
+    cf_log(LOG_ERR,__FILE__,__LINE__,"DB error: %s\n",db_strerror(ret));
+    return FLT_DECLINE;
+  }
+  /* }}} */
 
-    id.start = thr->tid;
-    id.end   = thr->tid;
+  len  = snprintf(buff,256,"%d/%d",t.tm_year+1900,t.tm_mon+1);
+  tlen = snprintf(tid,50,"%llu",thr->tid);
 
-    array_push(&index,&id);
+  key.data = tid;
+  key.size = tlen;
+
+  if((ret = db->get(db,NULL,&key,&data,0)) != 0) {
+    if(ret != DB_NOTFOUND) {
+      cf_log(LOG_ERR,__FILE__,__LINE__,"DB error: %s\n",db_strerror(ret));
+      db->close(db,0);
+      return FLT_DECLINE;
+    }
+
+    data.data = buff;
+    data.size = len;
+
+    if((ret = db->put(db,NULL,&key,&data,0)) != 0) {
+      cf_log(LOG_ERR,__FILE__,__LINE__,"DB error: %s\n",db_strerror(ret));
+      db->close(db,0);
+      return FLT_DECLINE;
+    }
   }
   else {
-    if(thr->tid < idx->start)    idx->start = thr->tid;
-    else if(thr->tid > idx->end) idx->end   = thr->tid;
+    str_init(&str);
+    str_chars_append(&str,data.data,data.size);
+    str_char_append(&str,'\0');
+    str_chars_append(&str,buff,len);
+
+    data.data = str.content;
+    data.size = str.len;
+
+    db->del(db,NULL,&key,0);
+    if((ret = db->put(db,NULL,&key,&data,0)) != 0) {
+      cf_log(LOG_ERR,__FILE__,__LINE__,"DB error: %s\n",db_strerror(ret));
+      db->close(db,0);
+      return FLT_DECLINE;
+    }
+
+    str_cleanup(&str);
   }
 
-  if((fd = fopen(v->values[0],"w")) != 0) {
-    free(index.array);
-    return FLT_DECLINE;
-  }
-  fwrite(index.array,sizeof(t_tid_index),index.elements,fd);
-  fclose(fd);
+  db->close(db,0);
 
-  return FLT_OK;
+  return FLT_DECLINE;
 }
 
 

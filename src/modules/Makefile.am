@@ -67,6 +67,7 @@ flt_registerednames_la_LDFLAGS=-module -export-dynamic -avoid-version
 
 pkglib_LTLIBRARIES+=flt_tid_index.la
 flt_tid_index_la_SOURCES=flt_tid_index.c
+flt_tid_index_la_LIBADD=$(BDB_LIB)
 flt_tid_index_la_LDFLAGS=-module -export-dynamic -avoid-version
 
 pkglib_LTLIBRARIES+=flt_tplmode.la

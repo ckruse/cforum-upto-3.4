@@ -38,6 +38,8 @@
 #include <unistd.h>
 #include <sys/un.h>
 
+#include <db.h>
+
 #include "hashlib.h"
 #include "utils.h"
 #include "configparser.h"
@@ -48,8 +50,8 @@
 #include "fo_tid_index.h"
 /* }}} */
 
-/** Array containig the index entries */
-t_array idx;
+/** Database containig the index entries */
+DB *Tdb = NULL;
 
 /* {{{ is_digit */
 /**
@@ -98,16 +100,22 @@ int is_thread(const char *path) {
  */
 void index_month(char *year,char *month) {
   t_name_value *apath = cfg_get_first_value(&fo_default_conf,"ArchivePath");
-  char path[256],path1[256];
-  u_int64_t min = (u_int64_t)-1,max = 0,tmp;
+  char path[256],path1[256],ym[256];
   t_tid_index midx;
   struct stat st;
+  DBT key,data;
+  size_t ym_len,len;
+  t_string str;
+  int ret;
+  u_int64_t x;
+  u_char y[50];
 
   DIR *m;
   struct dirent *ent;
 
   (void)snprintf(path,256,"%s/%s/%s",apath->values[0],year,month);
   (void)snprintf(path1,256,"%s/%s/%s/.leave",apath->values[0],year,month);
+  ym_len = snprintf(ym,256,"%s/%s",year,month);
 
   if(stat(path1,&st) == 0) return;
 
@@ -116,22 +124,47 @@ void index_month(char *year,char *month) {
     exit(EXIT_FAILURE);
   }
 
+  memset(&key,0,sizeof(key));
+  memset(&data,0,sizeof(data));
+  str_init(&str);
+
   while((ent = readdir(m)) != NULL) {
     if(is_thread(ent->d_name) == -1) continue;
 
-    tmp = strtoull(ent->d_name+1,NULL,10);
-    if(tmp > max) max = tmp;
-    if(tmp < min) min = tmp;
+    x   = strtoull(ent->d_name+1,NULL,10);
+    len = snprintf(y,50,"%llu",x);
+
+    key.data = y;
+    key.size = len;
+
+    if(Tdb->get(Tdb,NULL,&key,&data,0) == 0) {
+      str_chars_append(&str,data.data,data.size);
+      str_char_append(&str,'\0');
+      str_chars_append(&str,ym,ym_len);
+
+      data.data = str.content;
+      data.size = str.len;
+
+      Tdb->del(Tdb,NULL,&key,0);
+      if((ret = Tdb->put(Tdb,NULL,&key,&data,0)) != 0) {
+        fprintf(stderr,"DB error: %s\n",db_strerror(ret));
+        exit(-1);
+      }
+
+      str_cleanup(&str);
+    }
+    else {
+      data.data = ym;
+      data.size = ym_len;
+
+      if((ret = Tdb->put(Tdb,NULL,&key,&data,0)) != 0) {
+        fprintf(stderr,"DB error: %s\n",db_strerror(ret));
+        exit(-1);
+      }
+    }
   }
 
   closedir(m);
-
-  midx.year  = atoi(year);
-  midx.month = atoi(month);
-  midx.start = min;
-  midx.end   = max;
-
-  array_push(&idx,&midx);
 }
 /* }}} */
 
@@ -164,20 +197,6 @@ void do_year(char *year) {
 }
 /* }}} */
 
-/* {{{ cmp */
-#ifndef DOXYGEN
-int cmp(const void *elem1,const void *elem2) {
-  t_tid_index *id1 = (t_tid_index *)elem1;
-  t_tid_index *id2 = (t_tid_index *)elem2;
-
-  if(id1->start > id2->start) return 1;
-  if(id1->start < id2->start) return -1;
-
-  return 0;
-}
-#endif
-/* }}} */
-
 /* {{{ main */
 /**
  * Main function
@@ -190,10 +209,10 @@ int main(int argc,char *argv[],char *envp[]) {
   u_char *file;
   t_configfile dconf;
   t_name_value *ent,*idxfile;
-  FILE *fd;
 
   DIR *years;
   struct dirent *year;
+  int ret;
 
   static const u_char *wanted[] = {
     "fo_default"
@@ -219,8 +238,6 @@ int main(int argc,char *argv[],char *envp[]) {
     return EXIT_FAILURE;
   }
 
-  array_init(&idx,sizeof(t_tid_index),NULL);
-
   if((ent = cfg_get_first_value(&fo_default_conf,"ArchivePath")) == NULL) {
     fprintf(stderr,"error getting archive path\n");
     return EXIT_FAILURE;
@@ -229,6 +246,18 @@ int main(int argc,char *argv[],char *envp[]) {
     fprintf(stderr,"error getting index file\n");
     return EXIT_FAILURE;
   }
+
+  /* {{{ open database */
+  if((ret = db_create(&Tdb,NULL,0)) != 0) {
+    fprintf(stderr,"DB error: %s\n",db_strerror(ret));
+    return EXIT_FAILURE;
+  }
+
+  if((ret = Tdb->open(Tdb,NULL,idxfile->values[0],NULL,DB_BTREE,DB_CREATE,0644)) != 0) {
+    fprintf(stderr,"DB error: %s\n",db_strerror(ret));
+    return EXIT_FAILURE;
+  }
+  /* }}} */
 
   if((years = opendir(ent->values[0])) == NULL) {
     fprintf(stderr,"opendir(%s): %s\n",ent->values[0],strerror(errno));
@@ -243,13 +272,9 @@ int main(int argc,char *argv[],char *envp[]) {
 
   closedir(years);
 
-  array_sort(&idx,cmp);
-  if((fd = fopen(idxfile->values[0],"w")) == NULL) {
-    fprintf(stderr,"fopen(%s): %s\n",idxfile->values[0],strerror(errno));
-    return EXIT_FAILURE;
-  }
-  fwrite(idx.array,idx.element_size,idx.elements,fd);
-  fclose(fd);
+  /* {{{ close database */
+  if(Tdb) Tdb->close(Tdb,0);
+  /* }}} */
 
   cfg_cleanup(&fo_default_conf);
   cfg_cleanup_file(&dconf);

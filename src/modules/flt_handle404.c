@@ -28,6 +28,8 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
+#include <db.h>
+
 #include "hashlib.h"
 #include "utils.h"
 #include "configparser.h"
@@ -35,7 +37,6 @@
 #include "template.h"
 #include "readline.h"
 #include "clientlib.h"
-#include "fo_tid_index.h"
 /* }}} */
 
 /* {{{ flt_handle404_cmp */
@@ -53,33 +54,50 @@ int flt_handle404_cmp(const void *elem1,const void *elem2) {
 int flt_handle404_execute(t_cf_hash *head,t_configuration *dc,t_configuration *vc,u_int64_t tid,u_int64_t mid) {
   t_name_value *v    = cfg_get_first_value(&fo_default_conf,"ThreadIndexFile");
   t_name_value *aurl = cfg_get_first_value(&fo_default_conf,"ArchiveURL");
-  t_array ary;
   struct stat st;
-  FILE *fd;
   u_char *port = getenv("SERVER_PORT");
-  t_tid_index *idx;
+  DB *db;
+  DBT key,data;
+  u_char ctid[50];
+  size_t len;
 
   if(stat(v->values[0],&st) == -1) return FLT_DECLINE;
-  if((fd = fopen(v->values[0],"r")) == NULL) return FLT_DECLINE;
 
-  array_init(&ary,sizeof(t_tid_index),NULL);
-  ary.array    = fo_alloc(NULL,1,st.st_size,FO_ALLOC_MALLOC);
-  ary.reserved = st.st_size;
-  ary.elements = st.st_size / sizeof(t_tid_index);
+  /* {{{ open database */
+  if((ret = db_create(&db,NULL,0)) != 0) {
+    fprintf(stderr,"DB error: %s\n",db_strerror(ret));
+    return FLT_DECLINE;
+  }
 
-  fread(ary.array,sizeof(t_tid_index),st.st_size/sizeof(t_tid_index),fd);
-  fclose(fd);
+  if((ret = db->open(db,NULL,v->values[0],NULL,DB_BTREE,DB_RDONLY,0)) != 0) {
+    fprintf(stderr,"DB error: %s\n",db_strerror(ret));
+    return FLT_DECLINE;
+  }
+  /* }}} */
 
-  if((idx = array_bsearch(&ary,(void *)&tid,flt_handle404_cmp)) == NULL) return FLT_DECLINE;
+  len = snprintf(ctid,50,"%llu",tid);
+  key.data = ctid;
+  key.size = len;
+
+  if((ret = db->get(db,NULL,&key,&data,0)) != 0) {
+    if(ret != DB_NOTFOUND) {
+      fprintf(stderr,"DB error: %s\n",db_strerror(ret));
+    }
+
+    db->close(db,0);
+    return FLT_DECLINE;
+  }
 
   printf("Status: 301 Moved Permanently\015\012");
 
   if(!port || cf_strcmp(port,"80") == 0) {
-    printf("Location: http://%s%s%d/%d/t%llu/#m%llu\015\012\015\012",getenv("SERVER_NAME"),aurl->values[0],idx->year,idx->month,tid,mid);
+    printf("Location: http://%s%s/%s/t%llu/#m%llu\015\012\015\012",getenv("SERVER_NAME"),aurl->values[0],data.data,tid,mid);
   }
   else {
-    printf("Location: http://%s:%s%s%d/%d/t%llu/#m%llu\015\012\015\012",getenv("SERVER_NAME"),getenv("SERVER_PORT"),aurl->values[0],idx->year,idx->month,tid,mid);
+    printf("Location: http://%s:%s%s/%s/t%llu/#m%llu\015\012\015\012",getenv("SERVER_NAME"),getenv("SERVER_PORT"),aurl->values[0],data.data,tid,mid);
   }
+
+  db->close(db,0);
 
   return FLT_EXIT;
 }

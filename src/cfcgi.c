@@ -140,8 +140,10 @@ void cf_cgi_parse_path_info(t_array *ary) {
       }
     }
 
-    name = strdup(start+1);
-    array_push(ary,&name);
+    if(*start != '/') {
+      name = strdup(start+1);
+      array_push(ary,&name);
+    }
   }
 }
 /* }}} */

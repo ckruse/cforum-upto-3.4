@@ -1,3 +1,12 @@
+2004-07-16 Christian Kruse <ckruse@wwwtech.de>
+	* src/Makefile.am: Added berkeley DB for fo_tid_index and fo_threadlookup
+	* src/fo_tid_index.c, src/fo_threadlookup.c: Changed to BerkeleyDB
+	* src/modules/Makefile.am: Added berkeley DB for flt_tid_index.c and
+		flt_handle404.c
+	* src/modules/flt_tid_index.c, src/modules/flt_handle404.c: Changed to berkeley db
+	* TODO: Added TODO list
+	* src/cfcgi.c: Fixed bug in PATH_INFO parsing
+
 2004-07-15 Christian Kruse <ckruse@wwwtech.de>
 	* src/clientlib.c: Changed behavior of get_link() (now it's much more flexible)
 	* src/fo_view.c, src/flt_posting.c: adjusted get_link() calls to new behavior,

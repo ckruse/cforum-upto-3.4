@@ -37,6 +37,8 @@
 #include <unistd.h>
 #include <sys/un.h>
 
+#include <db.h>
+
 #include "hashlib.h"
 #include "utils.h"
 #include "configparser.h"
@@ -64,20 +66,6 @@ int is_tid(const u_char *c) {
 }
 /* }}} */
 
-/* {{{ cmp */
-#ifndef DOXYGEN
-int cmp(const void *elem1,const void *elem2) {
-  u_int64_t *tid = (u_int64_t *)elem1;
-  t_tid_index *id = (t_tid_index *)elem2;
-
-  if(*tid >= id->start && *tid <= id->end) return 0;
-  if(*tid < id->start) return -1;
-
-  return 1;
-}
-#endif
-/* }}} */
-
 /* {{{ main */
 /**
  * Main function
@@ -87,24 +75,28 @@ int cmp(const void *elem1,const void *elem2) {
  * \return EXIT_SUCCESS or EXIT_FAILURE
  */
 int main(int argc,char *argv[],char *envp[]) {
+  /* {{{ variables */
   t_array *cfgfiles;
   u_char *file;
   t_configfile dconf;
   u_int64_t tid;
   u_char *ctid;
-  t_array index;
   struct stat st;
   t_name_value *v;
-  FILE *fd;
-  t_tid_index *idx;
   t_name_value *archive_path;
   u_char *port = getenv("SERVER_PORT");
   t_array infos;
+  DB *Tdb;
+  DBT key,data;
+  int ret;
+  size_t len;
 
   static const u_char *wanted[] = {
     "fo_default"
   };
+  /* }}} */
 
+  /* {{{ initialization */
   cfg_init();
 
   cf_cgi_parse_path_info(&infos);
@@ -128,76 +120,97 @@ int main(int argc,char *argv[],char *envp[]) {
 
   if(infos.elements != 2 && infos.elements != 4) {
     /** \todo Cleanup code */
+    fprintf(stderr,"Wrong argument count: %d\n",infos.elements);
     return EXIT_FAILURE;
   }
 
   ctid = *((u_char **)array_element_at(&infos,1));
   if(is_tid(ctid) == -1) {
     /** \todo cleanup code */
+    fprintf(stderr,"Wrong argument, no tid\n");
     return EXIT_FAILURE;
   }
   if((v = cfg_get_first_value(&fo_default_conf,"ThreadIndexFile")) == NULL) {
     /** \todo Cleanup code */
+    fprintf(stderr,"ThreadIndexFile not found\n");
     return EXIT_FAILURE;
   }
+
   if((archive_path = cfg_get_first_value(&fo_default_conf,"ArchiveURL")) == NULL) {
     /** \todo cleanup file */
+    fprintf(stderr,"ArchiveURL not found\n");
     return EXIT_FAILURE;
   }
+  /* }}} */
+
+  /* {{{ open database */
   if(stat(v->values[0],&st) == -1) {
     printf("Status: 404 Not Found\015\012Content-Type: text/html\015\012\015\012");
     str_error_message("E_FO_404",NULL,8);
     return EXIT_FAILURE;
   }
-
-  tid = strtoull(ctid,NULL,10);
-
-  /* do a lookup */
-  array_init(&index,sizeof(t_tid_index),NULL);
-
-  index.array    = fo_alloc(NULL,1,st.st_size,FO_ALLOC_MALLOC);
-  index.reserved = st.st_size;
-  index.elements = st.st_size / sizeof(t_tid_index);
-
-  if((fd = fopen(v->values[0],"r")) == NULL) {
-    printf("Status: 500 Internal Server Error\015\012Content-Type: text/html\015\012\015\012");
-    str_error_message("E_ARCHIVE_ERROR",NULL,15);
+  if((ret = db_create(&Tdb,NULL,0)) != 0) {
+    fprintf(stderr,"DB ewrror: %s\n",db_strerror(ret));
     return EXIT_FAILURE;
   }
-  fread(index.array,sizeof(t_tid_index),st.st_size/sizeof(t_tid_index),fd);
-  fclose(fd);
 
-  if((idx = array_bsearch(&index,(void *)&tid,cmp)) == NULL) {
+  if((ret = Tdb->open(Tdb,NULL,v->values[0],NULL,DB_BTREE,DB_RDONLY,0)) != 0) {
+    fprintf(stderr,"DB error: %s\n",db_strerror(ret));
+    return EXIT_FAILURE;
+  }
+  /* }}} */
+
+  /* {{{ get URLs */
+  tid = strtoull(ctid,NULL,10);
+
+  memset(&key,0,sizeof(key));
+  memset(&data,0,sizeof(data));
+
+  key.data = ctid;
+  key.size = strlen(ctid);
+
+  if((ret = Tdb->get(Tdb,NULL,&key,&data,0)) != 0) {
     printf("Status: 404 Not Found\015\012Content-Type: text/html\015\012\015\012");
     str_error_message("E_FO_404",NULL,8);
     return EXIT_FAILURE;
   }
+  /* }}} */
 
+  /* {{{ check if there is more than one entry */
+  len = strlen(data.data);
+  if(len < data.size) {
+    /* k, we have got more than one thread. What to do? At the moment we ignore it. */
+  }
+  /* }}} */
+
+  /* {{{ redirect */
   printf("Status: 302 Moved Temporarily\015\012");
-
 
   if(!port || cf_strcmp(port,"80") == 0) {
     if(infos.elements == 4) {
-      printf("Location: http://%s%s%d/%d/%s/#m%s\015\012\015\012",getenv("SERVER_NAME"),archive_path->values[0],idx->year,idx->month,ctid,*((char **)array_element_at(&infos,3)));
+      printf("Location: http://%s%s/%s/t%s/#m%s\015\012\015\012",getenv("SERVER_NAME"),archive_path->values[0],(u_char *)data.data,ctid,*((char **)array_element_at(&infos,3)));
     }
     else {
-      printf("Location: http://%s%s%d/%d/%s/\015\012\015\012",getenv("SERVER_NAME"),archive_path->values[0],idx->year,idx->month,ctid);
+      printf("Location: http://%s%s/%s/t%s/\015\012\015\012",getenv("SERVER_NAME"),archive_path->values[0],(u_char *)data.data,ctid);
     }
   }
   else {
     if(infos.elements == 4) {
-      printf("Location: http://%s:%s%s%d/%d/%s/#m%s\015\012\015\012",getenv("SERVER_NAME"),getenv("SERVER_PORT"),archive_path->values[0],idx->year,idx->month,ctid,*((char **)array_element_at(&infos,3)));
+      printf("Location: http://%s:%s%s/%s/t%s/#m%s\015\012\015\012",getenv("SERVER_NAME"),getenv("SERVER_PORT"),archive_path->values[0],(u_char *)data.data,ctid,*((char **)array_element_at(&infos,3)));
     }
     else {
-      printf("Location: http://%s:%s%s%d/%d/%s/\015\012\015\012",getenv("SERVER_NAME"),getenv("SERVER_PORT"),archive_path->values[0],idx->year,idx->month,ctid);
+      printf("Location: http://%s:%s%s/t%s/\015\012\015\012",getenv("SERVER_NAME"),getenv("SERVER_PORT"),archive_path->values[0],(u_char *)data.data,ctid);
     }
   }
+  /* }}} */
 
+  /* {{{ cleanup */
   cfg_cleanup(&fo_default_conf);
   cfg_cleanup_file(&dconf);
 
   array_destroy(cfgfiles);
   free(cfgfiles);
+  /* }}} */
 
   return EXIT_SUCCESS;
 }

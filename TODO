@@ -1,0 +1,16 @@
+TODO for 2.0 Release:
+
+- Implement (optional) voting
+- Write cleanup code for cfg_cleanup()
+- Define cleanup function for tree in cfg_init()
+- Write cleanup routine for child postings array in make_thread_tree()
+- Write Cleanup code in fo_threadloopup.c
+- Repair flt_link.c
+- Repair flt_nntp.c
+- Cleanup code for flt_livefilter.c
+- file:// URL validation in validate.c
+- Handling of multiple entries in thread id index in fo_threadlookup and
+  flt_handle404
+- Implement syntax highlighting
+
+

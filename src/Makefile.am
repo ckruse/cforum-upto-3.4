@@ -81,11 +81,11 @@ fo_cleanup_LDADD=libcfutils.la libcfreadline.la libconfigparser.la libcfclientli
 fo_cleanup_LDFLAGS=-export-dynamic
 
 fo_threadlookup_SOURCES=fo_threadlookup.c
-fo_threadlookup_LDADD=libcfclientlib.la libcfutils.la libconfigparser.la libcfcgi.la
+fo_threadlookup_LDADD=libcfclientlib.la libcfutils.la libconfigparser.la libcfcgi.la $(BDB_LIB)
 fo_threadlookup_LDFLAGS=-export-dynamic
 
 fo_tid_index_SOURCES=fo_tid_index.c
-fo_tid_index_LDADD=libcfutils.la libconfigparser.la
+fo_tid_index_LDADD=libcfutils.la libconfigparser.la $(BDB_LIB)
 fo_tid_index_LDFLAGS=-export-dynamic
 
 
