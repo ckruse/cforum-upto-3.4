@@ -215,7 +215,7 @@ static struct option cmdline_options[] = {
 /* {{{ usage */
 void usage(void) {
   fprintf(stderr,"Usage:\n" \
-    "[CF_CONF_DIR=\"/path/to/config\"] fo_tid_index [options]\n\n" \
+    "[CF_CONF_DIR=\"/path/to/config\"] cf-tid_index [options]\n\n" \
     "where options are:\n" \
     "\t-c, --config-directory  Path to the configuration directory\n" \
     "\t-f, --forum-name        Name of the forum to index\n" \

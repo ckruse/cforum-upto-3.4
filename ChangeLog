@@ -1,3 +1,11 @@
+2005-02-15 Christian Kruse <ckruse@wwwtech.de>
+	* src/cf-recovery.c: Migration finished, seems to work fine
+	* src/modules/flt_failsafe.c: Added THRDLST_WRITTEN_HANDLER which re-creates
+		the backup file after threadlist has been written to disk
+	* src/defines.h: Added THRDLST_WRITTEN_HANDLER
+	* src/cf-tid_index.c: Small bugfix in description
+	* src/archiver.c: Added THRDLST_WRITTEN_HANDLER
+
 2005-02-14 Christian Kruse <ckruse@wwwtech.de>
 	* conf/patterns/php.pat: Added => operator
 	* src/cf-recovery.c: Renamed fo_recovery to cf-recovery, began to migrate it

@@ -219,7 +219,7 @@ void cf_archive_threads(t_forum *forum,t_thread **to_archive,size_t len) {
 /* {{{ cf_write_threadlist */
 void cf_write_threadlist(t_forum *forum) {
   int ret;
-  size_t i,j;
+  size_t i,j,k;
   t_name_value *forums = cfg_get_first_value(&fo_server_conf,NULL,"Forums");
   t_handler_config *handler;
   t_archive_thrdlst_writer fkt;
@@ -235,6 +235,15 @@ void cf_write_threadlist(t_forum *forum) {
         cf_log(CF_DBG|CF_FLSH,__FILE__,__LINE__,"starting disc writer\n");
         ret     = fkt(forum);
         cf_log(CF_DBG|CF_FLSH,__FILE__,__LINE__,"Discwriter ended\n");
+
+        if(ret == FLT_OK && Modules[THRDLST_WRITTEN_HANDLER].elements) {
+          for(j=0;j<Modules[THRDLST_WRITTEN_HANDLER].elements;++j) {
+            handler = array_element_at(&Modules[THRDLST_WRITTEN_HANDLER],j);
+            fkt     = (t_archive_thrdlst_writer)handler->func;
+
+            fkt(forum);
+          }
+        }
       }
     }
   }
@@ -251,6 +260,15 @@ void cf_write_threadlist(t_forum *forum) {
           cf_log(CF_DBG|CF_FLSH,__FILE__,__LINE__,"starting disc writer\n");
           ret     = fkt(forum);
           cf_log(CF_DBG|CF_FLSH,__FILE__,__LINE__,"Discwriter ended\n");
+
+          if(ret == FLT_OK && Modules[THRDLST_WRITTEN_HANDLER].elements) {
+            for(j=0;j<Modules[THRDLST_WRITTEN_HANDLER].elements;++j) {
+              handler = array_element_at(&Modules[THRDLST_WRITTEN_HANDLER],j);
+              fkt     = (t_archive_thrdlst_writer)handler->func;
+
+              fkt(forum);
+            }
+          }
         }
       }
     }

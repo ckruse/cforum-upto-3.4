@@ -39,30 +39,31 @@
 
 #define LISTENQ 1024 /**< The size of the listen() queque. */
 
-#define INIT_HANDLER            1 /**< Handler hook number. Look in the programmers manual section for more information. */
-#define VIEW_HANDLER            2 /**< Handler hook number. Look in the programmers manual section for more information. */
-#define VIEW_INIT_HANDLER       3 /**< Handler hook number. Look in the programmers manual section for more information. */
-#define VIEW_LIST_HANDLER       4 /**< Handler hook number. Look in the programmers manual section for more information. */
-#define POSTING_HANDLER         5 /**< Handler hook number. Look in the programmers manual section for more information. */
-#define CONNECT_INIT_HANDLER    6 /**< Handler hook number. Look in the programmers manual section for more information. */
-#define AUTH_HANDLER            7 /**< Handler hook number. Look in the programmers manual section for more information. */
-#define ARCHIVE_HANDLER         8 /**< Handler hook number. Look in the programmers manual section for more information. */
-#define NEW_POST_HANDLER        9 /**< Handler hook number. Look in the programmers man... argh, fuck off, you know what I mean */
-#define AFTER_POST_HANDLER     10 /**< Handler hook number. .... */
-#define HANDLE_404_HANDLER     11 /**< Handler hook .... */
-#define DIRECTIVE_FILTER       12 /**< Handler hook */
-#define PRE_CONTENT_FILTER     13 /**< Handler hook */
-#define POST_CONTENT_FILTER    14 /**< Handler hook */
-#define NEW_THREAD_HANDLER     15 /**< Handler h... */
-#define DATA_LOADING_HANDLER   16 /**< ... */
-#define THRDLST_WRITE_HANDLER  17 /**< ... */
-#define ARCHIVE_THREAD_HANDLER 18 /**< ... */
-#define SORTING_HANDLER        19 /**< ... */
-#define POST_DISPLAY_HANDLER   20 /**< ... */
-#define URL_REWRITE_HANDLER    21
-#define THREAD_SORTING_HANDLER 22
+#define INIT_HANDLER             1 /**< Handler hook number. Look in the programmers manual section for more information. */
+#define VIEW_HANDLER             2 /**< Handler hook number. Look in the programmers manual section for more information. */
+#define VIEW_INIT_HANDLER        3 /**< Handler hook number. Look in the programmers manual section for more information. */
+#define VIEW_LIST_HANDLER        4 /**< Handler hook number. Look in the programmers manual section for more information. */
+#define POSTING_HANDLER          5 /**< Handler hook number. Look in the programmers manual section for more information. */
+#define CONNECT_INIT_HANDLER     6 /**< Handler hook number. Look in the programmers manual section for more information. */
+#define AUTH_HANDLER             7 /**< Handler hook number. Look in the programmers manual section for more information. */
+#define ARCHIVE_HANDLER          8 /**< Handler hook number. Look in the programmers manual section for more information. */
+#define NEW_POST_HANDLER         9 /**< Handler hook number. Look in the programmers man... argh, fuck off, you know what I mean */
+#define AFTER_POST_HANDLER      10 /**< Handler hook number. .... */
+#define HANDLE_404_HANDLER      11 /**< Handler hook .... */
+#define DIRECTIVE_FILTER        12 /**< Handler hook */
+#define PRE_CONTENT_FILTER      13 /**< Handler hook */
+#define POST_CONTENT_FILTER     14 /**< Handler hook */
+#define NEW_THREAD_HANDLER      15 /**< Handler h... */
+#define DATA_LOADING_HANDLER    16 /**< ... */
+#define THRDLST_WRITE_HANDLER   17 /**< ... */
+#define ARCHIVE_THREAD_HANDLER  18 /**< ... */
+#define SORTING_HANDLER         19 /**< ... */
+#define POST_DISPLAY_HANDLER    20 /**< ... */
+#define URL_REWRITE_HANDLER     21
+#define THREAD_SORTING_HANDLER  22
+#define THRDLST_WRITTEN_HANDLER 23
 
-#define MOD_MAX                22 /**< The maximum hook value. */
+#define MOD_MAX                23 /**< The maximum hook value. */
 
 #define FLT_OK       0 /**< Returned by a plugin function if everything as ok. */
 #define FLT_DECLINE -1 /**< Returned by a plugin function if this request is not for the plugin. */

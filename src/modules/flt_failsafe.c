@@ -64,6 +64,22 @@ void flt_failsafe_cleanup_hash(void *data) {
   cf_mutex_destroy(&fl->BackupMutex);
 }
 
+void flt_failsafe_cleaner(t_forum *forum) {
+  FILE *fd;
+  t_cf_failsafe *fl = cf_hash_get(flt_failsafe_hsh,forum->name,strlen(forum->name));
+
+  /* lock backup mutex */
+  CF_LM(&fl->BackupMutex);
+
+  if((fd = fopen(fl->BackupFile,"wb")) != NULL) {
+    fwrite("CFFS",4,1,fd);
+    fwrite(CFFS_VERSION,3,1,fd);
+  }
+
+  CF_UM(&fl->BackupMutex);
+  return FLT_OK;
+}
+
 /* {{{ flt_failsafe_write */
 void flt_failsafe_write(t_forum *forum,FILE *fd,u_int64_t tid,u_int64_t bmid,t_posting *p) {
   t_cf_list_element *elem;
@@ -269,6 +285,7 @@ t_handler_config flt_failsafe_handlers[] = {
   { INIT_HANDLER,       flt_failsafe_init           },
   { NEW_POST_HANDLER,   flt_failsafe_post_handler   },
   { NEW_THREAD_HANDLER, flt_failsafe_thread_handler },
+  { THRDLST_WRITTEN_HANDLER, flt_failsafe_cleaner },
   { 0, NULL }
 };
 
