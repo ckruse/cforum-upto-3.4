@@ -45,6 +45,7 @@ Forum FORUM1 {
  FieldValidate "ImageUrl" "http-strict"
 
  QuotingChars "»» "
+ PreviewDateFormat "%d. %B %Y, %H:%M"
 
  PostingAssistantMustValidate "yes"
 

@@ -102,6 +102,8 @@ int flt_tidx_module(t_forum *forum,t_thread *thr) {
       return FLT_DECLINE;
     }
 
+    memset(&data,0,sizeof(data));
+
     data.data = buff;
     data.size = len;
 
@@ -116,6 +118,8 @@ int flt_tidx_module(t_forum *forum,t_thread *thr) {
     str_chars_append(&str,data.data,data.size);
     str_char_append(&str,'\0');
     str_chars_append(&str,buff,len);
+
+    memset(&data,0,sizeof(data));
 
     data.data = str.content;
     data.size = str.len;

@@ -190,7 +190,13 @@ void display_posting_form(t_cf_hash *head) {
         for(ent = head->table[i];ent;ent=ent->next) {
           for(param = (t_cf_cgi_param *)ent->data;param;param=param->next) {
             if(param->value) {
-              if(cf_strncmp(param->name,"ne",2) == 0) cf_set_variable(&tpl,cs,param->name+2,param->value,strlen(param->value),1);
+              /* we don't want to have empty URLs */
+              len = strlen(param->name);
+              if(cf_strcasecmp(param->name+len-3,"Url") == 0) {
+                if(cf_strcmp(param->value,"http://") == 0) continue;
+              }
+
+              if(cf_strncmp(param->name,"ne_",3) == 0) cf_set_variable(&tpl,cs,param->name+3,param->value,strlen(param->value),0);
               else cf_set_variable(&tpl,cs,param->name,param->value,strlen(param->value),1);
             }
           }
@@ -774,7 +780,7 @@ int main(int argc,char *argv[],char *env[]) {
       /* {{{ get thread id and message id (if given) */
       tidmid = cf_cgi_get(head,"fupto");
       if(tidmid) {
-        val = strstr(tidmid,";");
+        val = strstr(tidmid,",");
         tid = str_to_u_int64(tidmid);
         mid = str_to_u_int64(val+1);
 

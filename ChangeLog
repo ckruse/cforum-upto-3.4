@@ -1,3 +1,12 @@
+2005-01-20 Christian Kruse <ckruse@wwwtech.de>
+	* conf/fo_post.conf.in: Added PreviewDateFormat directive
+	* src/modules/flt_tid_index.c: Small bugfix to initialize all variables
+	* src/modules/flt_preview.c: Moved to 3.0 API, implemented it completely
+	* src/modules/flt_posting.c: Moved several directives to flt_preview.c
+	* src/cfcgi.c: Little bit code cleaning
+	* src/fo_post.c: Small bugfix, now fields ending with Url are ignored if their
+		content is "http://"
+
 2005-01-20 Christian Seiler <self@christian-seiler.de>
 	* src/template.h: added cf_tpl_var_clone prototype
 	* src/template.c: added cf_tpl_var_clone function, bugfix in

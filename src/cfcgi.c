@@ -362,7 +362,7 @@ int _cf_cgi_parse_params(t_cf_hash *hash,u_char *data) {
 }
 /* }}} */
 
-/* {{{ cf_cgi_destroy
+/* {{{ cf_cgi_destroy_entry
  * Returns:                nothing
  * Parameters:
  *   - void *data          the hash-entry

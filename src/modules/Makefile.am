@@ -106,10 +106,10 @@ flt_tipoftheday_la_LDFLAGS=-module -export-dynamic -avoid-version
 #flt_remotesignature_la_SOURCES=flt_remotesignature.c
 #flt_remotesignature_la_LIBADD=$(LIBWWW_LIBS)
 #flt_remotesignature_la_LDFLAGS=-module -export-dynamic -avoid-version
-#
-#pkglib_LTLIBRARIES+=flt_preview.la
-#flt_preview_la_SOURCES=flt_preview.c
-#flt_preview_la_LDFLAGS=-module -export-dynamic -avoid-version
+
+pkglib_LTLIBRARIES+=flt_preview.la
+flt_preview_la_SOURCES=flt_preview.c
+flt_preview_la_LDFLAGS=-module -export-dynamic -avoid-version
 
 pkglib_LTLIBRARIES+=flt_handle404.la
 flt_handle404_la_SOURCES=flt_handle404.c

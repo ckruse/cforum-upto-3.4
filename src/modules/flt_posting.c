@@ -47,9 +47,7 @@ struct {
   u_char *THeight;
   u_char *ActiveColorF;
   u_char *ActiveColorB;
-  int Preview;
-  int PreviewSwitchType;
-} flt_posting_cfg = { NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0 };
+} flt_posting_cfg = { NULL, NULL, NULL, NULL, NULL, NULL, NULL };
 /* }}} */
 
 /* {{{ flt_posting_replace_placeholders */
@@ -157,10 +155,6 @@ int flt_posting_execute_filter(t_cf_hash *head,t_configuration *dc,t_configurati
   /* {{{ set some standard variables in thread mode */
   if(flt_posting_cfg.TWidth) cf_tpl_setvalue(tpl,"twidth",TPL_VARIABLE_STRING,flt_posting_cfg.TWidth,strlen(flt_posting_cfg.TWidth));
   if(flt_posting_cfg.THeight) cf_tpl_setvalue(tpl,"theight",TPL_VARIABLE_STRING,flt_posting_cfg.THeight,strlen(flt_posting_cfg.THeight));
-  if(flt_posting_cfg.Preview) cf_tpl_setvalue(tpl,"preview",TPL_VARIABLE_STRING,"1",1);
-
-  if(flt_posting_cfg.PreviewSwitchType == 0) cf_tpl_setvalue(tpl,"previewswitchtype",TPL_VARIABLE_STRING,"checkbox",8);
-  else if(flt_posting_cfg.PreviewSwitchType == 1) cf_tpl_setvalue(tpl,"previewswitchtype",TPL_VARIABLE_STRING,"button",6);
 
   if(flt_posting_cfg.ActiveColorF || flt_posting_cfg.ActiveColorB) {
     cf_tpl_setvalue(tpl,"activecolor",TPL_VARIABLE_STRING,"1",1);
@@ -331,12 +325,8 @@ int flt_posting_post_display(t_cf_hash *head,t_configuration *dc,t_configuration
   t_string body;
 
   if(head) {
-    printf("if\n");
-
     /* set if none of the values have been given */
     if(!cf_cgi_get(head,"Name") && !cf_cgi_get(head,"EMail") && !cf_cgi_get(head,"HomepageUrl") && !cf_cgi_get(head,"ImageUrl") && !cf_cgi_get(head,"body")) {
-      printf("if2\n");
-
       if((v = cfg_get_first_value(pc,forum_name,"Name")) != NULL) cf_set_variable(tpl,cs,"Name",v->values[0],strlen(v->values[0]),1);
       if((v = cfg_get_first_value(pc,forum_name,"EMail")) != NULL) cf_set_variable(tpl,cs,"EMail",v->values[0],strlen(v->values[0]),1);
       if((v = cfg_get_first_value(pc,forum_name,"HomepageUrl")) != NULL) cf_set_variable(tpl,cs,"HomageUrl",v->values[0],strlen(v->values[0]),1);
@@ -467,31 +457,6 @@ int flt_posting_handle_box(t_configfile *cfile,t_conf_opt *opt,const u_char *con
 }
 /* }}} */
 
-/* {{{ flt_posting_handle_prev */
-int flt_posting_handle_prev(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
-  flt_posting_cfg.Preview = cf_strcmp(args[0],"yes") == 0;
-
-  return 0;
-}
-/* }}} */
-
-/* {{{ flt_posting_handle_prevt */
-int flt_posting_handle_prevt(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
-  if(cf_strcmp(args[0],"button") == 0) {
-    flt_posting_cfg.PreviewSwitchType = 1;
-  }
-  else if(cf_strcmp(args[0],"checkbox") == 0) {
-    flt_posting_cfg.PreviewSwitchType = 0;
-  }
-  else {
-    fprintf(stderr,"Error: wrong value for PreviewSwitchType\n");
-    return 1;
-  }
-
-  return 0;
-}
-/* }}} */
-
 /* {{{ flt_posting_handle_actpcol */
 int flt_posting_handle_actpcol(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
   if(flt_posting_cfg.ActiveColorF) free(flt_posting_cfg.ActiveColorF);
@@ -519,8 +484,6 @@ t_conf_opt flt_posting_config[] = {
   { "Bye",                flt_posting_handle_greet,    CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
   { "Signature",          flt_posting_handle_greet,    CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
   { "TextBox",            flt_posting_handle_box,      CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
-  { "GeneratePreview",    flt_posting_handle_prev,     CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
-  { "PreviewSwitchType",  flt_posting_handle_prevt,    CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
   { "ActivePostingColor", flt_posting_handle_actpcol,  CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
   { NULL, NULL, 0, NULL }
 };
