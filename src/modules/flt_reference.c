@@ -57,6 +57,8 @@ int flt_reference_handle_posting(t_cf_hash *head,t_configuration *dc,t_configura
   size_t i;
   t_ref_uri *suri;
 
+  str_init(&str);
+
   for(ptr=thr->messages->content;*ptr;ptr++) {
     if(*ptr == '[') {
       if(cf_strncasecmp(ptr,"[ref:",5) == 0) {
@@ -64,11 +66,11 @@ int flt_reference_handle_posting(t_cf_hash *head,t_configuration *dc,t_configura
         ptr += 5;
 
         for(start = ptr += 1;*ptr && (isalnum(*ptr) || *ptr == '.');ptr++);
-        
-        if(*ptr == ';') {
-          id = strndup(start,ptr-start);
 
-          for(start=ptr+=1;*ptr && !isspace(*ptr) && *ptr == ']';ptr++);
+        if(*ptr == ';') {
+          id = strndup(start-1,ptr-start+1);
+
+          for(start=ptr+=1;*ptr && !isspace(*ptr) && *ptr != ']';ptr++);
 
           if(*ptr == ']') {
             uri = strndup(start,ptr-start);

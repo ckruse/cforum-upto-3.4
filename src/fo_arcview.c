@@ -358,7 +358,9 @@ void print_thread_structure(t_arc_thread *thr,const u_char *year,const u_char *m
   tpl_cf_setvar(&main_tpl,"threadlist",threadlist.content,threadlist.len,0);
 
   tpl_cf_parse_to_mem(&main_tpl);
-  cf_cache(cache->values[0],pi,main_tpl.parsed.content,main_tpl.parsed.len);
+  
+  if(show_invisible == 0) cf_cache(cache->values[0],pi,main_tpl.parsed.content,main_tpl.parsed.len);
+
   fwrite(main_tpl.parsed.content,1,main_tpl.parsed.len,stdout);
 
   tpl_cf_finish(&main_tpl);
@@ -712,7 +714,7 @@ void show_thread(const u_char *year,const u_char *month,const u_char *tid) {
     return;
   }
 
-  if(cf_cache_outdated(cache->values[0],pi,path.content) == -1 || (ent = cf_get_cache(cache->values[0],pi)) == NULL) {
+  if(show_invisible || cf_cache_outdated(cache->values[0],pi,path.content) == -1 || (ent = cf_get_cache(cache->values[0],pi)) == NULL) {
     impl = gdome_di_mkref();
     if((doc = gdome_di_createDocFromURI(impl,path.content,GDOME_LOAD_PARSING,&e)) == NULL) {
       printf("Status: 404 Not Found\015\012\015\012");
@@ -797,6 +799,7 @@ void show_month_content(const u_char *year,const u_char *month) {
   t_name_value *m_tp   = cfg_get_first_value(&fo_arcview_conf,"MonthsTemplate");
   t_name_value *tl_tp  = cfg_get_first_value(&fo_arcview_conf,"ThreadListMonthTemplate");
   t_name_value *cache  = cfg_get_first_value(&fo_arcview_conf,"CacheDir");
+  int show_invisible = cf_hash_get(GlobalValues,"ShowInvisible",13) != NULL;
   t_cache_entry *ent;
   t_string path,mstr;
   struct stat st;
@@ -809,6 +812,7 @@ void show_month_content(const u_char *year,const u_char *month) {
   struct s_arc_content cnt_str,*cnt_str1;
   size_t i;
   t_string strbuff;
+  int is_invisible;
 
   t_cf_template m_tpl,tl_tpl;
   u_char mt_name[256],tl_name[256],buff[256];
@@ -834,7 +838,7 @@ void show_month_content(const u_char *year,const u_char *month) {
   /* no additional headers */
   fwrite("\015\012",1,2,stdout);
 
-  if(cf_cache_outdated(cache->values[0],pi,path.content) == -1 || (ent = cf_get_cache(cache->values[0],pi)) == NULL) {
+  if(show_invisible || cf_cache_outdated(cache->values[0],pi,path.content) == -1 || (ent = cf_get_cache(cache->values[0],pi)) == NULL) {
     array_init(&ary,sizeof(cnt_str),destroy_sort_array);
 
     /* get templates */
@@ -862,7 +866,8 @@ void show_month_content(const u_char *year,const u_char *month) {
     for(;ptr < file + st.st_size;ptr++) {
       if(!(ptr = get_next_token(ptr,file,st.st_size,"<Thread",7))) break;
 
-      tid = get_id(ptr,file,st.st_size);
+      tid          = get_id(ptr,file,st.st_size);
+      is_invisible = 0;
       //len = snprintf(buff,256,"%llu",tid);
 
       str_char_append(&strbuff,'t');
@@ -908,19 +913,26 @@ void show_month_content(const u_char *year,const u_char *month) {
           /* baba, finished */
           else if(cf_strncmp(ptr,"<Message",8) == 0 || cf_strncmp(ptr,"</Message>",10) == 0) break;
         }
+        else if(*ptr == 'i') {
+          if(cf_strncmp(ptr,"invisible",9) == 0) {
+            is_invisible = *(ptr+11) - '0';
+          }
+        }
       }
 
-      tpl_cf_parse_to_mem(&tl_tpl);
+      if(is_invisible == 0 || show_invisible == 1) {
+        tpl_cf_parse_to_mem(&tl_tpl);
 
-      cnt_str.content.len      = tl_tpl.parsed.len;
-      cnt_str.content.reserved = tl_tpl.parsed.reserved;
-      cnt_str.content.content  = tl_tpl.parsed.content;
-      cnt_str.date             = date;
-      cnt_str.tid              = tid;
+        cnt_str.content.len      = tl_tpl.parsed.len;
+        cnt_str.content.reserved = tl_tpl.parsed.reserved;
+        cnt_str.content.content  = tl_tpl.parsed.content;
+        cnt_str.date             = date;
+        cnt_str.tid              = tid;
 
-      array_push(&ary,&cnt_str);
+        array_push(&ary,&cnt_str);
 
-      memset(&tl_tpl.parsed,0,sizeof(tl_tpl.parsed));
+        memset(&tl_tpl.parsed,0,sizeof(tl_tpl.parsed));
+      }
     }
 
     munmap(file,st.st_size);
@@ -945,7 +957,7 @@ void show_month_content(const u_char *year,const u_char *month) {
     array_destroy(&ary);
 
     tpl_cf_parse_to_mem(&m_tpl);
-    cf_cache(cache->values[0],pi,m_tpl.parsed.content,m_tpl.parsed.len);
+    if(show_invisible == 0) cf_cache(cache->values[0],pi,m_tpl.parsed.content,m_tpl.parsed.len);
     fwrite(m_tpl.parsed.content,1,m_tpl.parsed.len,stdout);
 
     tpl_cf_finish(&tl_tpl);
