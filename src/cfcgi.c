@@ -149,15 +149,14 @@ void cf_cgi_parse_path_info(t_array *ary) {
 /* }}} */
 
 /* {{{ cf_cgi_parse_path_info_nv */
-t_cf_hash *cf_cgi_parse_path_info_nv(void) {
+t_cf_hash *cf_cgi_parse_path_info_nv(t_cf_hash *hash) {
   u_char *pi = getenv("PATH_INFO"),*start,*name,*value;
   register u_char *ptr;
-  t_cf_hash *hash = NULL;
 
   start = name = value = NULL;
 
   if(pi) {
-    hash = cf_hash_new(cf_cgi_destroy_entry);
+	  if(hash == NULL) hash = cf_hash_new(cf_cgi_destroy_entry);
 
     for(ptr=pi;*ptr;ptr++) {
       if(*ptr == '/') {

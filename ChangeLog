@@ -8,6 +8,24 @@
 		to BDB
 	* scr/templates/{de,fr}/tpl_*/Makefile.am: Changed path to scripts/ directory
 	* cgi-shared/ForumUtils.pm: Went to new messages API
+	* src/clientlib.[ch]: Involved advanced_get_link(). This function creates a
+		link string and appends some parameters. It cares about the delimiter string
+		(e.g., is it a question mark (because it's the first parameter) or is it a
+		ampersand (because it's not the first parameter))
+	* src/modules/flt_admin.c: Changed to advanced_get_link()
+	* src/modules/flt_openclose.c: Trivial changes, moved variable declarations
+		and so on to function scope. So there is no need to create a new stack.
+	* cgi-bin/fo_usermanagement.in: Added user management software
+	* src/cfcgi.[ch]: Added parameter merging feature for cgilib
+	* configure.in: Added fo_usermangement.in and fo_usermanagement.conf.in
+	* cgi-shared/Plugins/Management/SQL.pm: Added user management plugin for SQL
+		databases
+	* htdocs/Makefile.am,htdocs/archiv/Makefile.am,cgi-shared/config/Makefile.am,
+	* cgi-shared/Makefile.am,cgi-shared/data/Makefile.am,cgi-bin/Makefile.am:
+		Bugfix in handling directory structure (test ! -d instead of test -d)
+	* cgi-bin/Makefile.am: Added fo_usermanagement
+	* configure.in: Added fo_usermanagement.conf and fo_usermanagement
+	* cgi-shared/config/Makefile.am: Added fo_usermanagement.conf
 
 2004-07-30 Christian Kruse <ckruse@wwwtech.de>
 	* TODO: actualized

@@ -517,8 +517,8 @@ int main(int argc,char *argv[],char *env[]) {
   }
 
   pt = cfg_get_first_value(&fo_view_conf,"ParamType");
-  if(*pt->values[0] == 'Q') head = cf_cgi_new();
-  else                      head = cf_cgi_parse_path_info_nv();
+  head = cf_cgi_new();
+  if(*pt->values[0] == 'P') cf_cgi_parse_path_info_nv(head);
 
 
   /* first action: authorization modules */

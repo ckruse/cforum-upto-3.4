@@ -87,7 +87,7 @@ int run_post_filters(t_cf_hash *head,t_message *p,int sock)
     for(i=0;i<Modules[NEW_POST_HANDLER].elements && (ret == FLT_OK || ret == FLT_DECLINE);i++) {
       handler = array_element_at(&Modules[NEW_POST_HANDLER],i);
       fkt     = (t_new_post_filter)handler->func;
-      ret     = fkt(head,&fo_default_conf,&fo_view_conf,p,(int)sock,fupto);
+      ret     = fkt(head,&fo_default_conf,&fo_view_conf,p,sock,fupto);
     }
   }
 
@@ -722,6 +722,7 @@ int main(int argc,char *argv[],char *env[]) {
   u_char *fname;
   t_cl_thread thr;
   t_message *p;
+	u_char *link;
 
   size_t len;
 
@@ -1028,8 +1029,10 @@ int main(int argc,char *argv[],char *env[]) {
                       run_after_post_filters(head,p,tid);
 
                       if(cfg_val && cf_strcmp(cfg_val->values[0],"yes") == 0) {
-                        cfg_val = cfg_get_first_value(&fo_default_conf,UserName ? "BaseURL" : "UBaseURL");
-                        printf("Status: 302 Moved Temporarily\015\012Location: %s?t=%llu&m=%llu\015\012\015\012",cfg_val->values[0],tid,mid);
+                        cfg_val = cfg_get_first_value(&fo_default_conf,UserName ? "PostingURL" : "UPostingURL");
+												link = get_link(cfg_val->values[0],tid,mid);
+                        printf("Status: 302 Moved Temporarily\015\012Location: %s\015\012\015\012",link);
+												free(link);
                       }
                       else {
                         display_finishing_screen(p);

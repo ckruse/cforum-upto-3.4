@@ -178,9 +178,11 @@ int flt_admin_init(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc) {
 
 int flt_admin_posthandler(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc,t_message *msg,u_int64_t tid,int mode) {
   u_char buff[256];
+	u_char *link;
   size_t l;
   u_char *UserName = cf_hash_get(GlobalValues,"UserName",8);
   int ShowInvisible = cf_hash_get(GlobalValues,"ShowInvisible",13) != NULL;
+	t_name_value *link_pattern = cfg_get_first_value(dc,"UPostingURL");
 
   if(flt_admin_is_admin(UserName)) {
     tpl_cf_setvar(&msg->tpl,"admin","1",1,0);
@@ -188,17 +190,20 @@ int flt_admin_posthandler(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc
     if(ShowInvisible) {
       tpl_cf_setvar(&msg->tpl,"aaf","1",1,0);
 
-      l = snprintf(buff,256,"?t=%lld&m=%lld&aaf=1&faa=archive",tid,msg->mid);
-      tpl_cf_setvar(&msg->tpl,"archive_link",buff,l,1);
+      link = advanced_get_link(link_pattern->values[0],tid,msg->mid,"aaf=1&faa=archive",17,&l);
+      tpl_cf_setvar(&msg->tpl,"archive_link",link,l,1);
+			free(link);
 
       if(msg->invisible == 0) {
-        l = snprintf(buff,256,"?t=%lld&m=%lld&aaf=1&faa=del",tid,msg->mid);
+			  link = advanced_get_link(link_pattern->values[0],tid,msg->mid,"aaf=1&faa=del",13,&l);
         tpl_cf_setvar(&msg->tpl,"visible","1",1,0);
-        tpl_cf_setvar(&msg->tpl,"del_link",buff,l,1);
+        tpl_cf_setvar(&msg->tpl,"del_link",link,l,1);
+				free(link);
       }
       else {
-        l = snprintf(buff,256,"?t=%lld&m=%lld&aaf=1&faa=undel",tid,msg->mid);
-        tpl_cf_setvar(&msg->tpl,"undel_link",buff,l,1);
+			  link = advanced_get_link(link_pattern->values[0],tid,msg->mid,"aaf=1&faa=undel",15,&l);
+        tpl_cf_setvar(&msg->tpl,"undel_link",link,l,1);
+				free(link);
       }
     }
 
@@ -224,10 +229,7 @@ int flt_admin_validator(t_cf_hash *head,t_configuration *dc,t_configuration *vc,
   u_char *UserName = cf_hash_get(GlobalValues,"UserName",8);
   int ShowInvisible = cf_hash_get(GlobalValues,"ShowInvisible",13) != NULL;
 
-  if(flt_admin_is_admin(UserName) && ShowInvisible) {
-    printf("X-I-am-it: flt_admin\015\012");
-    return FLT_EXIT;
-  }
+  if(flt_admin_is_admin(UserName) && ShowInvisible) return FLT_EXIT;
   return FLT_DECLINE;
 }
 

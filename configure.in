@@ -281,6 +281,7 @@ AC_TYPE_SIGNAL
 AC_OUTPUT(cgi-bin/Makefile
 cgi-bin/fo_post_old
 cgi-bin/fo_userconf
+cgi-bin/fo_usermanagement
 htdocs/Makefile
 htdocs/archiv/Makefile
 htdocs/my/Makefile
@@ -288,6 +289,7 @@ Makefile
 cgi-shared/Makefile
 cgi-shared/config/Makefile
 cgi-shared/Plugins/Makefile
+cgi-shared/Plugins/Management/Makefile
 cgi-shared/docs/Makefile
 cgi-shared/data/Makefile
 cgi-shared/data/messages/Makefile
@@ -307,6 +309,7 @@ cgi-shared/config/fo_userconf.conf
 cgi-shared/config/fo_view.conf
 cgi-shared/config/fo_server.conf
 cgi-shared/config/fo_vote.conf
+cgi-shared/config/fo_usermanagement.conf
 Doxyfile
 scripts/msgs2db.pl
 )

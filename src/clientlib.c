@@ -593,7 +593,7 @@ u_char *get_link(const u_char *link,u_int64_t tid,u_int64_t mid) {
             u_int64_to_str(&buff,mid);
             ptr += 1;
           }
-          else                     str_char_append(&buff,*ptr);
+          else str_char_append(&buff,*ptr);
 
           break;
         default:
@@ -602,6 +602,49 @@ u_char *get_link(const u_char *link,u_int64_t tid,u_int64_t mid) {
     }
   }
 
+  return buff.content;
+}
+/* }}} */
+
+/* {{{ advanced_get_link */
+u_char *advanced_get_link(const u_char *link,u_int64_t tid,u_int64_t mid,const u_char *parameters,size_t plen,size_t *l) {
+  register const u_char *ptr;
+  t_string buff;
+  int qm = 0;
+
+  str_init(&buff);
+
+  for(ptr=link;*ptr;++ptr) {
+    switch(*ptr) {
+      case '%':
+        if(*(ptr+1) == 't') {
+          u_int64_to_str(&buff,tid);
+          ptr += 1;
+        }
+        else if(*(ptr+1) == 'm') {
+          u_int64_to_str(&buff,mid);
+          ptr += 1;
+        }
+        else str_char_append(&buff,*ptr);
+
+        break;
+      case '?':
+        qm = 1;
+      default:
+        str_char_append(&buff,*ptr);
+    }
+  }
+
+  if(qm) {
+   str_char_append(&buff,'&');
+   str_chars_append(&buff,parameters,plen);
+  }
+  else {
+    str_char_append(&buff,'?');
+    str_chars_append(&buff,parameters,plen);
+  }
+
+  if(l) *l = buff.len;
   return buff.content;
 }
 /* }}} */

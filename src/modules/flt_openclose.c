@@ -128,21 +128,18 @@ void parse_query_string(t_cf_hash *head,int cl) {
 }
 
 int execute_filter(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cl_thread *thread,int mode) {
-  if(ThreadsOpenByDefault != -1 && mode == 0) {
-    int cl = !ThreadsOpenByDefault;
-    t_name_value *vs = NULL;
-    t_message *msg;
-    int i = 0;
-    u_char buff[500];
-    u_char *UserName = cf_hash_get(GlobalValues,"UserName",8);
-    t_mod_api is_visited;
+	int cl = !ThreadsOpenByDefault;
+	t_name_value *vs = NULL;
+	t_message *msg;
+	int i = 0;
+	u_char buff[500];
+	u_char *UserName = cf_hash_get(GlobalValues,"UserName",8);
+	t_mod_api is_visited;
 
-    if(UserName) {
-      vs = cfg_get_first_value(dc,"UBaseURL");
-    }
-    else {
-      vs = cfg_get_first_value(dc,"BaseURL");
-    }
+
+  if(ThreadsOpenByDefault != -1 && mode == 0) {
+    if(UserName) vs = cfg_get_first_value(dc,"UBaseURL");
+    else         vs = cfg_get_first_value(dc,"BaseURL");
 
     if(!sclen && head) { // get me the list of opened threads
       parse_query_string(head,cl);

@@ -482,10 +482,10 @@ sub get_error {
     ) or return 'Bad database error, go away';
 	}
 
-	my $id = $dcfg->{Language}->[0]->[0].'_'.($variant ? $err.'_'.$variant : $err);
+	my $id = $dcfg->{Language}->[0]->[0].'_E_'.($variant ? $err.'_'.$variant : $err);
 
 	my $msg = $Msgs->db_get($id);
-	return $msg||$id;
+	return $msg||'Error not found: '.$id;
 }
 # }}}
 

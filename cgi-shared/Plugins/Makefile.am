@@ -1,3 +1,4 @@
+SUBDIRS=Management
 
 EXTRA_DIST=CategoryCheck.pm \
   FixedLineWidth.pm \
@@ -13,7 +14,7 @@ EXTRA_DIST=CategoryCheck.pm \
   Variables.pm
 
 install-data-local:
-	if ! -d $(PERLMODULES)/Plugins; then \
+	if test ! -d $(PERLMODULES)/Plugins; then \
 		$(MKDIR) -p $(PERLMODULES)/Plugins; \
 	fi; \
 	for file in $(EXTRA_DIST); do \

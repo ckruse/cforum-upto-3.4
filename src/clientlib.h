@@ -266,8 +266,20 @@ u_char *get_time(t_configuration *cfg,const u_char *symbol,int *len,time_t *date
  * \param tid The thread id
  * \param mid The message id
  * \return Returns NULL on failure or the link string on success
+ * \attention You have to free() the returned pointer!
  */
 u_char *get_link(const u_char *link,u_int64_t tid,u_int64_t mid);
+
+/**
+ * This function generates a link to a thread and appends some parameters (as query string)
+ * \param link The link string
+ * \param tid The thread id
+ * \param mid The message id
+ * \param l A reference, the new length will be stored in it (if NULL, it'll be ignored)
+ * \return Returns the link string
+ * \attention You have to free() the returned pointer!
+ */
+u_char *advanced_get_link(const u_char *link,u_int64_t tid,u_int64_t mid,const u_char *parameters,size_t plen,size_t *l);
 
 /**
  * This function checks if a message has answers

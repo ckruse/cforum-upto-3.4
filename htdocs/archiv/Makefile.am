@@ -1,7 +1,7 @@
 EXTRA_DIST=.htaccess
 
 install-data-local:
-	if ! -d $(DOCROOT)/archiv; then \
+	if test ! -d $(DOCROOT)/archiv; then \
 		$(MKDIR) -p $(DOCROOT)/archiv; \
 	fi; \
 	for file in $(EXTRA_DIST); do \

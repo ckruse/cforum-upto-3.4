@@ -47,9 +47,10 @@ t_cf_hash *cf_cgi_new(void);
 /**
  * This function creates a CGI hash from a PATH_INFO string. It expects the
  * PATH_INFO string to be name-value pairs
+ * \param hash If not NULL, this hash will be used to store the parameters
  * \return It returns NULL on error or the CGI hash on success.
  */
-t_cf_hash *cf_cgi_parse_path_info_nv(void);
+t_cf_hash *cf_cgi_parse_path_info_nv(t_cf_hash *hash);
 
 /**
  * This function parses a query string
