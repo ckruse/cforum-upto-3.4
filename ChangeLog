@@ -1,3 +1,9 @@
+2005-01-28 Christian Kruse <ckruse@wwwtech.de>
+	* src/modules/flt_categorycheck.c: Added plugin to check if a valid category
+		has been posted
+	* src/modules/flt_postingassistant.c: Small code cleaning
+	* src/modules/Makefile.am: Added flt_categorycheck
+
 2005-01-27 Christian Kruse <ckruse@wwwtech.de>
 	* src/clientlib.c: Bugfix, error string from database as not null-terminated
 	* src/fo_vote.c: Bugfix, now fo_vote sends an error message if no parameters

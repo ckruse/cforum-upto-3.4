@@ -1,4 +1,4 @@
-/*
+/**
  * \file flt_postingassistant.c
  * \author Christian Kruse, <ckruse@wwwtech.de>
  * \brief Posting assistant
@@ -225,6 +225,7 @@ int flt_poas_check_newlines(u_char *str) {
 }
 /* }}} */
 
+/* {{{ flt_poas_check_sig */
 float flt_poas_check_sig(u_char *str) {
   float score = 0;
   register u_char *ptr;
@@ -248,6 +249,7 @@ float flt_poas_check_sig(u_char *str) {
 
   return score;
 }
+/* }}} */
 
 /* {{{ flt_poas_standardchecks */
 int flt_poas_standardchecks(t_message *p) {
