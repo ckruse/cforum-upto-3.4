@@ -338,7 +338,7 @@
       <directive name="LinkNoVisited" arguments="1">
         <argument paramname="fltlinknovisited" type="radio" encode="plain">
           <validate>^(yes|no)$</validate>
-          <question>Der Postingbaum wird zeilenweise von oben nach unten abgearbeitet. Sollen dabei die -Elemente nur auf ungelesene Postings zeigen, oder sollen auch bereits gelesene Postings angesprungen werden? Sollten keine ungelesenen Postings mehr vorhanden sein, so wird das Default-Verhalten aktiviert.</question>
+          <question>Der Postingbaum wird zeilenweise von oben nach unten abgearbeitet. Sollen dabei die &lt;link&gt;-Elemente nur auf ungelesene Postings zeigen, oder sollen auch bereits gelesene Postings angesprungen werden? Sollten keine ungelesenen Postings mehr vorhanden sein, so wird das Default-Verhalten aktiviert.</question>
           <error>Bitte geben Sie &quot;nur auf ungelesene Postings&quot; oder &quot;auf alle Postings&quot; bei der Frage nach den Link-Elementen an!</error>
           <formvalues>
             <value val="yes">Nur auf ungelesene Postings</value>

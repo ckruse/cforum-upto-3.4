@@ -62,8 +62,11 @@ int flt_deleted_execute(t_cf_hash *head,t_configuration *dc,t_configuration *vc,
   u_char buff[256];
   u_char one[] = "1";
   url = cfg_get_first_value(dc,"UBaseURL");
+  t_message *msg;
 
   if(UserName) {
+    msg = cf_get_first_visible(thread->messages);
+
     if(mode == 0) {
       if(Cfg.DeletedFile) {
         memset(&key,0,sizeof(key));
@@ -88,18 +91,18 @@ int flt_deleted_execute(t_cf_hash *head,t_configuration *dc,t_configuration *vc,
         }
         else {
           if(Cfg.CheckBoxes) {
-            tpl_cf_setvar(&thread->messages->tpl,"delcheckbox","1",1,0);
-            tpl_cf_setvar(&thread->messages->tpl,"deltid",buff,len,0);
+            tpl_cf_setvar(,"delcheckbox","1",1,0);
+            tpl_cf_setvar(&msg->tpl,"deltid",buff,len,0);
           }
 
           len = snprintf(buff,150,"%s?a=d&t=%lld",url->values[0],thread->tid);
-          tpl_cf_setvar(&thread->messages->tpl,"dellink",buff,len,1);
+          tpl_cf_setvar(&msg->tpl,"dellink",buff,len,1);
         }
       }
     }
     else {
       len = snprintf(buff,150,"%s?a=d&t=%lld",url->values[0],thread->tid);
-      tpl_cf_setvar(&thread->messages->tpl,"dellink",buff,len,1);
+      tpl_cf_setvar(&msg->tpl,"dellink",buff,len,1);
     }
 
     return FLT_OK;

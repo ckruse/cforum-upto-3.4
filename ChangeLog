@@ -1,3 +1,19 @@
+2004-12-13 Christian Kruse <ckruse@wwwtech.de>
+	* src/clientlib.c, src/clientlib.h: Added cf_get_first_visible() in the client
+		library
+	* src/modules/flt_deleted.c, src/modules/flt_visited.c: Now using
+		cf_get_first_visible() for setting the links
+	* src/templates/de/tpl_*/sendpass.html: Added form field for sending email by
+		username
+	* cgi-shared/Plugins/Quotings.pm, cgi-shared/Plugins/CategoryCheck.pm,
+		cgi-shared/Plugins/SpellCheck.pm, cgi-shared/Plugins/Preview.pm,
+		cgi-shared/Plugins/RegisterName.pm,
+		cgi-shared/Plugins/CheckRegisteredName.pm,
+		cgi-shared/Plugins/RandomSignature.pm: Removed CheckRFC.pm
+	* cgi-shared/config/modules.de.xml: Corrected typo
+	* cgi-bin/fo_usermanagement.in, cgi-shared/Plugins/Management/SQL.pm: Added
+		code for sending email by username
+
 2004-11-29 Christian Kruse <ckruse@wwwtech.de>
 	* cgi-shared/Plugins/RandomSignature.pm: Added UTF-8 validation and it also
 		parses more than one [remote-signature:]

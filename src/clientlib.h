@@ -476,6 +476,13 @@ void cf_init(void);
  */
 void cf_fini(void);
 
+/**
+ * Returns first visible message in tree
+ * \param msg The message list head
+ * \return msg if no invisible message could be found, first visible message if a visible message could be found
+ */
+t_message *cf_get_first_visible(t_message *msg);
+
 #endif
 
 /* eof */

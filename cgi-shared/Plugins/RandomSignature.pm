@@ -19,12 +19,13 @@ package Plugins::RandomSignature;
 
 use strict;
 
-use CheckRFC;
 use ForumUtils qw/transform_body/;
+use CForum::Clientlib;
+use CForum::Validator;
 
 use LWP::Simple;
 
-our $VERSION = (q$Revision: 1.2 $ =~ /([\d.]+)\s*$/)[0] or '0.0';
+our $VERSION = (q$Revision$ =~ /([\d.]+)\s*$/)[0] or '0.0';
 
 push @{$main::Plugins->{newthread}},\&execute;
 push @{$main::Plugins->{newpost}},\&execute;
@@ -37,7 +38,7 @@ sub execute {
 
   while($body =~ m!\[remote-signature:(http://[^\]]+)\]!) {
     my $uri = $1;
-    if(is_URL($uri)) {
+    if(is_valid_http_link($uri,CForum::Validator::VALIDATE_STRICT)) {
       my $sig = '';
 
       if($sig = LWP::Simple::get($uri)) {

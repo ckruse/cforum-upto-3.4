@@ -90,8 +90,8 @@ sub remove_user {
 }
 # }}}
 
-# {{{ get_password
-sub get_password {
+# {{{ get_password_by_username
+sub get_password_by_username {
   my $self  = shift;
   my $fdc   = shift;
   my $fuc   = shift;
@@ -116,6 +116,42 @@ sub get_password {
     return {
       pass => $result->{$passwdcol},
       email => $result->{$emailcol}
+    };
+  }
+
+  $dbq->finish;
+  $dbh->disconnect;
+  return;
+}
+# }}}
+
+# {{{ get_password_by_email
+sub get_password_by_email {
+  my $self  = shift;
+  my $fdc   = shift;
+  my $fuc   = shift;
+  my $email = shift;
+
+  my $connstr = connstr($fuc);
+  my $dbh     = DBI->connect($connstr,$fuc->{SQLUser}->[0]->[0],$fuc->{SQLPass}->[0]->[0]);
+  return get_error($fdc, 'SQL', 'connect') unless defined $dbh;
+
+  my ($table,$usercol,$passwdcol,$emailcol) = sql_data($fuc);
+
+  my $dbq = $dbh->prepare('SELECT '.$usercol.','.$passwdcol.','.$emailcol.' FROM '.$table.' WHERE '.$emailcol.' = ?');
+  return get_error($main::fo_default_conf, 'SQL', 'execute') unless defined($dbq) && $dbq;
+  $dbq->execute($email) or return get_error($fdc, 'SQL', 'execute');
+
+  if($dbq->rows) {
+    my $result = $dbq->fetchrow_hashref;
+    
+    $dbq->finish;
+    $dbh->disconnect;
+
+    return {
+      pass => $result->{$passwdcol},
+      email => $result->{$emailcol},
+      uname => $result->{$usercol}
     };
   }
 
