@@ -5,5 +5,12 @@
 	* src/modules/flt_visited.c: Fixed bug in marking messages visible
 	* src/htmllib.c: Fixed bugs for str_cleanup()
 	* src/modules/flt_latex.c: Changed behavior, not yet finished
-	* conf/modules.de.xml: Fixed bug for parameter
+	* conf/modules.de.xml: Fixed bug for parameter, added UserMailDB
+	* src/modules/flt_mailonpost.c: Added support for "un-abo" threads
+	* src/perl/Plugins/Pathes.pm: Added plugin to write default values
+	* scripts/fo_usermanagement.in: Invented register plugin interface
+	* conf/fo_usermanagement.conf.in: Load pathes plugin by default
+	* src/perl/Plugins/Makefile.am: Added pathes plugin
+	* src/perl/Plugins/XMLRPCUserManagement.pm: Changed behavior of registering
+		users
 

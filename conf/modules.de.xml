@@ -4,6 +4,7 @@
 <config>
   <directive name="DeletedFile" invisible="yes"/>
   <directive name="VisitedFile" invisible="yes"/>
+  <directive name="MailUserDB"  invisible="yes"/>
 
   <page title="Anzeige-Funktionen" id="viewfuncs">
     <section name="Design-Ändernde Anzeige-Funktionen">

@@ -3,7 +3,8 @@ SUBDIRS=Management
 EXTRA_DIST=HTTPAuth.pm \
   RegisterName.pm \
 	ImportExport.pm \
-  XMLRPCUserManagement.pm
+  XMLRPCUserManagement.pm \
+	Pathes.pm
 
 install-data-local:
 	if test ! -d $(libdir)/cforum/Plugins; then \
