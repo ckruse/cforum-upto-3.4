@@ -4,6 +4,28 @@
 		changed 'nein' to 'no'
 	* cgi-bin/fo_userconf: Bugfix, now 'Fehler: HASH(...)' is no longer possible
 
+2004-06-13 Jan Rieger <jr@occuris.de>
+	* cgi-shared/config/templates/tpl_html4/forum_begin.html:
+	* cgi-shared/config/templates/tpl_html4/forum_end.html:
+	* cgi-shared/config/templates/tpl_html4/forum_thread.html:
+	* cgi-shared/config/templates/tpl_html4/thread.html:
+		Added <b> tags to links
+	* cgi-shared/config/templates/tpl_html4/forum_begin.html:
+	* cgi-shared/config/templates/tpl_xhtml10/forum_begin.html:
+		Splitted 'QuickLinks' into 'QuickLinks' and 'Options', added link to
+		SELFHTML aktuell
+
+2004-06-12 Jan Rieger <jr@occuris.de>
+	* cgi-shared/config/templates/tpl_html4/forum_thread.html:
+	* cgi-shared/config/templates/tpl_xhtml10/forum_thread.html:
+    Changed '#a1' to '#nachricht', added '#{$unanch}' to new links
+	* cgi-shared/config/templates/tpl_html4/usereditok.html:
+	* cgi-shared/config/templates/tpl_xhtml10/usereditok.html:
+		Added link to {$userconfig}?a=edit
+	* cgi-shared/config/templates/tpl_html4/forum_begin.html:
+	* cgi-shared/config/templates/tpl_xhtml10/forum_begin.html:
+		Changed 'Gelöschte Threads einblenden' to 'Ausgeblendete Threads anzeigen'
+
 2004-06-07 Christian Kruse <ckruse@wwwtech.de>
 	* src/utils.h: corrected documentation
 	* src/configparser.[ch]: Changed access to configuration directives to AVL
@@ -70,8 +92,6 @@
 	* src/Makefile.am: Added libcfclientlib_la_LDFLAGS
 	* src/modules/flt_visited.c: fixed bugs in BerkeleyDB handling
 	* cgi-shared/Plugins/MarkOwnVisited.pm: Changed BerkeleyDB handling
-	* cgi-shared/config/templates/tpl_*/*.html: Updated HTML templates; xhtml
-		1.0 templates are now valid xhtml 1.0, etc, pp
 	* cgi-shared/config/templates/tpl_{xhtml10,html4}/thread.html: Fixed bug (if
 		not closed)
 	* cgi-shared/config/templates/tpl_xhtml10/arcyears.html: Fixed bug (missing
@@ -79,6 +99,16 @@
 	* template_gen.pl: Changed a bug in \r handling
 	* cgi-shared/config/templates/tpl_{xhtml10,html4}/useredit.html: Added the
 		necessary {if $page} entry
+
+2004-05-27 Jan Rieger <jr@occuris.de>
+	* cgi-shared/config/templates/tpl_html4/*.html:
+	  Updated HTML templates; templates are now according to the guidelines of
+	  http://selfaktuell.teamone.de/sonst/layoutvorgaben.htm and valid html 4.01
+
+2004-05-24 Jan Rieger <jr@occuris.de>
+	* cgi-shared/config/templates/tpl_xhtml10/*.html:
+	  Updated HTML templates; templates are now according to the guidelines of
+	  http://selfaktuell.teamone.de/sonst/layoutvorgaben.htm and valid xhtml 1.0
 
 2004-05-18 Christian Kruse <ckruse@wwwtech.de>
 	* src/modules/flt_visited.c: Changed to BerkeleyDB. My tree algorithms are
