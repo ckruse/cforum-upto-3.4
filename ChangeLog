@@ -2,6 +2,8 @@
 	* conf/fo_view.conf.in, conf/fo_post.conf.in: Added another plugin and some
 		required directives
 	* src/fo_view.c: Small bugfix, thread-only view is not yet implemented
+	* src/modules/flt_mailonpost.c: Fixed small bug, now abo link is not generated
+		if there is no email-address in user config
 
 2005-02-16 Christian Kruse <ckruse@wwwtech.de>
 	* src/modules/flt_mailonpost.c: Fixed several bugs, now it seems to work

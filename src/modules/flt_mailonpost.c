@@ -331,6 +331,8 @@ int flt_mailonpost_post_handler(t_cf_hash *head,t_configuration *dc,t_configurat
   size_t len;
 
   if(cf_hash_get(GlobalValues,"UserName",8)) {
+    if(cfg_get_first_value(vc,flt_mailonpost_fn,"EMail") == NULL) return FLT_DECLINE;
+
     cs = cfg_get_first_value(dc,flt_mailonpost_fn,"ExternCharset");
     uri = cfg_get_first_value(dc,flt_mailonpost_fn,"UPostingURL");
     link = cf_advanced_get_link(uri->values[0],thread->tid,thread->messages->mid,"mailonpost=yes",14,&len);
