@@ -1,5 +1,6 @@
 2005-01-19 Christian Kruse <ckruse@wwwtech.de>
-	* src/modules/flt_directives.c: Bugfix for bug #484
+	* src/modules/flt_directives.c: Bugfix for bug #484, added support for
+	rel="nofollow" links
 
 2005-01-16 Christian Kruse <ckruse@wwwtech.de>
 	* cgi-shared/ForumUtils.pm: small bugfixes
