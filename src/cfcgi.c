@@ -258,7 +258,6 @@ u_char *cf_cgi_url_encode(const u_char *str,size_t len) {
   }
 
   *ptr2 = '\0';
-  nstr  = fo_alloc(nstr,ptr2-nstr,1,FO_ALLOC_REALLOC);
 
   return nstr;
 }

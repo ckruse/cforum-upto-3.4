@@ -794,7 +794,7 @@ void cf_gen_threadlist(t_cl_thread *thread,t_cf_hash *head,t_string *threadlist,
 
   u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10), *date, *link;
 
-  int slvl = -1,level;
+  int slvl = -1,level = 0;
 
   t_name_value *dft = cfg_get_first_value(&fo_view_conf,forum_name,"DateFormatThreadList"),
     *ot  = cfg_get_first_value(&fo_view_conf,forum_name,"OpenThread"),
