@@ -71,6 +71,7 @@ t_conf_opt default_options[] = {
   { "UBaseURL",                 handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG, &fo_default_conf },
   { "PostingURL",               handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG, &fo_default_conf },
   { "UPostingURL",              handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG, &fo_default_conf },
+  { "VoteURL",                  handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG, &fo_default_conf },
   { "ArchiveURL",               handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG, &fo_default_conf },
   { "ArchivePostingURL",        handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG, &fo_default_conf },
   { "ErrorTemplate",            handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG, &fo_default_conf },

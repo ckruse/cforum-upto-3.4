@@ -24,6 +24,7 @@
 #include <ctype.h>
 
 #include <sys/types.h>
+#include <sys/file.h>
 #include <signal.h>
 
 /* socket includes */
@@ -110,9 +111,11 @@ int main(int argc,char *argv[],char *env[]) {
   u_char *fname,*ctid,*cmid,*a,buff[512],*uname;
   t_cf_hash *head;
   size_t len;
+  DB_ENV *dbenv;
   DB *db;
   DBT key,data;
-  t_name_value *dbname;
+  t_name_value *dbname,*cs;
+  int fd;
 
   /* set signal handler for SIGSEGV (for error reporting) */
   signal(SIGSEGV,sighandler);
@@ -121,6 +124,7 @@ int main(int argc,char *argv[],char *env[]) {
   signal(SIGBUS,sighandler);
 
   if((cfgfiles = get_conf_file(wanted,2)) == NULL) {
+    fprintf(stderr,"Could not find config files!\n");
     return EXIT_FAILURE;
   }
 
@@ -150,6 +154,7 @@ int main(int argc,char *argv[],char *env[]) {
 
   head   = cf_cgi_new();
   dbname = cfg_get_first_value(&fo_vote_conf,"VotingDatabase");
+  cs     = cfg_get_first_value(&fo_default_conf,"ExternCharset");
 
   /* first action: authorization modules */
   if(Modules[AUTH_HANDLER].elements) {
@@ -169,7 +174,7 @@ int main(int argc,char *argv[],char *env[]) {
   /* }}} */
 
   if((uname = cf_hash_get(GlobalValues,"UserName",8)) == NULL) {
-    printf("Status: 403 Forbidden\015\012Content-Type: text/html\015\012\015\012");
+    printf("Status: 403 Forbidden\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
     str_error_message("E_VOTE_AUTH",NULL);
   }
   
@@ -180,19 +185,35 @@ int main(int argc,char *argv[],char *env[]) {
 
     if(cmid && ctid && a && is_id(cmid) && is_id(ctid)) {
       if((sock = set_us_up_the_socket()) != -1) {
+        /* {{{ open database and lock it */
         if((ret = db_create(&db,NULL,0)) != 0) {
-          printf("Status: 500 Internal Server Error\015\012\015\012");
+          printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
           str_error_message("E_FO_500",NULL);
           fprintf(stderr,"db_create() error: %s\n",db_strerror(ret));
           return EXIT_FAILURE;
         }
 
         if((ret = db->open(db,NULL,dbname->values[0],NULL,DB_BTREE,DB_CREATE,0644)) != 0) {
-          printf("Status: 500 Internal Server Error\015\012\015\012");
+          printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
           str_error_message("E_FO_500",NULL);
           fprintf(stderr,"db->open() error: %s\n",db_strerror(ret));
           return EXIT_FAILURE;
         }
+
+        if((ret = db->fd(db,&fd)) != 0) {
+          printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
+          str_error_message("E_FO_500",NULL);
+          fprintf(stderr,"db->fd() error: %s\n",db_strerror(ret));
+          return EXIT_FAILURE;
+        }
+
+        if((ret = flock(fd,LOCK_EX)) != 0) {
+          printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
+          str_error_message("E_FO_500",NULL);
+          fprintf(stderr,"db->fd() error: %s\n",strerror(errno));
+          return EXIT_FAILURE;
+        }
+        /* }}} */
 
         memset(&key,0,sizeof(key));
         memset(&data,0,sizeof(data));
@@ -203,13 +224,13 @@ int main(int argc,char *argv[],char *env[]) {
         key.size = len;
 
         if((ret = db->get(db,NULL,&key,&data,0)) == 0) {
-          printf("Status: 403 Forbidden\015\012Content-Type: text/html\015\012\015\012");
+          printf("Status: 403 Forbidden\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
           str_error_message("E_VOTE_MULTIPLE",NULL);
           return EXIT_FAILURE;
         }
 
         if(ret != DB_NOTFOUND) {
-          printf("Status: 500 Internal Server Error\015\012Content-Type: text/html\015\012\015\012");
+          printf("Status: 501 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
           str_error_message("E_VOTE_INTERNAL",NULL);
           fprintf(stderr,"db->get() error: %s\n",db_strerror(ret));
           return EXIT_FAILURE;
@@ -219,12 +240,13 @@ int main(int argc,char *argv[],char *env[]) {
         data.size = 1;
 
         if((ret = db->put(db,NULL,&key,&data,DB_NODUPDATA|DB_NOOVERWRITE)) != 0) {
-          printf("Status: 500 Internal Server Error\015\012Content-Type: text/html\015\012\015\012");
+          printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
           str_error_message("E_VOTE_INTERNAL",NULL);
           fprintf(stderr,"db->put() error: %s\n",db_strerror(ret));
           return EXIT_FAILURE;
         }
 
+        flock(fd,LOCK_UN);
         db->close(db,0);
 
         printf("Status: 204 No Content\015\012\015\012");
@@ -234,13 +256,13 @@ int main(int argc,char *argv[],char *env[]) {
         close(sock);
       }
       else {
-        printf("Status: 500 Internal Server Error\015\012Content-Type: text/html\015\012\015\012");
+        printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
         perror("socket");
         str_error_message("E_VOTE_INTERNAL",NULL);
       }
     }
     else {
-      printf("Status: 500 Internal Server Error\015\012Content-Type: text/html\015\012\015\012");
+      printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
       str_error_message("E_VOTE_INTERNAL",NULL);
     }
   }

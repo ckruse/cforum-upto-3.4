@@ -60,6 +60,9 @@ typedef struct s_message {
 
   time_t date; /**< The date this message was created */
   unsigned short level; /**< The indent level of the posting */
+  u_int32_t votes_good; /**< The good votings */
+  u_int32_t votes_bad; /**< The bad votings */
+  
   short may_show; /**< The visibility flag for plugins to use to hide postings */
   short invisible; /**< The visibility flag (if 0, posting is deleted) */
 

@@ -901,7 +901,7 @@ int cf_read_posting(t_posting *p,int sock,rline_t *tsd) {
  */
 void cf_send_posting(int sock,u_int64_t tid,u_int64_t mid,int invisible) {
   int n;
-  u_char buff[500];
+  u_char buff[512];
   t_thread *t = cf_get_thread(tid);
   t_posting *p = NULL;
   t_string bff;
@@ -936,7 +936,7 @@ void cf_send_posting(int sock,u_int64_t tid,u_int64_t mid,int invisible) {
   }
 
   p = t->postings;
-  n = sprintf(buff,"THREAD t%lld m%lld\n",t->tid,p->mid);
+  n = snprintf(buff,512,"THREAD t%lld m%lld\n",t->tid,p->mid);
   str_chars_append(&bff,buff,n);
 
   for(;p;p=p->next) {
@@ -946,7 +946,7 @@ void cf_send_posting(int sock,u_int64_t tid,u_int64_t mid,int invisible) {
     }
 
     if(!first) {
-      n = sprintf(buff,"MSG m%lld\n",p->mid);
+      n = snprintf(buff,512,"MSG m%lld\n",p->mid);
       str_chars_append(&bff,buff,n);
     }
 
@@ -978,13 +978,19 @@ void cf_send_posting(int sock,u_int64_t tid,u_int64_t mid,int invisible) {
       str_chars_append(&bff,p->category,p->category_len);
     }
 
-    n = sprintf(buff,"\nDate:%ld\n",p->date);
+    n = snprintf(buff,512,"\nDate:%ld\n",p->date);
     str_chars_append(&bff,buff,n);
 
-    n = sprintf(buff,"Level:%d\n",p->level);
+    n = snprintf(buff,512,"Level:%d\n",p->level);
     str_chars_append(&bff,buff,n);
 
-    n = sprintf(buff,"Visible:%d\n",p->invisible == 0);
+    n = snprintf(buff,512,"Visible:%d\n",p->invisible == 0);
+    str_chars_append(&bff,buff,n);
+
+    n = snprintf(buff,512,"Votes-Good:%ld\n",p->votes_good);
+    str_chars_append(&bff,buff,n);
+
+    n = snprintf(buff,512,"Votes-Bad:%ld\n",p->votes_bad);
     str_chars_append(&bff,buff,n);
 
     str_chars_append(&bff,"Content:",8);
@@ -1135,6 +1141,8 @@ void cf_generate_shared_memory() {
       mem_append(&pool,&(p->date),sizeof(p->date));
       mem_append(&pool,&(p->level),sizeof(p->level));
       mem_append(&pool,&(p->invisible),sizeof(p->invisible));
+      mem_append(&pool,&(p->votes_good),sizeof(p->votes_good));
+      mem_append(&pool,&(p->votes_bad),sizeof(p->votes_bad));
 
       val = p->user.name_len + 1;
       mem_append(&pool,&val,sizeof(val));

@@ -915,6 +915,12 @@ int cf_get_next_thread_through_sock(int sock,rline_t *tsd,t_cl_thread *thr,const
         thr->last->email     = strdup(&line[6]);
         thr->last->email_len = tsd->rl_len - 7;
       }
+      else if(cf_strncmp(line,"Votes-Good:",11) == 0) {
+        thr->last->votes_good = strtoul(line+11,NULL,10);
+      }
+      else if(cf_strncmp(line,"Votes-Bad:",10) == 0) {
+        thr->last->votes_bad = strtoul(line+10,NULL,10);
+      }
       else if(cf_strncmp(line,"END",3) == 0) {
         shallRun = 0;
         ok = 1;
@@ -1021,8 +1027,15 @@ void *cf_get_next_thread_through_shm(void *shm_ptr,t_cl_thread *thr,const u_char
     thr->last->invisible = *((u_int16_t *)ptr);
     thr->last->may_show  = 1;
     ptr += sizeof(u_int16_t);
-
     if(thr->last->invisible) thr->msg_len--;
+
+    /* votings */
+    thr->last->votes_good = *((u_int32_t *)ptr);
+    ptr += sizeof(u_int32_t);
+
+    thr->last->votes_bad = *((u_int32_t *)ptr);
+    ptr += sizeof(u_int32_t);
+
 
     /* author length */
     thr->last->author_len = *((u_int32_t *)ptr) - 1;
@@ -1184,8 +1197,8 @@ int cf_get_message_through_shm(void *shm_ptr,t_cl_thread *thr,const u_char *tpln
       val = *((u_int32_t *)ptr1);
       ptr1 += sizeof(u_int32_t) + val;
 
-      /* date, level, invisible */
-      ptr1 += sizeof(time_t) + sizeof(u_int16_t) + sizeof(u_int16_t);
+      /* date, level, invisible, votes good, votes bad */
+      ptr1 += sizeof(time_t) + sizeof(u_int16_t) + sizeof(u_int16_t) + sizeof(u_int32_t) + sizeof(u_int32_t);
 
       /* user name length + user name */
       val = *((u_int32_t *)ptr1);

@@ -365,30 +365,7 @@ int flt_directives_execute(t_configuration *fdc,t_configuration *fvc,const u_cha
         tmp1 = get_link(vs->values[0],tid,mid);
         if(tmp2) tmp2 += 7;
 
-        if(sig == 0 && cite) {
-          str_chars_append(cite,"[link:",6);
-          str_chars_append(cite,tmp1,strlen(tmp1));
-
-          if(tmp2) {
-            str_chars_append(cite,"@title=",7);
-            str_chars_append(cite,tmp2,strlen(tmp2));
-          }
-
-          str_char_append(cite,']');
-        }
-
-        str_chars_append(content,"<a href=\"",9);
-        str_chars_append(content,tmp1,strlen(tmp1));
-
-        if(flt_directives_link) {
-          str_chars_append(content,"\" target=\"",10);
-          str_chars_append(content,flt_directives_link,strlen(flt_directives_link));
-        }
-
-        str_chars_append(content,"\">",2);
-        if(tmp2) str_chars_append(content,tmp2,strlen(tmp2));
-        else str_chars_append(content,tmp1,strlen(tmp1));
-        str_chars_append(content,"</a>",4);
+        flt_directives_generate_uri(tmp1,tmp2,content,cite,sig);
 
         free(tmp1);
 

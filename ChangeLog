@@ -1,3 +1,14 @@
+2004-11-23 Christian Kruse <ckruse@wwwtech.de>
+	* src/clientlib.c, src/clientlib.h, src/serverlib.c: Added support for voting
+		in the CFTP protocol
+	* src/modules/flt_directives.c: Added support for link templates in [pref:]
+	* src/modules/flt_voting.c: Now the cache will be rebuild on voting
+	* src/modules/Makefile.am: Added flt_votingvariables
+	* src/fo_vote.c: Added locking, fixed bugs in header sending
+	* src/templates/de/tpl_*/forum_posting.html: Added output for voting
+	* src/configparser.c: Added parameter for VotingURL
+	* cgi-shared/config/Makefile.am: Added fo_vote.conf
+
 2004-11-22 Christian Kruse <ckruse@wwwtech.de>
 	* src/modules/flt_visited.c: Added »mark all visited« functionality
 	* src/modules/flt_posting.c, src/fo_view.c: Fixed a bug in tree view
