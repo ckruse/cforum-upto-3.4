@@ -111,7 +111,7 @@ void flt_directives_generate_uri(const u_char *uri,const u_char *title,t_string 
 
   if(title) {
     len1 = strlen(title);
-    tmp2 = htmlentities(tmp1,1);
+    tmp2 = htmlentities(uri,1);
     len = strlen(tmp2);
 
     str_chars_append(content,"<a href=\"",9);
@@ -131,7 +131,7 @@ void flt_directives_generate_uri(const u_char *uri,const u_char *title,t_string 
     if(flt_directives_lt_toks.elements) {
       for(i=0;i<flt_directives_lt_toks.elements;i++) {
         if((tok = array_element_at(&flt_directives_lt_toks,i)) != NULL) {
-          switch(tok.type) {
+          switch(tok->type) {
             case FLT_DIRECTIVES_TOK_TITLE:
               str_chars_append(content,title,len1);
               break;
@@ -139,7 +139,7 @@ void flt_directives_generate_uri(const u_char *uri,const u_char *title,t_string 
               str_chars_append(content,tmp2,len);
               break;
             default:
-              str_chars_append(content,tok.tok,tok.type);
+              str_chars_append(content,tok->tok,tok->type);
               break;
           }
         }
@@ -165,7 +165,7 @@ void flt_directives_generate_uri(const u_char *uri,const u_char *title,t_string 
     free(tmp2);
   }
   else {
-    tmp2 = htmlentities(tmp1,1);
+    tmp2 = htmlentities(uri,1);
     len = strlen(tmp2);
 
     str_chars_append(content,"<a href=\"",9);
@@ -488,7 +488,7 @@ int flt_directives_handle_lt(t_configfile *cfile,t_conf_opt *opt,u_char **args,i
   t_flt_directives_lt_tok tok;
 
   str_init(&str);
-  array_init(&flt_directives_lt_toks,NULL);
+  array_init(&flt_directives_lt_toks,sizeof(tok),NULL);
 
   for(ptr=args[0];*ptr;++ptr) {
     switch(*ptr) {
@@ -499,7 +499,7 @@ int flt_directives_handle_lt(t_configfile *cfile,t_conf_opt *opt,u_char **args,i
               str_char_append(&str,*(ptr+1));
               break;
             case 't':
-              tok.tok  = htmlentities(str.content);
+              tok.tok  = htmlentities(str.content,1);
               tok.type = strlen(tok.tok);
               array_push(&flt_directives_lt_toks,&tok);
 
@@ -512,7 +512,7 @@ int flt_directives_handle_lt(t_configfile *cfile,t_conf_opt *opt,u_char **args,i
               break;
 
             case 'u':
-              tok.tok  = htmlentities(str.content);
+              tok.tok  = htmlentities(str.content,1);
               tok.type = strlen(tok.tok);
               array_push(&flt_directives_lt_toks,&tok);
 
@@ -538,7 +538,7 @@ int flt_directives_handle_lt(t_configfile *cfile,t_conf_opt *opt,u_char **args,i
   }
 
   if(str.len) {
-    tok.tok  = htmlentities(str.content);
+    tok.tok  = htmlentities(str.content,1);
     tok.type = strlen(tok.tok);
     array_push(&flt_directives_lt_toks,&tok);
 
@@ -559,7 +559,7 @@ t_conf_opt flt_directives_config[] = {
   { "ShowImageAsLink",      flt_directives_handle_image,    CFG_OPT_CONFIG|CFG_OPT_USER,  NULL },
   { "PostingLinkTarget",    flt_directives_handle_link,     CFG_OPT_CONFIG|CFG_OPT_USER,  NULL },
   { "ReferenceURI",         flt_directives_handle_ref,      CFG_OPT_CONFIG|CFG_OPT_USER,  NULL },
-  { "LinkTemplate",         flt_directives_handle_lt,       CFg_OPT_CONFIG|CFG_OPT_USER,  NULL },
+  { "LinkTemplate",         flt_directives_handle_lt,       CFG_OPT_CONFIG|CFG_OPT_USER,  NULL },
   { NULL, 0, NULL, NULL }
 };
 
