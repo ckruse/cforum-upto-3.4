@@ -303,6 +303,7 @@ cgi-shared/docs/Makefile
 cgi-shared/data/Makefile
 cgi-shared/data/messages/Makefile
 src/Makefile src/modules/Makefile
+src/parsetpl/Makefile
 src/templates/Makefile
 src/templates/de/Makefile
 src/templates/en/Makefile

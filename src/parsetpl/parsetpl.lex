@@ -55,6 +55,7 @@ typedef struct s_token {
 static long lineno                   = 0;
 static t_string  string              = { 0, 0, NULL };
 static t_string  content             = { 0, 0, NULL };
+static t_string  content_backup      = { 0, 0, NULL };
 static t_string  output              = { 0, 0, NULL };
 static t_string  output_mem          = { 0, 0, NULL };
 static t_string  current_file        = { 0, 0, NULL };
@@ -75,65 +76,168 @@ static t_string  current_file        = { 0, 0, NULL };
 
 \{      {
   yy_push_state(TAG);
+  if(content_backup.content) free(content_backup.content);
+  str_init(&content_backup);
+  str_chars_append(&content_backup,yytext,strlen(yytext));
   return PARSETPL_TOK_TAGSTART;
 }
 
 <TAG>{
-  \n                  { ++lineno;  return PARSETPL_TOK_WHITESPACE; }
-  [\r\t ]             return PARSETPL_TOK_WHITESPACE;
+  \n                  {
+    str_chars_append(&content_backup,yytext,strlen(yytext));
+    ++lineno;
+    return PARSETPL_ERR_UNRECOGNIZEDCHARACTER;
+  }
+  [\r\t ]             {
+    str_chars_append(&content_backup,yytext,strlen(yytext));
+    return PARSETPL_TOK_WHITESPACE;
+  }
   \"             {
+    str_chars_append(&content_backup,yytext,strlen(yytext));
     if(string.content) free(string.content);
     str_init(&string);
     yy_push_state(STRING);
   }
-  -?[0-9]+            return PARSETPL_TOK_INTEGER;
-  \$[A-Za-z0-9_]+     return PARSETPL_TOK_VARIABLE;
+  -?[0-9]+            {
+    str_chars_append(&content_backup,yytext,strlen(yytext));
+    return PARSETPL_TOK_INTEGER;
+  }
+  \$[A-Za-z0-9_]+     {
+    str_chars_append(&content_backup,yytext,strlen(yytext));
+    return PARSETPL_TOK_VARIABLE;
+  }
   \}             {
+    str_chars_append(&content_backup,yytext,strlen(yytext));
     yy_pop_state();
     if(content.content) free(content.content);
     str_init(&content);
     return PARSETPL_TOK_TAGEND;
   }
-  ->escape            return PARSETPL_TOK_MODIFIER_ESCAPE;
-  ==                  return PARSETPL_TOK_COMPARE;
-  !=                  return PARSETPL_TOK_COMPARE;
-  =                   return PARSETPL_TOK_ASSIGNMENT;
-  \[                  return PARSETPL_TOK_ARRAYSTART;
-  ,                   return PARSETPL_TOK_ARRAYSEP;
-  \]                  return PARSETPL_TOK_ARRAYEND;
-  !                   return PARSETPL_TOK_NOT;
-  else[ ]if           return PARSETPL_TOK_ELSIF;
-  if                  return PARSETPL_TOK_IF;
-  elsif               return PARSETPL_TOK_ELSIF;
-  else                return PARSETPL_TOK_ELSE;
-  endif               return PARSETPL_TOK_ENDIF;
-  include             return PARSETPL_TOK_INCLUDE;
-  foreach             return PARSETPL_TOK_FOREACH;
-  as                  return PARSETPL_TOK_AS;
-  endforeach          return PARSETPL_TOK_ENDFOREACH;
+  ->escape            {
+    str_chars_append(&content_backup,yytext,strlen(yytext));
+    return PARSETPL_TOK_MODIFIER_ESCAPE;
+  }
+  ==                  {
+    str_chars_append(&content_backup,yytext,strlen(yytext));
+    return PARSETPL_TOK_COMPARE;
+  }
+  !=                  {
+    str_chars_append(&content_backup,yytext,strlen(yytext));
+    return PARSETPL_TOK_COMPARE;
+  }
+  =                   {
+    str_chars_append(&content_backup,yytext,strlen(yytext));
+    return PARSETPL_TOK_ASSIGNMENT;
+  }
+  \[                  {
+    str_chars_append(&content_backup,yytext,strlen(yytext));
+    return PARSETPL_TOK_ARRAYSTART;
+  }
+  ,                   {
+    str_chars_append(&content_backup,yytext,strlen(yytext));
+    return PARSETPL_TOK_ARRAYSEP;
+  }
+  \]                  {
+    str_chars_append(&content_backup,yytext,strlen(yytext));
+    return PARSETPL_TOK_ARRAYEND;
+  }
+  !                   {
+    str_chars_append(&content_backup,yytext,strlen(yytext));
+    return PARSETPL_TOK_NOT;
+  }
+  else[ ]if           {
+    str_chars_append(&content_backup,yytext,strlen(yytext));
+    return PARSETPL_TOK_ELSIF;
+  }
+  if                  {
+    str_chars_append(&content_backup,yytext,strlen(yytext));
+    return PARSETPL_TOK_IF;
+  }
+  elsif               {
+    str_chars_append(&content_backup,yytext,strlen(yytext));
+    return PARSETPL_TOK_ELSIF;
+  }
+  else                {
+    str_chars_append(&content_backup,yytext,strlen(yytext));
+    return PARSETPL_TOK_ELSE;
+  }
+  endif               {
+    str_chars_append(&content_backup,yytext,strlen(yytext));
+    return PARSETPL_TOK_ENDIF;
+  }
+  include             {
+    str_chars_append(&content_backup,yytext,strlen(yytext));
+    return PARSETPL_TOK_INCLUDE;
+  }
+  foreach             {
+    str_chars_append(&content_backup,yytext,strlen(yytext));
+    return PARSETPL_TOK_FOREACH;
+  }
+  as                  {
+    str_chars_append(&content_backup,yytext,strlen(yytext));
+    return PARSETPL_TOK_AS;
+  }
+  endforeach          {
+    str_chars_append(&content_backup,yytext,strlen(yytext));
+    return PARSETPL_TOK_ENDFOREACH;
+  }
   <<EOF>>        {
+    str_chars_append(&content_backup,yytext,strlen(yytext));
     return PARSETPL_ERR_UNTERMINATEDTAG;
   }
-  .                   return PARSETPL_ERR_UNRECOGNIZEDCHARACTER;
+  .                   {
+    str_chars_append(&content_backup,yytext,strlen(yytext));
+    return PARSETPL_ERR_UNRECOGNIZEDCHARACTER;
+  }
 }
 
 <STRING>{
-  \n                  { ++lineno;  return PARSETPL_ERR_UNTERMINATEDSTRING; }
-  \\n                 str_char_append(&string,'\n');
-  \\t                 str_char_append(&string,'\t');
-  \\r                 str_char_append(&string,'\r');
-  \\0[0-7]{1,3}       str_char_append(&string,(char)strtol(yytext,NULL,8));
-  \\x[0-9A-Fa-f]{1,2} str_char_append(&string,(char)strtol(yytext,NULL,16));
-  \\\\                str_char_append(&string,'\\');
-  \\\"                str_char_append(&string,'"');
+  \n                  {
+    str_chars_append(&content_backup,yytext,strlen(yytext));
+    ++lineno; 
+    return PARSETPL_ERR_UNTERMINATEDSTRING;
+  }
+  \\n                 {
+    str_chars_append(&content_backup,yytext,strlen(yytext));
+    str_char_append(&string,'\n');
+  }
+  \\t                 {
+    str_chars_append(&content_backup,yytext,strlen(yytext));
+    str_char_append(&string,'\t');
+  }
+  \\r                 {
+    str_chars_append(&content_backup,yytext,strlen(yytext));
+    str_char_append(&string,'\r');
+  }
+  \\0[0-7]{1,3}       {
+    str_chars_append(&content_backup,yytext,strlen(yytext));
+    str_char_append(&string,(char)strtol(yytext,NULL,8));
+  }
+  \\x[0-9A-Fa-f]{1,2} {
+    str_chars_append(&content_backup,yytext,strlen(yytext));
+    str_char_append(&string,(char)strtol(yytext,NULL,16));
+  }
+  \\\\                {
+    str_chars_append(&content_backup,yytext,strlen(yytext));
+    str_char_append(&string,'\\');
+  }
+  \\\"                {
+    str_chars_append(&content_backup,yytext,strlen(yytext));
+    str_char_append(&string,'"');
+  }
   \"                  {
+    str_chars_append(&content_backup,yytext,strlen(yytext));
     yy_pop_state();
     return PARSETPL_TOK_STRING;
   }
   <<EOF>> {
+    str_chars_append(&content_backup,yytext,strlen(yytext));
     return PARSETPL_ERR_UNTERMINATEDSTRING;
   }
-  .                   str_char_append(&string,*yytext);
+  .                   {
+    str_chars_append(&content_backup,yytext,strlen(yytext));
+    str_char_append(&string,*yytext);
+  }
 }
 
 . {
@@ -809,6 +913,8 @@ int parse_file(const u_char *filename) {
   t_array data;
   int tag_started = 0;
   t_token token;
+  t_token *tok;
+  int i;
   
   basename = strdup((u_char *)filename);
   if(!strcmp(PARSETPL_INCLUDE_EXT,basename+strlen(basename)-strlen(PARSETPL_INCLUDE_EXT))) {
@@ -849,14 +955,26 @@ int parse_file(const u_char *filename) {
   
   do {
     ret = parsetpl_lex();
-    if(ret < PARSETPL_TOK_EOF) { // error
-      break;
+    if(ret < PARSETPL_TOK_EOF) {
+      if(!tag_started) {
+        break; // error
+      }
+      yy_pop_state();
+      if(content.content) free(content.content);
+      str_init(&content);
+      str_str_append(&content,&content_backup);
+      array_destroy(&data);
+      array_init(&data,sizeof(t_token),destroy_token);
+      tag_started = 0;
+      ret = PARSETPL_TOK_TAGEND;// dummy
+      continue;
     }
     if(tag_started) {
       if(ret == PARSETPL_TOK_TAGEND) {
         ret = process_tag(&data);
-        if(ret < PARSETPL_TOK_EOF) { // error
-          break;
+        if(ret < PARSETPL_TOK_EOF) { // no error
+          // append content backup
+          str_str_append(&content,&content_backup);
         }
         array_destroy(&data);
         array_init(&data,sizeof(t_token),destroy_token);
