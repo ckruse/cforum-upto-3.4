@@ -1,4 +1,3 @@
-2005-02-23 Christian Kruse <ckruse@wwwtech.de>
-	* src/modules/flt_syntax.c: Fixed several bugs in syntax highlighting
-	* src/modules/flt_failsafe.c: Fixed a really bad bug which caused "too many
-		open files" errors
+2005-02-25 Christian Kruse <ckruse@wwwtech.de>
+	* src/fo_server.c: Fixes a really nasty bug in logfile rolling
+

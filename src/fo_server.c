@@ -168,6 +168,8 @@ void logfile_worker(void) {
 
       rename(log->values[0],str.content);
 
+      head.log.std = NULL;
+      
       str_cleanup(&str);
       pthread_mutex_unlock(&head.log.lock);
     }
@@ -177,7 +179,7 @@ void logfile_worker(void) {
   if(stat(log->values[0],&st) == 0) {
     if(st.st_size >= size) {
       pthread_mutex_lock(&head.log.lock);
-      fclose(head.log.std);
+      fclose(head.log.err);
 
       len = strftime(buff,256,".%Y-%m-%d-%T",&tm);
       str_init(&str);
@@ -186,6 +188,8 @@ void logfile_worker(void) {
 
       rename(log->values[0],str.content);
 
+      head.log.err = NULL;
+      
       str_cleanup(&str);
       pthread_mutex_unlock(&head.log.lock);
     }
