@@ -458,7 +458,8 @@ void show_month_content(const u_char *year,const u_char *month) {
   }
 
   len = get_month_name(atoi(month),fn,&tmp);
-  cf_set_variable(&m_tpl,cs,"month",month,len,1);
+  cf_set_variable(&m_tpl,cs,"month",tmp,len,1);
+  free(tmp);
   cf_set_variable(&m_tpl,cs,"year",year,strlen(year),1);
   cf_set_variable(&m_tpl,cs,"forumbase",forumpath->values[0],strlen(forumpath->values[0]),1);
 

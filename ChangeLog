@@ -1,3 +1,8 @@
+2005-03-07 CHristian Kruse <ckruse@wwwtech.de>
+	* src/utils.c: Fixed nasty bug in cf_make_path()
+	* src/modules/flt_xmlstorage.c: Fixed a bug in archiving routines
+	* src/fo_arcview.c: Fixed a bug in variable setting
+
 2005-03-05 Christian Seiler <self@christian-seiler.de>
 	* conf/patterns/html.pat: Fixed small bug
 
