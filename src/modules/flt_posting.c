@@ -330,14 +330,30 @@ int flt_posting_execute_filter(t_cf_hash *head,t_configuration *dc,t_configurati
 }
 /* }}} */
 
+int flt_posting_is_relative_uri(u_char *tmp,size_t len) {
+  t_string str;
+  int ret = 0;
+
+  str_init(&str);
+  str_char_set(&str,"http://www.example.org",21);
+  if(*tmp == '.' || *tmp == '?') str_char_append(&str,'/');
+  str_chars_append(&str,tmp,len);
+
+  ret = is_valid_http_link(str.content,0);
+  str_cleanup(&str);
+
+  return ret == 0;
+}
+
 /* {{{ standard directives ([link:], [ref:], [iframe:], [image:], [pref:]) */
 int flt_posting_directives(t_configuration *fdc,t_configuration *fvc,const u_char *directive,const u_char *parameter,t_string *content,t_string *cite,const u_char *qchars,int sig) {
-  size_t len,i,len1;
+  size_t len,i,len1 = 0;
   t_name_value *xhtml = cfg_get_first_value(fdc,"XHTMLMode");
   u_int64_t tid,mid;
   u_char *ptr,*tmp1 = NULL,**list = NULL,*title_alt = NULL;
   t_name_value *vs = cfg_get_first_value(fdc,cf_hash_get(GlobalValues,"UserName",8) ? "UPostingURL" : "PostingURL");
   t_ref_uri *uri;
+  int go = 1;
 
   if(*directive == 'l') {
     /* {{{ [link:] */
@@ -353,7 +369,15 @@ int flt_posting_directives(t_configuration *fdc,t_configuration *fvc,const u_cha
         len  = strlen(parameter);
       }
 
-      if(is_valid_link(tmp1) == 0) {
+      if(is_valid_link(tmp1) != 0) {
+        if(cf_strncmp(tmp1,"..",2) == 0 || *tmp1 == '/' || *tmp1 == '?') {
+          if(!flt_posting_is_relative_uri(tmp1,len)) {
+            go = 0;
+          }
+        }
+      }
+
+      if(go) {
         str_chars_append(content,"<a href=\"",9);
         str_chars_append(content,tmp1,len);
 
@@ -410,12 +434,13 @@ int flt_posting_directives(t_configuration *fdc,t_configuration *fvc,const u_cha
         else {
           str_chars_append(content,"<img src=\"",10);
           str_chars_append(content,tmp1,len);
-          str_char_append(content,'"',1);
+          str_char_append(content,'"');
 
           if(title_alt) {
             str_chars_append(content," alt=\"",6);
             str_chars_append(content,title_alt,len1);
-            str_char_append(content,'"');
+            str_chars_append(content,"\" title=\"",9);
+            str_chars_append(content,title_alt,len1);
           }
 
           if(*xhtml->values[0] == 'y')  str_chars_append(content,"\"/>",3);

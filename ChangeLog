@@ -14,6 +14,8 @@
 		_may_ have whitespaces!
 	* src/modules/flt_posting.c: Fixed bug in [image:...@alt=...] handling
 	* src/stringutils.c: Fixed bug in nsplit()
+	* src/modules/flt_posting.c: Fixed bug in [link:] handling (relative links
+		have to be validated correctly)
 
 2004-10-05 Christian seiler <self@christian-seiler.de>
 	* fixed bugs #384, #335 and #381, this includes:
