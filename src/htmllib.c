@@ -114,7 +114,7 @@ void msg_to_html(t_cl_thread *thread,const u_char *msg,t_string *content,t_strin
         if(*ptr1 == ':') {
           tmp = ptr1;
 
-          for(ptr1++;*ptr1 && !isspace(*ptr1) && *ptr1 != ']';++ptr1);
+          for(ptr1++;*ptr1 && *ptr1 != ']';++ptr1);
           if(*ptr1 == ']') {
             directive = strndup(ptr+1,tmp-ptr-1);
             parameter = strndup(tmp+1,ptr1-tmp-1);

@@ -302,8 +302,8 @@ sub message_field {
     my ($uri,$title) = ($1,$2,$3);
     next if
       !is_valid_link($uri) &&
-      !is_valid_http_url(($uri =~ /^[Vv][Ii][Ee][Ww]-[Ss][Oo][Uu][Rr][Cc][Ee]:(.+)/)[0],CForum::Validator::VALIDATE_STRICT) &&
-      !($uri =~ m{^(?:\.?\.?/(?!/)|\?)} and is_valid_http_url(rel_uri($uri,$base)));
+      !is_valid_http_link(($uri =~ /^[Vv][Ii][Ee][Ww]-[Ss][Oo][Uu][Rr][Cc][Ee]:(.+)/)[0],CForum::Validator::VALIDATE_STRICT) &&
+      !($uri =~ m{^(?:\.?\.?/(?!/)|\?)} and is_valid_http_link(rel_uri($uri,$base)));
 
     push @links,[$uri,$title];
   }
@@ -312,8 +312,8 @@ sub message_field {
   while($posting =~ /\[[Ii][Mm][Aa][Gg][Ee]:\s*([^\]\s]+?)\s*(?:\@alt=([^\]]+)\s*)?\]/g) {
     my ($uri,$alt) = ($1,$2);
     next if
-      !is_valid_http_url($uri,CForum::Validator::VALIDATE_STRICT) &&
-      !($uri =~ m{^(?:\.?\.?/(?!/)|\?)} and is_valid_http_url(rel_uri($uri, $base),CForum::Validator::VALIDATE_STRICT));
+      !is_valid_http_link($uri,CForum::Validator::VALIDATE_STRICT) &&
+      !($uri =~ m{^(?:\.?\.?/(?!/)|\?)} and is_valid_http_link(rel_uri($uri, $base),CForum::Validator::VALIDATE_STRICT));
 
     push @images,[$uri,$alt];
   }
@@ -322,8 +322,8 @@ sub message_field {
   while($posting =~ /\[[Ii][Ff][Rr][Aa][Mm][Ee]:\s*([^\]\s]+)\s*\]/g) {
     my $uri = $1;
     next if
-      !is_valid_http_url($uri,CForum::Validator::VALIDATE_STRICT) &&
-      !($uri =~ m{^(?:\.?\.?/(?!/)|\?)} and is_valid_http_url(rel_uri($uri, $base),CForum::Validator::VALIDATE_STRICT));
+      !is_valid_http_link($uri,CForum::Validator::VALIDATE_STRICT) &&
+      !($uri =~ m{^(?:\.?\.?/(?!/)|\?)} and is_valid_http_link(rel_uri($uri, $base),CForum::Validator::VALIDATE_STRICT));
 
     push @iframes,$uri;
   }
@@ -341,7 +341,7 @@ sub message_field {
   # ... images
   $posting =~ s!$_!'<img src="'.$1.'" border="0" alt="'.($2?$2:'').'">'!eg for map {
     '\[[Ii][Mm][Aa][Gg][Ee]:\s*('.
-    quotemeta(recode($fdcfg,$_->[1])).
+    quotemeta(recode($fdcfg,$_->[0])).
     ')'.
     ($_->[1] ? '\s*\@alt=('.quotemeta(recode($fdcfg,$_->[1])).')' : '').
     '\s*\]'

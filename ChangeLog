@@ -6,6 +6,12 @@
 		of is_valid_url()
 	* src/validate.c: Accepting ~ characters in hostpath; this is not really RFC
 		compliant but very often in the web
+	* cgi-shared/ForumUtils.pm: Fixed bugs in [image:] handling, fixed bug (it is
+		is_valid_http_link(), not is_valid_http_url())
+	* cgi-shared/Plugins/PostingAssistant.pm: Fixed bug in function call (it is
+		is_valid_http_link(), not is_valid_http_url())
+	* src/htmllib.c: Fixed bug in directive parsing. Arguments of the directive
+		_may_ have whitespaces!
 
 2004-10-05 Christian seiler <self@christian-seiler.de>
 	* fixed bugs #384, #335 and #381, this includes:
