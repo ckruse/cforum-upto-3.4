@@ -118,7 +118,7 @@ sub cleanup_deleted {
   my $value = '';
 
   unless(-f $file) {
-    print STDERR "Could not find $file!\n";
+    #print STDERR "Could not find $file!\n";
     return;
   }
 
@@ -156,7 +156,7 @@ sub cleanup_visited {
   my $value = '';
 
   unless(-f $file) {
-    print STDERR "Could not find $file!\n";
+    #print STDERR "Could not find $file!\n";
     return;
   }
 
@@ -181,6 +181,7 @@ sub cleanup_visited {
 }
 # }}}
 
+# {{{ cleanup votes
 sub cleanup_votes {
   my $file = shift;
   my $mids = shift;
@@ -191,7 +192,7 @@ sub cleanup_votes {
   my $value = '';
 
   unless(-f $file) {
-    print STDERR "Could not find $file!\n";
+    #print STDERR "Could not find $file!\n";
     return;
   }
 
@@ -218,5 +219,6 @@ sub cleanup_votes {
   $dbfile->db_close();
 
 }
+# }}}
 
 # eof
