@@ -1,3 +1,7 @@
+2004-06-16 Jan Rieger <jr@occuris.de>
+	* cgi-shared/config/templates/tpl_*/arcthreadlist.html:
+	  Added template variables, see Bug #173
+
 2004-06-15 Jan Rieger <jr@occuris.de>
   * cgi-shared/config/templates/tpl_*/forum_begin.html:
     Changed meta refresh to only contain URL in frameset view
