@@ -721,6 +721,11 @@ int flt_directives_rewrite(t_cf_hash *head,t_configuration *dc,t_configuration *
 }
 /* }}} */
 
+int flt_directives_suial_set(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cl_thread *thread,t_cf_template *tpl) {
+  if(flt_directives_suial == 0) cf_tpl_setvalue(tpl,"showimage",TPL_VARIABLE_INT,1);
+  return FLT_OK;
+}
+
 int flt_directives_init(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc) {
   cf_html_register_directive("link",flt_directives_execute,CF_HTML_DIR_TYPE_ARG|CF_HTML_DIR_TYPE_INLINE);
   cf_html_register_directive("pref",flt_directives_execute,CF_HTML_DIR_TYPE_ARG|CF_HTML_DIR_TYPE_INLINE);
@@ -755,11 +760,6 @@ int flt_directives_handle_icons(t_configfile *cfile,t_conf_opt *opt,const u_char
   flt_directives_icons = strdup(args[0]);
 
   return 0;
-}
-
-int flt_directives_suial_set(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cl_thread *thread,t_cf_template *tpl) {
-  if(flt_directives_suial == 0) cf_tpl_setvalue(tpl,"showimage",TPL_VARIABLE_INT,1);
-  return FLT_OK;
 }
 
 int flt_directives_handle_suial(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
