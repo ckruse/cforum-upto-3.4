@@ -766,7 +766,7 @@ int main(int argc,char *argv[],char *env[]) {
   void *shm;
   #endif
 
-  int sock,new_thread = 0;
+  int sock,new_thread = 0,ShowInvisible = 0;
   rline_t rl;
 
   /* set signal handler for SIGSEGV (for error reporting) */
@@ -856,6 +856,7 @@ int main(int argc,char *argv[],char *env[]) {
   if(ret != FLT_EXIT) ret = cf_run_init_handlers(head);
 
   cs = cfg_get_first_value(&fo_default_conf,forum_name,"ExternCharset");
+  ShowInvisible = cf_hash_get(GlobalValues,"ShowInvisible",13) != NULL;
 
   if(ret != FLT_EXIT) {
     /* fine -- lets spit out http headers */
@@ -941,13 +942,13 @@ int main(int argc,char *argv[],char *env[]) {
       #endif
 
       #ifdef CF_SHARED_MEM
-      if(new_thread == 0 && cf_get_message_through_shm(shm,&thr,NULL,tid,mid,CF_KILL_DELETED) == -1) {
+      if(new_thread == 0 && cf_get_message_through_shm(shm,&thr,NULL,tid,mid,ShowInvisible ? CF_KEEP_DELETED : CF_KILL_DELETED) == -1) {
         printf("Status: 500 Internal Server Error\015\012\015\012");
         cf_error_message(ErrorString,NULL);
         return EXIT_SUCCESS;
       }
       #else
-      if(new_thread == 0 && cf_get_message_through_sock(sock,&rl,&thr,NULL,tid,mid,CF_KILL_DELETED) == -1) {
+      if(new_thread == 0 && cf_get_message_through_sock(sock,&rl,&thr,NULL,tid,mid,ShowInvisible ? CF_KEEP_DELETED : CF_KILL_DELETED) == -1) {
         printf("Status: 500 Internal Server Error\015\012\015\012");
         cf_error_message(ErrorString,NULL);
         return EXIT_SUCCESS;
@@ -985,7 +986,9 @@ int main(int argc,char *argv[],char *env[]) {
       p->date        = time(NULL);
       if(new_thread == 0) p->level = thr.threadmsg->level + 1;
       p->may_show    = 1;
-      p->invisible   = 0;
+
+      if(thr.threadmsg->invisible) p->invisible = 1;
+      else p->invisible = 0;
       /* }}} */
 
       #ifdef CF_SHARED_MEM
@@ -1078,6 +1081,8 @@ int main(int argc,char *argv[],char *env[]) {
         val = get_remote_addr();
         str_chars_append(&str1,"\nRemoteAddr: ",13);
         str_chars_append(&str1,val,strlen(val));
+
+        if(p->invisible) str_chars_append(&str1,"\nInvisible: 1",13);
 
         str_chars_append(&str1,"\n\n",2);
 

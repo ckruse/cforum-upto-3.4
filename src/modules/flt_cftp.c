@@ -219,7 +219,7 @@ int flt_cftp_handler(int sockfd,t_forum *forum,const u_char **tokens,int tnum,rl
           p1 = cf_get_posting(t,mid);
           CF_RW_RD(&t->lock);
 
-          if(!p1 || p1->invisible == 1) {
+          if(!p1) {
             writen(sockfd,"404 Posting Not Found\n",22);
             cf_log(CF_ERR,__FILE__,__LINE__,"Posting not found\n");
             err = 1;
@@ -232,13 +232,21 @@ int flt_cftp_handler(int sockfd,t_forum *forum,const u_char **tokens,int tnum,rl
             if(cf_read_posting(forum,p,sockfd,tsd)) {
               CF_RW_WR(&t->lock);
 
-              CF_LM(&forum->uniques.lock);
-              if(cf_hash_get(forum->uniques.ids,p->unid.content,p->unid.len) != NULL) {
-                writen(sockfd,"502 Unid already got\n",21);
-                cf_log(CF_ERR,__FILE__,__LINE__,"Unid already got\n");
+              if(p1->invisible == 1 && p->invisible == 0) {
+                writen(sockfd,"404 Posting Not Found\n",22);
+                cf_log(CF_ERR,__FILE__,__LINE__,"p1->invisible = 1 and p->invisible = 0\n");
                 err = 1;
               }
-              CF_UM(&forum->uniques.lock);
+
+              if(err == 0) {
+                CF_LM(&forum->uniques.lock);
+                if(cf_hash_get(forum->uniques.ids,p->unid.content,p->unid.len) != NULL) {
+                  writen(sockfd,"502 Unid already got\n",21);
+                  cf_log(CF_ERR,__FILE__,__LINE__,"Unid already got\n");
+                  err = 1;
+                }
+                CF_UM(&forum->uniques.lock);
+              }
 
               if(err == 0) {
                 p->level     = p1->level + 1;

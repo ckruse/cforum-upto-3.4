@@ -164,7 +164,7 @@ int flt_gummizelle_init(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc) 
   u_char *f_ptr;
   u_char *ptr;
 
-  t_name_value *v;
+  t_name_value *v = NULL;
   flt_gummizelle_t ent;
   t_string val;
 
