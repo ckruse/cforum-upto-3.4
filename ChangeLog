@@ -14,5 +14,6 @@
 		accept-charset to accept-charset="UTF-8"
 	* cgi-shared/config/fo_default.conf.in: Changed locale and ExternCharset to
 		UTF-8
+	* cgi-shared/ForumUtils.pm: Bugfix in UTF-8-<>-handling
 
 

@@ -64,7 +64,12 @@ sub recode {
   my $str = shift;
 
   return unless defined $str;
-  $str = $Clientlib->htmlentities_charset_convert($str,"UTF-8",$fdc->{ExternCharset}->[0]->[0],0) if $fdc->{ExternCharset}->[0]->[0] ne "UTF-8";
+  if($fdc->{ExternCharset}->[0]->[0] eq 'UTF-8') {
+    $str = $Clientlib->htmlentities($str,0);
+  }
+  else {
+    $str = $Clientlib->htmlentities_charset_convert($str,"UTF-8",$fdc->{ExternCharset}->[0]->[0],0) if $fdc->{ExternCharset}->[0]->[0] ne "UTF-8";
+  }
 
   return $str;
 }
