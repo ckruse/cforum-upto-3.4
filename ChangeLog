@@ -7,12 +7,21 @@
 	* src/modules/flt_directives.c, src/modules/flt_httpauth.c,
 		src/modules/flt_deleted.c, src/modules/flt_link.c,
 		src/modules/flt_listhighlight.c, src/modules/flt_visited.c,
-		src/modules/flt_posting.c: Migrated to new 3.0 API
+		src/modules/flt_posting.c, src/modules/flt_threadreturnanchor.c,
+		src/modules/flt_motd.c, src/modules/flt_category.c,
+		src/modules/flt_basic.c, src/modules/flt_handle404.c,
+		src/modules/flt_votingvariables.c, src/modules/flt_tplmode.c,
+		src/modules/flt_frameset.c, src/modules/flt_scoring.lex,
+		src/modules/flt_http.c, src/modules/flt_tipoftheday.c,
+		src/modules/flt_include.c, src/modules/flt_admin.c: Migrated to new 3.0 API
 	* src/modules/flt_openclose.c: Migrated to new 3.0 API, made it to first POST
 		filter
 	* src/htmllib.c: Migrated to new 3.0 API
 	* src/messageutils.c: Bugfix in cleanup function
 	* src/configparser.c: Bugfix for user mode configuration parsing
+	* src/modules/flt_livefilter.c: Migrated to 3.0 API, added LiveFilterOverwrite
+		configuration directive
+	* cgi-shared/config/modules.de.xml: Added LiveFilterOverwrite directive
 
 2005-01-10 Christian Kruse <ckruse@wwwtech.de>
 	* src/fo_view.c: Migrated to 3.0 API

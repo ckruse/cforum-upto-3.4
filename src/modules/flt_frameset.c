@@ -50,20 +50,19 @@ u_char *TplBlank;
  * t_filter_begin function
  *
  */
-int execute_filter(t_cf_hash *head,t_configuration *dc,t_configuration *vc) {
+int flt_frameset_execute_filter(t_cf_hash *head,t_configuration *dc,t_configuration *vc) {
   u_char buff[256];
   u_char *UserName = cf_hash_get(GlobalValues,"UserName",8);
-  t_name_value *cs = cfg_get_first_value(dc,NULL,"ExternCharset");
-  t_name_value *x = cfg_get_first_value(dc,NULL,UserName?"UBaseURL":"BaseURL");
+  u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
+  t_name_value *cs = cfg_get_first_value(dc,forum_name,"ExternCharset");
+  t_name_value *x = cfg_get_first_value(dc,forum_name,UserName?"UBaseURL":"BaseURL");
   t_cf_template tpl;
   u_char *action = NULL;
 
-  if(!ShallFrameset) {
-    return FLT_DECLINE;
-  }
+  if(!ShallFrameset) return FLT_DECLINE;
 
   if(!head) {
-    gen_tpl_name(buff,256,TplFrameset);
+    cf_gen_tpl_name(buff,256,TplFrameset);
 
     if(tpl_cf_init(&tpl,buff) == 0) {
       printf("Content-Type: text/html; charset=%s\n\n",cs->values[0]);
@@ -77,7 +76,7 @@ int execute_filter(t_cf_hash *head,t_configuration *dc,t_configuration *vc) {
     }
     else {
       printf("Content-Type: text/html; charset=%s\n\n",cs->values[0]);
-      str_error_message("E_TPL_NOT_FOUND",NULL);
+      cf_error_message("E_TPL_NOT_FOUND",NULL);
       return FLT_EXIT;
     }
   }
@@ -86,7 +85,7 @@ int execute_filter(t_cf_hash *head,t_configuration *dc,t_configuration *vc) {
 
     if(action) {
       if(cf_strcmp(action,"b") == 0) {
-        gen_tpl_name(buff,256,TplBlank);
+        cf_gen_tpl_name(buff,256,TplBlank);
 
         printf("Content-Type: text/html; charset=%s\n\n",cs->values[0]);
         if(tpl_cf_init(&tpl,buff) == 0) {
@@ -95,9 +94,7 @@ int execute_filter(t_cf_hash *head,t_configuration *dc,t_configuration *vc) {
           tpl_cf_parse(&tpl);
           tpl_cf_finish(&tpl);
         }
-        else {
-          printf("Sorry! Could not find template file!\n");
-        }
+        else printf("Sorry! Could not find template file!\n");
 
         return FLT_EXIT;
       }
@@ -113,7 +110,7 @@ int execute_filter(t_cf_hash *head,t_configuration *dc,t_configuration *vc) {
   return FLT_DECLINE;
 }
 
-int set_cf_variables(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cf_template *top,t_cf_template *end) {
+int flt_frameset_set_cf_variables(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cf_template *top,t_cf_template *end) {
   if(ShallFrameset) {
     tpl_cf_setvar(top,"target","view",4,0);
     tpl_cf_setvar(top,"frame","1",1,0);
@@ -126,7 +123,7 @@ int set_cf_variables(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_c
   return FLT_DECLINE;
 }
 
-int set_posting_vars(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cl_thread *thr,t_cf_template *tpl) {
+int flt_frameset_set_posting_vars(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cl_thread *thr,t_cf_template *tpl) {
   if(ShallFrameset) {
     tpl_cf_setvar(tpl,"frame","1",1,0);
     return FLT_OK;
@@ -135,7 +132,7 @@ int set_posting_vars(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_c
   return FLT_DECLINE;
 }
 
-int set_list_vars(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_message *msg,u_int64_t tid,int mode) {
+int flt_frameset_set_list_vars(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_message *msg,u_int64_t tid,int mode) {
   if(ShallFrameset) {
     tpl_cf_setvar(&msg->tpl,"frameset","1",1,0);
     if(mode == 0) tpl_cf_setvar(&msg->tpl,"target","view",4,0);
@@ -145,12 +142,12 @@ int set_list_vars(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_mess
   return FLT_DECLINE;
 }
 
-int get_conf(t_configfile *f,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
+int flt_frameset_get_conf(t_configfile *f,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
   ShallFrameset = cf_strcmp(args[0],"yes") == 0 ? 1 : 0;
   return 0;
 }
 
-int get_tpls(t_configfile *f,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
+int flt_frameset_get_tpls(t_configfile *f,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
   TplFrameset = strdup(args[0]);
   TplBlank    = strdup(args[1]);
 
@@ -163,16 +160,16 @@ void flt_frameset_finish(void) {
 }
 
 t_conf_opt flt_frameset_config[] = {
-  { "ShowForumAsFrameset", get_conf, CFG_OPT_CONFIG|CFG_OPT_USER,   NULL },
-  { "TemplatesFrameset",   get_tpls, CFG_OPT_CONFIG|CFG_OPT_NEEDED, NULL },
+  { "ShowForumAsFrameset", flt_frameset_get_conf, CFG_OPT_CONFIG|CFG_OPT_USER,   NULL },
+  { "TemplatesFrameset",   flt_frameset_get_tpls, CFG_OPT_CONFIG|CFG_OPT_NEEDED, NULL },
   { NULL, NULL, 0, NULL }
 };
 
 t_handler_config flt_frameset_handlers[] = {
-  { INIT_HANDLER,      execute_filter   },
-  { VIEW_INIT_HANDLER, set_cf_variables    },
-  { POSTING_HANDLER,   set_posting_vars },
-  { VIEW_LIST_HANDLER, set_list_vars    },
+  { INIT_HANDLER,      flt_frameset_execute_filter },
+  { VIEW_INIT_HANDLER, flt_frameset_set_cf_variables },
+  { POSTING_HANDLER,   flt_frameset_set_posting_vars },
+  { VIEW_LIST_HANDLER, flt_frameset_set_list_vars },
   { 0, NULL }
 };
 

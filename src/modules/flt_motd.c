@@ -40,11 +40,13 @@
 static int MOTD_enable = 1;
 static u_char *MOTD_File = NULL;
 
+/* {{{ flt_motd_execute */
 int flt_motd_execute(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cf_template *begin,t_cf_template *end) {
   FILE *fd;
   struct stat st;
   u_char *txt;
-  t_name_value *cs = cfg_get_first_value(dc,NULL,"ExternCharset");
+  u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
+  t_name_value *cs = cfg_get_first_value(dc,forum_name,"ExternCharset");
 
   if(MOTD_File && MOTD_enable) {
     if(stat(MOTD_File,&st) != -1) {
@@ -62,15 +64,19 @@ int flt_motd_execute(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_c
 
   return FLT_DECLINE;
 }
+/* }}} */
 
-
+/* {{{ flt_motd_handle */
 int flt_motd_handle(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
-  if(cf_strcmp(opt->name,"MotdFile") == 0) {
-    MOTD_File = strdup(args[0]);
-  }
+  if(cf_strcmp(opt->name,"MotdFile") == 0) MOTD_File = strdup(args[0]);
   else MOTD_enable = cf_strcmp(args[0],"yes") == 0;
 
   return 0;
+}
+/* }}} */
+
+void flt_motd_cleanup(void) {
+  if(MOTD_File) free(MOTD_File);
 }
 
 t_conf_opt flt_motd_config[] = {

@@ -39,6 +39,7 @@
 #include "clientlib.h"
 /* }}} */
 
+/* {{{ flt_handle404_gen_url */
 void flt_handle404_gen_url(u_char *buff,u_char *aurl,u_char *url,u_int64_t tid,u_int64_t mid) {
   register u_char *ptr = buff,*ptr1;
   int slash = 1;
@@ -96,12 +97,14 @@ void flt_handle404_gen_url(u_char *buff,u_char *aurl,u_char *url,u_int64_t tid,u
 
   *ptr = '\0';
 }
+/* }}} */
 
+/* {{{ flt_handle404_execute */
 int flt_handle404_execute(t_cf_hash *head,t_configuration *dc,t_configuration *vc,u_int64_t tid,u_int64_t mid) {
-  t_name_value *v    = cfg_get_first_value(&fo_default_conf,NULL,"ThreadIndexFile");
-  t_name_value *aurl = cfg_get_first_value(&fo_default_conf,NULL,"ArchiveURL");
+  u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
+  t_name_value *v    = cfg_get_first_value(&fo_default_conf,forum_name,"ThreadIndexFile");
+  t_name_value *aurl = cfg_get_first_value(&fo_default_conf,forum_name,"ArchiveURL");
   struct stat st;
-  u_char *port = getenv("SERVER_PORT");
   DB *db;
   DBT key,data;
   u_char ctid[50];
@@ -131,9 +134,7 @@ int flt_handle404_execute(t_cf_hash *head,t_configuration *dc,t_configuration *v
   key.size = len;
 
   if((ret = db->get(db,NULL,&key,&data,0)) != 0) {
-    if(ret != DB_NOTFOUND) {
-      fprintf(stderr,"db->get() error: %s\n",db_strerror(ret));
-    }
+    if(ret != DB_NOTFOUND) fprintf(stderr,"db->get() error: %s\n",db_strerror(ret));
 
     db->close(db,0);
     return FLT_DECLINE;
@@ -148,6 +149,7 @@ int flt_handle404_execute(t_cf_hash *head,t_configuration *dc,t_configuration *v
 
   return FLT_EXIT;
 }
+/* }}} */
 
 t_conf_opt flt_handle404_config[] = {
   { NULL, NULL, 0, NULL }

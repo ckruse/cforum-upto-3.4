@@ -37,12 +37,14 @@
 
 static u_char *TPLMode = NULL;
 
+/* {{{ flt_tplmode_execute */
 int flt_tplmode_execute(t_cf_hash *head,t_configuration *dc,t_configuration *vc) {
   t_name_value *v,*v1;
+  u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
 
   if(TPLMode) {
-    v1 = cfg_get_first_value(dc,NULL,"XHTMLMode");
-    v  = cfg_get_first_value(dc,NULL,"TemplateMode");
+    v1 = cfg_get_first_value(dc,forum_name,"XHTMLMode");
+    v  = cfg_get_first_value(dc,forum_name,"TemplateMode");
 
     free(v->values[0]);
 
@@ -62,17 +64,22 @@ int flt_tplmode_execute(t_cf_hash *head,t_configuration *dc,t_configuration *vc)
 
   return FLT_DECLINE;
 }
+/* }}} */
 
+/* {{{ flt_tplmode_handle */
 int flt_tplmode_handle(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
   if(TPLMode) free(TPLMode);
   TPLMode = strdup(args[0]);
 
   return 0;
 }
+/* }}} */
 
+/* {{{ flt_tplmode_finish */
 void flt_tplmode_finish(void) {
   if(TPLMode) free(TPLMode);
 }
+/* }}} */
 
 t_conf_opt flt_tplmode_config[] = {
   { "TPLMode",        flt_tplmode_handle, CFG_OPT_USER, NULL },

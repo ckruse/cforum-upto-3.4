@@ -39,6 +39,7 @@
 static t_cf_hash *flt_category_cats = NULL;
 static int flt_category_hide_in_thread = 0;
 
+/* {{{ flt_category_parse_list */
 void flt_category_parse_list(u_char *vips,t_cf_hash *hash) {
   if(vips) {
     u_char *ptr = vips;
@@ -56,18 +57,22 @@ void flt_category_parse_list(u_char *vips,t_cf_hash *hash) {
     cf_hash_set(hash,pre,strlen(pre),"1",1); /* argh! This sucks */
   }
 }
+/* }}} */
 
+/* {{{ flt_category_execute_filter */
 int flt_category_execute_filter(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_message *msg,u_int64_t tid,int mode) {
-  if(mode && flt_category_hide_in_thread == 0) return FLT_DECLINE;
-  if(!flt_category_cats) return FLT_DECLINE;
+  if(!flt_category_cats || (mode & CF_MODE_POST)) return FLT_DECLINE;
+  if((mode & CF_MODE_THREADVIEW) && flt_category_hide_in_thread == 0) return FLT_DECLINE;
 
-  if(cf_hash_get(flt_category_cats,msg->category,msg->category_len)) return FLT_OK;
+  if(cf_hash_get(flt_category_cats,msg->category.content,msg->category.len)) return FLT_OK;
 
   msg->may_show = 0;
   delete_subtree(msg);
   return FLT_OK;
 }
+/* }}} */
 
+/* {{{ flt_category_handle_command */
 int flt_category_handle_command(t_configfile *cf,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
   if(cf_strcmp(opt->name,"ShowCategories") == 0) {
     if(!flt_category_cats) flt_category_cats = cf_hash_new(NULL);
@@ -80,13 +85,16 @@ int flt_category_handle_command(t_configfile *cf,t_conf_opt *opt,const u_char *c
 
   return 0;
 }
+/* }}} */
 
+/* {{{ flt_category_finish */
 void flt_category_finish(void) {
   if(flt_category_cats) {
     cf_hash_destroy(flt_category_cats);
     flt_category_cats = NULL;
   }
 }
+/* }}} */
 
 t_conf_opt flt_category_config[] = {
   { "ShowCategories",             flt_category_handle_command, CFG_OPT_USER|CFG_OPT_CONFIG, NULL },

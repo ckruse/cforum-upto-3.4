@@ -39,6 +39,7 @@ static size_t flt_admin_AdminNum = 0;
 static int my_errno = 0;
 static int is_admin = -1;
 
+/* {{{ flt_admin_is_admin */
 int flt_admin_is_admin(const u_char *name) {
   size_t i;
 
@@ -57,14 +58,18 @@ int flt_admin_is_admin(const u_char *name) {
   is_admin = 0;
   return 0;
 }
+/* }}} */
 
+/* {{{ flt_admin_gogogo */
 #ifndef CF_SHARED_MEM
 int flt_admin_gogogo(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc,int sock)
 #else
 int flt_admin_gogogo(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc,void *ptr)
-  int sock;
 #endif
 {
+  #ifdef CF_SHARED_MEM
+  int sock;
+  #endif
   u_char *action = NULL,*tid,*mid,buff[512],*answer;
   size_t len;
   rline_t rl;
@@ -79,13 +84,13 @@ int flt_admin_gogogo(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc,void
     mid = cf_cgi_get(cgi,"m");
 
     if(!tid || !mid) return FLT_DECLINE;
-    if(strtol(tid,NULL,10) == 0 || strtol(mid,NULL,10) == 0) return FLT_DECLINE;
+    if(str_to_u_int64(tid) == 0 || str_to_u_int64(mid) == 0) return FLT_DECLINE;
 
     memset(&rl,0,sizeof(rline_t));
 
     #ifdef CF_SHARED_MEM
     /* if in shared memory mode, the sock parameter is a pointer to the shared mem segment */
-    sock = set_us_up_the_socket();
+    sock = cf_socket_setup();
     #endif
 
     if(cf_strcmp(action,"del") == 0) {
@@ -111,7 +116,7 @@ int flt_admin_gogogo(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc,void
     #ifdef CF_SHARED_MEM
     writen(sock,"QUIT\n",5);
     close(sock);
-    reget_shm_ptr();
+    cf_reget_shm_ptr();
     #endif
 
     cf_hash_entry_delete(cgi,"t",1);
@@ -122,7 +127,9 @@ int flt_admin_gogogo(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc,void
 
   return FLT_DECLINE;
 }
+/* }}} */
 
+/* {{{ flt_admin_setvars */
 int flt_admin_setvars(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc,t_cf_template *top,t_cf_template *down) {
   u_char *msg,buff[256];
   size_t len,len1;
@@ -132,13 +139,11 @@ int flt_admin_setvars(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc,t_c
   if(flt_admin_is_admin(UserName)) {
     tpl_cf_setvar(top,"admin","1",1,0);
 
-    if(ShowInvisible) {
-      tpl_cf_setvar(top,"aaf","1",1,0);
-    }
+    if(ShowInvisible) tpl_cf_setvar(top,"aaf","1",1,0);
 
     if(my_errno) {
       len = snprintf(buff,256,"E_FO_%d",my_errno);
-      msg = get_error_message(buff,&len1);
+      msg = cf_get_error_message(buff,&len1);
       if(msg) {
         tpl_cf_setvar(top,"flt_admin_errmsg",msg+len+1,len1-len-1,1);
         free(msg);
@@ -150,25 +155,26 @@ int flt_admin_setvars(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc,t_c
 
   return FLT_DECLINE;
 }
+/* }}} */
 
+/* {{{ flt_admin_init */
 int flt_admin_init(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc) {
-  t_name_value *v = cfg_get_first_value(dc,NULL,"Administrators");
+  u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
+  t_name_value *v = cfg_get_first_value(dc,forum_name,"Administrators");
   u_char *val = NULL;
   u_char *UserName = cf_hash_get(GlobalValues,"UserName",8);
 
   cf_register_mod_api_ent("flt_admin","is_admin",(t_mod_api)flt_admin_is_admin);
 
   if(!UserName) return FLT_DECLINE;
-  if(!v)        return FLT_DECLINE;
+  if(!v) return FLT_DECLINE;
 
   flt_admin_AdminNum = split(v->values[0],",",&flt_admin_Admins);
 
   if(!cgi)      return FLT_DECLINE;
 
   val = cf_cgi_get(cgi,"aaf");
-
-  if(!val)      return FLT_DECLINE;
-
+  if(!val) return FLT_DECLINE;
   if(!v) return FLT_DECLINE;
 
   /* ShowInvisible is imported from the client library */
@@ -176,14 +182,17 @@ int flt_admin_init(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc) {
 
   return FLT_OK;
 }
+/* }}} */
 
+/* {{{ flt_admin_posthandler */
 int flt_admin_posthandler(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc,t_message *msg,u_int64_t tid,int mode) {
+  u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);  
   u_char buff[256];
   u_char *link;
   size_t l;
   u_char *UserName = cf_hash_get(GlobalValues,"UserName",8);
   int ShowInvisible = cf_hash_get(GlobalValues,"ShowInvisible",13) != NULL;
-  t_name_value *link_pattern = cfg_get_first_value(dc,NULL,"UPostingURL");
+  t_name_value *link_pattern = cfg_get_first_value(dc,forum_name,"UPostingURL");
 
   if(flt_admin_is_admin(UserName)) {
     tpl_cf_setvar(&msg->tpl,"admin","1",1,0);
@@ -191,18 +200,18 @@ int flt_admin_posthandler(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc
     if(ShowInvisible) {
       tpl_cf_setvar(&msg->tpl,"aaf","1",1,0);
 
-      link = advanced_get_link(link_pattern->values[0],tid,msg->mid,"aaf=1&faa=archive",17,&l);
+      link = cf_advanced_get_link(link_pattern->values[0],tid,msg->mid,"aaf=1&faa=archive",17,&l);
       tpl_cf_setvar(&msg->tpl,"archive_link",link,l,1);
       free(link);
 
       if(msg->invisible == 0) {
-        link = advanced_get_link(link_pattern->values[0],tid,msg->mid,"aaf=1&faa=del",13,&l);
+        link = cf_advanced_get_link(link_pattern->values[0],tid,msg->mid,"aaf=1&faa=del",13,&l);
         tpl_cf_setvar(&msg->tpl,"visible","1",1,0);
         tpl_cf_setvar(&msg->tpl,"del_link",link,l,1);
         free(link);
       }
       else {
-        link = advanced_get_link(link_pattern->values[0],tid,msg->mid,"aaf=1&faa=undel",15,&l);
+        link = cf_advanced_get_link(link_pattern->values[0],tid,msg->mid,"aaf=1&faa=undel",15,&l);
         tpl_cf_setvar(&msg->tpl,"undel_link",link,l,1);
         free(link);
       }
@@ -213,7 +222,9 @@ int flt_admin_posthandler(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc
 
   return FLT_DECLINE;
 }
+/* }}} */
 
+/* {{{ flt_admin_finish */
 void flt_admin_finish(void) {
   size_t i;
   if(flt_admin_Admins) {
@@ -221,7 +232,9 @@ void flt_admin_finish(void) {
     free(flt_admin_Admins);
   }
 }
+/* }}} */
 
+/* {{{ flt_admin_validator */
 #ifndef CF_SHARED_MEM
 int flt_admin_validator(t_cf_hash *head,t_configuration *dc,t_configuration *vc,time_t last_modified,int sock)
 #else
@@ -234,7 +247,9 @@ int flt_admin_validator(t_cf_hash *head,t_configuration *dc,t_configuration *vc,
   if(flt_admin_is_admin(UserName) && ShowInvisible) return FLT_EXIT;
   return FLT_DECLINE;
 }
+/* }}} */
 
+/* {{{ flt_admin_lm */
 #ifndef CF_SHARED_MEM
 time_t flt_admin_lm(t_cf_hash *head,t_configuration *dc,t_configuration *vc,int sock)
 #else
@@ -247,6 +262,7 @@ time_t flt_admin_lm(t_cf_hash *head,t_configuration *dc,t_configuration *vc,void
   if(flt_admin_is_admin(UserName) && ShowInvisible) time(NULL);
   return 0;
 }
+/* }}} */
 
 t_conf_opt flt_admin_config[] = {
   { NULL, NULL, 0, NULL }

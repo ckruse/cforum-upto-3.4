@@ -679,6 +679,18 @@
           </formvalues>
         </argument>
       </directive>
+
+      <directive name="LiveFilterOverwrite" arguments="1">
+	<argument paramname="livefilteroverwrite" type="radio" encode="plain">
+	  <validate>^(yes|no)$</validate>
+	  <question>Möchten Sie, dass der Live-Filter bereits ausgeblendete Postings (z. B. durch die BlackList) wieder einblendent?</question>
+	  <error>Möchten Sie, dass der Live-Filter bereits ausgeblendete Postings (z. B. durch die BlackList) wieder einblendent? Bitte geben Sie &quot;ja&quot; oder &quot;nein&quot; an!</error>
+	  <formvalues>
+	    <value val="yes">Ja</value>
+	    <value val="no" default="yes">Nein</value>
+	  </formvalues>
+	</argument>
+      </directive>
     </section>
 
     <section name="Filterung nach Namen">

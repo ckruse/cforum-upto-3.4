@@ -38,15 +38,14 @@ static u_char *JSFile = NULL;
 static u_char **XSLTUri = NULL;
 static int    CSS_Overwrite = 0;
 
+/* {{{ flt_include_exec_list */
 int flt_include_exec_list(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cf_template *begin,t_cf_template *end) {
   int rc = FLT_DECLINE;
 
   if(CSSUri) {
     tpl_cf_setvar(begin,"owncss",CSSUri,strlen(CSSUri),1);
 
-    if(CSS_Overwrite) {
-      tpl_cf_setvar(begin,"cssoverwrite","1",1,0);
-    }
+    if(CSS_Overwrite) tpl_cf_setvar(begin,"cssoverwrite","1",1,0);
 
     rc = FLT_OK;
   }
@@ -71,11 +70,15 @@ int flt_include_exec_list(t_cf_hash *head,t_configuration *dc,t_configuration *v
 
   return rc;
 }
+/* }}} */
 
+/* {{{ flt_include_exec_post */
 int flt_include_exec_post(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cl_thread *thread,t_cf_template *tpl) {
   return flt_include_exec_list(head,dc,vc,tpl,NULL);
 }
+/* }}} */
 
+/* {{{ flt_incldue_handle */
 int flt_include_handle(t_configfile *cf,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
   if(cf_strcmp(opt->name,"OwnCSSFile") == 0) {
     if(CSSUri) free(CSSUri);
@@ -90,12 +93,11 @@ int flt_include_handle(t_configfile *cf,t_conf_opt *opt,const u_char *context,u_
     XSLTUri = args;
     return -1;
   }
-  else {
-    CSS_Overwrite = cf_strcmp(args[0],"yes") == 0;
-  }
+  else CSS_Overwrite = cf_strcmp(args[0],"yes") == 0;
 
   return 0;
 }
+/* }}} */
 
 void flt_include_finish(void) {
   if(CSSUri) free(CSSUri);

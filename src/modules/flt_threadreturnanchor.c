@@ -35,11 +35,13 @@
 
 static int    ThreadReturnAnchor = 0;
 
+/* {{{ flt_threadreturnanchor_post */
 int flt_threadreturnanchor_post(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cl_thread *thread,t_cf_template *tpl) {
   const t_cf_tpl_variable *path;
   t_string new_path;
-  char buf[20];
-  
+  char buf[50];
+  size_t len;
+
   if(ThreadReturnAnchor) {
     path = tpl_cf_getvar(tpl, "forumbase");
     if (!path) return 1;
@@ -47,8 +49,8 @@ int flt_threadreturnanchor_post(t_cf_hash *head,t_configuration *dc,t_configurat
     str_init(&new_path);
     str_str_set(&new_path,path->data);
     str_char_append(&new_path,'#');
-    snprintf(buf, 20, "t%ld", (long)thread->tid);
-    str_chars_append(&new_path,buf,strlen(buf));
+    len = snprintf(buf, 50, "t%llu", thread->tid);
+    str_chars_append(&new_path,buf,len);
     tpl_cf_setvar(tpl,"forumreturn",new_path.content,new_path.len,0);
     str_cleanup(&new_path);
 
@@ -57,12 +59,15 @@ int flt_threadreturnanchor_post(t_cf_hash *head,t_configuration *dc,t_configurat
 
   return FLT_DECLINE;
 }
+/* }}} */
 
+/* {{{ flt_threadreturnanchor_handle */
 int flt_threadreturnanchor_handle(t_configfile *cf,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
   ThreadReturnAnchor = cf_strcmp(args[0],"yes") == 0;
 
   return 0;
 }
+/* }}} */
 
 t_conf_opt config[] = {
   { "ThreadReturnAnchor", flt_threadreturnanchor_handle, CFG_OPT_CONFIG|CFG_OPT_USER, NULL },

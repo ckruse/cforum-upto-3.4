@@ -38,9 +38,11 @@ static u_char *TOTD_File = NULL;
 static u_char *TOTD_Idx  = NULL;
 static int TOTD_Activate = 0;
 
+/* {{{ flt_tipoftheday_execute */
 int flt_tipoftheday_execute(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc,t_cf_template *top,t_cf_template *down) {
   FILE *fd;
   u_char *line = NULL;
+  u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   ssize_t linelen;
   size_t bufflen = 0;
   u_int32_t num,offset;
@@ -62,7 +64,7 @@ int flt_tipoftheday_execute(t_cf_hash *cgi,t_configuration *dc,t_configuration *
       if((fd = fopen(TOTD_File,"r")) != NULL) {
         if(fseek(fd,(long)offset,SEEK_SET) != -1) {
           if((linelen = getline((char **)&line,&bufflen,fd)) != -1) {
-            cs = cfg_get_first_value(dc,NULL,"ExternCharset");
+            cs = cfg_get_first_value(dc,forum_name,"ExternCharset");
             cf_set_variable(top,cs,"tipoftheday",line,linelen-1,0);
 
             free(line);
@@ -76,7 +78,9 @@ int flt_tipoftheday_execute(t_cf_hash *cgi,t_configuration *dc,t_configuration *
 
   return FLT_DECLINE;
 }
+/* }}} */
 
+/* {{{ flt_tipoftheday_confighandler */
 int flt_tipoftheday_confighandler(t_configfile *cf,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
   if(cf_strcmp(opt->name,"TipOfTheDayFile") == 0) {
     TOTD_File = strdup(args[0]);
@@ -90,11 +94,14 @@ int flt_tipoftheday_confighandler(t_configfile *cf,t_conf_opt *opt,const u_char 
 
   return 0;
 }
+/* }}} */
 
+/* {{{ flt_tipoftheday_cleanup */
 void flt_tipoftheday_cleanup(void) {
   if(TOTD_File) free(TOTD_File);
   if(TOTD_Idx) free(TOTD_Idx);
 }
+/* }}} */
 
 t_conf_opt flt_tipoftheday_config[] = {
   { "TipOfTheDayFile",     flt_tipoftheday_confighandler, CFG_OPT_CONFIG, NULL },

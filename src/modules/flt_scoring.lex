@@ -128,7 +128,7 @@ static int     flt_scoring_ign         = 0;
 
 /* {{{ flt_scoring_calc_col */
 size_t flt_scoring_calc_col(u_char buff[],int score) {
-  float percentage = 0,tmp;
+  float percentage = 0;
   int finish = (flt_scoring_max_val + flt_scoring_min_val) / 2;
   u_char scol[3];
   u_char *col = scol;
@@ -168,46 +168,46 @@ int flt_scoring_execute(t_cf_hash *head,t_configuration *dc,t_configuration *vc,
   size_t len;
   u_char buff[10];
 
-  if(mode == 0) {
-    if(flt_scoring_ary.elements) {
-      for(i=0;i<flt_scoring_ary.elements;i++) {
-        flt = array_element_at(&flt_scoring_ary,i);
+  if(mode & CF_MODE_THREADVIEW) return FLT_DECLINE;
 
-        switch(flt->field) {
-          case FLT_SCORING_SUBJECT:
-            res = pcre_exec(flt->regex, flt->regex_extra, msg->subject, msg->subject_len, 0, 0, NULL,0);
-            break;
-          case FLT_SCORING_AUTHOR:
-            res = pcre_exec(flt->regex,flt->regex_extra,msg->author,msg->author_len,0,0,NULL,0);
-            break;
-          case FLT_SCORING_CAT:
-            if(msg->category) res = pcre_exec(flt->regex,flt->regex_extra,msg->category,msg->category_len,0,0,NULL,0);
-            break;
-          default:
-            res = -1;
-        }
+  if(flt_scoring_ary.elements) {
+    for(i=0;i<flt_scoring_ary.elements;i++) {
+      flt = array_element_at(&flt_scoring_ary,i);
 
-        if(res >= 0) score += flt->score;
+      switch(flt->field) {
+        case FLT_SCORING_SUBJECT:
+	  res = pcre_exec(flt->regex, flt->regex_extra, msg->subject.content, msg->subject.len, 0, 0, NULL,0);
+	  break;
+        case FLT_SCORING_AUTHOR:
+	  res = pcre_exec(flt->regex,flt->regex_extra,msg->author.content,msg->author.len,0,0,NULL,0);
+	  break;
+        case FLT_SCORING_CAT:
+	  if(msg->category.len) res = pcre_exec(flt->regex,flt->regex_extra,msg->category.content,msg->category.len,0,0,NULL,0);
+	  break;
+        default:
+	  res = -1;
       }
 
-      /* Does the user want to ignore non-matched postings? */
-      if(score == 0 && flt_scoring_ign) return FLT_OK;
-
-      /* has the posting to be deleted? */
-      if(flt_scoring_hide_score_set && score <= flt_scoring_hide_score) {
-        msg->may_show = 0;
-      }
-      else {
-        /* no, so go and calculate the color */
-        len = flt_scoring_calc_col(buff,score);
-        tpl_cf_setvar(&msg->tpl,"flt_scoring_color",buff,len,0);
-      }
-
-      return FLT_OK;
+      if(res >= 0) score += flt->score;
     }
+
+    /* Does the user want to ignore non-matched postings? */
+    if(score == 0 && flt_scoring_ign) return FLT_OK;
+
+    /* has the posting to be deleted? */
+    if(flt_scoring_hide_score_set && score <= flt_scoring_hide_score) {
+      msg->may_show = 0;
+    }
+    else {
+      /* no, so go and calculate the color */
+      len = flt_scoring_calc_col(buff,score);
+      tpl_cf_setvar(&msg->tpl,"flt_scoring_color",buff,len,0);
+    }
+
+    return FLT_OK;
   }
 
-  return 0;
+  return FLT_DECLINE;
 }
 /* }}} */
 

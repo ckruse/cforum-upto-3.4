@@ -72,12 +72,13 @@ typedef struct s_node {
 
 static t_flt_lf_node *flt_lf_first = NULL;
 static int flt_lf_active = 0;
+static int flt_lf_overwrite = 0;
 
 static t_string flt_lf_str = { 0, 0, NULL };
 
 static int flt_lf_success = 1;
 
-/* {{{ case_strstr */
+/* {{{ flt_lf_case_strstr */
 u_char *flt_lf_case_strstr(const u_char *haystack,const u_char *needle) {
   size_t len1 = strlen(haystack);
   size_t len2 = strlen(needle);
@@ -551,11 +552,11 @@ u_char *flt_lf_evaluate(t_flt_lf_node *n,t_message *msg,u_int64_t tid) {
             snprintf(buff,50,"%lld",tid);
             return strdup(buff);
           case 'a':
-            return strdup(msg->author);
+            return strdup(msg->author.content);
           case 's':
-            return strdup(msg->subject);
+            return strdup(msg->subject.content);
           case 'c':
-            return strdup(msg->category);
+            return msg->category.len ? strdup(msg->category.content) : NULL;
           case 'd':
             snprintf(buff,50,"%ld",msg->date);
             return strdup(buff);
@@ -564,27 +565,20 @@ u_char *flt_lf_evaluate(t_flt_lf_node *n,t_message *msg,u_int64_t tid) {
             return strdup(buff);
           case 'v':
             if(cf_strcasecmp(n->content,"visited") == 0) {
-              if(is_visited) {
-                return (u_char *)(is_visited(&(msg->mid)) == NULL ? 0 : 1);
-              }
-              else {
-                return NULL;
-              }
+              if(is_visited) return (u_char *)(is_visited(&(msg->mid)) == NULL ? 0 : 1);
+              else return NULL;
             }
-            else {
-              return (u_char *)(msg->may_show == 0 ? 0 : 1);
-            }
+            else return (u_char *)(msg->may_show == 0 ? 0 : 1);
         }
       }
-      else {
-        return (u_char *)(n->content == (u_char *)1 ? 1 : 0);
-      }
+      else return (u_char *)(n->content == (u_char *)1 ? 1 : 0);
+
     case TOK_STR:
       return strdup(n->content);
+
     case TOK_LPAREN:
-      if(n->argument) {
-        ret = flt_lf_evaluate(n->argument,msg,tid);
-      }
+      if(n->argument) ret = flt_lf_evaluate(n->argument,msg,tid);
+
       else ret = NULL;
       return ret;
   }
@@ -595,10 +589,13 @@ u_char *flt_lf_evaluate(t_flt_lf_node *n,t_message *msg,u_int64_t tid) {
 
 /* {{{ flt_lf_filter */
 int flt_lf_filter(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_message *msg,u_int64_t tid,int mode) {
+  if(mode & CF_MODE_THREADVIEW) return FLT_DECLINE;
+
   if(flt_lf_active) {
     if(flt_lf_first && flt_lf_success) {
-      if(flt_lf_evaluate(flt_lf_first,msg,tid) == 0) {
-        msg->may_show = 0;
+      if(flt_lf_evaluate(flt_lf_first,msg,tid) == 0) msg->may_show = 0;
+      else {
+	if(flt_lf_overwrite) msg->may_show = 1;
       }
     }
 
@@ -611,7 +608,9 @@ int flt_lf_filter(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_mess
 
 /* {{{ flt_lf_handle_command */
 int flt_lf_handle_command(t_configfile *cf,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
-  flt_lf_active = cf_strcmp(args[0],"yes") == 0;
+  if(cf_strcmp(opt->name,"ActivateLiveFilter") == 0) flt_lf_active = cf_strcmp(args[0],"yes") == 0;
+  else flt_lf_overwrite = cf_strcmp(args[0],"yes") == 0;
+
   return 0;
 }
 /* }}} */
@@ -622,9 +621,9 @@ void flt_lf_cleanup(void) {
 }
 /* }}} */
 
-/* {{{ module config */
 t_conf_opt config[] = {
-  { "ActivateLiveFilter", flt_lf_handle_command, CFG_OPT_CONFIG|CFG_OPT_USER, NULL },
+  { "ActivateLiveFilter",  flt_lf_handle_command, CFG_OPT_CONFIG|CFG_OPT_USER, NULL },
+  { "LiveFilterOverwrite", flt_lf_handle_command, CFG_OPT_CONFIG|CFG_OPT_USER, NULL },
   { NULL, NULL, 0, NULL }
 };
 
@@ -642,6 +641,5 @@ t_module_config flt_livefilter = {
   NULL,
   flt_lf_cleanup
 };
-/* }}} */
 
 /* eof */

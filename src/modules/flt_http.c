@@ -45,63 +45,44 @@ struct {
   int handle_last_modified_since;
 } http_config = { 0, 0, 0, 0 };
 
+/* {{{ flt_http_gmt_diff */
 time_t flt_http_gmt_diff(void) {
-    struct timeval now;
-    time_t t1, t2;
-    struct tm t;
+  struct timeval now;
+  time_t t1, t2;
+  struct tm t;
 
-    gettimeofday(&now, NULL);
-    t1 = now.tv_sec;
-    t2 = 0;
+  gettimeofday(&now, NULL);
+  t1 = now.tv_sec;
+  t2 = 0;
 
-    t = *gmtime(&t1);
+  t = *gmtime(&t1);
 
-    t.tm_isdst = 0; /* we know this GMT time isn't daylight-savings */
-    t2 = mktime(&t);
-    return (time_t)difftime(t1, t2);
+  t.tm_isdst = 0; /* we know this GMT time isn't daylight-savings */
+  t2 = mktime(&t);
+  return (time_t)difftime(t1, t2);
 }
+/* }}} */
 
+/* {{{ flt_http_get_month */
 int flt_http_get_month(const u_char *m) {
-  if(cf_strncmp(m,"Jan",3) == 0) {
-    return 0;
-  }
-  else if(cf_strncmp(m,"Feb",3) == 0) {
-    return 1;
-  }
-  else if(cf_strncmp(m,"Mar",3) == 0) {
-    return 2;
-  }
-  else if(cf_strncmp(m,"Apr",3) == 0) {
-    return 3;
-  }
-  else if(cf_strncmp(m,"May",3) == 0) {
-    return 4;
-  }
-  else if(cf_strncmp(m,"Jun",3) == 0) {
-    return 5;
-  }
-  else if(cf_strncmp(m,"Jul",3) == 0) {
-    return 6;
-  }
-  else if(cf_strncmp(m,"Aug",3) == 0) {
-    return 7;
-  }
-  else if(cf_strncmp(m,"Sep",3) == 0) {
-    return 8;
-  }
-  else if(cf_strncmp(m,"Oct",3) == 0) {
-    return 9;
-  }
-  else if(cf_strncmp(m,"Nov",3) == 0) {
-    return 10;
-  }
-  else if(cf_strncmp(m,"Dec",3) == 0) {
-    return 11;
-  }
+  if(cf_strncmp(m,"Jan",3) == 0) return 0;
+  else if(cf_strncmp(m,"Feb",3) == 0) return 1;
+  else if(cf_strncmp(m,"Mar",3) == 0) return 2;
+  else if(cf_strncmp(m,"Apr",3) == 0) return 3;
+  else if(cf_strncmp(m,"May",3) == 0) return 4;
+  else if(cf_strncmp(m,"Jun",3) == 0) return 5;
+  else if(cf_strncmp(m,"Jul",3) == 0) return 6;
+  else if(cf_strncmp(m,"Aug",3) == 0) return 7;
+  else if(cf_strncmp(m,"Sep",3) == 0) return 8;
+  else if(cf_strncmp(m,"Oct",3) == 0) return 9;
+  else if(cf_strncmp(m,"Nov",3) == 0) return 10;
+  else if(cf_strncmp(m,"Dec",3) == 0) return 11;
 
   return -1;
 }
+/* }}} */
 
+/* {{{ flt_http_get_lm */
 #ifndef CF_SHARED_MEM
 long flt_http_get_lm(int sock) {
   rline_t tsd;
@@ -124,7 +105,9 @@ long flt_http_get_lm(void *ptr) {
   return *((time_t *)ptr);
 }
 #endif
+/* }}} */
 
+/* {{{ flt_http_validate_cache */
 #ifndef CF_SHARED_MEM
 int flt_http_validate_cache(t_cf_hash *head,t_configuration *dc,t_configuration *vc,time_t lm,int sock) {
 #else
@@ -148,7 +131,9 @@ int flt_http_validate_cache(t_cf_hash *head,t_configuration *dc,t_configuration 
 
   return ret;
 }
+/* }}} */
 
+/* {{{ flt_http_header_callbacks */
 #ifndef CF_SHARED_MEM
 int flt_http_header_callbacks(t_cf_hash *head,t_cf_hash *header_table,t_configuration *dc,t_configuration *vc,int sock) {
 #else
@@ -174,7 +159,9 @@ int flt_http_header_callbacks(t_cf_hash *head,t_cf_hash *header_table,t_configur
 
   return retret;
 }
+/* }}} */
 
+/* {{{ flt_http_lm_callbacks */
 #ifndef CF_SHARED_MEM
 time_t flt_http_lm_callbacks(t_cf_hash *head,t_configuration *dc,t_configuration *vc,int sock,time_t t1) {
 #else
@@ -205,7 +192,9 @@ time_t flt_http_lm_callbacks(t_cf_hash *head,t_configuration *dc,t_configuration
 
   return t1;
 }
+/* }}} */
 
+/* {{{ flt_http_execute */
 #ifndef CF_SHARED_MEM
 int flt_http_execute(t_cf_hash *head,t_configuration *dc,t_configuration *vc,int sock) {
 #else
@@ -285,7 +274,9 @@ int flt_http_execute(t_cf_hash *head,t_configuration *dc,t_configuration *vc,voi
 
   return FLT_DECLINE;
 }
+/* }}} */
 
+/* {{{ flt_http_handle_command */
 int flt_http_handle_command(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
   u_char *ptr = NULL;
 
@@ -320,7 +311,9 @@ int flt_http_handle_command(t_configfile *cfile,t_conf_opt *opt,const u_char *co
 
   return 0;
 }
+/* }}} */
 
+/* {{{ flt_http_set_headers */
 #ifndef CF_SHARED_MEM
 int flt_http_set_headers(t_cf_hash *cgi,t_cf_hash *header_table,t_configuration *dc,t_configuration *vc,int sock) {
 #else
@@ -347,7 +340,9 @@ int flt_http_set_headers(t_cf_hash *cgi,t_cf_hash *header_table,t_configuration 
 
   return FLT_OK;
 }
+/* }}} */
 
+/* {{{ flt_http_validate */
 #ifndef CF_SHARED_MEM
 int flt_http_validate(t_cf_hash *head,t_configuration *dc,t_configuration *vc,time_t last_modified,int sock) {
 #else
@@ -359,7 +354,7 @@ int flt_http_validate(t_cf_hash *head,t_configuration *dc,t_configuration *vc,ti
   int ret = FLT_DECLINE;
 
   if(uname) {
-    uconffile = get_uconf_name(uname);
+    uconffile = cf_get_uconf_name(uname);
 
     if(uconffile) {
       if(stat(uconffile,&st) != -1) {
@@ -376,7 +371,9 @@ int flt_http_validate(t_cf_hash *head,t_configuration *dc,t_configuration *vc,ti
 
   return ret;
 }
+/* }}} */
 
+/* {{{ flt_http_lm */
 #ifndef CF_SHARED_MEM
 time_t flt_http_lm(t_cf_hash *head,t_configuration *dc,t_configuration *vc,int sock) {
 #else
@@ -388,19 +385,17 @@ time_t flt_http_lm(t_cf_hash *head,t_configuration *dc,t_configuration *vc,void 
   time_t ret = -1;
 
   if(uname) {
-    uconffile = get_uconf_name(uname);
+    uconffile = cf_get_uconf_name(uname);
 
     if(uconffile) {
-      if(stat(uconffile,&st) != -1) {
-        ret = st.st_mtime;
-      }
-
+      if(stat(uconffile,&st) != -1) ret = st.st_mtime;
       free(uconffile);
     }
   }
 
   return ret;
 }
+/* }}} */
 
 t_conf_opt flt_http_config[] = {
   { "SendLastModified",        flt_http_handle_command, CFG_OPT_CONFIG, NULL },
