@@ -11,6 +11,8 @@
 	* src/serverlib.c: Fixed bug in periodical worker
 	* src/htmllib.c: Fixed bug in XHTML mode recognizing
 	* src/fo_server.c: Fixed bug of logfile handler
+	* src/modules/flt_link.c: Bugfix, now directives are local
+	* scripts/cf-indextips.pl: Bugfix, forgot a ;
 
 2005-02-03 Christian Kruse <ckruse@wwwtech.de>
 	* conf/patterns/perl.pat, conf/patterns/php.pat: Corrected escaping

@@ -12,7 +12,7 @@ GetOptions(
   "tips-file=s" => \$TIPS_FILE,
   "tips-index=s" => \$INDEX_FILE,
   "help" => \$help
-)
+);
 
 usage() if $help;
 
