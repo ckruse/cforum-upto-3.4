@@ -130,10 +130,10 @@ sub cleanup_deleted {
   my $cursor = $dbfile->db_cursor();
 
   while($cursor->c_get($key,$value,DB_NEXT) == 0) {
-    print $sock "STAT t$key\n";
+    print $sock "STAT THREAD t$key\n";
     my $line = <$sock>;
 
-    push @deleted,$key unless $line =~ /^200/;
+    push @deleted,$key if $line =~ /^404/;
   }
 
   $cursor->c_close;

@@ -164,10 +164,8 @@ int flt_cftp_handler(int sockfd,t_forum *forum,const u_char **tokens,int tnum,rl
   /* }}} */
   /* {{{ stat */
   else if(cf_strcmp(tokens[0],"STAT") == 0) {
-    if(tnum != 4) return FLT_DECLINE;
-
     /* {{{ STAT THREAD */
-    if(cf_strcmp(tokens[1],"THREAD") == 0) {
+    if(tnum == 3 && cf_strcmp(tokens[1],"THREAD") == 0) {
       tid = strtoull(tokens[2]+1,NULL,10);
 
       if(cf_get_thread(forum,tid)) {
@@ -180,7 +178,7 @@ int flt_cftp_handler(int sockfd,t_forum *forum,const u_char **tokens,int tnum,rl
     /* }}} */
 
     /* {{{ STAT POST */
-    else if(cf_strcmp(tokens[1],"POST") == 0) {
+    else if(tnum == 4 && cf_strcmp(tokens[1],"POST") == 0) {
       tid = strtoull(tokens[2]+1,NULL,10);
       mid = strtoull(tokens[3]+1,NULL,10);
 
