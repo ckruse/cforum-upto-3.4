@@ -101,7 +101,7 @@ int is_thread(const char *path) {
  * \param month The month
  */
 void index_month(char *year,char *month) {
-  t_name_value *apath = cfg_get_first_value(&fo_default_conf,forum_name,"ArchivePath");
+  t_name_value *apath = cfg_get_first_value(&fo_server_conf,forum_name,"ArchivePath");
   char path[256],path1[256],ym[256];
   t_tid_index midx;
   struct stat st;
@@ -176,7 +176,7 @@ void index_month(char *year,char *month) {
  * \param year The year
  */
 void do_year(char *year) {
-  t_name_value *apath = cfg_get_first_value(&fo_default_conf,NULL,"ArchivePath");
+  t_name_value *apath = cfg_get_first_value(&fo_server_conf,forum_name,"ArchivePath");
   char path[256];
 
   DIR *months;
@@ -199,6 +199,13 @@ void do_year(char *year) {
 }
 /* }}} */
 
+/**
+ * Dummy function, for ignoring unknown directives
+ */
+int ignre(t_configfile *cfile,const u_char *context,u_char *name,u_char **args,size_t len) {
+  return 0;
+}
+
 static struct option cmdline_options[] = {
   { "config-directory", 1, NULL, 'c' },
   { "forum-name",       1, NULL, 'f' },
@@ -220,7 +227,11 @@ void usage(void) {
 }
 /* }}} */
 
-/* {{{ main */
+t_conf_opt extra_opts[] = {
+  { "ArchivePath", handle_command, CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_server_conf },
+  { NULL, NULL, 0, NULL }
+};
+
 /**
  * Main function
  * \param argc Argument count
@@ -230,66 +241,79 @@ void usage(void) {
 int main(int argc,char *argv[],char *envp[]) {
   t_array *cfgfiles;
   u_char *file;
-  t_configfile dconf,sconf;
+  t_configfile sconf,dconf;
   t_name_value *ent,*idxfile;
-  u_char c;
+  char c;
 
   DIR *years;
   struct dirent *year;
   int ret;
 
   static const u_char *wanted[] = {
-    "fo_default"
+    "fo_server","fo_default"
   };
 
   /* {{{ read options from commandline */
-  while((c = getopt_long(argc,argv,"c:f",cmdline_options,NULL)) > 0) {
+  while((c = getopt_long(argc,argv,"c:f:",cmdline_options,NULL)) > 0) {
     switch(c) {
       case 'c':
-        if(!optarg) usage();
+        if(!optarg) {
+          fprintf(stderr,"no configuration path given for argument --config-directory\n");
+          usage();
+        }
         setenv("CF_CONF_DIR",optarg,1);
         break;
       case 'f':
-        if(!optarg) usage();
+        if(!optarg) {
+          fprintf(stderr,"no forum name given for argument --forum-name\n");
+          usage();
+        }
         forum_name = strdup(optarg);
         break;
       default:
+        fprintf(stderr,"unknown option: %d\n",c);
         usage();
     }
   }
   /* }}} */
 
-  if(!forum_name) usage();
+  if(!forum_name) {
+    fprintf(stderr,"forum name not given!\n");
+    usage();
+  }
 
   cfg_init();
 
-  if((cfgfiles = get_conf_file(wanted,1)) == NULL) {
+  /* {{{ configuration files */
+  if((cfgfiles = get_conf_file(wanted,2)) == NULL) {
     fprintf(stderr,"error getting config files\n");
     return EXIT_FAILURE;
   }
+
+  file = *((u_char **)array_element_at(cfgfiles,0));
+  cfg_init_file(&sconf,file);
+  free(file);
 
   file = *((u_char **)array_element_at(cfgfiles,1));
   cfg_init_file(&dconf,file);
   free(file);
 
-  cfg_register_options(&sconf,fo_server_options);
 
-  if(read_config(&dconf,NULL,CFG_MODE_CONFIG) != 0) {
+  cfg_register_options(&dconf,default_options);
+  cfg_register_options(&sconf,fo_server_options);
+  cfg_register_options(&sconf,extra_opts);
+
+  if(read_config(&dconf,NULL,CFG_MODE_CONFIG) != 0 || read_config(&sconf,ignre,CFG_MODE_CONFIG|CFG_MODE_NOLOAD)) {
     fprintf(stderr,"config file error!\n");
 
     cfg_cleanup_file(&dconf);
 
     return EXIT_FAILURE;
   }
+  /* }}} */
 
-  if((ent = cfg_get_first_value(&fo_default_conf,forum_name,"ArchivePath")) == NULL) {
-    fprintf(stderr,"error getting archive path\n");
-    return EXIT_FAILURE;
-  }
-  if((idxfile = cfg_get_first_value(&fo_default_conf,forum_name,"ThreadIndexFile")) == NULL) {
-    fprintf(stderr,"error getting index file\n");
-    return EXIT_FAILURE;
-  }
+  ent = cfg_get_first_value(&fo_server_conf,forum_name,"ArchivePath");
+  idxfile = cfg_get_first_value(&fo_default_conf,forum_name,"ThreadIndexFile");
 
   /* {{{ open database */
   if((ret = db_create(&Tdb,NULL,0)) != 0) {
@@ -328,6 +352,5 @@ int main(int argc,char *argv[],char *envp[]) {
 
   return EXIT_SUCCESS;
 }
-/* }}} */
 
 /* eof */

@@ -7,7 +7,8 @@ bin_PROGRAMS= \
 	fo_view \
 	fo_cleanup \
 	fo_vote \
-	fo_tid_index
+	fo_tid_index \
+	fo_threadlookup
 
 pkglib_LTLIBRARIES= \
 	libcfcharconvert.la \
@@ -67,6 +68,10 @@ libcfserverlib_la_LDFLAGS=-export-dynamic -avoid-version
 libcfclientlib_la_SOURCES=clientlib.c handlerrunners.c communication.c messageutils.c semaphores.c
 libcfclientlib_la_LIBADD=libcfconfigparser.la libcfcharconvert.la libcfreadline.la libcfutils.la libcfhashlib.la libcfcgi.la libcftemplate.la $(BDB_LIB)
 libcfclientlib_la_LDFLAGS=-export-dynamic -avoid-version
+
+fo_threadlookup_SOURCES=fo_threadlookup.c
+fo_threadlookup_LDADD=libcfclientlib.la libcfutils.la libcfconfigparser.la libcfcgi.la $(BDB_LIB)
+fo_threadlookup_LDFLAGS=-export-dynamic
 
 fo_tid_index_SOURCES=fo_tid_index.c
 fo_tid_index_LDADD=libcfutils.la libcfconfigparser.la $(BDB_LIB)

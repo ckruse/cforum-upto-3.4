@@ -556,7 +556,7 @@ int main(int argc,char *argv[],char *envp[]) {
   t_array *cfgfiles;
   u_char *file;
   t_configfile conf,dconf,vconf;
-  u_char c;
+  char c;
 
   static const u_char *wanted[] = {
     "fo_default","fo_view","fo_vote"

@@ -17,6 +17,7 @@
 		cgi-shared/config/fo_vote.conf.in, cgi-shared/config/fo_userconf.conf.in:
 		Corrected syntax of configuration files
 	* src/fo_tid_index.c: Moved to 3.0 API, invented getopt usage
+	* src/fo_threadlookup.c: Moved to 3.0 API, made it a little bit more nice
 
 2005-01-14 Christian Kruse <ckruse@wwwtech.de>
 	* src/clientlib.h: Added t_hierarchical_node and some prototypes for handling
