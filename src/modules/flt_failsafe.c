@@ -74,10 +74,10 @@ void flt_failsafe_cleaner(t_forum *forum) {
   if((fd = fopen(fl->BackupFile,"wb")) != NULL) {
     fwrite("CFFS",4,1,fd);
     fwrite(CFFS_VERSION,3,1,fd);
+    fclose(fd);
   }
 
   CF_UM(&fl->BackupMutex);
-  return FLT_OK;
 }
 
 /* {{{ flt_failsafe_write */

@@ -1,11 +1,4 @@
-2005-02-22 Christian Kruse <ckruse@wwwtech.de>
-	* src/modules/flt_mailonpost.c: Fixed bug in checkbox, now it should work
-
-2005-02-21 Christian Kruse <ckruse@wwwtech.de>
-	* src/modules/flt_mailonpost.c: Fixed bug, flt_mailonpost_udb has to be equal
-		NULL if FLT_DECLINE should returned, not non-NULL
-	* src/modules/flt_syntax.c: Made parser more tollerant, now it also recognizes
-		"lang" and 'lang' and so on
-	* src/perl/Plugins/ImportExport.pm: Changed import behavior, unknown
-		directives will be ignored
-
+2005-02-23 Christian Kruse <ckruse@wwwtech.de>
+	* src/modules/flt_syntax.c: Fixed several bugs in syntax highlighting
+	* src/modules/flt_failsafe.c: Fixed a really bad bug which caused "too many
+		open files" errors
