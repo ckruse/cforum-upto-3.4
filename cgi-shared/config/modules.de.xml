@@ -67,6 +67,19 @@
         </argument>
       </directive>
 
+      <directive name="OwnXSLTFile" arguments="2">
+        <argument paramname="ownxsltfile_list" type="text" encode="plain">
+          <validate type="url"/>
+          <question>Möchten Sie eine eigene XSLT-Datei für die Forumshauptseite benutzen? Wenn ja, geben Sie hier die URL zu der Datei an. Wenn nein, lassen Sie das Feld einfach frei. Sie wird allerdings nur eingebunden, wenn als Templates &quot;XHTML 1.0&quot; eingestellt wurde!</question>
+          <error>Bitte geben Sie eine gültige URL für die eigene XSLT-Datei für die Forumshauptseite an!</error>
+        </argument>
+
+        <argument paramname="ownxsltfile_post" type="text" encode="plain">
+          <validate type="url"/>
+          <question>Möchten Sie eine eigene XSLT-Datei für die Postingseiten benutzen? Wenn ja, geben Sie hier die URL zu der Datei an. Wenn nein, lassen Sie das Feld einfach frei. Sie wird allerdings nur eingebunden, wenn als Templates &quot;XHTML 1.0&quot; eingestellt wurde!</question>
+          <error>Bitte geben Sie eine gültige URL für die eigene XSLT-Datei für die Postingseiten an!</error>
+        </argument>
+      </directive>
 
       <directive name="TextBox" arguments="2">
         <argument paramname="tboxw" type="text" encode="plain">

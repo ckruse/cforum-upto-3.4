@@ -1,18 +1,8 @@
-2004-11-28 Christian Kruse <ckruse@wwwtech.de>
-	* src/cfcgi.c: Fixed a really nasty bug; now cf_cgi_url_decode() is safe
-	* src/templates/de/tpl_html4/usersettings.html: Fixed several double UTF-8
-		encodings
+2004-11-29 Christian Kruse <ckruse@wwwtech.de>
+	* cgi-shared/Plugins/RandomSignature.pm: Added UTF-8 validation and it also
+		parses more than one [remote-signature:]
+	* src/modules/flt_include.c, src/templates/de/tpl_xhtml10/forum_posting.html,
+		src/templates/de/tpl_xhtml10/forum_begin.html,
+		cgi-shared/config/modules.de.xml: Added support for an XSLT template
 
-2004-11-24 Christian Kruse <ckruse@wwwtech.de>
-	* src/modules/flt_deleted.c, src/modules/flt_visited.c: Added file locking
-		(for the handle returned by db->fd())
-	* cgi-shared/ForumUtils.pm: Bugfix, didn't check length of a string
-	* src/fo_vote.c: Added charset and forumbase variables
-	* src/templates/de/tpl_*/vote_ok.html: Add them to the repository, needed by
-		fo_vote.c
-	* src/templates/de/tpl_*/forum_posting.html: Moved voting down under the
-		textbox
-	* src/templates/de/tpl_xhtml10/forum_posting.html: Added several IDs to make
-		it easier for user stylesheets
-	* cgi-shared/Plugins/SpellCheck.pm: Fixed UTF-8 handling bugs
 
