@@ -5,6 +5,8 @@
 	* src/modules/flt_sorting.c, src/fo_arcview.c: Moved to new cf_msg_linearize()
 	* src/htmllib.c: Fixed performance bug, unknown directives will not get
 		parsed now
+	* src/modules/flt_deleted.c: Code cleaning
+	* src/modules/flt_xmlarc.c: Fixed a nasty bug
 
 2005-02-19 Christian Seiler <self@christian-seiler.de>
 	* src/modules/flt_syntax.c: Small bugfixes
