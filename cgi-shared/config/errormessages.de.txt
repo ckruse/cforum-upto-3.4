@@ -31,11 +31,11 @@ E_field_missing: Die Daten scheinen unvollständig zu sein.
 E_posting_format: Das Format Ihres Postings scheint unsauber zu sein (z. B. keine Zeilenumbrüche, keine Satzzeichen, alles Kleingeschrieben oder ähnliches). Solche Postings sind ungern gesehen, da sie oft schwer zu lesen sind. Sind Sie sicher, dass Sie so posten möchten?
 E_posting_badwords: Ihr Posting scheint mehr als die erlaubte Zahl von Schimpfwörtern zu enthalten.
 E_posting_quoting: Sie haben mehr als 25% zitierte Zeilen in Ihrem Posting. Sind Sie sicher, dass Sie das Posting so abschicken wollen?
-E_uname_short: Der Username muss mindestens %d Zeichen lang sein.
+E_Username_short: Der Username muss mindestens %d Zeichen lang sein.
 E_pass_short: Das Passwort muss mindestens %d Zeichen lang sein.
 E_pass_match: Die Passwörter stimmen nicht überein!
-E_uname_invalid: Der Username ist ungültig!
-E_pass_invalid: Das Passwort ist ungültig!
+E_Username_invalid: Der Username ist ungültig!
+E_Password_invalid: Das Passwort ist ungültig!
 E_uname_exists: Der Username existiert bereits!
 E_auth_required: Um unter diesem Namen posten zu können, müssen Sie sich authentifizieren!
 E_FO_403: Zugriff verweigert.
@@ -61,3 +61,7 @@ E_POST_NOT_ALLOWED: Das Schreiben neuer Nachrichten ist Momentan nicht erlaubt.
 E_VOTE_INTERNAL: Interner Fehler aufgetreten. Vielleicht haben sie keine Thread- oder Nachrichten-ID übermittelt?
 E_VOTE_MULTIPLE: Sie dürfen nur einmal abstimmen!
 E_VOTE_AUTH: Sie müssen angemeldet sein, um abzustimmen!
+E_sendpw_error: Leider ist ein interner Fehler aufgetreten.
+E_sendpw_subject: SELFHTML-Forum-Passwort
+E_sendpw_body: Ihr SELFHTML-Forum-Passwort lautet: {$pass}
+

@@ -89,31 +89,31 @@ sub show_register_form {
 
 # {{{ validate parameters
 sub validate_parameters {
-  my $fo_default_conf = shift;
-	my $cfg             = shift;
-	my $cgi             = shift;
+  my $fdc = shift;
+	my $cfg = shift;
+	my $cgi = shift;
 
   foreach my $name ($cgi->param) {
 	  my $val = $cgi->param($name);
 
     if(exists $cfg->{MinVal}) {
       my ($minval) = grep { $_->[0] eq $name } @{$cfg->{MinVal}};
-      return $name if defined $minval && $minval->[1] > $val;
+      return get_error($fdc,$name,'short') if defined $minval && $minval->[1] > $val;
     }
 
     if(exists $cfg->{MaxVal}) {
       my ($maxval) = grep { $_->[0] eq $name } @{$cfg->{MaxVal}};
-      return $name if defined $maxval && $maxval->[1] < $val;
+      return get_error($fdc,$name,'long') if defined $maxval && $maxval->[1] < $val;
     }
 
     if(exists $cfg->{MinLength}) {
       my ($minlen) = grep { $_->[0] eq $name } @{$cfg->{MinLength}};
-      return $name if defined $minlen && $minlen->[1] > length($val);
+      return get_error($fdc,$name,'short') if defined $minlen && $minlen->[1] > length($val);
     }
 
     if(exists $cfg->{MaxLength}) {
       my ($maxlen) = grep { $_->[0] eq $name } @{$cfg->{MaxLength}};
-      return $name if defined $maxlen && $maxlen->[1] < length($val);
+      return get_error($fdc,$name,'long') if defined $maxlen && $maxlen->[1] < length($val);
     }
 
 		if(exists $cgi->{Validate}) {
@@ -121,10 +121,10 @@ sub validate_parameters {
 
       if($validate) {
   			if($validate->[1] eq 'email') {
-          return $name unless is_email($val);
+          return get_error($fdc,$name,'invalid') unless is_email($val);
 		  	}
 			  else {
-          return $name unless $val =~ m!$validate->[1]!;
+          return get_error($fdc,$name,'invalid') unless $val =~ m!$validate->[1]!;
 			  }
       }
 		}
@@ -243,11 +243,8 @@ if($UserName) {
 
 			if($p eq $cgi->param('Password1')) {
 				$form = 0;
-        if($err = validate_parameters($fo_default_conf,$fo_usermanagement_conf,$cgi)) {
-          $err = $err.'_invalid';
-          $form = 1;
-        }
-        
+        $form = 1 if $err = validate_parameters($fo_default_conf,$fo_usermanagement_conf,$cgi);
+
         unless($form) {
           $Management->change_pass($fo_default_conf,$fo_usermanagement_conf,$UserName,$p) if $Management;
         }
@@ -311,13 +308,17 @@ if($UserName) {
 				$tpl->setVar('forumbase',recode($fo_default_conf,$fo_default_conf->{BaseURL}->[0]->[0]));
 				$tpl->setVar('charset',$fo_default_conf->{ExternCharset}->[0]->[0]);
 				$tpl->setVar('acceptcharset',$fo_default_conf->{ExternCharset}->[0]->[0].', UTF-8');
+
+        print $cgi->header(-type => 'text/html; charset='.$fo_default_conf->{ExternCharset}->[0]->[0]),$tpl->parseToMem;
 			}
 			else {
-				my $tpl = new CForum::Template(get_template($fo_default_conf,$user_config,$fo_usermanagement_conf->{SendPassErr}->[0]->[0]));
+				my $tpl = new CForum::Template(get_template($fo_default_conf,$user_config,$fo_default_conf->{ErrorTemplate}->[0]->[0]));
 				$tpl->setVar('script',recode($fo_default_conf,$fo_default_conf->{UserRegister}->[0]->[0]));
 				$tpl->setVar('forumbase',recode($fo_default_conf,$fo_default_conf->{BaseURL}->[0]->[0]));
 				$tpl->setVar('charset',$fo_default_conf->{ExternCharset}->[0]->[0]);
-				$tpl->setVar('acceptcharset',$fo_default_conf->{ExternCharset}->[0]->[0].', UTF-8');
+        $tpl->setVar('error',get_error($fo_default_conf,'sendpw','error'));
+
+        print $cgi->header(-type => 'text/html; charset='.$fo_default_conf->{ExternCharset}->[0]->[0]),$tpl->parseToMem;
 			}
 		}
 		else {
@@ -344,7 +345,7 @@ else {
         $fo_default_conf,
         $fo_usermanagement_conf,
         $user_config,
-        get_error($fo_default_conf,$err,"invalid")
+        $err
       );
     }
 

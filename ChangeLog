@@ -4,6 +4,11 @@
 2004-08-03 Christian Kruse <ckruse@wwwtech.de>
 	* src/templates/{de,fr}/tpl_*/forum_begin.html: Changed CSS a little bit,
 		span.cathigh has been overwritten by other CSS
+	* cgi-shared/config/errormessages.de.txt: Changed some names, added 'send
+		password' messages
+	* cgi-bin/fo_usermanagement.in: Changed behavior of validate_parameters() a
+		little bit, now it returns the error text, not the fieldname. I also changed
+		error handling and fixed it a little bit
 
 2004-08-02 Christian Kruse <ckruse@wwwtech.de>
 	* cgi-shared/Plugins/Management/SQL.pm: Bugfix, directives are named 'SQL*'!
