@@ -131,7 +131,7 @@ int flt_visited_execute_filter(t_cf_hash *head,t_configuration *dc,t_configurati
   t_message *msg;
   t_cl_thread thread;
   DBT key,data;
-  char buff[256];
+  char buff[256],*mav;
   size_t len;
 
   if(uname && Cfg.VisitedFile) {
@@ -144,6 +144,12 @@ int flt_visited_execute_filter(t_cf_hash *head,t_configuration *dc,t_configurati
     /* register module api */
     cf_register_mod_api_ent("flt_visited","is_visited",flt_visited_is_visited);
     cf_register_mod_api_ent("flt_visited","mark_visited",flt_visited_mark_visited);
+
+    /* check if we should mark all visited */
+    if(head && (mav = cf_cgi_get(head,"mav")) != NULL) {
+      if(*mav == '1') Cfg.mark_all_visited = 1;
+    }
+
 
     if(head && Cfg.HighlightVisitedPostings) {
       cmid = cf_cgi_get(head,"m");
@@ -346,7 +352,6 @@ time_t flt_visited_lm(t_cf_hash *head,t_configuration *dc,t_configuration *vc,vo
 /* {{{ flt_visited_init_handler */
 int flt_visited_init_handler(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc) {
   int ret;
-  u_char *mav;
 
   if(Cfg.VisitedFile) {
     if((ret = db_create(&Cfg.db,NULL,0)) != 0) {
@@ -360,10 +365,6 @@ int flt_visited_init_handler(t_cf_hash *cgi,t_configuration *dc,t_configuration 
     }
 
     return FLT_OK;
-  }
-
-  if(cgi && (mav = cf_cgi_get(cgi,"mav")) != NULL) {
-    if(*mav == '1') Cfg.mark_all_visited = 1;
   }
 
   return FLT_DECLINE;
