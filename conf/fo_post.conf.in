@@ -23,6 +23,7 @@ Load "flt_postingassistant"
 Load "flt_preview"
 Load "flt_syntax"
 Load "flt_checkregisteredname"
+Load "flt_mailonpost"
 
 Forum FORUM1 {
  PostingUrl "^http://wwwtech.de/cforum/forum/\\?"
@@ -70,6 +71,8 @@ Forum FORUM1 {
 
  SMTPHost "localhost"
  SMTPFrom "cforum@wwwtech.de"
+ SMTPReverse "devnull@wwwtech.de"
+ MailDatabase "@sharedstatedir@/cforum/mail_forum1.db"
 
  Image "selbermachen" "/images/01.gif" "Für dein Problem gibt es nur eine Lösung: SELFmade von Selbermachen."
  Image "archiv" "/images/02.gif" "Die Antwort auf deine Frage findest du im Archiv."

@@ -1,5 +1,6 @@
 2005-02-16 Christian Kruse <ckruse@wwwtech.de>
 	* src/modules/flt_mailonpost.c: Fixed several bugs, now it seems to work
+	* conf/fo_post.conf.in: Added cleanup routines for mailonpost database
 
 2005-02-15 Christian Kruse <ckruse@wwwtech.de>
 	* src/cf-recovery.c: Migration finished, seems to work fine
