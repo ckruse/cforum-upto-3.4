@@ -1,4 +1,6 @@
 2005-01-17 Christian Kruse <ckruse@wwwtech.de>
+	* src/perl/CForum-*: Removed for 3.0 release (will be replaced by
+		SWIG)
 	* swig/CForum-Configparser.i: Began to rewrite perl interfaces with SWIG
 	* cgi-shared/: Removed for 3.0
 	* src/perl/Plugins/, src/perl/ForumUtils.pm, conf/, docs/: Moved there

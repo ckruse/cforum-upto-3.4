@@ -1,9 +1,0 @@
-Changes
-Makefile.PL
-MANIFEST
-ppport.h
-README
-Validator.xs
-t/CForum-Validator.t
-lib/CForum/Validator.pm
-typemap
