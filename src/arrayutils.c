@@ -57,7 +57,7 @@ void array_push(t_array *ary,const void *element) {
 /* {{{ array_pop */
 void *array_pop(t_array *ary) {
   ary->elements -= 1;
-  return memdup((void *)(ary->array + ((ary->elements + 1) * ary->element_size)),ary->element_size);
+  return memdup((void *)(ary->array + ((ary->elements) * ary->element_size)),ary->element_size);
 }
 /* }}} */
 
