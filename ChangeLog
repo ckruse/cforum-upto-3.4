@@ -1,10 +1,12 @@
 2004-07-22 Christian Kruse <ckruse@wwwtech.de>
 	* src/templates/tpl_*/forum_begin.html: Changed 'Tip' to 'Hinweis'
-	* src/templates/tpl_*/forum_thread.html: Added space between images
+	* src/templates/tpl_*/forum_thread.html: Added space between images, added
+		handling for flt_scoring
 	* src/modules/flt_scoring.lex: Added module for newsreader-like scoring
 	* src/modules/Makefile.am: Added flt_scoring and PCRE-linking for
 		flt_urlrewrite
 	* configure.in: Added PCRE detection
+	* src/modules/flt_registerednames.c: Fixed memory leak
 
 2004-07-21 Jan Rieger <jr@occuris.de>
 	* src/templates/tpl_*/forum_begin.html: Fixed bug #310
