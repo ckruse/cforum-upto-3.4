@@ -116,7 +116,7 @@ void display_finishing_screen(t_message *p) {
 /* }}} */
 
 /* {{{ display_posting_form */
-void display_posting_form(t_cf_hash *head) {
+void display_posting_form(t_cf_hash *head,t_message *p) {
   /* display him the fucking formular */
   t_cf_template tpl;
   u_char tplname[256],*forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10),*uname = cf_hash_get(GlobalValues,"UserName",8);
@@ -164,9 +164,13 @@ void display_posting_form(t_cf_hash *head) {
   /* {{{ set categories */
   cf_tpl_var_init(&array,TPL_VARIABLE_ARRAY);
 
-  if(head) {
+  if(p) {
+    if(p->category.len) cf_set_variable(&tpl,cs,"cat",p->category.content,p->category.len,1);
+    cf_set_variable(&tpl,cs,"subject",p->subject.content,p->subject.len,1);
+  }
+  else if(head) {
     cat = cf_cgi_get(head,"cat");
-    if(cat) cf_tpl_setvalue(&tpl,"cat",TPL_VARIABLE_STRING,cat,strlen(cat));
+    if(cat) cf_set_variable(&tpl,cs,"cat",cat,strlen(cat),1);
   }
 
   for(i=0;i<cats->valnum;++i) {
@@ -773,14 +777,14 @@ int main(int argc,char *argv[],char *env[]) {
       /* {{{ ok, user gave us variables -- lets normalize them */
       if(normalize_cgi_variables(head,"qchar") != 0) {
         strcpy(ErrorString,"E_manipulated");
-        display_posting_form(head);
+        display_posting_form(head,NULL);
         return EXIT_SUCCESS;
       }
       /* }}} */
 
       /* {{{ everything seems to be fine, so lets validate user input */
       if(validate_cgi_variables(head) != 0) {
-        display_posting_form(head);
+        display_posting_form(head,NULL);
         return EXIT_SUCCESS;
       }
       /* }}} */
@@ -799,7 +803,7 @@ int main(int argc,char *argv[],char *env[]) {
 
         if(!tid || !mid) {
           strcpy(ErrorString,"E_manipulated");
-          display_posting_form(head);
+          display_posting_form(head,NULL);
           return EXIT_SUCCESS;
         }
       }
@@ -1003,7 +1007,7 @@ int main(int argc,char *argv[],char *env[]) {
         /* }}} */
       }
     }
-    else display_posting_form(head);
+    else display_posting_form(head,NULL);
   }
 
   /* cleanup source */

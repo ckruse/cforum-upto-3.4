@@ -4,6 +4,11 @@
 	* src/fo_server.c: Initialized variable
 	* conf/patterns/perl.pat: Fixed several bugs in patterns
 	* conf/patterns/php.pat: Removed second heredoc block
+	* src/fo_post.c, src/fo_post.h: Changed behavior and prototype of
+		display_posting_form(), now it expects a pointer to the handled message and
+		sets category and subject in the message template
+	* src/modules/flt_categorycheck.c, src/modules/flt_postingassistant.c,
+		src/modules/flt_preview.c: Changed display_posting_form() call
 
 2005-02-06 Christian Seiler <self@christian-seiler.de>
 	* conf/patterns/php.pat: Some improvements

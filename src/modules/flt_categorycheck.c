@@ -50,7 +50,7 @@ int flt_categorycheck_execute(t_cf_hash *head,t_configuration *dc,t_configuratio
   }
 
   strcpy(ErrorString,"E_posting_category");
-  display_posting_form(head);
+  display_posting_form(head,p);
   return FLT_EXIT;
 }
 
