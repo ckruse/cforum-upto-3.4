@@ -133,7 +133,7 @@ u_char *parse_message(u_char *start,t_array *stack,t_string *content,t_string *c
         }
 
         /* ok, parse this directive */
-        for(ptr1=ptr+1,sb=0;*ptr1 && isalnum(*ptr1) && sb == 0 && *ptr1 != '<';++ptr1) {
+        for(ptr1=ptr+1,sb=0;*ptr1 && isalpha(*ptr1) && sb == 0 && *ptr1 != '<';++ptr1) {
           sb = *ptr1 == '[';
         }
 
@@ -239,24 +239,12 @@ u_char *parse_message(u_char *start,t_array *stack,t_string *content,t_string *c
             rc = run_block_directive_filters(directive,(const u_char **)&parameter,1,content,cite,&d_content,cite ? &d_cite : NULL,qchars,sig);
 
             if(rc == FLT_DECLINE) {
-              str_char_append(content,'[');
-              str_chars_append(content,directive,strlen(directive));
-              str_char_append(content,'=');
-              str_chars_append(content,parameter,strlen(parameter));
-              str_char_append(content,']');
+              str_cleanup(&d_content);
+              if(cite) str_cleanup(&d_cite);
 
-              str_str_append(content,&d_content);
-              str_chars_append(content,"[/",2);
-              str_chars_append(content,directive,strlen(directive));
-              str_char_append(content,']');
-
-              ptr = retval;
-              continue;
+              ptr = safe;
+              goto default_action;
             }
-            else ptr = retval;
-
-            str_str_append(content,&d_content);
-            if(cite) str_str_append(cite,&d_cite);
 
             ptr = retval;
           }
@@ -323,32 +311,13 @@ u_char *parse_message(u_char *start,t_array *stack,t_string *content,t_string *c
             rc = run_block_directive_filters(directive,(const u_char **)stack_elem.args,stack_elem.argnum,content,cite,&d_content,cite ? &d_cite : NULL,qchars,sig);
 
             if(rc == FLT_DECLINE) {
-              str_char_append(content,'[');
-              str_chars_append(content,directive,strlen(directive));
-
-              for(i=0;i<stack_elem.argnum;i+=2) {
-                str_char_append(content,' ');
-                str_chars_append(content,stack_elem.args[i],strlen(stack_elem.args[i]));
-                str_char_append(content,'=');
-                str_chars_append(content,stack_elem.args[i+1],strlen(stack_elem.args[i+1]));
-
-                free(stack_elem.args[i]);
-                free(stack_elem.args[i+1]);
-              }
-
-              free(stack_elem.args);
-
-              str_char_append(content,']');
-
-              str_str_append(content,&d_content);
-              str_chars_append(content,"[/",2);
-              str_chars_append(content,directive,strlen(directive));
-              str_char_append(content,']');
-
-              ptr = retval;
-              continue;
+              ptr = safe;
+              str_cleanup(&d_content);
+              if(cite) str_cleanup(&d_cite);
+              goto default_action;
             }
-            else ptr = retval;
+
+            ptr = retval;
 
             //str_str_append(content,&d_content);
             //if(cite) str_str_append(cite,&d_cite);
