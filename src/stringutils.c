@@ -385,7 +385,6 @@ size_t nsplit(const u_char *big,const u_char *small,u_char ***ulist,size_t max) 
     *pos = '\0';
 
     list[len++] = strdup(pre);
-    if(len + 1 == max) break;
 
     if(len >= reser) {
       reser += PRERESERVE;
@@ -394,6 +393,7 @@ size_t nsplit(const u_char *big,const u_char *small,u_char ***ulist,size_t max) 
 
     pre    = pos+slen;
     *pos++ = *small;
+    if(len + 1 == max) break;
   }
 
   if(len + 1 == max) {

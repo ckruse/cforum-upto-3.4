@@ -409,9 +409,11 @@ int flt_posting_directives(t_configuration *fdc,t_configuration *fvc,const u_cha
         }
         else {
           str_chars_append(content,"<img src=\"",10);
-          str_chars_append(content,parameter,len);
+          str_chars_append(content,tmp1,len);
+          str_char_append(content,'"',1);
+
           if(title_alt) {
-            str_chars_append(content,"alt=\"",5);
+            str_chars_append(content," alt=\"",6);
             str_chars_append(content,title_alt,len1);
             str_char_append(content,'"');
           }
