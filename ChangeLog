@@ -2,7 +2,7 @@
 	* src/perl/CForum-*: Removed for 3.0 release (will be replaced by
 		SWIG)
 	* swig/CForum-Configparser.i: Began to rewrite perl interfaces with SWIG
-	* cgi-shared/, htdocs/, logs/: Removed for 3.0
+	* cgi-shared/, htdocs/, logs/, cgi-bin/: Removed for 3.0
 	* src/perl/Plugins/, src/perl/ForumUtils.pm, conf/, docs/: Moved there
 		for 3.0 release
 
