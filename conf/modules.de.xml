@@ -176,15 +176,15 @@
         </argument>
       </directive>
 
-      <directive name="SortThreads" arguments="1">
+      <directive name="SortMessages" arguments="1">
         <argument paramname="sortmessages" type="radio" encode="plain">
           <validate>^(ascending|descending|default)$</validate>
           <question>Wie sollen die Nachrichten sortiert werden?</question>
           <error>Wie sollen die Nachrichten sortiert werden? Bitte geben Sie &quot;ansteigend&quot;, &quot;absteigend&quot; oder &quot;Default-Reihenfolge&quot; an!</error>
           <formvalues>
             <value val="default" default="yes">Default-Reihenfolge</value>
-            <value val="ascending">Ja</value>
-            <value val="descending">Nein</value>
+            <value val="ascending">Aufsteigend</value>
+            <value val="descending">Absteigend</value>
           </formvalues>
         </argument>
       </directive>
