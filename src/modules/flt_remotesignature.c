@@ -41,6 +41,7 @@
 #include "template.h"
 #include "clientlib.h"
 #include "validate.h"
+#include "charconvert.h"
 #include "fo_post.h"
 /* }}} */
 
@@ -119,6 +120,7 @@ u_char *flt_remotesignature_get_url(const u_char *url) {
 int flt_remotesignature_execute(t_cf_hash *head,t_configuration *dc,t_configuration *pc,t_message *p,int sock,int mode) {
   u_char *rs = strstr(p->content.content,"[remote-signature:"),*url,*cnt;
   register u_char *ptr;
+  t_string *str;
 
   if(rs) {
     for(ptr=rs+18;*ptr && *ptr != ']' && !isspace(*ptr);ptr++);
@@ -130,8 +132,17 @@ int flt_remotesignature_execute(t_cf_hash *head,t_configuration *dc,t_configurat
       if(is_valid_http_link(url,1) == 0) {
         /* get content from URL */
         if((cnt = flt_remotesignature_get_url(url)) != NULL) {
-          p->content.len = rs-p->content.content;
-          str_chars_append(&p->content,cnt,strlen(cnt));
+          str = body_plain2coded(cnt);
+
+          if(str) {
+            if(is_valid_utf8_string(str->content,str->len) == 0) {
+              p->content.len = rs-p->content.content;
+              str_str_append(&p->content,str);
+            }
+
+            str_cleanup(str);
+            free(str);
+          }
 
           free(cnt);
         }

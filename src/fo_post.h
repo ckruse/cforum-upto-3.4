@@ -10,6 +10,7 @@
 #define _FO_POST_H
 
 void display_posting_form(t_cf_hash *head);
+t_string *body_plain2coded(const u_char *text);
 
 #endif
 
