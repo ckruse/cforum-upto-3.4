@@ -256,6 +256,18 @@
         </argument>
       </directive>
 
+      <directive name="LinkShowIcons" arguments="1">
+        <argument paramname="LinkShowIcons" type="text" encode="plain">
+          <validate>^(?:yes|no)$</validate>
+          <question>Möchten Sie Link-Icons benutzen? Sie können Icons an Links anhängen lassen, die bestimmte Funktionalität erfüllen, z. B. einen Link zur Validierung mit http://validator.w3.org/, einen Link zur Validierung mit http://validator.de.selfhtml.org/ und einen Link zur Validierung mit http://jigsaw.w3.org/css-validator/.</question>
+          <error>Möchten Sie Link-Icons benutzen? Bitte geben Sie &quot;ja&quot; oder &quot;nein&quot; an!</error>
+          <formvalues>
+            <value val="yes">Ja</value>
+            <value val="no" default="yes">Nein</value>
+          </formvalues>
+        </argument>
+      </directive>
+
       <directive name="Send204" arguments="1">
         <argument paramname="vote_send204" type="radio" encode="plain">
           <validate>^(yes|no)$</validate>
