@@ -12,6 +12,8 @@
 		prev pointers will be set correctly
 	* src/htmllib.c: Bugfix in parser. Now it seems to work correctly
 	* conf/modules.de.xml: Removed LineWidth directive
+	* src/modules/flt_syntax.c: Changed flt_syntax behavior, now the first line
+		break will be ignored
 
 2005-02-09 Christian Kruse <ckruse@wwwtech.de>
 	* conf/fo_view.conf.in: Added two modules

@@ -692,6 +692,15 @@ int flt_syntax_doit(flt_syntax_pattern_file_t *file,flt_syntax_block_t *block,u_
       fprintf(stderr,"line end behavior of default block is not stay!\n");
       return 1;
     }
+
+    if(cf_strncmp(text,"<br />",6) == 0) {
+      text += 6;
+      len  -= 6;
+    }
+    else if(cf_strncmp(text,"<br>",4) == 0) {
+      text += 4;
+      len  -= 4;
+    }
   }
 
   for(ptr=*pos?*pos:text;*ptr;++ptr) {
