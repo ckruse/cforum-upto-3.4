@@ -1272,9 +1272,8 @@ int flt_syntax_highlight(t_string *content,t_string *bco,const u_char *lang,cons
 
   if(!found) {
     if(flt_syntax_load(fname,lang) != 0) return 1;
+    file = array_element_at(&flt_syntax_files,flt_syntax_files.elements-1);
   }
-
-  file = array_element_at(&flt_syntax_files,flt_syntax_files.elements-1);
 
   str_init(&code);
   if(flt_syntax_doit(file,NULL,content->content,content->len,&code,&pos,NULL,cf_strcmp(xmlm->values[0],"yes") == 0,NULL) != 0) {

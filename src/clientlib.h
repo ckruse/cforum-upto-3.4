@@ -57,6 +57,8 @@ typedef struct s_message {
   t_string hp; /**< The homepage URL of the poster */
   t_string img; /**< The image URL of the poster */
 
+  t_string remote_addr; /**< The remote address of the poster */
+
   t_string subject; /**< The subject of the posting */
   t_string category; /**< The category of the posting */
   t_string content; /**< The content of the posting */
@@ -523,11 +525,13 @@ u_char *cf_get_link(const u_char *link,const u_char *forum_name,u_int64_t tid,u_
  * \param link The link string
  * \param tid The thread id
  * \param mid The message id
+ * \param anchor The anchor part of the URI, may be NULL
+ * \param plen The number of URI arguments to append. The number of arguments to the function must be plen * 2!
  * \param l A reference, the new length will be stored in it (if NULL, it'll be ignored)
  * \return Returns the link string
  * \attention You have to free() the returned pointer!
  */
-u_char *cf_advanced_get_link(const u_char *link,u_int64_t tid,u_int64_t mid,const u_char *parameters,size_t plen,size_t *l);
+u_char *cf_advanced_get_link(const u_char *link,u_int64_t tid,u_int64_t mid,u_char *anchor,size_t plen,size_t *l,...);
 
 /**
  * This function creates a date string. It's more general than get_time(),

@@ -162,6 +162,7 @@ void show_posting(t_cf_hash *head,void *shm_ptr,u_int64_t tid,u_int64_t mid)
   #endif
 
   u_char buff[256],
+         *tmp,
          fo_thread_tplname[256],
          fo_posting_tplname[256],
          *UserName = cf_hash_get(GlobalValues,"UserName",8),
@@ -241,7 +242,10 @@ void show_posting(t_cf_hash *head,void *shm_ptr,u_int64_t tid,u_int64_t mid)
     reg = cfg_get_first_value(&fo_default_conf,forum_name,"UserRegister");
   }
 
-  cf_set_variable(&tpl,cs,"forumbase",fbase->values[0],strlen(fbase->values[0]),1);
+  tmp = cf_get_link(fbase->values[0],NULL,0,0);
+  cf_set_variable(&tpl,cs,"forumbase",tmp,strlen(tmp),1);
+  free(tmp);
+
   cf_set_variable(&tpl,cs,"postscript",ps->values[0],strlen(ps->values[0]),1);
   cf_set_variable(&tpl,cs,"regscript",reg->values[0],strlen(reg->values[0]),1);
 
@@ -260,6 +264,7 @@ void show_posting(t_cf_hash *head,void *shm_ptr,u_int64_t tid,u_int64_t mid)
   cf_tpl_setvalue(&thread.messages->tpl,"msgnum",TPL_VARIABLE_INT,thread.msg_len);
   cf_tpl_setvalue(&thread.messages->tpl,"answers",TPL_VARIABLE_INT,thread.msg_len-1);
   if(UserName) cf_tpl_setvalue(&tpl,"authed",TPL_VARIABLE_INT,1);
+  cf_tpl_setvalue(&tpl,"cf_version",TPL_VARIABLE_STRING,CF_VERSION,strlen(CF_VERSION));
   /* }}} */
 
   printf("Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
@@ -271,8 +276,6 @@ void show_posting(t_cf_hash *head,void *shm_ptr,u_int64_t tid,u_int64_t mid)
   cf_run_thread_sorting_handlers(head,sock,&tsd,&thread);
   #endif
   #endif
-
-  cf_tpl_setvalue(&tpl,"cf_version",TPL_VARIABLE_STRING,CF_VERSION,strlen(CF_VERSION));
 
   if(cf_run_posting_handlers(head,&thread,&tpl,&fo_view_conf) != FLT_EXIT) cf_tpl_parse(&tpl);
   cf_tpl_finish(&tpl);

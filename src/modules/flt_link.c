@@ -95,29 +95,22 @@ t_message *flt_link_get_last(t_cl_thread *thread) {
 /* }}} */
 
 /* {{{ flt_link_getlink */
-void flt_link_getlink(t_string *str,u_int64_t tid,u_int64_t mid,const u_char *aaf,const u_char aafval[],u_char *forum_name) {
+void flt_link_getlink(t_string *str,u_int64_t tid,u_int64_t mid,u_char *forum_name) {
   str->content  = cf_get_link(NULL,forum_name,tid,mid);
   str->reserved = str->len = strlen(str->content);
   str->reserved += 1;
-
-  if(aaf) {
-    str_chars_append(str,aafval,5);
-    str_char_append(str,*aaf);
-  }
 }
 /* }}} */
 
 /* {{{ flt_link_set_links_post */
 int flt_link_set_links_post(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cl_thread *thread,t_cf_template *tpl) {
   u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
-  u_char *aaf = cf_cgi_get(head,"aaf");
   t_message *msg;
   size_t n;
   u_char *buff;
   t_string str;
   t_name_value *qtype = cfg_get_first_value(&fo_view_conf,forum_name,"ParamType");
   t_name_value *cs = cfg_get_first_value(&fo_default_conf,forum_name,"ExternCharset");
-  u_char *aafval = strdup(*qtype->values[0] == 'Q' ? "&aaf=" : "?aaf=");
 
   /* user doesn't want <link> tags */
   if(SetLinks == 0) return FLT_DECLINE;
@@ -126,33 +119,33 @@ int flt_link_set_links_post(t_cf_hash *head,t_configuration *dc,t_configuration 
 
   /* ok, we have to find the previous message */
   if((msg = flt_link_get_previous(thread->threadmsg)) != NULL) {
-    flt_link_getlink(&str,thread->tid,msg->mid,aaf,aafval,forum_name);
+    flt_link_getlink(&str,thread->tid,msg->mid,forum_name);
     cf_set_variable(tpl,cs,"prev",str.content,str.len,1);
     str_cleanup(&str);
   }
 
   /* next message... */
   if((msg = flt_link_get_next(thread->threadmsg)) != NULL) {
-    flt_link_getlink(&str,thread->tid,msg->mid,aaf,aafval,forum_name);
+    flt_link_getlink(&str,thread->tid,msg->mid,forum_name);
     cf_set_variable(tpl,cs,"next",str.content,str.len,1);
     str_cleanup(&str);
   }
 
-  flt_link_getlink(&str,thread->tid,thread->messages->mid,aaf,aafval,forum_name);
+  flt_link_getlink(&str,thread->tid,thread->messages->mid,forum_name);
   cf_set_variable(tpl,cs,"first",str.content,str.len,1);
   str_cleanup(&str);
 
   /* link rel="up" */
   for(msg=thread->threadmsg;msg && msg->level >= thread->threadmsg->level;msg=msg->prev);
   if(msg) {
-    flt_link_getlink(&str,thread->tid,msg->mid,aaf,aafval,forum_name);
+    flt_link_getlink(&str,thread->tid,msg->mid,forum_name);
     cf_set_variable(tpl,cs,"up",str.content,str.len,1);
     str_cleanup(&str);
   }
 
   /* last message... */
   if((msg = flt_link_get_last(thread)) != NULL) {
-    flt_link_getlink(&str,thread->tid,msg->mid,aaf,aafval,forum_name);
+    flt_link_getlink(&str,thread->tid,msg->mid,forum_name);
     cf_set_variable(tpl,cs,"last",str.content,str.len,1);
     str_cleanup(&str);
   }

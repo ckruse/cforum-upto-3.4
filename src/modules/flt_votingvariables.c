@@ -58,10 +58,10 @@ int flt_votingvariables_execute_filter(t_cf_hash *head,t_configuration *dc,t_con
     if(UserName) {
       cf_tpl_setvalue(tpl,"votes_link",TPL_VARIABLE_STRING,"1",1);
 
-      tmp = cf_advanced_get_link(v->values[0],thread->tid,thread->threadmsg->mid,"a=good",6,&len);
+      tmp = cf_advanced_get_link(v->values[0],thread->tid,thread->threadmsg->mid,NULL,1,&len,"a","good");
       cf_set_variable(tpl,cs,"vote_link_good",tmp,len,1);
 
-      tmp = cf_advanced_get_link(v->values[0],thread->tid,thread->threadmsg->mid,"a=bad",5,&len);
+      tmp = cf_advanced_get_link(v->values[0],thread->tid,thread->threadmsg->mid,NULL,1,&len,"a","bad");
       cf_set_variable(tpl,cs,"vote_link_bad",tmp,len,1);
     }
 

@@ -58,6 +58,7 @@
 #include "template.h"
 #include "readline.h"
 #include "charconvert.h"
+#include "cfcgi.h"
 #include "clientlib.h"
 /* }}} */
 
@@ -474,7 +475,9 @@ u_char *cf_get_error_message(const u_char *err,size_t *len, ...) {
 u_char *cf_get_link(const u_char *link,const u_char *forum_name,u_int64_t tid,u_int64_t mid) {
   t_name_value *vs;
   register const u_char *ptr;
+  u_char *si = cf_hash_get(GlobalValues,"ShowInvisible",13);
   t_string buff;
+  int qm = 0;
 
   str_init(&buff);
 
@@ -496,12 +499,20 @@ u_char *cf_get_link(const u_char *link,const u_char *forum_name,u_int64_t tid,u_
             ptr += 1;
           }
           else str_char_append(&buff,*ptr);
-
           break;
+
+        case '?':
+          qm = 1;
         default:
           str_char_append(&buff,*ptr);
       }
     }
+  }
+
+  if(si) {
+    if(qm) str_chars_append(&buff,"&aaf=",5);
+    else str_chars_append(&buff,"?aaf=",5);
+    str_char_append(&buff,'1');
   }
 
   return buff.content;
@@ -509,10 +520,13 @@ u_char *cf_get_link(const u_char *link,const u_char *forum_name,u_int64_t tid,u_
 /* }}} */
 
 /* {{{ cf_advanced_get_link */
-u_char *cf_advanced_get_link(const u_char *link,u_int64_t tid,u_int64_t mid,const u_char *parameters,size_t plen,size_t *l) {
+u_char *cf_advanced_get_link(const u_char *link,u_int64_t tid,u_int64_t mid,u_char *anchor,size_t plen,size_t *l,...) {
   register const u_char *ptr;
   t_string buff;
   int qm = 0;
+  u_char *si = cf_hash_get(GlobalValues,"ShowInvisible",13),*name,*value,*tmp;
+  size_t i;
+  va_list ap;
 
   str_init(&buff);
 
@@ -537,10 +551,34 @@ u_char *cf_advanced_get_link(const u_char *link,u_int64_t tid,u_int64_t mid,cons
     }
   }
 
-  if(qm) str_char_append(&buff,'&');
-  else   str_char_append(&buff,'?');
+  va_start(ap,l);
+  for(i=0;i<plen;++i) {
+    tmp = va_arg(ap,u_char *);
+    name = cf_cgi_url_encode(tmp,strlen(tmp));
 
-  str_chars_append(&buff,parameters,plen);
+    tmp = va_arg(ap,u_char *);
+    value = cf_cgi_url_encode(tmp,strlen(tmp));
+
+    if(qm == 0) {
+      str_char_append(&buff,'?');
+      qm = 1;
+    }
+    else str_char_append(&buff,'&');
+
+    str_chars_append(&buff,name,strlen(name));
+    str_char_append(&buff,'=');
+    str_chars_append(&buff,value,strlen(value));
+
+    free(name);
+    free(value);
+  }
+  va_end(ap);
+
+  if(si) str_chars_append(&buff,"&aaf=1",6);
+  if(anchor) {
+    str_char_append(&buff,'#');
+    str_chars_append(&buff,anchor,strlen(anchor));
+  }
 
   if(l) *l = buff.len;
   return buff.content;

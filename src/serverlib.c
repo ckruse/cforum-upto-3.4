@@ -686,6 +686,8 @@ void cf_cftp_handler(int sockfd) {
             forum = cf_hash_get(head.forums,tokens[1],strlen(tokens[1]));
             CF_RW_UN(&head.lock);
 
+            cf_log(CF_DBG,__FILE__,__LINE__,"here we go again, forum name: %s, forum: %p\n",tokens[1],forum);
+
             if(forum == NULL) writen(sockfd,"509 Forum does not exist\n",25);
             else writen(sockfd,"200 Ok\n",7);
           }
@@ -992,7 +994,7 @@ void cf_send_posting(t_forum *forum,int sock,u_int64_t tid,u_int64_t mid,int inv
     /* {{{ serialize flags */
     for(elem=p->flags.elements;elem;elem=elem->next) {
       flag = (t_posting_flag *)elem->data;
-      str_chars_append(&bff,"Flag: ",6);
+      str_chars_append(&bff,"Flag:",5);
       str_chars_append(&bff,flag->name,strlen(flag->name));
       str_char_append(&bff,'=');
       str_chars_append(&bff,flag->val,strlen(flag->val));
@@ -1026,6 +1028,9 @@ void cf_send_posting(t_forum *forum,int sock,u_int64_t tid,u_int64_t mid,int inv
       str_chars_append(&bff,p->category.content,p->category.len);
     }
 
+    str_chars_append(&bff,"\nRemote-Addr:",13);
+    str_str_append(&bff,&p->user.ip);
+
     n = snprintf(buff,512,"\nDate:%ld\n",p->date);
     str_chars_append(&bff,buff,n);
 
@@ -1049,7 +1054,7 @@ void cf_send_posting(t_forum *forum,int sock,u_int64_t tid,u_int64_t mid,int inv
 
   CF_RW_UN(&t->lock);
 
-  str_char_append(&bff,'\n');
+  str_chars_append(&bff,"END\n",4);
 
   writen(sock,bff.content,bff.len);
   free(bff.content);
@@ -1274,7 +1279,7 @@ void cf_generate_list(t_forum *forum,t_string *str,int del) {
       /* {{{ serialize flags */
       for(elem=p->flags.elements;elem;elem=elem->next) {
         flag = (t_posting_flag *)elem->data;
-        str_chars_append(str,"Flag: ",6);
+        str_chars_append(str,"Flag:",5);
         str_chars_append(str,flag->name,strlen(flag->name));
         str_char_append(str,'=');
         str_chars_append(str,flag->val,strlen(flag->val));
@@ -1295,6 +1300,9 @@ void cf_generate_list(t_forum *forum,t_string *str,int del) {
         str_chars_append(str,"\nCategory:",10);
         str_chars_append(str,p->category.content,p->category.len);
       }
+
+      str_chars_append(str,"\nRemote-Addr:",13);
+      str_str_append(str,&p->user.ip);
 
       /* date */
       n = snprintf(buff,256,"\nDate:%ld\n",p->date);
@@ -1418,6 +1426,10 @@ void cf_generate_shared_memory(t_forum *forum) {
         val = 0;
         mem_append(&pool,&val,sizeof(val));
       }
+
+      val = p->user.ip.len + 1;
+      mem_append(&pool,&val,sizeof(val));
+      mem_append(&pool,p->user.ip.content,val);
 
       val = p->content.len + 1;
       mem_append(&pool,&val,sizeof(val));

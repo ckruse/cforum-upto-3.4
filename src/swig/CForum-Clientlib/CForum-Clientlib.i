@@ -267,7 +267,7 @@ char *cf_pl_advanced_get_link(const u_char *link,const char *ctid,const char *cm
   tid = str_to_u_int64(ctid);
   mid = str_to_u_int64(cmid);
 
-  return cf_advanced_get_link(link,tid,mid,parameters,strlen(parameters),NULL);
+  return cf_advanced_get_link(link,tid,mid,NULL,1,NULL,parameters,"");
 }
 %}
 char *cf_pl_advanced_get_link(const u_char *link,const char *ctid,const char *cmid,const char *parameters);

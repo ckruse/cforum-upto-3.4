@@ -1,3 +1,19 @@
+2005-03-14 Christian Kruse <ckruse@wwwtech.de>
+	* src/fo_view.c: Now setting the forum base is based on cf_get_link()
+	* src/clientlib.[ch]: Changed behavior and prototype of cf_general_get_link()
+	* src/modules/flt_syntax.c, src/modules/flt_link.c,
+		src/modules/flt_votingvariables.c, src/modules/flt_mailonpost.c: Changed
+		call of cf_general_get_link()
+	* src/modules/flt_admin.c: Changed calls to cf_general_get_link(), now
+		username and IP address will be set to template in admin mode
+	* src/serverlib.c: Fixed some protocol bugs
+	* src/swig/CForum-Clientlib/CForum-Clientlib.i: Changed calling of
+		cf_general_get_link()
+	* src/communication.c: Fixed some protocol bugs
+	* src/fo_post.c: Now the username will be given as flag if poster is a
+		registered user
+	* src/archiver.c: Fixed bug in archiving by bytes
+
 2005-03-13 Christian Kruse <ckruse@wwwtech.de>
 	* src/modules/flt_syntax.c: Added - char to word characters
 	* conf/patterns/pascal.pat: Added pascal syntax highlighting

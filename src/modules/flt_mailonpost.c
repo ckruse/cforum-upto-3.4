@@ -619,11 +619,11 @@ int flt_mailonpost_post_handler(t_cf_hash *head,t_configuration *dc,t_configurat
   uri = cfg_get_first_value(dc,flt_mailonpost_fn,"UPostingURL");
 
   if(ret == DB_NOTFOUND) {
-    link = cf_advanced_get_link(uri->values[0],thread->tid,thread->messages->mid,"mailonpost=yes",14,&len);
+    link = cf_advanced_get_link(uri->values[0],thread->tid,thread->messages->mid,NULL,1,&len,"mailonpost","yes");
     cf_set_variable(tpl,cs,"abolink",link,len,1);
   }
   else {
-    link = cf_advanced_get_link(uri->values[0],thread->tid,thread->messages->mid,"mailonpost=no",14,&len);
+    link = cf_advanced_get_link(uri->values[0],thread->tid,thread->messages->mid,NULL,1,&len,"mailonpost","no");
     cf_set_variable(tpl,cs,"unabolink",link,len,1);
   }
 

@@ -57,7 +57,7 @@ struct sockaddr_un;
 void cf_run_archiver(void) {
   t_thread *t,*oldest_t,*prev = NULL,**to_archive = NULL;
   long size,threadnum,pnum,max_bytes,max_threads,max_posts;
-  int shall_archive = 0,len = 0,ret = FLT_OK,j;
+  int shall_archive = 0,len = 0,ret = FLT_OK,j,mb = 0;
   t_name_value *max_bytes_v, *max_posts_v, *max_threads_v, *forums = cfg_get_first_value(&fo_server_conf,NULL,"Forums");
   t_handler_config *handler;
   t_archive_filter fkt;
@@ -86,6 +86,7 @@ void cf_run_archiver(void) {
       CF_RW_RD(&forum->lock);
       CF_RW_RD(&forum->threads.lock);
 
+      mb            = 0;
       size          = forum->cache.invisible.len;
       t             = forum->threads.list;
       threadnum     = 0;
@@ -119,6 +120,7 @@ void cf_run_archiver(void) {
 
       if(size > max_bytes) {
         shall_archive = 1;
+        mb = 1;
         cf_log(CF_STD,__FILE__,__LINE__,"Archiver: Criterium: max bytes, Values: Config: %ld, Real: %ld\n",max_bytes,size);
       }
       if(pnum > max_posts) {
@@ -172,6 +174,9 @@ void cf_run_archiver(void) {
           to_archive = fo_alloc(to_archive,--len,sizeof(t_thread *),FO_ALLOC_REALLOC);
         }
       }
+
+      /* in max-bytes-type we have to create new lists... THIS SUCKS! */
+      if(mb) cf_generate_cache(forum);
     } while(shall_archive);
 
     /* after archiving, we re-generate the cache */

@@ -161,6 +161,33 @@ int flt_admin_setvars(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc,t_c
 }
 /* }}} */
 
+/* {{{ flt_admin_posting_setvars */
+int flt_admin_posting_setvars(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cl_thread *thread,t_cf_template *tpl) {
+  u_char *UserName = cf_hash_get(GlobalValues,"UserName",8);
+  int ShowInvisible = cf_hash_get(GlobalValues,"ShowInvisible",13) != NULL;
+
+  t_cf_list_element *elem;
+  t_cf_post_flag *flag;
+
+  if(flt_admin_is_admin(UserName)) {
+    cf_tpl_setvalue(tpl,"admin",TPL_VARIABLE_STRING,"1",1);
+    if(ShowInvisible) cf_tpl_setvalue(tpl,"aaf",TPL_VARIABLE_STRING,"1",1);
+
+    cf_tpl_setvalue(tpl,"ip",TPL_VARIABLE_STRING,thread->threadmsg->remote_addr.content,thread->threadmsg->remote_addr.len);
+
+    for(elem=thread->threadmsg->flags.elements;elem;elem=elem->next) {
+      flag = (t_cf_post_flag *)elem->data;
+      if(cf_strcmp(flag->name,"UserName") == 0) {
+        cf_tpl_setvalue(tpl,"uname",TPL_VARIABLE_STRING,flag->val,strlen(flag->val));
+        break;
+      }
+    }
+  }
+
+  return FLT_DECLINE;
+}
+/* }}} */
+
 /* {{{ flt_admin_init */
 int flt_admin_init(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc) {
   u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
@@ -204,18 +231,18 @@ int flt_admin_posthandler(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc
     if(ShowInvisible) {
       cf_tpl_setvalue(&msg->tpl,"aaf",TPL_VARIABLE_STRING,"1",1);
 
-      link = cf_advanced_get_link(link_pattern->values[0],tid,msg->mid,"aaf=1&faa=archive",17,&l);
+      link = cf_advanced_get_link(link_pattern->values[0],tid,msg->mid,NULL,1,&l,"faa","archive");
       cf_tpl_setvalue(&msg->tpl,"archive_link",TPL_VARIABLE_STRING,link,l);
       free(link);
 
       if(msg->invisible == 0) {
-        link = cf_advanced_get_link(link_pattern->values[0],tid,msg->mid,"aaf=1&faa=del",13,&l);
+        link = cf_advanced_get_link(link_pattern->values[0],tid,msg->mid,NULL,1,&l,"faa","del");
         cf_tpl_setvalue(&msg->tpl,"visible",TPL_VARIABLE_STRING,"1",1);
         cf_tpl_setvalue(&msg->tpl,"del_link",TPL_VARIABLE_STRING,link,l);
         free(link);
       }
       else {
-        link = cf_advanced_get_link(link_pattern->values[0],tid,msg->mid,"aaf=1&faa=undel",15,&l);
+        link = cf_advanced_get_link(link_pattern->values[0],tid,msg->mid,NULL,1,&l,"faa","undel");
         cf_tpl_setvalue(&msg->tpl,"undel_link",TPL_VARIABLE_STRING,link,l);
         free(link);
       }
@@ -277,6 +304,7 @@ t_handler_config flt_admin_handlers[] = {
   { INIT_HANDLER,         flt_admin_init },
   { VIEW_INIT_HANDLER,    flt_admin_setvars },
   { VIEW_LIST_HANDLER,    flt_admin_posthandler },
+  { POSTING_HANDLER,      flt_admin_posting_setvars },
   { 0, NULL }
 };
 

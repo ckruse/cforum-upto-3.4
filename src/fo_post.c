@@ -1007,10 +1007,20 @@ int main(int argc,char *argv[],char *env[]) {
         /* {{{ submit posting */
         len = snprintf(buff,256,"SELECT %s\n",forum_name);
         writen(sock,buff,len);
-        if((val = readline(sock,&rl)) == NULL || cf_strncmp(val,"200",3) != 0) {
+        if((val = readline(sock,&rl)) == NULL) {
+          len = snprintf(buff,256,"E_IO_ERR");
+
+          printf("Status: 500 Internal Server Error\015\012\015\012");
+          cf_error_message(buff,NULL);
+          return EXIT_SUCCESS;
+        }
+
+        if(cf_strncmp(val,"200",3) != 0) {
           ret = atoi(val);
-          if(val) free(val);
-          len = snprintf(buff,256,"E_FO_%d",ret);
+          free(val);
+          if(ret) len = snprintf(buff,256,"E_FO_%d",ret);
+          else len = snprintf(buff,256,"E_IO_ERR");
+
           printf("Status: 500 Internal Server Error\015\012\015\012");
           cf_error_message(buff,NULL);
           return EXIT_SUCCESS;
@@ -1026,6 +1036,11 @@ int main(int argc,char *argv[],char *env[]) {
         val = cf_cgi_get(head,"unid");
         str_chars_append(&str1,"Unid: ",6);
         str_chars_append(&str1,val,strlen(val));
+
+        if(UserName) {
+          str_chars_append(&str1,"\nFlag: UserName=",16);
+          str_chars_append(&str1,UserName,strlen(UserName));
+        }
 
         str_chars_append(&str1,"\nAuthor: ",9);
         str_str_append(&str1,&p->author);
@@ -1079,6 +1094,7 @@ int main(int argc,char *argv[],char *env[]) {
         }
 
         if(cf_strncmp(val,"200",3) != 0) {
+          fprintf(stderr,"Forum returned: %s\n",val);
           ret = atoi(val);
           if(val) free(val);
           len = snprintf(buff,256,"E_FO_%d",ret);

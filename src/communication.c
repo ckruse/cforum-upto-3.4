@@ -120,7 +120,7 @@ int cf_get_next_thread_through_sock(int sock,rline_t *tsd,t_cl_thread *thr,const
         chtmp = strstr(line+5,"=");
 
         flag.name = strndup(line+5,chtmp-line-5);
-        flag.val  = strndup(chtmp+1,strlen(chtmp+1)-1);
+        flag.val  = strndup(chtmp+1,strlen(chtmp+1));
 
         cf_list_append(&thr->last->flags,&flag,sizeof(flag));
       }
@@ -138,6 +138,7 @@ int cf_get_next_thread_through_sock(int sock,rline_t *tsd,t_cl_thread *thr,const
       else if(cf_strncmp(line,"EMail:",6) == 0)    str_char_set(&thr->last->email,line+6,tsd->rl_len-7);
       else if(cf_strncmp(line,"Votes-Good:",11) == 0) thr->last->votes_good = strtoul(line+11,NULL,10);
       else if(cf_strncmp(line,"Votes-Bad:",10) == 0)  thr->last->votes_bad = strtoul(line+10,NULL,10);
+      else if(cf_strncmp(line,"Remote-Addr:",12) == 0) str_char_set(&thr->last->remote_addr,line+12,tsd->rl_len-13);
       else if(cf_strncmp(line,"Visible:",8) == 0) {
         thr->last->invisible = line[8] == '0';
         if(thr->last->invisible) thr->msg_len--;
@@ -263,6 +264,13 @@ void *cf_get_next_thread_through_shm(void *shm_ptr,t_cl_thread *thr,const u_char
     }
     /* }}} */
 
+    /* {{{ the remote address */
+    val = *((u_int32_t *)ptr) - 1;
+    ptr += sizeof(u_int32_t);
+    str_char_set(&thr->last->remote_addr,ptr,val);
+    ptr += val + 1;
+    /* }}} */
+
     /* {{{ content */
     /* content length */
     val = *((u_int32_t *)ptr) - 1;
@@ -386,6 +394,7 @@ int cf_get_message_through_sock(int sock,rline_t *tsd,t_cl_thread *thr,const u_c
 
       thr->tid      = tid;
       thr->messages = NULL;
+      thr->ht       = NULL;
       thr->last     = NULL;
 
       if(cf_get_next_thread_through_sock(sock,tsd,thr,tplname) < 0 && *ErrorString) {
@@ -488,6 +497,10 @@ int cf_get_message_through_shm(void *shm_ptr,t_cl_thread *thr,const u_char *tpln
       val = *((u_int32_t *)ptr1);
       ptr1 += sizeof(u_int32_t);
       if(val) ptr1 += val;
+
+      /* remote address */
+      val = *((u_int32_t *)ptr1);
+      ptr1 += sizeof(u_int32_t) + val;
 
       /* length of the content + content */
       val = *((u_int32_t *)ptr1);
