@@ -269,7 +269,7 @@ static u_char *parse_message(t_cl_thread *thread,u_char *start,t_array *stack,t_
 
             array_pop(stack);
 
-            if(retval == NULL) {
+            if(retval == NULL || d_content.len == 0) {
               /* directive is invalid, get defined state */
               free(directive);
               free(parameter);
@@ -348,8 +348,8 @@ static u_char *parse_message(t_cl_thread *thread,u_char *start,t_array *stack,t_
             retval = parse_message(thread,(u_char *)ptr1+1,stack,&d_content,cite ? &d_cite : NULL,qchars,qclen,utf8,xml,max_sig_lines,show_sig,linebrk,sig,quotemode,line);
             array_pop(stack);
 
-            if(retval == NULL) {
-              /* directive is invalid, get defined state */
+            /* directive is invalid (e.g. no content, wrong nesting), get defined state */
+            if(retval == NULL || d_content.len == 0) {
               free(directive);
               str_cleanup(&d_content);
               str_cleanup(&d_cite);

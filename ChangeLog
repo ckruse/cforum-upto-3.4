@@ -5,6 +5,13 @@
 		now saved on the server
 	* conf/modules.de.xml: Added OcDbFile directive (invisible)
 	* src/perl/Plugins/Pathes.pm: Added OcDbFile directive
+	* src/modules/flt_directives.c: Fixed #697
+	* conf/modconf.dtd: Added for attribute
+	* conf/fo_default.conf.in: Changed default URIs
+	* src/fo_view.c: Fixed #698
+	* src/perl/ForumUtils.pm: Added is_admin() function
+	* src/htmllib.c: Fixed bug for empty directives
+	* scripts/fo_userconf.in: Fixed #602
 
 2005-04-02 Christian Kruse <ckruse@wwwtech.de>
 	* src/fo_view.c: Removed print_thread_structure()

@@ -45,11 +45,24 @@ use XML::GDOME;
 use HTML::Entities;
 use CForum::Template;
 
-use Storable qw(dclone);
+use Storable qw/dclone/;
 use POSIX qw/mktime/;
 use File::Path;
 
-use ForumUtils qw/read_configuration get_node_data get_template get_error recode uniquify_params get_config_files get_user_config_file create_directory_structure get_conf_val fatal/;
+use ForumUtils qw(
+  read_configuration
+  get_node_data
+  get_template
+  get_error recode
+  uniquify_params
+  get_config_files
+  get_user_config_file
+  create_directory_structure
+  get_conf_val
+  fatal
+  is_admin
+);
+
 use CForum::Validator qw/is_valid_http_link is_valid_link is_valid_mailaddress/;
 
 # }}}
@@ -226,81 +239,95 @@ sub generate_edit_output {
 
   my $err              = shift;
 
+  my $is_admin         = is_admin($fo_default_conf,$UserName) || 0;
+
   my $page             = $cgi->param('p');
   my $doit             = 1;
 
   my $tpl              = new CForum::Template(get_template($fo_default_conf,$user_config,get_conf_val($fo_userconf_conf,$Forum,'Edit')));
   my $txt              = '';
 
-  my $doc   = XML::GDOME->createDocFromURI(sprintf(get_conf_val($fo_userconf_conf,$Forum,'ModuleConfig'),get_conf_val($fo_default_conf,$Forum,'Language'))) or fatal($cgi,$fo_default_conf,$user_config,sprintf(get_error($fo_default_conf,'XML_PARSE'),"$!"),get_conf_val($fo_userconf_conf,$Forum,'FatalTemplate'));
+  my $doc              = XML::GDOME->createDocFromURI(sprintf(get_conf_val($fo_userconf_conf,$Forum,'ModuleConfig'),get_conf_val($fo_default_conf,$Forum,'Language'))) or fatal($cgi,$fo_default_conf,$user_config,sprintf(get_error($fo_default_conf,'XML_PARSE'),"$!"),get_conf_val($fo_userconf_conf,$Forum,'FatalTemplate'));
 
+  # {{{ page is given
   if($page) {
     # hmpf, findnodes doesn't work properly for /config/page@id="$page", nor for /config/page/@id="$page", neither
     # for both versions without quotations
     my ($node) = grep { $_->getAttribute('id') eq $page } $doc->findnodes('/config/page');
 
     if($node) {
-      # Ooookey, we don't want to bother the user
-      $doit = 0;
+      my $for = $node->getAttribute('for') || '';
 
-      my $i        = 0;
-      my $ud       = 0;
-      my $setting  = new CForum::Template(get_template($fo_default_conf,$user_config,get_conf_val($fo_userconf_conf,$Forum,'EditEntry')));
-      my $section  = new CForum::Template(get_template($fo_default_conf,$user_config,get_conf_val($fo_userconf_conf,$Forum,'SectEntry')));
-      my $updown   = new CForum::Template(get_template($fo_default_conf,$user_config,get_conf_val($fo_userconf_conf,$Forum,'UpDown')));
-      my @sections = $node->findnodes('./section');
-      
-      my $pageinfo = new CForum::Template::t_cf_tpl_variable(3);
-      $pageinfo->addvalue($page);
-      $pageinfo->addvalue($node->getAttribute('title'));
-      $tpl->setvar('current_page',$pageinfo);
-      
-      my $sectinfos = new CForum::Template::t_cf_tpl_variable(3);
-      foreach my $sect (@sections) {
-        my @nodes  = $sect->findnodes('./directive');
-        my $tmptxt = '';
-        ++$i;
+      if($for eq 'admin' && $is_admin || $for ne 'admin') {
+        # Ooookey, we don't want to bother the user
+        $doit = 0;
 
-        if($ud) {
-          $txt .= $updown->parseToMem;
-          $ud = 0;
-        }
-        
-        my $sectinfo = new CForum::Template::t_cf_tpl_variable(3);
-        $sectinfo->addvalue('a'.$i);
-        $sectinfo->addvalue($sect->getAttribute('name'));
-        $sectinfos->add($sectinfo);
+        my $i        = 0;
+        my $ud       = 0;
+        my $setting  = new CForum::Template(get_template($fo_default_conf,$user_config,get_conf_val($fo_userconf_conf,$Forum,'EditEntry')));
+        my $section  = new CForum::Template(get_template($fo_default_conf,$user_config,get_conf_val($fo_userconf_conf,$Forum,'SectEntry')));
+        my $updown   = new CForum::Template(get_template($fo_default_conf,$user_config,get_conf_val($fo_userconf_conf,$Forum,'UpDown')));
+        my @sections = $node->findnodes('./section');
 
-        foreach my $directive (@nodes) {
-          my $dname     = $directive->getAttribute('name');
-          my @arguments = $directive->getElementsByTagName('argument');
-          my $i         = 0;
+        my $pageinfo = new CForum::Template::t_cf_tpl_variable(3);
+        $pageinfo->addvalue($page);
+        $pageinfo->addvalue($node->getAttribute('title'));
+        $tpl->setvar('current_page',$pageinfo);
 
-          foreach my $arg (@arguments) {
-            my $pname = $arg->getAttribute('paramname');
-            my ($question,$arg) = htmlize($dname,$arg,$cgi,$user_config->{global}->{$dname}->[0]->[$i++],$fo_default_conf,$fo_view_conf,$fo_userconf_conf,$user_config);
+        my $sectinfos = new CForum::Template::t_cf_tpl_variable(3);
+        foreach my $sect (@sections) {
+          my $for = $sect->getAttribute('for') || '';
+          next if $for eq 'admin' && !$is_admin;
 
-            $setting->setvalue('empty','no');
-            $setting->setvalue('formentry',$arg);
-            $setting->setvalue('question',$question);
-            $tmptxt .= $setting->parseToMem;
+          my @nodes  = $sect->findnodes('./directive');
+          my $tmptxt = '';
+          ++$i;
 
-            $setting->setvalue('empty','yes');
-            $tmptxt .= $setting->parseToMem;
+          if($ud) {
+            $txt .= $updown->parseToMem;
+            $ud = 0;
           }
+
+          my $sectinfo = new CForum::Template::t_cf_tpl_variable(3);
+          $sectinfo->addvalue('a'.$i);
+          $sectinfo->addvalue($sect->getAttribute('name'));
+          $sectinfos->add($sectinfo);
+
+          foreach my $directive (@nodes) {
+            my $dname     = $directive->getAttribute('name');
+            my @arguments = $directive->getElementsByTagName('argument');
+            my $i         = 0;
+            my $for       = $directive->getAttribute('for') || '';
+
+            next if $for eq 'admin' && !$is_admin;
+
+            foreach my $arg (@arguments) {
+              my $pname = $arg->getAttribute('paramname');
+              my ($question,$arg) = htmlize($dname,$arg,$cgi,$user_config->{global}->{$dname}->[0]->[$i++],$fo_default_conf,$fo_view_conf,$fo_userconf_conf,$user_config);
+
+              $setting->setvalue('empty','no');
+              $setting->setvalue('formentry',$arg);
+              $setting->setvalue('question',$question);
+              $tmptxt .= $setting->parseToMem;
+
+              $setting->setvalue('empty','yes');
+              $tmptxt .= $setting->parseToMem;
+            }
+          }
+
+          $section->setvalue('title',recode($fo_default_conf,$sect->getAttribute('name')));
+          $section->setvalue('anchor','a'.$i);
+          $section->setvalue('content',$tmptxt);
+
+          $txt .= $section->parseToMem;
+          $ud = 1;
         }
 
-        $section->setvalue('title',recode($fo_default_conf,$sect->getAttribute('name')));
-        $section->setvalue('anchor','a'.$i);
-        $section->setvalue('content',$tmptxt);
-
-        $txt .= $section->parseToMem;
-        $ud = 1;
+        $tpl->setvar('sections',$sectinfos);
       }
-      
-      $tpl->setvar('sections',$sectinfos);
     }
   }
+  # }}}
 
   if($doit) {
     my @nodes = $doc->findnodes('/config/page');
@@ -308,6 +335,9 @@ sub generate_edit_output {
     my $pagetpl = new CForum::Template(get_template($fo_default_conf,$user_config,get_conf_val($fo_userconf_conf,$Forum,'PageEntry')));
 
     foreach my $page (@nodes) {
+      my $for = $page->getAttribute('for') || '';
+      next if $for eq 'admin' && !$is_admin;
+
       $pagetpl->setvalue('title' => recode($fo_default_conf,$page->getAttribute('title')));
       $pagetpl->setvalue('id' => $page->getAttribute('id'));
 
@@ -440,6 +470,7 @@ elsif($action eq 'save') {
   my $own_ucfg = dclone($user_config);
 
   my $page  = $cgi->param('p');
+  my $is_admin = is_admin($fo_default_conf,$UserName);
 
   unless($page) {
     generate_edit_output($cgi,$fo_default_conf,$fo_view_conf,$fo_userconf_conf,$user_config);
@@ -460,6 +491,12 @@ elsif($action eq 'save') {
     my $dname     = $directive->getAttribute('name');
     my @arguments = $directive->getElementsByTagName('argument');
     my $i         = 0;
+
+    my $for = $directive->getAttribute('for') || '';
+    if($for eq 'admin' && !$is_admin) {
+      delete $own_ucfg->{global}->{$dname} if exists $own_ucfg->{global}->{$dname};
+      next;
+    }
 
     foreach my $arg (@arguments) {
       my $pname    = $arg->getAttribute('paramname');

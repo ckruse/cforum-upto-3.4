@@ -16,11 +16,13 @@
   <!ATTLIST page
               title  CDATA   #REQUIRED
               id     NMTOKEN #REQUIRED
+              for    CDATA   #IMPLIED
             >                                                       <!-- each page has a name -->
 
     <!ELEMENT section (directive+)>                                 <!-- each section has directives -->
     <!ATTLIST section
                 name  CDATA  #REQUIRED
+                for   CDATA  #REQUIRED
               >                                                     <!-- each section has a name -->
 
       <!ELEMENT directive (argument*)>                              <!-- each directive has a name and arguments -->
@@ -28,6 +30,7 @@
                   name       CDATA  #REQUIRED
                   arguments  CDATA  #IMPLIED
                   invisible  CDATA  #IMPLIED
+                  for        CDATA  #IMPLIED
                 >                                                   <!-- each directive has a name and a number of arguments -->
 
 

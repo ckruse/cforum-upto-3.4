@@ -729,8 +729,8 @@ int flt_directives_rewrite(t_cf_hash *head,t_configuration *dc,t_configuration *
 }
 /* }}} */
 
-int flt_directives_suial_set(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cl_thread *thread,t_cf_template *tpl) {
-  if(flt_directives_suial == 0) cf_tpl_setvalue(tpl,"showimage",TPL_VARIABLE_INT,1);
+int flt_directives_suial_set(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cl_thread *thread,t_message *msg,t_cf_tpl_variable *hash) {
+  if(flt_directives_suial == 0) cf_tpl_hashvar_setvalue(hash,"showimage",TPL_VARIABLE_INT,1);
   return FLT_OK;
 }
 
@@ -974,9 +974,9 @@ t_conf_opt flt_directives_config[] = {
 };
 
 t_handler_config flt_directives_handlers[] = {
-  { POSTING_HANDLER,  flt_directives_suial_set },
-  { INIT_HANDLER,     flt_directives_init },
-  { NEW_POST_HANDLER, flt_directives_rewrite },
+  { PERPOST_VAR_HANDLER, flt_directives_suial_set },
+  { INIT_HANDLER,        flt_directives_init },
+  { NEW_POST_HANDLER,    flt_directives_rewrite },
   { 0, NULL }
 };
 

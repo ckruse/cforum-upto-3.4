@@ -21,12 +21,12 @@ Forum FORUM1 {
 
  BaseURL "/"
  PostingURL "?t=%t&m=%m"
- PostingURL_List "#m%m"
- PostingURL_Nested "#m%m"
+ PostingURL_List "?t=%t#m%m"
+ PostingURL_Nested "?t=%t#m%m"
  UBaseURL "/my/"
  UPostingURL "/my/?t=%t&m=%m"
- UPostingURL_List "#m%m"
- UPostingURL_Nested "#m%m"
+ UPostingURL_List "?t=%t#m%m"
+ UPostingURL_Nested "?t=%t#m%m"
 
  VoteURL "/cgi-bin/user/fo_vote"
 

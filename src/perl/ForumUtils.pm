@@ -33,6 +33,7 @@ BEGIN {
     get_user_config_file
     get_conf_val
     create_directory_structure
+    is_admin
   );
 }
 
@@ -478,6 +479,20 @@ sub fatal {
   print $tpl->parseToMem;
 
   exit;
+}
+# }}}
+
+# {{{ is_admin
+sub is_admin {
+  my $dc    = shift;
+  my $uname = shift;
+
+  if(my $val = get_conf_val($dc,$main::Forum,"Administrators")) {
+    my %admins = map { $_ => 1 } split /,/,$val;
+    return $admins{$uname};
+  }
+
+  return;
 }
 # }}}
 
