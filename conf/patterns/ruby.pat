@@ -13,6 +13,7 @@ block "default"
   onstring "'" "sqstring" "string"
   onstring "`" "exec" "string"
 
+  ostring "#!" "onelinecomment" "shebang"
   onstring "#" "onelinecomment" "comment"
 
   onstringlist "symbols" highlight "symbol"

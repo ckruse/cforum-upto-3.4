@@ -949,7 +949,6 @@ int flt_syntax_doit(flt_syntax_pattern_file_t *file,flt_syntax_block_t *block,u_
           tmpchar = flt_syntax_get_token(ptr);
 
           if(tmpchar && (tmpstr = array_bsearch(&tmplist->list,tmpchar,flt_syntax_my_scmp)) != NULL) {
-            free(tmpchar);
             matched = 1;
 
             str = array_element_at(&statement->args,1);
@@ -960,7 +959,7 @@ int flt_syntax_doit(flt_syntax_pattern_file_t *file,flt_syntax_block_t *block,u_
               str_str_append(cnt,str);
               str_chars_append(cnt,"\">",2);
 
-              str_chars_append(cnt,tmpstr->content,tmpstr->len);
+              str_chars_append(cnt,tmpchar,tmpstr->len);
               str_chars_append(cnt,"</span>",7);
 
               ptr += tmpstr->len - 1;
@@ -971,12 +970,12 @@ int flt_syntax_doit(flt_syntax_pattern_file_t *file,flt_syntax_block_t *block,u_
 
               str = array_element_at(&statement->args,0);
               *pos = ptr + str->len;
-              str_str_append(cnt,str);
+              str_chars_append(cnt,tmpchar,tmpstr->len);
               return 0;
             }
             else if(cf_strcmp(str->content,"stay") == 0) {
               str = array_element_at(&statement->args,0);
-              str_str_append(cnt,tmpstr);
+              str_chars_append(cnt,tmpchar,tmpstr->len);
               ptr += tmpstr->len - 1;
             }
             else {
@@ -992,7 +991,9 @@ int flt_syntax_doit(flt_syntax_pattern_file_t *file,flt_syntax_block_t *block,u_
                 return 1;
               }
 
-              str_chars_append(cnt,tmpstr->content,tmpstr->len);
+              str_chars_append(cnt,tmpchar,tmpstr->len);
+              free(tmpchar);
+
               tmpchar = ptr + tmpstr->len;
               priv_pops = 0;
               if(flt_syntax_doit(file,tmpblock,text,len,cnt,&tmpchar,NULL,xhtml,&priv_pops) != 0) return 1;
