@@ -62,8 +62,8 @@ int flt_deleted_execute(t_cf_hash *head,t_configuration *dc,t_configuration *vc,
   u_char buff[256];
   u_char one[] = "1";
 
-  if(mode == 0) {
-    if(UserName) {
+  if(UserName) {
+    if(mode == 0) {
       url = cfg_get_first_value(dc,"UBaseURL");
 
       if(Cfg.DeletedFile) {
@@ -98,11 +98,16 @@ int flt_deleted_execute(t_cf_hash *head,t_configuration *dc,t_configuration *vc,
         }
       }
     }
+    else {
+      len = snprintf(buff,150,"%s?a=d&t=%lld",url->values[0],thread->tid);
+      tpl_cf_setvar(&thread->messages->tpl,"dellink",buff,len,1);
+    }
 
     return FLT_OK;
   }
 
-  return FLT_DECLINE;
+
+  return FLT_OK;
 }
 /* }}} */
 

@@ -1,6 +1,7 @@
 2004-10-13 Christian Kruse <ckruse@wwwtech.de>
 	* cgi-shared/ForumUtils.pm: Fixed another bug in linebreak and quoting
 		handling
+	* src/modules/flt_deleted.c: Implemented deletion link in posting view
 
 2004-10-13 Christian Kruse <ckruse@wwwtech.de>
 	* cgi-shared/ForumUtils.pm: Fixed several bugs in message_field() (it's time
