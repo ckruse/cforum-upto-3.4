@@ -115,7 +115,7 @@ int is_valid_hostname(const u_char *hostname) {
   }
 
   /* ok, all characters are alnum and ascii or dots. Hostname is valid */
-  return count == 0 ? -1 : 0;
+  return 0;
 }
 /* }}} */
 
