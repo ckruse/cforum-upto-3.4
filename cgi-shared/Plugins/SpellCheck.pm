@@ -127,7 +127,7 @@ sub execute {
     $fragment = message_field(from_utf8(-string => $fragment, -charset => $fo_default_conf->{ExternCharset}->[0]->[0]),$cgi->param('qchar'),$fo_default_conf);
     $html_txt .= $fragment;
     $cpos = $spelling_error->{'offset'} + $cwl - 1;
-    $html_txt .= '<select name="spelling_'.$spelling_error->{'offset'}.'_'.$cwl.'">';
+    $html_txt .= '<select name="spelling_'.($spelling_error->{'offset'}-1).'_'.$cwl.'">';
     $html_txt .= '<option>'.from_utf8(-string => $spelling_error->{'original'}, -charset => $fo_default_conf->{ExternCharset}->[0]->[0]).'</option>';
     if (defined $spelling_error->{'misses'}) {
       foreach (@{$spelling_error->{'misses'}}) {
