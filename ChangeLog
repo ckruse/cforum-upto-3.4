@@ -13,6 +13,7 @@
 	* src/modules/flt_xmlarc.c: Fixed bug #606
 	* src/entitytable.h: Added sorted table for named entities
 	* src/htmllib.c: Fixed call to htmlentities_decode()
+	* scripts/fo_userconf.in: Fixed warning for use of uninitialized value
 
 2005-03-17 Christian Kruse <ckruse@wwwtech.de>
 	* src/modules/flt_gummizelle.c: Implemented the gummizelle

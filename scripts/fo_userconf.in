@@ -111,7 +111,10 @@ sub htmlize {
 
   my ($fo_default_conf,$fo_view_conf,$fo_userconf_conf,$user_config) = @_;
 
-  my $xhtml    = get_conf_val($fo_default_conf,$Forum,'XHMLMode') eq 'yes';
+  my $xhtml    = get_conf_val($fo_default_conf,$Forum,'XHMLMode');
+
+  if($xhtml) $xhtml = $xhtml eq 'yes';
+  else $xhtml = 0;
 
   my $default  = '';
   my $fname    = $arg->getAttribute('paramname');
