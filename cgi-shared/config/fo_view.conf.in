@@ -32,6 +32,8 @@
 </Filters>
 
 <ForumBehavior>
+ XHTMLMode "yes"
+
  ThreadsOpenByDefault    "yes"
  DoQuote                 "yes"
  QuotingChars            "»» "
@@ -39,7 +41,7 @@
 # VIPList                 "Cheatah,Stefan Einspender,Stefan Muenz"
 # VIPColors               "#FF00FF" "#0000FF"
  ShowForumAsFrameset     "no"
- ReadMode                "normal" # normal, table
+ ReadMode                "thread" # thread, threadlist, list
 # BaseTarget              "view"
 
  ParamType               "Q" # Q (query string) or P (path info)

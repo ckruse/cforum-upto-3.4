@@ -84,6 +84,7 @@ sub show_register_form {
   $tpl->setVar($_,recode($fo_default_conf,$cgi->param($_))) foreach $cgi->param;
 
   print $cgi->header(-type => 'text/html; charset='.$fo_default_conf->{ExternCharset}->[0]->[0]),$tpl->parseToMem;
+  exit;
 }
 
 # }}}

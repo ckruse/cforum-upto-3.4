@@ -7,9 +7,9 @@
 
 /* {{{ Initial comments */
 /*
- * $LastChangedDate: 2004-06-09 15:55:53 +0200 (Wed, 09 Jun 2004) $
- * $LastChangedRevision: 106 $
- * $LastChangedBy: cseiler $
+ * $LastChangedDate$
+ * $LastChangedRevision$
+ * $LastChangedBy$
  *
  */
 /* }}} */

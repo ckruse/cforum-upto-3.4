@@ -330,6 +330,13 @@ t_message *next_subtree(t_message *msg);
 t_message *prev_subtree(t_message *msg);
 
 /**
+ * This function searches for the parent message of the given posting
+ * \param tmsg The message
+ * \return NULL if there is no parent posting, otherwise a pointer to the parent posting
+ */
+t_message *parent_message(t_message *tmsg);
+
+/**
  * This function generates a template name
  * \param buff The buffer in which the name should be saved
  * \param len The maximal length of the buffer

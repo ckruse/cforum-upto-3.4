@@ -373,4 +373,40 @@ size_t split(const u_char *big,const u_char *small,u_char ***ulist) {
 }
 /* }}} */
 
+/* {{{ nsplit */
+size_t nsplit(const u_char *big,const u_char *small,u_char ***ulist,size_t max) {
+  u_char **list  = fo_alloc(NULL,PRERESERVE,sizeof(*list),FO_ALLOC_MALLOC);
+  u_char  *pos   = (u_char *)big,*pre = (u_char *)big;
+  size_t len   = 0;
+  size_t reser = PRERESERVE;
+  size_t slen  = strlen(small);
+
+  while((pos = strstr(pos,small)) != NULL) {
+    *pos = '\0';
+
+    list[len++] = strdup(pre);
+    if(len + 1 == max) break;
+
+    if(len >= reser) {
+      reser += PRERESERVE;
+      list = fo_alloc(list,reser,sizeof(*list),FO_ALLOC_REALLOC);
+    }
+
+    pre    = pos+slen;
+    *pos++ = *small;
+  }
+
+  if(len + 1 == max) {
+    if(len >= reser) list = fo_alloc(list,++reser,sizeof(*list),FO_ALLOC_REALLOC);
+    list[len++] = strdup(pre);
+  }
+
+  list   = fo_alloc(list,len,sizeof(*list),FO_ALLOC_REALLOC);
+  *ulist = list;
+
+  return len;
+}
+/* }}} */
+
+
 /* eof */

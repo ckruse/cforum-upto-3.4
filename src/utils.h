@@ -192,6 +192,16 @@ int str_equal_chars(const t_string *str1,const u_char *str2, size_t len);
 size_t split(const u_char *big,const u_char *small,u_char ***ulist);
 
 /**
+ * Splits a string into a list of maximal max elements
+ * \param bug The string to split
+ * \param small The string to search
+ * \param ulist A reference to a u_char ** pointer
+ * \return The length of the list
+ * \attention You have to free every element of the list _and_ the list itself!
+ */
+size_t nsplit(const u_char *big,const u_char *small,u_char ***ulist,size_t max);
+
+/**
  * This function tries to convert a date string in the form of "1.1.1982 12:30:40" into a unix timestamp.
  * The time in the date is optional.
  * \param datestr The date string

@@ -167,7 +167,7 @@ sub htmlize {
   }
 
   if($type eq 'TEXT') {
-    $element = '<input type="text" name="'.$fname.'" value="'.recode($fo_default_conf,$val).'">';
+    $element = '<input type="text" name="'.$fname.'" value="'.recode($fo_default_conf,$val||'').'">';
   }
   elsif($type eq 'RADIO') {
     foreach my $v (@fvals) {

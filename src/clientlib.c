@@ -511,6 +511,18 @@ t_message *prev_subtree(t_message *msg) {
 }
 /* }}} */
 
+/* {{{ parent_message */
+t_message *parent_message(t_message *tmsg) {
+  t_message *msg = NULL;
+
+  for(msg=tmsg;msg;msg=msg->prev) {
+    if(msg->level == tmsg->level - 1) return msg;
+  }
+
+  return NULL;
+}
+/* }}} */
+
 /* {{{ cleanup_struct
  * Returns: nothing
  * Parameters:

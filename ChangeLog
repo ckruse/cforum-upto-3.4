@@ -1,3 +1,29 @@
+2004-08-13 Christian Kruse <ckruse@wwwtech.de>
+	* src/fo_view.c: Changed behavior of the fo_view program: now it sets the
+		standard variables itself. It provides »ReadMode« now.
+	* src/clientlib.[ch]: Added parent_message() function
+	* src/utils.h, src/stringutils.c: Added nsplit() function
+	* src/defines.h: Added handler hooks for directive and content filters
+	* src/configparser.[ch]: Added another configuration flag (CFG_OPT_UNIQUE),
+		added several configuration flags
+	* src/htmllib.[ch]: Added html library, function for handling threads and
+		postings in HTML context
+	* src/modules/flt_voting.c, src/modules/flt_handle404.c,
+		src/modules/flt_scoring.lex, scripts/msgs2db.pl.in, src/modules/flt_motd.c,
+		src/modules/flt_preview.c, src/fo_vote.c: set svn:keywords property
+	* src/modules/flt_posting.c: Changed behavior, now it follows the new API for
+		directives and content filters
+	* src/modules/Makefile.am: Added libcfvalidate.la for flt_posting
+	* src/Makefile.am: Added libcfhtml.la for fo_view
+
+2004-08-12 Christian Kruse <ckruse@wwwtech.de>
+	* src/modules/flt_tipoftheday.c: Useless changes, thought I had to fix a bug
+		but there wasn't one at all
+
+2004-08-10 Christian Kruse <ckruse@wwwtech.de>
+	* cgi-bin/fo_usermanagement.in: Fixed a bug, forgot exit() call
+	* cgi-bin/fo_userconf.in: Fixed a warning bug ($val||'')
+
 2004-08-09 Christian Seiler <self@christian-seiler.de>
 	* cgi-shared/Plugins/SpellCheck.pm: Added 'SpellCheckerPath' config option,
 		fixed offset bug due to new version of ispell.

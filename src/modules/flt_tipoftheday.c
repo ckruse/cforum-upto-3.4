@@ -42,7 +42,7 @@ int flt_tipoftheday_execute(t_cf_hash *cgi,t_configuration *dc,t_configuration *
   FILE *fd;
   u_char *line = NULL;
   ssize_t linelen;
-  size_t bufflen;
+  size_t bufflen = 0;
   u_int32_t num,offset;
   int chosen;
   t_name_value *cs;

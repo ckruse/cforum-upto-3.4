@@ -46,9 +46,10 @@ typedef int (*t_take)(t_configfile *cfile,t_conf_opt *entry,u_char **args,int le
  */
 typedef int (*t_take_default)(t_configfile *cfile,u_char *name,u_char **args,int len);
 
-#define CFG_OPT_NEEDED  1 /**< directive _must_ exist */
-#define CFG_OPT_CONFIG  2 /**< directive may exist in fo_*.conf */
-#define CFG_OPT_USER    4 /**< directive may exist in user config */
+#define CFG_OPT_NEEDED  0x1 /**< directive _must_ exist */
+#define CFG_OPT_CONFIG  0x2 /**< directive may exist in fo_*.conf */
+#define CFG_OPT_USER    0x4 /**< directive may exist in user config */
+#define CFG_OPT_UNIQUE  0x8 /**< directive is unique, not multiple */
 
 #define CFG_MODE_CONFIG CFG_OPT_CONFIG /**< We are in configuration mode */
 #define CFG_MODE_USER   CFG_OPT_USER   /**< We are in user configuration mode */

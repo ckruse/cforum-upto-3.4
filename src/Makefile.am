@@ -21,7 +21,8 @@ pkglib_LTLIBRARIES= \
   libserverlib.la \
   libcfclientlib.la \
   libcfreadline.la \
-  libcfvalidate.la
+  libcfvalidate.la \
+  libcfhtml.la
 
 libcfreadline_la_SOURCES=readline.c
 libcfreadline_la_LDFLAGS=-export-dynamic -avoid-version
@@ -53,6 +54,10 @@ libcfvalidate_la_SOURCES=validate.c
 libcfvalidate_la_LIBADD=libcfutils.la $(IDN)
 libcfvalidate_la_LDFLAGS=-export-dynamic -avoid-version
 
+libcfhtml_la_SOURCES=htmllib.c
+libcfhtml_la_LIBADD=libcfutils.la libcfcharconvert.la libcfclientlib.la
+libcfhtml_la_LDFLAGS=-export-dynamic -avoid-version
+
 libcfclientlib_la_SOURCES=clientlib.c shm_locking.c semaphores.c
 libcfclientlib_la_LIBADD=libcfutils.la libcfreadline.la libcfcharconvert.la libcftemplate.la $(BDB_LIB)
 libcfclientlib_la_LDFLAGS=-export-dynamic -avoid-version
@@ -62,7 +67,7 @@ libserverlib_la_LIBADD=libcfhashlib.la libcfutils.la libcfreadline.la $(GDOME_LI
 libserverlib_la_LDFLAGS=-export-dynamic -avoid-version
 
 fo_view_SOURCES=fo_view.c
-fo_view_LDADD=libcfcharconvert.la libcfutils.la libcfcgi.la libcftemplate.la libconfigparser.la libcfclientlib.la
+fo_view_LDADD=libcfcharconvert.la libcfutils.la libcfcgi.la libcftemplate.la libconfigparser.la libcfclientlib.la libcfhtml.la
 fo_view_LDFLAGS=-export-dynamic
 
 fo_post_SOURCES=fo_post.c

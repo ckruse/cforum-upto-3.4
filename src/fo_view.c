@@ -167,7 +167,7 @@ void send_posting(t_cf_hash *head,void *shm_ptr,u_int64_t tid,u_int64_t mid) {
   #ifndef CF_SHARED_MEM
   rline_t tsd;
   #endif
-  t_name_value *fo_thread_tpl  = cfg_get_first_value(&fo_view_conf,"TemplateForumThread");
+  t_name_value *fo_thread_tpl;
   t_name_value *fo_posting_tpl = cfg_get_first_value(&fo_view_conf,"TemplatePosting");
   t_cf_template tpl;
   u_char fo_thread_tplname[256],fo_posting_tplname[256];
@@ -176,8 +176,21 @@ void send_posting(t_cf_hash *head,void *shm_ptr,u_int64_t tid,u_int64_t mid) {
   int del = cf_hash_get(GlobalValues,"ShowInvisible",13) == NULL ? CF_KILL_DELETED : CF_KEEP_DELETED;
   t_name_value *cs = cfg_get_first_value(&fo_default_conf,"ExternCharset");
   u_char *UserName = cf_hash_get(GlobalValues,"UserName",8);
-  t_name_value *fbase     = NULL;
+  t_name_value *rm = cfg_get_first_value(&fo_view_conf,"ReadMode");
 
+  /* user definable variables */
+  t_name_value *fbase     = NULL;
+  t_name_value *name      = cfg_get_first_value(&fo_view_conf,"Name");
+  t_name_value *email     = cfg_get_first_value(&fo_view_conf,"EMail");
+  t_name_value *hpurl     = cfg_get_first_value(&fo_view_conf,"HomepageUrl");
+  t_name_value *imgurl    = cfg_get_first_value(&fo_view_conf,"ImageUrl");
+
+  if(cf_strcmp(rm->values[0],"thread") == 0)          fo_thread_tpl = cfg_get_first_value(&fo_view_conf,"TemplateForumThread");
+  else if(cf_strcmp(rm->values[0],"threadlist") == 0) fo_thread_tpl = cfg_get_first_value(&fo_view_conf,"TemplateForumThreadList");
+  else if(cf_strcmp(rm->values[0],"list") == 0)       fo_thread_tpl = cfg_get_first_value(&fo_view_conf,"TemplateForumList");
+
+
+  /* {{{ init and get message from server */
   #ifndef CF_SHARED_MEM
   memset(&tsd,0,sizeof(tsd));
   #endif
@@ -195,16 +208,6 @@ void send_posting(t_cf_hash *head,void *shm_ptr,u_int64_t tid,u_int64_t mid) {
     return;
   }
   
-  UserName = cf_hash_get(GlobalValues,"UserName",8);
-  if(UserName) {
-    fbase     = cfg_get_first_value(&fo_default_conf,"UBaseURL");
-  }
-  else {
-    fbase     = cfg_get_first_value(&fo_default_conf,"BaseURL");
-  }
-
-  cf_set_variable(&tpl,cs,"forumbase",fbase->values[0],strlen(fbase->values[0]),1);
-
   #ifndef CF_SHARED_MEM
   if(cf_get_message_through_sock(sock,&tsd,&thread,fo_thread_tplname,tid,mid,del) == -1) {
   #else
@@ -222,12 +225,29 @@ void send_posting(t_cf_hash *head,void *shm_ptr,u_int64_t tid,u_int64_t mid) {
     }
     return;
   }
+  /* }}} */
+
+  /* {{{ set standard variables */
+  tpl_cf_setvar(&tpl,"charset",cs->values[0],strlen(cs->values[0]),0);
+
+  UserName = cf_hash_get(GlobalValues,"UserName",8);
+  if(UserName) fbase = cfg_get_first_value(&fo_default_conf,"UBaseURL");
+  else         fbase = cfg_get_first_value(&fo_default_conf,"BaseURL");
+
+  cf_set_variable(&tpl,cs,"forumbase",fbase->values[0],strlen(fbase->values[0]),1);
+
+  /* user values */
+  if(name && *name->values[0]) cf_set_variable(&tpl,cs,"aname",name->values[0],strlen(name->values[0]),1);
+  if(email && *email->values[0]) cf_set_variable(&tpl,cs,"aemail",email->values[0],strlen(email->values[0]),1);
+  if(hpurl && *hpurl->values[0]) cf_set_variable(&tpl,cs,"aurl",hpurl->values[0],strlen(hpurl->values[0]),1);
+  if(imgurl && *imgurl->values[0]) cf_set_variable(&tpl,cs,"aimg",imgurl->values[0],strlen(imgurl->values[0]),1);
 
   len = snprintf(buff,128,"%d",thread.msg_len);
   tpl_cf_setvar(&thread.messages->tpl,"msgnum",buff,len,0);
 
   len = snprintf(buff,128,"%d",thread.msg_len-1);
   tpl_cf_setvar(&thread.messages->tpl,"answers",buff,len,0);
+  /* }}} */
 
   printf("Content-Type: text/html; charset=%s\015\012\015\012",cs?cs->values[0]?cs->values[0]:(u_char *)"UTF-8":(u_char *)"UTF-8");
 

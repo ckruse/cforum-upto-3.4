@@ -107,9 +107,15 @@ t_conf_opt default_options[] = {
 /* {{{ forum client config options */
 t_conf_opt fo_view_options[] = {
   { "<ForumBehavior>", NULL, 0, NULL },
-  { "ShowFlags",                  handle_command,   CFG_OPT_CONFIG,                &fo_view_conf },
-  { "ReadMode",                   handle_command,   CFG_OPT_CONFIG,                &fo_view_conf },
-  { "ParamType",                  handle_command,   CFG_OPT_CONFIG|CFG_OPT_NEEDED, &fo_view_conf },
+  { "XHTMLMode",                  handle_command,   CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_UNIQUE,                &fo_view_conf },
+  { "DoQuote",                    handle_command,   CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_UNIQUE,                &fo_view_conf },
+  { "QuotingChars",               handle_command,   CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_NEEDED|CFG_OPT_UNIQUE, &fo_view_conf },
+  { "ShowThread",                 handle_command,   CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_UNIQUE,                &fo_view_conf },
+  { "ShowFlags",                  handle_command,   CFG_OPT_CONFIG,                                            &fo_view_conf },
+  { "ReadMode",                   handle_command,   CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_NEEDED|CFG_OPT_UNIQUE, &fo_view_conf },
+  { "ParamType",                  handle_command,   CFG_OPT_CONFIG|CFG_OPT_NEEDED,                             &fo_view_conf },
+  { "ShowSig",                    handle_command,   CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_UNIQUE,                &fo_view_conf },
+  { "MaxSigLines",                handle_command,   CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_UNIQUE,                &fo_view_conf },
   { "</ForumBehavior>", NULL, 0, NULL },
 
   { "<Templates>", NULL, 0, NULL },
@@ -517,10 +523,11 @@ int read_config(t_configfile *conf,t_take_default deflt,int mode) {
  */
 int handle_command(t_configfile *cfile,t_conf_opt *opt,u_char **args,int argnum) {
   t_configuration *conf = (t_configuration *)opt->data;
-  t_name_value tmp;
+  t_name_value tmp,*tmp1;
   t_cf_tree_dataset dt;
   const t_cf_tree_dataset *dt1;
   t_cf_list_head *head;
+  int i;
 
   tmp.values = args;
   tmp.valnum = argnum;
@@ -529,8 +536,19 @@ int handle_command(t_configfile *cfile,t_conf_opt *opt,u_char **args,int argnum)
   dt.key = opt->name;
 
   if((dt1 = cf_tree_find(&conf->directives,conf->directives.root,&dt)) != NULL) {
-    head = dt1->data;
-    cf_list_append(head,&tmp,sizeof(tmp));
+    if(opt->flags & CFG_OPT_UNIQUE) {
+      head = dt1->data;
+      tmp1 = head->elements->data;
+
+      for(i=0;i<tmp1->valnum;i++) free(tmp1->values[i]);
+      free(tmp1->values);
+
+      tmp1->values = args;
+    }
+    else {
+      head = dt1->data;
+      cf_list_append(head,&tmp,sizeof(tmp));
+    }
   }
   else {
     head = fo_alloc(NULL,1,sizeof(*head),FO_ALLOC_CALLOC);

@@ -63,6 +63,7 @@ flt_owncss_la_LDFLAGS=-module -export-dynamic -avoid-version
 
 pkglib_LTLIBRARIES+=flt_posting.la
 flt_posting_la_SOURCES=flt_posting.c
+flt_posting_la_LIBADD=../libcfvalidate.la
 flt_posting_la_LDFLAGS=-module -export-dynamic -avoid-version
 
 pkglib_LTLIBRARIES+=flt_registerednames.la
