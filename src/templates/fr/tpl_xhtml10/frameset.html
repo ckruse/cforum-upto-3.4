@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="{$charset}"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="fr" lang="fr">
+  <head>
+    <title>Forum SELFHTML</title>
+    <meta http-equiv="content-type" content="text/html; charset={$charset}" />
+    <meta http-equiv="expires" content="now" />
+    <meta http-equiv="cache-control" content="no-cache" />
+    <meta name="robots" content="noindex,noarchive,nofollow" />
+    <meta name="keywords" content="Forum SELFHTML, SELFHTML, Forum" />
+    <meta name="author" content="Stefan M&uuml;nz, stefan.muenz@selfhtml.org" />
+    <meta name="DC.Publisher" content="Forum SELFHTML" />
+    <meta name="DC.Identifier" content="{$script}" />
+    <meta name="DC.Language" content="fr" />
+    <meta name="DC.Rights" content="" />
+    <meta name="SELF.Pagetype" content="portal" />{if $owncss}{if $cssoverwrite}
+    <link rel="stylesheet" title="Feuille de style du forum SELFHTML" type="text/css" href="http://src.selfhtml.org/forum_strict.css" />{endif}
+    <link rel="stylesheet" title="Feuille de style personnalis&eacute;e" type="text/css" href="{$owncss}" />{else}
+    <link rel="stylesheet" title="Feuille de style du forum SELFHTML" type="text/css" href="http://src.selfhtml.org/forum_strict.css" />{endif}
+    <link rel="shortcut icon" type="image/x-icon" href="http://src.selfhtml.org/favicon.ico" />
+    <link rel="top" title="Forum SELFHTML" href="{$forumbase}" />
+    <link rel="help" title="Forums-FAQ" href="/faq/" />
+    <link rel="search" href="http://recherche.fr.selfhtml.org/" title="Recherche" />
+  </head>
+  <frameset rows="60%,*">
+    <frame name="forum" src="{$script}?a=f" />
+    <frame name="view"  src="{$script}?a=b" />
+    <noframes>
+      <body id="selfforumbody">
+        <div class="nav"><a class="an" name="top"><img src="http://src.selfhtml.org/refkap.gif" width="16" height="13" alt="Chapitre: vue d'ensemble" /></a>&nbsp;<a href="{$forumbase}">Forum SELFHTML</a></div>
+        <table class="header" id="selfforumheader">
+          <thead>
+            <tr>
+              <td class="hdrelse" style="width:110px;"><img src="http://src.selfhtml.org/logo.gif" width="106" height="109" alt="SELFHTML" /></td>
+              <td class="hdrelse"><h1 class="ph1">Forum SELFHTML</h1></td>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="info"><img src="http://src.selfhtml.org/kapx.gif" width="30" height="26" alt="Section: vue d'ensemble" /></td>
+              <td class="hdrtxt"><p><img src="http://src.selfhtml.org/down.gif" width="14" height="10" alt="vers le bas" />&nbsp;<a href="#frames"><b>Affichage hors cadres</b></a></p></td>
+            </tr>
+            <tr>
+              <td colspan="2" class="hdrquick"><a href="#bottom"><img src="http://src.selfhtml.org/down.gif" width="14" height="10" alt="vers le bas" /></a>&nbsp;</td>
+            </tr>
+          </tbody>
+        </table>
+        <h2 class="sh2"><a class="an" name="frames">Affichage hors cadres</a></h2>
+        <p>Le forum est actuellement pr&eacute;sent&eacute; dans un jeu de cadres. Votre navigateur semble ne pas pouvoir afficher les cadres.Dies ist die Frame-Ansicht des SELFHTML Forum. Ihr Browser scheint Frames jedoch nicht darstellen zu k&ouml;nnen.</p>
+        <p>Vous pouvez activer l'affichage classique dans vos <img src="http://src.selfhtml.org/kap.gif" width="15" height="13" alt="Chapitre: vue d'ensemble" />&nbsp;<a href="{$userconfig}"><b>r&eacute;glages personnels</b></a>.Die klassische Ansicht k&ouml;nnen Sie in Ihren <img src="http://src.selfhtml.org/kap.gif" width="15" height="13" alt="Kapitel" />&nbsp;<a href="{$userconfig}">Benutzer-Einstellungen</a> aktivieren.</p>
+        <div class="updown" id="selfforumbottom"><a href="#top"><img src="http://src.selfhtml.org/up.gif" width="14" height="10" alt="vers le haut" /></a></div>
+        <div class="nav"><a class="an" name="bottom"><img src="http://src.selfhtml.org/refkap.gif" width="16" height="13" alt="Chapitre: vue d'ensemble" /></a>&nbsp;<a href="{$forumbase}">Forum SELFHTML</a></div>
+        <p>&copy; 1998-2004 <img src="http://src.selfhtml.org/mail.gif" width="15" height="10" alt="Adresse &eacute;lectronique" />&nbsp;<a href="mailto:selfhtml@fr.selfhtml.org">selfhtml@fr.selfhtml.org</a></p>
+      </body>
+    </noframes>
+  </frameset>
+</html>
