@@ -182,6 +182,11 @@ sub transform_body {
   # first we transform all newlines to \n
   $txt =~ s/\015\012|\015|\012/\n/g;
 
+  # after that, we collect all links to postings...
+  foreach(@{$pcfg->{PostingUrl}}) {
+    $txt =~ s{\[link:\s*$_->[0]([\dtm=&]+)(?:#\w+)?\]}{my $tidpid = $1; $tidpid =~ s!&!;!; '[pref:'.$tidpid.']'}eg;
+  }
+
   # encode to html (entities, and so on -- if we do it once,
   # we don't need to do it every time a message will be viewed)
   $txt = recode($dcfg,$txt);
@@ -191,7 +196,7 @@ sub transform_body {
   # ... messages
   foreach(@{$pcfg->{Image}}) {
     my ($name,$url,$alt) = (quotemeta $_->[0],recode($dcfg,$_->[1]),recode($dcfg,$_->[2]));
-    $txt =~ s!\[[mM][sS][gG]:\s*$name\]![image:$url]!g;
+    $txt =~ s!\[[mM][sS][gG]:\s*$name\]![image:$url\@alt=$alt]!g;
   }
 
   # ... all quoting characters to \177

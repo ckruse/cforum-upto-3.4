@@ -1,6 +1,11 @@
 2004-10-07 Christian Kruse <ckruse@wwwtech.de>
 	* src/templates/de/tpl_xhtml10/forum_thread.html: Fixed typo (${} instead of
 		{$})
+	* cgi-shared/ForumUtils.pm: Fixed a bug in [pref:] and [msg:] handling
+	* cgi-shared/Plugins/PostingAssistant.pm: Fixed bug, is_valid_link() instead
+		of is_valid_url()
+	* src/validate.c: Accepting ~ characters in hostpath; this is not really RFC
+		compliant but very often in the web
 
 2004-10-05 Christian seiler <self@christian-seiler.de>
 	* fixed bugs #384, #335 and #381, this includes:

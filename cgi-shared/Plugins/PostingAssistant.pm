@@ -83,7 +83,7 @@ sub links_check {
   while($body =~ /\[[Ll][Ii][Nn][Kk]:\s*([^\]\s]+)\s*(?:\@title=([^\]]+)\s*)?\]/g) {
     my ($uri,$title) = ($1,$2,$3);
     return -1 if
-      !is_valid_url($uri) &&
+      !is_valid_link($uri) &&
       !is_valid_http_url(($uri =~ /^[Vv][Ii][Ee][Ww]-[Ss][Oo][Uu][Rr][Cc][Ee]:(.+)/)[0],CForum::Validator::VALIDATE_STRICT) &&
       !($uri =~ m{^(?:\.?\.?/(?!/)|\?)} and is_valid_http_url(rel_uri($uri,$base)));
   }
