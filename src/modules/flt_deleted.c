@@ -61,11 +61,10 @@ int flt_deleted_execute(t_cf_hash *head,t_configuration *dc,t_configuration *vc,
   size_t len;
   u_char buff[256];
   u_char one[] = "1";
+  url = cfg_get_first_value(dc,"UBaseURL");
 
   if(UserName) {
     if(mode == 0) {
-      url = cfg_get_first_value(dc,"UBaseURL");
-
       if(Cfg.DeletedFile) {
         memset(&key,0,sizeof(key));
         memset(&data,0,sizeof(data));
