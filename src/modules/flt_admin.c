@@ -225,7 +225,7 @@ int flt_admin_posthandler(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc
   int ShowInvisible = cf_hash_get(GlobalValues,"ShowInvisible",13) != NULL;
   t_name_value *link_pattern = cfg_get_first_value(dc,forum_name,"UPostingURL");
 
-  if(flt_admin_is_admin(UserName)) {
+  if(flt_admin_is_admin(UserName) && ShowInvisible) {
     cf_tpl_setvalue(&msg->tpl,"admin",TPL_VARIABLE_STRING,"1",1);
 
     if(ShowInvisible) {
