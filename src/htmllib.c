@@ -207,6 +207,12 @@ u_char *parse_message(u_char *start,t_array *stack,t_string *content,t_string *c
 
           if(*ptr1 == ']') {
             directive = strndup(ptr+1,tmp-ptr-1);
+
+            if(cf_hash_get(registered_directives,directive,tmp-ptr-1) == NULL) {
+              free(directive);
+              goto default_action;
+            }
+
             parameter = strndup(tmp+1,ptr-tmp-1);
 
             stack_elem.begin   = (u_char *)ptr1;
@@ -258,6 +264,12 @@ u_char *parse_message(u_char *start,t_array *stack,t_string *content,t_string *c
         /* {{{ we got [something something */
         else if(isspace(*ptr1) || *ptr1 == ']') {
           directive = strndup(ptr+1,ptr1-ptr-1);
+
+          if(cf_hash_get(registered_directives,directive,ptr1-ptr-1) == NULL) {
+            free(directive);
+            goto default_action;
+          }
+
           memset(&stack_elem,0,sizeof(stack_elem));
 
           sb = 0;

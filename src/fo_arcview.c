@@ -777,7 +777,7 @@ void show_thread(const u_char *year,const u_char *month,const u_char *tid) {
    */
   ArcSortMeth = cf_strcmp(sm->values[0],"ascending") == 0 ? CF_SORT_ASCENDING : CF_SORT_DESCENDING;
   sort_messages(thr->ht);
-  cf_msg_linearize(thr->ht);
+  cf_msg_linearize(thr,thr->ht);
 
   if(thr->messages->invisible == 0 || (admin == 1 && show_invisible == 1)) print_thread(thr,year,month,pi,admin,show_invisible);
   else {

@@ -252,7 +252,7 @@ t_message *cf_msg_do_linearize(t_hierarchical_node *node) {
 /* }}} */
 
 /* {{{ cf_msg_linearize */
-void cf_msg_linearize(t_hierarchical_node *h) {
+void cf_msg_linearize(t_cl_thread *thr,t_hierarchical_node *h) {
   t_message *p,*p1;
 
   cf_msg_do_linearize(h);
@@ -262,6 +262,8 @@ void cf_msg_linearize(t_hierarchical_node *h) {
     p->prev = p1;
     p1      = p;
   }
+
+  thr->last = p1;
 }
 /* }}} */
 

@@ -1,3 +1,11 @@
+2005-02-20 Christian Kruse <ckruse@wwwtech.de>
+	* src/clientlib.h, src/messageutils.c: Changed prototype and behavior of
+		cf_msg_linearize(), now it expects thread as parameter and sets the ->last
+		pointer correct
+	* src/modules/flt_sorting.c, src/fo_arcview.c: Moved to new cf_msg_linearize()
+	* src/htmllib.c: Fixed performance bug, unknown directives will not get
+		parsed now
+
 2005-02-19 Christian Seiler <self@christian-seiler.de>
 	* src/modules/flt_syntax.c: Small bugfixes
 
