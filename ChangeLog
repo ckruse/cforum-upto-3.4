@@ -18,6 +18,7 @@
 	* src/modules/flt_syntax.c: Implemented pattern elements used by html pattern
 		matching
 	* src/arrayutils.c: Fixed small bug in array_element_at()
+	* src/modules/flt_posting.c: Fixed bug in replacing {$vname}
 
 2005-02-14 Christian Kruse <ckruse@wwwtech.de>
 	* conf/patterns/php.pat: Added => operator

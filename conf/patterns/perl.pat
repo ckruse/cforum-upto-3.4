@@ -42,9 +42,9 @@ block "default"
   
   # syntax onregexpafter <vorher-regexp> <regexp-zu-matchen> <neuer-block> <span-klasse>
   # vorher-regexp wird auf das zeichen davor angewandt
-  onregexpafter "^[^a-zA-Z0-9]" "^0[0-7]+" highlight "octnumber"
-  onregexpafter "^[^a-zA-Z0-9]" "^0[xX][0-9A-Fa-f]+" highlight "hexnumber"
-  onregexpafter "^[^a-zA-Z0-9]" "^[0-9]+" highlight "number"
+  onregexpafter "^[^a-zA-Z0-9]" "^0[0-7](\\.[0-7]*|[0-7]+)" highlight "octnumber"
+  onregexpafter "^[^a-zA-Z0-9]" "^0[xX][0-9A-Fa-f](\\.[0-9A-Fa-f]+|[0-9A-Fa-f]*)" highlight "hexnumber"
+  onregexpafter "^[^a-zA-Z0-9]" "^[0-9](\\.[0-9]+|[0-9]*)" highlight "number"
 end
 
 block "qw("
@@ -70,8 +70,8 @@ end
 block "heredoc"
   lineend stay
 
-  onstring "\\\\\\\\" highlight "escaped"
-  onstring "\\\\\&quot;" highlight "escaped"
+  onstring "\\\\" highlight "escaped"
+  onstring "\\&quot;" highlight "escaped"
 
   onregexp "^\\\\[0-7]{1,3}" highlight "escaped"
   onregexp "^\\\\x[0-9A-Fa-f]{1,2}" highlight "escaped"

@@ -58,9 +58,7 @@ void flt_posting_replace_placeholders(const u_char *str,t_string *appender,t_cl_
   size_t len;
 
   if(thread) {
-    for(ptr1 = thread->threadmsg->author.content;*ptr1;++ptr1) {
-      if(isspace(*ptr1)) break;
-    }
+    for(ptr1 = thread->threadmsg->author.content;*ptr1 && (!isspace(*ptr1) && *ptr1 != '-');++ptr1);
   }
 
   for(;*ptr;++ptr) {
@@ -83,7 +81,7 @@ void flt_posting_replace_placeholders(const u_char *str,t_string *appender,t_cl_
       tmp = NULL;
       ptr += 7;
       if(thread) {
-        tmp = strndup(thread->threadmsg->author.content,(size_t)(ptr1-thread->threadmsg->author.len));
+        tmp = strndup(thread->threadmsg->author.content,(size_t)(ptr1-thread->threadmsg->author.content));
         name = htmlentities_charset_convert(tmp,"UTF-8",cs->values[0],&len,0);
       }
       else {
