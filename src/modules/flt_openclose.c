@@ -202,9 +202,7 @@ int flt_oc_execute_filter(t_cf_hash *head,t_configuration *dc,t_configuration *v
   cf_tpl_setvalue(&thread->messages->tpl,"unanch",TPL_VARIABLE_STRING,buff,i);
 
   /* user wants to use java script */
-  if(UseJavaScript) {
-    if(ThreadsOpenByDefault && OpenThreadIfNew == 0) cf_tpl_setvalue(&thread->messages->tpl,"UseJavaScript",TPL_VARIABLE_INT,1);
-  }
+  if(UseJavaScript) cf_tpl_setvalue(&thread->messages->tpl,"UseJavaScript",TPL_VARIABLE_INT,1);
 
   if(ThreadsOpenByDefault == 0) {
     for(i=0;i<flt_oc_opened_len;++i) {
