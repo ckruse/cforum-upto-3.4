@@ -792,7 +792,7 @@
           <validate>.</validate>
           <question>Sollen Kategorien farblich hervorgehoben werden? Wenn ja, welche?</question>
           <error>Bitte geben Sie eine korrekte Kategorie für die Hervorhebung an!</error>
-          <formvalues location="fo_default.conf" directive="Category" />
+          <formvalues location="fo_default.conf" directive="Categories" />
         </argument>
       </directive>
 
@@ -814,7 +814,7 @@
           <validate>.</validate>
           <question>Wollen Sie nur bestimmte Kategorien anzeigen? Wenn ja, welche?</question>
           <error>Bitte geben Sie (eine) valide Kategorie(n) an, die Sie nur angezeigt bekommen wollen!</error>
-          <formvalues location="fo_default.conf" directive="Category" />
+          <formvalues location="fo_default.conf" directive="Categories" />
         </argument>
       </directive>
     </section>

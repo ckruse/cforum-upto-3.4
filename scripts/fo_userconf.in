@@ -82,16 +82,16 @@ sub get_argument_values {
       my $dir = $fvalues->getAttribute('directive');
 
       if($loc eq 'fo_default.conf') {
-        return exists $fo_default_conf->{$Forum}->{$dir} ? @{$fo_default_conf->{$Forum}->{$dir}} : ();
+        return exists $fo_default_conf->{$Forum}->{$dir} ? @{$fo_default_conf->{$Forum}->{$dir}->[0]} : ();
       }
       elsif($loc eq 'fo_view.conf') {
-        return exists $fo_view_conf->{$Forum}->{$dir} ? @{$fo_view_conf->{$Forum}->{$dir}} : ();
+        return exists $fo_view_conf->{$Forum}->{$dir} ? @{$fo_view_conf->{$Forum}->{$dir}->[0]} : ();
       }
       elsif($loc eq 'fo_userconf.conf') {
-        return exists $fo_userconf_conf->{$Forum}->{$dir} ? @{$fo_userconf_conf->{$Forum}->{$dir}} : ();
+        return exists $fo_userconf_conf->{$Forum}->{$dir} ? @{$fo_userconf_conf->{$Forum}->{$dir}->[0]} : ();
       }
       else {
-        return exists $user_config->{global}->{$dir} ? @{$user_config->{global}->{$dir}} : ();
+        return exists $user_config->{$Forum}->{$dir} ? @{$user_config->{$Forum}->{$dir}->[0]} : ();
       }
     }
   }
@@ -161,13 +161,19 @@ sub htmlize {
   }
   elsif($type eq 'RADIO') {
     foreach my $v (@fvals) {
-      $element .= '<input type="radio" name="'.$fname.'" value="'.recode($fo_default_conf,$v->[0]).'" '.($v->[0] eq $val ? ' checked'.($xhtml?'="checked"':'') : '').($xhtml?' /':'').'> '.recode($fo_default_conf,$v->[1] || $v->[0]).'<br'.($xhtml?' /':'').'>';
+      my $lval = ref($v) ? $v->[0] : $v;
+      my $ttl = ref($v) ? $v->[1] : $v;
+
+      $element .= '<input type="radio" name="'.$fname.'" value="'.recode($fo_default_conf,$lval).'" '.($lval eq $val ? ' checked'.($xhtml?'="checked"':'') : '').($xhtml?' /':'').'> '.recode($fo_default_conf,$ttl || $lval).'<br'.($xhtml?' /':'').'>';
     }
 
   }
   elsif($type eq 'CHECKBOX') {
     foreach my $v (@fvals) {
-      $element .= '<input type="checkbox" name="'.$fname.'" value="'.recode($fo_default_conf,$v->[0]).'"'.($vals{$v->[0]} ? ' checked'.($xhtml?'="checked"':'') : '').($xhtml?' /':'').'> '.recode($fo_default_conf,$v->[1] || $v->[0]).'<br'.($xhtml?' /':'').'>';
+      my $lval = ref($v) ? $v->[0] : $v;
+      my $ttl = ref($v) ? $v->[1] : $v;
+
+      $element .= '<input type="checkbox" name="'.$fname.'" value="'.recode($fo_default_conf,$lval).'"'.($vals{$lval} ? ' checked'.($xhtml?'="checked"':'') : '').($xhtml?' /':'').'> '.recode($fo_default_conf,$ttl || $lval).'<br'.($xhtml?' /':'').'>';
     }
   }
   elsif($type eq 'SELECT') {
@@ -177,12 +183,18 @@ sub htmlize {
 
     if($multiple eq 'no') {
       foreach my $v (@fvals) {
-        $element .= '<option value="'.recode($fo_default_conf,$v->[0]).'"'.($v->[0] eq $val ? ' selected'.($xhtml?'="selected"':'') : '').($xhtml?' /':'').'>'.recode($fo_default_conf,$v->[1] || $v->[0]).'</option>';
+        my $lval = ref($v) ? $v->[0] : $v;
+        my $ttl = ref($v) ? $v->[1] : $v;
+
+        $element .= '<option value="'.recode($fo_default_conf,$lval).'"'.($lval eq $val ? ' selected'.($xhtml?'="selected"':'') : '').($xhtml?' /':'').'>'.recode($fo_default_conf,$ttl || $lval).'</option>';
       }
     }
     else {
       foreach my $v (@fvals) {
-        $element .= '<option value="'.recode($fo_default_conf,$v->[0]).'"'.($vals{$v->[0]} ? ' selected'.($xhtml?'="selected"':'') : '').($xhtml?' /':'').'>'.recode($fo_default_conf,$v->[1] || $v->[0]).'</option>';
+        my $lval = ref($v) ? $v->[0] : $v;
+        my $ttl = ref($v) ? $v->[1] : $v;
+
+        $element .= '<option value="'.recode($fo_default_conf,$lval).'"'.($vals{$lval} ? ' selected'.($xhtml?'="selected"':'') : '').($xhtml?' /':'').'>'.recode($fo_default_conf,$ttl || $lval).'</option>';
       }
     }
 
