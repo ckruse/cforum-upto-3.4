@@ -3,6 +3,7 @@
 	* src/modules/flt_cftp.c: Replaced \t by spaces
 	* src/modules/flt_xmlstorage.c: Replaced \t by spaces
 	* src/modules/flt_extern.c: Migrated to 3.0 API
+	* src/modules/flt_failsafe.c: Migrated to 3.0 API
 
 2005-01-08 Christian Kruse <ckruse@wwwtech.de>
 	* src/validate.c: Fixed bug in is_valid_link() function (now it is view-source

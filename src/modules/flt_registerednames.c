@@ -349,7 +349,12 @@ int flt_registerednames_handle_command(t_configfile *cf,t_conf_opt *opt,const u_
   if(flt_rn_namesdb == NULL) flt_rn_namesdb = cf_hash_new(flt_registerednames_cleanup_hash);
 
   if(argnum == 1) {
-    if((ndb = cf_hash_get(flt_rn_namesdb,(u_char *)context,strlen(context))) == NULL) ndb1.AuthNames = strdup(args[0]);
+    if((ndb = cf_hash_get(flt_rn_namesdb,(u_char *)context,strlen(context))) == NULL) {
+      ndb1.AuthNames = strdup(args[0]);
+      ndb1.NamesDB = NULL;
+
+      cf_hash_set(flt_rn_namesdb,(u_char *)context,strlen(context),&ndb1,sizeof(ndb1));
+    }
     else {
       free(ndb->AuthNames);
       ndb->AuthNames = strdup(args[0]);
