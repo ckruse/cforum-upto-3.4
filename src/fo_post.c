@@ -150,7 +150,7 @@ void display_posting_form(t_cf_hash *head,t_message *p) {
   utf8 = cf_strcmp(cs->values[0],"UTF-8") == 0;
 
   if(utf8 || (qchars = htmlentities_charset_convert(qc->values[0],"UTF-8",cs->values[0],&qclen,0)) == NULL) {
-    qchars = strdup(qc->values[0]);
+    qchars = htmlentities(qc->values[0],0);
     qclen  = strlen(qchars);
   }
 
