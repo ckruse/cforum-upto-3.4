@@ -1,6 +1,3 @@
-2005-01-15 Christian Kruse <ckruse@wwwtech.de>
-	* src/modules/flt_directives.c: Bugfix for [ref:], now it supports @title=
-	* cgi-shared/Plugins/MarkOwnVisited.pm: Removed CheckRFC.pm, fixed little bug
-	* cgi-shared/Plugins/PostOkLink.pm: Removed CheckRFC.pm
-	* cgi-shared/Makefile.am: Removed CheckRFC.pm
+2005-01-16 Christian Kruse <ckruse@wwwtech.de>
+	* cgi-shared/ForumUtils.pm: small bugfixes
 
