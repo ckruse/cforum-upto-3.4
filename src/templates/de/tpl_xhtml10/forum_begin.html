@@ -192,8 +192,9 @@
             </p>{if $LOAD_TIME}
             <p>Ladezeitpunkt: {$LOAD_TIME}{if $autoreload}, automatischer Reload: {$autoreloadtime}{endif}</p>{endif}{if $flt_admin_errmsg}
             <p><b>{$flt_admin_errmsg}</b></p>{endif}{if $tipoftheday}
-            <p>Wussten Sie, dass {$tipoftheday}</p>{endif}
-          </td>
+            <p>Wussten Sie, dass {$tipoftheday}</p>{endif}{if $motd}
+          {$motd}
+{endif}          </td>
         </tr>
         <tr>
           <td colspan="2" class="hdrquick"><a href="#bottom"><img src="http://src.selfhtml.org/down.gif" width="14" height="10" alt="nach unten" /></a></td>
@@ -212,6 +213,6 @@
       <b>Mitmachen:</b> Um auf eine aktuelle Nachricht zu antworten, einfach diese &ouml;ffnen und lesen. Alle Nachrichten enthalten ein Formular zum Antworten.<br /><b>Hinweis:</b> Nachrichten in neuem Fenster &ouml;ffnen (rechte Maustaste). Dann bleibt diese Indexdatei im Hintergrund ge&ouml;ffnet.
     </p>{if $delcheckbox}
     <form method="post" action="{$ubase}">
-      <div style="display:none;"><input type="hidden" name="a" value="d" /></div>
-      <ol id="root">{else}
+      <div style="display:none;"><input type="hidden" name="a" value="d" /></div>
+      <ol id="root">{else}
     <ol id="root">{endif}

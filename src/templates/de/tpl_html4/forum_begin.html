@@ -196,8 +196,9 @@
           </p>{if $LOAD_TIME}
           <p>Ladezeitpunkt: {$LOAD_TIME}{if $autoreload}, automatischer Reload: {$autoreloadtime}{endif}</p>{endif}{if $flt_admin_errmsg}
           <p><b>{$flt_admin_errmsg}</b></p>{endif}{if $tipoftheday}
-          <p>Wussten Sie, dass {$tipoftheday}</p>{endif}
-        </td>
+          <p>Wussten Sie, dass {$tipoftheday}</p>{endif}{if $motd}
+          {$motd}
+{endif}        </td>
       </tr>
       <tr>
         <td colspan="2" bgcolor="#EEEEEE" class="doc"><a href="#bottom"><img src="http://src.selfhtml.org/down.gif" width="14" height="10" border="0" alt="nach unten"></a>&nbsp;</td>

@@ -27,6 +27,8 @@
  AddFilter "@libdir@/cforum/flt_link.so" "flt_link"
  AddFilter "@libdir@/cforum/flt_threadreturnanchor.so" "flt_threadreturnanchor"
  AddFilter "@libdir@/cforum/flt_handle404.so" "flt_handle404"
+ AddFilter "@libdir@/cforum/flt_motd.so" "flt_motd"
+ AddFilter "@libdir@/cforum/flt_tipoftheday.so" "flt_tipoftheday"
 </Filters>
 
 <ForumBehavior>
@@ -47,6 +49,9 @@
  HandleLastModifiedSince "yes"
 
  GeneratePreview "yes"
+
+ MotdFile "/etc/motd"
+ EnableMotd "yes"
 </ForumBehavior>
 
 <Templates>

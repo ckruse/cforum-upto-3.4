@@ -186,8 +186,10 @@
           </p>
           <p>Avant de participer aux discussions du forum SELFHTML, veuillez prendre connaissance des r&egrave;gles pr&eacute;sent&eacute;es dans les <img src="http://src.selfhtml.org/dok.gif" width="15" height="10" border="0" alt="Autre page d'information">&nbsp;<a href="/faq/"{if $frame} target="_top"{endif}><b>FAQ du forum</b></a>. Il est souhait&eacute; de tous les participants de respecter ces r&egrave;gles.</p>{if $LOAD_TIME}
           <p>Derni&egrave;re actualisation: {$LOAD_TIME}{if $autoreload}, procha&icirc;ne actualisation automatique: {$autoreloadtime}{endif}</p>{endif}{if $flt_admin_errmsg}
-          <p><b>{$flt_admin_errmsg}</b></p>{endif}
-        </td>
+          <p><b>{$flt_admin_errmsg}</b></p>{endif}{if $tipoftheday}
+          <p>Wussten Sie, dass {$tipoftheday}</p>{endif}{if $motd}
+          {$motd}
+{endif}        </td>
       </tr>
       <tr>
         <td colspan="2" bgcolor="#EEEEEE" class="doc"><a href="#bottom"><img src="http://src.selfhtml.org/down.gif" width="14" height="10" border="0" alt="vers le bas"></a>&nbsp;</td>

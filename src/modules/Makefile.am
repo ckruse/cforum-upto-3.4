@@ -127,4 +127,9 @@ flt_scoring_la_SOURCES=flt_scoring.c
 flt_scoring_la_LDFLAGS=-module -export-dynamic -avoid-version
 flt_scoring_la_LIBADD=$(PCRE_LIBS)
 
+pkglib_LTLIBRARIES+=flt_motd.la
+flt_motd_la_SOURCES=flt_motd.c
+flt_motd_la_LDFLAGS=-module -export-dynamic -avoid-version
+
+
 # eof

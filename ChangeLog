@@ -9,6 +9,11 @@
 		written statically in one statement
 	* cgi-bin/fo_usermanagement.in: Fixed bugs (moved the send password part to the
 		unauthorized part, fixed typos, etc, pp)
+	* cgi-shared/config/modules.de.xml: Added motd directive
+	* src/modules/Makefile.am: Added motd filter
+	* cgi-shared/config/fo_view.conf.in: Added motd directives
+	* src/templates/{de,fr}/tpl_*/forum_begin.html: Added motd variable
+	* src/modules/flt_motd.c: Added message of the day filter
 
 2004-08-05 Christian Kruse <ckruse@wwwtech.de>
 	* cgi-bin/fo_usermanagement.in: Added umask handling

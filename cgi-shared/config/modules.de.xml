@@ -318,6 +318,18 @@
         </argument>
       </directive>
 
+      <directive name="EnableMotd" arguments="1">
+        <argument paramname="enablemotd" type="radio" encode="plain">
+          <validate>^(?:yes|no)$</validate>
+          <question>Soll die Nachricht des Tages (MOTD) angezeigt werden?</question>
+          <error>Soll die Nachricht des Tages angezeigt werden? Bitte geben Sie &quot;Ja&quot; oder &quot;Nein&quot; an!</error>
+          <formvalues>
+            <value val="yes" default="yes">Ja</value>
+            <value val="no">Nein</value>
+          </formvalues>
+        </argument>
+      </directive>
+
       <directive name="ShowIframeAsLink" arguments="1">
         <argument paramname="showiframeaslink" type="radio" encode="plain">
           <validate>^(?:yes|no)$</validate>
