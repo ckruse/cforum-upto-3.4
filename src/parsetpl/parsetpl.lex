@@ -481,11 +481,12 @@ int process_variable_print_tag (t_token *variable,t_array *data) {
   }
   if(data->elements) {
     token = (t_token *)array_shift(data);
-    destroy_token(token); free(token);
     if(token->type != PARSETPL_TOK_MODIFIER_ESCAPE || data->elements) {
+      destroy_token(token); free(token);
       str_cleanup(&tmp);
       return PARSETPL_ERR_INVALIDTAG;
     }
+    destroy_token(token); free(token);
     escape_html = 1;
   }
   str_chars_append(&tmp,"if(vp) {\n",9);
