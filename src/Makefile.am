@@ -15,6 +15,8 @@ pkglib_LTLIBRARIES= \
 	libcfserverutils.la \
 	libcfclientlib.la \
 	libcfcgi.la \
+	libcfvalidate.la \
+	libcfhtml.la \
 	libcftemplate.la \
   libcfserverlib.la
 
@@ -40,6 +42,14 @@ libcfcgi_la_SOURCES=cfcgi.c
 libcfcgi_la_LIBADD=libcfhashlib.la
 libcfcgi_la_LDFLAGS=-export-dynamic -avoid-version
 
+libcfvalidate_la_SOURCES=validate.c
+libcfvalidate_la_LIBADD=libcfutils.la $(IDN)
+libcfvalidate_la_LDFLAGS=-export-dynamic -avoid-version
+
+libcfhtml_la_SOURCES=htmllib.c
+libcfhtml_la_LIBADD=libcfutils.la libcfcharconvert.la libcfclientlib.la
+libcfhtml_la_LDFLAGS=-export-dynamic -avoid-version
+
 libcfconfigparser_la_SOURCES=configparser.c
 libcfconfigparser_la_LIBADD=libcfutils.la $(DL)
 libcfconfigparser_la_LDFLAGS=-export-dynamic -avoid-version
@@ -56,7 +66,7 @@ libcfclientlib_la_LIBADD=libcfconfigparser.la libcfcharconvert.la libcfreadline.
 libcfclientlib_la_LDFLAGS=-export-dynamic -avoid-version
 
 fo_view_SOURCES=fo_view.c
-fo_view_LDADD=libcfconfigparser.la libcftemplate.la libcfcharconvert.la libcfreadline.la libcfutils.la libcfhashlib.la libcfclientlib.la libcfcgi.la
+fo_view_LDADD=libcfconfigparser.la libcftemplate.la libcfcharconvert.la libcfreadline.la libcfutils.la libcfhashlib.la libcfclientlib.la libcfcgi.la libcfhtml.la
 fo_server_LDFLAGS=-export-dynamic
 
 fo_server_SOURCES=fo_server.c

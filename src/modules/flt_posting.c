@@ -52,27 +52,26 @@ struct {
 } flt_posting_cfg = { NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0 };
 /* }}} */
 
-/* {{{ replace_placeholders */
-void replace_placeholders(const u_char *str,t_string *appender,t_cl_thread *thread) {
+/* {{{ flt_posting_replace_placeholders */
+void flt_posting_replace_placeholders(const u_char *str,t_string *appender,t_cl_thread *thread,t_name_value *cs) {
   register u_char *ptr = (u_char *)str;
   register u_char *ptr1 = NULL;
   u_char *name,*tmp;
   size_t len;
-  t_name_value *cs = cfg_get_first_value(&fo_default_conf,"ExternCharset");
 
   if(thread) {
-    for(ptr1 = thread->threadmsg->author;*ptr1;ptr1++) {
+    for(ptr1 = thread->threadmsg->author.content;*ptr1;++ptr1) {
       if(isspace(*ptr1)) break;
     }
   }
 
-  for(;*ptr;ptr++) {
+  for(;*ptr;++ptr) {
     if(cf_strncmp(ptr,"\\n",2) == 0) {
       str_chars_append(appender,"\n",1);
       ptr += 1;
     }
     else if(cf_strncmp(ptr,"{$name}",7) == 0) {
-      if(thread) name = htmlentities_charset_convert(thread->threadmsg->author,"UTF-8",cs->values[0],&len,0);
+      if(thread) name = htmlentities_charset_convert(thread->threadmsg->author.content,"UTF-8",cs->values[0],&len,0);
       else {
         name = strdup("alle");
         len  = 4;
@@ -86,20 +85,19 @@ void replace_placeholders(const u_char *str,t_string *appender,t_cl_thread *thre
       tmp = NULL;
       ptr += 7;
       if(thread) {
-        tmp = strndup(thread->threadmsg->author,ptr1-thread->threadmsg->author);
+        tmp = strndup(thread->threadmsg->author.content,(size_t)(ptr1-thread->threadmsg->author.len));
         name = htmlentities_charset_convert(tmp,"UTF-8",cs->values[0],&len,0);
       }
       else {
         name = strdup("alle");
         len  = 4;
       }
+
       str_chars_append(appender,name,len);
       free(name);
       if(tmp) free(tmp);
     }
-    else {
-      str_chars_append(appender,ptr,1);
-    }
+    else str_chars_append(appender,ptr,1);
   }
 }
 /* }}} */
@@ -107,22 +105,26 @@ void replace_placeholders(const u_char *str,t_string *appender,t_cl_thread *thre
 /* {{{ flt_posting_execute_filter */
 int flt_posting_execute_filter(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cl_thread *thread,t_cf_template *tpl) {
   /* {{{ variables */
-  t_name_value *ps,
-               *cs = cfg_get_first_value(dc,"ExternCharset"),
-               *rm = cfg_get_first_value(vc,"ReadMode"),
-               *dq = cfg_get_first_value(vc,"DoQuote"),
-               *st = cfg_get_first_value(vc,"ShowThread"),
-               *qc = cfg_get_first_value(vc,"QuotingChars"),
-               *ms = cfg_get_first_value(vc,"MaxSigLines"),
-               *ss = cfg_get_first_value(vc,"ShowSig");
-
   u_char buff[256],
         *tmp,
         *qchars,
         *msgcnt,
         *date,
         *link,
-        *UserName = cf_hash_get(GlobalValues,"UserName",8);
+        *UserName = cf_hash_get(GlobalValues,"UserName",8),
+        *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
+
+  t_name_value *ps,
+               *cs = cfg_get_first_value(dc,forum_name,"ExternCharset"),
+               *rm = cfg_get_first_value(vc,forum_name,"ReadMode"),
+               *dq = cfg_get_first_value(vc,forum_name,"DoQuote"),
+               *st = cfg_get_first_value(vc,forum_name,"ShowThread"),
+               *qc = cfg_get_first_value(vc,forum_name,"QuotingChars"),
+               *ms = cfg_get_first_value(vc,forum_name,"MaxSigLines"),
+               *ss = cfg_get_first_value(vc,forum_name,"ShowSig"),
+               *locale = cfg_get_first_value(dc,forum_name,"DateLocale"),
+               *df = cfg_get_first_value(vc,forum_name,"DateFormatThreadView"),
+               *dft = cfg_get_first_value(vc,forum_name,"DateFormatThreadList");
 
   size_t len,
          qclen,
@@ -149,8 +151,8 @@ int flt_posting_execute_filter(t_cf_hash *head,t_configuration *dc,t_configurati
     qclen  = strlen(qchars);
   }
 
-  if(UserName) ps = cfg_get_first_value(dc,"UPostScript");
-  else         ps = cfg_get_first_value(dc,"PostScript");
+  if(UserName) ps = cfg_get_first_value(dc,forum_name,"UPostScript");
+  else         ps = cfg_get_first_value(dc,forum_name,"PostScript");
 
   /* {{{ set some standard variables in thread mode */
   if(flt_posting_cfg.TWidth) tpl_cf_setvar(tpl,"twidth",flt_posting_cfg.TWidth,strlen(flt_posting_cfg.TWidth),1);
@@ -180,14 +182,14 @@ int flt_posting_execute_filter(t_cf_hash *head,t_configuration *dc,t_configurati
   /* }}} */
 
   /* {{{ set title, name, email, homepage, time and category */
-  cf_set_variable(tpl,cs,"title",thread->threadmsg->subject,thread->threadmsg->subject_len,1);
-  cf_set_variable(tpl,cs,"name",thread->threadmsg->author,thread->threadmsg->author_len,1);
-  if(thread->threadmsg->email) cf_set_variable(tpl,cs,"email",thread->threadmsg->email,thread->threadmsg->email_len,1);
-  if(thread->threadmsg->hp) cf_set_variable(tpl,cs,"link",thread->threadmsg->hp,thread->threadmsg->hp_len,1);
-  if(thread->threadmsg->img) cf_set_variable(tpl,cs,"image",thread->threadmsg->img,thread->threadmsg->img_len,1);
-  if(thread->threadmsg->category) cf_set_variable(tpl,cs,"category",thread->threadmsg->category,thread->threadmsg->category_len,1);
+  cf_set_variable(tpl,cs,"title",thread->threadmsg->subject.content,thread->threadmsg->subject.len,1);
+  cf_set_variable(tpl,cs,"name",thread->threadmsg->author.content,thread->threadmsg->author.len,1);
+  if(thread->threadmsg->email.len) cf_set_variable(tpl,cs,"email",thread->threadmsg->email.content,thread->threadmsg->email.len,1);
+  if(thread->threadmsg->hp.len) cf_set_variable(tpl,cs,"link",thread->threadmsg->hp.content,thread->threadmsg->hp.len,1);
+  if(thread->threadmsg->img.len) cf_set_variable(tpl,cs,"image",thread->threadmsg->img.content,thread->threadmsg->img.len,1);
+  if(thread->threadmsg->category.len) cf_set_variable(tpl,cs,"category",thread->threadmsg->category.content,thread->threadmsg->category.len,1);
 
-  tmp  = get_time(vc,"DateFormatThreadView",&len,&thread->threadmsg->date);
+  tmp = cf_general_get_time(df->values[0],locale->values[0],&len,&thread->threadmsg->date);
   cf_set_variable(tpl,cs,"time",tmp,len,1);
   free(tmp);
   /* }}} */
@@ -197,33 +199,30 @@ int flt_posting_execute_filter(t_cf_hash *head,t_configuration *dc,t_configurati
    */
   if(thread->threadmsg != thread->messages) {
     t_message *msg;
-    if((msg = parent_message(thread->threadmsg)) != NULL) {
-      tmp = get_time(vc,"DateFormatThreadView",&len,&msg->date);
+    if((msg = cf_msg_get_parent(thread->threadmsg)) != NULL) {
+      tmp = cf_general_get_time(df->values[0],locale->values[0],&len,&msg->date);
 
       tpl_cf_setvar(tpl,"messagebefore","1",1,0);
-      cf_set_variable(tpl,cs,"b_name",msg->author,strlen(msg->author),1);
-      cf_set_variable(tpl,cs,"b_title",msg->subject,strlen(msg->subject),1);
+      cf_set_variable(tpl,cs,"b_name",msg->author.content,msg->author.len,1);
+      cf_set_variable(tpl,cs,"b_title",msg->subject.content,msg->subject.len,1);
       cf_set_variable(tpl,cs,"b_time",tmp,len,1);
 
       free(tmp);
 
-      tmp = get_link(NULL,thread->tid,msg->mid);
+      tmp = cf_get_link(NULL,forum_name,thread->tid,msg->mid);
       cf_set_variable(tpl,cs,"b_link",tmp,strlen(tmp),1);
-
       free(tmp);
 
-      if(msg->category) {
-        cf_set_variable(tpl,cs,"b_category",msg->category,strlen(msg->category),1);
-      }
+      if(msg->category.len) cf_set_variable(tpl,cs,"b_category",msg->category.content,msg->category.len,1);
     }
   }
   /* }}} */
 
   /* {{{ generate html code for the message and the cite */
   /* ok -- lets convert the message to the target charset with html encoded */
-  if(utf8 || (msgcnt = charset_convert_entities(thread->threadmsg->content,thread->threadmsg->content_len,"UTF-8",cs->values[0],&msgcntlen)) == NULL) {
-    msgcnt    = strdup(thread->threadmsg->content);
-    msgcntlen = thread->threadmsg->content_len;
+  if(utf8 || (msgcnt = charset_convert_entities(thread->threadmsg->content.content,thread->threadmsg->content.len,"UTF-8",cs->values[0],&msgcntlen)) == NULL) {
+    msgcnt    = strdup(thread->threadmsg->content.content);
+    msgcntlen = thread->threadmsg->content.len;
   }
 
   str_init(&content);
@@ -261,23 +260,24 @@ int flt_posting_execute_filter(t_cf_hash *head,t_configuration *dc,t_configurati
     }
     else tpl_cf_setvar(&thread->threadmsg->tpl,"active","1",1,0);
 
-    handle_thread(thread,head,1);
+    /* {{{ run handlers in pre and post mode */
+    cf_run_view_handlers(thread,head,CF_MODE_THREADVIEW|CF_MODE_PRE);
+    for(msg=thread->messages;msg;msg=msg->next) cf_run_view_list_handlers(msg,head,thread->tid,CF_MODE_THREADVIEW);
+    cf_run_view_handlers(thread,head,CF_MODE_THREADVIEW|CF_MODE_POST);
+    /* }}} */
 
     tpl_cf_setvar(tpl,"threadlist","",0,0);
     for(msg=thread->messages;msg;msg=msg->next) {
       if((msg->may_show && msg->invisible == 0) || ShowInvisible == 1) {
-        rc = handle_thread_list_posting(msg,head,thread->tid,1);
+        if(slvl == -1) slvl = msg->level;
 
-        if(ShowInvisible == 0 && (rc == FLT_EXIT || msg->may_show == 0)) continue;
-        else if(slvl == -1) slvl = msg->level;
+        date = cf_general_get_time(dft->values[0],locale->values[0],&len,&msg->date);
+        link = cf_get_link(NULL,forum_name,thread->tid,msg->mid);
 
-        date = get_time(vc,"DateFormatThreadList",&len,&msg->date);
-        link = get_link(NULL,thread->tid,msg->mid);
+        cf_set_variable(&msg->tpl,cs,"author",msg->author.content,msg->author.len,1);
+        cf_set_variable(&msg->tpl,cs,"title",msg->subject.content,msg->subject.len,1);
 
-        cf_set_variable(&msg->tpl,cs,"author",msg->author,strlen(msg->author),1);
-        cf_set_variable(&msg->tpl,cs,"title",msg->subject,strlen(msg->subject),1);
-
-        if(msg->category) cf_set_variable(&msg->tpl,cs,"category",msg->category,strlen(msg->category),1);
+        if(msg->category.len) cf_set_variable(&msg->tpl,cs,"category",msg->category.content,msg->category.len,1);
 
         if(date) {
           cf_set_variable(&msg->tpl,cs,"time",date,len,1);
@@ -295,7 +295,7 @@ int flt_posting_execute_filter(t_cf_hash *head,t_configuration *dc,t_configurati
 
         level = msg->level;
 
-        if(msg->next && has_answers(msg)) { /* this message has at least one answer */
+        if(msg->next && cf_msg_has_answers(msg)) { /* this message has at least one answer */
           tpl_cf_appendvar(tpl,"threadlist","<li>",4);
 
           tpl_cf_parse_to_mem(&msg->tpl);
@@ -326,23 +326,24 @@ int flt_posting_execute_filter(t_cf_hash *head,t_configuration *dc,t_configurati
 
 /* {{{ pre and post content filters */
 int flt_posting_post_cnt(t_configuration *dc,t_configuration *vc,t_cl_thread *thr,t_string *content,t_string *cite,const u_char *qchars) {
+  u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   t_name_value *cs;
   u_char *tmp;
 
   if(cite) {
-    cs = cfg_get_first_value(dc,"ExternCharset");
+    cs = cfg_get_first_value(dc,forum_name,"ExternCharset");
 
     if(flt_posting_cfg.Bye) {
       if(cf_strcasecmp(cs->values[0],"utf-8") == 0 || (tmp = htmlentities_charset_convert(flt_posting_cfg.Bye,"UTF-8",cs->values[0],NULL,0)) == NULL) tmp = strdup(flt_posting_cfg.Bye);
       str_char_append(cite,'\n');
-      replace_placeholders(tmp,cite,thr);
+      flt_posting_replace_placeholders(tmp,cite,thr,cs);
 
       free(tmp);
     }
     if(flt_posting_cfg.Signature) {
       if(cf_strcasecmp(cs->values[0],"utf-8") == 0 || (tmp = htmlentities_charset_convert(flt_posting_cfg.Signature,"UTF-8",cs->values[0],NULL,0)) == NULL) tmp = strdup(flt_posting_cfg.Signature);
       str_chars_append(cite,"\n-- \n",5);
-      replace_placeholders(tmp,cite,thr);
+      flt_posting_replace_placeholders(tmp,cite,thr,cs);
 
       free(tmp);
     }
@@ -354,15 +355,16 @@ int flt_posting_post_cnt(t_configuration *dc,t_configuration *vc,t_cl_thread *th
 }
 
 int flt_posting_pre_cnt(t_configuration *dc,t_configuration *vc,t_cl_thread *thr,t_string *content,t_string *cite,const u_char *qchars) {
+  u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   t_name_value *cs;
   u_char *tmp;
 
   if(cite) {
     if(flt_posting_cfg.Hi) {
-      cs = cfg_get_first_value(dc,"ExternCharset");
+      cs = cfg_get_first_value(dc,forum_name,"ExternCharset");
 
       if(cf_strcasecmp(cs->values[0],"utf-8") == 0 || (tmp = htmlentities_charset_convert(flt_posting_cfg.Hi,"UTF-8",cs->values[0],NULL,0)) == NULL) tmp = strdup(flt_posting_cfg.Hi);
-      replace_placeholders(tmp,cite,thr);
+      flt_posting_replace_placeholders(tmp,cite,thr,cs);
       free(tmp);
 
       return FLT_OK;
@@ -374,8 +376,8 @@ int flt_posting_pre_cnt(t_configuration *dc,t_configuration *vc,t_cl_thread *thr
 /* }}} */
 
 /* {{{ module configuration */
-/* {{{ handle_greet */
-int handle_greet(t_configfile *cfile,t_conf_opt *opt,u_char **args,int argnum) {
+/* {{{ flt_posting_handle_greet */
+int flt_posting_handle_greet(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
   u_char *tmp = strdup(args[0]);
 
   if(cf_strcmp(opt->name,"Hi") == 0) {
@@ -395,8 +397,8 @@ int handle_greet(t_configfile *cfile,t_conf_opt *opt,u_char **args,int argnum) {
 }
 /* }}} */
 
-/* {{{ handle_box */
-int handle_box(t_configfile *cfile,t_conf_opt *opt,u_char **args,int argnum) {
+/* {{{ flt_posting_handle_box */
+int flt_posting_handle_box(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
   if(flt_posting_cfg.TWidth) free(flt_posting_cfg.TWidth);
   if(flt_posting_cfg.THeight) free(flt_posting_cfg.THeight);
 
@@ -407,16 +409,16 @@ int handle_box(t_configfile *cfile,t_conf_opt *opt,u_char **args,int argnum) {
 }
 /* }}} */
 
-/* {{{ handle_prev */
-int handle_prev(t_configfile *cfile,t_conf_opt *opt,u_char **args,int argnum) {
+/* {{{ flt_posting_handle_prev */
+int flt_posting_handle_prev(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
   flt_posting_cfg.Preview = cf_strcmp(args[0],"yes") == 0;
 
   return 0;
 }
 /* }}} */
 
-/* {{{ handle_prevt */
-int handle_prevt(t_configfile *cfile,t_conf_opt *opt,u_char **args,int argnum) {
+/* {{{ flt_posting_handle_prevt */
+int flt_posting_handle_prevt(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
   if(cf_strcmp(args[0],"button") == 0) {
     flt_posting_cfg.PreviewSwitchType = 1;
   }
@@ -432,8 +434,8 @@ int handle_prevt(t_configfile *cfile,t_conf_opt *opt,u_char **args,int argnum) {
 }
 /* }}} */
 
-/* {{{ handle_actpcol */
-int handle_actpcol(t_configfile *cfile,t_conf_opt *opt,u_char **args,int argnum) {
+/* {{{ flt_posting_handle_actpcol */
+int flt_posting_handle_actpcol(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
   if(flt_posting_cfg.ActiveColorF) free(flt_posting_cfg.ActiveColorF);
   if(flt_posting_cfg.ActiveColorB) free(flt_posting_cfg.ActiveColorB);
 
@@ -444,7 +446,7 @@ int handle_actpcol(t_configfile *cfile,t_conf_opt *opt,u_char **args,int argnum)
 }
 /* }}} */
 
-/* {{{ cleanup */
+/* {{{ flt_posting_cleanup */
 void flt_posting_cleanup(void) {
   if(flt_posting_cfg.Hi)           free(flt_posting_cfg.Hi);
   if(flt_posting_cfg.Bye)          free(flt_posting_cfg.Bye);
@@ -456,13 +458,13 @@ void flt_posting_cleanup(void) {
 
 /* {{{ t_conf_opt config[] */
 t_conf_opt flt_posting_config[] = {
-  { "Hi",                         handle_greet,    CFG_OPT_CONFIG|CFG_OPT_USER,                NULL },
-  { "Bye",                        handle_greet,    CFG_OPT_CONFIG|CFG_OPT_USER,                NULL },
-  { "Signature",                  handle_greet,    CFG_OPT_CONFIG|CFG_OPT_USER,                NULL },
-  { "TextBox",                    handle_box,      CFG_OPT_CONFIG|CFG_OPT_USER,                NULL },
-  { "GeneratePreview",            handle_prev,     CFG_OPT_CONFIG|CFG_OPT_USER,                NULL },
-  { "PreviewSwitchType",          handle_prevt,    CFG_OPT_CONFIG|CFG_OPT_USER,                NULL },
-  { "ActivePostingColor",         handle_actpcol,  CFG_OPT_CONFIG|CFG_OPT_USER,                NULL },
+  { "Hi",                 flt_posting_handle_greet,    CFG_OPT_CONFIG|CFG_OPT_USER, NULL },
+  { "Bye",                flt_posting_handle_greet,    CFG_OPT_CONFIG|CFG_OPT_USER, NULL },
+  { "Signature",          flt_posting_handle_greet,    CFG_OPT_CONFIG|CFG_OPT_USER, NULL },
+  { "TextBox",            flt_posting_handle_box,      CFG_OPT_CONFIG|CFG_OPT_USER, NULL },
+  { "GeneratePreview",    flt_posting_handle_prev,     CFG_OPT_CONFIG|CFG_OPT_USER, NULL },
+  { "PreviewSwitchType",  flt_posting_handle_prevt,    CFG_OPT_CONFIG|CFG_OPT_USER, NULL },
+  { "ActivePostingColor", flt_posting_handle_actpcol,  CFG_OPT_CONFIG|CFG_OPT_USER, NULL },
   { NULL, NULL, 0, NULL }
 };
 /* }}} */

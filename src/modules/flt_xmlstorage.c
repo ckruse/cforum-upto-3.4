@@ -326,7 +326,7 @@ int flt_xmlstorage_make_forumtree(t_forum *forum) {
   if(path.content[path.len-1] != '/') str_char_append(&path,'/');
   str_chars_append(&path,"forum.xml",9);
 
-  if((doc_index = gdome_di_createDocFromURI(di,path.content,GDOME_LOAD_VALIDATING,&e)) == NULL) {
+  if((doc_index = gdome_di_createDocFromURI(di,path.content,0,&e)) == NULL) {
     cf_log(CF_ERR|CF_FLSH,__FILE__,__LINE__,"error loading file (%s)!\n",path.content);
     return FLT_OK;
   }
@@ -342,7 +342,7 @@ int flt_xmlstorage_make_forumtree(t_forum *forum) {
 
     str_chars_append(&path,ctid,strlen(ctid));
     str_chars_append(&path,".xml",4);
-    if((doc_thread = gdome_di_createDocFromURI(di,path.content,GDOME_LOAD_VALIDATING,&e)) == NULL) {
+    if((doc_thread = gdome_di_createDocFromURI(di,path.content,0,&e)) == NULL) {
       cf_log(CF_ERR|CF_FLSH,__FILE__,__LINE__,"error loading file (%s)!\n",path.content);
       exit(-1);
     }

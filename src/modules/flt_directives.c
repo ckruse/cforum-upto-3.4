@@ -199,11 +199,12 @@ void flt_directives_generate_uri(const u_char *uri,const u_char *title,t_string 
 
 /* {{{ flt_directives_execute */
 int flt_directives_execute(t_configuration *fdc,t_configuration *fvc,const u_char *directive,const u_char *parameter,t_string *content,t_string *cite,const u_char *qchars,int sig) {
+  u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   size_t len = 0,i,len1 = 0;
-  t_name_value *xhtml = cfg_get_first_value(fdc,NULL,"XHTMLMode");
+  t_name_value *xhtml = cfg_get_first_value(fdc,forum_name,"XHTMLMode");
   u_int64_t tid,mid;
   u_char *ptr,*tmp,*tmp1 = NULL,**list = NULL,*title_alt = NULL,*tmp2 = NULL;
-  t_name_value *vs = cfg_get_first_value(fdc,NULL,cf_hash_get(GlobalValues,"UserName",8) ? "UPostingURL" : "PostingURL");
+  t_name_value *vs = cfg_get_first_value(fdc,forum_name,cf_hash_get(GlobalValues,"UserName",8) ? "UPostingURL" : "PostingURL");
   t_flt_directives_ref_uri *uri;
   int go = 1;
 
@@ -362,7 +363,7 @@ int flt_directives_execute(t_configuration *fdc,t_configuration *fvc,const u_cha
       if(flt_directives_is_valid_pref(parameter,&tmp1,&tmp2)) {
         tid = str_to_u_int64(parameter+2);
         mid = str_to_u_int64(tmp1);
-        tmp1 = get_link(vs->values[0],tid,mid);
+        tmp1 = cf_get_link(vs->values[0],forum_name,tid,mid);
         if(tmp2) tmp2 += 7;
 
         flt_directives_generate_uri(tmp1,tmp2,content,cite,sig);

@@ -627,7 +627,7 @@ void cf_init(void) {
   APIEntries = cf_hash_new(cf_api_destroy_entry);
   memset(ErrorString,0,sizeof(ErrorString));
 
-  if(val) cf_hash_set(GlobalValues,"FORUM_NAME",10,val,strlen(val));
+  if(val) cf_hash_set(GlobalValues,"FORUM_NAME",10,val,strlen(val)+1);
 }
 /* }}} */
 

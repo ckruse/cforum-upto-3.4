@@ -74,10 +74,6 @@ void print_thread_structure(t_cl_thread *thread,t_cf_hash *head) {
 
   for(msg=thread->messages;msg;msg=msg->next) {
     if((msg->may_show && msg->invisible == 0) || ShowInvisible == 1) {
-      rc = cf_run_view_list_handlers(msg,head,thread->tid,0);
-
-      if(ShowInvisible == 0 && ((rc != FLT_DECLINE && rc != FLT_OK) || msg->may_show == 0)) continue;
-
       printed = 1;
 
       date = cf_general_get_time(dnv->values[0],loc->values[0],&len,&msg->date);
@@ -240,6 +236,7 @@ void show_threadlist(int sock,t_cf_hash *head)
 void show_threadlist(void *shm_ptr,t_cf_hash *head)
 #endif
 {
+  /* {{{ variables */
   int ret,len;
   #ifndef CF_SHARED_MEM
   rline_t tsd;
@@ -268,12 +265,12 @@ void show_threadlist(void *shm_ptr,t_cf_hash *head)
 
   time_t tm;
   t_cl_thread thread;
+  t_message *msg;
   size_t i;
   int del = cf_hash_get(GlobalValues,"ShowInvisible",13) == NULL ? CF_KILL_DELETED : CF_KEEP_DELETED;
+  /* }}} */
 
-
-  /* initialization work */
-
+  /* {{{ initialization work */
   #ifndef CF_SHARED_MEM
   memset(&tsd,0,sizeof(tsd));
   #endif
@@ -287,13 +284,12 @@ void show_threadlist(void *shm_ptr,t_cf_hash *head)
   cf_gen_tpl_name(fo_begin_tplname,256,fo_begin_tpl->values[0]);
   cf_gen_tpl_name(fo_end_tplname,256,fo_end_tpl->values[0]);
   cf_gen_tpl_name(fo_thread_tplname,256,fo_thread_tpl->values[0]);
+  /* }}} */
 
-  /*
-   * if not in shm mode, request the threadlist from
+  /* {{{ if not in shm mode, request the threadlist from
    * the forum server. If in shm mode, request the
    * shm pointer
    */
-
   #ifndef CF_SHARED_MEM
   len = snprintf(buff,128,"SELECT %s\n",forum_name);
   writen(sock,buff,len);
@@ -310,10 +306,9 @@ void show_threadlist(void *shm_ptr,t_cf_hash *head)
   ptr = shm_ptr;
   ptr1 = ptr + sizeof(time_t);
   #endif
+  /* }}} */
 
-  /*
-   * Check if request was ok. If not, send error message.
-   */
+  /* {{{ Check if request was ok. If not, send error message. */
   #ifndef CF_SHARED_MEM
   if(!line || cf_strcmp(line,"200 Ok\n")) {
     printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
@@ -331,13 +326,14 @@ void show_threadlist(void *shm_ptr,t_cf_hash *head)
     cf_error_message("E_NO_CONN",NULL,strerror(errno));
   }
   #endif
+  /* }}} */
 
   /*
    * Request of shm segment/threadlist wen't through,
    * go on with work
    */
   else {
-    UserName = cf_hash_get(GlobalValues,"UserName",8);
+    /* {{{ more initialization */
     fbase    = cfg_get_first_value(&fo_default_conf,forum_name,UserName ? "UBaseURL" : "BaseURL");
 
     if(tpl_cf_init(&tpl_begin,fo_begin_tplname) != 0) {
@@ -357,6 +353,7 @@ void show_threadlist(void *shm_ptr,t_cf_hash *head)
 
     cf_set_variable(&tpl_end,cs,"forumbase",fbase->values[0],strlen(fbase->values[0]),1);
     tpl_cf_setvar(&tpl_begin,"charset",cs->values[0],strlen(cs->values[0]),0);
+    /* }}} */
 
     /* run some plugins */
     cf_run_view_init_handlers(head,&tpl_begin,&tpl_end);
@@ -399,8 +396,19 @@ void show_threadlist(void *shm_ptr,t_cf_hash *head)
           len = snprintf(buff,128,"%d",thread.msg_len-1);
           tpl_cf_setvar(&thread.messages->tpl,"answers",buff,len,0);
 
-          ret = cf_run_view_handlers(&thread,head,0);
-          if(ret == FLT_OK || ret == FLT_DECLINE || del == CF_KEEP_DELETED) print_thread_structure(&thread,head);
+	  /* first: run VIEW_HANDLER handlers in pre-mode */
+          ret = cf_run_view_handlers(&thread,head,CF_MODE_THREADLIST|CF_MODE_PRE);
+
+          if(ret == FLT_OK || ret == FLT_DECLINE || del == CF_KEEP_DELETED) {
+	    /* run list handlers */
+	    for(msg=thread.messages;msg;msg=msg->next) cf_run_view_list_handlers(msg,head,thread.tid,CF_MODE_THREADLIST);
+
+	    /* after that, run VIEW_HANDLER handlers in post-mode */
+	    ret = cf_run_view_handlers(&thread,head,CF_MODE_THREADLIST|CF_MODE_POST);
+
+	    /* if thread is still visible print it out */
+	    if(ret == FLT_OK || ret == FLT_DECLINE || del == CF_KEEP_DELETED) print_thread_structure(&thread,head);
+	  }
 
           cf_cleanup_thread(&thread);
         }
@@ -504,9 +512,9 @@ int main(int argc,char *argv[],char *env[]) {
     return EXIT_FAILURE;
   }
 
-  cf_init();
-  init_modules();
   cfg_init();
+  init_modules();
+  cf_init();
 
   #ifndef CF_SHARED_MEM
   sock = 0;
@@ -654,9 +662,7 @@ int main(int argc,char *argv[],char *env[]) {
   }
 
   /* cleanup source */
-  cfg_cleanup(&fo_default_conf);
   cfg_cleanup_file(&dconf);
-  cfg_cleanup(&fo_view_conf);
   cfg_cleanup_file(&conf);
 
   array_destroy(cfgfiles);

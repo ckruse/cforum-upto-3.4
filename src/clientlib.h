@@ -19,6 +19,12 @@
 #ifndef _CF_CLIENTLIB_H
 #define _CF_CLIENTLIB_H
 
+#define CF_MODE_THREADLIST (1<<0)
+#define CF_MODE_THREADVIEW (1<<1)
+#define CF_MODE_PRE        (1<<2)
+#define CF_MODE_POST       (1<<3)
+
+
 /**
  * module api function.
  * \param param Expects a void pointer
@@ -319,7 +325,7 @@ t_message *cf_msg_prev_subtree(t_message *msg);
  * \param tmsg The message
  * \return NULL if there is no parent posting, otherwise a pointer to the parent posting
  */
-t_message *cf_msg_parent_message(t_message *tmsg);
+t_message *cf_msg_get_parent(t_message *tmsg);
 
 /**
  * This function checks if a message has answers

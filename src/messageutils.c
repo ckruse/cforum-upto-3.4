@@ -138,7 +138,7 @@ void cf_cleanup_message(t_message *msg) {
 
   if(msg->category.len) str_cleanup(&msg->category);
   if(msg->content.len) str_cleanup(&msg->content);
-  if(msg->email.len) str_cleanup(&msg->content);
+  if(msg->email.len) str_cleanup(&msg->email);
   if(msg->hp.len) str_cleanup(&msg->hp);
   if(msg->img.len) str_cleanup(&msg->img);
 

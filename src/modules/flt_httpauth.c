@@ -36,16 +36,15 @@
 
 
 int flt_httpauth_run(t_cf_hash *head,t_configuration *dc,t_configuration *vc) {
-  t_name_value *v = cfg_get_first_value(dc,NULL,"AuthMode");
+  u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
+  t_name_value *v = cfg_get_first_value(dc,forum_name,"AuthMode");
   u_char *name,*path;
 
-  if(!v || !v->values[0] || cf_strcmp(v->values[0],"http") != 0) {
-    return FLT_DECLINE;
-  }
+  if(!v || !v->values[0] || cf_strcmp(v->values[0],"http") != 0) return FLT_DECLINE;
 
   name = getenv("REMOTE_USER");
   if(name) {
-    path = get_uconf_name(name);
+    path = cf_get_uconf_name(name);
 
     if(path) {
       free(path);

@@ -10,7 +10,6 @@
  * $LastChangedDate$
  * $LastChangedRevision$
  * $LastChangedBy$
- *
  */
 /* }}} */
 
@@ -28,6 +27,8 @@
 #include <sys/types.h>
 #include <fcntl.h>
 #include <unistd.h>
+
+#include <sys/file.h>
 
 #include <db.h>
 
@@ -57,17 +58,19 @@ struct {
 int flt_deleted_execute(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cl_thread *thread,int mode) {
   t_name_value *url;
   u_char *UserName = cf_hash_get(GlobalValues,"UserName",8);
+  u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   DBT key,data;
   size_t len;
   u_char buff[256];
   u_char one[] = "1";
-  url = cfg_get_first_value(dc,NULL,"UBaseURL");
+  url = cfg_get_first_value(dc,forum_name,"UBaseURL");
   t_message *msg;
 
   if(UserName) {
-    msg = cf_get_first_visible(thread->messages);
+    msg = cf_msg_get_first_visible(thread->messages);
 
-    if(mode == 0) {
+    /* run only in threadlist mode and only in pre mode */
+    if(mode & (CF_MODE_THREADLIST|CF_MODE_PRE)) {
       if(Cfg.DeletedFile) {
         memset(&key,0,sizeof(key));
         memset(&data,0,sizeof(data));
@@ -82,7 +85,7 @@ int flt_deleted_execute(t_cf_hash *head,t_configuration *dc,t_configuration *vc,
         if(Cfg.db->get(Cfg.db,NULL,&key,&data,0) == 0) {
           if(Cfg.DoDelete) {
             thread->messages->may_show = 0;
-            delete_subtree(thread->messages);
+            cf_msg_delete_subtree(thread->messages);
           }
           else {
             len = snprintf(buff,256,"?a=u&t=%llu",thread->tid);
@@ -119,32 +122,26 @@ int flt_deleted_pl_filter(t_cf_hash *head,t_configuration *dc,t_configuration *v
 
   if(Cfg.BLlen) {
     for(i=0;i<Cfg.BLlen;i++) {
-      if(cf_strcasecmp(msg->author,Cfg.BlackList[i]) == 0) {
+      if(cf_strcasecmp(msg->author.content,Cfg.BlackList[i]) == 0) {
         msg->may_show = 0;
 
         if(Cfg.FollowUps == 0) {
-          if(!delete_subtree(msg)) {
-            return FLT_OK;
-          }
+          if(!cf_msg_delete_subtree(msg)) return FLT_OK;
         }
       }
     }
   }
 
-  if(mode == 0) {
+  if(mode & CF_MODE_THREADLIST) {
     if(Cfg.ShowFrom) {
       if(msg->may_show) {
-        if(msg->date < Cfg.ShowFrom) {
-          msg->may_show = 0;
-        }
+        if(msg->date < Cfg.ShowFrom) msg->may_show = 0;
       }
     }
 
     if(Cfg.ShowUntil) {
       if(msg->may_show) {
-        if(msg->date > Cfg.ShowUntil) {
-          msg->may_show = 0;
-        }
+        if(msg->date > Cfg.ShowUntil) msg->may_show = 0;
       }
     }
   }
@@ -276,7 +273,7 @@ int flt_del_init_handler(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc)
 }
 /* }}} */
 
-/* {{{ flt_del_view_init_handler */
+/* {{{ flt_deleted_view_init_handler */
 int flt_del_view_init_handler(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cf_template *begin,t_cf_template *end) {
   if(end && Cfg.CheckBoxes && Cfg.DeletedFile) {
     if(head && cf_cgi_get(head,"nd") != NULL) tpl_cf_setvar(begin,"delnodelete","1",1,0);
@@ -395,7 +392,6 @@ time_t flt_deleted_lm(t_cf_hash *head,t_configuration *dc,t_configuration *vc,vo
 }
 /* }}} */
 
-/* {{{ module config */
 t_conf_opt flt_deleted_config[] = {
   { "BlackList",               flt_del_handle_command, CFG_OPT_CONFIG|CFG_OPT_USER, NULL },
   { "ShowBlacklistFollowups",  flt_del_handle_command, CFG_OPT_CONFIG|CFG_OPT_USER, NULL },
@@ -424,6 +420,5 @@ t_module_config flt_deleted = {
   NULL,
   flt_del_cleanup
 };
-/*  }}} */
 
 /* eof */

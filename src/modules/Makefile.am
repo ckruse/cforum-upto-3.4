@@ -20,11 +20,11 @@ pkglib_LTLIBRARIES=flt_cftp.la
 flt_cftp_la_SOURCES=flt_cftp.c
 flt_cftp_la_LDFLAGS=-module -export-dynamic -avoid-version
 
-#pkglib_LTLIBRARIES+=flt_deleted.la
-#flt_deleted_la_SOURCES=flt_deleted.c
-#flt_deleted_la_LIBADD=$(BDB_LIB)
-#flt_deleted_la_LDFLAGS=-module -export-dynamic -avoid-version
-#
+pkglib_LTLIBRARIES+=flt_deleted.la
+flt_deleted_la_SOURCES=flt_deleted.c
+flt_deleted_la_LIBADD=$(BDB_LIB)
+flt_deleted_la_LDFLAGS=-module -export-dynamic -avoid-version
+
 #pkglib_LTLIBRARIES+=flt_frameset.la
 #flt_frameset_la_SOURCES=flt_frameset.c
 #flt_frameset_la_LDFLAGS=-module -export-dynamic -avoid-version
@@ -32,35 +32,35 @@ flt_cftp_la_LDFLAGS=-module -export-dynamic -avoid-version
 #pkglib_LTLIBRARIES+=flt_http.la
 #flt_http_la_SOURCES=flt_http.c
 #flt_http_la_LDFLAGS=-module -export-dynamic -avoid-version
-#
-#pkglib_LTLIBRARIES+=flt_httpauth.la
-#flt_httpauth_la_SOURCES=flt_httpauth.c
-#flt_httpauth_la_LDFLAGS=-module -export-dynamic -avoid-version
-#
-#pkglib_LTLIBRARIES+=flt_link.la
-#flt_link_la_SOURCES=flt_link.c
-#flt_link_la_LDFLAGS=-module -export-dynamic -avoid-version
-#
-#pkglib_LTLIBRARIES+=flt_listhighlight.la
-#flt_listhighlight_la_SOURCES=flt_listhighlight.c
-#flt_listhighlight_la_LDFLAGS=-module -export-dynamic -avoid-version
-#
+
+pkglib_LTLIBRARIES+=flt_httpauth.la
+flt_httpauth_la_SOURCES=flt_httpauth.c
+flt_httpauth_la_LDFLAGS=-module -export-dynamic -avoid-version
+
+pkglib_LTLIBRARIES+=flt_link.la
+flt_link_la_SOURCES=flt_link.c
+flt_link_la_LDFLAGS=-module -export-dynamic -avoid-version
+
+pkglib_LTLIBRARIES+=flt_listhighlight.la
+flt_listhighlight_la_SOURCES=flt_listhighlight.c
+flt_listhighlight_la_LDFLAGS=-module -export-dynamic -avoid-version
+
 #pkglib_LTLIBRARIES+=flt_livefilter.la
 #flt_livefilter_la_SOURCES=flt_livefilter.c
 #flt_livefilter_la_LDFLAGS=-module -export-dynamic -avoid-version
-#
-#pkglib_LTLIBRARIES+=flt_openclose.la
-#flt_openclose_la_SOURCES=flt_openclose.c
-#flt_openclose_la_LDFLAGS=-module -export-dynamic -avoid-version
-#
+
+pkglib_LTLIBRARIES+=flt_openclose.la
+flt_openclose_la_SOURCES=flt_openclose.c
+flt_openclose_la_LDFLAGS=-module -export-dynamic -avoid-version
+
 #pkglib_LTLIBRARIES+=flt_include.la
 #flt_include_la_SOURCES=flt_include.c
 #flt_include_la_LDFLAGS=-module -export-dynamic -avoid-version
-#
-#pkglib_LTLIBRARIES+=flt_posting.la
-#flt_posting_la_SOURCES=flt_posting.c
-#flt_posting_la_LIBADD=../libcfvalidate.la
-#flt_posting_la_LDFLAGS=-module -export-dynamic -avoid-version
+
+pkglib_LTLIBRARIES+=flt_posting.la
+flt_posting_la_SOURCES=flt_posting.c
+flt_posting_la_LIBADD=../libcfvalidate.la
+flt_posting_la_LDFLAGS=-module -export-dynamic -avoid-version
 
 pkglib_LTLIBRARIES+=flt_registerednames.la
 flt_registerednames_la_SOURCES=flt_registerednames.c
@@ -80,11 +80,11 @@ flt_tid_index_la_LDFLAGS=-module -export-dynamic -avoid-version
 #flt_urlrewrite_la_SOURCES=flt_urlrewrite.c
 #flt_urlrewrite_la_LDFLAGS=-module -export-dynamic -avoid-version
 #flt_urlrewrite_la_LIBADD=$(PCRE_LIBS)
-#
-#pkglib_LTLIBRARIES+=flt_visited.la
-#flt_visited_la_SOURCES=flt_visited.c
-#flt_visited_la_LIBADD=$(BDB_LIB)
-#flt_visited_la_LDFLAGS=-module -export-dynamic -avoid-version
+
+pkglib_LTLIBRARIES+=flt_visited.la
+flt_visited_la_SOURCES=flt_visited.c
+flt_visited_la_LIBADD=$(BDB_LIB)
+flt_visited_la_LDFLAGS=-module -export-dynamic -avoid-version
 
 pkglib_LTLIBRARIES+=flt_extern.la
 flt_extern_la_SOURCES=flt_extern.c
@@ -132,10 +132,10 @@ pkglib_LTLIBRARIES+=flt_failsafe.la
 flt_failsafe_la_SOURCES=flt_failsafe.c
 flt_failsafe_la_LDFLAGS=-module -export-dynamic -avoid-version
 
-#pkglib_LTLIBRARIES+=flt_directives.la
-#flt_directives_la_SOURCES=flt_directives.c
-#flt_directives_la_LDFLAGS=-module -export-dynamic -avoid-version
-#flt_directives_la_LIBADD=../libcfvalidate.la
+pkglib_LTLIBRARIES+=flt_directives.la
+flt_directives_la_SOURCES=flt_directives.c
+flt_directives_la_LDFLAGS=-module -export-dynamic -avoid-version
+flt_directives_la_LIBADD=../libcfvalidate.la
 
 #pkglib_LTLIBRARIES+=flt_votingvariables.la
 #flt_votingvariables_la_SOURCES=flt_votingvariables.c
