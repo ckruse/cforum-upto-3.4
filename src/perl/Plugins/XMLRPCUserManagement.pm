@@ -64,7 +64,7 @@ sub add_user {
   #
   # run config plugins
   #
-  foreach(@{$Plugins->{register}}) {
+  foreach(@{$main::Plugins->{register}}) {
     &$_($fo_default_conf,undef,undef,$dir,$ufile,$dat);
   }
   close $dat;

@@ -2,6 +2,7 @@
 	* src/modules/flt_spellcheck.c: Fixed bug #555
 	* src/modules/flt_mailonpost.c: Added missing ; that caused parse
 		error
+	* src/perl/Plugins/XMLRPCUserManagement.pm: Fixed small bug
 
 2005-02-25 Christian Kruse <ckruse@wwwtech.de>
 	* src/fo_server.c: Fixed a _really_ nasty bug in logfile rolling...
