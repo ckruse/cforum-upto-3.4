@@ -55,6 +55,7 @@
 
 #include "serverlib.h"
 #include "fo_server.h"
+#include "archiver.h"
 /* }}} */
 
 
@@ -667,7 +668,7 @@ void cf_cftp_handler(int sockfd) {
 
               writen(sockfd,"200 Ok\n",7);
 
-              cf_archive_thread(sockfd,forum,tid);
+              cf_archive_thread(forum,tid);
               cf_generate_cache(forum);
             }
 
@@ -883,6 +884,14 @@ t_thread *cf_get_thread(t_forum *forum,u_int64_t tid) {
   CF_RW_UN(&forum->threads.lock);
 
   return t ? *t : NULL;
+}
+/* }}} */
+
+/* {{{ cf_destroy_flag */
+void cf_destroy_flag(void *data) {
+  t_posting_flag *flag = (t_posting_flag *)data;
+  free(flag->name);
+  free(flag->val);
 }
 /* }}} */
 

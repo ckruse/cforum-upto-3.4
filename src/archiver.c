@@ -58,11 +58,10 @@ void cf_run_archiver(void) {
   t_posting *oldest,*newest_in_t;
   long size,threadnum,pnum,max_bytes,max_threads,max_posts;
   int shall_archive = 0,len = 0,ret = FLT_OK;
-  t_name_value *max_bytes_v, *max_posts_v, *max_threads_v, *forums = cfg_get_value(&fo_server_conf,NULL,"Forums");
+  t_name_value *max_bytes_v, *max_posts_v, *max_threads_v, *forums = cfg_get_first_value(&fo_server_conf,NULL,"Forums");
   t_handler_config *handler;
   t_archive_filter fkt;
   size_t i;
-  u_char *fname;
   t_forum *forum;
   t_posting *p,*p1;
 
@@ -82,6 +81,7 @@ void cf_run_archiver(void) {
 
     do {
       CF_RW_RD(&forum->lock);
+      CF_RW_RD(&forum->threads.lock);
 
       size          = forum->cache.invisible.len;
       t             = forum->threads.list;
@@ -94,6 +94,7 @@ void cf_run_archiver(void) {
       newest_in_t   = NULL;
 
       CF_RW_UN(&forum->lock);
+      CF_RW_UN(&forum->threads.lock);
 
       if(!t) return;
 
@@ -125,15 +126,15 @@ void cf_run_archiver(void) {
 
       if(size > max_bytes) {
         shall_archive = 1;
-        cf_log(LOG_STD,__FILE__,__LINE__,"Archiver: Criterium: max bytes, Values: Config: %ld, Real: %ld\n",max_bytes,size);
+        cf_log(CF_STD,__FILE__,__LINE__,"Archiver: Criterium: max bytes, Values: Config: %ld, Real: %ld\n",max_bytes,size);
       }
       if(pnum > max_posts) {
         shall_archive = 1;
-        cf_log(LOG_STD,__FILE__,__LINE__,"Archiver: Criterium: max posts, Values: Config: %ld, Real: %ld\n",max_posts,pnum);
+        cf_log(CF_STD,__FILE__,__LINE__,"Archiver: Criterium: max posts, Values: Config: %ld, Real: %ld\n",max_posts,pnum);
       }
       if(threadnum > max_threads) {
         shall_archive = 1;
-        cf_log(LOG_STD,__FILE__,__LINE__,"Archiver: Criterium: max threads, Values: Config: %ld, Real: %ld\n",max_threads,threadnum);
+        cf_log(CF_STD,__FILE__,__LINE__,"Archiver: Criterium: max threads, Values: Config: %ld, Real: %ld\n",max_threads,threadnum);
       }
 
       if(shall_archive) {
@@ -161,9 +162,9 @@ void cf_run_archiver(void) {
           CF_RW_UN(&oldest_prev->lock);
         }
         else {
-          CF_RW_WR(&head.lock);
-          head.thread = oldest_t->next;
-          CF_RW_UN(&head.lock);
+          CF_RW_WR(&forum->threads.lock);
+          forum->threads.list = oldest_t->next;
+          CF_RW_UN(&forum->threads.lock);
         }
 
         /* all references to this thread are released, so run the archiver plugins */
@@ -179,16 +180,18 @@ void cf_run_archiver(void) {
 
         if(ret == FLT_EXIT) {
           for(p=to_archive[len-1]->postings;p;p=p1) {
-            free(p->user.name);
-            free(p->user.ip);
-            free(p->subject);
-            free(p->unid);
-            free(p->content);
+            str_cleanup(&p->user.name);
+            str_cleanup(&p->user.ip);
+            str_cleanup(&p->subject);
+            str_cleanup(&p->unid);
+            str_cleanup(&p->content);
 
-            if(p->user.email) free(p->user.email);
-            if(p->user.img) free(p->user.img);
-            if(p->user.hp) free(p->user.hp);
-            if(p->category) free(p->category);
+            if(p->user.email.len) str_cleanup(&p->user.email);
+            if(p->user.img.len) str_cleanup(&p->user.img);
+            if(p->user.hp.len) str_cleanup(&p->user.hp);
+            if(p->category.len) str_cleanup(&p->category);
+
+            cf_list_destroy(&p->flags,cf_destroy_flag);
 
             p1 = p->next;
             free(p);
@@ -207,7 +210,7 @@ void cf_run_archiver(void) {
     /* ok, this may have token some time, so yield... */
     pthread_yield();
 
-    cf_log(LOG_STD,__FILE__,__LINE__,"archiver ran for forum %s. Writing threadlists...\n",forum->name);
+    cf_log(CF_STD|CF_FLSH,__FILE__,__LINE__,"archiver ran for forum %s. Writing threadlists...\n",forum->name);
 
     cf_write_threadlist(forum);
 
@@ -216,15 +219,18 @@ void cf_run_archiver(void) {
 
       for(i=0;i<len;i++) {
         for(p=to_archive[i]->postings;p;p=p1) {
-          free(p->user.name);
-          free(p->user.ip);
-          free(p->subject);
-          free(p->unid);
-          free(p->content);
-          if(p->user.email) free(p->user.email);
-          if(p->user.img) free(p->user.img);
-          if(p->user.hp) free(p->user.hp);
-          if(p->category) free(p->category);
+          str_cleanup(&p->user.name);
+          str_cleanup(&p->user.ip);
+          str_cleanup(&p->subject);
+          str_cleanup(&p->unid);
+          str_cleanup(&p->content);
+
+          if(p->user.email.len) str_cleanup(&p->user.email);
+          if(p->user.img.len) str_cleanup(&p->user.img);
+          if(p->user.hp.len) str_cleanup(&p->user.hp);
+          if(p->category.len) str_cleanup(&p->category);
+
+          cf_list_destroy(&p->flags,cf_destroy_flag);
 
           p1 = p->next;
           free(p);
@@ -242,7 +248,6 @@ void cf_run_archiver(void) {
 }
 
 void cf_archive_threads(t_forum *forum,t_thread **to_archive,int len) {
-  return 0;
 }
 
 void cf_write_threadlist(t_forum *forum) {
