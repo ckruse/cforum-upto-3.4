@@ -18,6 +18,12 @@
 		Corrected syntax of configuration files
 	* src/fo_tid_index.c: Moved to 3.0 API, invented getopt usage
 	* src/fo_threadlookup.c: Moved to 3.0 API, made it a little bit more nice
+	* cgi-bin/fo_userconf.in: Fixed bug #432
+	* cgi-bin/fo_post_old.in: Removed for 3.0
+	* configure.in: Removed fo_post_old.in
+	* cgi-shared/ForumUtils.pm: Moved to 3.0 API, removed some routines no longer
+		needed, not yet tested!
+	* cgi-bin/fo_userconf.in: Moved to 3.0 API, not yet tested!
 
 2005-01-14 Christian Kruse <ckruse@wwwtech.de>
 	* src/clientlib.h: Added t_hierarchical_node and some prototypes for handling

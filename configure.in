@@ -287,7 +287,6 @@ AC_TYPE_PID_T
 AC_TYPE_SIGNAL
 
 AC_OUTPUT(cgi-bin/Makefile
-cgi-bin/fo_post_old
 cgi-bin/fo_userconf
 cgi-bin/fo_usermanagement
 cgi-bin/admin/Makefile

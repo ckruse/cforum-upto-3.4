@@ -21,8 +21,6 @@ BEGIN {
     generate_unid
     get_error
     decode_params
-    message_field
-    transform_body
     gen_time
     rel_uri
     get_template
@@ -30,9 +28,10 @@ BEGIN {
     recode
     uniquify_params
     fatal
-    plaintext
     decode
-    get_config_file
+    get_config_files
+    get_user_config_file
+    get_conf_val
     create_directory_structure
   );
 }
@@ -62,13 +61,14 @@ my $Clientlib = new CForum::Clientlib;
 sub recode {
   my $fdc = shift; # default config
   my $str = shift;
+  my $cs = get_conf_val($fdc,$main::Forum,'ExternCharset');
 
   return unless defined $str;
-  if($fdc->{ExternCharset}->[0]->[0] eq 'UTF-8') {
+  if($cs eq 'UTF-8') {
     $str = $str ? $Clientlib->htmlentities($str,0) : '';
   }
   else {
-    $str = $Clientlib->htmlentities_charset_convert($str,"UTF-8",$fdc->{ExternCharset}->[0]->[0],0) if $fdc->{ExternCharset}->[0]->[0] ne "UTF-8";
+    $str = $Clientlib->htmlentities_charset_convert($str,"UTF-8",$cs,0) if $cs ne "UTF-8";
   }
 
   return $str;
@@ -101,12 +101,28 @@ sub decode {
 }
 # }}}
 
-# {{{ get_config_file
-sub get_config_file {
+# {{{ get_config_files
+sub get_config_files {
+  return unless $ENV{'CF_CONF_DIR'};
+  my @ret = ();
+
+  foreach my $fname (@_) {
+    my $f = $ENV{'CF_CONF_DIR'}.'/'.$fname;
+    return unless -f $f || !-r $f;
+
+    push @ret,$f;
+  }
+
+  return @ret;
+}
+# }}}
+
+# {{{ get_user_config_file
+sub get_user_config_file {
   my $default_conf = shift;
   my $uname        = shift;
 
-  my $cfgfile = sprintf '%s%s/%s/%s/%s%s',$default_conf->{ConfigDirectory}->[0]->[0],substr($uname,0,1),substr($uname,1,1),substr($uname,2,1),$uname,'.conf';
+  my $cfgfile = sprintf '%s%s/%s/%s/%s%s',get_conf_val($default_conf,$main::Forum,'ConfigDirectory'),substr($uname,0,1),substr($uname,1,1),substr($uname,2,1),$uname,'.conf';
 
   return $cfgfile;
 }
@@ -117,7 +133,7 @@ sub create_directory_structure {
   my $default_conf = shift;
   my $uname        = shift;
 
-  my $dir = $default_conf->{ConfigDirectory}->[0]->[0];
+  my $dir = get_conf_val($default_conf,$main::Forum,'ConfigDirectory');
   $dir =~ s!/$!!;
 
   for(0..2) {
@@ -137,14 +153,15 @@ sub create_directory_structure {
 # {{{ get_template
 sub get_template {
   my ($fo_default_conf,$user_config,$tplname) = (shift,shift,shift);
+  my $tplmode = get_conf_val($user_config,'global','TPLMode');
+  my $lang = get_conf_val($fo_default_conf,$main::Forum,'Language');
+  my $tplmode_global = get_conf_val($fo_default_conf,$main::Forum,'TemplateMode');
 
   if($user_config) {
-    if(exists $user_config->{TPLMode}) {
-      return sprintf($tplname,$fo_default_conf->{Language}->[0]->[0],$user_config->{TPLMode}->[0]->[0]) if $user_config->{TPLMode}->[0]->[0];
-    }
+    return sprintf($tplname,$lang,$tplmode) if $tplmode;
   }
 
-  return sprintf($tplname,$fo_default_conf->{Language}->[0]->[0],$fo_default_conf->{TemplateMode}->[0]->[0]);
+  return sprintf($tplname,$lang,$tplmode_global);
 }
 # }}}
 
@@ -164,230 +181,10 @@ sub gen_time {
   my $time   = shift;
   my $dcfg   = shift;
   my $format = shift;
+  my $dl = get_conf_val($dcfg,$main::Forum,'DateLocale');
 
-  setlocale(LC_ALL,$dcfg->{DateLocale}->[0]->[0]);
+  setlocale(LC_ALL,$dl);
   return strftime($format,localtime($time));
-}
-# }}}
-
-# {{{ transform_body
-sub transform_body {
-  my $dcfg   = shift;
-  my $pcfg   = shift;
-  my $txt    = shift;
-  my $qchars = recode($dcfg,shift);
-  my $base   = $ENV{SCRIPT_NAME};
-
-  $base =~ s![^/]*$!!; #!;
-
-  #
-  # the following section contains lot of code from André Malo -- thanks to him
-  #
-
-  # first we transform all newlines to \n
-  $txt =~ s/\015\012|\015|\012/\n/g;
-
-  # after that, we collect all links to postings...
-  foreach(@{$pcfg->{PostingUrl}}) {
-    $txt =~ s{\[link:\s*$_->[0]([\dtm=&]+)(?:#\w+)?(\@title=[^\[\]<]+)?\]}{
-      my $tidpid = $1;
-      my $title = $2;
-      $tidpid =~ s!&(?:amp;)?!;!; '[pref:'.$tidpid.($title||'').']'}eg;
-  }
-
-  # encode to html (entities, and so on -- if we do it once,
-  # we don't need to do it every time a message will be viewed)
-  $txt = recode($dcfg,$txt);
-
-  # now transform...
-
-  # ... messages
-  foreach(@{$pcfg->{Image}}) {
-    my ($name,$url,$alt) = (quotemeta $_->[0],recode($dcfg,$_->[1]),recode($dcfg,$_->[2]));
-    $txt =~ s!\[msg:\s*$name\]![image:$url\@alt=$alt]!g;
-  }
-
-  # ... all quoting characters to \177
-  my $len = length $qchars;
-  $txt =~ s!^((?:\Q$qchars\E)+)!"\177" x (length($1)/$len)!gem if $len;
-
-  # save the sig
-  $txt =~ s!\n-- \n!_/_SIG_/_!;
-
-  # after that we kill all whitespaces at the end of the line
-  $txt =~ s/[^\S\n]+$//gm;
-
-  # now kill all newlines at the end of the string
-  $txt =~ s/\s+$//;
-
-  # now lets transform \n to <br />
-  $txt =~ s!\n!<br />!g;
-
-  # transform more than one space to &nbsp; (ascii art, etc)
-  $txt =~ s/(\s\s+)/'&nbsp;' x length($1)/eg;
-
-  # spaces after a <br /> have to be &nbsp;
-  $txt =~ s!(?:^|(<br(?:\s*/)?>))\s!($1?$1:'').'&nbsp;'!eg;
-
-  # after that - transform it to UTF-8
-  $txt = $Clientlib->charset_convert($txt,length($txt),$dcfg->{ExternCharset}->[0]->[0],"UTF-8") if $dcfg->{ExternCharset}->[0]->[0] ne "UTF-8";
-
-  return $txt;
-}
-# }}}
-
-# {{{ message_field
-sub message_field {
-  my $posting = shift;
-  my $qchar   = shift;
-  my $fdcfg   = shift;
-  my $archive = shift;
-
-  my $xhtml   = $fdcfg->{XHTMLMode} && $fdcfg->{XHTMLMode}->[0]->[0] eq 'yes';
-  my $break   = $xhtml ? '<br />' : '<br>';
-
-  my $base   = $ENV{SCRIPT_NAME};
-
-  $base =~ s![^/]*$!!; #!;
-
-  #
-  # maybe not as fast as the previous code, but even
-  # more elegant
-  #
-  my $txt   = '';
-  my $qmode = 0;
-  for(my $i=0;$i<length($posting);$i++) {
-    if(substr($posting,$i,1) eq "\177") {
-      $txt .= '<span class="q">' unless $qmode;
-      $txt  .= recode($fdcfg,$qchar);
-      $qmode = 1;
-    }
-    elsif(substr($posting,$i,6) eq '<br />') {
-      $txt .= $break;
-
-      if($qmode && substr($posting,$i+6,length $qchar) ne $qchar) {
-        $txt .= '</span>';
-        $qmode = 0;
-      }
-
-      $i += 5;
-    }
-    else {
-      $txt .= substr($posting,$i,1);
-    }
-  }
-
-  $posting = $txt;
-
-#  $posting =~ s/\177/recode($fdcfg,$qchar)/eg; # \177 => quote chars
-  $posting =~ s!_/_SIG_/_(.*)!$break<span class="sig">-- $break$1</span>!s;
-
-  # we want all posting refs to be transformed to links
-  my $posturl;
-  if($main::UserName) {
-    $posturl = $fdcfg->{UPostingURL}->[0]->[0];
-  }
-  else {
-    $posturl = $fdcfg->{PostingURL}->[0]->[0];
-  }
-
-  $posting =~ s{\[pref:t=(\d+);m=(\d+)(?:\@title=([^\[\]<]+))?\]}{
-    my $txt = $posturl;
-    my ($tid,$mid,$title) = ($1,$2,$3);
-    $txt =~ s!\%t!$tid!g;
-    $txt =~ s!\%m!$mid!g;
-    '<a href="'.$txt.'">'.($title||$txt).'</a>';
-  }eg;
-
-
-  # Phase 1: collect links, images, etc, pp
-
-  # this is much faster than the code used before
-  # (efficience analysis is relly nice :-)
-
-  my @links = ();
-  while($posting =~ /\[link:\s*([^\]\s]+?)\s*(?:\@title=([^\[\]<]+)\s*)?\]/g) {
-    my ($uri,$title) = ($1,$2);
-    next if
-      !is_valid_link($uri) &&
-      !is_valid_http_link(($uri =~ /^view-source:(.+)/)[0],CForum::Validator::VALIDATE_STRICT) &&
-      !($uri =~ m{^(?:\.?\.?/(?!/)|\?)} and is_valid_http_link(rel_uri($uri,$base)));
-
-    push @links,[$uri,$title];
-  }
-
-  my @images = ();
-  while($posting =~ /\[image:\s*([^\]\s]+?)\s*(?:\@alt=([^\[\]<]+)\s*)?\]/g) {
-    my ($uri,$alt) = ($1,$2);
-    next if
-      !is_valid_http_link($uri,CForum::Validator::VALIDATE_STRICT) &&
-      !($uri =~ m{^(?:\.?\.?/(?!/)|\?)} and is_valid_http_link(rel_uri($uri, $base),CForum::Validator::VALIDATE_STRICT));
-
-    push @images,[$uri,$alt];
-  }
-
-  my @iframes = ();
-  while($posting =~ /\[iframe:\s*([^\[\]<\s]+)\s*\]/g) {
-    my $uri = $1;
-    next if
-      !is_valid_http_link($uri,CForum::Validator::VALIDATE_STRICT) &&
-      !($uri =~ m{^(?:\.?\.?/(?!/)|\?)} and is_valid_http_link(rel_uri($uri, $base),CForum::Validator::VALIDATE_STRICT));
-
-    push @iframes,$uri;
-  }
-
-  # Phase 2: Ok, we collected the links, lets transform them
-  # ... links
-  $posting =~ s!$_!'<a href="'.$1.'">'.($2||$1).'</a>'!eg for map {
-    '\[link:\s*('.
-    quotemeta($_->[0]).
-    ')'.
-    ($_->[1] ? '\s*\@title=('.quotemeta($_->[1]).')' : '').
-    '\s*\]'
-  } @links;
-
-  # ... images
-  $posting =~ s!$_!'<img src="'.$1.'" border="0" alt="'.($2||'').'">'!eg for map {
-    '\[image:\s*('.
-    quotemeta($_->[0]).
-    ')'.
-    ($_->[1] ? '\s*\@alt=('.quotemeta($_->[1]).')' : '').
-    '\s*\]'
-  } @images;
-
-  # ... iframes
-  $posting =~ s!$_!'<iframe src="'.$1.'" width="90%" height="90%"><a href="'.$1.'">'.$1.'</a></iframe>'!eg for map {
-    '\[iframe:\s*('.quotemeta($_).')\]'
-  } @iframes;
-
-  # return
-  #
-  return $posting;
-}
-# }}}
-
-# {{{ plaintext
-sub plaintext {
-  my $posting = shift;
-  my $qchar   = shift;
-  my $pcfg    = shift;
-
-  $posting =~ s!<a href="([^"]+)">\1</a>![link:$1]!g;
-  $posting =~ s!<img src="([^"]+)" border="0" alt="">![image:$1]!g;
-  $posting =~ s!<iframe src="([^"]+)" width="90%" height="90%"><a href="\1">\1</a></iframe>![iframe:$1]!g;
-
-  foreach($pcfg->{Image}) {
-    my ($name,$url,$alt) = (quotemeta $_->[0],quotemeta encode $_->[1],quotemeta encode $_->[2]);
-    $posting =~ s!<img src="$url" alt="$alt">![msg:$name]!g;
-  }
-
-  $posting =~ s!\177!$qchar!g;
-  $posting =~ s!<br />!\n!g;
-  $posting =~ s!&nbsp;! !g;
-  $posting =~ s!&#39;!'!g;
-  $posting =~ s!_/_SIG_/_!\n-- \n!;
-
-  return decode $posting;
 }
 # }}}
 
@@ -411,6 +208,7 @@ sub uniquify_params {
   my $dcfg  = shift;
   my $cgi   = shift;
   my $fname = shift;
+  my $cs    = get_conf_val($fo_default_conf,$main::Forum,'ExternCharset');
 
   my $val = $cgi->param($fname) or return get_error($dcfg,'manipulated');
 
@@ -446,7 +244,7 @@ sub uniquify_params {
         my $nval;
 
         # browsers are broken :(
-        if($dcfg->{ExternCharset}->[0]->[0] eq 'ISO-8859-1') {
+        if($cs eq 'ISO-8859-1') {
           # Ok, we got characters not present in Latin-1. Due to
           # our knowledge of the browser bugs we assume that
           # Windows-1252 has been sent; THIS IS JUST A HACK!
@@ -460,7 +258,7 @@ sub uniquify_params {
           $nval = $Clientlib->charset_convert(
             $val,
             length($val),
-            $dcfg->{ExternCharset}->[0]->[0],
+            $cs,
             "UTF-8"
           );
 
@@ -504,15 +302,17 @@ sub decode_params {
 sub get_error {
   my ($dcfg,$err) = (shift,shift);
   my $variant     = shift || '';
+  my $msgdb       = get_conf_val($dcfg,$main::Forum,'MessagesDatabase');
+  my $lang        = get_conf_val($dcfg,$main::Forum,'Language');
 
   unless($Msgs) {
     $Msgs = new BerkeleyDB::Btree(
-      -Filename => $dcfg->{MessagesDatabase}->[0]->[0],
+      -Filename => $msgdb,
       -Flags => DB_RDONLY
     ) or return 'Bad database error, go away';
   }
 
-  my $id = $dcfg->{Language}->[0]->[0].'_E_'.($variant ? $err.'_'.$variant : $err);
+  my $id = $lang.'_E_'.($variant ? $err.'_'.$variant : $err);
 
   my $msg = '';
   my $rc = $Msgs->db_get($id,$msg);
@@ -566,7 +366,7 @@ sub parse_argument {
     my $i         = 0;
     my @vals      = ();
 
-    $cfg->{$directive} = [] unless exists $cfg->{$directive};
+    $cfg->{$context}->{$directive} = [] unless exists $cfg->{$context}->{$directive};
 
     for($i=0;$i<length($line);$i++) {
       my $c = substr($line,$i,1);
@@ -577,7 +377,7 @@ sub parse_argument {
     }
 
     if($#vals != -1) {
-      push @{$cfg->{$directive}},[@vals];
+      push @{$cfg->{$context}->{$directive}},[@vals];
       return 1;
     }
   }
@@ -587,18 +387,43 @@ sub parse_argument {
 }
 # }}}
 
+# {{{ get_conf_val
+sub get_conf_val {
+  my $conf = shift;
+  my $context = shift;
+  my $name = shift;
+
+  return unless $conf->{$context};
+  return unless $conf->{$context}->{$name};
+
+  my @vals = $conf->{$context}->{$name};
+  return @vals if @vals > 1;
+  return $vals[0];
+}
+# }}}
+
 # {{{ read_configuration
 sub read_configuration {
   my $cfgfile = shift;
   my $cfg     = {};
   local *DAT;
+  my $context = 'global';
 
   open DAT,'<'.$cfgfile or return;
 
   while(<DAT>) {
     next if m/^\s*(\#|$ )/x;
     next if m/^\s*</;
-    next unless parse_argument($cfg,$_);
+    if(m/\s*Forum\s+(\S+)\s+{/) {
+      $context = $1;
+      next;
+    }
+    else if(m/\s*}$/) {
+      $context = 'global';
+      next;
+    }
+
+    next unless parse_argument($cfg,$context,$_);
   }
 
   close DAT and return $cfg;
@@ -634,6 +459,8 @@ sub fatal {
   my $ftpl = get_template($dcfg,$ucfg,shift);
   my $sock = shift;
   my $hdr  = shift;
+  my $cs   = get_conf_val($dcfg,$main::Forum,'ExternCharset');
+  my $burl = get_conf_val($dcfg,$main::Forum,$main::UserName?'UBaseURL':'BaseURL');
 
   if(defined $sock) {
     print $sock "QUIT\n";
@@ -641,12 +468,12 @@ sub fatal {
   }
 
   my $tpl  = new CForum::Template($ftpl);
-  $tpl->setVar('forumbase',$ENV{REMOTE_USER} ? $dcfg->{UBaseURL}->[0]->[0] : $dcfg->{BaseURL}->[0]->[0]);
+  $tpl->setVar('forumbase',);
   $tpl->setVar('err',recode($dcfg,$err));
 
-  $tpl->setVar('charset',$dcfg->{ExternCharset}->[0]->[0]);
-  $tpl->setVar('acceptcharset',$dcfg->{ExternCharset}->[0]->[0].', UTF-8');
-  print $cgi->header(-type => 'text/html; charset='.$dcfg->{ExternCharset}->[0]->[0]) unless $hdr;
+  $tpl->setVar('charset',$cs);
+  $tpl->setVar('acceptcharset',$cs.', UTF-8');
+  print $cgi->header(-type => 'text/html; charset='.$cs) unless $hdr;
   print $tpl->parseToMem;
 
   exit;
