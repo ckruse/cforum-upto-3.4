@@ -138,7 +138,7 @@ void show_posting(t_cf_hash *head,void *shm_ptr,u_int64_t tid,u_int64_t mid)
          *UserName = cf_hash_get(GlobalValues,"UserName",8),
          *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
 
-  t_name_value *fo_thread_tpl,
+  t_name_value *fo_thread_tpl  = NULL,
                *fo_posting_tpl = cfg_get_first_value(&fo_view_conf,forum_name,"TemplatePosting"),
                *cs             = cfg_get_first_value(&fo_default_conf,forum_name,"ExternCharset"),
                *rm             = cfg_get_first_value(&fo_view_conf,forum_name,"ReadMode"),

@@ -50,25 +50,15 @@
 #include "fo_arcview.h"
 /* }}} */
 
-/* {{{ Dummy function, for ignoring unknown directives */
-#ifndef DOXYGEN
-int ignre(t_configfile *cf,const u_char *context,u_char *name,u_char **args,size_t argnum) {
-  return 0;
-}
-#endif
-/* }}} */
+
+t_cf_hash *ArcviewHandlers = NULL;
+
+static int ArcSortMeth = CF_SORT_ASCENDING;
 
 /* {{{ get_month_name */
-/**
- * function for getting the month name from a month number
- * \param month The number of the month
- * \param name A reference pointer to a u_char pointer
- * \return Returns -1 on failure and the size of the created u_char pointer on success
- * \attention You have to free the created u_char pointer
- */
-size_t get_month_name(int month,u_char **name) {
+size_t get_month_name(int month,const u_char *fn,u_char **name) {
   struct tm tm;
-  t_name_value *v = cfg_get_first_value(&fo_default_conf,NULL,"DateLocale");
+  t_name_value *v = cfg_get_first_value(&fo_default_conf,fn,"DateLocale");
   if(!v) return 0;
 
   *name = fo_alloc(NULL,BUFSIZ,1,FO_ALLOC_MALLOC);
@@ -81,1127 +71,29 @@ size_t get_month_name(int month,u_char **name) {
 }
 /* }}} */
 
-/* {{{ is_numeric */
-/**
- * function checking if a given u_char array only consists of numbers
- * \param ptr The array pointer to check
- * \return 0 if there are characters beside 0-9, 1 if there are only 0-9
- */
-int is_numeric(register const u_char *ptr) {
-  for(;*ptr;ptr++) {
-    if(!isdigit(*ptr)) return 0;
-  }
+/* {{{ validation wrapper functions */
+int validate_year(const u_char *year) {
+  t_is_valid_year pi;
 
-  return 1;
-}
-/* }}} */
+  if((pi = cf_hash_get(ArcviewHandlers,"av_validate_year",16)) != NULL) return pi(year);
 
-/* {{{ nummeric comparison of array elements */
-#ifndef DOXYGEN
-int array_numeric_compare(const void *elem1,const void *elem2) {
-  int elem1_i = *((int *)elem1);
-  int elem2_i = *((int *)elem2);
-
-  if(elem1_i < elem2_i)  return -1;
-  if(elem1_i == elem2_i) return  0;
-  if(elem1_i > elem2_i)  return  1;
-
-  /* eh? */
-  return 0;
-}
-#endif
-/* }}} */
-
-/* {{{ read_dir_content */
-/**
- * Function for reading directory content. All directory entries beginning with a dot are ignored.
- * \param dir The directory to read
- * \return A (sorted) array of the directory contents
- */
-t_array *read_dir_content(const u_char *dir) {
-  DIR *d_dir;
-  struct dirent *ent;
-  t_array *ary = fo_alloc(NULL,1,sizeof(*ary),FO_ALLOC_MALLOC);
-  int num;
-
-  array_init(ary,sizeof(num),NULL);
-
-  if((d_dir = opendir(dir)) == NULL) {
-    return NULL;
-  }
-
-  while((ent = readdir(d_dir)) != NULL) {
-    if(*ent->d_name == '.') continue;
-    num = atoi(ent->d_name);
-
-    if(num) array_push(ary,&num);
-  }
-
-  closedir(d_dir);
-
-  array_sort(ary,array_numeric_compare);
-  return ary;
-}
-/* }}} */
-
-/* {{{ get_next_token */
-/**
- * Helper function for the parsing of the XML files
- * \param ptr The position pointer
- * \param base The pointer to the beginning of the field
- * \param len The length of the field
- * \param token The token to search for
- * \param tlen The length of the token
- * \return Returns NULL if the token could not be found and a pointer to the position of the token if found
- */
-u_char *get_next_token(register u_char *ptr,const u_char *base,size_t len,const u_char *token,size_t tlen) {
-  for(;ptr < base+len;ptr++) {
-    if(*ptr == *token) {
-      if(cf_strncmp(ptr,token,tlen) == 0) return ptr;
-    }
-  }
-
-  return NULL;
-}
-/* }}} */
-
-/* {{{ get_id */
-/**
- * Helper function for reading the id of an element
- * \param ptr The position pointer
- * \param base The pointer to the beginning of the field
- * \param len The length of the field
- */
-u_int64_t get_id(u_char *ptr,const u_char *base,size_t len) {
-  if(!(ptr = get_next_token(ptr,base,len,(const u_char *)"id=",3))) return 0;
-  return strtoull(ptr+5,NULL,10);
-}
-/* }}} */
-
-/* {{{ generate_thread_output */
-/**
- * Recursive function for generating a thread view
- * \param cl_thread A pointer to the clientlib-thread structure
- * \param msg A pointer to the message
- * \param threads The string reference pointer for the threads contents
- * \param threadlist The string reference pointer for the thread list in the header of the file
- * \param pt_tpl The "per thread" template
- * \param tl_tpl The "threadlist" template
- * \param ud_tpl The "up down" template
- * \param cs The charset to use for output
- * \param admin Is the viewing user an administrator?
- * \param show_invisible Boolean for showing invisible postings of not (only affects if admin is true)
- */
-void generate_thread_output(t_cl_thread *cl_thread, t_arc_message *msg,t_string *threads,t_string *threadlist,t_cf_template *pt_tpl,t_cf_template *tl_tpl,t_cf_template *ud_tpl,t_name_value *cs,int admin,int show_invisible) {
-  size_t i;
-  t_arc_message *child;
-  u_char buff[256];
-  size_t len;
-  t_string *str = fo_alloc(NULL,1,sizeof(*str),FO_ALLOC_CALLOC);
-  u_char *cnt = NULL;
-  size_t cntlen;
-  int printed = 0;
-  u_char *date;
-  t_string strbuffer;
-  t_name_value *vs = cfg_get_first_value(&fo_default_conf,NULL,"ArchivePostingURL"),
-               *qc = cfg_get_first_value(&fo_arcview_conf,NULL,"QuotingChars"),
-               *ms = cfg_get_first_value(&fo_arcview_conf,NULL,"MaxSigLines"),
-               *ss = cfg_get_first_value(&fo_arcview_conf,NULL,"ShowSig");
-
-  str_init(&strbuffer);
-
-  /* first: set threadlist variables */
-  str_char_append(&strbuffer,'m');
-  u_int64_to_str(&strbuffer,msg->mid);
-
-  cf_set_variable(tl_tpl,cs,"mid",strbuffer.content,strbuffer.len,1);
-  cf_set_variable(tl_tpl,cs,"subject",msg->subject.content,msg->subject.len,1);
-  cf_set_variable(tl_tpl,cs,"author",msg->author.content,msg->author.len,1);
-
-  if((date = get_time(&fo_arcview_conf,"DateFormatViewList",(int *)&len,&msg->date)) != NULL) {
-    tpl_cf_setvar(tl_tpl,"date",date,len,1);
-    tpl_cf_setvar(pt_tpl,"date",date,len,1);
-    free(date);
-  }
-
-  if(msg->category.len) cf_set_variable(tl_tpl,cs,"category",msg->category.content,msg->category.len,1);
-  else tpl_cf_freevar(tl_tpl,"category");
-
-  /* parse threadlist and append output to threadlist content */
-  tpl_cf_parse_to_mem(tl_tpl);
-  str_chars_append(threadlist,tl_tpl->parsed.content,tl_tpl->parsed.len);
-
-  tl_tpl->parsed.len = 0;
-
-  /* after that: set per thread variables */
-  cf_set_variable(pt_tpl,cs,"mid",strbuffer.content,strbuffer.len,1);
-  cf_set_variable(pt_tpl,cs,"subject",msg->subject.content,msg->subject.len,1);
-  cf_set_variable(pt_tpl,cs,"author",msg->author.content,msg->author.len,1);
-
-  strbuffer.len = 0;
-
-  /* category */
-  if(msg->category.len) cf_set_variable(pt_tpl,cs,"category",msg->category.content,msg->category.len,1);
-  else                  tpl_cf_freevar(pt_tpl,"category");
-  /* email */
-  if(msg->email.len)    cf_set_variable(pt_tpl,cs,"email",msg->email.content,msg->email.len,1);
-  else                  tpl_cf_freevar(pt_tpl,"email");
-  /* homepage url */
-  if(msg->hp.len)       cf_set_variable(pt_tpl,cs,"link",msg->hp.content,msg->hp.len,1);
-  else                  tpl_cf_freevar(pt_tpl,"link");
-  /* image url */
-  if(msg->img.len)      cf_set_variable(pt_tpl,cs,"image",msg->img.content,msg->img.len,1);
-  else                  tpl_cf_freevar(pt_tpl,"image");
-
-  /* convert message to the right charset */
-  if(cf_strcmp(cs->values[0],"UTF-8") == 0 || (cnt = charset_convert_entities(msg->content.content,msg->content.len,"UTF-8",cs->values[0],&cntlen)) == NULL) {
-    cnt = strdup(msg->content.content);
-  }
-
-  /* convert message to html */
-  msg_to_html(cl_thread,cnt,str,NULL,qc->values[0],ms ? atoi(ms->values[0]) : -1,ss ? cf_strcmp(ss->values[0],"yes") == 0 : 1);
-
-  free(cnt);
-
-  tpl_cf_setvar(pt_tpl,"message",str->content,str->len,0);
-  str_cleanup(str);
-  free(str);
-
-  tpl_cf_parse_to_mem(pt_tpl);
-  str_chars_append(threads,pt_tpl->parsed.content,pt_tpl->parsed.len);
-  pt_tpl->parsed.len = 0;
-
-  if(msg->childs.elements) {
-    str_chars_append(threadlist,"<ul>",4);
-
-    for(i=0;i<msg->childs.elements;i++) {
-      child = array_element_at(&msg->childs,i);
-      if(child->invisible == 1 && (admin == 0 || show_invisible == 0)) continue;
-
-      printed = 1;
-
-      tpl_cf_parse_to_mem(ud_tpl);
-      str_chars_append(threads,ud_tpl->parsed.content,ud_tpl->parsed.len);
-      ud_tpl->parsed.len = 0;
-
-      str_chars_append(threadlist,"<li>",4);
-      generate_thread_output(cl_thread,child,threads,threadlist,pt_tpl,tl_tpl,ud_tpl,cs,admin,show_invisible);
-      str_chars_append(threadlist,"</li>",5);
-    }
-
-    if(printed) str_chars_append(threadlist,"</ul>",5);
-    else {
-      threadlist->len -= 4;
-      *(threadlist->content + threadlist->len) = '\0';
-    }
-  }
-}
-/* }}} */
-
-/* {{{ convert_arc_message */
-/**
- * Function to convert t_arc_thread to t_cl_thread
- * \param head Reference pointer to the list head where the message shall be appended
- * \param msg Reference pointer to the message
- * \return the number of elements
- */
-u_int32_t convert_arc_message(t_cf_list_head *head,t_arc_message *msg,unsigned short level) {
-  t_message *cl_msg;
-  size_t ctr,ret;
-  
-  cl_msg = (t_message *)fo_alloc(NULL,1,sizeof(*cl_msg),FO_ALLOC_CALLOC);
-  if(!cl_msg) return 0;
-  cl_msg->mid = msg->mid;
-  cl_msg->author = msg->author.content;
-  cl_msg->author_len = msg->author.len;
-  cl_msg->subject = msg->subject.content;
-  cl_msg->subject_len = msg->subject.len;
-  cl_msg->category = msg->category.content;
-  cl_msg->category_len = msg->category.len;
-  cl_msg->content = msg->content.content;
-  cl_msg->content_len = msg->content.len;
-  cl_msg->email = msg->email.content;
-  cl_msg->email_len = msg->email.len;
-  cl_msg->hp = msg->hp.content;
-  cl_msg->hp_len = msg->hp.len;
-  cl_msg->img = msg->img.content;
-  cl_msg->img_len = msg->img.len;
-  cl_msg->date = msg->date;
-  cl_msg->level = level;
-  cl_msg->may_show = msg->may_show;
-  cl_msg->invisible = msg->invisible;
-  memcpy(&cl_msg->tpl,&msg->tpl,sizeof(msg->tpl));
-  if(head->last) {
-    cl_msg->prev = *((t_message **)head->last->data);
-    (*((t_message **)head->last->data))->next = cl_msg;
-  }
-  ret = 1;
-  cf_list_append(head,(void *)&cl_msg,sizeof(cl_msg));
-  for(ctr = 0; ctr < msg->childs.elements; ctr++) {
-    ret += convert_arc_message(head,(t_arc_message*)array_element_at(&msg->childs,ctr),level+1);
-  }
-  return ret;
-}
-/* }}} */
-
-/* {{{ convert_arc_thread */
-/**
- * Function to convert t_arc_thread to t_cl_thread
- * \param cl_thread Reference pointer to the t_cl_thread
- * \param arc_thread Reference pointer to the t_arc_thread
- */
-void convert_arc_thread(t_cl_thread *cl_thread,t_arc_thread *arc_thread) {
-  t_cf_list_head *head;
-  
-  cl_thread->tid = arc_thread->tid;
-  head = (t_cf_list_head *)fo_alloc(NULL,1,sizeof(*head),FO_ALLOC_CALLOC);
-  if(!head) return;
-  cf_list_init(head);
-  cl_thread->msg_len = convert_arc_message(head,arc_thread->msgs,0);
-  cl_thread->messages = cl_thread->threadmsg = *((t_message **)head->elements->data);
-  cl_thread->last = *((t_message **)head->last->data);
-  cf_list_destroy(head,NULL);
-  free(head);
-}
-/* }}} */
-
-/* {{{ print_thread_structure */
-/**
- * Function for printing a thread structure
- * \param thr The thread
- * \param year The year of the thread
- * \param month The month of the thread
- * \param admin Boolean If the user is an admin or not
- * \param show_invisible If true invisible messages will be printed (only affecting if user is an administrator)
- */
-void print_thread_structure(t_arc_thread *thr,const u_char *year,const u_char *month,int admin,int show_invisible) {
-  t_name_value *main_tpl_cfg       = cfg_get_first_value(&fo_arcview_conf,NULL,"ThreadTemplate");
-  t_name_value *threadlist_tpl_cfg = cfg_get_first_value(&fo_arcview_conf,NULL,"ThreadListTemplate");
-  t_name_value *per_thread_tpl_cfg = cfg_get_first_value(&fo_arcview_conf,NULL,"PerThreadTemplate");
-  t_name_value *up_down_tpl_cfg    = cfg_get_first_value(&fo_arcview_conf,NULL,"UpDownTemplate");
-  t_name_value *ecache = cfg_get_first_value(&fo_arcview_conf,NULL,"EnableCache");
-  t_name_value *cache  = NULL,*clevel = NULL;
-  u_char pi[256];
-  u_char *username = cf_hash_get(GlobalValues,"UserName",8);
-  t_name_value *forumpath = cfg_get_first_value(&fo_default_conf,NULL,username?"UBaseURL":"BaseURL");
-
-  t_name_value *cs = cfg_get_first_value(&fo_default_conf,NULL,"ExternCharset");
-
-  u_char main_tpl_name[256],threadlist_tpl_name[256],per_thread_tpl_name[256],up_down_tpl_name[256];
-  t_cf_template main_tpl,threadlist_tpl,per_thread_tpl,up_down_tpl;
-
-  u_char *tmp;
-  int len,cache_level = 0;
-
-  t_string threadlist,threads;
-  
-  t_cl_thread cl_thread;
-
-  if(ecache && *ecache->values[0] == 'y') {
-    cache  = cfg_get_first_value(&fo_arcview_conf,NULL,"CacheDir");
-    ecache = cfg_get_first_value(&fo_arcview_conf,NULL,"CacheLevel");
-
-    if(clevel) cache_level = atoi(clevel->values[0]);
-    else       cache_level = 6;
-  }
-
-  snprintf(pi,256,"%s/%s/t%llu",year,month,thr->tid);
-
-  /* Buarghs. Four templates. This is fucking bad. */
-  generate_tpl_name(main_tpl_name,256,main_tpl_cfg);
-  generate_tpl_name(threadlist_tpl_name,256,threadlist_tpl_cfg);
-  generate_tpl_name(per_thread_tpl_name,256,per_thread_tpl_cfg);
-  generate_tpl_name(up_down_tpl_name,256,up_down_tpl_cfg);
-
-  if(tpl_cf_init(&main_tpl,main_tpl_name) != 0
-    || tpl_cf_init(&threadlist_tpl,threadlist_tpl_name) != 0
-    || tpl_cf_init(&per_thread_tpl,per_thread_tpl_name) != 0
-    || tpl_cf_init(&up_down_tpl,up_down_tpl_name) != 0) {
-    str_error_message("E_TPL_NOT_FOUND",NULL);
-    return;
-  }
-
-  len = get_month_name(atoi(month),&tmp);
-
-  tpl_cf_setvar(&main_tpl,"month",tmp,len,1);
-  tpl_cf_setvar(&main_tpl,"year",year,strlen(year),0);
-  cf_set_variable(&main_tpl,cs,"subject",thr->msgs->subject.content,thr->msgs->subject.len,1);
-  tpl_cf_setvar(&main_tpl,"charset",cs->values[0],strlen(cs->values[0]),0);
-
-  free(tmp);
-
-  str_init(&threads);
-  str_init(&threadlist);
-
-  convert_arc_thread(&cl_thread,thr);
-  generate_thread_output(&cl_thread,thr->msgs,&threads,&threadlist,&per_thread_tpl,&threadlist_tpl,&up_down_tpl,cs,admin,show_invisible);
-
-  tpl_cf_setvar(&main_tpl,"threads",threads.content,threads.len,0);
-  tpl_cf_setvar(&main_tpl,"threadlist",threadlist.content,threadlist.len,0);
-  tpl_cf_setvar(&main_tpl,"forumbase",forumpath->values[0],strlen(forumpath->values[0]),1);
-
-  tpl_cf_parse_to_mem(&main_tpl);
-  
-  if(show_invisible == 0 && cache) cf_cache(cache->values[0],pi,main_tpl.parsed.content,main_tpl.parsed.len,cache_level);
-
-  fwrite(main_tpl.parsed.content,1,main_tpl.parsed.len,stdout);
-
-  tpl_cf_finish(&main_tpl);
-  tpl_cf_finish(&threadlist_tpl);
-  tpl_cf_finish(&per_thread_tpl);
-  tpl_cf_finish(&up_down_tpl);
-}
-/* }}} */
-
-/* {{{ node_compare */
-#ifndef DOXYGEN
-int node_compare(t_cf_tree_dataset *a,t_cf_tree_dataset *b) {
-  if(*((u_int64_t *)a->key) < *((u_int64_t *)b->key)) return -1;
-  if(*((u_int64_t *)a->key) > *((u_int64_t *)b->key)) return 1;
-
-  return 0;
-}
-#endif
-/* }}} */
-
-/* {{{ set_nodevalue_to_str */
-/**
- * Helper function to set the contents of a node to a t_string string
- * \param n The node
- * \param str Reference pointer to a string object
- */
-void set_nodevalue_to_str(GdomeNode *n,t_string *str) {
-  GdomeException exc;
-  GdomeNode *x   = gdome_n_firstChild(n,&exc);
-  GdomeDOMString *y;
-
-  str_init(str);
-
-  if(x) {
-    y = gdome_n_nodeValue(x,&exc);
-
-    if(y) {
-      str_char_set(str,y->str,strlen(y->str));
-
-      gdome_n_unref(x,&exc);
-      gdome_str_unref(y);
-      return;
-    }
-    else {
-      y = gdome_n_nodeValue(n,&exc);
-
-      if(y) {
-        str_char_set(str,y->str,strlen(y->str));
-
-        gdome_n_unref(x,&exc);
-        gdome_str_unref(y);
-        return;
-      }
-    }
-
-    gdome_n_unref(x,&exc);
-  }
-}
-/* }}} */
-
-/* {{{ handle_header */
-/**
- * Helper function for getting header informations
- * \param p Reference pointer to the message structure
- * \param n The node
- */
-void handle_header(t_arc_message *p,GdomeNode *n) {
-  GdomeException     exc;
-  GdomeNodeList     *nl       = gdome_n_childNodes(n,&exc);
-  GdomeNode         *author   = gdome_nl_item(nl,0,&exc);
-  GdomeNode         *category = gdome_nl_item(nl,1,&exc);
-  GdomeNode         *subject  = gdome_nl_item(nl,2,&exc);
-  GdomeNode         *date     = gdome_nl_item(nl,3,&exc);
-  GdomeDOMString    *ls_str   = gdome_str_mkref("longSec");
-  GdomeNamedNodeMap *atts     = gdome_n_attributes(date,&exc);
-  GdomeNode         *longSec  = gdome_nnm_getNamedItem(atts,ls_str,&exc);
-  GdomeDOMString    *ls_val   = gdome_n_nodeValue(longSec,&exc);
-
-  GdomeNodeList     *a_nl     = gdome_n_childNodes(author,&exc);
-  GdomeNode         *a_name   = gdome_nl_item(a_nl,0,&exc);
-  GdomeNode         *a_email  = gdome_nl_item(a_nl,1,&exc);
-  GdomeNode         *a_hp     = gdome_nl_item(a_nl,2,&exc);
-  GdomeNode         *a_img    = gdome_nl_item(a_nl,3,&exc);
-
-  p->date          = strtol(ls_val->str,NULL,10);
-
-  set_nodevalue_to_str(a_name,&p->author);
-  set_nodevalue_to_str(subject,&p->subject);
-  set_nodevalue_to_str(category,&p->category);
-  set_nodevalue_to_str(a_email,&p->email);
-  set_nodevalue_to_str(a_hp,&p->hp);
-  set_nodevalue_to_str(a_img,&p->img);
-
-  gdome_str_unref(ls_val);
-  gdome_n_unref(a_name,&exc);
-  gdome_n_unref(a_email,&exc);
-  gdome_n_unref(a_hp,&exc);
-  gdome_n_unref(a_img,&exc);
-  gdome_n_unref(longSec,&exc);
-  gdome_nl_unref(a_nl,&exc);
-  gdome_str_unref(ls_str);
-  gdome_nnm_unref(atts,&exc);
-  gdome_n_unref(author,&exc);
-  gdome_n_unref(category,&exc);
-  gdome_n_unref(subject,&exc);
-  gdome_n_unref(date,&exc);
-  gdome_nl_unref(nl,&exc);
-}
-/* }}} */
-
-/* {{{ sort_compare */
-#ifndef DOXYGEN
-int sort_compare(const void *a,const void *b) {
-  if(((t_arc_message *)a)->mid > ((t_arc_message *)b)->mid) return 1;
-  if(((t_arc_message *)a)->mid < ((t_arc_message *)b)->mid) return -1;
-
-  return 0;
-}
-#endif
-/* }}} */
-
-/* {{{ make_thread_tree */
-/**
- * Recursive function to create a hierarchical thread tree
- * \param thread Reference pointer to the thread
- * \param msg Reference pointer to the message
- * \param posting The posting node
- * \param tree A tree of MessageContent elements (for fast access)
- */
-void make_thread_tree(t_arc_thread *thread,t_arc_message *msg,GdomeNode *posting,t_cf_tree *tree) {
-  GdomeException e;
-  GdomeNodeList     *childs    = gdome_n_childNodes(posting,&e);
-  GdomeNamedNodeMap *atts      = gdome_n_attributes(posting,&e);
-  GdomeDOMString    *str_id    = gdome_str_mkref("id");
-  GdomeDOMString    *str_invi  = gdome_str_mkref("invisible");
-  GdomeNode         *invi      = gdome_nnm_getNamedItem(atts,str_invi,&e);
-  GdomeNode         *id        = gdome_nnm_getNamedItem(atts,str_id,&e);
-  GdomeNode         *fcnt      = NULL;
-  GdomeDOMString    *tmp       = NULL;
-  GdomeNode *element;
-  GdomeDOMString *name;
-  t_arc_message m;
-
-  t_cf_tree_dataset d,*rs;
-  size_t len,i;
-
-  thread->msg_len++;
-
-
-  if(id) {
-    GdomeDOMString *tmp = gdome_n_nodeValue(id,&e);
-    msg->mid            = strtoull(tmp->str+1,NULL,10);
-
-    gdome_str_unref(tmp);
-  }
-  else {
-    fprintf(stderr,"thread %llu: no id found\n",thread->tid);
-    str_error_message("E_ARCHIVE_ERROR",NULL);
-    exit(0);
-  }
-
-  if(invi) {
-    GdomeDOMString *tmp = gdome_n_nodeValue(invi,&e);
-    msg->invisible     = atoi(tmp->str);
-
-    gdome_str_unref(tmp);
-  }
-  else {
-    msg->invisible     = 0;
-  }
-
-  tmp   = NULL;
-  d.key = &msg->mid;
-  rs    = (t_cf_tree_dataset *)cf_tree_find(tree,tree->root,&d);
-
-  if(rs) {
-    fcnt         = (GdomeNode *)rs->data;
-    GdomeNode *n = gdome_n_firstChild(fcnt,&e);
-    tmp          = gdome_n_nodeValue(n,&e);
-    gdome_n_unref(n,&e);
-  }
-  else {
-    fprintf(stderr,"thread %llu: no posting content found for message %llu\n",thread->tid,msg->mid);
-    str_error_message("E_ARCHIVE_ERROR",NULL);
-    exit(0);
-  }
-
-  if(tmp) {
-    str_init(&msg->content);
-    str_char_set(&msg->content,tmp->str,gdome_str_length(tmp));
-    gdome_str_unref(tmp);
-  }
-  else {
-    /* uh, oh, posting has no content */
-    str_init(&msg->content);
-  }
-
-  for(i=0,len=gdome_nl_length(childs,&e);i<len;i++) {
-    element = gdome_nl_item(childs,i,&e);
-    name    = gdome_n_nodeName(element,&e);
-
-    if(cf_strcmp(name->str,"Header") == 0) {
-      handle_header(msg,element);
-    }
-    else if(cf_strcmp(name->str,"Message") == 0) {
-      memset(&m,0,sizeof(m));
-
-      if(msg->childs.element_size == 0) {
-        /* \todo cleanup routine for child postings array */
-        array_init(&msg->childs,sizeof(m),NULL);
-      }
-
-      make_thread_tree(thread,&m,element,tree);
-
-      array_push(&msg->childs,&m);
-    }
-
-    gdome_str_unref(name);
-    gdome_n_unref(element,&e);
-  }
-
-  gdome_nl_unref(childs,&e);
-  gdome_nnm_unref(atts,&e);
-  gdome_str_unref(str_id);
-  gdome_str_unref(str_invi);
-  gdome_n_unref(invi,&e);
-  gdome_n_unref(id,&e);
-
-  /* ok, this level of postings has been created. Go and sort (if necessary) */
-  if(msg->childs.elements > 1) {
-    array_sort(&msg->childs,sort_compare);
-  }
-}
-/* }}} */
-
-/* {{{ create_thread_structure */
-/**
- * Function for creating a thread structure. Uses make_thread_tree()
- * \param doc The XML DOM document
- * \param thr A reference pointer to the thread
- */
-void create_thread_structure(GdomeDocument *doc,t_arc_thread *thr) {
-  size_t i,len;
-  t_cf_tree tree;
-  GdomeException e;
-  GdomeDOMString *msgcnt_str = gdome_str_mkref("MessageContent");
-  GdomeNodeList *message_content = gdome_doc_getElementsByTagName(doc,msgcnt_str,&e);
-  GdomeNodeList *messages;
-  GdomeNode *n,*msg;
-  GdomeNamedNodeMap *atts;
-  GdomeDOMString *mid_str = gdome_str_mkref("mid"),*mid_v;
-  GdomeDOMString *message_str = gdome_str_mkref("Message");
-  GdomeNode *mid_n;
-  t_cf_tree_dataset d;
-
-  cf_tree_init(&tree,node_compare,NULL);
-
-  /*
-   * first we put every MessageContent node into a tree. This is necessary
-   * because the MessageContent nodes are childs of the ContentList node.
-   * And the ContentList node is the last child of the Thread node...
-   */
-   for(i=0,len=gdome_nl_length(message_content,&e);i<len;i++) {
-
-     n      = gdome_nl_item(message_content,i,&e);
-     atts   = gdome_n_attributes(n,&e);
-     mid_n  = gdome_nnm_getNamedItem(atts,mid_str,&e);
-     mid_v  = gdome_n_nodeValue(mid_n,&e);
-
-     d.data = n;
-     d.key  = fo_alloc(NULL,1,sizeof(u_int64_t),FO_ALLOC_MALLOC);
-     *((u_int64_t *)d.key) = strtoull(mid_v->str+1,NULL,10);
-
-     cf_tree_insert(&tree,NULL,&d);
-
-     gdome_str_unref(mid_v);
-     gdome_n_unref(mid_n,&e);
-     gdome_nnm_unref(atts,&e);
-   }
-
-   gdome_nl_unref(message_content,&e);
-   gdome_str_unref(msgcnt_str);
-   gdome_str_unref(mid_str);
-
-   /*
-    * ok... now we have fast access to the node values. The
-    * next thing we have to do is creating an internal structure
-    * from the XML. Trivial recursive algorithm -- if there weren't
-    * the need of sorting. So we cannot use the standard (flat) data
-    * types, we have to use a datatype which is not flat and therefore
-    * possible to sort (has to be recursive, too)
-    *
-    * Ah. Nice idea: we can sort them in make_thread_tree(). A little
-    * array_qsort() before every return would probably work very well
-    */
-    messages = gdome_doc_getElementsByTagName(doc,message_str,&e);
-    msg      = gdome_nl_item(messages,0,&e);
-
-    thr->msgs = fo_alloc(NULL,1,sizeof(*thr->msgs),FO_ALLOC_CALLOC);
-    make_thread_tree(thr,thr->msgs,msg,&tree);
-
-    gdome_n_unref(msg,&e);
-    gdome_nl_unref(messages,&e);
-    gdome_str_unref(message_str);
-
-}
-/* }}} */
-
-/* {{{ show_thread */
-/**
- * Function for showing a thread of the archive
- * \param year The year of the thread
- * \param month The month of the thread
- * \param tid The thread id
- */
-void show_thread(const u_char *year,const u_char *month,const u_char *tid) {
-  t_name_value *apath = cfg_get_first_value(&fo_default_conf,NULL,"ArchivePath");
-  struct stat st;
-  t_string path;
-  t_arc_thread thr;
-  t_mod_api is_admin = cf_get_mod_api_ent("is_admin");
-  u_char *uname = cf_hash_get(GlobalValues,"UserName",8);
-  int admin = uname ? (int)is_admin(uname) : 0;
-  int show_invisible = cf_hash_get(GlobalValues,"ShowInvisible",13) != NULL;
-  t_name_value *cache  = cfg_get_first_value(&fo_arcview_conf,NULL,"CacheDir");
-  t_cache_entry *ent;
-  u_char pi[256];
-
-  GdomeException e;
-  GdomeDocument *doc;
-  GdomeDOMImplementation *impl;
-
-  snprintf(pi,256,"%s/%s/t%s",year,month,*tid == 't' ? tid+1 : tid);
-
-  memset(&thr,0,sizeof(thr));
-
-  /* generate file name */
-  str_init(&path);
-  str_chars_append(&path,apath->values[0],strlen(apath->values[0]));
-  str_char_append(&path,'/');
-  str_chars_append(&path,year,strlen(year));
-  str_char_append(&path,'/');
-  str_chars_append(&path,month,strlen(month));
-  if(*tid == 't') str_char_append(&path,'/');
-  else            str_chars_append(&path,"/t",2);
-  str_chars_append(&path,tid,strlen(tid));
-  str_chars_append(&path,".xml",4);
-
-  if(stat(path.content,&st) == -1) {
-    printf("Status: 404 Not Found\015\012\015\012");
-    str_error_message("E_ARCHIVE_THREADNOTPRESENT",NULL);
-    return;
-  }
-
-  if(show_invisible || cf_cache_outdated(cache->values[0],pi,path.content) == -1 || (ent = cf_get_cache(cache->values[0],pi,2)) == NULL) {
-    impl = gdome_di_mkref();
-    if((doc = gdome_di_createDocFromURI(impl,path.content,GDOME_LOAD_PARSING,&e)) == NULL) {
-      printf("Status: 404 Not Found\015\012\015\012");
-      str_error_message("E_ARCHIVE_THREADNOTPRESENT",NULL);
-      gdome_di_unref(impl,&e);
-      return;
-    }
-
-    /* no further headers (at the moment) */
-    fwrite("\015\012",1,2,stdout);
-
-    thr.tid = strtoull(*tid == 't' ? tid+1 : tid,NULL,10);
-    create_thread_structure(doc,&thr);
-
-    gdome_doc_unref(doc,&e);
-    gdome_di_unref(impl,&e);
-
-    if(thr.msgs->invisible == 0 || (admin == 1 && show_invisible == 1)) {
-      print_thread_structure(&thr,year,month,admin,show_invisible);
-    }
-    else {
-      str_error_message("E_FO_404",NULL);
-    }
-  }
-  else {
-    printf("\015\012");
-    fwrite(ent->ptr,1,ent->size,stdout);
-    cf_cache_destroy(ent);
-  }
-}
-/* }}} */
-
-/* {{{ threadlist sort algorithms */
-/**
- * struct used for sorting the threadlist
- */
-struct s_arc_content {
-  t_string content; /**< string containing the content */
-  time_t date;      /**< date of this thread (used for sort) */
-  u_int64_t tid;    /**< thread id (used for sort) */
-};
-
-/**
- * internal cleanup function for the array
- * \param arg The element to destroy
- */
-void destroy_sort_array(void *arg) {
-  struct s_arc_content *cnt1 = (struct s_arc_content *)arg;
-  str_cleanup(&cnt1->content);
+  return FLT_EXIT;
 }
 
+int validate_month(const u_char *year,const u_char *month) {
+  t_is_valid_month pi;
 
-/**
- * Comparing function for array_sort() call
- * \param arg1 The first argument
- * \param arg2 The second argument
- * \return -1 if first argument is lesser, +1 if first argument is greater, 0 if arguments are equal
- */
-int month_cnt_cmp(const void *arg1,const void *arg2) {
-  struct s_arc_content *cnt1 = (struct s_arc_content *)arg1;
-  struct s_arc_content *cnt2 = (struct s_arc_content *)arg2;
+  if((pi = cf_hash_get(ArcviewHandlers,"av_validate_month",17)) != NULL) return pi(year,month);
 
-  if(cnt1->date > cnt2->date) return 1;
-  if(cnt1->date < cnt2->date) return -1;
-  if(cnt1->tid > cnt2->tid) return 1;
-  if(cnt1->tid < cnt2->tid) return -1;
-
-  /* cannot happen */
-  return 0;
+  return FLT_EXIT;
 }
-/* }}} */
 
-/* {{{ show_month_content */
-/**
- * Function for showing the contents of a month
- * \param year The year
- * \param month The month
- */
-void show_month_content(const u_char *year,const u_char *month) {
-  t_name_value *v      = cfg_get_first_value(&fo_default_conf,NULL,"ArchivePath");
-  t_name_value *cs     = cfg_get_first_value(&fo_default_conf,NULL,"ExternCharset");
-  t_name_value *m_tp   = cfg_get_first_value(&fo_arcview_conf,NULL,"MonthsTemplate");
-  t_name_value *tl_tp  = cfg_get_first_value(&fo_arcview_conf,NULL,"ThreadListMonthTemplate");
-  t_name_value *cache  = NULL;
-  t_name_value *clevel = NULL;
-  t_name_value *ecache = cfg_get_first_value(&fo_arcview_conf,NULL,"EnableCache");
-  int show_invisible = cf_hash_get(GlobalValues,"ShowInvisible",13) != NULL;
-  u_char *username = cf_hash_get(GlobalValues,"UserName",8);
-  t_name_value *forumpath = cfg_get_first_value(&fo_default_conf,NULL,username?"UBaseURL":"BaseURL");
+int validate_thread(const u_char *year,const u_char *month,const u_char *tid) {
+  t_is_valid_thread pi;
 
-  t_cache_entry *ent;
-  t_string path,mstr;
-  struct stat st;
-  u_char *ptr,*file,*tmp1,*tmp2,pi[256];
-  int fd;
-  u_int64_t tid;
-  time_t date;
-  int len;
-  t_array ary;
-  struct s_arc_content cnt_str,*cnt_str1;
-  size_t i;
-  t_string strbuff;
-  int is_invisible,cache_level = 0;
+  if((pi = cf_hash_get(ArcviewHandlers,"av_validate_thread",18)) != NULL) return pi(year,month,tid);
 
-  t_cf_template m_tpl,tl_tpl;
-  u_char mt_name[256],tl_name[256],buff[256];
-
-  if(ecache && *ecache->values[0] == 'y') {
-    cache  = cfg_get_first_value(&fo_arcview_conf,NULL,"CacheDir");
-    ecache = cfg_get_first_value(&fo_arcview_conf,NULL,"CacheLevel");
-
-    if(ecache) cache_level = atoi(ecache->values[0]);
-    else       cache_level = 6;
-  }
-
-  str_init(&path);
-  str_init(&strbuff);
-
-  snprintf(pi,256,"%s/%s.idx",year,month);
-
-  /* generate path to index file */
-  str_chars_append(&path,v->values[0],strlen(v->values[0]));
-  str_char_append(&path,'/');
-  str_chars_append(&path,year,strlen(year));
-  str_char_append(&path,'/');
-  str_chars_append(&path,month,strlen(month));
-  str_chars_append(&path,"/index.xml",10);
-
-  if(stat(path.content,&st) == -1) {
-    printf("Status: 404 Not Found\015\012\015\012");
-    perror("stat");
-    str_error_message("E_ARCHIVE_MONTHNOTPRESENT",NULL);
-    return;
-  }
-
-  /* no additional headers */
-  fwrite("\015\012",1,2,stdout);
-
-  if(show_invisible || cache == NULL || cf_cache_outdated(cache->values[0],pi,path.content) == -1 || (ent = cf_get_cache(cache->values[0],pi,cache_level)) == NULL) {
-    array_init(&ary,sizeof(cnt_str),destroy_sort_array);
-
-    /* get templates */
-    generate_tpl_name(mt_name,256,m_tp);
-    generate_tpl_name(tl_name,256,tl_tp);
-
-    if(tpl_cf_init(&m_tpl,mt_name) != 0 || tpl_cf_init(&tl_tpl,tl_name) != 0) {
-      str_error_message("E_CONFIG_ERR",NULL);
-      return;
-    }
-
-    /* open file for mmap */
-    if((fd = open(path.content,O_RDONLY)) == -1) {
-      perror("open");
-      str_error_message("E_ARCHIVE_MONTHNOTPRESENT",NULL);
-      return;
-    }
-
-    if((caddr_t)(file = ptr = mmap(0,st.st_size,PROT_READ,MAP_FILE|MAP_SHARED,fd,0)) == (caddr_t)-1) {
-      perror("mmap");
-      str_error_message("E_ARCHIVE_MONTHNOTPRESENT",NULL);
-      return;
-    }
-
-    for(;ptr < file + st.st_size;ptr++) {
-      if(!(ptr = get_next_token(ptr,file,st.st_size,"<Thread",7))) break;
-
-      tid          = get_id(ptr,file,st.st_size);
-      is_invisible = 0;
-      //len = snprintf(buff,256,"%llu",tid);
-
-      str_char_append(&strbuff,'t');
-      u_int64_to_str(&strbuff,tid);
-      cf_set_variable(&tl_tpl,cs,"link",strbuff.content,strbuff.len,1);
-      strbuff.len = 0;
-
-      if(!(ptr = get_next_token(ptr,file,st.st_size,"<Message",8))) break;
-
-      /* we need: date, category, tid, subject, author */
-      for(++ptr;ptr < file + st.st_size;ptr++) {
-        if(*ptr == '<') {
-          if(cf_strncmp(ptr,"<Name>",6) == 0) {
-            tmp2 = get_next_token(ptr,file,st.st_size,"</Name>",7);
-            tmp1 = strndup(ptr+6,tmp2-ptr-6);
-            cf_set_variable(&tl_tpl,cs,"author",tmp1,tmp2-ptr-6,0);
-            free(tmp1);
-          }
-          else if(cf_strncmp(ptr,"<Category",9) == 0) {
-            if(cf_strncmp(ptr,"<Category/>",11) == 0) {
-              tpl_cf_freevar(&tl_tpl,"cat");
-            }
-            else {
-              tmp2 = get_next_token(ptr,file,st.st_size,"</Category>",11);
-              tmp1 = strndup(ptr+10,tmp2-ptr-10);
-              cf_set_variable(&tl_tpl,cs,"cat",tmp1,tmp2-ptr-10,1);
-              free(tmp1);
-            }
-          }
-          else if(cf_strncmp(ptr,"<Subject>",9) == 0) {
-            tmp2 = get_next_token(ptr,file,st.st_size,"</Subject>",10);
-            tmp1 = strndup(ptr+9,tmp2-ptr-9);
-            cf_set_variable(&tl_tpl,cs,"subject",tmp1,tmp2-ptr-9,0);
-            free(tmp1);
-          }
-          else if(cf_strncmp(ptr,"<Date",5) == 0) {
-            ptr += 15;
-            date = strtol(ptr,NULL,10);
-            tmp1 = get_time(&fo_arcview_conf,"DateFormatList",&len,&date);
-            cf_set_variable(&tl_tpl,cs,"date",tmp1,len,1);
-            free(tmp1);
-          }
-          /* baba, finished */
-          else if(cf_strncmp(ptr,"<Message",8) == 0 || cf_strncmp(ptr,"</Message>",10) == 0) break;
-        }
-        else if(*ptr == 'i') {
-          if(cf_strncmp(ptr,"invisible",9) == 0) {
-            is_invisible = *(ptr+11) - '0';
-          }
-        }
-      }
-
-      if(is_invisible == 0 || show_invisible == 1) {
-        tpl_cf_parse_to_mem(&tl_tpl);
-
-        cnt_str.content.len      = tl_tpl.parsed.len;
-        cnt_str.content.reserved = tl_tpl.parsed.reserved;
-        cnt_str.content.content  = tl_tpl.parsed.content;
-        cnt_str.date             = date;
-        cnt_str.tid              = tid;
-
-        array_push(&ary,&cnt_str);
-
-        memset(&tl_tpl.parsed,0,sizeof(tl_tpl.parsed));
-      }
-    }
-
-    munmap(file,st.st_size);
-
-    array_sort(&ary,month_cnt_cmp);
-    str_init(&mstr);
-
-    for(i=0;i<ary.elements;i++) {
-      cnt_str1 = array_element_at(&ary,i);
-      str_str_append(&mstr,&cnt_str1->content);
-    }
-
-    len = get_month_name(atoi(month),&tmp1);
-    tpl_cf_setvar(&m_tpl,"month",tmp1,len,1);
-    cf_set_variable(&m_tpl,cs,"year",year,strlen(year),1);
-
-    tpl_cf_setvar(&m_tpl,"charset",cs->values[0],strlen(cs->values[0]),0);
-    //tpl_cf_setvar(&m_tpl,"threads",tl_tpl.parsed.content,tl_tpl.parsed.len,0);
-    tpl_cf_setvar(&m_tpl,"threads",mstr.content,mstr.len,0);
-    tpl_cf_setvar(&m_tpl,"forumbase",forumpath->values[0],strlen(forumpath->values[0]),1);
-
-    str_cleanup(&mstr);
-    array_destroy(&ary);
-
-    tpl_cf_parse_to_mem(&m_tpl);
-    if(show_invisible == 0 && cache) cf_cache(cache->values[0],pi,m_tpl.parsed.content,m_tpl.parsed.len,cache_level);
-    fwrite(m_tpl.parsed.content,1,m_tpl.parsed.len,stdout);
-
-    tpl_cf_finish(&tl_tpl);
-    tpl_cf_finish(&m_tpl);
-  }
-  else {
-    fwrite(ent->ptr,1,ent->size,stdout);
-    cf_cache_destroy(ent);
-  }
-}
-/* }}} */
-
-/* {{{ show_year_content */
-/**
- * Functions for showing the contents of a year
- * \param year The year
- */
-void show_year_content(const u_char *year) {
-  t_name_value *v   = cfg_get_first_value(&fo_default_conf,NULL,"ArchivePath");
-  t_name_value *mt  = cfg_get_first_value(&fo_arcview_conf,NULL,"MonthsTemplate");
-  t_name_value *mlt = cfg_get_first_value(&fo_arcview_conf,NULL,"MonthsListTemplate");
-  t_name_value *cs  = cfg_get_first_value(&fo_default_conf,NULL,"ExternCharset");
-  u_char *username = cf_hash_get(GlobalValues,"UserName",8);
-  t_name_value *forumpath = cfg_get_first_value(&fo_default_conf,NULL,username?"UBaseURL":"BaseURL");
-
-  t_cf_template mt_tpl,mlt_tpl;
-
-  t_array *months;
-  size_t len,i;
-  int month;
-
-  u_char mt_name[256],mlt_name[256],path[256],buff[10],*name;
-
-  struct stat st;
-
-  fwrite("\015\012",1,2,stdout);
-
-  if(!v || !mt || !mlt) {
-    str_error_message("E_CONFIG_ERR",NULL);
-    return;
-  }
-
-  snprintf(path,256,"%s/%s",v->values[0],year);
-  if(stat(path,&st) == -1) {
-    perror("stat");
-    str_error_message("E_ARCHIVE_YEARNOTPRESENT",NULL);
-    return;
-  }
-
-  generate_tpl_name(mt_name,256,mt);
-  generate_tpl_name(mlt_name,256,mlt);
-
-  if(tpl_cf_init(&mt_tpl,mt_name) != 0 || tpl_cf_init(&mlt_tpl,mlt_name) != 0) {
-    str_error_message("E_CONFIG_ERR",NULL);
-    return;
-  }
-
-  if((months = read_dir_content(path)) == NULL) {
-    str_error_message("E_ARCHIVE_YEARNOTPRESENT",NULL);
-    tpl_cf_finish(&mlt_tpl);
-    tpl_cf_finish(&mt_tpl);
-    return;
-  }
-
-  for(i=0;i<months->elements;i++) {
-    month = *((int *)array_element_at(months,i));
-    len = snprintf(buff,10,"%d",month);
-
-    tpl_cf_setvar(&mlt_tpl,"month",buff,len,0);
-
-    if((len = get_month_name(month,&name)) != 0) {
-      tpl_cf_setvar(&mlt_tpl,"name",name,len,1);
-      free(name);
-    }
-
-    tpl_cf_parse_to_mem(&mlt_tpl);
-  }
-
-  tpl_cf_setvar(&mt_tpl,"charset",cs->values[0],strlen(cs->values[0]),0);
-  tpl_cf_setvar(&mt_tpl,"months",mlt_tpl.parsed.content,mlt_tpl.parsed.len,0);
-  tpl_cf_setvar(&mt_tpl,"forumbase",forumpath->values[0],strlen(forumpath->values[0]),1);
-  tpl_cf_setvar(&mt_tpl,"year",year,strlen(year),0);
-
-  tpl_cf_parse(&mt_tpl);
-
-  tpl_cf_finish(&mlt_tpl);
-  tpl_cf_finish(&mt_tpl);
-
-  array_destroy(months);
-  free(months);
-}
-/* }}} */
-
-/* {{{ show_year_list */
-/**
- * Function for showing a list of years
- */
-void show_year_list(void) {
-  t_name_value *ap = cfg_get_first_value(&fo_default_conf,NULL,"ArchivePath");
-  t_array *ary = read_dir_content(ap->values[0]);
-  u_char *username = cf_hash_get(GlobalValues,"UserName",8);
-  t_name_value *forumpath = cfg_get_first_value(&fo_default_conf,NULL,username?"UBaseURL":"BaseURL");
-
-  t_name_value *yt  = cfg_get_first_value(&fo_arcview_conf,NULL,"YearsTemplate");
-  t_name_value *ylt = cfg_get_first_value(&fo_arcview_conf,NULL,"YearListTemplate");
-
-  t_cf_template years,year;
-  u_char buff[10],yt_name[256],ylt_name[256];
-
-  unsigned int i,y;
-
-  fwrite("\015\012",1,2,stdout);
-
-  if(!ap || !yt || !ylt) {
-    str_error_message("E_CONFIG_ERR",NULL);
-    return;
-  }
-
-  generate_tpl_name(yt_name,256,yt);
-  generate_tpl_name(ylt_name,256,ylt);
-
-  if(tpl_cf_init(&years,yt_name) != 0 || tpl_cf_init(&year,ylt_name) != 0) {
-    str_error_message("E_CONFIG_ERR",NULL);
-    return;
-  }
-
-  for(i=0;i<ary->elements;i++) {
-    y = *((int *)array_element_at(ary,i));
-    y = snprintf(buff,10,"%d",y);
-
-    tpl_cf_setvar(&year,"year",buff,y,0);
-    tpl_cf_parse_to_mem(&year);
-  }
-
-  tpl_cf_setvar(&years,"years",year.parsed.content,year.parsed.len,0);
-  tpl_cf_setvar(&years,"forumbase",forumpath->values[0],strlen(forumpath->values[0]),1);
-
-  tpl_cf_parse(&years);
-
-  tpl_cf_finish(&year);
-  tpl_cf_finish(&years);
-
-  array_destroy(ary);
-  free(ary);
+  return FLT_EXIT;
 }
 /* }}} */
 
@@ -1242,7 +134,658 @@ void sighandler(int segnum) {
 }
 /* }}} */
 
-/* {{{ main */
+/* {{{ array_numeric_compare */
+int array_numeric_compare(const void *elem1,const void *elem2) {
+  int elem1_i = *((int *)elem1);
+  int elem2_i = *((int *)elem2);
+
+  switch(ArcSortMeth) {
+    case CF_SORT_ASCENDING:
+      if(elem1_i < elem2_i)  return -1;
+      if(elem1_i == elem2_i) return  0;
+      if(elem1_i > elem2_i)  return  1;
+
+    case CF_SORT_DESCENDING:
+      if(elem1_i < elem2_i)  return  1;
+      if(elem1_i == elem2_i) return  0;
+      if(elem1_i > elem2_i)  return -1;
+  }
+
+  /* eh? */
+  return 0;
+}
+/* }}} */
+
+/* {{{ show_years */
+void show_years() {
+  size_t i;
+  int *y;
+
+  t_array *ary;
+  t_get_years gy;
+
+  u_char *fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
+  u_char *username = cf_hash_get(GlobalValues,"UserName",8);
+  t_name_value *cs = cfg_get_first_value(&fo_default_conf,fn,"ExternCharset");
+  t_name_value *sy = cfg_get_first_value(&fo_arcview_conf,fn,"SortYearList");
+  t_name_value *yt = cfg_get_first_value(&fo_arcview_conf,fn,"YearsTemplate");
+  t_name_value *forumpath = cfg_get_first_value(&fo_default_conf,fn,username?"UBaseURL":"BaseURL");
+
+  t_cf_template tpl;
+
+  u_char yt_name[256];
+
+  t_cf_tpl_variable array;
+
+  if((gy = cf_hash_get(ArcviewHandlers,"av_get_years",12)) == NULL) {
+    printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
+    cf_error_message("E_ARCHIVE_ERROR",NULL);
+    return;
+  }
+
+  if((ary = gy()) == NULL) {
+    printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
+    cf_error_message("E_ARCHIVE_ERROR",NULL);
+    return;
+  }
+
+  ArcSortMeth = cf_strcmp(sy->values[0],"ascending") == 0 ? CF_SORT_ASCENDING : CF_SORT_DESCENDING;
+  array_sort(ary,array_numeric_compare);
+
+  cf_gen_tpl_name(yt_name,256,yt->values[0]);
+  if(cf_tpl_init(&tpl,yt_name) != 0) {
+    printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
+    cf_error_message("E_CONFIG_ERR",NULL);
+    return;
+  }
+
+  cf_tpl_var_init(&array,TPL_VARIABLE_ARRAY);
+
+  for(i=0;i<ary->elements;++i) {
+    y = array_element_at(ary,i);
+    cf_tpl_var_addvalue(&array,TPL_VARIABLE_INT,*y);
+  }
+
+  cf_tpl_setvar(&tpl,"years",&array);
+  cf_set_variable(&tpl,cs,"forumbase",forumpath->values[0],strlen(forumpath->values[0]),1);
+
+  printf("Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
+  cf_tpl_parse(&tpl);
+
+  cf_tpl_finish(&tpl);
+
+  array_destroy(ary);
+  free(ary);
+}
+/* }}} */
+
+/* {{{ show_year_content */
+void show_year_content(const u_char *year) {
+  int *y;
+  size_t i,len;
+
+  t_get_monthlist ml;
+
+  u_char *fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
+  u_char *username = cf_hash_get(GlobalValues,"UserName",8);
+  u_char mt_name[256],*mname;
+
+  t_name_value *mt = cfg_get_first_value(&fo_arcview_conf,fn,"MonthsTemplate");
+  t_name_value *cs = cfg_get_first_value(&fo_default_conf,fn,"ExternCharset");
+  t_name_value *sm = cfg_get_first_value(&fo_arcview_conf,fn,"SortMonthList");
+  t_name_value *forumpath = cfg_get_first_value(&fo_default_conf,fn,username?"UBaseURL":"BaseURL");
+
+  t_array *ary;
+
+  t_cf_template mt_tpl;
+
+  t_cf_tpl_variable array,array1;
+
+  if((ml = cf_hash_get(ArcviewHandlers,"av_get_monthlist",16)) == NULL) {
+    printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
+    cf_error_message("E_ARCHIVE_ERROR",NULL);
+    return;
+  }
+
+  if((ary = ml(year)) == NULL) {
+    printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
+    cf_error_message("E_ARCHIVE_ERROR",NULL);
+    return;
+  }
+
+  ArcSortMeth = cf_strcmp(sm->values[0],"ascending") == 0 ? CF_SORT_ASCENDING : CF_SORT_DESCENDING;
+  array_sort(ary,array_numeric_compare);
+
+  cf_gen_tpl_name(mt_name,256,mt->values[0]);
+  if(cf_tpl_init(&mt_tpl,mt_name) != 0) {
+    cf_error_message("E_CONFIG_ERR",NULL);
+    return;
+  }
+
+  cf_tpl_var_init(&array,TPL_VARIABLE_ARRAY);
+
+  for(i=0;i<ary->elements;++i) {
+    y   = array_element_at(ary,i);
+    len = get_month_name(*y,fn,&mname);
+
+    cf_tpl_var_init(&array1,TPL_VARIABLE_ARRAY);
+    cf_tpl_var_addvalue(&array1,TPL_VARIABLE_INT,*y);
+    cf_tpl_var_addvalue(&array1,TPL_VARIABLE_STRING,mname,len);
+
+    free(mname);
+
+    cf_tpl_var_add(&array,&array1);
+  }
+
+  cf_tpl_setvar(&mt_tpl,"months",&array);
+  cf_set_variable(&mt_tpl,cs,"forumbase",forumpath->values[0],strlen(forumpath->values[0]),1);
+  cf_set_variable(&mt_tpl,cs,"year",year,strlen(year),1);
+
+  printf("Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
+  cf_tpl_parse(&mt_tpl);
+
+  cf_tpl_finish(&mt_tpl);
+
+  array_destroy(ary);
+  free(ary);
+}
+/* }}} */
+
+/* {{{ sort_threadlist */
+int sort_threadlist(const void *a,const void *b) {
+  t_arc_tl_ent *ea = (t_arc_tl_ent *)a;
+  t_arc_tl_ent *eb = (t_arc_tl_ent *)b;
+
+  switch(ArcSortMeth) {
+    case CF_SORT_ASCENDING:
+      if(ea->date < eb->date)  return -1;
+      if(ea->date == eb->date) return  0;
+      if(ea->date > eb->date)  return  1;
+
+    case CF_SORT_DESCENDING:
+      if(ea->date < eb->date)  return  1;
+      if(ea->date == eb->date) return  0;
+      if(ea->date > eb->date)  return -1;
+  }
+
+  /* hu? */
+  return 0;
+}
+/* }}} */
+
+/* {{{ prep_var */
+size_t prep_var(const u_char *val,size_t len,u_char **out,t_name_value *cs,int html) {
+  u_char *tmp = NULL;
+  size_t len1 = 0;
+
+  if(cf_strcmp(cs->values[0],"UTF-8") != 0) {
+    if(html) {
+      tmp = htmlentities_charset_convert(val,"UTF-8",cs->values[0],&len1,0);
+      html = 0;
+    }
+    else tmp = charset_convert_entities(val,len,"UTF-8",cs->values[0],&len1);
+
+    /* This should only happen if we use charset_convert() -- and we should not use it. */
+    if(!tmp) {
+      tmp = htmlentities(val,0);
+      len1 = strlen(val);
+    }
+  }
+  /* ExternCharset is also UTF-8 */
+  else {
+    if(html) {
+      tmp = htmlentities(val,0);
+      len1 = strlen(tmp);
+    }
+  }
+
+  *out = tmp;
+  return len1;
+}
+/* }}} */
+
+/* {{{ show_month_content */
+void show_month_content(const u_char *year,const u_char *month) {
+  t_get_threadlist gt;
+  t_month_last_modified mt;
+
+  int cache_level,do_cache,show_invisible = cf_hash_get(GlobalValues,"ShowInvisible",13) != NULL;
+  size_t i,len,len1;
+  time_t last_modified;
+
+  u_char *fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
+  u_char mt_name[256],pi[256],*tmp,*tmp1;
+
+  t_name_value *cs = cfg_get_first_value(&fo_default_conf,fn,"ExternCharset");
+  t_name_value *stl = cfg_get_first_value(&fo_arcview_conf,fn,"SortThreadList");
+  t_name_value *m_tp = cfg_get_first_value(&fo_arcview_conf,fn,"MonthsTemplate");
+  t_name_value *forumpath = cfg_get_first_value(&fo_default_conf,fn,"BaseURL");
+  t_name_value *ecache = cfg_get_first_value(&fo_arcview_conf,fn,"EnableCache");
+  t_name_value *df = cfg_get_first_value(&fo_arcview_conf,fn,"DateFormatList");
+  t_name_value *lc = cfg_get_first_value(&fo_default_conf,fn,"DateLocale");
+  t_name_value *cache  = NULL;
+  t_name_value *clevel = NULL;
+
+  t_array *ary;
+
+  t_arc_tl_ent *ent;
+
+  t_cache_entry *cent;
+
+  t_cf_template m_tpl;
+  t_cf_tpl_variable array,array1;
+
+  /* {{{ check for cache */
+  if(ecache && *ecache->values[0] == 'y' && !show_invisible) {
+    do_cache = 1;
+    cache  = cfg_get_first_value(&fo_arcview_conf,fn,"CacheDir");
+    clevel = cfg_get_first_value(&fo_arcview_conf,fn,"CacheLevel");
+
+    if(ecache) cache_level = atoi(clevel->values[0]);
+    else       cache_level = 6;
+
+    snprintf(pi,256,"%s/%s.idx",year,month);
+
+    if((mt = cf_hash_get(ArcviewHandlers,"av_threadlist_lm",16)) != NULL) {
+      if((last_modified = mt(year,month)) != 0) {
+        if(cf_cache_outdated_date(cache->values[0],pi,last_modified) != -1 && (cent = cf_get_cache(cache->values[0],pi,cache_level)) != NULL) {
+          printf("Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
+          fwrite(cent->ptr,1,cent->size,stdout);
+          cf_cache_destroy(cent);
+          return;
+        }
+      }
+    }
+  }
+  /* }}} */
+
+  if((gt = cf_hash_get(ArcviewHandlers,"av_get_threadlist",17)) == NULL) {
+    printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
+    cf_error_message("E_ARCHIVE_ERROR",NULL);
+    return;
+  }
+
+  if((ary = gt(year,month)) == NULL) {
+    printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
+    cf_error_message("E_ARCHIVE_ERROR",NULL);
+    return;
+  }
+
+  ArcSortMeth = cf_strcmp(stl->values[0],"ascending") == 0 ? CF_SORT_ASCENDING : CF_SORT_DESCENDING;
+  array_sort(ary,sort_threadlist);
+
+  cf_gen_tpl_name(mt_name,256,m_tp->values[0]);
+
+  if(cf_tpl_init(&m_tpl,mt_name) != 0) {
+    printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
+    cf_error_message("E_CONFIG_ERR",NULL);
+    return;
+  }
+
+
+  cf_tpl_var_init(&array,TPL_VARIABLE_ARRAY);
+
+  for(i=0;i<ary->elements;++i) {
+    ent = array_element_at(ary,i);
+
+    cf_tpl_var_init(&array1,TPL_VARIABLE_ARRAY);
+
+    len = prep_var(ent->author,ent->alen,&tmp,cs,1);
+    cf_tpl_var_addvalue(&array1,TPL_VARIABLE_STRING,tmp?tmp:ent->author,tmp?len:ent->alen);
+    if(tmp) free(tmp);
+
+    len = prep_var(ent->subject,ent->slen,&tmp,cs,1);
+    cf_tpl_var_addvalue(&array1,TPL_VARIABLE_STRING,tmp?tmp:ent->subject,tmp?len:ent->slen);
+    if(tmp) free(tmp);
+
+    cf_tpl_var_addvalue(&array1,TPL_VARIABLE_STRING,ent->tid,ent->tlen);
+
+    tmp1 = cf_general_get_time(df->values[0],lc->values[0],&len1,&ent->date);
+    if(tmp1) {
+      len = prep_var(tmp1,len1,&tmp,cs,1);
+      cf_tpl_var_addvalue(&array1,TPL_VARIABLE_STRING,tmp?tmp:tmp1,tmp?len:len1);
+      free(tmp1);
+      if(tmp) free(tmp);
+    }
+
+    if(ent->cat) {
+      len = prep_var(ent->cat,ent->clen,&tmp,cs,1);
+      cf_tpl_var_addvalue(&array1,TPL_VARIABLE_STRING,tmp?tmp:ent->cat,tmp?len:ent->clen);
+      if(tmp) free(tmp);
+    }
+
+    cf_tpl_var_add(&array,&array1);
+  }
+
+  len = get_month_name(atoi(month),fn,&tmp);
+  cf_set_variable(&m_tpl,cs,"month",month,len,1);
+  cf_set_variable(&m_tpl,cs,"year",year,strlen(year),1);
+  cf_set_variable(&m_tpl,cs,"forumbase",forumpath->values[0],strlen(forumpath->values[0]),1);
+
+  cf_tpl_setvar(&m_tpl,"threads",&array);
+
+  printf("Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
+  cf_tpl_parse_to_mem(&m_tpl);
+
+  fwrite(m_tpl.parsed.content,1,m_tpl.parsed.len,stdout);
+  if(show_invisible == 0 && do_cache) cf_cache(cache->values[0],pi,m_tpl.parsed.content,m_tpl.parsed.len,cache_level);
+
+  cf_tpl_finish(&m_tpl);
+
+  array_destroy(ary);
+  free(ary);
+}
+/* }}} */
+
+/* {{{ msgs_cmp */
+int msgs_cmp(const void *a,const void *b) {
+  t_hierarchical_node *na = (t_hierarchical_node *)a;
+  t_hierarchical_node *nb = (t_hierarchical_node *)b;
+
+  switch(ArcSortMeth) {
+    case CF_SORT_ASCENDING:
+      if(na->msg->date > nb->msg->date) return 1;
+      else if(na->msg->date < nb->msg->date) return -1;
+
+    case CF_SORT_DESCENDING:
+      if(na->msg->date > nb->msg->date) return -1;
+      else if(na->msg->date < nb->msg->date) return 1;
+  }
+
+  return 0;
+}
+/* }}} */
+
+/* {{{ sort_messages */
+void sort_messages(t_hierarchical_node *h) {
+  size_t i;
+
+  array_sort(&h->childs,msgs_cmp);
+
+  for(i=0;i<h->childs.elements;++i) sort_messages(array_element_at(&h->childs,i));
+}
+/* }}} */
+
+/* {{{ generate_thread_output */
+void generate_thread_output(t_cl_thread *thread,t_hierarchical_node *msg,t_cf_tpl_variable *threads,t_string *threadlist,t_cf_template *tl_tpl,t_name_value *cs,int admin,int show_invisible,const u_char *fn) {
+  size_t i;
+  t_hierarchical_node *child;
+  size_t len,len1,cntlen;
+  t_string str;
+  u_char *cnt = NULL;
+  int printed = 0;
+  u_char *date,*tmp;
+  t_string strbuffer;
+  t_name_value *qc = cfg_get_first_value(&fo_arcview_conf,fn,"QuotingChars"),
+               *ms = cfg_get_first_value(&fo_arcview_conf,fn,"MaxSigLines"),
+               *ss = cfg_get_first_value(&fo_arcview_conf,fn,"ShowSig");
+
+  t_name_value *tf = cfg_get_first_value(&fo_arcview_conf,fn,"DateFormatViewList");
+  t_name_value *dl = cfg_get_first_value(&fo_default_conf,fn,"DateLocale");
+
+  t_cf_tpl_variable ary;
+
+  str_init(&strbuffer);
+  str_init(&str);
+
+  cf_tpl_var_init(&ary,TPL_VARIABLE_ARRAY);
+
+
+  /* {{{ first: set threadlist and per thread variables */
+  str_char_append(&strbuffer,'m');
+  u_int64_to_str(&strbuffer,msg->msg->mid);
+
+  cf_set_variable(tl_tpl,cs,"mid",strbuffer.content,strbuffer.len,1);
+  cf_set_variable(tl_tpl,cs,"subject",msg->msg->subject.content,msg->msg->subject.len,1);
+  cf_set_variable(tl_tpl,cs,"author",msg->msg->author.content,msg->msg->author.len,1);
+
+  cf_tpl_var_addvalue(&ary,TPL_VARIABLE_STRING,strbuffer.content,strbuffer.len);
+
+  len = prep_var(msg->msg->subject.content,msg->msg->subject.len,&tmp,cs,1);
+  cf_tpl_var_addvalue(&ary,TPL_VARIABLE_STRING,tmp?tmp:msg->msg->subject.content,tmp?len:msg->msg->subject.len);
+  if(tmp) free(tmp);
+
+  len = prep_var(msg->msg->author.content,msg->msg->author.len,&tmp,cs,1);
+  cf_tpl_var_addvalue(&ary,TPL_VARIABLE_STRING,tmp?tmp:msg->msg->author.content,tmp?len:msg->msg->author.len);
+  if(tmp) free(tmp);
+
+  if((date = cf_general_get_time(tf->values[0],dl->values[0],(int *)&len,&msg->msg->date)) != NULL) {
+    cf_set_variable(tl_tpl,cs,"date",date,len,1);
+
+    len1 = prep_var(date,len,&tmp,cs,1);
+    cf_tpl_var_addvalue(&ary,TPL_VARIABLE_STRING,tmp?tmp:date,tmp?len1:len);
+    if(tmp) free(tmp);
+
+    free(date);
+  }
+
+  /* {{{ add message content to array */
+  /* convert message to the right charset */
+  if(cf_strcmp(cs->values[0],"UTF-8") == 0 || (cnt = charset_convert_entities(msg->msg->content.content,msg->msg->content.len,"UTF-8",cs->values[0],&cntlen)) == NULL) {
+    cnt = strdup(msg->msg->content.content);
+  }
+
+  /* convert message to html */
+  msg_to_html(thread,cnt,&str,NULL,qc->values[0],ms ? atoi(ms->values[0]) : -1,ss ? cf_strcmp(ss->values[0],"yes") == 0 : 1);
+
+  free(cnt);
+
+  cf_tpl_var_addvalue(&ary,TPL_VARIABLE_STRING,str.content,str.len);
+  str_cleanup(&str);
+  /* }}} */
+
+  if(msg->msg->category.len) cf_set_variable(tl_tpl,cs,"category",msg->msg->category.content,msg->msg->category.len,1);
+  else cf_tpl_freevar(tl_tpl,"category");
+
+  /* category */
+  if(msg->msg->category.len) {
+    len = prep_var(msg->msg->category.content,msg->msg->category.len,&tmp,cs,1);
+    cf_tpl_var_addvalue(&ary,TPL_VARIABLE_STRING,tmp?tmp:msg->msg->category.content,tmp?len:msg->msg->category.len);
+    if(tmp) free(tmp);
+  }
+  else cf_tpl_var_addvalue(&ary,TPL_VARIABLE_INT,0);
+
+  /* email */
+  if(msg->msg->email.len) {
+    len = prep_var(msg->msg->email.content,msg->msg->email.len,&tmp,cs,1);
+    cf_tpl_var_addvalue(&ary,TPL_VARIABLE_STRING,tmp?tmp:msg->msg->email.content,tmp?len:msg->msg->email.len);
+    if(tmp) free(tmp);
+  }
+  else cf_tpl_var_addvalue(&ary,TPL_VARIABLE_INT,0);
+
+  /* image url */
+  if(msg->msg->img.len) {
+    len = prep_var(msg->msg->img.content,msg->msg->img.len,&tmp,cs,1);
+    cf_tpl_var_addvalue(&ary,TPL_VARIABLE_STRING,tmp?tmp:msg->msg->img.content,tmp?len:msg->msg->img.len);
+    if(tmp) free(tmp);
+  }
+  else cf_tpl_var_addvalue(&ary,TPL_VARIABLE_INT,0);
+
+  /* homepage url */
+  if(msg->msg->hp.len) {
+    len = prep_var(msg->msg->hp.content,msg->msg->hp.len,&tmp,cs,1);
+    cf_tpl_var_addvalue(&ary,TPL_VARIABLE_STRING,tmp?tmp:msg->msg->hp.content,tmp?len:msg->msg->hp.len);
+    if(tmp) free(tmp);
+  }
+  else cf_tpl_var_addvalue(&ary,TPL_VARIABLE_INT,0);
+  /* }}} */
+
+  /* parse threadlist and append output to threadlist content */
+  cf_tpl_parse_to_mem(tl_tpl);
+  str_chars_append(threadlist,tl_tpl->parsed.content,tl_tpl->parsed.len);
+
+  tl_tpl->parsed.len = 0;
+
+  cf_tpl_var_add(threads,&ary);
+
+  if(msg->childs.elements) {
+    str_chars_append(threadlist,"<ul>",4);
+
+    for(i=0;i<msg->childs.elements;i++) {
+      child = array_element_at(&msg->childs,i);
+      if(child->msg->invisible == 1 && (admin == 0 || show_invisible == 0)) continue;
+
+      printed = 1;
+
+      str_chars_append(threadlist,"<li>",4);
+      generate_thread_output(thread,child,threads,threadlist,tl_tpl,cs,admin,show_invisible,fn);
+      str_chars_append(threadlist,"</li>",5);
+    }
+
+    if(printed) str_chars_append(threadlist,"</ul>",5);
+    else {
+      threadlist->len -= 4;
+      *(threadlist->content + threadlist->len) = '\0';
+    }
+  }
+}
+/* }}} */
+
+/* {{{ print_thread */
+void print_thread(t_cl_thread *thr,const u_char *year,const u_char *month,const u_char *pi,int admin,int show_invisible) {
+  u_char *fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
+
+  t_name_value *main_tpl_cfg       = cfg_get_first_value(&fo_arcview_conf,fn,"ThreadTemplate");
+  t_name_value *threadlist_tpl_cfg = cfg_get_first_value(&fo_arcview_conf,fn,"ThreadListTemplate");
+  t_name_value *forumpath          = cfg_get_first_value(&fo_default_conf,fn,"BaseURL");
+  t_name_value *ecache = cfg_get_first_value(&fo_arcview_conf,fn,"EnableCache");
+  t_name_value *cache, *clevel;
+
+  t_name_value *cs = cfg_get_first_value(&fo_default_conf,fn,"ExternCharset");
+
+  u_char main_tpl_name[256],threadlist_tpl_name[256];
+  t_cf_template main_tpl,threadlist_tpl;
+
+  u_char *tmp;
+  int len,cache_level;
+
+  t_string threadlist;
+
+  t_cf_tpl_variable ary;
+
+  /* Buarghs. Four templates. This is fucking bad. */
+  cf_gen_tpl_name(main_tpl_name,256,main_tpl_cfg->values[0]);
+  cf_gen_tpl_name(threadlist_tpl_name,256,threadlist_tpl_cfg->values[0]);
+
+  if(cf_tpl_init(&main_tpl,main_tpl_name) != 0 || cf_tpl_init(&threadlist_tpl,threadlist_tpl_name) != 0) {
+    printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
+    cf_error_message("E_TPL_NOT_FOUND",NULL);
+    return;
+  }
+
+  len = get_month_name(atoi(month),fn,&tmp);
+
+  cf_set_variable(&main_tpl,cs,"month",tmp,len,1);
+  cf_set_variable(&main_tpl,cs,"year",year,strlen(year),1);
+  cf_set_variable(&main_tpl,cs,"subject",thr->messages->subject.content,thr->messages->subject.len,1);
+  cf_set_variable(&main_tpl,cs,"charset",cs->values[0],strlen(cs->values[0]),1);
+  cf_set_variable(&main_tpl,cs,"forumbase",forumpath->values[0],strlen(forumpath->values[0]),1);
+
+  free(tmp);
+
+  str_init(&threadlist);
+  cf_tpl_var_init(&ary,TPL_VARIABLE_ARRAY);
+
+  generate_thread_output(thr,thr->ht,&ary,&threadlist,&threadlist_tpl,cs,admin,show_invisible,fn);
+
+  cf_tpl_setvar(&main_tpl,"threads",&ary);
+  cf_tpl_setvalue(&main_tpl,"threadlist",TPL_VARIABLE_STRING,threadlist.content,threadlist.len);
+
+  cf_tpl_parse_to_mem(&main_tpl);
+ 
+  printf("Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
+  fwrite(main_tpl.parsed.content,1,main_tpl.parsed.len,stdout);
+
+  if(show_invisible == 0 && ecache && *ecache->values[0] == 'y') {
+    cache  = cfg_get_first_value(&fo_arcview_conf,fn,"CacheDir");
+    clevel = cfg_get_first_value(&fo_arcview_conf,fn,"CacheLevel");
+
+    if(clevel) cache_level = atoi(clevel->values[0]);
+    else       cache_level = 6;
+
+    cf_cache(cache->values[0],pi,main_tpl.parsed.content,main_tpl.parsed.len,cache_level);
+  }
+
+  cf_tpl_finish(&main_tpl);
+  cf_tpl_finish(&threadlist_tpl);
+}
+/* }}} */
+
+void show_thread(const u_char *year,const u_char *month,const u_char *tid) {
+  t_get_thread gt;
+  t_thread_last_modified tlm;
+
+  int cache_level;
+  int show_invisible = cf_hash_get(GlobalValues,"ShowInvisible",13) != NULL;
+  time_t last_modified;
+
+  u_char *fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
+  u_char *uname = cf_hash_get(GlobalValues,"UserName",8);
+  u_char pi[256];
+
+  t_mod_api is_admin = cf_get_mod_api_ent("is_admin");
+  int admin = uname ? (int)is_admin(uname) : 0;
+
+  t_name_value *cs = cfg_get_first_value(&fo_default_conf,fn,"ExternCharset");
+  t_name_value *sm = cfg_get_first_value(&fo_arcview_conf,fn,"SortMessages");
+  t_name_value *ecache = cfg_get_first_value(&fo_arcview_conf,fn,"EnableCache");
+  t_name_value *cache, *clevel;
+
+  t_cache_entry *cent;
+
+  t_cl_thread *thr;
+
+  /* {{{ check for cache */
+  if(ecache && *ecache->values[0] == 'y' && !show_invisible) {
+    cache  = cfg_get_first_value(&fo_arcview_conf,fn,"CacheDir");
+    clevel = cfg_get_first_value(&fo_arcview_conf,fn,"CacheLevel");
+
+    if(ecache) cache_level = atoi(clevel->values[0]);
+    else       cache_level = 6;
+
+    snprintf(pi,256,"%s/%s/t%s",year,month,*tid == 't' ? tid+1 : tid);
+
+    if((tlm = cf_hash_get(ArcviewHandlers,"av_thread_lm",12)) != NULL) {
+      if((last_modified = tlm(year,month,tid)) != 0) {
+        if(cf_cache_outdated_date(cache->values[0],pi,last_modified) != -1 && (cent = cf_get_cache(cache->values[0],pi,cache_level)) != NULL) {
+          printf("Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
+          fwrite(cent->ptr,1,cent->size,stdout);
+          cf_cache_destroy(cent);
+          return;
+        }
+      }
+    }
+  }
+  /* }}} */
+
+  if((gt = cf_hash_get(ArcviewHandlers,"av_get_thread",13)) == NULL) {
+    printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
+    cf_error_message("E_ARCHIVE_ERROR",NULL);
+    return;
+  }
+
+  if((thr = gt(year,month,tid)) == NULL) {
+    printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
+    cf_error_message("E_ARCHIVE_ERROR",NULL);
+    return;
+  }
+
+  /*
+   * we have to sort the messages in the thread; due to our hierarchical
+   * structure this is very easy
+   */
+  ArcSortMeth = cf_strcmp(sm->values[0],"ascending") == 0 ? CF_SORT_ASCENDING : CF_SORT_DESCENDING;
+  sort_messages(thr->ht);
+  cf_msg_linearize(thr->ht);
+
+  if(thr->messages->invisible == 0 || (admin == 1 && show_invisible == 1)) print_thread(thr,year,month,pi,admin,show_invisible);
+  else {
+    printf("Status: 404 Not Found\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
+    cf_error_message("E_FO_404",NULL);
+  }
+
+}
+
 /**
  * The main function of the forum archive viewer. No command line switches used.
  * \param argc The argument count
@@ -1255,18 +798,16 @@ int main(int argc,char *argv[],char *env[]) {
     "fo_default", "fo_arcview"
   };
 
-  u_int32_t pieces = 0;
-  int ret;
-  size_t i;
-  u_char  *ucfg;
+  u_char *forum_name = NULL,*fname;
   t_array *cfgfiles;
   t_configfile conf,dconf;
-  t_name_value *cs = NULL;
-  u_char *UserName;
-  u_char *fname;
-  u_char **path_infos;
+  t_name_value *cs,*v;
+  u_char **infos = NULL,*pi;
   t_cf_hash *head;
+  t_string tmp;
+
   size_t len;
+  int ret;
 
   /* set signal handler for SIGSEGV (for error reporting) */
   signal(SIGSEGV,sighandler);
@@ -1274,19 +815,21 @@ int main(int argc,char *argv[],char *env[]) {
   signal(SIGFPE,sighandler);
   signal(SIGBUS,sighandler);
 
-
-  if((cfgfiles  = get_conf_file(wanted,2)) == NULL) {
+  if((cfgfiles = get_conf_file(wanted,2)) == NULL) {
+    fprintf(stderr,"Could not find configuration files...\n");
     return EXIT_FAILURE;
   }
 
+  ArcviewHandlers = cf_hash_new(NULL);
+
   head = cf_cgi_new();
+  len  = cf_cgi_path_info_parsed(&infos);
 
-  cf_init();
-  init_modules();
   cfg_init();
+  init_modules();
+  cf_init();
 
-  ret  = FLT_OK;
-
+  /* {{{ read configuration */
   fname = *((u_char **)array_element_at(cfgfiles,0));
   cfg_init_file(&dconf,fname);
   free(fname);
@@ -1306,133 +849,110 @@ int main(int argc,char *argv[],char *env[]) {
 
     return EXIT_FAILURE;
   }
+  /* }}} */
 
-  /* first action: authorization modules */
-  if(Modules[AUTH_HANDLER].elements) {
-    size_t i;
-    t_filter_begin exec;
-    t_handler_config *handler;
+  /* {{{ ensure that CF_FORUM_NAME is set and we have got a context in every file */
+  if((forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10)) == NULL) {
+    fprintf(stderr,"Could not get forum name!");
 
-    ret = FLT_DECLINE;
+    cfg_cleanup_file(&conf);
+    cfg_cleanup_file(&dconf);
 
-    for(i=0;i<Modules[AUTH_HANDLER].elements && ret == FLT_DECLINE;i++) {
-      handler = array_element_at(&Modules[AUTH_HANDLER],i);
+    cfg_destroy();
+    cf_fini();
 
-      exec = (t_filter_begin)handler->func;
-      ret = exec(head,&fo_default_conf,&fo_view_conf);
-    }
+    return EXIT_FAILURE;
   }
 
-  if((UserName = cf_hash_get(GlobalValues,"UserName",8)) != NULL) {
-    /* get user config */
-    ucfg = get_uconf_name(UserName);
-    if(ucfg) {
-      free(conf.filename);
-      conf.filename = ucfg;
+  if(cfg_get_first_value(&fo_default_conf,forum_name,"ThreadIndexFile") == NULL) {
+    fprintf(stderr,"Have no context for forum %s in default configuration file!\n",forum_name);
 
-      if(read_config(&conf,ignre,CFG_MODE_USER) != 0) {
-        fprintf(stderr,"config file error!\n");
+    cfg_cleanup_file(&conf);
+    cfg_cleanup_file(&dconf);
 
-        cfg_cleanup_file(&conf);
-        cfg_cleanup_file(&dconf);
+    cfg_destroy();
+    cf_fini();
 
-        return EXIT_FAILURE;
-      }
-    }
+    return EXIT_FAILURE;
   }
 
-  /* first state: let the begin-filters run! :-) */
-  if(ret != FLT_EXIT && Modules[INIT_HANDLER].elements) {
-    t_handler_config *handler;
-    t_filter_begin exec;
+  if(cfg_get_first_value(&fo_arcview_conf,forum_name,"SortYearList") == NULL) {
+    fprintf(stderr,"Have no context for forum %s in fo_view configuration file!\n",forum_name);
 
-    for(i=0;i<Modules[INIT_HANDLER].elements && (ret == FLT_OK || ret == FLT_DECLINE);i++) {
-      handler = array_element_at(&Modules[INIT_HANDLER],i);
-      exec    = (t_filter_begin)handler->func;
-      ret     = exec(head,&fo_default_conf,&fo_view_conf);
+    cfg_cleanup_file(&conf);
+    cfg_cleanup_file(&dconf);
+
+    cfg_destroy();
+    cf_fini();
+
+    return EXIT_FAILURE;
+  }
+  /* }}} */
+
+
+  cs = cfg_get_first_value(&fo_default_conf,forum_name,"ExternCharset");
+
+  /* {{{ check if URI ends with a slash */
+  if((pi = getenv("PATH_INFO")) != NULL) {
+    if(*pi && pi[strlen(pi)-1] != '/') {
+      str_init(&tmp);
+
+      v = cfg_get_first_value(&fo_default_conf,forum_name,"ArchiveURL");
+      str_chars_append(&tmp,v->values[0],strlen(v->values[0]));
+      str_chars_append(&tmp,pi,strlen(pi));
+      str_char_append(&tmp,'/');
+
+      printf("Status: 301 Moved Permanently\015\012Location: %s\015\012\015\012",tmp.content);
+      str_cleanup(&tmp);
+
+      ret = FLT_EXIT;
     }
   }
+  /* }}} */
 
-  cs = cfg_get_first_value(&fo_default_conf,NULL,"ExternCharset");
-
-  if(ret != FLT_EXIT) {
-    printf("Content-Type: text/html; charset=%s\015\012",cs?cs->values[0]?cs->values[0]:(u_char *)"UTF-8":(u_char *)"UTF-8");
-
-    /* ok, let's check whats going on... parse PATH_INFO */
-    pieces = path_info_parsed(&path_infos);
-
-    /* {{{ we do not want bad values */
-    /* bad, ugly ass! don't fool me! */
-    for(len=0;len<pieces;len++) {
-      /* we accept an trailing t for the tid */
-      if(len == 2 && *path_infos[len] == 't') {
-        if(!is_numeric(path_infos[len]+1)) {
-          /* destroy everything */
-          for(len=0;len<pieces;len++) {
-            free(path_infos[len]);
-          }
-
-          free(path_infos);
-          pieces = 0;
-          break;
-        }
-      }
-      else {
-        if(!is_numeric(path_infos[len])) {
-          /* destroy everything */
-          for(len=0;len<pieces;len++) {
-            free(path_infos[len]);
-          }
-
-          free(path_infos);
-          pieces = 0;
-          break;
-        }
-      }
-    }
-    /* }}} */
-
-    switch(pieces) {
-      /* year given */
-      case 1:
-        show_year_content(path_infos[0]);
-        break;
-      /* and month given */
-      case 2:
-        show_month_content(path_infos[0],path_infos[1]);
-        break;
-      /* and tid given */
+  if(ret != FLT_EXIT && (ret = cf_run_init_handlers(head)) != FLT_EXIT) {
+    switch(len) {
       case 3:
-        show_thread(path_infos[0],path_infos[1],path_infos[2]);
+        ret = validate_thread(infos[0],infos[1],infos[2]);
+        break;
+      case 2:
+        ret = validate_month(infos[0],infos[1]);
+        break;
+      case 1:
+        ret = validate_year(infos[0]);
         break;
 
-      /* show list of years due to an input error or nothing given */
+      case 0:
+        ret = FLT_OK;
+        break;
+
       default:
-        show_year_list();
+        printf("Status: 404 Not Found\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
+        cf_error_message("E_ARCHIVE_GENERIC404",NULL);
+        ret = FLT_EXIT;
     }
+
+    if(ret != FLT_EXIT) {
+      switch(len) {
+        case 0:
+          show_years();
+          break;
+        case 1:
+          show_year_content(infos[0]);
+          break;
+        case 2:
+          show_month_content(infos[0],infos[1]);
+          break;
+        case 3:
+          show_thread(infos[0],infos[1],infos[2]);
+          break;
+      }
+    }
+
   }
 
-  if(pieces) {
-    for(i=0;i<pieces;i++) {
-      free(path_infos[i]);
-    }
-    free(path_infos);
-  }
-
-  array_destroy(cfgfiles);
-  free(cfgfiles);
-
-  cfg_cleanup_file(&conf);
-  cfg_cleanup_file(&dconf);
-
-  cfg_cleanup(&fo_default_conf);
-  cfg_cleanup(&fo_arcview_conf);
-
-  cleanup_modules(Modules);
-  cf_fini();
 
   return EXIT_SUCCESS;
 }
-/* }}} */
 
 /* eof */

@@ -31,7 +31,8 @@ Load "flt_handle404"
 Load "flt_motd"
 Load "flt_tipoftheday"
 Load "flt_sorting"
-
+Load "flt_directives"
+Load "flt_syntax"
 
 Forum FORUM1 {
  ThreadsOpenByDefault    "yes"

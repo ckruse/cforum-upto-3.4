@@ -459,11 +459,11 @@ void cf_cgi_destroy(t_cf_hash *hash) {
 }
 /* }}} */
 
-/* {{{ path_info_parsed */
+/* {{{ cf_cgi_path_info_parsed */
 /**
  * This function parses a PATH_INFO string
  */
-u_int32_t path_info_parsed(u_char ***infos) {
+u_int32_t cf_cgi_path_info_parsed(u_char ***infos) {
   u_char *path = getenv("PATH_INFO"),*prev,**list = NULL;
   register u_char *ptr;
   int len = 0;

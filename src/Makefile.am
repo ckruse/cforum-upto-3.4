@@ -7,6 +7,7 @@ bin_PROGRAMS= \
 	fo_vote \
 	fo_tid_index \
 	fo_post \
+	fo_arcview \
 	fo_threadlookup
 
 pkglib_LTLIBRARIES= \
@@ -71,6 +72,10 @@ libcfclientlib_la_LDFLAGS=-export-dynamic -avoid-version
 fo_threadlookup_SOURCES=fo_threadlookup.c
 fo_threadlookup_LDADD=libcfclientlib.la libcfutils.la libcfconfigparser.la libcfcgi.la $(BDB_LIB)
 fo_threadlookup_LDFLAGS=-export-dynamic
+
+fo_arcview_SOURCES=fo_arcview.c
+fo_arcview_LDADD=libcfconfigparser.la libcftemplate.la libcfcharconvert.la libcfutils.la libcfhashlib.la libcfclientlib.la libcfcgi.la libcfhtml.la
+fo_arcview_LDFLAGS=-export-dynamic
 
 fo_tid_index_SOURCES=fo_tid_index.c
 fo_tid_index_LDADD=libcfutils.la libcfconfigparser.la $(BDB_LIB)

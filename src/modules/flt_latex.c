@@ -215,7 +215,7 @@ int flt_latex_execute(t_configuration *fdc,t_configuration *fvc,const u_char *di
   u_char sum[33];
   t_string str;
   struct stat st;
-  int obj;
+  int obj = 0;
   t_name_value *xhtml = cfg_get_first_value(fdc,forum_name,"XHTMLMode");
   size_t len;
 

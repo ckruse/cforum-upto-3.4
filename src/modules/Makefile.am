@@ -169,4 +169,9 @@ pkglib_LTLIBRARIES+=flt_checkregisteredname.la
 flt_checkregisteredname_la_SOURCES=flt_checkregisteredname.c
 flt_checkregisteredname_la_LDFLAGS=-module -export-dynamic -avoid-version
 
+pkglib_LTLIBRARIES+=flt_xmlarc.la
+flt_xmlarc_la_SOURCES=flt_xmlarc.c ../xml_handling.c
+flt_xmlarc_la_LDFLAGS=-module -export-dynamic -avoid-version
+flt_xmlarc_la_LIBADD=$(GDOME_LIBS)
+
 # eof

@@ -1,3 +1,16 @@
+2005-02-09 Christian Kruse <ckruse@wwwtech.de>
+	* conf/fo_view.conf.in: Added two modules
+	* conf/fo_post.conf.in: Added three modules
+	* conf/fo_arcview.conf.in: Moved to new config syntax, added some modules,
+		added some sorting directives
+	* src/fo_view.c: Fixed small variable initialization bug
+	* src/modules/flt_latex.c: Fixed small variable intialization bug
+	* src/modules/flt_xmlarc.c: Added XML storage module for the archive viewer
+	* src/cfcgi.[ch]: Renamed function (name was really bad)
+	* src/fo_arcview.c: Totaly rewrote the archive viewer
+	* src/configparser.c: Added some sorting directives for the archive viewer,
+		made archive viewer directives local
+
 2005-02-08 Christian Kruse <ckruse@wwwtech.de>
 	* configure.in: Added cf-cleanup.pl
 	* src/swig/CForum-Configparser/CForum-Configparser.i: Small bugfix

@@ -16,37 +16,35 @@
 #ifndef _FO_ARCVIEW_H
 #define _FO_ARCVIEW_H
 
-/**
- * Struct for message representation of the archive viewer. It's hierarchical
- */
-typedef struct s_arc_message {
-  u_int64_t mid;     /**< message id */
-  t_string author;   /**< author name */
-  t_string subject;  /**< subject of the post */
-  t_string category; /**< category of the post */
-  t_string content;  /**< content of the post */
-  t_string email;    /**< email address of the author */
-  t_string hp;       /**< homepage address of the author */
-  t_string img;      /**< image url of the author */
+extern t_cf_hash *ArcviewHandlers;
 
-  time_t date;       /**< date of the posting */
-  int may_show;      /**< boolean for plugins (if 0, the message will be deleted) */
-  int invisible;     /**< boolean, if 1 the message will be deleted */
+typedef int (*t_is_valid_year)(const u_char *);
+typedef int (*t_is_valid_month)(const u_char *,const u_char *);
+typedef int (*t_is_valid_thread)(const u_char *,const u_char *,const u_char *);
 
-  t_cf_template tpl; /**< template of this posting */
+typedef t_array *(*t_get_years)(void);
+typedef t_array *(*t_get_monthlist)(const u_char *);
+typedef t_array *(*t_get_threadlist)(const u_char *,const u_char *);
+typedef t_cl_thread *(*t_get_thread)(const u_char *,const u_char *,const u_char *);
 
-  t_array childs;    /**< array of answers to this posting */
-} t_arc_message;
+typedef time_t (*t_month_last_modified)(const u_char *,const u_char *);
+typedef time_t (*t_thread_last_modified)(const u_char *,const u_char *,const u_char *);
 
-/**
- * Struct for thread representation of the archive viewer
- */
-typedef struct s_arc_thread {
-  u_int64_t tid;        /**< thread id */
-  long msg_len;         /**< number of messages */
+typedef struct {
+  u_char *author;
+  size_t alen;
 
-  t_arc_message *msgs;  /**< pointer to the thread message */
-} t_arc_thread;
+  u_char *cat;
+  size_t clen;
+
+  u_char *subject;
+  size_t slen;
+
+  u_char *tid;
+  size_t tlen;
+
+  time_t date;
+} t_arc_tl_ent;
 
 
 #endif

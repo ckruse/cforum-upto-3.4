@@ -112,7 +112,7 @@ void cf_cgi_destroy(t_cf_hash *hash);
  * \param infos A reference to a u_char ** array
  * \return Returns the length of the u_char ** array
  */
-u_int32_t path_info_parsed(u_char ***infos);
+u_int32_t cf_cgi_path_info_parsed(u_char ***infos);
 
 #endif
 
