@@ -1,3 +1,21 @@
+2004-12-31 Christian Kruse <ckruse@wwwtech.de>
+	* *: Merged back changes from 2.1
+
+2004-12-31 Christian Kruse <ckruse@wwwtech.de>
+	* src/modules/flt_category.c: Added configuration option
+		HideCategoriesInThreadView
+	* src/modules/flt_listhighlight.c: A little bit code cleaning
+	* cgi-shared/config/modules.de.xml: Added configuration option
+		HideCategoriesInThreadView and moved several configuration options to
+		different sections
+
+2004-12-30 Christian Kruse <ckruse@wwwtech.de>
+	* src/fo_vote.c: Added variable backlink in OK output
+	* src/templates/de/tpl_*/vote_ok.html: Added link back to posting
+	* src/fo_view.c: Fixed bug in filter handling
+	* src/modules/flt_visited.c: Fixed bug in 204 response
+	* cgi-shared/config/modules.de.xml: Added 204 response options
+
 2004-12-19 Christian Kruse <ckruse@wwwtech.de>
 	* src/defines.h: Added several handler hooks
 	* src/modules/flt_xmlstorage.c: Added several handlers (not yet implemented!),
@@ -29,22 +47,6 @@
 	* src/perl/CForum-Clientlib/Clientlib.xs: Fixed bug in
 		CForum::Clientlib::Thread->deleted
 	* src/fo_arcview.c: Deleted unecessary cfg_get_value() call
-
-2004-12-13 Christian Kruse <ckruse@wwwtech.de>
-	* src/clientlib.c, src/clientlib.h: Added cf_get_first_visible() in the client
-		library
-	* src/modules/flt_deleted.c, src/modules/flt_visited.c: Now using
-		cf_get_first_visible() for setting the links
-	* src/templates/de/tpl_*/sendpass.html: Added form field for sending email by
-		username
-	* cgi-shared/Plugins/Quotings.pm, cgi-shared/Plugins/CategoryCheck.pm,
-		cgi-shared/Plugins/SpellCheck.pm, cgi-shared/Plugins/Preview.pm,
-		cgi-shared/Plugins/RegisterName.pm,
-		cgi-shared/Plugins/CheckRegisteredName.pm,
-		cgi-shared/Plugins/RandomSignature.pm: Removed CheckRFC.pm
-	* cgi-shared/config/modules.de.xml: Corrected typo
-	* cgi-bin/fo_usermanagement.in, cgi-shared/Plugins/Management/SQL.pm: Added
-		code for sending email by username
 
 2004-11-28 Christian Kruse <ckruse@wwwtech.de>
 	* src/cfcgi.c: Fixed a really nasty bug in cf_cgi_url_decode(); now it is safe
@@ -997,3 +999,5 @@
 
 
 >>>>>>> .merge-rechts.r368
+=======
+>>>>>>> .merge-rechts.r382

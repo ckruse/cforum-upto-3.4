@@ -117,10 +117,11 @@ void *flt_visited_mark_visited(void *vmid) {
 
 /* {{{ flt_visited_execute_filter */
 #ifndef CF_SHARED_MEM
-int flt_visited_execute_filter(t_cf_hash *head,t_configuration *dc,t_configuration *vc,int sock) {
+int flt_visited_execute_filter(t_cf_hash *head,t_configuration *dc,t_configuration *vc,int sock)
 #else
-int flt_visited_execute_filter(t_cf_hash *head,t_configuration *dc,t_configuration *vc,void *sock) {
+int flt_visited_execute_filter(t_cf_hash *head,t_configuration *dc,t_configuration *vc,void *sock)
 #endif
+{
   u_char *uname = cf_hash_get(GlobalValues,"UserName",8);
   u_char *cmid;
   u_char *ctid;
@@ -157,7 +158,7 @@ int flt_visited_execute_filter(t_cf_hash *head,t_configuration *dc,t_configurati
 
       /* we shall mark a whole thread visited */
       if(ctid) {
-        tid = strtoull(ctid,NULL,10);
+        tid = str_to_u_int64(ctid);
         memset(&tsd,0,sizeof(tsd));
         memset(&thread,0,sizeof(thread));
 
@@ -168,9 +169,7 @@ int flt_visited_execute_filter(t_cf_hash *head,t_configuration *dc,t_configurati
           ret = cf_get_message_through_sock(sock,&tsd,&thread,NULL,tid,0,CF_KILL_DELETED);
           #endif
 
-          if(ret == -1) {
-            return FLT_DECLINE;
-          }
+          if(ret == -1) return FLT_DECLINE;
 
           for(msg=thread.messages;msg;msg=msg->next) {
             len = snprintf(buff,256,"%llu",msg->mid);
@@ -182,7 +181,7 @@ int flt_visited_execute_filter(t_cf_hash *head,t_configuration *dc,t_configurati
               remove(buff);
               if((fd = open(buff,O_CREAT|O_TRUNC|O_WRONLY)) != -1) close(fd);
             }
-            
+
           }
 
           cleanup_struct(&thread);
@@ -303,7 +302,7 @@ int flt_visit_handle_command(t_configfile *cf,t_conf_opt *opt,const u_char *cont
     Cfg.mark_visited = cf_strcmp(args[0],"yes") == 0;
   }
   else if(cf_strcmp(opt->name,"MarkThreadResponse204") == 0) {
-    Cfg.resp_204 = cf_strcmp(args[0],"yes");
+    Cfg.resp_204 = cf_strcmp(args[0],"yes") == 0;
   }
 
   return 0;
@@ -312,10 +311,11 @@ int flt_visit_handle_command(t_configfile *cf,t_conf_opt *opt,const u_char *cont
 
 /* {{{ flt_visited_validate */
 #ifndef CF_SHARED_MEM
-int flt_visited_validate(t_cf_hash *head,t_configuration *dc,t_configuration *vc,time_t last_modified,int sock) {
+int flt_visited_validate(t_cf_hash *head,t_configuration *dc,t_configuration *vc,time_t last_modified,int sock)
 #else
-int flt_visited_validate(t_cf_hash *head,t_configuration *dc,t_configuration *vc,time_t last_modified,void *sock) {
+int flt_visited_validate(t_cf_hash *head,t_configuration *dc,t_configuration *vc,time_t last_modified,void *sock)
 #endif
+{
   struct stat st;
   char buff[256];
 
@@ -331,10 +331,11 @@ int flt_visited_validate(t_cf_hash *head,t_configuration *dc,t_configuration *vc
 
 /* {{{ flt_visited_lm */
 #ifndef CF_SHARED_MEM
-time_t flt_visited_lm(t_cf_hash *head,t_configuration *dc,t_configuration *vc,int sock) {
+time_t flt_visited_lm(t_cf_hash *head,t_configuration *dc,t_configuration *vc,int sock)
 #else
-time_t flt_visited_lm(t_cf_hash *head,t_configuration *dc,t_configuration *vc,void *sock) {
+time_t flt_visited_lm(t_cf_hash *head,t_configuration *dc,t_configuration *vc,void *sock)
 #endif
+{
   struct stat st;
   char buff[256];
 
@@ -383,10 +384,11 @@ int flt_visited_init_handler(t_cf_hash *cgi,t_configuration *dc,t_configuration 
 
 /* {{{ set_link */
 #ifndef CF_SHARED_MEM
-int set_link(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cl_thread *thr,int sock) {
+int set_link(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cl_thread *thr,int sock)
 #else
-int set_link(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cl_thread *thr,void *sock) {
+int set_link(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cl_thread *thr,void *sock)
 #endif
+{
   u_char buff[512];
   int UserName = cf_hash_get(GlobalValues,"UserName",8) != NULL;
   t_name_value *x = cfg_get_first_value(dc,NULL,UserName?"UBaseURL":"BaseURL");

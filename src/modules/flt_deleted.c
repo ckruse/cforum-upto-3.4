@@ -155,10 +155,11 @@ int flt_deleted_pl_filter(t_cf_hash *head,t_configuration *dc,t_configuration *v
 
 /* {{{ flt_deleted_del_thread */
 #ifndef CF_SHARED_MEM
-int flt_deleted_del_thread(t_cf_hash *head,t_configuration *dc,t_configuration *vc,int sock) {
+int flt_deleted_del_thread(t_cf_hash *head,t_configuration *dc,t_configuration *vc,int sock)
 #else
-int flt_deleted_del_thread(t_cf_hash *head,t_configuration *dc,t_configuration *vc,void *sock) {
+int flt_deleted_del_thread(t_cf_hash *head,t_configuration *dc,t_configuration *vc,void *sock)
 #endif
+{
   u_char *c_tid,*qs,*a;
   u_int64_t tid;
   DBT key,data;
@@ -227,7 +228,7 @@ int flt_deleted_del_thread(t_cf_hash *head,t_configuration *dc,t_configuration *
               key.size = len;
 
               Cfg.db->del(Cfg.db,NULL,&key,0);
-              
+
               cf_hash_entry_delete(head,"t",1);
               cf_hash_entry_delete(head,"a",1);
             }
@@ -350,10 +351,11 @@ void flt_del_cleanup(void) {
 
 /* {{{ flt_deleted_validate */
 #ifndef CF_SHARED_MEM
-int flt_deleted_validate(t_cf_hash *head,t_configuration *dc,t_configuration *vc,time_t last_modified,int sock) {
+int flt_deleted_validate(t_cf_hash *head,t_configuration *dc,t_configuration *vc,time_t last_modified,int sock)
 #else
-int flt_deleted_validate(t_cf_hash *head,t_configuration *dc,t_configuration *vc,time_t last_modified,void *sock) {
+int flt_deleted_validate(t_cf_hash *head,t_configuration *dc,t_configuration *vc,time_t last_modified,void *sock)
 #endif
+{
   struct stat st;
   char buff[256];
 
@@ -374,10 +376,11 @@ int flt_deleted_validate(t_cf_hash *head,t_configuration *dc,t_configuration *vc
 
 /* {{{ flt_deleted_lm */
 #ifndef CF_SHARED_MEM
-time_t flt_deleted_lm(t_cf_hash *head,t_configuration *dc,t_configuration *vc,int sock) {
+time_t flt_deleted_lm(t_cf_hash *head,t_configuration *dc,t_configuration *vc,int sock)
 #else
-time_t flt_deleted_lm(t_cf_hash *head,t_configuration *dc,t_configuration *vc,void *sock) {
+time_t flt_deleted_lm(t_cf_hash *head,t_configuration *dc,t_configuration *vc,void *sock)
 #endif
+{
   struct stat st;
   char buff[256];
 

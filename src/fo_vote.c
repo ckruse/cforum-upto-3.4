@@ -52,7 +52,7 @@ void sighandler(int segnum) {
   if(fd) {
     qs    = getenv("QUERY_STRING");
     if(GlobalValues) uname = cf_hash_get(GlobalValues,"UserName",8);
-    
+
     switch(segnum) {
       case SIGSEGV:
         snprintf(buff,10,"SIGSEGV");
@@ -97,8 +97,17 @@ void send_ok_output(t_cf_hash *head,t_name_value *cs) {
   u_char tpl_name[256];
   t_cf_template tpl;
   u_char *uname = cf_hash_get(GlobalValues,"UserName",8);
+  u_char *link,
+         *ctid = cf_cgi_get(head,"t"),
+         *cmid = cf_cgi_get(head,"m");
+
+  u_int64_t tid,mid;
 
   generate_tpl_name(tpl_name,256,cfg_tpl);
+
+  tid   = str_to_u_int64(tid);
+  mid   = str_to_u_int64(mid);
+  link  = get_link(NULL,tid,mid);
 
   if(tpl_cf_init(&tpl,tpl_name) != 0) {
     printf("500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
@@ -109,11 +118,15 @@ void send_ok_output(t_cf_hash *head,t_name_value *cs) {
   if(uname) fbase = cfg_get_first_value(&fo_default_conf,"UBaseURL");
   else      fbase = cfg_get_first_value(&fo_default_conf,"BaseURL");
 
+  cf_set_variable(&tpl,cs,"backlink",link,strlen(link),0);
   cf_set_variable(&tpl,cs,"forumbase",fbase->values[0],strlen(fbase->values[0]),1);
   cf_set_variable(&tpl,cs,"charset",cs->values[0],strlen(cs->values[0]),1);
 
+  free(link);
+
   printf("Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
   tpl_cf_parse(&tpl);
+  tpl_cf_finish(&tpl);
 }
 
 /**
@@ -209,7 +222,7 @@ int main(int argc,char *argv[],char *env[]) {
     printf("Status: 403 Forbidden\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
     str_error_message("E_VOTE_AUTH",NULL);
   }
-  
+
   if(head && uname) {
     ctid = cf_cgi_get(head,"t");
     cmid = cf_cgi_get(head,"m");
@@ -307,7 +320,7 @@ int main(int argc,char *argv[],char *env[]) {
 
         if(send204 && cf_strcmp(send204->values[0],"yes") == 0) printf("Status: 204 No Content\015\012\015\012");
         else send_ok_output(head,cs);
-        
+
 
         len = snprintf(buff,512,"VOTE %s\nTid: %s\nMid: %s\n\nQUIT\n",*a=='g'?"GOOD":"BAD",ctid,cmid);
         writen(sock,buff,len);

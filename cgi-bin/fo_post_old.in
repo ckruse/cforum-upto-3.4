@@ -28,7 +28,7 @@ BEGIN {
 
 use lib ("@PERLMODULES@","@libdir@");
 
-sub VERSION {(q$Revision: 1.48 $ =~ /([\d.]+)\s*$/)[0] or '0.0'}
+sub VERSION {(q$Revision$ =~ /([\d.]+)\s*$/)[0] or '0.0'}
 
 use CGI;
 use CGI::Carp qw/fatalsToBrowser/;
@@ -99,7 +99,7 @@ sub show_form {
       $tpl->setVar ($field->[0].'_max', $field->[1]);
     }
   }
-  
+
   foreach(@{$Plugins->{display}}) {
     &$_($fo_default_conf,$fo_view_conf,$fo_post_conf,$user_config,$cgi,$tpl);
   }
@@ -423,7 +423,7 @@ if($cgi->param) {
     else {
       my $tpl = new CForum::Template(get_template($fo_default_conf,$user_config,$fo_post_conf->{OkTemplate}->[0]->[0]));
       my $txt = '';
-      
+
       if($fo_default_conf->{ExternCharset}->[0]->[0] eq "UTF-8") {
         $txt = $cgi->param('newbody');
       }
@@ -441,12 +441,10 @@ if($cgi->param) {
       $cgi->delete('body');
 
       foreach($cgi->param) {
-        if(!m/Url$/) {
-          $tpl->setVar($_ => recode($fo_default_conf,$cgi->param($_)));
-        }
-        else {
-          $tpl->setVar($_ => recode($fo_default_conf,$cgi->param($_))) if $cgi->param($_) ne 'http://';
-        }
+        next unless $cgi->param($_);
+        next if $_ =~ m!Url$! && $cgi->param($_) eq 'http://';
+
+        $tpl->setVar($_ => recode($fo_default_conf,$cgi->param($_)));
       }
 
       $tpl->setVar('forumbase',$UserName ? recode($fo_default_conf,$fo_default_conf->{UBaseURL}->[0]->[0]) : recode($fo_default_conf,$fo_default_conf->{BaseURL}->[0]->[0]));
