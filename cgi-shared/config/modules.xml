@@ -293,6 +293,18 @@
           </formvalues>
         </argument>
       </directive>
+      <directive name="LinkNoVisited" arguments="1">
+        <argument paramname="fltlinknovisited" type="radio" encode="plain">
+          <validate>^(yes|no)$</validate>
+          <question>Sollen die &lt;link&gt;-Elemente zuerst auf nicht besuchte Nachrichten zeigen, auch wenn dabei unbesuchte Nachrichten übersprungen werden? Wenn keine unbesuchten Nachrichten vorhanden sind, zeigen die &lt;link&gt;-Elemente ganz auf die ganz normalen Ziele.</question>
+          <error>Bitte geben Sie &quot;ja&quot; oder &quot;nein&quot; bei der Frage nach den Link-Elementen an!</error>
+          <formvalues>
+            <value val="yes">Ja</value>
+            <value val="no" default="yes">Nein</value>
+          </formvalues>
+        </argument>
+      </directive>
+
 
       <directive name="TipOfTheDayActivate" arguments="1">
         <argument paramname="totdactivate" type="radio" encode="plain">
