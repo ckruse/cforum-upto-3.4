@@ -346,6 +346,7 @@ else {
 		my $tpl = new CForum::Template(get_template($fo_default_conf,$user_config,$fo_usermanagement_conf->{RegisterOk}->[0]->[0]));
 
 		$tpl->setVar('ubase',recode($fo_default_conf,$fo_default_conf->{UBaseURL}->[0]->[0]));
+		$tpl->setVar('userconfig',recode($fo_default_conf,$fo_default_conf->{UserConfig}->[0]->[0]));
 		$tpl->setVar('forumbase',recode($fo_default_conf,$fo_default_conf->{BaseURL}->[0]->[0]));
 		$tpl->setVar('script',recode($fo_default_conf,$fo_default_conf->{UserRegister}->[0]->[0]));
 		$tpl->setVar('uscript',recode($fo_default_conf,$fo_default_conf->{UserManagement}->[0]->[0]));
