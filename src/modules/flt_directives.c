@@ -391,7 +391,7 @@ int flt_directives_execute(t_configuration *fdc,t_configuration *fvc,const u_cha
             str_chars_append(&tmpstr,tmp1,strlen(tmp1));
             str_chars_append(&tmpstr,tmp2,strlen(tmp2));
 
-            flt_directives_generate_uri(tmpstr.str,title_alt,content,NULL,0);
+            flt_directives_generate_uri(tmpstr.content,title_alt,content,NULL,0);
 
             if(sig == 0 && cite) {
               str_chars_append(cite,"[ref:",5);
@@ -401,6 +401,7 @@ int flt_directives_execute(t_configuration *fdc,t_configuration *fvc,const u_cha
               str_char_append(cite,']');
             }
 
+            str_cleanup(&tmpstr);
             free(list[0]);
             free(list[1]);
             free(list);
