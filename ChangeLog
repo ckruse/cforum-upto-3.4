@@ -1,3 +1,6 @@
+2004-07-21 Jan Rieger <jr@occuris.de>
+	* src/templates/tpl_*/forum_begin.html: Fixed bug #310
+
 2004-07-21 Christian Kruse <ckruse@wwwtech.de>
 	* src/clientlib.c: Fixed bug (free() before fprintf())
 	* src/fo_vote.c: Fixed bug, made it more userfriendly
