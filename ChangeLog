@@ -26,6 +26,10 @@
 	* src/perl/Plugins/Makefile.am: Removed CategoryCheck.pm, doesn't exist any
 		longer
 	* src/perl/Plugins/Management/SQL.pm: Some small bugfixes
+	* scripts/Makefile.am: Bugfix, script is fo_userconf, not fo_userconf.in
+	* scripts/fo_userconf.in: Moved to new SWIG module API
+	* src/perl/Plugins/RegisterName.pm: Moved to new SWIG module API
+	* src/perl/Plugins/ImportExport.pm: Moved to new SWIG module API
 
 2005-02-06 Christian Seiler <self@christian-seiler.de>
 	* conf/patterns/php.pat: Some improvements

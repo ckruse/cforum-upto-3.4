@@ -16,8 +16,6 @@ package Plugins::RegisterName;
 # }}}
 
 # {{{ plugin header
-#
-
 use strict;
 
 sub VERSION {(q$Revision$ =~ /([\d.]+)\s*$/)[0] or '0.0'}
@@ -30,6 +28,7 @@ use CGI::Carp qw/fatalsToBrowser/;
 use ForumUtils qw(
   recode
   get_error
+  get_conf_val
 );
 
 push @{$main::Plugins->{writeconf}},\&execute;

@@ -26,7 +26,7 @@ use XML::GDOME;
 use Storable qw(dclone);
 
 use ForumUtils qw/get_conf_val fatal get_template get_user_config_file get_error recode get_node_data/;
-use CForum::Validator;
+use CForum::Validator qw/is_valid_http_link is_valid_link is_valid_mailaddress/;
 use CForum::Template;
 
 # }}}
@@ -111,13 +111,13 @@ sub imprt {
 
       # {{{ validate user input
       if($type eq 'http-url') {
-        fatal($cgi,$fo_default_conf,$user_config,get_error($fo_default_conf,'IMPORT_DATAINVALID'),get_conf_val($fo_userconf_conf,$main::Forum,'FatalTemplate')) unless is_valid_http_link($val);
+        fatal($cgi,$fo_default_conf,$user_config,get_error($fo_default_conf,'IMPORT_DATAINVALID'),get_conf_val($fo_userconf_conf,$main::Forum,'FatalTemplate')) if is_valid_http_link($val);
       }
       elsif($type eq 'url') {
-        fatal($cgi,$fo_default_conf,$user_config,get_error($fo_default_conf,'IMPORT_DATAINVALID'),get_conf_val($fo_userconf_conf,$main::Forum,'FatalTemplate')) unless is_valid_link($val);
+        fatal($cgi,$fo_default_conf,$user_config,get_error($fo_default_conf,'IMPORT_DATAINVALID'),get_conf_val($fo_userconf_conf,$main::Forum,'FatalTemplate')) if is_valid_link($val);
       }
       elsif($type eq 'email') {
-        fatal($cgi,$fo_default_conf,$user_config,get_error($fo_default_conf,'IMPORT_DATAINVALID'),get_conf_val($fo_userconf_conf,$main::Forum,'FatalTemplate')) unless is_valid_mailaddress($val);
+        fatal($cgi,$fo_default_conf,$user_config,get_error($fo_default_conf,'IMPORT_DATAINVALID'),get_conf_val($fo_userconf_conf,$main::Forum,'FatalTemplate')) if is_valid_mailaddress($val);
       }
       else {
         my $validate = get_node_data($arguments_mod[$i]);
@@ -159,10 +159,10 @@ sub imprt {
 
   my $tpl = new CForum::Template(get_template($fo_default_conf,$user_config,get_conf_val($fo_userconf_conf,$main::Forum,'ImportOk')));
 
-  $tpl->setVar('forumbase',recode($fo_default_conf,get_conf_val($fo_default_conf,$main::Forum,'UBaseURL')));
-  $tpl->setVar('script',recode($fo_default_conf,get_conf_val($fo_default_conf,$main::Forum,'UserConfig')));
-  $tpl->setVar('charset',get_conf_val($fo_default_conf,$main::Forum,'ExternCharset'));
-  $tpl->setVar('acceptcharset',get_conf_val($fo_default_conf,$main::Forum,'ExternCharset').', UTF-8');
+  $tpl->setvalue('forumbase',recode($fo_default_conf,get_conf_val($fo_default_conf,$main::Forum,'UBaseURL')));
+  $tpl->setvalue('script',recode($fo_default_conf,get_conf_val($fo_default_conf,$main::Forum,'UserConfig')));
+  $tpl->setvalue('charset',get_conf_val($fo_default_conf,$main::Forum,'ExternCharset'));
+  $tpl->setvalue('acceptcharset',get_conf_val($fo_default_conf,$main::Forum,'ExternCharset').', UTF-8');
 
   print $cgi->header(-type => "text/html; charset=".get_conf_val($fo_default_conf,$main::Forum,'ExternCharset')),$tpl->parseToMem;
 }
@@ -173,13 +173,12 @@ sub imprtform {
   fatal($cgi,$fo_default_conf,$user_config,sprintf(get_error($fo_default_conf,'MUST_AUTH'),"$!"),get_conf_val($fo_userconf_conf,$main::Forum,'FatalTemplate')) unless $main::UserName;
 
   my $tpl = new CForum::Template(get_template($fo_default_conf,$user_config,get_conf_val($fo_userconf_conf,$main::Forum,'ImportForm')));
-  $tpl->setVar('forumbase',recode($fo_default_conf,get_conf_val($fo_default_conf,$main::Forum,'UBaseURL')));
-  $tpl->setVar('script',recode($fo_default_conf,get_conf_val($fo_default_conf,$main::Forum,'UserConfig')));
-  $tpl->setVar('charset',get_conf_val($fo_default_conf,$main::Forum,'ExternCharset'));
-  $tpl->setVar('acceptcharset',get_conf_val($fo_default_conf,$main::Forum,'ExternCharset').', UTF-8');
+  $tpl->setvalue('forumbase',recode($fo_default_conf,get_conf_val($fo_default_conf,$main::Forum,'UBaseURL')));
+  $tpl->setvalue('script',recode($fo_default_conf,get_conf_val($fo_default_conf,$main::Forum,'UserConfig')));
+  $tpl->setvalue('charset',get_conf_val($fo_default_conf,$main::Forum,'ExternCharset'));
+  $tpl->setvalue('acceptcharset',get_conf_val($fo_default_conf,$main::Forum,'ExternCharset').', UTF-8');
 
-  print $cgi->header(-type => "text/html; charset=".get_conf_val($fo_default_conf,$main::Forum,'ExternCharset'));
-  $tpl->parse;
+  print $cgi->header(-type => "text/html; charset=".get_conf_val($fo_default_conf,$main::Forum,'ExternCharset')),$tpl->parseToMem;
 }
 
 1;

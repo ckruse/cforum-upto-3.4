@@ -1,5 +1,5 @@
 
-bin_SCRIPTS=fo_userconf.in \
+bin_SCRIPTS=fo_userconf \
 	fo_usermanagement \
 	fo_xmlrpc \
 	cf-indextips.pl \

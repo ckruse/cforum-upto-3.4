@@ -44,7 +44,7 @@ use POSIX qw/setlocale strftime LC_ALL/;
 use HTML::Entities;
 
 use CForum::Template;
-use CForum::Clientlib qw/htmlentities charset_convert_entities charset_convert htmlentities_charset_convert/;
+use CForum::Clientlib qw/htmlentities charset_convert_entities charset_convert htmlentities_charset_convert is_valid_utf8_string/;
 use CForum::Validator;
 
 my $Msgs = undef;
@@ -217,7 +217,7 @@ sub uniquify_params {
       my @values = $cgi->param($_);
 
       foreach my $val (@values) {
-        return get_error($dcfg,'posting','charset') unless is_valid_utf8_string($val,length($val));
+        return get_error($dcfg,'posting','charset') if is_valid_utf8_string($val,length($val));
 
         # we want non-breaking space and unicode whitespaces as normal whitespaces
         $val =~ s/\xC2\xA0|\xE2\x80[\x80-\x8B\xA8-\xAF]/ /g;
