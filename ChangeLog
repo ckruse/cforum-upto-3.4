@@ -1,5 +1,6 @@
 2005-03-29 Christian Kruse <ckruse@wwwtech.de>
 	* scripts/fo_userconf.in: Fixed bug #654
+	* scripts/cf-cleanup.pl.in: Fixed bug #653
 
 2005-03-23 Christian Kruse <ckruse@wwwtech.de>
 	* src/modules/flt_votingvariables.c: Fixed bug #620
