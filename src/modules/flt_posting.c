@@ -489,8 +489,6 @@ int execute_filter(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cl_
     ps        = cfg_get_first_value(dc,"PostScript");
   }
 
-  cf_set_variable(tpl,cs,"forumbase",fbase->values[0],strlen(fbase->values[0]),1);
-
   if(thread) {
     cf_set_variable(tpl,cs,"title",thread->threadmsg->subject,strlen(thread->threadmsg->subject),1);
     cf_set_variable(tpl,cs,"name",thread->threadmsg->author,strlen(thread->threadmsg->author),1);

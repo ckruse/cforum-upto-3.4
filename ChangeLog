@@ -1,3 +1,12 @@
+2004-08-07 Christian Seiler <self@christian-seiler.de>
+	* src/fo_view.c,
+		src/modules/flt_posting.c,
+		src/modules/flt_threadreturnanchor.c: fo_view now sets $forumbase itself,
+		flt_posting.c does not set it anymore and flt_threadreturnanchor sets
+		$forumreturn instead of modifying $forumbase
+	* src/templates/{de,fr}/tpl_*/forum_posting.html: changed {$forumbase} to
+		{if $forumreturn}{$forumreturn}{else}{$forumbase}{endif}
+
 2004-08-05 Christian Kruse <ckruse@wwwtech.de>
 	* src/templates/de/tpl_*/Makefile.am: Fixed bug, source file is <tplname>.c,
 		not <tplname>.html

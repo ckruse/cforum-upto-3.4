@@ -49,7 +49,7 @@ int flt_threadreturnanchor_post(t_cf_hash *head,t_configuration *dc,t_configurat
     str_char_append(&new_path,'#');
     snprintf(buf, 20, "t%ld", (long)thread->tid);
     str_chars_append(&new_path,buf,strlen(buf));
-    tpl_cf_setvar(tpl,"forumbase",new_path.content,new_path.len,0);
+    tpl_cf_setvar(tpl,"forumreturn",new_path.content,new_path.len,0);
     str_cleanup(&new_path);
 
     return FLT_OK;

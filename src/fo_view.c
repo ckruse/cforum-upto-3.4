@@ -175,6 +175,8 @@ void send_posting(t_cf_hash *head,void *shm_ptr,u_int64_t tid,u_int64_t mid) {
   char buff[128];
   int del = cf_hash_get(GlobalValues,"ShowInvisible",13) == NULL ? CF_KILL_DELETED : CF_KEEP_DELETED;
   t_name_value *cs = cfg_get_first_value(&fo_default_conf,"ExternCharset");
+  u_char *UserName = cf_hash_get(GlobalValues,"UserName",8);
+  t_name_value *fbase     = NULL;
 
   #ifndef CF_SHARED_MEM
   memset(&tsd,0,sizeof(tsd));
@@ -192,6 +194,16 @@ void send_posting(t_cf_hash *head,void *shm_ptr,u_int64_t tid,u_int64_t mid) {
     str_error_message("E_TPL_NOT_FOUND",NULL);
     return;
   }
+  
+  UserName = cf_hash_get(GlobalValues,"UserName",8);
+  if(UserName) {
+    fbase     = cfg_get_first_value(&fo_default_conf,"UBaseURL");
+  }
+  else {
+    fbase     = cfg_get_first_value(&fo_default_conf,"BaseURL");
+  }
+
+  cf_set_variable(&tpl,cs,"forumbase",fbase->values[0],strlen(fbase->values[0]),1);
 
   #ifndef CF_SHARED_MEM
   if(cf_get_message_through_sock(sock,&tsd,&thread,fo_thread_tplname,tid,mid,del) == -1) {
@@ -263,6 +275,8 @@ void send_threadlist(void *shm_ptr,t_cf_hash *head) {
   t_handler_config *handler;
   t_filter_init_view fkt;
   int del = cf_hash_get(GlobalValues,"ShowInvisible",13) == NULL ? CF_KILL_DELETED : CF_KEEP_DELETED;
+  u_char *UserName = cf_hash_get(GlobalValues,"UserName",8);
+  t_name_value *fbase     = NULL;
 
   /* initialization work */
 
@@ -326,12 +340,22 @@ void send_threadlist(void *shm_ptr,t_cf_hash *head) {
     tm    = time(NULL);
     ltime = get_time(&fo_view_conf,"DateFormatLoadTime",&len,&tm);
 
+    UserName = cf_hash_get(GlobalValues,"UserName",8);
+    if(UserName) {
+      fbase     = cfg_get_first_value(&fo_default_conf,"UBaseURL");
+    }
+    else {
+      fbase     = cfg_get_first_value(&fo_default_conf,"BaseURL");
+    }
+
     if(tpl_cf_init(&tpl_begin,fo_begin_tplname) != 0) {
       printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs?cs->values[0]?cs->values[0]:(u_char *)"UTF-8":(u_char *)"UTF-8");
 
       str_error_message("E_TPL_NOT_FOUND",NULL);
       return;
     }
+    cf_set_variable(&tpl_begin,cs,"forumbase",fbase->values[0],strlen(fbase->values[0]),1);
+
     if(tpl_cf_init(&tpl_end,fo_end_tplname) != 0) {
       printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs?cs->values[0]?cs->values[0]:(u_char *)"UTF-8":(u_char *)"UTF-8");
 
@@ -339,6 +363,7 @@ void send_threadlist(void *shm_ptr,t_cf_hash *head) {
       return;
     }
 
+    cf_set_variable(&tpl_end,cs,"forumbase",fbase->values[0],strlen(fbase->values[0]),1);
     tpl_cf_setvar(&tpl_begin,"charset",cs->values[0],strlen(cs->values[0]),0);
 
     /* run some plugins */

@@ -105,7 +105,7 @@
       }
     //--></style>{endif}
     <link rel="shortcut icon" type="image/x-icon" href="http://src.selfhtml.org/favicon.ico" />
-    <link rel="top" title="Forum SELFHTML" href="{$forumbase}" />{if $prev}
+    <link rel="top" title="Forum SELFHTML" href="{if $forumreturn}{$forumreturn}{else}{$forumbase}{endif}" />{if $prev}
     <link rel="prev" href="{$prev}" title="Message pr&eacute;c&eacute;dent" />{endif}{if $next}
     <link rel="next" href="{$next}" title="Message suivant" />{endif}{if $first}
     <link rel="first" href="{$first}" title="Premier message" />{endif}{if $last}
@@ -120,7 +120,7 @@
     <link rel="bookmark" href="http://actuel.fr.selfhtml.org/liens/" title="Index des liens SELFHTML" />
   </head>
   <body id="selfforumbody">
-    <div class="nav"><a class="an" name="top"><img src="http://src.selfhtml.org/refkap.gif" width="16" height="13" alt="Chapitre: vue d'ensemble" /></a>&nbsp;<a href="{$forumbase}"{if $frame} onclick="window.open(this,'_top'); return false;"{endif}>Forum SELFHTML</a></div>
+    <div class="nav"><a class="an" name="top"><img src="http://src.selfhtml.org/refkap.gif" width="16" height="13" alt="Chapitre: vue d'ensemble" /></a>&nbsp;<a href="{if $forumreturn}{$forumreturn}{else}{$forumbase}{endif}"{if $frame} onclick="window.open(this,'_top'); return false;"{endif}>Forum SELFHTML</a></div>
     <table class="header" id="selfforumheader">
       <thead>
         <tr>
@@ -195,7 +195,7 @@
     </form>
     <p>Veuillez <b>ne cliquer qu'une seule fois</b> sur le bouton <i>Envoyer le message</i> et patienter un petit instant!</p>
     <div class="updown" id="selfforumbottom"><a href="#top"><img src="http://src.selfhtml.org/up.gif" width="14" height="10" alt="vers le haut" /></a></div>
-    <div class="nav"><a class="an" name="bottom"><img src="http://src.selfhtml.org/refkap.gif" width="16" height="13" alt="Chapitre: vue d'ensemble" /></a>&nbsp;<a href="{$forumbase}"{if $frame} onclick="window.open(this,'_top'); return false;"{endif}>Forum SELFHTML</a></div>
+    <div class="nav"><a class="an" name="bottom"><img src="http://src.selfhtml.org/refkap.gif" width="16" height="13" alt="Chapitre: vue d'ensemble" /></a>&nbsp;<a href="{if $forumreturn}{$forumreturn}{else}{$forumbase}{endif}"{if $frame} onclick="window.open(this,'_top'); return false;"{endif}>Forum SELFHTML</a></div>
     <p>&copy; 1998-2004 <img src="http://src.selfhtml.org/mail.gif" width="15" height="10" alt="Adresse &eacute;lectronique" />&nbsp;<a href="mailto:selfhtml@fr.selfhtml.org">selfhtml@fr.selfhtml.org</a></p>
   </body>
 </html>

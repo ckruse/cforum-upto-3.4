@@ -104,7 +104,7 @@
       }
     //--></style>{endif}
     <link rel="shortcut icon" type="image/x-icon" href="http://src.selfhtml.org/favicon.ico">
-    <link rel="top" title="Forum SELFHTML" href="{$forumbase}">{if $prev}
+    <link rel="top" title="Forum SELFHTML" href="{if $forumreturn}{$forumreturn}{else}{$forumbase}{endif}">{if $prev}
     <link rel="prev" href="{$prev}" title="Message pr&eacute;c&eacute;dent">{endif}{if $next}
     <link rel="next" href="{$next}" title="Message suivant">{endif}{if $first}
     <link rel="first" href="{$first}" title="Premier message">{endif}{if $last}
@@ -121,7 +121,7 @@
   <body bgcolor="#FFFFFF" text="#000000" link="#AA5522" vlink="#772200" alink="#000000" id="selfforumbody">
     <table cellpadding="4" cellspacing="0" border="0" width="100%" id="selfforumnav">
       <tr>
-        <td bgcolor="#FFEEDD" class="nav"><a class="an" name="top"><img src="http://src.selfhtml.org/refkap.gif" width="16" height="13" border="0" alt="Chapitre: vue d'ensemble"></a>&nbsp;<a href="{$forumbase}"><b>Forum SELFHTML</b></a></td>
+        <td bgcolor="#FFEEDD" class="nav"><a class="an" name="top"><img src="http://src.selfhtml.org/refkap.gif" width="16" height="13" border="0" alt="Chapitre: vue d'ensemble"></a>&nbsp;<a href="{if $forumreturn}{$forumreturn}{else}{$forumbase}{endif}"><b>Forum SELFHTML</b></a></td>
       </tr>
     </table>
     <table cellpadding="4" cellspacing="0" border="0" width="100%" id="selfforumheader">
@@ -200,7 +200,7 @@
         <td bgcolor="#EEEEEE" class="doc"><a href="#top"><img src="http://src.selfhtml.org/up.gif" width="14" height="10" border="0" alt="vers le haut"></a></td>
       </tr>
       <tr>
-        <td bgcolor="#FFEEDD" class="nav"><a class="an" name="bottom"><img src="http://src.selfhtml.org/refkap.gif" width="16" height="13" border="0" alt="Chapitre: vue d'ensemble"></a>&nbsp;<a href="{$forumbase}"><b>Forum SELFHTML</b></a></td>
+        <td bgcolor="#FFEEDD" class="nav"><a class="an" name="bottom"><img src="http://src.selfhtml.org/refkap.gif" width="16" height="13" border="0" alt="Chapitre: vue d'ensemble"></a>&nbsp;<a href="{if $forumreturn}{$forumreturn}{else}{$forumbase}{endif}"><b>Forum SELFHTML</b></a></td>
       </tr>
     </table>
     <p>&copy; 1998-2004 <img src="http://src.selfhtml.org/mail.gif" width="15" height="10" border="0" alt="Adresse &eacute;lectronique">&nbsp;<a href="mailto:selfhtml@fr.selfhtml.org">selfhtml@fr.selfhtml.org</a></p>
