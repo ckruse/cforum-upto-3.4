@@ -2,7 +2,7 @@
 	* conf/patterns/php.pat: Some improvements
 
 2005-02-06 Christian Kruse <ckruse@wwwtech.de>
-	* conf/errormessages.de.txt: Patric Canterino fixed some typos
+	* conf/errormessages.de.txt: Patrick Canterino fixed some typos
 	* conf/patterns/perl.pat: Corrected some misstakes in the patterns
 	* src/modules/flt_xmlstorage.c: Fixed a really nasty bug in reading the stored
 		XML!
