@@ -11,7 +11,7 @@ E_PW_DISACCORD: Die Passwörter stimmen nicht überein.
 E_PW_INVALID: Das Passwort ist nicht valide.
 E_ADDUSER_FAILED: Der angegebene Username existiert schon. Bitte wählen Sie einen anderen.
 E_CONFIG_ERR: Es scheint ein Konfigurations-Fehler vorzuliegen oder der Konfigurations-Parser ist veraltet.
-E_IO_ERR: Leider ist ein Datei-Fehler aufgetreten.
+E_IO_ERR: Leider ist ein Datei-Fehler aufgetreten: %s
 E_name_short: Sie haben einen zu kurzen Namen angegeben.
 E_name_long: Sie haben einen zu langen Namen angegeben.
 E_name_invalid: Sind Sie sicher, dass Sie unter einem solchen Namen posten möchten?
@@ -70,3 +70,10 @@ E_new_post_mail_body: Hallo {name},\n\nes gibt eine neue Antwort auf:\n\n  http:
 E_SQL_connect: Ein Datenbankfehler ist aufgetreten. Bitte wenden Sie sich an den Systemadministrator.
 E_SQL_execute: Ein Datenbankfehler ist aufgetreten. Bitte wenden Sie sich an den Systemadministrator.
 E_SMTP_failed: Auf Grund eines internen Fehlers konnte die Mail nicht verschickt werden.
+E_UNKNOWN_DIRECTIVE_TYPE: Unbekannter Typ für Direktive!
+E_XML_PARSE: XML-Parser-Fehler: %s
+E_PLUGIN_ERR: Plugin-Fehler: %s
+E_IMPORT_VERSION: Die Version des Import-Formats ist neuer als die unterstützte Version!
+E_IMPORT_DATAFAILURE: Das Import-Format scheint ungültig zu sein!
+E_IMPORT_DATAINVALID: Einige Werte der zu importierenden Daten scheinen nicht valide zu sein!
+E_MUST_AUTH: Für diese Funktion müssen Sie angemeldet sein!

@@ -3,6 +3,10 @@
 	* cgi-bin/fo_usermanagement.in: Moved to 3.0 API
 	* cgi-shared/Plugins/ImportExport.pm: Added plugin to import and export
 		configuration data
+	* cgi-shared/config/errormessages.de.txt: Added several error messages
+	* cgi-shared/config/fo_userconf.conf.in: Added several configuration
+		directives
+	* cgi-bin/fo_userconf.in: Debugged it
 
 2005-01-15 Christian Kruse <ckruse@wwwtech.de>
 	* src/modules/flt_directives.c: Bugfix for [ref:], now it supports @title=

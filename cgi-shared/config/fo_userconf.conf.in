@@ -39,7 +39,11 @@ Forum FORUM1 {
   PageEntry "@libdir@/cforum/%s_%s_pageentry.so"
   EditOk "@libdir@/cforum/%s_%s_usereditok.so"
   UpDown "@libdir@/cforum/%s_%s_updown.so"
+  ImportForm "@libdir@/cforum/%s_%s_importform.so"
+  ImportOk "@libdir@/cforum/%s_%s_importok.so"
 
   ViewSettings "@libdir@/cforum/%s_%s_usersettings.so"
+
+  FatalTemplate "@libdir@/cforum/%s_%s_fatal.so"
 }
 

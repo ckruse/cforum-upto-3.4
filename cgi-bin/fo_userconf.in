@@ -47,23 +47,9 @@ use Storable qw(dclone);
 use POSIX qw/mktime/;
 use File::Path;
 
-use ForumUtils qw/read_configuration get_node_data get_template get_error recode uniquify_params get_config_files get_user_config_file create_directory_structure get_conf_val/;
+use ForumUtils qw/read_configuration get_node_data get_template get_error recode uniquify_params get_config_files get_user_config_file create_directory_structure get_conf_val fatal/;
 use CForum::Validator;
 
-# }}}
-
-# {{{ fatal
-sub fatal {
-  my $err = shift;
-
-  print <<HTML;
-Content-Type: text/html
-
-$err
-HTML
-
-  exit;
-}
 # }}}
 
 # {{{ get_argument_values
@@ -205,7 +191,7 @@ sub htmlize {
     $element = '<textarea name="'.$fname.'">'.recode($fo_default_conf,$val).'</textarea>';
   }
   else {
-    die 'Directive '.$dname.': unknown type '.$type;
+    fatal($cgi,$fo_default_conf,$user_config,get_error($fo_default_conf,'E_UNKNOWN_DIRECTIVE_TYPE'),get_conf_val($fo_userconf_conf,$Forum,'FatalTemplate'));
   }
 
   return ($question,$element);
@@ -213,7 +199,6 @@ sub htmlize {
 # }}}
 
 # {{{ generate_edit_output
-
 sub generate_edit_output {
   my $cgi              = shift;
   my $fo_default_conf  = shift;
@@ -226,10 +211,10 @@ sub generate_edit_output {
   my $page             = $cgi->param('p');
   my $doit             = 1;
 
-  my $tpl              = new CForum::Template(get_template($fo_default_conf,$user_config,$fo_userconf_conf->{Edit}->[0]->[0]));
+  my $tpl              = new CForum::Template(get_template($fo_default_conf,$user_config,get_conf_val($fo_userconf_conf,$Forum,'Edit')));
   my $txt              = '';
 
-  my $doc   = XML::GDOME->createDocFromURI(sprintf($fo_userconf_conf->{ModuleConfig}->[0]->[0],$fo_default_conf->{Language}->[0]->[0])) or die $!;
+  my $doc   = XML::GDOME->createDocFromURI(sprintf(get_conf_val($fo_userconf_conf,$Forum,'ModuleConfig'),get_conf_val($fo_default_conf,$Forum,'Language'))) or fatal($cgi,$fo_default_conf,$user_config,sprintf(get_error($fo_default_conf,'E_XML_PARSE'),"$!"),get_conf_val($fo_userconf_conf,$Forum,'FatalTemplate'));
 
   if($page) {
     # hmpf, findnodes doesn't work properly for /config/page@id="$page", nor for /config/page/@id="$page", neither
@@ -242,15 +227,15 @@ sub generate_edit_output {
 
       my $i        = 0;
       my $ud       = 0;
-      my $setting  = new CForum::Template(get_template($fo_default_conf,$user_config,$fo_userconf_conf->{EditEntry}->[0]->[0]));
-      my $section  = new CForum::Template(get_template($fo_default_conf,$user_config,$fo_userconf_conf->{SectEntry}->[0]->[0]));
-      my $updown   = new CForum::Template(get_template($fo_default_conf,$user_config,$fo_userconf_conf->{UpDown}->[0]->[0]));
+      my $setting  = new CForum::Template(get_template($fo_default_conf,$user_config,get_conf_val($fo_userconf_conf,$Forum,'EditEntry')));
+      my $section  = new CForum::Template(get_template($fo_default_conf,$user_config,get_conf_val($fo_userconf_conf,$Forum,'SectEntry')));
+      my $updown   = new CForum::Template(get_template($fo_default_conf,$user_config,get_conf_val($fo_userconf_conf,$Forum,'UpDown')));
       my @sections = $node->findnodes('./section');
 
       foreach my $sect (@sections) {
         my @nodes  = $sect->findnodes('./directive');
         my $tmptxt = '';
-        $i++;
+        ++$i;
 
         if($ud) {
           $txt .= $updown->parseToMem;
@@ -264,7 +249,7 @@ sub generate_edit_output {
 
           foreach my $arg (@arguments) {
             my $pname = $arg->getAttribute('paramname');
-            my ($question,$arg) = htmlize($dname,$arg,$cgi,$user_config->{$dname}->[0]->[$i++],$fo_default_conf,$fo_view_conf,$fo_userconf_conf,$user_config);
+            my ($question,$arg) = htmlize($dname,$arg,$cgi,$user_config->{$dname}->[0]->[++$i],$fo_default_conf,$fo_view_conf,$fo_userconf_conf,$user_config);
 
             $setting->setVar('empty','no');
             $setting->setVar('formentry',$arg);
@@ -289,7 +274,7 @@ sub generate_edit_output {
   if($doit) {
     my @nodes = $doc->findnodes('/config/page');
 
-    my $pagetpl = new CForum::Template(get_template($fo_default_conf,$user_config,$fo_userconf_conf->{PageEntry}->[0]->[0]));
+    my $pagetpl = new CForum::Template(get_template($fo_default_conf,$user_config,get_conf_val($fo_userconf_conf,$Forum,'PageEntry')));
 
     foreach my $page (@nodes) {
       $pagetpl->setVar('title' => recode($fo_default_conf,$page->getAttribute('title')));
@@ -302,17 +287,16 @@ sub generate_edit_output {
   }
 
   $tpl->setVar('p',$page) if $page;
-  $tpl->setVar('forumbase',recode($fo_default_conf,$fo_default_conf->{UBaseURL}->[0]->[0]));
-  $tpl->setVar('userconfig',recode($fo_default_conf,$fo_default_conf->{UserConfig}->[0]->[0]));
-  $tpl->setVar('script',recode($fo_default_conf,$fo_default_conf->{UserConfig}->[0]->[0]));
+  $tpl->setVar('forumbase',recode($fo_default_conf,get_conf_val($fo_default_conf,$Forum,'UBaseURL')));
+  $tpl->setVar('userconfig',recode($fo_default_conf,get_conf_val($fo_default_conf,$Forum,'UserConfig')));
+  $tpl->setVar('script',recode($fo_default_conf,get_conf_val($fo_default_conf,$Forum,'UserConfig')));
   $tpl->setVar('editcontent',$txt);
   $tpl->setVar('error',recode($fo_default_conf,$err)) if defined $err;
-  $tpl->setVar('charset',$fo_default_conf->{ExternCharset}->[0]->[0]);
-  $tpl->setVar('acceptcharset',$fo_default_conf->{ExternCharset}->[0]->[0].', UTF-8');
+  $tpl->setVar('charset',get_conf_val($fo_default_conf,$Forum,'ExternCharset'));
+  $tpl->setVar('acceptcharset',get_conf_val($fo_default_conf,$Forum,'ExternCharset').', UTF-8');
 
-  print $cgi->header(-type => 'text/html; charset='.$fo_default_conf->{ExternCharset}->[0]->[0]),$tpl->parseToMem;
+  print $cgi->header(-type => 'text/html; charset='.get_conf_val($fo_default_conf,$Forum,'ExternCharset')),$tpl->parseToMem;
 }
-
 # }}}
 
 # {{{ validate_input
@@ -359,7 +343,7 @@ sub show_register_form {
   $tpl->setVar('forumbase',recode($fo_default_conf,get_conf_val($fo_default_conf,$Forum,'BaseURL')));
   $tpl->setVar('script',recode($fo_default_conf,get_conf_val($fo_default_conf,$Forum,'UserRegister')));
   $tpl->setVar('error',recode($fo_default_conf,$err)) if defined $err;
-  $tpl->setVar('charset',$fo_default_conf->{ExternCharset}->[0]->[0]);
+  $tpl->setVar('charset',get_conf_val($fo_default_conf,$Forum,'ExternCharset'));
   $tpl->setVar('acceptcharset',get_conf_val($fo_default_conf,$Forum,'ExternCharset').', UTF-8');
 
   $tpl->setVar($_,recode($fo_default_conf,$cgi->param($_))) foreach $cgi->param;
@@ -377,9 +361,9 @@ my $fo_userconf_conf = read_configuration($fnames[2]) or die $!;
 my $user_config      = {};
 
 # {{{ load plugins and authenticate
-foreach(@{$fo_userconf_conf->{AddModule}}) {
+foreach(@{$fo_userconf_conf->{$Forum}->{AddModule}}) {
   eval "use $_->[0];";
-  die $@ if $@;
+  fatal($cgi,$fo_default_conf,$user_config,sprintf(get_error($fo_default_conf,'E_PLUGIN_ERR'),"$@"),get_conf_val($fo_userconf_conf,$Forum,'FatalTemplate')) if $@;
 }
 
 foreach(@{$Plugins->{auth}}) {
@@ -431,7 +415,7 @@ elsif($action eq 'save') {
     exit;
   }
 
-  my $doc      = XML::GDOME->createDocFromURI(sprintf($fo_userconf_conf->{ModuleConfig}->[0]->[0],$fo_default_conf->{Language}->[0]->[0])) or die $!;
+  my $doc      = XML::GDOME->createDocFromURI(sprintf(get_conf_val($fo_userconf_conf,$Forum,'ModuleConfig'),get_conf_val($fo_default_conf,$Forum,'Language'))) or fatal($cgi,$fo_default_conf,$user_config,sprintf(get_error($fo_default_conf,'E_PLUGIN_ERR'),"$!"),get_conf_val($fo_userconf_conf,$Forum,'FatalTemplate'));
   my ($pgnode) = grep { $_->getAttribute('id') eq $page } $doc->findnodes('/config/page');
   my @nodes    = $pgnode->findnodes('./section/directive');
 
@@ -514,7 +498,7 @@ elsif($action eq 'save') {
           }
         }
         else {
-          die 'unknown type "'.$type.'" for directive "'.$dname.'"';
+          fatal($cgi,$fo_default_conf,$user_config,get_error($fo_default_conf,'E_UNKNOWN_DIRECTIVE_TYPE'),get_conf_val($fo_userconf_conf,$Forum,'FatalTemplate'));
         }
       }
       # }}}
@@ -552,7 +536,7 @@ elsif($action eq 'save') {
 
   # all checks are ok, lets write the config file
   my $cfile = get_config_file($fo_default_conf,$UserName);
-  open DAT,'>'.$cfile or die fatal($!);
+  open DAT,'>'.$cfile or fatal($cgi,$fo_default_conf,$user_config,sprintf(get_error($fo_default_conf,'E_IO_ERR'),"$!"),get_conf_val($fo_userconf_conf,$Forum,'FatalTemplate'));;
 
   foreach my $dir (keys %{$own_ucfg->{global}}) {
     next if !$own_ucfg->{global}->{$dir} || !@{$own_ucfg->{global}->{$dir}};
@@ -575,30 +559,30 @@ elsif($action eq 'save') {
   close DAT;
 
 
-  my $tpl = new CForum::Template(get_template($fo_default_conf,$user_config,$fo_userconf_conf->{EditOk}->[0]->[0])) or die $!;
+  my $tpl = new CForum::Template(get_template($fo_default_conf,$user_config,get_conf_val($fo_userconf_conf,$Forum,'EditOk'))) or die $!;
 
-  $tpl->setVar('forumbase',recode($fo_default_conf,$fo_default_conf->{UBaseURL}->[0]->[0]));
-  $tpl->setVar('userconfig',recode($fo_default_conf,$fo_default_conf->{UserConfig}->[0]->[0]));
-  $tpl->setVar('script',recode($fo_default_conf,$fo_default_conf->{UserConfig}->[0]->[0]));
-  $tpl->setVar('charset',$fo_default_conf->{ExternCharset}->[0]->[0]);
-  $tpl->setVar('acceptcharset',$fo_default_conf->{ExternCharset}->[0]->[0].', UTF-8');
+  $tpl->setVar('forumbase',recode($fo_default_conf,get_conf_val($fo_default_conf,$Forum,'UBaseURL')));
+  $tpl->setVar('userconfig',recode($fo_default_conf,get_conf_val($fo_default_conf,$Forum,'UserConfig')));
+  $tpl->setVar('script',recode($fo_default_conf,get_conf_val($fo_default_conf,'UserConfig')));
+  $tpl->setVar('charset',$cs);
+  $tpl->setVar('acceptcharset',$cs.', UTF-8');
 
-  print $cgi->header(-type => 'text/html; charset='.$fo_default_conf->{ExternCharset}->[0]->[0]),$tpl->parseToMem;
+  print $cgi->header(-type => 'text/html; charset='.$cs),$tpl->parseToMem;
 }
 # }}}
 # {{{ show options
 else {
   if($Plugins->{$action}) {
-    &{$Plugins->{$action}}($fo_default_conf,$fo_view_conf,$fo_userconf_conf,$user_config);
+    &{$Plugins->{$action}}($fo_default_conf,$fo_view_conf,$fo_userconf_conf,$user_config,$cgi);
   }
   else {
-    my $tpl = new CForum::Template(get_template($fo_default_conf,$user_config,$fo_userconf_conf->{ViewSettings}->[0]->[0])) or die $@;
+    my $tpl = new CForum::Template(get_template($fo_default_conf,$user_config,get_conf_val($fo_userconf_conf,$Forum,'ViewSettings'))) or die $@;
 
     $tpl->setVar('forumbase',recode($fo_default_conf,get_conf_val($fo_default_conf,$Forum,'UBaseURL')));
     $tpl->setVar('userconfig',recode($fo_default_conf,get_conf_val($fo_default_conf,$Forum,'UserConfig')));
     $tpl->setVar('script',recode($fo_default_conf,get_conf_val($fo_default_conf,$Forum,'UserConfig')));
 
-    foreach my $modconf (@{$fo_userconf_conf->{ModuleConfig}}) {
+    foreach my $modconf (@{$fo_userconf_conf->{$Forum}->{ModuleConfig}}) {
       my $doc   = XML::GDOME->createDocFromURI(sprintf($modconf->[0],get_conf_val($fo_default_conf,$Forum,'Language'))) or die $!;
       my @nodes = $doc->findnodes('/config/page/section/*');
 
