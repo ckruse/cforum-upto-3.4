@@ -250,7 +250,7 @@ sub generate_edit_output {
 
           foreach my $arg (@arguments) {
             my $pname = $arg->getAttribute('paramname');
-            my ($question,$arg) = htmlize($dname,$arg,$cgi,$user_config->{$dname}->[0]->[++$i],$fo_default_conf,$fo_view_conf,$fo_userconf_conf,$user_config);
+            my ($question,$arg) = htmlize($dname,$arg,$cgi,$user_config->{global}->{$dname}->[0]->[$i++],$fo_default_conf,$fo_view_conf,$fo_userconf_conf,$user_config);
 
             $setting->setvalue('empty','no');
             $setting->setvalue('formentry',$arg);
@@ -594,7 +594,7 @@ else {
 
         foreach my $arg (@arguments) {
           my $pname = $arg->getAttribute('paramname');
-          my $val   = $user_config->{$dname}->[0]->[$i++];
+          my $val   = $user_config->{global}->{$dname}->[0]->[$i++];
 
           next if !defined($val) || !length($val);
 

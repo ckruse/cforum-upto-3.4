@@ -3,6 +3,8 @@
 	* src/swig/CForum-Configparser/CForum-Configparser.i: Small bugfix
 	* scripts/cf-cleanup.pl.in: Added cleanup script, therefore I deleted
 		fo_cleanup
+	* scripts/fo_userconf.in: Bugfix, there were some small errors in config file
+		handling
 
 2005-02-07 Christian Kruse <ckruse@wwwtech.de>
 	* src/modules/flt_link.c: Fixed bug in variable setting
