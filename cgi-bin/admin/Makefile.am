@@ -8,9 +8,9 @@ install-exec-local:
 	fi; \
 	for file in $(EXTRA_DIST); do \
     if test "$${file}" != ".htaccess"; then \
-		  $(INSTALL_PROGRAM) $$file $(bindir)/$$file; \
+		  $(INSTALL_PROGRAM) $$file $(bindir)/admin/$$file; \
 		else \
-			$(INSTALL_DATA) $$file $(bindir)/$$file; \
+			$(INSTALL_DATA) $$file $(bindir)/admin/$$file; \
 		fi; \
 	done
 
