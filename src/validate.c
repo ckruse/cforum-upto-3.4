@@ -46,6 +46,7 @@ static const t_scheme_list scheme_list[] = {
   { "news",     is_valid_news_link },
   { "gopher",   is_valid_gopher_link },
   { "ftp",      is_valid_ftp_link },
+  { "file",     is_valid_file_link },
   { "\0", NULL }
 };
 /* }}} */
@@ -1078,6 +1079,7 @@ int is_valid_ftp_link(const u_char *link) {
           case '@':
           case '&':
           case '=':
+          case '/':
             break;
           default:
             return -1;
@@ -1100,6 +1102,74 @@ int is_valid_ftp_link(const u_char *link) {
     }
 
     if(*(ptr+2)) return -1;
+  }
+
+  return 0;
+}
+/* }}} */
+
+/* {{{ is_valid_file_link */
+int is_valid_file_link(const u_char *link) {
+  register u_char *ptr;
+  const u_char *hostname;
+  u_char *dp,*slash;
+
+  if(cf_strncmp(link,"file://",7)) return -1;
+  if(cf_strncmp(link+7,"localhost",9) == 0) {
+    if(*(link+16) != '/') return -1;
+    slash = (u_char *)link+16;
+  }
+  else {
+    /* ok, no file path follows; this is not allowed */
+    if((slash = strstr(link+7,"/")) == NULL) return -1;
+
+    /* we got a hostname without port number */
+    if((db = strstr(link+7,":")) == NULL) {
+      hostname = strndup(link+7,ptr-link+7);
+      if(!is_valid_hostname(hostname)) {
+        free(hostname);
+        return -1;
+      }
+      free(hostname);
+    }
+    /* we got a hostname with port number */
+    else {
+      hostname = strndup(link+7,dp-link+7);
+      if(!is_valid_hostname(hostname)) {
+        free(hostname),
+        return -1;
+      }
+      free(hostname);
+
+      for(ptr=doublepoint+1;*ptr;ptr++) {
+        if(!isdigit(*ptr)) return -1;
+      }
+    }
+  }
+
+  /* ok, now fpath segments follow */
+  for(ptr=slash+1;*ptr;++ptr) {
+    if(!isuchar_wo_escape(*ptr)) {
+      if(*ptr == '%') {
+        if(!isxdigit(*(ptr+1)) || !isxdigit(*(ptr+2))) return -1;
+        ptr += 2;
+        continue;
+      }
+
+      if(*ptr == ';') break;
+
+      switch(*ptr) {
+        case '?':
+        case ':':
+        case '@':
+        case '&':
+        case '=':
+        case '/':
+          break;
+        default:
+          return -1;
+      }
+    }
   }
 
   return 0;

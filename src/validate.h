@@ -117,6 +117,13 @@ int is_valid_wais_link(const u_char *link);
  */
 int is_valid_gopher_link(const u_char *link);
 
+/**
+ * Checks if a link is a valid file:// link
+ * \param link The link string to check
+ * \return 0 if the address is valid, -1 if it isn't
+ */
+int is_valid_file_link(const u_char *link);
+
 #endif
 
 /* eof */

@@ -1,5 +1,9 @@
 2004-11-07 Christian Kruse <ckruse@wwwtech.de>
 	* cgi-shared/ForumUtils.pm: Fixed typo
+	* src/validate.c: Fixed bug in ftp URI validation, added is_valid_file_link()
+		function
+	* src/validate.h: Added is_valid_file_link() function
+
 
 2004-11-04 Christian Kruse <ckruse@wwwtech.de>
 	* src/templates/{de,fr}/tpl_*/forum_posting.html,
