@@ -92,13 +92,14 @@ static int flt_syntax_active = 0;
 #define FLT_SYNTAX_TOK_KEY 2
 #define FLT_SYNTAX_TOK_EQ  3
 
-#define FLT_SYNTAX_STAY             0xF
-#define FLT_SYNTAX_POP              0x10
-#define FLT_SYNTAX_ONSTRING         0x11
-#define FLT_SYNTAX_ONSTRINGLIST     0x12
-#define FLT_SYNTAX_ONREGEXP         0x13
-#define FLT_SYNTAX_ONREGEXP_BACKREF 0x14
-#define FLT_SYNTAX_ONREGEXP_AFTER   0x15
+#define FLT_SYNTAX_STAY                   0xF
+#define FLT_SYNTAX_POP                    0x10
+#define FLT_SYNTAX_ONSTRING               0x11
+#define FLT_SYNTAX_ONSTRINGLIST           0x12
+#define FLT_SYNTAX_ONREGEXP               0x13
+#define FLT_SYNTAX_ONREGEXP_BACKREF       0x14
+#define FLT_SYNTAX_ONREGEXP_AFTER         0x15
+#define FLT_SYNTAX_ONREGEXP_AFTER_BACKREF 0x16
 
 /* {{{ flt_syntax_read_string */
 int flt_syntax_read_string(const u_char *begin,u_char **pos,t_string *str) {
@@ -219,7 +220,7 @@ int flt_syntax_load(const u_char *path,const u_char *lang) {
   ssize_t len;
   u_char *line = NULL,*pos,*error;
   size_t buflen = 0;
-  int state = FLT_SYNTAX_GLOBAL,offset,type,tb,lineno = 0;
+  int state = FLT_SYNTAX_GLOBAL,offset,type,tb = 0,lineno = 0;
   t_string str,*tmpstr;
   flt_syntax_preg_t preg;
 
@@ -374,8 +375,9 @@ int flt_syntax_load(const u_char *path,const u_char *lang) {
             return 1;
           }
         }
-        else array_push(&statement.args,&str);
 
+        if(str.len) array_push(&statement.args,&str);
+        str_init(&str);
         array_push(&block.statement,&statement);
       }
       /* }}} */
@@ -413,11 +415,9 @@ int flt_syntax_load(const u_char *path,const u_char *lang) {
             return 1;
           }
         }
-        else {
-          array_push(&statement.args,&str),
-          str_init(&str);
-        }
 
+        if(str.len) array_push(&statement.args,&str);
+        str_init(&str);
         array_push(&block.statement,&statement);
       }
       /* }}} */
@@ -467,11 +467,10 @@ int flt_syntax_load(const u_char *path,const u_char *lang) {
             return 1;
           }
         }
-        else {
-          array_push(&statement.args,&str);
-          str_init(&str);
-        }
 
+        if(str.len) array_push(&statement.args,&str);
+
+        str_init(&str);
         array_push(&block.statement,&statement);
       }
       /* }}} */
@@ -589,10 +588,81 @@ int flt_syntax_load(const u_char *path,const u_char *lang) {
             return 1;
           }
         }
-        else {
-          array_push(&statement.args,&str);
-          str_init(&str);
+
+        if(str.len) array_push(&statement.args,&str);
+        str_init(&str);
+        array_push(&block.statement,&statement);
+      }
+      /* }}} */
+      /* {{{ onregexpafter_backref <vorher-regexp> <regexp-zu-matchen> <neuer-block> <backref-nummer> <span-klasse> */
+      else if(cf_strcmp(str.content,"onregexpafter_backref") == 0) {
+        str_cleanup(&str);
+        statement.type = FLT_SYNTAX_ONREGEXP_AFTER_BACKREF;
+
+        if((type = flt_syntax_next_token(line,&pos,&str)) != FLT_SYNTAX_TOK_STR) {
+          fprintf(stderr,"after onregexpafter_backref we got no regex at line %d!\n",lineno);
+          return 1;
         }
+        if((preg.re = pcre_compile((const char *)str.content,0,(const char **)&error,&offset,NULL)) == NULL) {
+          fprintf(stderr,"error in pattern '%s': %s (offset %d) at line %d\n",str.content,error,offset,lineno);
+          return 1;
+        }
+        if((preg.extra = pcre_study(preg.re,0,(const char **)&error)) == NULL) {
+          if(error) {
+            fprintf(stderr,"error in pattern '%s': %s at line %d\n",str.content,error,lineno);
+            return 1;
+          }
+        }
+
+        str_cleanup(&str);
+        array_init(&statement.pregs,sizeof(preg),NULL);
+        array_push(&statement.pregs,&preg);
+
+        if((type = flt_syntax_next_token(line,&pos,&str)) != FLT_SYNTAX_TOK_STR) {
+          fprintf(stderr,"after onregexpafter_backref we got no regex at line %d!\n",lineno);
+          return 1;
+        }
+        if((preg.re = pcre_compile((const char *)str.content,0,(const char **)&error,&offset,NULL)) == NULL) {
+          fprintf(stderr,"error in pattern '%s': %s (offset %d) at line %d\n",str.content,error,offset,lineno);
+          return 1;
+        }
+        if((preg.extra = pcre_study(preg.re,0,(const char **)&error)) == NULL) {
+          if(error) {
+            fprintf(stderr,"error in pattern '%s': %s at line %d\n",str.content,error,lineno);
+            return 1;
+          }
+        }
+
+        str_cleanup(&str);
+        array_push(&statement.pregs,&preg);
+
+        array_init(&statement.args,sizeof(t_string),NULL);
+
+        type = flt_syntax_next_token(line,&pos,&str);
+        if(type != FLT_SYNTAX_TOK_STR) {
+          fprintf(stderr,"after onregexpafter_backref we got no block name at line %d!\n",lineno);
+          return 1;
+        }
+
+        array_push(&statement.args,&str);
+        str_init(&str);
+
+        
+        if((type = flt_syntax_next_token(line,&pos,&str)) != FLT_SYNTAX_TOK_KEY) {
+          fprintf(stderr,"after onregexpafter_backref we got no backref number at line %d!\n",lineno);
+          return 1;
+        }
+
+        array_push(&statement.args,&str);
+        str_init(&str);
+
+        if((type = flt_syntax_next_token(line,&pos,&str)) != FLT_SYNTAX_TOK_STR) {
+          fprintf(stderr,"after onregexpafter_backref we got no span class name at line %d!\n",lineno);
+          return 1;
+        }
+
+        array_push(&statement.args,&str);
+        str_init(&str);
 
         array_push(&block.statement,&statement);
       }
@@ -607,12 +677,18 @@ int flt_syntax_load(const u_char *path,const u_char *lang) {
 
   fclose(fd);
 
+  if(!file.start) {
+    fprintf(stderr,"got no default block name!\n");
+    return 1;
+  }
+
   array_push(&flt_syntax_files,&file);
 
   return 0;
 }
 /* }}} */
 
+/* {{{ flt_syntax_block_by_name */
 flt_syntax_block_t *flt_syntax_block_by_name(flt_syntax_pattern_file_t *file,const u_char *name) {
   size_t i;
   flt_syntax_block_t *block;
@@ -624,7 +700,9 @@ flt_syntax_block_t *flt_syntax_block_by_name(flt_syntax_pattern_file_t *file,con
 
   return NULL;
 }
+/* }}} */
 
+/* {{{ flt_syntax_list_by_name */
 flt_syntax_list_t *flt_syntax_list_by_name(flt_syntax_pattern_file_t *file,const u_char *name) {
   size_t i;
   flt_syntax_list_t *list;
@@ -636,6 +714,7 @@ flt_syntax_list_t *flt_syntax_list_by_name(flt_syntax_pattern_file_t *file,const
 
   return NULL;
 }
+/* }}} */
 
 /* {{{ flt_syntax_extra_arg */
 t_string *flt_syntax_extra_arg(t_string *str,const u_char *extra_arg) {
@@ -656,6 +735,7 @@ t_string *flt_syntax_extra_arg(t_string *str,const u_char *extra_arg) {
 }
 /* }}} */
 
+/* {{{ flt_syntax_get_token */
 u_char *flt_syntax_get_token(const u_char *txt) {
   register u_char *ptr = NULL;
   u_char *ret = NULL;
@@ -670,8 +750,10 @@ u_char *flt_syntax_get_token(const u_char *txt) {
 
   return ret;
 }
+/* }}} */
 
-int flt_syntax_doit(flt_syntax_pattern_file_t *file,flt_syntax_block_t *block,u_char *text,size_t len,t_string *cnt,u_char **pos,const u_char *extra_arg,int xhtml) {
+/* {{{ flt_syntax_doit */
+int flt_syntax_doit(flt_syntax_pattern_file_t *file,flt_syntax_block_t *block,u_char *text,size_t len,t_string *cnt,u_char **pos,const u_char *extra_arg,int xhtml,int *pops) {
   u_char *ptr,*tmpchar,*priv_extra;
   size_t i,x;
   flt_syntax_statement_t *statement;
@@ -680,7 +762,7 @@ int flt_syntax_doit(flt_syntax_pattern_file_t *file,flt_syntax_block_t *block,u_
   flt_syntax_block_t *tmpblock;
   flt_syntax_list_t *tmplist;
   flt_syntax_preg_t *tmppreg;
-  int stdvec[42];
+  int stdvec[42],priv_pops = 0;
 
   if(!block) {
     if((block = flt_syntax_block_by_name(file,file->start)) == NULL) {
@@ -739,6 +821,9 @@ int flt_syntax_doit(flt_syntax_pattern_file_t *file,flt_syntax_block_t *block,u_
               ptr += tmpstr->len - 1;
             }
             else if(cf_strcmp(str->content,"pop") == 0) {
+              str = array_element_at(&statement->args,2);
+              if(str && pops) *pops = atoi(str->content) - 1;
+
               *pos = ptr + tmpstr->len;
               str_str_append(cnt,tmpstr);
               if(extra_arg) {
@@ -767,9 +852,17 @@ int flt_syntax_doit(flt_syntax_pattern_file_t *file,flt_syntax_block_t *block,u_
               str_str_append(cnt,tmpstr);
 
               tmpchar = ptr + tmpstr->len;
-              if(flt_syntax_doit(file,tmpblock,text,len,cnt,&tmpchar,NULL,xhtml) != 0) return 1;
+              priv_pops = 0;
+              if(flt_syntax_doit(file,tmpblock,text,len,cnt,&tmpchar,NULL,xhtml,&priv_pops) != 0) return 1;
               ptr = tmpchar - 1;
               str_chars_append(cnt,"</span>",7);
+
+              /* maybe we shall return more than one state */
+              if(priv_pops > 0) {
+                if(pops) *pops = priv_pops - 1;
+                if(pos) *pos = ptr + 1;
+                return 0;
+              }
             }
           }
 
@@ -787,7 +880,6 @@ int flt_syntax_doit(flt_syntax_pattern_file_t *file,flt_syntax_block_t *block,u_
             fprintf(stderr,"could not find list %s!\n",str->content);
             return 1;
           }
-
 
           tmpchar = flt_syntax_get_token(ptr);
 
@@ -809,6 +901,9 @@ int flt_syntax_doit(flt_syntax_pattern_file_t *file,flt_syntax_block_t *block,u_
               ptr += tmpstr->len - 1;
             }
             else if(cf_strcmp(str->content,"pop") == 0) {
+              str = array_element_at(&statement->args,2);
+              if(str && pops) *pops = atoi(str->content) - 1;
+
               str = array_element_at(&statement->args,0);
               *pos = ptr + str->len;
               str_str_append(cnt,str);
@@ -834,9 +929,16 @@ int flt_syntax_doit(flt_syntax_pattern_file_t *file,flt_syntax_block_t *block,u_
               str = array_element_at(&statement->args,0);
               str_str_append(cnt,str);
               tmpchar = ptr + str->len;
-              if(flt_syntax_doit(file,tmpblock,text,len,cnt,&tmpchar,NULL,xhtml) != 0) return 1;
+              priv_pops = 0;
+              if(flt_syntax_doit(file,tmpblock,text,len,cnt,&tmpchar,NULL,xhtml,&priv_pops) != 0) return 1;
               ptr = tmpchar - 1;
               str_chars_append(cnt,"</span>",7);
+
+              if(priv_pops > 0) {
+                if(pops) *pops = priv_pops - 1;
+                if(pos) *pos = ptr + 1;
+                return 0;
+              }
             }
           }
           else {
@@ -866,6 +968,9 @@ int flt_syntax_doit(flt_syntax_pattern_file_t *file,flt_syntax_block_t *block,u_
               ptr += stdvec[1] - stdvec[0] - 1;
             }
             else if(cf_strcmp(str->content,"pop") == 0) {
+              str = array_element_at(&statement->args,1);
+              if(str && pops) *pops = atoi(str->content) - 1;
+
               str_chars_append(cnt,ptr+stdvec[0],stdvec[1]-stdvec[0]);
               *pos = ptr + (stdvec[1] - stdvec[0]);
               return 0;
@@ -889,9 +994,16 @@ int flt_syntax_doit(flt_syntax_pattern_file_t *file,flt_syntax_block_t *block,u_
 
               str_chars_append(cnt,ptr+stdvec[0],stdvec[1]-stdvec[0]);
               tmpchar = ptr + (stdvec[1] - stdvec[0]);
-              if(flt_syntax_doit(file,tmpblock,text,len,cnt,&tmpchar,NULL,xhtml) != 0) return 1;
+              priv_pops = 0;
+              if(flt_syntax_doit(file,tmpblock,text,len,cnt,&tmpchar,NULL,xhtml,&priv_pops) != 0) return 1;
               ptr = tmpchar - 1;
               str_chars_append(cnt,"</span>",7);
+
+              if(priv_pops > 0) {
+                if(pops) *pops = priv_pops - 1;
+                if(pos) *pos = ptr + 1;
+                return 0;
+              }
             }
           }
           /* }}} */
@@ -922,11 +1034,18 @@ int flt_syntax_doit(flt_syntax_pattern_file_t *file,flt_syntax_block_t *block,u_
             tmpchar = ptr + (stdvec[1] - stdvec[0]);
 
             if(pcre_get_substring((const char *)ptr,stdvec,42,atoi(str->content),(const char **)&priv_extra) < 0) break;
-            if(flt_syntax_doit(file,tmpblock,text,len,cnt,&tmpchar,priv_extra,xhtml) != 0) return 1;
+            priv_pops = 0;
+            if(flt_syntax_doit(file,tmpblock,text,len,cnt,&tmpchar,priv_extra,xhtml,&priv_pops) != 0) return 1;
 
             pcre_free_substring(priv_extra);
             ptr = tmpchar - 1;
             str_chars_append(cnt,"</span>",7);
+
+            if(priv_pops > 0) {
+              if(pops) *pops = priv_pops - 1;
+              if(pos) *pos = ptr + 1;
+              return 0;
+            }
           }
           /* }}} */
           break;
@@ -937,7 +1056,7 @@ int flt_syntax_doit(flt_syntax_pattern_file_t *file,flt_syntax_block_t *block,u_
             x = stdvec[1] - stdvec[0];
             tmppreg = array_element_at(&statement->pregs,1);
 
-            if(pcre_exec(tmppreg->re,tmppreg->extra,ptr+x,len-(text-ptr),0,0,stdvec,42) >= 0) {
+            if(pcre_exec(tmppreg->re,tmppreg->extra,ptr+x,len-(text-ptr)-x,0,0,stdvec,42) >= 0) {
               matched = 1;
               str_chars_append(cnt,ptr,x);
               ptr += x;
@@ -957,6 +1076,9 @@ int flt_syntax_doit(flt_syntax_pattern_file_t *file,flt_syntax_block_t *block,u_
                 ptr += stdvec[1] - stdvec[0] - 1;
               }
               else if(cf_strcmp(str->content,"pop") == 0) {
+                str = array_element_at(&statement->args,1);
+                if(str && pops) *pops = atoi(str->content) - 1;
+
                 str_chars_append(cnt,ptr+stdvec[0],stdvec[1]-stdvec[0]);
                 *pos = ptr + (stdvec[1] - stdvec[0]);
                 return 0;
@@ -980,9 +1102,61 @@ int flt_syntax_doit(flt_syntax_pattern_file_t *file,flt_syntax_block_t *block,u_
 
                 str_chars_append(cnt,ptr+stdvec[0],stdvec[1]-stdvec[0]);
                 tmpchar = ptr + (stdvec[1] - stdvec[0]);
-                if(flt_syntax_doit(file,tmpblock,text,len,cnt,&tmpchar,NULL,xhtml) != 0) return 1;
+                priv_pops = 0;
+                if(flt_syntax_doit(file,tmpblock,text,len,cnt,&tmpchar,NULL,xhtml,&priv_pops) != 0) return 1;
                 ptr = tmpchar - 1;
                 str_chars_append(cnt,"</span>",7);
+
+                if(priv_pops > 0) {
+                  if(pops) *pops = priv_pops - 1;
+                  if(pos) *pos = ptr + 1;
+                  return 0;
+                }
+              }
+            }
+          }
+          /* }}} */
+          break;
+        case FLT_SYNTAX_ONREGEXP_AFTER_BACKREF:
+          /* {{{ onregexpafter_backref */
+          tmppreg = array_element_at(&statement->pregs,0);
+          if(pcre_exec(tmppreg->re,tmppreg->extra,ptr,len-(text-ptr),0,0,stdvec,42) >= 0) {
+            x = stdvec[1] - stdvec[0];
+            tmppreg = array_element_at(&statement->pregs,1);
+
+            if(pcre_exec(tmppreg->re,tmppreg->extra,ptr+x,len-(text-ptr)-x,0,0,stdvec,42) >= 0) {
+              matched = 1;
+              str_chars_append(cnt,ptr,x);
+              ptr += x;
+
+              str = array_element_at(&statement->args,2);
+              str_chars_append(cnt,"<span class=\"",13);
+              str_str_append(cnt,str);
+              str_chars_append(cnt,"\">",2);
+
+              priv_extra = NULL;
+              str_chars_append(cnt,ptr+stdvec[0],stdvec[1]-stdvec[0]);
+              tmpchar = ptr + (stdvec[1] - stdvec[0]);
+
+              str = array_element_at(&statement->args,0);
+              if((tmpblock = flt_syntax_block_by_name(file,str->content)) == NULL) {
+                fprintf(stderr,"Could not find block %s!\n",str->content);
+                return 1;
+              }
+
+              str = array_element_at(&statement->args,1);
+              if(pcre_get_substring((const char *)ptr,stdvec,42,atoi(str->content),(const char **)&priv_extra) < 0) break;
+              priv_pops = 0;
+              if(flt_syntax_doit(file,tmpblock,text,len,cnt,&tmpchar,priv_extra,xhtml,&priv_pops) != 0) return 1;
+
+              pcre_free_substring(priv_extra);
+              ptr = tmpchar - 1;
+              str_chars_append(cnt,"</span>",7);
+
+              if(priv_pops > 0) {
+                if(pops) *pops = priv_pops - 1;
+                if(pos) *pos = ptr + 1;
+                return 0;
               }
             }
           }
@@ -1006,7 +1180,9 @@ int flt_syntax_doit(flt_syntax_pattern_file_t *file,flt_syntax_block_t *block,u_
 
   return 0;
 }
+/* }}} */
 
+/* {{{ flt_syntax_highlight */
 int flt_syntax_highlight(t_string *content,t_string *bco,const u_char *lang,const u_char *fname) {
   u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   flt_syntax_pattern_file_t *file;
@@ -1032,7 +1208,7 @@ int flt_syntax_highlight(t_string *content,t_string *bco,const u_char *lang,cons
   file = array_element_at(&flt_syntax_files,flt_syntax_files.elements-1);
 
   str_init(&code);
-  if(flt_syntax_doit(file,NULL,content->content,content->len,&code,&pos,NULL,cf_strcmp(xmlm->values[0],"yes") == 0) != 0) {
+  if(flt_syntax_doit(file,NULL,content->content,content->len,&code,&pos,NULL,cf_strcmp(xmlm->values[0],"yes") == 0,NULL) != 0) {
     str_cleanup(&code);
     return 1;
   }
@@ -1046,7 +1222,9 @@ int flt_syntax_highlight(t_string *content,t_string *bco,const u_char *lang,cons
 
   return 0;
 }
+/* }}} */
 
+/* {{{ flt_syntax_execute */
 int flt_syntax_execute(t_configuration *fdc,t_configuration *fvc,const u_char *directive,const u_char **parameters,size_t plen,t_string *bco,t_string *bci,t_string *content,t_string *cite,const u_char *qchars,int sig) {
   t_string str;
   struct stat st;
@@ -1129,7 +1307,9 @@ int flt_syntax_execute(t_configuration *fdc,t_configuration *fvc,const u_char *d
 
   return FLT_OK;
 }
+/* }}} */
 
+/* {{{ flt_syntax_init */
 int flt_syntax_init(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc) {
   cf_html_register_directive("code",flt_syntax_execute,CF_HTML_DIR_TYPE_ARG|CF_HTML_DIR_TYPE_BLOCK);
 
@@ -1137,7 +1317,7 @@ int flt_syntax_init(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc) {
 
   return FLT_DECLINE;
 }
-
+/* }}} */
 
 /* {{{ flt_syntax_handle */
 int flt_syntax_handle(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {

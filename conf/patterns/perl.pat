@@ -3,7 +3,7 @@
 start = "default"
 
 list "symbols" = "(,),{,},:,[,],;,\,"
-list "operators" = "-&gt;,++,--,**,!,~,and,+,-,=~,!~,*,/,%,x,+,-,.,&lt;&lt;,&gt;&gt;,&lt;,&gt;,&lt;=,&gt;=,lt,gt,le,ge,==,!=,&lt;=&gt;,eq,ne,cmp,&amp;,|,^,&amp;&amp;,||,..,...,=,+=,-=,*=,/=,**=,^=,\,,=&gt;,not,and,or,xor"
+list "operators" = "and,x,lt,gt,le,ge,eq,ne,cmp,not,and,or,xor"
 list "keywords" = "continue,do,else,elsif,for,foreach,goto,if,last,my,next,package,return,sub,switch,unless,until,use,while,print,split,require,pack,hex,open,close,opendir,closedir,readdir,chomp,chop,exit,vars"
 list "makros" = "__PACKAGE__,SUPER,BEGIN,CHECK,INIT,END,DESTROY"
 
@@ -33,6 +33,7 @@ block "default"
   # syntax: onstringlist <listen-name> <neuer-block> <span-klasse>
   onstringlist "keywords" highlight "keyword"
   onstringlist "operators" highlight "operator"
+  onregexp "^(-&gt;|\\+\\+|--|\\*\\*|!|~|\\+|-|=~|!~|\\*|/|%|\\+|-|\\.|&lt;&lt;|&gt;&gt;|&lt;|&gt;|&lt;=|&gt;=|==|!=|&lt;=&gt;|&amp;|\\||\\^|&amp;&amp;|\\|\\||\\.\\.|\\.\\.\\.|=|\\+=|-=|\\*=|/=|\\*\\*=|\\^=|,|=&gt;)" highlight "operator"
   onstringlist "symbols" highlight "symbol"
   onstringlist "makros" highlight "makro"
 

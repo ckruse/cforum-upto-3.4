@@ -12,6 +12,12 @@
 		configurable
 	* src/configparser.c: Added directives OpenThread, OpenPosting, OpenSubtree,
 		CloseSubtree, ClosePosting, CloseThread
+	* conf/patterns/perl.pat, conf/patterns/php.pat: Bugfix for several operator
+		patterns
+	* conf/patterns/html.pat: Fixed several bugs in pattern file
+	* src/modules/flt_syntax.c: Implemented pattern elements used by html pattern
+		matching
+	* src/arrayutils.c: Fixed small bug in array_element_at()
 
 2005-02-14 Christian Kruse <ckruse@wwwtech.de>
 	* conf/patterns/php.pat: Added => operator
