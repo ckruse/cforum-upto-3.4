@@ -4,7 +4,7 @@
   <head>
     <title>SELFHTML Forum</title>
     <meta http-equiv="content-type" content="text/html; charset={$charset}" />{if $autoreload}
-    <meta http-equiv="refresh" content="{$autoreload}; URL={if $frame}?a=f{endif}" />{endif}
+    <meta http-equiv="refresh" content="{$autoreload}; URL={$ubase}{if $frame}?a=f{endif}" />{endif}
     <meta name="robots" content="noarchive,nofollow" />
     <meta name="description" content="Forum als Erg&auml;nzung zu der Dokumentation SELFHTML" />
     <meta name="keywords" content="SELFHTML Forum, SELFHTML, Forum, SELFForum" />
@@ -94,8 +94,8 @@
       }
       function News() {
         F2 = window.open("http://selfaktuell.teamone.de/news.htm","Fenster2","width=520,height=400,scrollbars=yes,resizable=yes,status=yes");
-      }
-{if $UseJavaScript}
+      }{if $UseJavaScript}
+
       /* thanks to Stefan 'Zapp' (xzapp@nexgo.de) */
       function snap(obj) {
         if(obj.getElementsByTagName) {
@@ -200,13 +200,17 @@
     <p>
       Der Live-Filter filtert die Thread-Liste nach Kriterien, die Sie in diesem Text-Feld angeben k&ouml;nnen. Die Bedienungsweise wird in der <img src="http://src.selfhtml.org/dok.gif" width="15" height="10" alt="Seite" />&nbsp;<a href="/live_syntax.html"{if $frame} onclick="window.open(this,'_top'); return false;"{endif}>Syntax-Beschreibung</a> erkl&auml;rt.
     </p>
-    <form method="get" action="{$forumbase}" accept-charset="{$charset},UTF-8">
+    <form method="get" action="{$ubase}" accept-charset="{$charset},UTF-8">
       <p><label for="lf">Filter-String:</label> <input type="text" name="lf" id="lf" value="{$lf}" size="50" /> <input type="submit" value="Filtern!" /></p>
     </form>{endif}
     <h2 class="sh2"><a class="an" name="nachrichten">Aktuelle Nachrichten</a></h2>
     <p>
       <b>Mitmachen:</b> Um auf eine aktuelle Nachricht zu antworten, einfach diese &ouml;ffnen und lesen. Alle Nachrichten enthalten ein Formular zum Antworten.<br /><b>Tip:</b> Nachrichten in neuem Fenster &ouml;ffnen (rechte Maustaste). Dann bleibt diese Indexdatei im Hintergrund ge&ouml;ffnet.
     </p>{if $delcheckbox}
+
     <form method="post" action="{$ubase}">
+
       <div style="display:none;"><input type="hidden" name="a" value="d" /></div>
-{endif}    <ol id="root">
+
+      <ol id="root">{else}
+    <ol id="root">{endif}

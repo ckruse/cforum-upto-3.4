@@ -3,7 +3,7 @@
   <head>
     <title>SELFHTML Forum</title>
     <meta http-equiv="content-type" content="text/html; charset={$charset}">{if $autoreload}
-    <meta http-equiv="refresh" content="{$autoreload}; URL={if $frame}?a=f{endif}">{endif}
+    <meta http-equiv="refresh" content="{$autoreload}; URL={$ubase}{if $frame}?a=f{endif}">{endif}
     <meta name="robots" content="noarchive,nofollow">
     <meta name="description" content="Forum als Erg&auml;nzung zu der Dokumentation SELFHTML">
     <meta name="keywords" content="SELFHTML Forum, SELFHTML, Forum, SELFForum">
@@ -93,8 +93,8 @@
       }
       function News() {
         F2 = window.open("http://selfaktuell.teamone.de/news.htm","Fenster2","width=520,height=400,scrollbars=yes,resizable=yes,status=yes");
-      }
-{if $UseJavaScript}
+      }{if $UseJavaScript}
+
       /* thanks to Stefan 'Zapp' (xzapp@nexgo.de) */
       function snap(obj) {
         if(obj.getElementsByTagName) {
@@ -136,8 +136,6 @@
         <td bgcolor="#EEEEEE" class="doc" width="110"><img src="http://src.selfhtml.org/logo.gif" width="106" height="109" border="0" alt="SELFHTML"></td>
         <td bgcolor="#EEEEEE" class="doc" valign="bottom" width="100%"><span class="blue">Das Forum zu SELFHTML</span><h1 class="ph1">SELFHTML Forum</h1></td>
       </tr>
-
-
       <tr>
         <td bgcolor="#EEEEEE" class="doc" valign="top" align="center">
           <table border="0" cellpadding="5" cellspacing="5" width="100%">
@@ -147,7 +145,7 @@
                   <a href="http://selfaktuell.teamone.de/news.htm" onclick="if(!window.News) return true; News(); return false;"{if $frame} target="_top"{endif}><img src="http://src.selfhtml.org/xview.gif" width="30" height="20" border="0" alt="News"></a><br>
                   <a href="http://selfaktuell.teamone.de/news.htm" onclick="if(!window.News) return true; News(); return false;"{if $frame} target="_top"{endif}><b>News</b></a>
                 </p>
-                <form method="POST" action="http://selfsuche.teamone.de/cgi-bin/such.pl">
+                <form method="post" action="http://selfsuche.teamone.de/cgi-bin/such.pl">
                   <p>
                     <b><label for="suchausdruck">Suche nach:</label></b><br>
                     <input type="text" name="suchausdruck" id="suchausdruck" size="10" maxlength="50" style="width:90px; font-family:monospace; font-size:10pt;">
@@ -205,13 +203,16 @@
     <p>
       Der Live-Filter filtert die Thread-Liste nach Kriterien, die Sie in diesem Text-Feld angeben k&ouml;nnen. Die Bedienungsweise wird in der <img src="http://src.selfhtml.org/dok.gif" width="15" height="10" border="0" alt="Seite">&nbsp;<a href="/live_syntax.html"{if $frame} target="_top"{endif}>Syntax-Beschreibung</a> erkl&auml;rt.
     </p>
-    <form method="get" action="{$forumbase}" accept-charset="{$charset},UTF-8">
+    <form method="get" action="{$ubase}" accept-charset="{$charset},UTF-8">
       <p><label for="lf">Filter-String:</label> <input type="text" name="lf" id="lf" value="{$lf}" size="50"> <input type="submit" value="Filtern!"></p>
     </form>{endif}
     <h2 class="sh2"><a class="an" name="nachrichten">Aktuelle Nachrichten</a></h2>
     <p>
       <b>Mitmachen:</b> Um auf eine aktuelle Nachricht zu antworten, einfach diese &ouml;ffnen und lesen. Alle Nachrichten enthalten ein Formular zum Antworten.<br><b>Tip:</b> Nachrichten in neuem Fenster &ouml;ffnen (rechte Maustaste). Dann bleibt diese Indexdatei im Hintergrund ge&ouml;ffnet.
     </p>{if $delcheckbox}
+
     <form method="post" action="{$ubase}">
+
       <div style="display:none;"><input type="hidden" name="a" value="d"></div>
-{endif}    <ol id="root">
+      <ol id="root">{else}
+    <ol id="root">{endif}
