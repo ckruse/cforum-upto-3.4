@@ -21,6 +21,8 @@
 		src/modules/flt_sorting.c, src/modules/flt_openclose.c: Added multi forum
 		abilities
 	* src/defines.h: Added CF_SORT_NEWESTFIRST
+	* src/perl/Plugins/ImportExport.pm: Moved to upload() routine, the new way of
+		handling file uploads in CGI.pm
 
 2005-02-07 Christian Kruse <ckruse@wwwtech.de>
 	* src/modules/flt_link.c: Fixed bug in variable setting

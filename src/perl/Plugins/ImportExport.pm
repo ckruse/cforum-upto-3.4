@@ -71,8 +71,10 @@ sub imprt {
   fatal($cgi,$fo_default_conf,$user_config,sprintf(get_error($fo_default_conf,'MUST_AUTH'),"$!"),get_conf_val($fo_userconf_conf,$main::Forum,'FatalTemplate')) unless $main::UserName;
 
   my $own_conf = dclone($user_config->{global});
-  my $fh = $cgi->param('import');
+  my $fh = $cgi->upload('import');
   my $str = '';
+
+  fatal($cgi,$fo_default_conf,$user_config,get_error($fo_default_conf,'IMPORT_DATAFAILURE'),get_conf_val($fo_userconf_conf,$main::Forum,'FatalTemplate')) unless $fh;
 
   $str .= $_ while(<$fh>);
 
