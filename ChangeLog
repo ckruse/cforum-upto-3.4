@@ -1,4 +1,7 @@
 2004-08-05 Christian Kruse <ckruse@wwwtech.de>
+	* Created 2.0 STABLE branch
+
+2004-08-05 Christian Kruse <ckruse@wwwtech.de>
 	* src/templates/de/tpl_*/Makefile.am: Fixed bug, source file is <tplname>.c,
 		not <tplname>.html
 	* src/templates/de/tpl_*/sendpassok.html,
