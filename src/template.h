@@ -25,6 +25,7 @@
 #define TPL_VARIABLE_STRING       1
 #define TPL_VARIABLE_INT          2
 #define TPL_VARIABLE_ARRAY        3
+#define TPL_VARIABLE_HASH         4
 
 /**
  * This struct contains the necessary information about the template file.
@@ -47,6 +48,7 @@ typedef struct s_cf_tpl_variable {
     t_string d_string; /**< String data */
     signed long d_int; /**< Integer data */
     t_array d_array; /**< Array data */
+    t_cf_hash *d_hash; /**< Hash data */
   } data; /**< The actual template data */
   
   unsigned short temporary; /**< Internal flag: Is this a temporary variable? */
@@ -146,6 +148,22 @@ void cf_tpl_var_add(t_cf_tpl_variable *var,t_cf_tpl_variable *element);
  * \param type The type of the element to add
  */
 void cf_tpl_var_addvalue(t_cf_tpl_variable *array_var,unsigned short type,...);
+
+/**
+ * This function sets an element of a hash
+ * \param var The hash variable structure
+ * \param key The key of the element
+ * \param element The element that is to be set
+ */
+void cf_tpl_hashvar_set(t_cf_tpl_variable *var,const u_char *key,t_cf_tpl_variable *element);
+
+/**
+ * This function sets a value of a hash
+ * \param var The hash variable structure
+ * \param key The key of the element
+ * \param type The type of the element to set
+ */
+void cf_tpl_hashvar_setvalue(t_cf_tpl_variable *array_var,const u_char *key,unsigned short type,...);
 
 /**
  * This function will parse a template file and print out the parsed content. No memory is allocated, this

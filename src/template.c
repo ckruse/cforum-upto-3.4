@@ -127,6 +127,8 @@ void cf_tpl_setvalue(t_cf_template *tpl,const u_char *vname,unsigned short type,
       break;
     case TPL_VARIABLE_ARRAY:
       // arrays may NOT be set this way!
+    case TPL_VARIABLE_HASH:
+      // hashes neither
     default:
       // illegal
       break;
@@ -192,6 +194,9 @@ void cf_tpl_var_init(t_cf_tpl_variable *var,unsigned short type) {
     case TPL_VARIABLE_ARRAY:
       array_init(&var->data.d_array,sizeof(t_cf_tpl_variable),cf_tpl_cleanup_var);
       break;
+    case TPL_VARIABLE_HASH:
+      var->data.d_hash = cf_hash_new(cf_tpl_cleanup_var);
+      break;
     default:
       var->type = TPL_VARIABLE_INVALID;
       break;
@@ -220,6 +225,9 @@ void cf_tpl_var_destroy(t_cf_tpl_variable *var) {
       break;
     case TPL_VARIABLE_ARRAY:
       array_destroy(&var->data.d_array);
+      break;
+    case TPL_VARIABLE_HASH:
+      cf_hash_destroy(var->data.d_hash);
       break;
   }
 }
@@ -256,6 +264,8 @@ void cf_tpl_var_setvalue(t_cf_tpl_variable *var,...) {
       break;
     case TPL_VARIABLE_ARRAY:
       // arrays are not supported
+    case TPL_VARIABLE_HASH:
+      // hashes neither
     default:
       // invalid
       break;
@@ -284,7 +294,7 @@ t_cf_tpl_variable *cf_tpl_var_convert(t_cf_tpl_variable *dest,t_cf_tpl_variable 
   if(new_type != TPL_VARIABLE_STRING && new_type != TPL_VARIABLE_INT) {
     return NULL;
   }
-  if(src->type != TPL_VARIABLE_STRING && src->type != TPL_VARIABLE_INT && src->type != TPL_VARIABLE_ARRAY) {
+  if(src->type != TPL_VARIABLE_STRING && src->type != TPL_VARIABLE_INT && src->type != TPL_VARIABLE_ARRAY && src->type != TPL_VARIABLE_HASH) {
     return NULL;
   }
   if(!dest) {
@@ -309,6 +319,10 @@ t_cf_tpl_variable *cf_tpl_var_convert(t_cf_tpl_variable *dest,t_cf_tpl_variable 
         snprintf(intbuf,19,"%ld",src->data.d_array.elements);
         str_char_set(&var->data.d_string,intbuf,strlen(intbuf));
         break;
+      case TPL_VARIABLE_HASH:
+        snprintf(intbuf,19,"%ld",src->data.d_hash->elements);
+        str_char_set(&var->data.d_string,intbuf,strlen(intbuf));
+        break;
     }
   } else if(new_type == TPL_VARIABLE_INT) {
     switch(src->type) {
@@ -320,6 +334,9 @@ t_cf_tpl_variable *cf_tpl_var_convert(t_cf_tpl_variable *dest,t_cf_tpl_variable 
         break;
       case TPL_VARIABLE_ARRAY:
         var->data.d_int = (signed long)src->data.d_array.elements;
+        break;
+      case TPL_VARIABLE_HASH:
+        var->data.d_int = (signed long)src->data.d_hash->elements;
         break;
     }
   }
@@ -343,7 +360,9 @@ t_cf_tpl_variable *cf_tpl_var_clone(t_cf_tpl_variable *var) {
   t_cf_tpl_variable *new_var, *tmp_var;
   long i;
   
-  if(!var || (var->type != TPL_VARIABLE_STRING && var->type != TPL_VARIABLE_INT && var->type != TPL_VARIABLE_ARRAY)) {
+  t_cf_hash_entry *ent;
+  
+  if(!var || (var->type != TPL_VARIABLE_STRING && var->type != TPL_VARIABLE_INT && var->type != TPL_VARIABLE_ARRAY && var->type != TPL_VARIABLE_HASH)) {
     return NULL;
   }
   
@@ -367,6 +386,23 @@ t_cf_tpl_variable *cf_tpl_var_clone(t_cf_tpl_variable *var) {
         }
         tmp_var->temporary = 1;
         cf_tpl_var_add(new_var,tmp_var);
+      }
+      break;
+    case TPL_VARIABLE_HASH:
+      for(i=0;i<hashsize(var->data.d_hash->tablesize);i++) {
+        if(!var->data.d_hash->table[i]) {
+          continue;
+        }
+        for(ent = var->data.d_hash->table[i];ent;ent=ent->next) {
+          tmp_var = cf_tpl_var_clone((t_cf_tpl_variable *)ent->data);
+          if(!tmp_var) {
+            cf_tpl_var_destroy(new_var);
+            free(new_var);
+            return NULL;
+          }
+          tmp_var->temporary = 1;
+          cf_tpl_hashvar_set(new_var,ent->key,tmp_var);
+        }
       }
       break;
   }
@@ -401,9 +437,9 @@ void cf_tpl_var_add(t_cf_tpl_variable *var,t_cf_tpl_variable *element) {
 }
 
 /*
- * Returns: The destination variable that contains the converted value
  * Parameters:
  *   - t_cf_tpl_variable *array_var   a pointer to the variable structure
+ *   - unsigned short type            the type of the new element
  *      - signed long value           the integer value
  *    or:
  *      - const u_char *value         the string value
@@ -436,6 +472,79 @@ void cf_tpl_var_addvalue(t_cf_tpl_variable *array_var,unsigned short type,...) {
       break;
     case TPL_VARIABLE_ARRAY:
       // arrays may NOT be set this way!
+    case TPL_VARIABLE_HASH:
+      // hashes neither!
+    default:
+      // illegal
+      break;
+  }
+  va_end(ap);
+}
+
+/*
+ * Parameters:
+ *   - t_cf_tpl_variable *var     a pointer to the variable structure
+ *   - const u_char *key          the key of the element
+ *   - t_cf_tpl_variable *element a pointer to the element that is to be set
+ *
+ * This function sets an element of a hash
+ *
+ */
+void cf_tpl_hashvar_set(t_cf_tpl_variable *var,const u_char *key,t_cf_tpl_variable *element) {
+  int tmp = 0;
+  if(var->type != TPL_VARIABLE_HASH) {
+    return;
+  }
+  if(element->temporary) {
+    tmp = 1;
+  }
+  element->temporary = 0;
+  cf_hash_set(var->data.d_hash,(u_char *)key,strlen(key),element,sizeof(t_cf_tpl_variable));
+  // cleanup if it's temporary
+  if(tmp) {
+    // don't destroy the var, only free it
+    free(element);
+  }
+}
+
+/*
+ * Parameters:
+ *   - t_cf_tpl_variable *hash_var    a pointer to the variable structure
+ *   - unsigned short type            the type of the new element
+ *      - signed long value           the integer value
+ *    or:
+ *      - const u_char *value         the string value
+ *      - int len                     the length of the value
+ *
+ * This function sets an element of a hash by its value. Only string and integer values are supported
+ *
+ */
+void cf_tpl_hashvar_setvalue(t_cf_tpl_variable *hash_var,const u_char *key,unsigned short type,...) {
+  va_list ap;
+  signed long int_value;
+  const u_char *string_value;
+  int string_len;
+  t_cf_tpl_variable var;
+  
+  va_start(ap,type);
+  switch(type) {
+    case TPL_VARIABLE_STRING:
+      string_value = va_arg(ap,const u_char *);
+      string_len = va_arg(ap,int);
+      cf_tpl_var_init(&var,type);
+      str_char_set(&var.data.d_string,string_value,string_len);
+      cf_tpl_hashvar_set(hash_var,key,&var);
+      break;
+    case TPL_VARIABLE_INT:
+      int_value = va_arg(ap,signed long);
+      cf_tpl_var_init(&var,type);
+      var.data.d_int = int_value;
+      cf_tpl_hashvar_set(hash_var,key,&var);
+      break;
+    case TPL_VARIABLE_ARRAY:
+      // arrays may NOT be set this way!
+    case TPL_VARIABLE_HASH:
+      // hashes neither!
     default:
       // illegal
       break;

@@ -1,3 +1,10 @@
+2005-03-02 Christian Seiler <self@christian-seiler.de>
+	* src/template.c, src/template.h: Added support for hash variables
+	* src/parsetpl/parsetpl.lex: Added support for hash dereferencing
+		({$foo["bar"]} and for hash assignment ({$foo = ["bar" =>
+		"buz"]}); added concatenation operator for strings and
+		variables (+)
+
 2005-03-01 Christian Seiler <self@christian-seiler.de>
 	* src/perl/Plugins/XMLRPCUserManagement.pm: Fixed small bug
 
