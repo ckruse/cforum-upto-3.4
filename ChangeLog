@@ -1,3 +1,10 @@
+2005-01-04 Christian Kruse <ckruse@wwwtech.de>
+	* src/utils.[ch]: Added cf_make_path() in utilities
+	* src/modules/flt_xmlstorage.c: Did several bugfixes, removed locking, added
+		support for new forum (empty or non-existant forum.xml)
+	* src/serverlib.c: Several bugfixes
+
+
 2005-01-02 Christian Kruse <ckruse@wwwtech.de>
 	* cf_pthread.h: Removed tabs
 	* src/xml_handling.c: Small bugfixes
@@ -17,7 +24,6 @@
 	* src/configparser.h: Added some cleanup functions
 	* src/fo_server.c: Wrote a lot of cleanup code, did some bugfixes, added
 		threadlist and archiver thread
-
 
 2005-01-01 Christian Kruse <ckruse@wwwtech.de>
 	* src/modules/flt_xmlstorage.c: Debugging, now it compiles cleanly

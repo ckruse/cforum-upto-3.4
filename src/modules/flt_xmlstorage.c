@@ -29,6 +29,7 @@
 
 #include <gdome.h>
 
+#include <errno.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 
@@ -324,7 +325,7 @@ int flt_xmlstorage_make_forumtree(t_forum *forum) {
 
   if((doc_index = gdome_di_createDocFromURI(di,path.content,GDOME_LOAD_VALIDATING,&e)) == NULL) {
     cf_log(CF_ERR|CF_FLSH,__FILE__,__LINE__,"error loading file (%s)!\n",path.content);
-    exit(-1);
+    return FLT_OK;
   }
 
   path.len -= 9;
@@ -354,7 +355,7 @@ int flt_xmlstorage_make_forumtree(t_forum *forum) {
     thread->postings = fo_alloc(NULL,1,sizeof(*thread->postings),FO_ALLOC_CALLOC);
     thread->last     = thread->postings;
 
-    //flt_xmlstorage_create_threadtree(forum,thread,thread->postings,n2,n1,0);
+    flt_xmlstorage_create_threadtree(forum,thread,thread->postings,n2,n1,0);
     array_push(&ary,&thread);
 
     cf_register_thread(forum,thread);
@@ -869,7 +870,7 @@ void flt_xmlstorage_thread2xml(t_forum *forum,GdomeDOMImplementation *impl,Gdome
     cf_log(CF_ERR|CF_FLSH,__FILE__,__LINE__,"ERROR! COULD NOT WRITE XML FILE! Trying to write it to /tmp/%s/t%llu.xml\n",forum->name,t->tid);
 
     snprintf(buff,256,"/tmp/%s",forum->name);
-    mkdir(buff,0755);
+    cf_make_path(buff,0755);
 
     snprintf(buff,256,"/tmp/%s/t%llu.xml",forum->name,t->tid);
     gdome_di_saveDocToFile(impl,doc2,buff,0,&e);
@@ -884,7 +885,7 @@ void flt_xmlstorage_thread2xml(t_forum *forum,GdomeDOMImplementation *impl,Gdome
 
 /* {{{ flt_xmlstorage_threadlist_writer */
 int flt_xmlstorage_threadlist_writer(t_forum *forum) {
-  t_thread *t,*t1;
+  t_thread *t;
   u_int64_t ltid,lmid;
   u_char buff[256];
   pid_t pid;
@@ -911,41 +912,43 @@ int flt_xmlstorage_threadlist_writer(t_forum *forum) {
       return FLT_OK;
   }
 
-  CF_RW_RD(&forum->threads.lock);
+
+  /*
+   * Because of the fork() call above, we don't need
+   * locking
+   */
+
+  /* first, ensure that the path to forum.xml exists */
+  cf_make_path(mpath->values[0],0755);
+
   t    = forum->threads.list;
   ltid = forum->threads.last_tid;
   lmid = forum->threads.last_mid;
-  CF_RW_UN(&forum->threads.lock);
-
-  /* we exit at this point if no threads are available */
-  if(!t) return FLT_OK;
 
   impl = gdome_di_mkref();
   doc = xml_create_doc(impl,"Forum",FORUM_DTD);
-  elm = xml_create_element(doc,"Forum");
+  elm = gdome_doc_documentElement(doc,&e);
 
-  snprintf(buff,256,"t%llu",ltid);
-  xml_set_attribute(elm,"lastThread",buff);
+  if(ltid) {
+    snprintf(buff,256,"t%llu",ltid);
+    xml_set_attribute(elm,"lastThread",buff);
+  }
 
-  snprintf(buff,256,"m%llu",lmid);
-  xml_set_attribute(elm,"lastMessage",buff);
+  if(lmid) {
+    snprintf(buff,256,"m%llu",lmid);
+    xml_set_attribute(elm,"lastMessage",buff);
+  }
 
-  do {
-    CF_RW_RD(&t->lock);
-
+  for(;t;t=t->next) {
     flt_xmlstorage_thread2xml(forum,impl,doc,t,mpath);
-
-    t1 = t->next;
-    CF_RW_UN(&t->lock);
-    t = t1;
-  } while(t);
+  }
 
   snprintf(buff,256,"%s/forum.xml",mpath->values[0]);
   if(!gdome_di_saveDocToFile(impl,doc,buff,0,&e)) {
     cf_log(CF_ERR|CF_FLSH,__FILE__,__LINE__,"ERROR! COULD NOT WRITE XML FILE! Trying to write it to /tmp/%s/forum.xml\n",forum->name);
 
     snprintf(buff,256,"/tmp/%s",forum->name);
-    mkdir(buff,0755);
+    cf_make_path(buff,0755);
     snprintf(buff,256,"/tmp/%s/forum.xml",forum->name);
     gdome_di_saveDocToFile(impl,doc,buff,0,&e);
   }
@@ -954,7 +957,7 @@ int flt_xmlstorage_threadlist_writer(t_forum *forum) {
   gdome_doc_unref(doc,&e);
   gdome_di_unref(impl,&e);
 
-  return FLT_OK;
+  exit(0);
 }
 /* }}} */
 

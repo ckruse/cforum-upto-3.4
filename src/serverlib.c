@@ -171,7 +171,6 @@ void cf_setup_shared_mem(t_forum *forum) {
 /* {{{ cf_register_forum */
 t_forum *cf_register_forum(const u_char *name) {
   t_forum *forum = fo_alloc(NULL,1,sizeof(*forum),FO_ALLOC_MALLOC);
-  t_name_value *nv;
 
   forum->name = strdup(name);
   forum->fresh = forum->locked = 0;
@@ -182,10 +181,9 @@ t_forum *cf_register_forum(const u_char *name) {
   forum->date.visible = forum->date.invisible = 0;
 
   #ifdef CF_SHARED_MEM
-  nv = cfg_get_first_value(&fo_default_conf,name,"SharedMemIds");
-  forum->shm.ids[0] = atoi(nv->values[0]);
-  forum->shm.ids[1] = atoi(nv->values[1]);
-  forum->shm.sem    = atoi(nv->values[2]);
+  forum->shm.ids[0] = -1;
+  forum->shm.ids[1] = -1;
+  forum->shm.sem    = 0;
 
   forum->shm.ptrs[0] = NULL;
   forum->shm.ptrs[1] = NULL;
@@ -230,6 +228,8 @@ void cf_destroy_forum(t_forum *forum) {
 
   for(i=0;i<2;++i) {
     if(forum->shm.ids[i] >= 0) {
+      cf_log(CF_DBG,__FILE__,__LINE__,"removing shm segment %d\n",forum->shm.ids[i]);
+
       if(forum->shm.ptrs[i])
         if(shmdt(forum->shm.ptrs[i]) < 0) cf_log(CF_ERR,__FILE__,__LINE__,"shmdt: %s\n",strerror(errno));
 
@@ -417,6 +417,7 @@ void *cf_io_worker(void *arg) {
   }
 
   /* we are questioned to go down, so write threadlist */
+  /* we don't need this extra call. It's been done in the while() loop */
   //cf_log(CF_DBG|CF_FLSH,__FILE__,__LINE__,"starting cf_write_threadlist(NULL)...\n");
   //cf_write_threadlist(NULL);
 
@@ -1212,10 +1213,7 @@ void cf_generate_shared_memory(t_forum *forum) {
   t1 = t = forum->threads.list;
   CF_RW_UN(&forum->threads.lock);
 
-  /*
-   * {{{ CAUTION! Deep magic begins here!
-   */
-
+  /* {{{ CAUTION! Deep magic begins here! */
   mem_append(&pool,&tm,sizeof(t));
 
   for(;t;t=t1) {
@@ -1289,12 +1287,10 @@ void cf_generate_shared_memory(t_forum *forum) {
     CF_RW_UN(&t->lock);
     t = t1;
   }
-
   /*
    * Phew. Deep magic ends
-   * }}}
    */
-
+  /* }}} */
 
   /* lets go surfin' */
   CF_LM(&forum->shm.lock);
@@ -1312,7 +1308,7 @@ void cf_generate_shared_memory(t_forum *forum) {
 
   cf_log(CF_DBG,__FILE__,__LINE__,"shm_ids[%d]: %ld\n",semval,forum->shm.ids[semval]);
 
-  /* does the segment already exists? */
+  /* {{{ does the segment already exists? */
   if(forum->shm.ids[semval] != -1) {
     /* yeah, baby, yeah! */
 
@@ -1330,16 +1326,16 @@ void cf_generate_shared_memory(t_forum *forum) {
 
     /* delete the segment */
     if(shmctl(forum->shm.ids[semval],IPC_RMID,NULL) != 0) {
-      if(errno != EINVAL) {
-        cf_log(CF_ERR,__FILE__,__LINE__,"shmctl: %s\n",strerror(errno));
-        CF_UM(&forum->shm.lock);
-        mem_cleanup(&pool);
-        return;
-      }
+      cf_log(CF_ERR,__FILE__,__LINE__,"shmctl: %s\n",strerror(errno));
+      CF_UM(&forum->shm.lock);
+      mem_cleanup(&pool);
+      return;
     }
   }
+  /* }}} */
 
-  if((forum->shm.ids[semval] = shmget(atoi(v->values[semval]),pool.len,IPC_CREAT|CF_SHARED_MODE)) == -1) {
+  cf_log(CF_DBG,__FILE__,__LINE__,"shmget(%s,%lu,%u)\n",v->values[semval],pool.len,IPC_EXCL|IPC_CREAT|CF_SHARED_MODE);
+  if((forum->shm.ids[semval] = shmget(atoi(v->values[semval]),pool.len,IPC_EXCL|IPC_CREAT|CF_SHARED_MODE)) == -1) {
     cf_log(CF_ERR,__FILE__,__LINE__,"shmget: %s\n",strerror(errno));
     exit(EXIT_FAILURE);
   }

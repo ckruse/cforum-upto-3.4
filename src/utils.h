@@ -180,6 +180,17 @@ int str_equal_chars(const t_string *str1,const u_char *str2, size_t len);
 /* }}} */
 
 /* {{{ Utility functions */
+
+/**
+ * This function tries to create the whole path from the beginning of the
+ * parameter given, e.g. cf_make_path("/abc/def/",0755) tries to create /abc
+ * and after that /abc/def
+ * \param path The path to create
+ * \param mode The mode to create with (think about umask!)
+ * \return 0 on success, -1 on error
+ */
+int cf_make_path(const u_char *path,mode_t mode);
+
 /**
  * Splits a string into a list of strings and returns the length of the list. The string big will be cut at
  * every match of the string small.

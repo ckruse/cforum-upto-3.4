@@ -171,6 +171,33 @@ int gen_unid(u_char *buff,int maxlen) {
 }
 /* }}} */
 
+/* {{{ cf_make_path */
+int cf_make_path(const u_char *path,mode_t mode) {
+  u_char *mpath = strdup(path);
+  register u_char *ptr;
+
+  for(ptr=mpath;*ptr;++ptr) {
+    if(*ptr == '/') {
+      *ptr = '\0';
+
+      if(mkdir(mpath,mode) != 0) {
+	if(errno != EEXIST) return -1;
+      }
+
+      *ptr = '/';
+    }
+  }
+
+  if(*(ptr-1) != '/') {
+    if(mkdir(mpath,mode) != 0) {
+      if(errno != EEXIST) return -1;
+    }
+  }
+
+  return 0;
+}
+/* }}} */
+
 #ifdef HAS_NO_GETLINE
 /* {{{ getline
  * Returns: ssize_t         The number of bytes read or -1 on failure
