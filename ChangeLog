@@ -1,3 +1,8 @@
+2005-01-07 Christian Seiler <self@christian-seiler.de>
+	* cgi-bin/admin/fo_xmlrpc.in: exporer $fo_xmlrpc_conf variable
+	* cgi-shared/Pluginx/XMLRPCUserManagement.pm: added
+	* cgi-shared/config/fo_xmlrpc.conf.in: load RegisterName plugin
+
 2005-01-03 Christian Seiler <self@christian-seiler.de>
 	* cgi-bin/admin/Makefile.am: Added forgotten admin/ to path
 

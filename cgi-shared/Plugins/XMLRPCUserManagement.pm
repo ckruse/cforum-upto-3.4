@@ -84,6 +84,13 @@ sub delete_user {
   }
   my $dir   = $cfile;
   $dir =~ s!\.conf$!!; #!;
+  
+  #
+  # run config plugins
+  #
+  foreach(@{$main::Plugins->{unregister}}) {
+    &$_($main::fo_default_conf,$main::fo_xmlrpc_conf,{});
+  }
 
   rmtree($dir) or return;
   unlink($cfile) or return;

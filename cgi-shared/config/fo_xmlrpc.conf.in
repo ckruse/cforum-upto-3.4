@@ -12,6 +12,7 @@
 <Modules>
   AddModule "Plugins::HTTPAuth"
   AddModule "Plugins::XMLRPCUserManagement"
+  AddModule "Plugins::RegisterName"
 </Modules>
 
 <General>

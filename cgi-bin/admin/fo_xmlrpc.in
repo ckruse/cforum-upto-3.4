@@ -27,6 +27,7 @@ BEGIN {
   $prefix  = '@prefix@';
   
   $fo_default_conf = undef;
+  $fo_xmlrpc_conf = undef;
   
   # methods are registered by plugins
   $methods = {};
@@ -47,7 +48,7 @@ use ForumUtils qw/read_configuration get_template get_error recode uniquify_para
 # }}}
 
    $fo_default_conf        = read_configuration($Config.'fo_default.conf')  or die "error: $!";
-my $fo_xmlrpc_conf         = read_configuration($Config.'fo_xmlrpc.conf') or die "error: $!";
+   $fo_xmlrpc_conf         = read_configuration($Config.'fo_xmlrpc.conf') or die "error: $!";
 my $user_config            = {};
 
 my $rpc;
