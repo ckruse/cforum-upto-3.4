@@ -62,8 +62,6 @@ t_conf_opt default_options[] = {
   { "ExternCharset",            handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_default_conf },
   { "TemplateMode",             handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_default_conf },
   { "XHTMLMode",                handle_command,   CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_UNIQUE|CFG_OPT_LOCAL, &fo_default_conf },
-  { "MessagePath",              handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_default_conf },
-  { "ArchivePath",              handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_default_conf },
   { "ThreadIndexFile",          handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_default_conf },
   { "SocketName",               handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_GLOBAL,&fo_default_conf },
   { "BaseURL",                  handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_default_conf },
@@ -546,7 +544,7 @@ int read_config(t_configfile *conf,t_take_default deflt,int mode) {
     }
     /* }}} */
 
-    /* {{{ we got a »Load« directive -- go and load the module */
+    /* {{{ we got a Load directive -- go and load the module */
     if(cf_strcmp(directive_name,"Load") == 0) {
       if(argnum != 1) {
         fprintf(stderr,"[%s:%d] Hey, wrong argument count for ModulePath!",conf->filename,linenum);

@@ -1,14 +1,25 @@
 2004-12-19 Christian Kruse <ckruse@wwwtech.de>
+	* src/defines.h: Added several handler hooks
+	* src/modules/flt_xmlstorage.c: Added several handlers (not yet implemented!),
+		added configuration directives
+	* src/serverlib.[ch]: Added cf_remove_thread() function (it removes a thread
+		from the double linked list)
+	* src/archiver.[ch]: Added several handler hook implementations
+	* src/configparser.c: Removed MessagePath and ArchivePath directives; they're
+		plugin dependent
+
+2004-12-19 Christian Kruse <ckruse@wwwtech.de>
 	* src/fo_view.c: several small changes for folding
 	* src/xml_handling.c, src/xml_handling.h: added some xml routines to make it
 		easier to handle DOM
 	* src/modules/flt_xmlstorage.c: totally rewrote flt_xmlstorage.c
 	* src/modules/flt_admin.c: several small changes for folding
 	* src/serverlib.c, src/serverlib.h: little bit code cleaning (tabs are really
-		nasty), small bugfix, added support for flags in datatypes
+		nasty), small bugfix, added support for flags in datatypes, added
+		cf_destroy_flag() and fixed a bug in handler function
 	* src/fo_server.c: little bit code cleaning (f*ck off tabs!)
 	* src/archiver.[ch]: rewrote archiver functions (not yet finished, not yet
-		tested!)
+		tested!) -- it compiles cleanly
 
 2004-12-19 Christian Kruse <ckruse@wwwtech.de>
 	* *: Merged back changes from 2.1

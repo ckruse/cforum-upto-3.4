@@ -442,7 +442,7 @@ void flt_xmlstorage_create_threadtree(t_forum *forum,t_thread *thread,t_posting 
   GdomeException e;
   GdomeNodeList *nl_thr = gdome_n_childNodes(msg_elem_thread,&e);
 
-  GdomeNode *n,*msg_ind,*n1 = NULL;
+  GdomeNode *n,*msg_ind;
   GdomeDOMString *name;
   /* }}} */
 
@@ -625,13 +625,29 @@ void flt_xmlstorage_handle_header(t_posting *p,GdomeNode *n) {
 }
 /* }}} */
 
+/* {{{ flt_xmlstorage_threadlist_writer */
+int flt_xmlstorage_threadlist_writer(t_forum *forum) {
+  return FLT_OK;
+}
+/* }}} */
+
+/* {{{ flt_xmlstorage_archive_thread */
+int flt_xmlstorage_archive_thread(t_forum *forum,t_thread *thread) {
+  return FLT_OK;
+}
+/* }}} */
+
 
 t_conf_opt flt_xmlstorage_config[] = {
+  { "MessagePath", handle_command, CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_default_conf },
+  { "ArchivePath", handle_command, CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_default_conf },
   { NULL, NULL, 0, NULL }
 };
 
 t_handler_config flt_xmlstorage_handlers[] = {
-  { DATA_LOADING_HANDLER, flt_xmlstorage_make_forumtree },
+  { DATA_LOADING_HANDLER,   flt_xmlstorage_make_forumtree },
+  { THRDLST_WRITE_HANDLER,  flt_xmlstorage_threadlist_writer },
+  { ARCHIVE_THREAD_HANDLER, flt_xmlstorage_archive_thread },
   { 0, NULL }
 };
 

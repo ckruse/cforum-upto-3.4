@@ -202,5 +202,6 @@ t_posting *cf_get_posting(t_thread *t,u_int64_t mid);
 void *cf_worker(void *arg);
 
 void cf_destroy_flag(void *data);
+void cf_remove_thread(t_forum *forum,t_thread *t);
 
 /* eof */

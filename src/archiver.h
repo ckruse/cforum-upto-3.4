@@ -28,12 +28,27 @@
 typedef int (*t_archive_filter)(t_thread *thr);
 
 /**
+ * Function type for threadlist writer plugins
+ * \param forum The forum object to write the threadlist of
+ * \return FLT_DECLINE if this plugin is not used, FLT_OK if everything was OK
+ */
+typedef int (*t_archive_thrdlst_writer)(t_forum *forum);
+
+/**
+ * Function type for archiving threads
+ * \param forum The forum object
+ * \param thread The thread object
+ * \return FLT_DECLINE if this plugin is not used, FLT_OK if everything was OK
+ */
+typedef int (*t_archive_thread)(t_forum *forum,t_thread *thread);
+
+/**
  * This function archives a list of threads to their right position in the archive.
  * \param forum The forum struct
  * \param to_archive The thread list of to archive threads
  * \param len The length of the list
  */
-void cf_archive_threads(t_forum *forum,t_thread **to_archive,int len);
+void cf_archive_threads(t_forum *forum,t_thread **to_archive,size_t len);
 
 /**
  * This function runs the archiver and writes the actual threadlist to disk. It gets

@@ -54,8 +54,7 @@ struct sockaddr_un;
 
 
 void cf_run_archiver(void) {
-  t_thread *t,*oldest_t,*prev = NULL,**to_archive = NULL,*oldest_prev,*max_posts_t;
-  t_posting *oldest,*newest_in_t;
+  t_thread *t,*oldest_t,*prev = NULL,**to_archive = NULL;
   long size,threadnum,pnum,max_bytes,max_threads,max_posts;
   int shall_archive = 0,len = 0,ret = FLT_OK;
   t_name_value *max_bytes_v, *max_posts_v, *max_threads_v, *forums = cfg_get_first_value(&fo_server_conf,NULL,"Forums");
@@ -78,6 +77,9 @@ void cf_run_archiver(void) {
     max_posts     = strtol(max_posts_v->values[0],NULL,10);
     max_threads   = strtol(max_threads_v->values[0],NULL,10);
 
+    shall_archive = 0;
+    len           = 0;
+    ret           = FLT_OK;
 
     do {
       CF_RW_RD(&forum->lock);
@@ -88,15 +90,12 @@ void cf_run_archiver(void) {
       threadnum     = 0;
       pnum          = 0;
       shall_archive = 0;
-      oldest        = NULL;
       oldest_t      = NULL;
-      oldest_prev   = NULL;
-      newest_in_t   = NULL;
 
       CF_RW_UN(&forum->lock);
       CF_RW_UN(&forum->threads.lock);
 
-      if(!t) return;
+      if(!t) break;
 
       /* since we have exclusive access to the messages, we need no longer locking to the messages itself */
       do {
@@ -104,16 +103,9 @@ void cf_run_archiver(void) {
 
         CF_RW_RD(&t->lock);
 
-        newest_in_t = t->newest;
-        pnum       += t->posts;
+        pnum += t->posts;
 
-        if(!max_posts_t || max_posts_t->posts < t->posts) max_posts_t = t;
-
-        if(!oldest || newest_in_t->date < oldest->date) {
-          oldest      = newest_in_t;
-          oldest_t    = t;
-          oldest_prev = prev;
-        }
+        if(!oldest_t || t->newest->date < oldest_t->newest->date) oldest_t = t;
 
         prev = t;
         t    = t->next;
@@ -146,26 +138,8 @@ void cf_run_archiver(void) {
         * unregistered and pointers are re-set, everything is safe...
         */
         cf_unregister_thread(forum,oldest_t);
+        cf_remove_thread(forum,oldest_t);
 
-        /*
-        * if we lock oldest_t before oldest_prev this
-        * could cause a dead lock or some undefined behavior
-        */
-        if(oldest_prev) CF_RW_WR(&oldest_prev->lock);
-
-        CF_RW_WR(&oldest_t->lock);
-
-        if(oldest_prev) {
-          oldest_prev->next       = oldest_t->next;
-          if(oldest_prev->next) oldest_prev->next->prev = oldest_prev; /* is NULL if the last thread is being archived */
-
-          CF_RW_UN(&oldest_prev->lock);
-        }
-        else {
-          CF_RW_WR(&forum->threads.lock);
-          forum->threads.list = oldest_t->next;
-          CF_RW_UN(&forum->threads.lock);
-        }
 
         /* all references to this thread are released, so run the archiver plugins */
         if(Modules[ARCHIVE_HANDLER].elements) {
@@ -247,13 +221,57 @@ void cf_run_archiver(void) {
 
 }
 
-void cf_archive_threads(t_forum *forum,t_thread **to_archive,int len) {
+void cf_archive_threads(t_forum *forum,t_thread **to_archive,size_t len) {
+  int ret;
+  size_t i,j;
+  t_handler_config *handler;
+  t_archive_thread fkt;
+
+  for(i=0;i<len;i++) {
+    if(Modules[ARCHIVE_THREAD_HANDLER].elements) {
+      ret = FLT_DECLINE;
+
+      for(j=0;j<Modules[ARCHIVE_THREAD_HANDLER].elements && ret == FLT_DECLINE;j++) {
+        handler = array_element_at(&Modules[ARCHIVE_THREAD_HANDLER],j);
+        fkt     = (t_archive_thread)handler->func;
+        ret     = fkt(forum,to_archive[i]);
+      }
+    }
+  }
 }
 
 void cf_write_threadlist(t_forum *forum) {
+  int ret;
+  size_t i;
+  t_handler_config *handler;
+  t_archive_thrdlst_writer fkt;
+
+
+  if(Modules[THRDLST_WRITE_HANDLER].elements) {
+    ret = FLT_DECLINE;
+
+    for(i=0;i<Modules[THRDLST_WRITE_HANDLER].elements && ret == FLT_DECLINE;i++) {
+      handler = array_element_at(&Modules[THRDLST_WRITE_HANDLER],i);
+      fkt     = (t_archive_thrdlst_writer)handler->func;
+      ret     = fkt(forum);
+    }
+  }
 }
 
 int cf_archive_thread(t_forum *forum,u_int64_t tid) {
+  t_thread *t = cf_get_thread(forum,tid);
+  t_thread **list;
+
+  if(t) {
+    cf_unregister_thread(forum,t);
+    cf_remove_thread(forum,t);
+
+    list = fo_alloc(NULL,1,sizeof(*list),FO_ALLOC_MALLOC);
+    list[0] = t;
+
+    cf_archive_threads(forum,list,1);
+  }
+
   return 0;
 }
 

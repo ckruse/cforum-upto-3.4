@@ -578,6 +578,37 @@ void cf_unregister_thread(t_forum *forum,t_thread *t) {
 }
 /* }}} */
 
+/* {{{ cf_remove_thread */
+void cf_remove_thread(t_forum *forum,t_thread *t) {
+  CF_RW_WR(&t->lock);
+  if(t->prev) {
+    CF_RW_WR(&t->prev->lock);
+    t->prev->next = t->next;
+
+    if(t->next) {
+      CF_RW_WR(&t->next->lock);
+      t->next->prev = t->prev;
+      CF_RW_UN(&t->next->lock);
+    }
+
+    CF_RW_UN(&t->prev->lock);
+  }
+  else {
+    CF_RW_WR(&forum->threads.lock);
+    forum->threads.list = t->next;
+
+    if(t->next) {
+      CF_RW_WR(&t->next->lock);
+      t->next->prev = NULL;
+      CF_RW_UN(&t->next->lock);
+    }
+
+    CF_RW_UN(&forum->threads.lock);
+  }
+  CF_RW_UN(&t->lock);
+}
+/* }}} */
+
 /* {{{ cf_tokenize */
 int cf_tokenize(u_char *line,u_char ***tokens) {
   int n = 0,reser = 5;
