@@ -44,15 +44,19 @@
 #include "fo_post.h"
 /* }}} */
 
-
+/* {{{ printer */
 PRIVATE int printer(const char * fmt, va_list pArgs) {
   return 0;
 }
+/* }}} */
 
+/* {{{ tracer */
 PRIVATE int tracer(const char * fmt, va_list pArgs) {
   return 0;
 }
+/* }}} */
 
+/* {{{ terminate_handler */
 PRIVATE int terminate_handler(HTRequest *request, HTResponse *response, void *param, int status)  {
   /* we're not handling other requests */
   HTEventList_stopLoop ();
@@ -60,22 +64,24 @@ PRIVATE int terminate_handler(HTRequest *request, HTResponse *response, void *pa
   /* stop here */
   return HT_ERROR;
 }
+/* }}} */
 
-u_char *get_url(const u_char *url) {
+/* {{{ flt_remotesignature_get_url */
+u_char *flt_remotesignature_get_url(const u_char *url) {
   u_char *cwd,*absolute_url;
   HTRequest* request = HTRequest_new();
   HTChunk* chunk = NULL;
   u_char *string = NULL;
 
   /* Initialize libwww core */
-  HTProfile_newPreemptiveClient("ClassicForum", "2.0");
+  HTProfile_newPreemptiveClient("ClassicForum", CF_VERSION);
 
   /* Gotta set up our own traces */
   HTPrint_setCallback(printer);
   HTTrace_setCallback(tracer);
 
   /* We want raw output including headers */
-  HTRequest_setOutputFormat(request, WWW_RAW);
+  HTRequest_setOutputFormat(request, WWW_SOURCE);
 
   /* Close connection immediately */
   HTRequest_addConnection(request, "close", "");
@@ -107,28 +113,26 @@ u_char *get_url(const u_char *url) {
 
   return string;
 }
+/* }}} */
 
-
-
+/* {{{ flt_remotesignature_execute */
 int flt_remotesignature_execute(t_cf_hash *head,t_configuration *dc,t_configuration *pc,t_message *p,int sock,int mode) {
-  u_char *rs = strstr("[remote-signature:",p->content),*end,*url,*cnt;
+  u_char *rs = strstr(p->content.content,"[remote-signature:"),*url,*cnt;
   register u_char *ptr;
-  t_string str;
 
   if(rs) {
     for(ptr=rs+18;*ptr && *ptr != ']' && !isspace(*ptr);ptr++);
 
     if(*ptr == ']') {
-      url = strndup(rs+18,end-ptr-18);
+      url = strndup(rs+18,ptr-(rs+18));
 
       /* we only accept strict URLs */
       if(is_valid_http_link(url,1) == 0) {
         /* get content from URL */
-        if((cnt = get_url(url)) != NULL) {
-          str_init(&str);
-          str_char_set(&str,p->content,ptr-p->content);
-          str_chars_append(&str,cnt,strlen(cnt));
-          str_chars_append(&str,end,strlen(end));
+        if((cnt = flt_remotesignature_get_url(url)) != NULL) {
+          p->content.len = rs-p->content.content;
+          str_chars_append(&p->content,cnt,strlen(cnt));
+
           free(cnt);
         }
       }
@@ -139,6 +143,7 @@ int flt_remotesignature_execute(t_cf_hash *head,t_configuration *dc,t_configurat
   
   return FLT_DECLINE;
 }
+/* }}} */
 
 t_conf_opt flt_remotesignature_config[] = {
   { NULL, NULL, 0, NULL }

@@ -18,6 +18,8 @@
 #ifndef __DEFINES_H
 #define __DEFINES_H
 
+#define CF_VERSION "3.0"
+
 #define CF_ERR (1<<1) /**< Used by the logging function. Log an error. */
 #define CF_STD (1<<2) /**< Used by the logging function. Log a standard message. */
 #define CF_DBG (1<<3) /**< Used by the logging function. Log a debugging message. */

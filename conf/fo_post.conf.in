@@ -17,6 +17,8 @@ Load "flt_directives"
 Load "flt_visited"
 Load "flt_include"
 Load "flt_httpauth"
+Load "flt_remotesignature"
+Load "flt_preview"
 
 Forum FORUM1 {
  PostingUrl "http://selfforum.teamone.de/\?"
