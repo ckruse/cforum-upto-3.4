@@ -7,6 +7,7 @@ use Getopt::Long;
 my $template_dir = '';
 my $template_lang = '';
 my $template_theme = '';
+my $cforum_source = '';
 my $libdir = '';
 my $help = 0;
 
@@ -15,6 +16,7 @@ GetOptions(
   "lang=s" => \$template_lang,
   "name=s" => \$template_theme,
   "install=s" => \$libdir,
+  "cforum-source=s" => \$cforum_source,
   "help" => \$help
 );
 
@@ -29,6 +31,8 @@ if(!$template_dir || !$template_lang || !$template_theme || !$libdir) {
   usage();
 }
 
+$cforum_source = "-I$cforum_source/src" if $cforum_source;
+
 opendir DIR,$template_dir or die "could not open directory $template_dir: $!";
 
 while(my $ent = readdir DIR) {
@@ -39,7 +43,7 @@ while(my $ent = readdir DIR) {
   my $wo_end = $ent;
   $wo_end =~ s/\.html?$//;
 
-  my $so_name = "${template_lang}_${template_theme}_$ent";
+  my $so_name = "${template_lang}_${template_theme}_$wo_end.so";
 
   $? = 0;
   if(-f "$template_dir/$wo_end.c") {
@@ -62,10 +66,10 @@ while(my $ent = readdir DIR) {
     my $mtime_c = (stat("$template_dir/$wo_end.c"))[9];
     my $mtime_so = (stat("$libdir/$so_name"))[9];
 
-    system "gcc -shared ".($ENV{CFLAGS}||'')." ".($ENV{LDFLAGS}||'')." -o $libdir/$so_name $template_dir/$wo_end.c -lcfutils -lcftemplate" if $mtime_c > $mtime_so;
+    system "gcc -shared ".($ENV{CFLAGS}||'')." $cforum_source ".($ENV{LDFLAGS}||'')." -L$libdir -o $libdir/$so_name $template_dir/$wo_end.c -lcfutils -lcftemplate" if $mtime_c > $mtime_so;
   }
   else {
-    system "gcc -shared ".($ENV{CFLAGS}||'')." ".($ENV{LDFLAGS}||'')." -o $libdir/$so_name $template_dir/$wo_end.c -lcfutils -lcftemplate";
+    system "gcc -shared ".($ENV{CFLAGS}||'')." $cforum_source ".($ENV{LDFLAGS}||'')." -L$libdir -o $libdir/$so_name $template_dir/$wo_end.c -lcfutils -lcftemplate";
   }
 
   if($? != 0) {
@@ -83,10 +87,11 @@ USAGE:
   $0 [options]
 
 Options:
-  --dir=DIR      Path to the templates (in HTML format)
-  --lang=LANG    Name of the language (e.g. en, de)
-  --name=NAME    Name of the theme (e.g. html4, xhtml10)
-  --install=DIR  The target directory where to install the compiled templates
+  --dir=DIR            Path to the templates (in HTML format, mandatory)
+  --lang=LANG          Name of the language (e.g. en, de, mandatory)
+  --name=NAME          Name of the theme (e.g. html4, xhtml10, mandatory)
+  --install=DIR        The target directory where to install the compiled templates (mandatory)
+  --cforum-source=DIR  The project directory root of the classic forum
 
 USAGE
 

@@ -75,10 +75,6 @@ static t_array   foreach_var_stack;
   str_char_append(&content,'\n');
 }
 
-\x0D {
-  str_chars_append(&content,"\\x0D",4);
-}
-
 \{      {
   yy_push_state(TAG);
   if(content_backup.content) free(content_backup.content);
@@ -93,10 +89,7 @@ static t_array   foreach_var_stack;
     ++lineno;
     return PARSETPL_ERR_UNRECOGNIZEDCHARACTER;
   }
-  \x0D {
-    ;
-  }
-  [\t ]             {
+  [\t\r ]             {
     str_chars_append(&content_backup,yytext,yyleng);
     return PARSETPL_TOK_WHITESPACE;
   }
@@ -202,10 +195,6 @@ static t_array   foreach_var_stack;
     ++lineno; 
     return PARSETPL_ERR_UNTERMINATEDSTRING;
   }
-  \x0D {
-    str_char_append(&content_backup,'\r');
-    str_chars_append(&string,"\\x0D",4);
-  }
   \\n                 {
     str_chars_append(&content_backup,yytext,yyleng);
     str_char_append(&string,'\n');
@@ -266,6 +255,10 @@ void append_escaped_string(t_string *dest,t_string *src) {
     if(src->content[i] == '\n') {
       str_char_append(dest,'\\');
       str_char_append(dest,'n');
+      continue;
+    }
+    if(src->content[i] == '\x0D') {
+      str_chars_append(dest,"\\x0D",4);
       continue;
     }
     if(src->content[i] == '\\' || src->content[i] == '"') {
