@@ -6,6 +6,7 @@
 		upper side
 	* cgi-shared/config/fo_view.conf.in: Replaced flt_owncss entries by
 		flt_include
+	* cgi-shared/config/fo_default.conf.in: Added VoteURL directive
 
 2004-12-19 Christian Kruse <ckruse@wwwtech.de>
 	* src/modules/flt_deleted.c: Fixed bug in tpl_cf_setvar() call
