@@ -1,7 +1,7 @@
 2004-10-20 Christian Kruse <ckruse@wwwtech.de>
 	* src/fo_server.h, src/utils.h, src/serverlib.c, src/serverlib.h,
-		src/listutils.c, src/configparser.c, src/fo_server.c: Began rewrite of
-		fo_server
+		src/listutils.c, src/configparser.c, src/fo_server.c, src/defines.h: Began
+		rewrite of fo_server
 	* cgi-shared/config/fo_server.conf.in: Added Forums directive
 	* cgi-shared/ForumUtils.pm: Fixed a bug in link handling (entities became
 		encoded twicely)

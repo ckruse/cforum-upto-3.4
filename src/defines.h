@@ -18,14 +18,14 @@
 #ifndef __DEFINES_H
 #define __DEFINES_H
 
-#define LOG_ERR 1 /**< Used by the logging function. Log an error. */
-#define LOG_STD 2 /**< Used by the logging function. Log a standard message. */
-#define LOG_DBG 3 /**< Used by the logging function. Log a debugging message. */
+#define CF_ERR 1 /**< Used by the logging function. Log an error. */
+#define CF_STD 2 /**< Used by the logging function. Log a standard message. */
+#define CF_DBG 3 /**< Used by the logging function. Log a debugging message. */
 
 #define TIMER 5L /**< Timer value. Check every 5 seconds. */
 
 /* the dtd uri */
-#define FORUM_DTD "http://cforum.teamone.de/forum.dtd" /**< The URL of the selfforum DTD */
+#define FORUM_DTD "http://wwwtech.de/cforum/download/cforum.dtd" /**< The URL of the selfforum DTD */
 
 /* some limits */
 #define PRERESERVE 5 /**< Limit in lists or for bigger arrays to reserve before used (to avoid malloc() calls) */
@@ -48,8 +48,9 @@
 #define PRE_CONTENT_FILTER     13 /**< Handler hook */
 #define POST_CONTENT_FILTER    14 /**< Handler hook */
 #define NEW_THREAD_HANDLER     15 /**< Handler h... */
+#define DATA_LOADING_HANDLER   16 /**< ... */
 
-#define MOD_MAX                15 /**< The maximum hook value. */
+#define MOD_MAX                16 /**< The maximum hook value. */
 
 #define FLT_OK       0 /**< Returned by a plugin function if everything as ok. */
 #define FLT_DECLINE -1 /**< Returned by a plugin function if this request is not for the plugin. */

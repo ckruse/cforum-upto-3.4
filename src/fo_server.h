@@ -84,6 +84,9 @@ typedef struct s_server {
 } t_server;
 
 typedef struct s_forum {
+  /** The name of the forum */
+  u_char *name;
+
   /** Is the cache fresh? */
   int fresh;
 
@@ -183,6 +186,9 @@ typedef struct s_head {
 
   /** This hash contains all the CFTP protocol handlers */
   t_cf_hash *protocol_handlers;
+
+  /** This hash contains all forums */
+  t_cf_hash *forums;
 
 } t_head;
 

@@ -119,6 +119,7 @@ int main(int argc,char *argv[]) {
   pid_t pid;
 
   int c,
+      error = 1,
       daemonize = 0,
       start_threads = 0,
       spare_threads = 0;
@@ -262,54 +263,64 @@ int main(int argc,char *argv[]) {
   thr_setconcurrency(6);
   #endif
 
-  /* ok, go through each forum and read it's data... */
+  /* {{{ ok, go through each forum, register it and read it's data... */
   forums = cfg_get_first_value(&fo_server_conf,NULL,"Forums");
   for(i=0;i<forums->valnum;i++) {
     if((actforum = cf_register_forum(forums->values[i])) == NULL) {
-      cf_log(CF_ERRLOG,__FILE__,__LINE__,"could not register forum %s\n",forums->values[i]);
+      cf_log(CF_ERR,__FILE__,__LINE__,"could not register forum %s\n",forums->values[i]);
       continue;
     }
 
-    cf_load_data(actforum);
-  }
-
-
-  pthread_attr_init(&thread_attr);
-
-  /*
-   * on very high traffic, the server does accept more and more
-   * connections, but does not serve these connection in an
-   * acceptable time. So we experience a little bit with thread
-   * scheduling...
-   */
-  #ifdef _POSIX_THREAD_PRIORITY_SCHEDULING
-  memset(&param,0,sizeof(struct sched_param));
-
-  param.sched_priority = (sched_get_priority_min(SCHEDULING) + sched_get_priority_max(SCHEDULING)) / 2;
-
-  pthread_setschedparam(pthread_self(),SCHEDULING,&param);
-
-  param.sched_priority++;
-  pthread_attr_setschedparam(&attr,&param);
-  pthread_attr_setinheritsched(&attr,PTHREAD_INHERIT_SCHED);
-  #endif
-
-  /* ok, start worker threads */
-  threads = cfg_get_first_value(&fo_server_conf,NULL,"MinThreads");
-  start_threads = atoi(threads->values[0]);
-
-  for(i=0;i<start_threads;i++) {
-    if((status = pthread_create(&thread,&attr,cf_worker,NULL)) != 0) {
-      cf_log(LOG_ERR,__FILE__,__LINE__,"error creating worker thread %d: %s\n",i,strerror(errno));
-      exit(-1);
+    if(cf_load_data(actforum) == -1) {
+      cf_log(CF_ERR,__FILE__,__LINE__,"could not load data for forum %s!\n",forums->values[i]);
+      error = 1;
+      break;
     }
 
-    cf_rw_list_append(&head.workers,&thread,sizeof(thread));
+    cf_log(CF_STD,__FILE__,__LINE__,"Loaded data for forum %s\n",forums->values[i]);
   }
+  /* }}} */
 
-  /* needed later */
-  threads = cfg_get_first_value(&fo_server_conf,NULL,"SpareThreads")
-  spare_threads = atoi(threads->values[0]);
+  /* {{{ more initialization (some threading options, starting of the worker threads, etc, pp) */
+  if(error == 0) {
+    pthread_attr_init(&thread_attr);
+
+    /*
+     * on very high traffic, the server does accept more and more
+     * connections, but does not serve these connection in an
+     * acceptable time. So we experience a little bit with thread
+     * scheduling...
+     */
+    #ifdef _POSIX_THREAD_PRIORITY_SCHEDULING
+    memset(&param,0,sizeof(struct sched_param));
+
+    param.sched_priority = (sched_get_priority_min(SCHEDULING) + sched_get_priority_max(SCHEDULING)) / 2;
+
+    pthread_setschedparam(pthread_self(),SCHEDULING,&param);
+
+    param.sched_priority++;
+    pthread_attr_setschedparam(&attr,&param);
+    pthread_attr_setinheritsched(&attr,PTHREAD_INHERIT_SCHED);
+    #endif
+
+    /* ok, start worker threads */
+    threads = cfg_get_first_value(&fo_server_conf,NULL,"MinThreads");
+    start_threads = atoi(threads->values[0]);
+
+    for(i=0;i<start_threads;i++) {
+      if((status = pthread_create(&thread,&attr,cf_worker,NULL)) != 0) {
+        cf_log(LOG_ERR,__FILE__,__LINE__,"error creating worker thread %d: %s\n",i,strerror(errno));
+        exit(-1);
+      }
+
+      cf_rw_list_append(&head.workers,&thread,sizeof(thread));
+    }
+
+    /* needed later */
+    threads = cfg_get_first_value(&fo_server_conf,NULL,"SpareThreads")
+    spare_threads = atoi(threads->values[0]);
+  }
+  /* }}} */
 
 
   /* cleanup */
