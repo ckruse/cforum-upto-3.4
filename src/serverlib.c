@@ -1089,7 +1089,7 @@ int cf_read_posting(t_forum *forum,t_posting *p,int sock,rline_t *tsd) {
         str_char_set(&p->user.hp,line+13,llen-14);
       }
       else if(cf_strncmp(line,"ImageUrl:",9) == 0) {
-        str_char_set(&p->user.img,line+12,llen-13);
+        str_char_set(&p->user.img,line+10,llen-11);
       }
       else if(cf_strncmp(line,"Body:",5) == 0) {
         str_char_set(&p->content,line+6,llen-7);

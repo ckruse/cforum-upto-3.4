@@ -1,5 +1,8 @@
 2005-02-10 Christian Kruse <ckruse@wwwtech.de>
 	* src/fo_post.c: Bugfix in unicode whitespace handling
+	* scripts/cf-xmlconv.pl: Added repairing routine to change old, old directive
+		syntax to new syntax
+	* src/serverlib.c: Bugfix in user image handling
 
 2005-02-09 Christian Kruse <ckruse@wwwtech.de>
 	* conf/fo_view.conf.in: Added two modules

@@ -77,6 +77,8 @@ sub treat_file($) {
       next unless $content_node->getChildNodes()->getLength() == 1;
       next unless $content_node->getChildNodes()->item(0)->getNodeType() == CDATA_SECTION_NODE;
       $messages{$mid} = $new_document->importNode($content_node->getChildNodes()->item(0),1);
+
+      repair_data($messages{$mid},$new_document);
     }
   }
 
@@ -154,3 +156,27 @@ sub convert_message_element($$$$) {
   }
 }
 # }}}
+
+# {{{ repair_data
+sub repair_data {
+  my $node = shift;
+  my $doc  = shift;
+  my $data = $node->getFirstChild ? $node->getFirstChild->getNodeValue : $node->getNodeValue;
+
+  return unless $data;
+
+  $data =~ s!<a href="([^"]+)">.*?</a>![link:$1]!g;
+  $data =~ s!<img src="([^"]+)"(?: alt="([^"]+)")? ?/?>!"[image:".$1.($2?'@alt='.$2:'')."]"!eg;
+  $data =~ s!<iframe src="([^"]+)">.*?</iframe>![iframe:$1]!g;
+
+  if($node->getFirstChild) {
+    my $x = $doc->createTextNode($data);
+    $node->replaceChild($x,$node->getFirstChild);
+  }
+  else {
+    $node->setNodeValue($data);
+  }
+}
+# }}}
+
+# eof
