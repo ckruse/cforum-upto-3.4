@@ -1,3 +1,6 @@
+2004-10-10 Christian Seiler <self@christian-seiler.de>
+	* src/modules/flt_handle404.c: fixed bug #408
+
 2004-10-09 Christian Kruse <ckruse@wwwtech.de>
 	* src/stringutils.c: Fixed a bug in nsplit() (I didn't cover the len == 0
 		case)
