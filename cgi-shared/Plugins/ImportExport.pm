@@ -17,6 +17,7 @@ package Plugins::ImportExport;
 #
 use strict;
 use constant CF_DTD => 'http://wwwtech.de/cforum/download/cfconfig.dtd';
+use constant CF_VER => '0.1';
 
 sub VERSION {(q$Revision$ =~ /([\d.]+)\s*$/)[0] or '0.0'}
 
@@ -36,6 +37,8 @@ sub export {
   my $doc = XML::GDOME->createDocument(undef, 'CFConfig', $dtd);
   my $root = $doc->documentElement;
 
+  $root->setAttribute('version',CF_VER);
+
   my @directives = $uconf->findnodes('/config/page/section/directive');
   foreach my $directive (@directives) {
     my @vals = get_conf_val($user_config,'global',$directive->getAttribute('name'));
@@ -53,7 +56,7 @@ sub export {
 
   print "Content-Type: text/xml; charset=UTF-8\015\012\015\012",$doc->toString;
 
-  return 1;
+  return 0;
 }
 
 sub import {
