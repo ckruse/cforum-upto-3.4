@@ -101,7 +101,7 @@ void flt_posting_replace_placeholders(const u_char *str,t_string *appender,t_cl_
 /* {{{ flt_posting_execute_filter */
 int flt_posting_execute_filter(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cl_thread *thread,t_cf_template *tpl) {
   u_char buff[256],*tmp,*qchars,*msgcnt,*UserName,*forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
-  t_name_value *ps,*v,*cs,*dq,*st,*qc,*ms,*ss,*locale,*df,*rm = cfg_get_first_value(vc,forum_name,"ReadMode");
+  t_name_value *ps,*v,*cs = cfg_get_first_value(dc,forum_name,"ExternCharset"),*dq,*st,*qc,*ms,*ss,*locale,*df,*rm = cfg_get_first_value(vc,forum_name,"ReadMode");
   int utf8;
   size_t len,qclen,msgcntlen;
   t_string cite,content,threadlist;
@@ -124,7 +124,6 @@ int flt_posting_execute_filter(t_cf_hash *head,t_configuration *dc,t_configurati
 
   UserName = cf_hash_get(GlobalValues,"UserName",8);
 
-  cs = cfg_get_first_value(dc,forum_name,"ExternCharset");
   dq = cfg_get_first_value(vc,forum_name,"DoQuote");
   st = cfg_get_first_value(vc,forum_name,"ShowThread");
   qc = cfg_get_first_value(vc,forum_name,"QuotingChars");

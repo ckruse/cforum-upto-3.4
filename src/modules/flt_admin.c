@@ -180,11 +180,12 @@ int flt_admin_posting_setvars(t_cf_hash *head,t_configuration *dc,t_configuratio
 /* {{{ flt_admin_setvars_thread */
 int flt_admin_setvars_thread(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cl_thread *thread,t_message *msg,t_cf_tpl_variable *hash) {
   u_char *UserName = cf_hash_get(GlobalValues,"UserName",8);
+  int si = cf_hash_get(GlobalValues,"ShowInvisible",13) != NULL;
 
   t_cf_list_element *elem;
   t_cf_post_flag *flag;
 
-  if(flt_admin_is_admin(UserName)) {
+  if(flt_admin_is_admin(UserName) && si) {
     cf_tpl_hashvar_setvalue(hash,"ip",TPL_VARIABLE_STRING,thread->threadmsg->remote_addr.content,thread->threadmsg->remote_addr.len);
 
     for(elem=thread->threadmsg->flags.elements;elem;elem=elem->next) {
