@@ -7,6 +7,10 @@
 	* cgi-shared/config/fo_userconf.conf.in: Added several configuration
 		directives
 	* cgi-bin/fo_userconf.in: Debugged it
+	* CategoryCheck.pm, CheckRegisteredName.pm, FixedLineWidth.pm,
+		MarkOwnVisited.pm, PostingAssistant.pm, PostOkLink.pm, Preview.pm,
+		Quotings.pm, RandomSignature.pm, SendMailOnAnswer.pm, SpellCheck.pm,
+		Variables.pm: Removed for 3.0 release
 
 2005-01-15 Christian Kruse <ckruse@wwwtech.de>
 	* src/modules/flt_directives.c: Bugfix for [ref:], now it supports @title=
