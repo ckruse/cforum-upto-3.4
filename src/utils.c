@@ -241,7 +241,7 @@ void redirect_with_nice_uri(const u_char *ruri,int perm) {
 
   str_init(&uri);
 
-  if(cf_strcmp(ruri,"http://",7) != 0) {
+  if(cf_strncmp(ruri,"http://",7) != 0) {
     str_chars_append(&uri,"http://",7);
 
     tmp = getenv("SERVER_NAME");
