@@ -1,0 +1,39 @@
+#!/bin/sh
+
+prefix="@prefix@"
+exec_prefix="@exec_prefix@"
+
+PID_FILE="@localstatedir@/cforum/cf_pid"
+SERVER_BIN="@bindir@/fo_server"
+CONF_PATH="@sysconfdir@/cforum"
+
+case $1 in
+    start)
+        if test -f "${PID_FILE}"; then
+            pid="`cat $PID_FILE`"
+            echo "There seems to run a server at PID ${pid}, remove ${PID_FILE} if there was an unclean shutdown"
+        else
+            ${SERVER_BIN} --config-directory ${CONF_PATH} --daemonize --pid-file ${PID_FILE};
+        fi
+        ;;
+
+    stop)
+        if test ! -f "${PID_FILE}"; then
+            echo "PID file ${PID_FILE} seems not to exist"
+        else
+            echo "Shutting down server"
+            pid="`cat $PID_FILE`"
+            kill -TERM ${pid}
+        fi
+        ;;
+
+    *)
+        echo "Usage: $0 [start|stop|restart]"
+        echo <<EOF
+start    Start forum server
+stop     Stop forum server
+
+EOF
+        ;;
+
+esac

@@ -6,6 +6,8 @@ bin_SCRIPTS=fo_userconf \
 	cf-msgs2db.pl \
 	cf-xmlconv.pl \
 	cf-compile_templates.pl \
-	cf-cleanup.pl
+	cf-cleanup.pl \
+	cforum.sh
 
+EXTRA_DIST=cforum.sh
 

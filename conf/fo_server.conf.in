@@ -32,7 +32,7 @@ LogMaxSize "2097152"
 ErrorLog "@localstatedir@/cf_errors"
 StdLog "@localstatedir@/cf_stdlog"
 
-PIDFile "@localstatedir@/fo_pid"
+PIDFile "@localstatedir@/cf_pid"
 
 # external interface
 ExternPort "6666"

@@ -21,6 +21,8 @@
 	* src/configparser.c: Removed very old configuration option ErrorMessages
 	* scripts/fo_usermanagement.in, scripts/cf-cleanup.pl.in,
 		scripts/fo_userconf.in, scripts/fo_xmlrpc.in: Fixed "use lib" handling
+	* scripts/Makefile.am: Added start script cforum.sh to EXTRA_DIST variable
+	* scripts/cforum.sh.in: Added start script for forum server
 
 2005-02-10 Christian Seiler <self@christian-seiler.de>
 	* src/ipcutils.c: added to repository, implemented ipc_dpopen and
