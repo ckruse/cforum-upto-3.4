@@ -9,6 +9,7 @@
 	* cgi-bin/fo_usermanagement.in: Changed behavior of validate_parameters() a
 		little bit, now it returns the error text, not the fieldname. I also changed
 		error handling and fixed it a little bit
+	* src/templates/de/tpl_*/Makefile.am: added sendpass* to Makefiles
 
 2004-08-02 Christian Kruse <ckruse@wwwtech.de>
 	* cgi-shared/Plugins/Management/SQL.pm: Bugfix, directives are named 'SQL*'!

@@ -164,5 +164,14 @@ de_html4_section_la_SOURCES=section.c
 de_html4_section_la_LIBADD=../../../libcfutils.la ../../../libcftemplate.la
 de_html4_section_la_LDFLAGS=-module -export-dynamic -avoid-version
 
+pkglib_LTLIBRARIES+=de_html4_sendpass.la
+de_html4_sendpass_la_SOURCES=sendpass.html
+de_html4_sendpass_la_LIBADD=../../../libcfutils.la ../../../libcftemplate.la
+de_html4_section_la_LDFLAGS=-module -export-dynamic -avoid-version
+
+pkglib_LTLIBRARIES+=de_html4_sendpassok.la
+de_html4_sendpassok_la_SOURCES=sendpassok.html
+de_html4_sendpassok_la_LIBADD=../../../libcfutils.la ../../../libcftemplate.la
+de_html4_section_la_LDFLAGS=-module -export-dynamic -avoid-version
 
 # eof
