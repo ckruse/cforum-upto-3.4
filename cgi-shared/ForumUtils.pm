@@ -184,7 +184,7 @@ sub transform_body {
 
   # after that, we collect all links to postings...
   foreach(@{$pcfg->{PostingUrl}}) {
-    $txt =~ s{\[link:\s*$_->[0]([\dtm=&]+)(?:#\w+)?(\@title=[^\[\]<]+)\]}{
+    $txt =~ s{\[link:\s*$_->[0]([\dtm=&]+)(?:#\w+)?(\@title=[^\[\]<]+)?\]}{
       my $tidpid = $1;
       my $title = $2;
       $tidpid =~ s!&(?:amp;)?!;!; '[pref:'.$tidpid.($title||'').']'}eg;
