@@ -112,19 +112,21 @@ sub imprt {
       my $val = get_node_data($arguments_user[$i]);
 
       # {{{ validate user input
-      if($type eq 'http-url') {
-        fatal($cgi,$fo_default_conf,$user_config,get_error($fo_default_conf,'IMPORT_DATAINVALID'),get_conf_val($fo_userconf_conf,$main::Forum,'FatalTemplate')) if is_valid_http_link($val);
-      }
-      elsif($type eq 'url') {
-        fatal($cgi,$fo_default_conf,$user_config,get_error($fo_default_conf,'IMPORT_DATAINVALID'),get_conf_val($fo_userconf_conf,$main::Forum,'FatalTemplate')) if is_valid_link($val);
-      }
-      elsif($type eq 'email') {
-        fatal($cgi,$fo_default_conf,$user_config,get_error($fo_default_conf,'IMPORT_DATAINVALID'),get_conf_val($fo_userconf_conf,$main::Forum,'FatalTemplate')) if is_valid_mailaddress($val);
-      }
-      else {
-        my $validate = get_node_data($arguments_mod[$i]);
-        if($validate) {
-          fatal($cgi,$fo_default_conf,$user_config,get_error($fo_default_conf,'IMPORT_DATAINVALID'),get_conf_val($fo_userconf_conf,$main::Forum,'FatalTemplate')) unless $val =~ /$validate/;
+      if($val) {
+        if($type eq 'http-url') {
+          fatal($cgi,$fo_default_conf,$user_config,get_error($fo_default_conf,'IMPORT_DATAINVALID'),get_conf_val($fo_userconf_conf,$main::Forum,'FatalTemplate')) if is_valid_http_link($val);
+        }
+        elsif($type eq 'url') {
+          fatal($cgi,$fo_default_conf,$user_config,get_error($fo_default_conf,'IMPORT_DATAINVALID'),get_conf_val($fo_userconf_conf,$main::Forum,'FatalTemplate')) if is_valid_link($val);
+        }
+        elsif($type eq 'email') {
+          fatal($cgi,$fo_default_conf,$user_config,get_error($fo_default_conf,'IMPORT_DATAINVALID'),get_conf_val($fo_userconf_conf,$main::Forum,'FatalTemplate')) if is_valid_mailaddress($val);
+        }
+        else {
+          my $validate = get_node_data($arguments_mod[$i]);
+          if($validate) {
+            fatal($cgi,$fo_default_conf,$user_config,get_error($fo_default_conf,'IMPORT_DATAINVALID'),get_conf_val($fo_userconf_conf,$main::Forum,'FatalTemplate')) unless $val =~ /$validate/;
+          }
         }
       }
       # }}}

@@ -1,3 +1,7 @@
+2005-03-31 Christian Kruse <ckruse@wwwtech.de>
+	* src/perl/Plugins/ImportExport.pm: Fixed a bug in import function, empty
+		values should not be validated
+
 2005-03-29 Christian Kruse <ckruse@wwwtech.de>
 	* scripts/fo_userconf.in: Fixed bug #654
 	* scripts/cf-cleanup.pl.in: Fixed bug #653
