@@ -113,8 +113,8 @@ sub htmlize {
 
   my $xhtml    = get_conf_val($fo_default_conf,$Forum,'XHMLMode');
 
-  if($xhtml) $xhtml = $xhtml eq 'yes';
-  else $xhtml = 0;
+  if($xhtml) { $xhtml = $xhtml eq 'yes'; }
+  else { $xhtml = 0; }
 
   my $default  = '';
   my $fname    = $arg->getAttribute('paramname');
