@@ -28,6 +28,11 @@
 	* src/fo_post.c: Moved to 3.0 API, compiles cleanly but has not been tested
 		yet!
 	* src/handlerrunners.c: Added several handler runners
+	* conf/fo_post.conf.in: Moved to new fo_post
+	* configure.in: Removed template entries
+	* src/parsetpl/Makefile.am: renamed parsetpl to cf-parsetpl
+	* src/configparser.c: Adopted configuration options for fo_post
+	* scripts/cf-compile_templates.pl: Added script to compile templates
 
 2005-01-16 Christian Seiler <self@christian-seiler.de>
 	* src/template.c, src/template.h: Lot's of changes to support loops

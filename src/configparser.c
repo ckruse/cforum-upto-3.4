@@ -135,22 +135,16 @@ t_conf_opt fo_view_options[] = {
 
 /* {{{ fo_post configuration options */
 t_conf_opt fo_post_options[] = {
-  {  "<General>", NULL, 0, NULL },
-  {  "PostingUrl",                handle_command,   CFG_OPT_CONFIG|CFG_OPT_GLOBAL, &fo_post_conf },
-  {  "FieldConfig",               handle_command,   CFG_OPT_CONFIG|CFG_OPT_GLOBAL, &fo_post_conf },
-  {  "FieldNeeded",               handle_command,   CFG_OPT_CONFIG|CFG_OPT_GLOBAL, &fo_post_conf },
-  {  "RedirectOnPost",            handle_command,   CFG_OPT_CONFIG|CFG_OPT_GLOBAL, &fo_post_conf },
-  {  "</General>", NULL, 0, NULL },
+  {  "PostingUrl",                handle_command,   CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_post_conf },
+  {  "FieldConfig",               handle_command,   CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_post_conf },
+  {  "FieldNeeded",               handle_command,   CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_post_conf },
+  {  "RedirectOnPost",            handle_command,   CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_post_conf },
 
-  {  "<Images>", NULL, 0, NULL },
-  {  "Image",                     handle_command,   CFG_OPT_CONFIG|CFG_OPT_GLOBAL, &fo_post_conf },
-  {  "</Images>", NULL, 0, NULL },
+  {  "Image",                     handle_command,   CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_post_conf },
 
-  {  "<Templates>", NULL, 0, NULL },
-  {  "ThreadTemplate",            handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_GLOBAL, &fo_post_conf },
-  {  "FatalTemplate",             handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_GLOBAL, &fo_post_conf },
-  {  "OkTemplate",                handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_GLOBAL, &fo_post_conf },
-  {  "</Templates>", NULL, 0, NULL },
+  {  "ThreadTemplate",            handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_post_conf },
+  {  "FatalTemplate",             handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_post_conf },
+  {  "OkTemplate",                handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_post_conf },
 
   {  NULL, NULL, 0, NULL }
 };

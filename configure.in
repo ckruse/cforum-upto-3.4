@@ -291,14 +291,6 @@ src/perl/Plugins/Management/Makefile
 src/Makefile
 src/modules/Makefile
 src/parsetpl/Makefile
-src/templates/Makefile
-src/templates/de/Makefile
-src/templates/en/Makefile
-src/templates/fr/Makefile
-src/templates/de/tpl_html4/Makefile
-src/templates/de/tpl_xhtml10/Makefile
-src/templates/fr/tpl_html4/Makefile
-src/templates/fr/tpl_xhtml10/Makefile
 conf/fo_arcview.conf
 conf/fo_default.conf
 conf/fo_post.conf

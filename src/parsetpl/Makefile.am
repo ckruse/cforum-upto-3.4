@@ -5,11 +5,11 @@ SUFFIXES=.lex
 	flex -Pparsetpl -o$@ $<
 
 bin_PROGRAMS= \
-  parsetpl
+  cf-parsetpl
 
 
-parsetpl_SOURCES=parsetpl.c
-parsetpl_LDADD=../libcfutils.la
-parsetpl_LDFLAGS=-export-dynamic
+cf_parsetpl_SOURCES=parsetpl.c
+cf_parsetpl_LDADD=../libcfutils.la
+cf_parsetpl_LDFLAGS=-export-dynamic
 
 # eof

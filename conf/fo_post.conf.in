@@ -9,13 +9,14 @@
 # $LastChangedBy$
 #
 
-AddPlugin "Plugins::PostOkLink"
-AddPlugin "Plugins::SpellCheck"
-AddPlugin "Plugins::Preview"
-AddPlugin "Plugins::PostingAssistant"
-AddPlugin "Plugins::Variables"
-AddPlugin "Plugins::CheckRegisteredName"
-AddPlugin "Plugins::HTTPAuth"
+ModulePath "@libdir@/cforum"
+
+Load "flt_tplmode"
+Load "flt_http"
+Load "flt_directives"
+Load "flt_visited"
+Load "flt_include"
+Load "flt_httpauth"
 
 Forum "FORUM1" {
  PostingUrl "http://selfforum.teamone.de/\?"
@@ -31,13 +32,13 @@ Forum "FORUM1" {
  FieldConfig "qchar"    "10"     "1"
  FieldConfig "cat"      "18"     "3"
 
- FieldNeeded "Name"
-# FieldNeeded "EMail"
- FieldNeeded "subject"
- FieldNeeded "body"
- FieldNeeded "unid"
- FieldNeeded "qchar"
- FieldNeeded "cat"
+ FieldNeeded "Name" "yes" "yes"
+# FieldNeeded "EMail" "yes" "yes"
+ FieldNeeded "subject" "yes" "no"
+ FieldNeeded "body" "yes" "yes"
+ FieldNeeded "unid" "yes" "yes"
+ FieldNeeded "qchar" "yes" "yes"
+ FieldNeeded "cat" "yes" "no"
 
 
  PostingAssistantMustValidate "yes"

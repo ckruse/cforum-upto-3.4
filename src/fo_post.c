@@ -366,10 +366,9 @@ int get_message_url(const u_char *msgstr,t_name_value **v) {
 
 /* {{{ body_plain2coded */
 t_string *body_plain2coded(const u_char *text) {
-  u_char *body,*forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
+  u_char *body;
   t_string *str = fo_alloc(NULL,1,sizeof(*str),FO_ALLOC_CALLOC);
   u_char *ptr,*end,*tmp,*qchars;
-  t_string tmpstr;
   t_name_value *v;
   t_mod_api get_qchars = cf_get_mod_api_ent("get_qchars");
   size_t len;
