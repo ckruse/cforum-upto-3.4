@@ -43,7 +43,7 @@ static int NoVisited   = 0;
 /* {{{ flt_link_get_previous */
 t_message *flt_link_get_previous(t_message *msg) {
   t_mod_api is_visited;
-  t_message *tmp;
+  t_message *tmp = NULL;
 
   if(msg->prev) {
     is_visited = cf_get_mod_api_ent("is_visited");
