@@ -43,24 +43,14 @@ struct {
   u_char *Hi;
   u_char *Bye;
   u_char *Signature;
-  u_char *link;
   u_char *TWidth;
   u_char *THeight;
   u_char *ActiveColorF;
   u_char *ActiveColorB;
   int Preview;
   int PreviewSwitchType;
-  int IframeAsLink;
-  int ImageAsLink;
-} Cfg = { NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 0 };
+} flt_posting_cfg = { NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0 };
 /* }}} */
-
-typedef struct {
-  u_char *id;
-  u_char *uri;
-} t_ref_uri;
-
-static t_array ref_uris = { 0, 0, 0, NULL, NULL };
 
 /* {{{ replace_placeholders */
 void replace_placeholders(const u_char *str,t_string *appender,t_cl_thread *thread) {
@@ -163,15 +153,15 @@ int flt_posting_execute_filter(t_cf_hash *head,t_configuration *dc,t_configurati
   else         ps = cfg_get_first_value(dc,"PostScript");
 
   /* {{{ set some standard variables in thread mode */
-  if(Cfg.TWidth) tpl_cf_setvar(tpl,"twidth",Cfg.TWidth,strlen(Cfg.TWidth),1);
-  if(Cfg.THeight) tpl_cf_setvar(tpl,"theight",Cfg.THeight,strlen(Cfg.THeight),1);
-  if(Cfg.Preview) tpl_cf_setvar(tpl,"preview","1",1,0);
+  if(flt_posting_cfg.TWidth) tpl_cf_setvar(tpl,"twidth",flt_posting_cfg.TWidth,strlen(flt_posting_cfg.TWidth),1);
+  if(flt_posting_cfg.THeight) tpl_cf_setvar(tpl,"theight",flt_posting_cfg.THeight,strlen(flt_posting_cfg.THeight),1);
+  if(flt_posting_cfg.Preview) tpl_cf_setvar(tpl,"preview","1",1,0);
 
-  if(Cfg.PreviewSwitchType == 0) tpl_cf_setvar(tpl,"previewswitchtype","checkbox",8,0);
-  else if(Cfg.PreviewSwitchType == 1) tpl_cf_setvar(tpl,"previewswitchtype","button",6,0);
+  if(flt_posting_cfg.PreviewSwitchType == 0) tpl_cf_setvar(tpl,"previewswitchtype","checkbox",8,0);
+  else if(flt_posting_cfg.PreviewSwitchType == 1) tpl_cf_setvar(tpl,"previewswitchtype","button",6,0);
 
-  if(Cfg.ActiveColorF && *Cfg.ActiveColorF) cf_set_variable(tpl,cs,"activecolorf",Cfg.ActiveColorF,strlen(Cfg.ActiveColorF),1);
-  if(Cfg.ActiveColorB && *Cfg.ActiveColorB) cf_set_variable(tpl,cs,"activecolorb",Cfg.ActiveColorB,strlen(Cfg.ActiveColorB),1);
+  if(flt_posting_cfg.ActiveColorF && *flt_posting_cfg.ActiveColorF) cf_set_variable(tpl,cs,"activecolorf",flt_posting_cfg.ActiveColorF,strlen(flt_posting_cfg.ActiveColorF),1);
+  if(flt_posting_cfg.ActiveColorB && *flt_posting_cfg.ActiveColorB) cf_set_variable(tpl,cs,"activecolorb",flt_posting_cfg.ActiveColorB,strlen(flt_posting_cfg.ActiveColorB),1);
 
   cf_set_variable(tpl,cs,"action",ps->values[0],strlen(ps->values[0]),1);
 
@@ -330,323 +320,6 @@ int flt_posting_execute_filter(t_cf_hash *head,t_configuration *dc,t_configurati
 }
 /* }}} */
 
-int flt_posting_is_relative_uri(u_char *tmp,size_t len) {
-  t_string str;
-  int ret = 0;
-
-  str_init(&str);
-  str_char_set(&str,"http://www.example.org",21);
-  if(*tmp == '.' || *tmp == '?') str_char_append(&str,'/');
-  str_chars_append(&str,tmp,len);
-
-  ret = is_valid_http_link(str.content,0);
-  str_cleanup(&str);
-
-  return ret == 0;
-}
-
-int flt_posting_is_valid_pref(const u_char *parameter,u_char **tmp) {
-  u_char *ptr;
-
-	/* strict syntax checking for [pref:], necessary because of some idiots */
-	if(*parameter == 't') {
-		if(*(parameter+1) == '=') {
-			for(ptr=parameter+2;*ptr && isdigit(*ptr);++ptr);
-
-			if(*ptr++ == ';') {
-				if(*ptr++ == 'm') {
-					if(*ptr++ == '=') {
-					  *tmp = ptr;
-
-						for(;*ptr && isdigit(*ptr);++ptr);
-
-						if(*ptr == '\0') return 1;
-					}
-				}
-			}
-		}
-	}
-
-  return 0;
-}
-
-
-/* {{{ standard directives ([link:], [ref:], [iframe:], [image:], [pref:]) */
-int flt_posting_directives(t_configuration *fdc,t_configuration *fvc,const u_char *directive,const u_char *parameter,t_string *content,t_string *cite,const u_char *qchars,int sig) {
-  size_t len,i,len1 = 0;
-  t_name_value *xhtml = cfg_get_first_value(fdc,"XHTMLMode");
-  u_int64_t tid,mid;
-  u_char *ptr,*tmp,*tmp1 = NULL,**list = NULL,*title_alt = NULL,*tmp2;
-  t_name_value *vs = cfg_get_first_value(fdc,cf_hash_get(GlobalValues,"UserName",8) ? "UPostingURL" : "PostingURL");
-  t_ref_uri *uri;
-  int go = 1;
-
-  if(*directive == 'l') {
-    /* {{{ [link:] */
-    if(cf_strcmp(directive,"link") == 0) {
-      if((ptr = strstr(parameter,"@title=")) != NULL) {
-        tmp1      = strndup(parameter,ptr-parameter);
-        len       = ptr - parameter;
-        title_alt = htmlentities(ptr + 7,1);
-        len1      = strlen(title_alt);
-      }
-      else {
-        tmp1 = (u_char *)parameter;
-        len  = strlen(parameter);
-      }
-
-      if(is_valid_link(tmp1) != 0) {
-        if(cf_strncmp(tmp1,"..",2) == 0 || *tmp1 == '/' || *tmp1 == '?') {
-          if(!flt_posting_is_relative_uri(tmp1,len)) {
-            go = 0;
-          }
-        }
-        else {
-          go = 0;
-        }
-      }
-
-      if(go) {
-        tmp2 = htmlentities(tmp1,1);
-        len = strlen(tmp2);
-
-        str_chars_append(content,"<a href=\"",9);
-        str_chars_append(content,tmp2,len);
-
-        if(Cfg.link) {
-          str_chars_append(content,"\" target=\"",10);
-          str_chars_append(content,Cfg.link,strlen(Cfg.link));
-        }
-
-        str_chars_append(content,"\">",2);
-        if(title_alt) str_chars_append(content,title_alt,len1);
-        else          str_chars_append(content,tmp2,len);
-        str_chars_append(content,"</a>",4);
-
-        if(cite && sig == 0) {
-          str_chars_append(cite,"[link:",6);
-          str_chars_append(cite,tmp2,len);
-          if(title_alt) {
-            str_chars_append(cite,"@title=",7);
-            str_chars_append(cite,title_alt,len1);
-          }
-          str_char_append(cite,']');
-        }
-
-        free(tmp2);
-        if(title_alt) free(title_alt);
-
-        return FLT_OK;
-      }
-    }
-    /* }}} */
-  }
-  else if(*directive == 'i') {
-    /* {{{ [image:] */
-    if(cf_strcmp(directive,"image") == 0) {
-      if((ptr = strstr(parameter,"@alt=")) != NULL) {
-        tmp1      = strndup(parameter,ptr-parameter);
-        len       = ptr - parameter;
-        title_alt = htmlentities(ptr + 5,1);
-        len1      = strlen(title_alt);
-      }
-      else {
-        tmp1 = (u_char *)parameter;
-        len  = strlen(parameter);
-      }
-
-      if(is_valid_http_link(tmp1,1) == 0) {
-        tmp2 = htmlentities(tmp1,1);
-        len = strlen(tmp2);
-
-        if(Cfg.ImageAsLink) {
-          str_chars_append(content,"<a href=\"",9);
-          str_chars_append(content,tmp2,len);
-
-          if(Cfg.link) {
-            str_chars_append(content,"\" target=\"",10);
-            str_chars_append(content,Cfg.link,strlen(Cfg.link));
-          }
-
-          str_chars_append(content,"\">",2);
-          if(title_alt) str_chars_append(content,title_alt,len1);
-          else          str_chars_append(content,tmp2,len);
-          str_chars_append(content,"</a>",4);
-        }
-        else {
-          str_chars_append(content,"<img src=\"",10);
-          str_chars_append(content,tmp2,len);
-          str_char_append(content,'"');
-
-          if(title_alt) {
-            str_chars_append(content," alt=\"",6);
-            str_chars_append(content,title_alt,len1);
-            str_chars_append(content,"\" title=\"",9);
-            str_chars_append(content,title_alt,len1);
-          }
-
-          if(*xhtml->values[0] == 'y')  str_chars_append(content,"\"/>",3);
-          else str_chars_append(content,"\">",2);
-        }
-
-        if(cite && sig == 0) {
-          str_chars_append(cite,"[image:",7);
-          str_chars_append(cite,tmp2,len);
-          if(title_alt) {
-            str_chars_append(cite,"@alt=",5);
-            str_chars_append(cite,title_alt,len1);
-          }
-          str_char_append(cite,']');
-        }
-
-        free(tmp2);
-        if(title_alt) free(title_alt);
-
-        return FLT_OK;
-      }
-    }
-    /* }}} */
-    /* {{{ [iframe:] */ 
-    else if(cf_strcmp(directive,"iframe") == 0) {
-      if(is_valid_http_link(parameter,1) == 0) {
-        tmp2 = htmlentities(parameter,1);
-        len = strlen(tmp2);
-
-        if(Cfg.IframeAsLink) {
-          str_chars_append(content,"<a href=\"",9);
-          str_chars_append(content,tmp2,len);
-
-          if(Cfg.link) {
-            str_chars_append(content,"\" target=\"",10);
-            str_chars_append(content,Cfg.link,strlen(Cfg.link));
-          }
-
-          str_chars_append(content,"\">",2);
-          str_chars_append(content,tmp2,len);
-          str_chars_append(content,"</a>",4);
-        }
-        else {
-          str_chars_append(content,"<iframe src=\"",13);
-          str_chars_append(content,tmp2,len);
-          str_chars_append(content,"\" width=\"90%\" height=\"90%\"><a href=\"",36);
-          str_chars_append(content,tmp2,len);
-
-          if(Cfg.link) {
-            str_chars_append(content,"\" target=\"",10);
-            str_chars_append(content,Cfg.link,strlen(Cfg.link));
-          }
-
-          str_chars_append(content,"\">",2);
-          str_chars_append(content,tmp2,len);
-          str_chars_append(content,"</a></iframe>",13);
-        }
-
-        if(cite && sig == 0) {
-          str_chars_append(cite,"[iframe:",8);
-          str_chars_append(cite,tmp2,len);
-          str_char_append(cite,']');
-        }
-
-        free(tmp2);
-
-        return FLT_OK;
-      }
-    }
-    /* }}} */
-  }
-  else {
-    /* {{{ [pref:] */
-    if(cf_strcmp(directive,"pref") == 0) {
-      tid = mid = 0;
-
-      if(flt_posting_is_valid_pref(parameter,&tmp1)) {
-        tid = str_to_u_int64(parameter+2);
-        mid = str_to_u_int64(tmp1);
-        tmp1 = get_link(vs->values[0],tid,mid);
-
-        if(sig == 0 && cite) {
-          str_chars_append(cite,"[link:",6);
-          str_chars_append(cite,tmp1,strlen(tmp1));
-          str_char_append(cite,']');
-        }
-
-        str_chars_append(content,"<a href=\"",9);
-        str_chars_append(content,tmp1,strlen(tmp1));
-
-        if(Cfg.link) {
-          str_chars_append(content,"\" target=\"",10);
-          str_chars_append(content,Cfg.link,strlen(Cfg.link));
-        }
-
-        str_chars_append(content,"\">",2);
-        str_chars_append(content,tmp1,strlen(tmp1));
-        str_chars_append(content,"</a>",4);
-
-        free(tmp1);
-
-        return FLT_OK;
-      }
-    }
-    /* }}} */
-    /* {{{ [ref:] */
-    else if(cf_strcmp(directive,"ref") == 0) {
-      len   = nsplit(parameter,";",&list,2);
-
-      if(len == 2) {
-        for(i=0;i<ref_uris.elements;i++) {
-          uri = array_element_at(&ref_uris,i);
-
-          if(cf_strcmp(uri->id,list[0]) == 0) {
-            tmp = htmlentities(list[0]);
-            tmp1 = htmlentities(uri->uri,1);
-            tmp2 = htmlentities(list[1]);
-
-            str_chars_append(content,"<a href=\"",9);
-            str_chars_append(content,tmp1,strlen(tmp1));
-            str_chars_append(content,tmp2,strlen(tmp2));
-
-            if(Cfg.link) {
-              str_chars_append(content,"\" target=\"",10);
-              str_chars_append(content,Cfg.link,strlen(Cfg.link));
-            }
-
-            str_chars_append(content,"\">",2);
-            str_chars_append(content,tmp1,strlen(tmp1));
-            str_chars_append(content,tmp2,strlen(tmp2));
-            str_chars_append(content,"</a>",4);
-
-            if(sig == 0 && cite) {
-              str_chars_append(cite,"[ref:",5);
-              str_chars_append(cite,tmp,strlen(tmp));
-              str_char_append(cite,';');
-              str_chars_append(cite,tmp2,strlen(tmp2));
-              str_char_append(cite,']');
-            }
-
-            free(list[0]);
-            free(list[1]);
-            free(list);
-            free(tmp);
-            free(tmp1);
-            free(tmp2);
-
-            return FLT_OK;
-          }
-        }
-
-        if(list) {
-          for(i=0;i<len;i++) free(list[i]);
-          free(list);
-        }
-      }
-    }
-    /* }}} */
-  }
-
-  return FLT_DECLINE;
-}
-/* }}} */
-
 /* {{{ pre and post content filters */
 int flt_posting_post_cnt(t_configuration *dc,t_configuration *vc,t_cl_thread *thr,t_string *content,t_string *cite,const u_char *qchars) {
   t_name_value *cs;
@@ -655,15 +328,15 @@ int flt_posting_post_cnt(t_configuration *dc,t_configuration *vc,t_cl_thread *th
   if(cite) {
     cs = cfg_get_first_value(dc,"ExternCharset");
 
-    if(Cfg.Bye) {
-      if(cf_strcasecmp(cs->values[0],"utf-8") == 0 || (tmp = htmlentities_charset_convert(Cfg.Bye,"UTF-8",cs->values[0],NULL,0)) == NULL) tmp = strdup(Cfg.Bye);
+    if(flt_posting_cfg.Bye) {
+      if(cf_strcasecmp(cs->values[0],"utf-8") == 0 || (tmp = htmlentities_charset_convert(flt_posting_cfg.Bye,"UTF-8",cs->values[0],NULL,0)) == NULL) tmp = strdup(flt_posting_cfg.Bye);
       str_char_append(cite,'\n');
       replace_placeholders(tmp,cite,thr);
 
       free(tmp);
     }
-    if(Cfg.Signature) {
-      if(cf_strcasecmp(cs->values[0],"utf-8") == 0 || (tmp = htmlentities_charset_convert(Cfg.Signature,"UTF-8",cs->values[0],NULL,0)) == NULL) tmp = strdup(Cfg.Signature);
+    if(flt_posting_cfg.Signature) {
+      if(cf_strcasecmp(cs->values[0],"utf-8") == 0 || (tmp = htmlentities_charset_convert(flt_posting_cfg.Signature,"UTF-8",cs->values[0],NULL,0)) == NULL) tmp = strdup(flt_posting_cfg.Signature);
       str_chars_append(cite,"\n-- \n",5);
       replace_placeholders(tmp,cite,thr);
 
@@ -681,10 +354,10 @@ int flt_posting_pre_cnt(t_configuration *dc,t_configuration *vc,t_cl_thread *thr
   u_char *tmp;
 
   if(cite) {
-    if(Cfg.Hi) {
+    if(flt_posting_cfg.Hi) {
       cs = cfg_get_first_value(dc,"ExternCharset");
 
-      if(cf_strcasecmp(cs->values[0],"utf-8") == 0 || (tmp = htmlentities_charset_convert(Cfg.Hi,"UTF-8",cs->values[0],NULL,0)) == NULL) tmp = strdup(Cfg.Hi);
+      if(cf_strcasecmp(cs->values[0],"utf-8") == 0 || (tmp = htmlentities_charset_convert(flt_posting_cfg.Hi,"UTF-8",cs->values[0],NULL,0)) == NULL) tmp = strdup(flt_posting_cfg.Hi);
       replace_placeholders(tmp,cite,thr);
       free(tmp);
 
@@ -702,26 +375,17 @@ int handle_greet(t_configfile *cfile,t_conf_opt *opt,u_char **args,int argnum) {
   u_char *tmp = strdup(args[0]);
 
   if(cf_strcmp(opt->name,"Hi") == 0) {
-    if(Cfg.Hi) free(Cfg.Hi);
-    Cfg.Hi          = tmp;
+    if(flt_posting_cfg.Hi) free(flt_posting_cfg.Hi);
+    flt_posting_cfg.Hi          = tmp;
   }
   else if(cf_strcmp(opt->name,"Bye") == 0) {
-    if(Cfg.Bye) free(Cfg.Bye);
-    Cfg.Bye         = tmp;
+    if(flt_posting_cfg.Bye) free(flt_posting_cfg.Bye);
+    flt_posting_cfg.Bye         = tmp;
   }
   else if(cf_strcmp(opt->name,"Signature") == 0) {
-    if(Cfg.Signature) free(Cfg.Signature);
-    Cfg.Signature   = tmp;
+    if(flt_posting_cfg.Signature) free(flt_posting_cfg.Signature);
+    flt_posting_cfg.Signature   = tmp;
   }
-
-  return 0;
-}
-/* }}} */
-
-/* {{{ handle_link */
-int handle_link(t_configfile *cfile,t_conf_opt *opt,u_char **args,int argnum) {
-  if(Cfg.link) free(Cfg.link);
-  Cfg.link = strdup(args[0]);
 
   return 0;
 }
@@ -729,11 +393,11 @@ int handle_link(t_configfile *cfile,t_conf_opt *opt,u_char **args,int argnum) {
 
 /* {{{ handle_box */
 int handle_box(t_configfile *cfile,t_conf_opt *opt,u_char **args,int argnum) {
-  if(Cfg.TWidth) free(Cfg.TWidth);
-  if(Cfg.THeight) free(Cfg.THeight);
+  if(flt_posting_cfg.TWidth) free(flt_posting_cfg.TWidth);
+  if(flt_posting_cfg.THeight) free(flt_posting_cfg.THeight);
 
-  Cfg.TWidth  = strdup(args[0]);
-  Cfg.THeight = strdup(args[1]);
+  flt_posting_cfg.TWidth  = strdup(args[0]);
+  flt_posting_cfg.THeight = strdup(args[1]);
 
   return 0;
 }
@@ -741,7 +405,7 @@ int handle_box(t_configfile *cfile,t_conf_opt *opt,u_char **args,int argnum) {
 
 /* {{{ handle_prev */
 int handle_prev(t_configfile *cfile,t_conf_opt *opt,u_char **args,int argnum) {
-  Cfg.Preview = cf_strcmp(args[0],"yes") == 0;
+  flt_posting_cfg.Preview = cf_strcmp(args[0],"yes") == 0;
 
   return 0;
 }
@@ -750,10 +414,10 @@ int handle_prev(t_configfile *cfile,t_conf_opt *opt,u_char **args,int argnum) {
 /* {{{ handle_prevt */
 int handle_prevt(t_configfile *cfile,t_conf_opt *opt,u_char **args,int argnum) {
   if(cf_strcmp(args[0],"button") == 0) {
-    Cfg.PreviewSwitchType = 1;
+    flt_posting_cfg.PreviewSwitchType = 1;
   }
   else if(cf_strcmp(args[0],"checkbox") == 0) {
-    Cfg.PreviewSwitchType = 0;
+    flt_posting_cfg.PreviewSwitchType = 0;
   }
   else {
     fprintf(stderr,"Error: wrong value for PreviewSwitchType\n");
@@ -766,84 +430,42 @@ int handle_prevt(t_configfile *cfile,t_conf_opt *opt,u_char **args,int argnum) {
 
 /* {{{ handle_actpcol */
 int handle_actpcol(t_configfile *cfile,t_conf_opt *opt,u_char **args,int argnum) {
-  if(Cfg.ActiveColorF) free(Cfg.ActiveColorF);
-  if(Cfg.ActiveColorB) free(Cfg.ActiveColorB);
+  if(flt_posting_cfg.ActiveColorF) free(flt_posting_cfg.ActiveColorF);
+  if(flt_posting_cfg.ActiveColorB) free(flt_posting_cfg.ActiveColorB);
 
-  Cfg.ActiveColorF = strdup(args[0]);
-  Cfg.ActiveColorB = strdup(args[1]);
-
-  return 0;
-}
-/* }}} */
-
-/* {{{ handle_iframe */
-int handle_iframe(t_configfile *cfile,t_conf_opt *opt,u_char **args,int argnum) {
-  Cfg.IframeAsLink = cf_strcmp(args[0],"yes") == 0;
-  return 0;
-}
-/* }}} */
-
-/* {{{ handle_image */
-int handle_image(t_configfile *cfile,t_conf_opt *opt,u_char **args,int argnum) {
-  Cfg.ImageAsLink = cf_strcmp(args[0],"yes") == 0;
-  return 0;
-}
-/* }}} */
-
-void flt_posting_cleanup_entry(void *e) {
-  t_ref_uri *uri = (t_ref_uri *)e;
-  free(uri->uri);
-  free(uri->id);
-}
-
-/* {{{ handle_ref */
-int handle_ref(t_configfile *cfile,t_conf_opt *opt,u_char **args,int argnum) {
-  t_ref_uri uri;
-
-  uri.id  = strdup(args[0]);
-  uri.uri = strdup(args[1]);
-
-  if(ref_uris.element_size == 0) array_init(&ref_uris,sizeof(uri),flt_posting_cleanup_entry);
-
-  array_push(&ref_uris,&uri);
+  flt_posting_cfg.ActiveColorF = strdup(args[0]);
+  flt_posting_cfg.ActiveColorB = strdup(args[1]);
 
   return 0;
 }
 /* }}} */
 
 /* {{{ cleanup */
-void cleanup(void) {
-  if(Cfg.Hi)           free(Cfg.Hi);
-  if(Cfg.Bye)          free(Cfg.Bye);
-  if(Cfg.Signature)    free(Cfg.Signature);
-  if(Cfg.link)         free(Cfg.link);
-  if(Cfg.ActiveColorF) free(Cfg.ActiveColorF);
-  if(Cfg.ActiveColorB) free(Cfg.ActiveColorB);
-  if(ref_uris.element_size > 0) array_destroy(&ref_uris);
+void flt_posting_cleanup(void) {
+  if(flt_posting_cfg.Hi)           free(flt_posting_cfg.Hi);
+  if(flt_posting_cfg.Bye)          free(flt_posting_cfg.Bye);
+  if(flt_posting_cfg.Signature)    free(flt_posting_cfg.Signature);
+  if(flt_posting_cfg.ActiveColorF) free(flt_posting_cfg.ActiveColorF);
+  if(flt_posting_cfg.ActiveColorB) free(flt_posting_cfg.ActiveColorB);
 }
 /* }}} */
 
 /* {{{ t_conf_opt config[] */
-t_conf_opt config[] = {
+t_conf_opt flt_posting_config[] = {
   { "Hi",                         handle_greet,    CFG_OPT_CONFIG|CFG_OPT_USER,                NULL },
   { "Bye",                        handle_greet,    CFG_OPT_CONFIG|CFG_OPT_USER,                NULL },
   { "Signature",                  handle_greet,    CFG_OPT_CONFIG|CFG_OPT_USER,                NULL },
-  { "PostingLinkTarget",          handle_link,     CFG_OPT_CONFIG|CFG_OPT_USER,                NULL },
   { "TextBox",                    handle_box,      CFG_OPT_CONFIG|CFG_OPT_USER,                NULL },
   { "GeneratePreview",            handle_prev,     CFG_OPT_CONFIG|CFG_OPT_USER,                NULL },
   { "PreviewSwitchType",          handle_prevt,    CFG_OPT_CONFIG|CFG_OPT_USER,                NULL },
   { "ActivePostingColor",         handle_actpcol,  CFG_OPT_CONFIG|CFG_OPT_USER,                NULL },
-  { "ShowIframeAsLink",           handle_iframe,   CFG_OPT_CONFIG|CFG_OPT_USER,                NULL },
-  { "ShowImageAsLink",            handle_image,    CFG_OPT_CONFIG|CFG_OPT_USER,                NULL },
-  { "ReferenceURI",               handle_ref,      CFG_OPT_CONFIG|CFG_OPT_USER,                NULL },
   { NULL, NULL, 0, NULL }
 };
 /* }}} */
 
 /* {{{ t_handler_config handlers[] */
-t_handler_config handlers[] = {
+t_handler_config flt_posting_handlers[] = {
   { POSTING_HANDLER,     flt_posting_execute_filter },
-  { DIRECTIVE_FILTER,    flt_posting_directives     },
   { PRE_CONTENT_FILTER,  flt_posting_pre_cnt        },
   { POST_CONTENT_FILTER, flt_posting_post_cnt       },
   { 0, NULL }
@@ -852,12 +474,12 @@ t_handler_config handlers[] = {
 
 /* {{{ t_module_config flt_posting */
 t_module_config flt_posting = {
-  config,
-  handlers,
+  flt_posting_config,
+  flt_posting_handlers,
   NULL,
   NULL,
   NULL,
-  cleanup
+  flt_posting_cleanup
 };
 /* }}} */
 /* }}} */
