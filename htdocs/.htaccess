@@ -1,0 +1,13 @@
+Options +FollowSymLinks
+
+DirectoryIndex /cgi-bin/fo_view
+
+RewriteEngine On
+RewriteBase /
+
+RewriteCond %{REQUEST_URI} !^/?my/
+RewriteRule ^/?(.+) /cgi-bin/fo_view$1 [L]
+
+RewriteCond %{REQUEST_URI} /?my/
+RewriteRule /?my/(.+) /cgi-bin/user/fo_view$1 [L]
+
