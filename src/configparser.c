@@ -135,17 +135,18 @@ t_conf_opt fo_view_options[] = {
 
 /* {{{ fo_post configuration options */
 t_conf_opt fo_post_options[] = {
-  {  "PostingUrl",                handle_command,   CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_post_conf },
-  {  "FieldConfig",               handle_command,   CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_post_conf },
-  {  "FieldNeeded",               handle_command,   CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_post_conf },
-  {  "RedirectOnPost",            handle_command,   CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_post_conf },
-  { "QuotingChars",               handle_command,   CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_NEEDED|CFG_OPT_UNIQUE|CFG_OPT_LOCAL, &fo_post_conf },
+  { "PostingUrl",                handle_command,   CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_post_conf },
+  { "FieldConfig",               handle_command,   CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_post_conf },
+  { "FieldNeeded",               handle_command,   CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_post_conf },
+  { "RedirectOnPost",            handle_command,   CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_post_conf },
+  { "FieldValidate",             handle_command,   CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_post_conf },
+  { "QuotingChars",              handle_command,   CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_NEEDED|CFG_OPT_UNIQUE|CFG_OPT_LOCAL, &fo_post_conf },
 
-  {  "Image",                     handle_command,   CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_post_conf },
+  { "Image",                     handle_command,   CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_post_conf },
 
-  {  "ThreadTemplate",            handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_post_conf },
-  {  "FatalTemplate",             handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_post_conf },
-  {  "OkTemplate",                handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_post_conf },
+  { "ThreadTemplate",            handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_post_conf },
+  { "FatalTemplate",             handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_post_conf },
+  { "OkTemplate",                handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_post_conf },
 
   {  NULL, NULL, 0, NULL }
 };

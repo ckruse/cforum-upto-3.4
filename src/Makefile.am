@@ -86,7 +86,7 @@ fo_vote_LDADD=libcfutils.la libcfhashlib.la libcfreadline.la libcfconfigparser.l
 fo_vote_LDFLAGS=-export-dynamic
 
 fo_post_SOURCES=fo_post.c
-fo_post_LDADD=libcfconfigparser.la libcftemplate.la libcfcharconvert.la libcfreadline.la libcfutils.la libcfhashlib.la libcfclientlib.la libcfcgi.la libcfhtml.la
+fo_post_LDADD=libcfconfigparser.la libcftemplate.la libcfcharconvert.la libcfreadline.la libcfutils.la libcfhashlib.la libcfclientlib.la libcfcgi.la libcfhtml.la libcfvalidate.la
 fo_post_LDFLAGS=-export-dynamic
 
 fo_view_SOURCES=fo_view.c

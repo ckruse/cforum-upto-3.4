@@ -23,14 +23,13 @@ E_subject_missing: Bitte geben sie einen Titel an!
 E_body_short: Haben Sie so wenig zu sagen?
 E_body_long: Das war jetzt etwas viel.
 E_body_missing: Haben Sie so wenig zu sagen?
-E_email_invalid: Ihre E-Mail-Adresse scheint ungültig zu sein.
+E_EMail_invalid: Ihre E-Mail-Adresse scheint ungültig zu sein.
 E_manipulated: Falsche oder fehlende Daten. Die Daten scheinen in irgendeiner Weise manipuliert worden zu sein.
-E_image_invalid: Die Bild-URL scheint ungültig zu sein.
-E_homepage_invalud: Die Homepage-URL scheint ungültig zu sein.
-E_cat: Bitte wählen Sie eine Kategorie aus!
+E_ImageUrl_invalid: Die Bild-URL scheint ungültig zu sein.
+E_HomepageUrl_invalid: Die Homepage-URL scheint ungültig zu sein.
+E_cat_missing: Bitte wählen Sie eine Kategorie aus!
 E_unid: Die Daten scheinen manipuliert worden zu sein...
 E_server: Der Server hat zurück gegeben:
-E_field_missing: Die Daten scheinen unvollständig zu sein.
 E_posting_format: Das Format Ihres Postings scheint unsauber zu sein (z. B. keine Zeilenumbrüche, keine Satzzeichen, alles Kleingeschrieben oder ähnliches). Solche Postings sind ungern gesehen, da sie oft schwer zu lesen sind. Sind Sie sicher, dass Sie so posten möchten?
 E_posting_badwords: Ihr Posting scheint mehr als die erlaubte Zahl von Schimpfwörtern zu enthalten.
 E_posting_quoting: Sie haben mehr als 25% zitierte Zeilen in Ihrem Posting. Sind Sie sicher, dass Sie das Posting so abschicken wollen?
@@ -51,6 +50,7 @@ E_FO_504: Leider ist die Authentifizierung fehlgeschlagen. Es könnte sein, dass
 E_FO_505: Der Server ist anscheinend etwas ausgelastet. Versuchen Sie es doch später noch einmal.
 E_FO_506: Der Server wird gerade heruntergefahren. Versuchen Sie es doch später noch einmal.
 E_FO_507: Der Server scheint gerade etwas ausgelastet zu sein. Versuchen sie es doch später noch einmal.
+E_FO_508: Programmier-Fehler. Schreiben Sie dem Programmierer eine Mail.
 E_FO_600: Das Forum ist aus administrativen oder technischen Gründen gesperrt. Bitte versuchen Sie es später noch einmal.
 E_ARCHIVE_ERROR: Leider ist ein interner Fehler aufgetreten.
 E_ARCHIVE_GENERIC404: Sie haben einen ungültige URL angegeben.

@@ -1,3 +1,12 @@
+2005-01-19 Christian Kruse <ckruse@wwwtech.de>
+	* conf/fo_server.conf.in: Corrected ModulePath
+	* conf/errormessages.de.txt: Added some error messages, corrected some typos
+	* conf/fo_post.conf.in: Invented FieldValidate directive
+	* src/clientlib.c: Several bugfixes, changed behavior of cf_set_variable()
+	* src/fo_post.c: Lots of bugfixes, lot of developement; should work now.
+	* src/configparser.c: Added FieldValidate directive
+	* src/memoryutils.c: Code cleaning
+
 2005-01-19 Christian Seiler <self@christian-seiler.de>
 	* src/parsetpl/parsetpl.lex: lot's of feature improvements, it is
 		now possible to access loop variable (@first, @last,

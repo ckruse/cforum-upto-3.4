@@ -46,15 +46,15 @@ void *fo_alloc(void *ptr,size_t nmemb,size_t size,int type) {
   void *l_ptr = NULL;
 
   switch(type) {
-  case FO_ALLOC_MALLOC:
-    l_ptr = malloc(nmemb * size);
-    break;
-  case FO_ALLOC_CALLOC:
-    l_ptr = calloc(nmemb,size);
-    break;
-  case FO_ALLOC_REALLOC:
-    l_ptr = realloc(ptr,size * nmemb);
-    break;
+    case FO_ALLOC_MALLOC:
+      l_ptr = malloc(nmemb * size);
+      break;
+    case FO_ALLOC_CALLOC:
+      l_ptr = calloc(nmemb,size);
+      break;
+    case FO_ALLOC_REALLOC:
+      l_ptr = realloc(ptr,size * nmemb);
+      break;
   }
 
   if(!l_ptr) {

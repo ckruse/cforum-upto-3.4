@@ -113,7 +113,7 @@ void *cf_get_shm_ptr(void) {
   if(shm_lock_sem == -1) {
     /* create a new segment */
     if((shm_lock_sem = semget(atoi(shm->values[2]),0,0)) == -1) {
-      perror("semget");
+      //perror("semget");
       return NULL;
     }
   }
@@ -123,7 +123,7 @@ void *cf_get_shm_ptr(void) {
 
     if(shm_id == -1) {
       if((shm_id = shmget(atoi(shm->values[val]),0,0)) == -1) {
-        perror("shmget");
+        //perror("shmget");
         return NULL;
       }
     }
@@ -134,7 +134,7 @@ void *cf_get_shm_ptr(void) {
        * So set SHM_RDONLY in the shmat-flag.
        */
       if((shm_ptr = shmat(shm_id,0,SHM_RDONLY)) == (void *)-1) {
-        perror("shmat");
+        //perror("shmat");
         return NULL;
       }
     }
@@ -238,16 +238,36 @@ void cf_set_variable(t_cf_template *tpl,t_name_value *cs,u_char *vname,const u_c
       else tmp = charset_convert_entities(val,len,"UTF-8",cs->values[0],&len1);
 
       /* This should only happen if we use charset_convert() -- and we should not use it. */
-      if(!tmp) cf_tpl_setvalue(tpl,vname,TPL_VARIABLE_STRING,val,len);
-      else {
-        cf_tpl_setvalue(tpl,vname,TPL_VARIABLE_STRING,tmp,len1);
-        free(tmp);
+      if(!tmp) {
+        tmp = htmlentities(val,0);
+        len = strlen(val);
       }
+
+      cf_tpl_setvalue(tpl,vname,TPL_VARIABLE_STRING,tmp,len1);
+      free(tmp);
     }
     /* ExternCharset is also UTF-8 */
+    else {
+      if(html) {
+        tmp = htmlentities(val,0);
+        len = strlen(val);
+
+        cf_tpl_setvalue(tpl,vname,TPL_VARIABLE_STRING,tmp,len);
+        free(tmp);
+      }
+      else cf_tpl_setvalue(tpl,vname,TPL_VARIABLE_STRING,val,len);
+    }
+  }
+  else {
+    if(html) {
+      tmp = htmlentities(val,0);
+      len = strlen(val);
+
+      cf_tpl_setvalue(tpl,vname,TPL_VARIABLE_STRING,tmp,len);
+      free(tmp);
+    }
     else cf_tpl_setvalue(tpl,vname,TPL_VARIABLE_STRING,val,len);
   }
-  else cf_tpl_setvalue(tpl,vname,TPL_VARIABLE_STRING,val,len);
 }
 /* }}} */
 
@@ -304,7 +324,7 @@ void cf_error_message(const u_char *err,FILE *out, ...) {
         key.size = size;
 
         if(Msgs->get(Msgs,NULL,&key,&value,0) == 0) {
-          buff = value.data;
+          buff = strndup(value.data,value.size);
         }
       }
 
@@ -356,7 +376,7 @@ void cf_error_message(const u_char *err,FILE *out, ...) {
 
         cf_tpl_finish(&tpl);
       }
-      else printf("Sorry, internal error, cannot do anything. Perhaps you should kick your system administrator.\n");
+      else printf("Sorry, internal error (%s), cannot do anything. Perhaps you should kick your system administrator.\n",err);
     }
     else printf("Sorry, could not find template file. I got error %s\n",err);
   }
@@ -404,7 +424,7 @@ u_char *cf_get_error_message(const u_char *err,size_t *len, ...) {
       key.size = size;
 
       if(Msgs->get(Msgs,NULL,&key,&value,0) == 0) {
-        buff = value.data;
+        buff = strndup(value.data,value.size);
       }
     }
 
@@ -439,6 +459,8 @@ u_char *cf_get_error_message(const u_char *err,size_t *len, ...) {
         else str_char_append(&msg,*ptr);
       }
 
+
+      free(buff);
       va_end(ap);
       if(len) *len = msg.len;
       return msg.content;

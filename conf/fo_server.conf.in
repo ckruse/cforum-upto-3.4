@@ -10,7 +10,7 @@
 #
 
 
-ModulePath "@libdir@"
+ModulePath "@libdir@/cforum/"
 
 Load "flt_tid_index"
 Load "flt_cftp"

@@ -40,6 +40,10 @@ Forum FORUM1 {
  FieldNeeded "qchar" "yes" "yes"
  FieldNeeded "cat" "yes" "no"
 
+ FieldValidate "EMail" "email"
+ FieldValidate "HomepageUrl" "http"
+ FieldValidate "ImageUrl" "http-strict"
+
  QuotingChars "»» "
 
  PostingAssistantMustValidate "yes"
