@@ -231,6 +231,7 @@ void send_posting(t_cf_hash *head,void *shm_ptr,u_int64_t tid,u_int64_t mid)
 
   /* {{{ set standard variables */
   tpl_cf_setvar(&tpl,"charset",cs->values[0],strlen(cs->values[0]),0);
+  tpl_cf_setvar(&tpl,"cf_version",CF_VERSION,strlen(CF_VERSION),1);
 
   UserName = cf_hash_get(GlobalValues,"UserName",8);
   if(UserName) fbase = cfg_get_first_value(&fo_default_conf,"UBaseURL");
@@ -388,6 +389,8 @@ void send_threadlist(void *shm_ptr,t_cf_hash *head)
 
     cf_set_variable(&tpl_end,cs,"forumbase",fbase->values[0],strlen(fbase->values[0]),1);
     tpl_cf_setvar(&tpl_begin,"charset",cs->values[0],strlen(cs->values[0]),0);
+    tpl_cf_setvar(&tpl_end,"cf_version",CF_VERSION,strlen(CF_VERSION),1);
+    tpl_cf_setvar(&tpl_begin,"cf_version",CF_VERSION,strlen(CF_VERSION),1);
 
     /* run some plugins */
     if(Modules[VIEW_INIT_HANDLER].elements) {

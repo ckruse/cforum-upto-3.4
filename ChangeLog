@@ -4,6 +4,11 @@
 		are given.
 	* src/validate.c: Added / char in HTTP link validation to allowed characters
 		to support RFC 3986 URIs
+	* src/fo_view.c: Added template variable to display forum version
+	* src/defines.h: Added forum version symbol
+	* src/templates/de/tpl_html4/forum_end.html,
+		src/templates/de/tpl_xhtml10/forum_end.html: Added forum version
+	* src/templates/de/tpl_*/*.html: Changed copyright notice, we got year 2005!
 
 2005-01-20 Christian Kruse <ckruse@wwwtech.de>
 	* src/modules/flt_tid_index.c: Fixed a small bug, didn't initialize some
