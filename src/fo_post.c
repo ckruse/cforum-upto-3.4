@@ -493,7 +493,7 @@ t_string *body_plain2coded(const u_char *text) {
 
   v = cfg_get_first_value(&fo_post_conf,forum_name,"QuotingChars");
 
-  qchars = v->values[0];
+  qchars = htmlentities(v->values[0],0);
   len = strlen(qchars);
 
   /* first phase: we need the string entity encoded */
@@ -576,6 +576,8 @@ t_string *body_plain2coded(const u_char *text) {
     }
     else str_char_append(str,*ptr);
   }
+
+  free(qchars);
 
   /* all phases finished, body has been normalized */
   return str;
