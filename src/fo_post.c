@@ -117,7 +117,7 @@ void display_posting_form(t_cf_hash *head) {
   size_t len,i;
   u_char *val;
   u_char *cat = NULL,*tmp;
-  t_cf_tpl_variable var,array;
+  t_cf_tpl_variable array;
   
   if(!tt) {
     cf_error_message("E_TPL_NOT_FOUND",NULL);
@@ -141,11 +141,7 @@ void display_posting_form(t_cf_hash *head) {
 
   for(i=0;i<cats->valnum;++i) {
     tmp   = charset_convert_entities(cats->values[i],strlen(cats->values[i]),"UTF-8",cs->values[0],&len);
-
-    cf_tpl_var_init(&var,TPL_VARIABLE_STRING);
-    cf_tpl_var_setvalue(&var,tmp,len);
-    cf_tpl_var_add(&array,&var);
-
+    cf_tpl_var_addvalue(&array,TPL_VARIABLE_STRING,tmp,len);
     free(tmp);
   }
   cf_tpl_setvar(&tpl,"cats",&array);
