@@ -65,7 +65,7 @@ sub recode {
 
   return unless defined $str;
   if($fdc->{ExternCharset}->[0]->[0] eq 'UTF-8') {
-    $str = $Clientlib->htmlentities($str,0);
+    $str = $str ? $Clientlib->htmlentities($str,0) : '';
   }
   else {
     $str = $Clientlib->htmlentities_charset_convert($str,"UTF-8",$fdc->{ExternCharset}->[0]->[0],0) if $fdc->{ExternCharset}->[0]->[0] ne "UTF-8";

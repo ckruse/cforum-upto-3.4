@@ -351,7 +351,7 @@ time_t flt_visited_lm(t_cf_hash *head,t_configuration *dc,t_configuration *vc,vo
 
 /* {{{ flt_visited_init_handler */
 int flt_visited_init_handler(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc) {
-  int ret;
+  int ret,fd;
 
   if(Cfg.VisitedFile) {
     if((ret = db_create(&Cfg.db,NULL,0)) != 0) {
@@ -360,6 +360,16 @@ int flt_visited_init_handler(t_cf_hash *cgi,t_configuration *dc,t_configuration 
     }
 
     if((ret = Cfg.db->open(Cfg.db,NULL,Cfg.VisitedFile,NULL,DB_BTREE,DB_CREATE,0644)) != 0) {
+      fprintf(stderr,"DB error: %s\n",db_strerror(ret));
+      return FLT_EXIT;
+    }
+
+    if((ret = Cfg.db->fd(Cfg.db,&fd)) != 0) {
+      fprintf(stderr,"DB error: %s\n",db_strerror(ret));
+      return FLT_EXIT;
+    }
+
+    if((ret = flock(fd,LOCK_EX)) != 0) {
       fprintf(stderr,"DB error: %s\n",db_strerror(ret));
       return FLT_EXIT;
     }
@@ -393,11 +403,18 @@ int set_link(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cl_thread
 
 /* {{{ flt_visited_cleanup */
 void flt_visited_cleanup(void) {
+  int fd;
+
   if(Cfg.VisitedPostingsColorF) free(Cfg.VisitedPostingsColorF);
   if(Cfg.VisitedPostingsColorB) free(Cfg.VisitedPostingsColorB);
   if(Cfg.VisitedFile)      free(Cfg.VisitedFile);
 
-  if(Cfg.db) Cfg.db->close(Cfg.db,0);
+  if(Cfg.db) {
+    Cfg.db->fd(Cfg.db,&fd);
+    flock(fd,LOCK_UN);
+
+    Cfg.db->close(Cfg.db,0);
+  }
 }
 /* }}} */
 

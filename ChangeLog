@@ -1,8 +1,5 @@
-2004-11-23 Christian Kruse <ckruse@wwwtech.de>
-	* src/fo_view.c: Deleted an unecessary variable
-	* src/fo_vote.c: Added functionality for 200 Ok response
-	* src/templates/de/tpl_*/Makefile.am: Added vote_ok.html
-	* src/configparser.c: Added directives Send204 and OkTemplate
-	* cgi-shared/config/fo_vote.conf.in: Added OkTemplate directive
-	* cgi-shared/config/modules.de.xml: Added Send204 directive
+2004-11-24 Christian Kruse <ckruse@wwwtech.de>
+	* src/modules/flt_deleted.c, src/modules/flt_visited.c: Added file locking
+		(for the handle returned by db->fd())
+	* cgi-shared/ForumUtils.pm: Bugfix, didn't check length of a string
 
