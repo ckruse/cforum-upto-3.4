@@ -1000,7 +1000,7 @@ int main(int argc,char *argv[],char *env[]) {
           cf_run_after_post_handlers(head,p,tid);
 
           if(cfg_val && cf_strcmp(cfg_val->values[0],"yes") == 0) {
-            cfg_val = cfg_get_first_value(&fo_default_conf,forum_name,UserName ? "PostingURL" : "UPostingURL");
+            cfg_val = cfg_get_first_value(&fo_default_conf,forum_name,UserName ? "UPostingURL" : "PostingURL");
             link = cf_get_link(cfg_val->values[0],NULL,tid,mid);
             printf("Status: 302 Moved Temporarily\015\012Location: %s\015\012\015\012",link);
             free(link);
