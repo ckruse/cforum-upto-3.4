@@ -12,7 +12,7 @@
 
 #
 use strict;
-use vars qw($Bin $Config $Script $Plugins $UserName $prefix $Management $Forum);
+use vars qw($Bin $Script $Plugins $UserName $prefix $Management $Forum);
 
 BEGIN {
   my $null = $0; $null =~ tr!\\!/!; # for win :-(
@@ -31,7 +31,7 @@ BEGIN {
   $Forum = $ENV{CF_FORUM_NAME};
 }
 
-use lib "@libdir@";
+use lib "@libdir@/cforum";
 
 sub VERSION {(q$Revision$ =~ /([\d.]+)\s*$/)[0] or '0.0'}
 

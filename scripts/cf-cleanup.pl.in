@@ -22,7 +22,7 @@ BEGIN {
   $Forum    = '';
 }
 
-use lib "@libdir@";
+use lib "@libdir@/cforum";
 
 sub VERSION {(q$Revision$ =~ /([\d.]+)\s*$/)[0] or '0.0'}
 

@@ -11,6 +11,7 @@
 
 AddModule "Plugins::HTTPAuth"
 AddModule "Plugins::XMLRPCUserManagement"
+AddModule "Plugins::RegisterName"
 
 Forum FORUM1 {
   Umask "0022"

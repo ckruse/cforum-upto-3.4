@@ -5,6 +5,12 @@
 		conf/fo_default.conf.in, conf/fo_post.conf.in, conf/fo_arcview.conf.in:
 		Changed some default pathes for better LFSH conformance
 	* configure.in: Changed default path for socket name
+	* conf/fo_xmlrpc.conf.in: Added RegisterName plugin to default configuration
+	* scripts/fo_xmlrpc.in, src/perl/Plugins/XMLRPCUserManagement.pm: Changed to
+		3.0 API and made some code cleaning
+	* scripts/fo_usermanagement.in, scripts/cf-cleanup.pl.in,
+		scripts/fo_userconf.in, scripts/fo_xmlrpc.in: Code cleaning, now argument of
+		'use lib' points to @libdir@/cforum (pkglibdir)
 
 2005-02-15 Christian Kruse <ckruse@wwwtech.de>
 	* src/cf-recovery.c: Migration finished, seems to work fine

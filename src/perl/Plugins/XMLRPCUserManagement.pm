@@ -22,11 +22,9 @@ use strict;
 
 sub VERSION {(q$Revision$ =~ /([\d.]+)\s*$/)[0] or '0.0'}
 
-use ForumUtils qw/read_configuration get_template get_error recode uniquify_params get_config_file create_directory_structure fatal/;
+use ForumUtils qw/get_config_files get_user_config_file create_directory_structure/;
 
 use File::Path;
-use CGI;
-use CGI::Carp qw/fatalsToBrowser/;
 
 $main::methods->{'user.exists'} = \&exists_user;
 $main::methods->{'user.add'} = \&add_user;
@@ -38,8 +36,8 @@ $main::methods->{'user.delete'} = \&delete_user;
 sub exists_user {
   my ($user) = @_;
   my $fo_default_conf = $main::fo_default_conf;
-  
-  my $ufile = get_config_file($fo_default_conf,$user);
+
+  my $ufile = get_user_config_file($fo_default_conf,$user);
   return (-f $ufile);
 }
 # }}}
@@ -48,27 +46,24 @@ sub exists_user {
 sub add_user {
   my ($user) = @_;
   my $fo_default_conf = $main::fo_default_conf;
-  
-  my $ufile = get_config_file($fo_default_conf,$user);
+
+  my $ufile = get_user_config_file($fo_default_conf,$user);
+
   # user exists
-  if(-f $ufile) {
-    return;
-  }
-  
-  if(!create_directory_structure($fo_default_conf,$user)) {
-    return;
-  }
-  
+  return if -f $ufile;
+
+  return unless create_directory_structure($fo_default_conf,$user);
+
   my $dir = $ufile;
   $dir =~ s!\.conf$!!; #!;
 
   mkdir $dir,0771 or return;
-  
+
   open DAT,'>'.$ufile or return;
   print DAT 'DeletedFile "',$dir,"/dt.dat\"\n";
   print DAT 'VisitedFile "',$dir,"/vt.dat\"\n";
   close DAT;
-  
+
   return 1;
 }
 # }}}
@@ -77,13 +72,23 @@ sub add_user {
 sub delete_user {
   my ($user) = @_;
   my $fo_default_conf = $main::fo_default_conf;
-  
-  my $cfile = get_config_file($fo_default_conf,$user);
-  if(!-f $cfile) {
-    return 0;
-  }
+
+  my $cfile = get_user_config_file($fo_default_conf,$user);
+  return unless -f $cfile;
+
   my $dir   = $cfile;
   $dir =~ s!\.conf$!!; #!;
+
+  my $user_config = read_configuration($cfile) or return;
+
+
+  #
+  # run plugins
+  #
+  $main::UserName = $user;
+  foreach(@{$main::Plugins->{unregister}}) {
+    &$_($main::fo_default_conf,undef,$main::fo_xmlrpc_conf,$user_config,undef);
+  }
 
   rmtree($dir) or return;
   unlink($cfile) or return;

@@ -12,7 +12,7 @@
 
 #
 use strict;
-use vars qw($Bin $Config $Script $Plugins $UserName $prefix $fo_default_conf $methods);
+use vars qw($Bin $Config $Script $Plugins $UserName $prefix $fo_default_conf $fo_xmlrpc_conf $methods $Forum);
 
 BEGIN {
   my $null = $0; $null =~ tr!\\!/!; # for win :-(
@@ -20,40 +20,41 @@ BEGIN {
   $Script  = ($null =~ /^.*\/(.*)$/)? $1 : $null;
 
   # get the path to the configuration
-  $Config = $ENV{CF_CONF_DIR} or die 'Could not get config path';
+  die 'Could not get config path, set CF_CONF_DIR' unless $ENV{CF_CONF_DIR};
+  $Forum = $ENV{CF_FORUM_NAME} or die "Could not get forum name, set CF_FORUM_NAME!";
 
   $Plugins = {};
   $UserName = '';
   $prefix  = '@prefix@';
   
   $fo_default_conf = undef;
+  $fo_xmlrpc_conf  = undef;
   
   # methods are registered by plugins
   $methods = {};
 }
 
-use lib "@libdir@";
+use lib "@libdir@/cforum";
 
 sub VERSION {(q$Revision$ =~ /([\d.]+)\s*$/)[0] or '0.0'}
 
 use CGI::Carp qw/fatalsToBrowser/;
 
-use DBI;
-
 use Frontier::Responder;
 
-use ForumUtils qw/read_configuration get_template get_error recode uniquify_params get_config_file create_directory_structure fatal/;
+use ForumUtils qw/read_configuration get_config_files get_conf_val/;
 
 # }}}
 
-   $fo_default_conf        = read_configuration($Config.'fo_default.conf')  or die "error: $!";
-my $fo_xmlrpc_conf         = read_configuration($Config.'fo_xmlrpc.conf') or die "error: $!";
-my $user_config            = {};
+my @cfiles = get_config_files("fo_default","fo_xmlrpc");
+
+$fo_default_conf        = read_configuration($cfiles[0])  or die "error reading $cfiles[0]: $!";
+$fo_xmlrpc_conf         = read_configuration($cfiles[1]) or die "error reading $cfiles[0]: $!";
 
 my $rpc;
 
 # {{{ load plugins and authenticate
-foreach(@{$fo_xmlrpc_conf->{AddModule}}) {
+foreach(@{$fo_xmlrpc_conf->{global}->{AddModule}}) {
   eval "use $_->[0];";
   die $@ if $@;
 }
@@ -63,7 +64,8 @@ foreach(@{$Plugins->{auth}}) {
 }
 # }}}
 
-umask oct($fo_xmlrpc_conf->{Umask}->[0]->[0]) if $fo_xmlrpc_conf->{Umask}->[0]->[0];
+my $mask = get_conf_val($fo_xmlrpc_conf,$Forum,'Umask');
+umask oct($mask) if $mask;
 
 $rpc = new Frontier::Responder('methods' => $methods);
 print $rpc->answer;
