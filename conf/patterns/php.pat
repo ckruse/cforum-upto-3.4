@@ -1,7 +1,7 @@
 start = "default"
 
 list "symbols" = ";,(,),{,},:,[,],\,"
-list "operators" = "or,xor,and,=,+=,-=,*=,/=,.=,%=,&amp;=,|=,^=,~=,&lt;,&gt;,||,&amp;&amp;,|,^,&amp;,==,!=,===,!==,&lt;,&lt;=,&gt;,&gt;=,&lt;&lt;,&gt;&gt;,.,*,/,%,!,~,++,--,-&gt;,-,+,?"
+list "operators" = "or,xor,and,=,+=,-=,*=,/=,.=,%=,&amp;=,|=,^=,~=,&lt;,&gt;,||,&amp;&amp;,|,^,&amp;,==,!=,===,!==,&lt;,&lt;=,&gt;,&gt;=,=&gt;,&lt;&lt;,&gt;&gt;,.,*,/,%,!,~,++,--,-&gt;,-,+,?"
 list "keywords" = "as,case,if,else,elseif,while,do,for,foreach,break,continue,switch,declare,return,require,include,require_once,include_once,var,class,new,function,default,null,false,true,echo,extends"
 list "makros" = "__FILE__,__LINE__,SID,__FUNCTION__,__CLASS__,__METHOD__,PHP_VERSION,PHP_OS,DEFAULT_INCLUDE_PATH,PEAR_INSTALL_DIR,PEAR_EXTENSION_DIR,PHP_EXTENSION_DIR,PHP_BINDIR,PHP_LIBDIR,PHP_DATADIR,PHP_SYSCONFDIR,PHP_LOCALSTATEDIR,PHP_CONFIG_FILE_PATH,PHP_OUTPUT_HANDLER_START,PHP_OUTPUT_HANDLER_CONT,PHP_OUTPUT_HANDLER_END,E_ERROR,E_WARNING,E_PARSE,E_NOTICE,E_CORE_ERROR,E_CORE_WARNING,E_COMPILE_ERROR,E_COMPILE_WARNING,E_USER_ERROR,E_USER_WARNING,E_USER_NOTICE,E_ALL"
 

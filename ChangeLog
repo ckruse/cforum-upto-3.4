@@ -1,3 +1,9 @@
+2005-02-14 Christian Kruse <ckruse@wwwtech.de>
+	* conf/patterns/php.pat: Added => operator
+	* src/cf-recovery.c: Renamed fo_recovery to cf-recovery, began to migrate it
+		to 3.0 API
+	* src/cf-tid_index.c: Renamed fo_tid_index to cf-tid_index
+
 2005-02-11 Christian Kruse <ckruse@wwwtech.de>
 	* conf/Makefile.am: Changed installation path, added patterns/ directory to
 		SUBDIRS
