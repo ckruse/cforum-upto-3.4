@@ -1,235 +1,195 @@
-<?xml version="1.0" encoding="{$charset}"?>
+<?xml version="1.0" encoding="{$charset}" ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="de" lang="de">
-  <head>
-    <title>SELFHTML Forum: {if $err}Fehler{else}{if $fupto}Antwort verfassen{else}Neue Nachricht verfassen{endif}{endif}</title>
-    <meta http-equiv="content-type" content="text/html; charset={$charset}" />
-    <meta http-equiv="expires" content="now" />
-    <meta http-equiv="cache-control" content="no-cache" />
-    <meta name="robots" content="noindex,noarchive,nofollow" />
-    <meta name="author" content="Stefan M&uuml;nz, stefan.muenz@selfhtml.org" />
-    <meta name="DC.Publisher" content="SELFHTML Forum" />
-    <meta name="DC.Identifier" content="{$script}" />
-    <meta name="DC.Language" content="de" />
-    <meta name="DC.Rights" content="" />
-    <meta name="SELF.Pagetype" content="page" />{if $owncss}{if $cssoverwrite}
-    <link rel="stylesheet" title="SELFHTML Forum Stylesheet" type="text/css" href="http://src.selfhtml.org/forum_strict.css" />
-    <style type="text/css"><!--{if $vipcol}
-      span.vip {
-        color:{if $vipcolfg}{$vipcolfg}{else}#FF0000{endif};
-        {if $vipcolbg}background-color:{$vipcolbg};{endif}
-      }{endif}{if $wlcol}
-      span.whitelist {
-        color:{if $wlcolfg}{$wlcolfg}{else}#0000FF{endif};
-        {if $wlcolbg}background-color:{$wlcolbg};{endif}
-      }{endif}{if $cathighcolor}
-      span.cathigh {{if $cathighcolorfg}
-        color:{$cathighcolorfg};{endif}{if $cathighcolorbg}
-        background-color:{$cathighcolorbg};{endif}
-      }{endif}{if $visitedcol}
-      span.visited,dl a:visited {{if $visitedcolfg}
-        color:{$visitedcolfg};{endif}{if $visitedcolbg}
-        background-color:{$visitedcolbg};{endif}
-        text-decoration:underline;
-      }
-      dl a:visited img {
-        background-color:#FFFFFF;
-      }{endif}{if $colorown}
-      span.own {{if $colorownfg}
-        color:{$colorownfg};{endif}{if $colorownbg}
-        background-color:{$colorownbg};{endif}
-      }{endif}{if $font}
-      p,h1,h2,h3,h4,ul,ol,li,div,td,th,address,nobr,b,i,dl,dd,dt,a,a:link,a:visited,a:active {{if $fontcolor}
-        color:{$fontcolor};{endif}{if $fontsize}
-        font-size:{$fontsize};{endif}{if $fontfamily}
-        font-family:{$fontfamily};{endif}
-      }{endif}
-      span.q {
-        color:{if $qcolor}{$qcolor}{else}#333333{endif};{if $qcolorback}
-        background-color:{$qcolorback};{endif}
-        display:block;
-      }
-      span.active {
-        color:{if $activecolorf}{$activecolorf}{else}#552200{endif};
-        font-weight:bold;
-        text-decoration:underline;{if $activecolorb}
-        background-color:{$activecolorb}{endif}
-      }
-      span.sig, span.sig a {
-        color:#999999;
-      }
-    //--></style>{endif}
-    <link rel="stylesheet" title="Benutzerdefiniertes Stylesheet" type="text/css" href="{$owncss}" />{else}
-    <link rel="stylesheet" title="SELFHTML Forum Stylesheet" type="text/css" href="http://src.selfhtml.org/forum_strict.css" />
-    <style type="text/css"><!--{if $vipcol}
-      span.vip {
-        color:{if $vipcolfg}{$vipcolfg}{else}#FF0000{endif};
-        {if $vipcolbg}background-color:{$vipcolbg};{endif}
-      }{endif}{if $wlcol}
-      span.whitelist {
-        color:{if $wlcolfg}{$wlcolfg}{else}#0000FF{endif};
-        {if $wlcolbg}background-color:{$wlcolbg};{endif}
-      }{endif}{if $cathighcolor}
-      span.cathigh {{if $cathighcolorfg}
-        color:{$cathighcolorfg};{endif}{if $cathighcolorbg}
-        background-color:{$cathighcolorbg};{endif}
-      }{endif}{if $visitedcol}
-      span.visited,dl a:visited {{if $visitedcolfg}
-        color:{$visitedcolfg};{endif}{if $visitedcolbg}
-        background-color:{$visitedcolbg};{endif}
-        text-decoration:underline;
-      }
-      dl a:visited img {
-        background-color:#FFFFFF;
-      }{endif}{if $colorown}
-      span.own {{if $colorownfg}
-        color:{$colorownfg};{endif}{if $colorownbg}
-        background-color:{$colorownbg};{endif}
-      }{endif}{if $font}
-      p,h1,h2,h3,h4,ul,ol,li,div,td,th,address,nobr,b,i,dl,dd,dt,a,a:link,a:visited,a:active {{if $fontcolor}
-        color:{$fontcolor};{endif}{if $fontsize}
-        font-size:{$fontsize};{endif}{if $fontfamily}
-        font-family:{$fontfamily};{endif}
-      }{endif}
-      span.q {
-        color:{if $qcolor}{$qcolor}{else}#333333{endif};{if $qcolorback}
-        background-color:{$qcolorback};{endif}
-        display:block;
-      }
-      span.active {
-        color:{if $activecolorf}{$activecolorf}{else}#552200{endif};
-        font-weight:bold;
-        text-decoration:underline;{if $activecolorb}
-        background-color:{$activecolorb}{endif}
-      }
-      span.sig, span.sig a {
-        color:#999999;
-      }
-    //--></style>{endif}
-    <link rel="shortcut icon" title="SELFHTML Icon" type="image/x-icon" href="http://src.selfhtml.org/favicon.ico" />
-    <link rel="top" title="SELFHTML Forum" href="{$forumbase}" />{if $prev}
-    <link rel="prev" href="{$prev}" title="Vorherige Nachricht" />{endif}{if $next}
-    <link rel="next" href="{$next}" title="N&auml;chste Nachricht" />{endif}{if $first}
-    <link rel="first" href="{$first}" title="Erste Nachricht" />{endif}{if $last}
-    <link rel="last" href="{$last}" title="Letzte Nachricht" />{endif}
-    <link rel="help" title="Forums-FAQ" href="/faq/" />
-    <link rel="search" title="SELFHTML Suche" href="http://suche.de.selfhtml.org/" />
-    <link rel="bookmark" href="http://de.selfhtml.org/" title="SELFHTML" />
-    <link rel="bookmark" href="/archiv/" title="Forums-Archiv" />
-    <link rel="bookmark" href="http://suche.de.selfhtml.org/" title="SELFHTML Suche" />
-    <link rel="bookmark" href="http://aktuell.de.selfhtml.org/artikel/" title="Feature-Artikel" />
-    <link rel="bookmark" href="http://aktuell.de.selfhtml.org/tippstricks/" title="Tipps+Tricks" />
-    <link rel="bookmark" href="http://aktuell.de.selfhtml.org/links/" title="Linkverzeichnis" />
-  </head>
-  <body id="selfforumbody">
-    <div class="nav"><a class="an" name="top"><img src="http://src.selfhtml.org/refkap.gif" width="16" height="13" alt="Teil von" /></a>&nbsp;<a href="{$forumbase}"{if $frame} onclick="window.open(this,'_top'); return false;"{endif}>SELFHTML Forum</a></div>
-    <table class="header" id="selfforumheader">
-      <thead>
-        <tr>
-          <td class="hdrelse" style="width:110px;"><img src="http://src.selfhtml.org/logo.gif" width="106" height="109" alt="SELFHTML" /></td>
-          <td class="hdrelse"><h1 class="ph1">SELFHTML Forum:<br />{if $err}Fehler{else}{if $fupto}Antwort verfassen{else}Neue Nachricht verfassen{endif}{endif}</h1></td>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td class="info"><img src="http://src.selfhtml.org/dokx.gif" width="30" height="20" alt="Informationsseite" /></td>
-          <td class="hdrtxt">
-            <p>{if $genprev}
-              <img src="http://src.selfhtml.org/down.gif" width="14" height="10" alt="nach unten" />&nbsp;<a href="#vorschau"><b>Vorschau</b></a><br />{endif}{if $do_spellcheck}
-              <img src="http://src.selfhtml.org/down.gif" width="14" height="10" alt="nach unten" />&nbsp;<a href="#rechtschreibpruefung"><b>Rechtschreibpr&uuml;fung</b></a><br />{endif}
-              <img src="http://src.selfhtml.org/down.gif" width="14" height="10" alt="nach unten" />&nbsp;<a href="#{if $err}fehler{else}{if $fupto}antworten{else}verfassen{endif}{endif}"><b>{if $err}Fehler{else}{if $fupto}Antwort verfassen{else}Neue Nachricht verfassen{endif}{endif}</b></a>
-            </p>{if !$err}
-            <p>
-              <a name="zu_diesem_Forum" class="an">Dies</a> ist ein Forum als Erg&auml;nzung zu <img src="http://src.selfhtml.org/serverkap.gif" width="15" height="13" alt="bereichs&uuml;bergreifendes Kapitel" />&nbsp;<a href="http://de.selfhtml.org/"{if $frame} onclick="window.open(this,'_top'); return false;"{endif}>SELFHTML</a>. Von allen hier Teilnehmenden werden HTML-Grundkenntnisse erwartet. Es wird erwartet, da&szlig; bei Problemen erst einmal in SELFHTML oder anderen Hilfen nach einer L&ouml;sung gesucht wird. Auch im Chat treffen sich fast den ganzen Tag &uuml;ber Gleichgesinnte und tauschen Infos und Hilfe aus!
-            </p>{endif}
-          </td>
-        </tr>
-        <tr>
-          <td colspan="2" class="hdrquick"><a href="#bottom"><img src="http://src.selfhtml.org/down.gif" width="14" height="10" alt="nach unten" /></a>&nbsp;</td>
-        </tr>
-      </tbody>
-    </table>{if $genprev}
-    <h2 class="sh2"><a class="an" name="vorschau">Vorschau</a></h2>
-    <p>Die folgende Nachricht zum Thema stammt von: <b>{$Name}</b>{if $EMail}, <img src="http://src.selfhtml.org/mail.gif" width="15" height="10" alt="E-Mail" />&nbsp;<a href="mailto:{$EMail}">{$EMail}</a>{endif}, {$date}{if $HomepageUrl}<br /><a href="{$HomepageUrl}"{if $frame} onclick="window.open(this,'_top'); return false;"{endif}>{$HomepageUrl}</a>{endif}</p>
-    <h3>{if $cat}({$cat}) {endif}{$subject}</h3>
-    <p><tt>{$message}</tt></p>{if $ImageUrl}
-    <p><img src="{$ImageUrl}" alt="" /></p>{endif}
-    <div class="updown"><a href="#top"><img src="http://src.selfhtml.org/up.gif" width="14" height="10" alt="nach oben" /></a><a href="#bottom"><img src="http://src.selfhtml.org/down.gif" width="14" height="10" alt="nach unten" /></a></div>{endif}{if $do_spellcheck}
-    <h2 class="sh2"><a class="an" name="rechtschreibpruefung">Rechtschreibpr&uuml;fung</a></h2>
-    <form method="post" action="{$script}" accept-charset="{$charset},UTF-8">{if $fupto}
-      <input type="hidden" name="fupto" value="{$fupto}" />{endif}{if $assicheck}
-      <input type="hidden" name="assicheck" value="1" />{endif}
-      <input type="hidden" name="unid" value="{$unid}" />
-      <input type="hidden" name="qchar" value="{$qchar}" />
-      <input type="hidden" name="spellcheck_ok" value="1" />
-      <input type="hidden" name="body" value="{$orig_txt}" />
-      <input type="hidden" name="Name" value="{$Name}" />
-      <input type="hidden" name="EMail" value="{$EMail}" />
-      <input type="hidden" name="cat" value="{$cat}" />
-      <input type="hidden" name="subject" value="{$subject}" />
-      <input type="hidden" name="HomepageUrl" value="{$HomepageUrl}" />
-      <input type="hidden" name="ImageUrl" value="{$ImageUrl}" />
-      <p><tt>{$html_txt}</tt></p>
-      <p><input type="submit" name="spellcheck" value="&Auml;nderungen &uuml;bernehmen und Vorschau anzeigen" /> <input type="submit" name="preview" value="Abbrechen und Vorschau anzeigen" /></p>
-    </form>{else}{if $err}
-    <h2 class="sh2"><a class="an" name="fehler">Fehler</a></h2>
-    <p>{$err}</p>{else}
-    <h2 class="sh2"><a class="an" name="{if $fupto}antworten{else}verfassen{endif}">{if $fupto}Antwort verfassen{else}Neue Nachricht verfassen{endif}</a></h2>{if !$fupto}
-    <p>Mit einer neuen Nachricht wird auch ein neues Thema (neuer Thread) gestartet. Das ist sinnvoll, um eine Frage zu stellen oder eine neue Diskussion zu entfachen.</p>{endif}{endif}
-    <form method="post" action="{$script}" accept-charset="{$charset},UTF-8">{if $fupto}
-      <input type="hidden" name="fupto" value="{$fupto}" />{endif}{if $assicheck}
-      <input type="hidden" name="assicheck" value="1" />{endif}
-      <input type="hidden" name="unid" value="{$unid}" />
-      <input type="hidden" name="qchar" value="{$qchar}" />
-      <table class="gray" id="answerform">
-        <tr>
-         <td class="descr"><br /><b><label for="Name">Name:</label></b></td>
-         <td class="field"><br /><input type="text" name="Name" id="Name" value="{$Name}" size="40"{if $Name_max} maxlength="{$Name_max}"{endif} class="inpfield" /></td>
-        </tr>
-        <tr>
-         <td class="descr"><b><label for="EMail">E-Mail:</label></b></td>
-         <td class="field"><input type="text" name="EMail" id="EMail" value="{$EMail}" size="40"{if $EMail_max} maxlength="{$EMail_max}"{endif} class="inpfield" /></td>
-        </tr>
-        <tr>
-         <td class="descr"><b><label for="cat">Themenbereich:</label></b></td>
-         <td class="field"><select size="1" name="cat" id="cat"><option value="">Bitte ausw&auml;hlen!</option>{$cats}</select></td>
-        </tr>
-        <tr>
-         <td class="descr"><b><label for="subject">Thema:</label></b></td>
-         <td class="field"><input type="text" name="subject" id="subject" value="{$subject}" size="40"{if $subject_max} maxlength="{$subject_max}"{endif} class="inpfield" /></td>
-        </tr>
-        <tr>
-         <td class="field" colspan="2">
-          <b><label for="body">Nachrichtentext:</label></b><br />
-          <tt><textarea cols="{if $twidth}{$twidth}{else}76{endif}" rows="{if $theight}{$theight}{else}25{endif}" name="body" id="body" style="font-size:{if $fontsize}{$fontsize}{else}10pt{endif};color:{if $fontcolor}{$fontcolor}{else}#0000C0{endif};{if !$twidth}width:580px;{endif}{if !$theight}height:380px;{endif}">{if $cite}{$cite}{else}{$body}{endif}</textarea></tt>
-         </td>
-        </tr>
-        <tr>
-         <td class="descr"><b><label for="HomepageURL">URL (optional):</label></b></td>
-         <td class="field"><input type="text" name="HomepageUrl" id="HomepageURL" value="{if $HomepageUrl}{$HomepageUrl}{else}http://{endif}" size="40" class="inpfield" /></td>
-        </tr>
-        <tr>
-         <td class="descr"><b><label for="ImageURL">Grafik-URL (optional):</label></b></td>
-         <td class="field"><input type="text" name="ImageUrl" id="ImageURL" value="{if $ImageUrl}{$ImageUrl}{else}http://{endif}" size="40" class="inpfield" /></td>
-        </tr>{if $previewswitchtype == "checkbox"}
-        <tr>
-         <td class="descr"><b><label for="preview">Vorschau generieren</label></b></td>
-         <td class="field"><input type="checkbox" name="preview" id="preview" value="1"{if $preview} checked="checked"{endif} /></td>
-        </tr>
-        <tr>
-         <td class="descr"><b><label for="spellcheck">Rechtschreibung &uuml;berpr&uuml;fen</label></b></td>
-         <td class="field"><input type="checkbox" name="spellcheck" id="spellcheck" value="1" /></td>
-        </tr>{endif}
-        <tr>
-         <td class="field" colspan="2"><input type="submit" value="Nachricht absenden" />{if $previewswitchtype == "button"} <input type="submit" name="preview" value="Vorschau generieren" /> <input type="submit" name="spellcheck" value="Rechtschreibung &uuml;berpr&uuml;fen" />{endif}</td>
-        </tr>
-      </table>
-    </form>
-    <p>Bitte nur <b>einmal</b> auf <i>Nachricht absenden</i> klicken, dann abwarten!</p>
-    {endif}
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset={$charset}" />
+<meta http-equiv="Expires" content="now" />
+<meta http-equiv="Cache-Control" content="no-cache" />
+<title>SELFHTML Forum: {if $err}Fehler{else}{if $fupto}Antwort verfassen{else}Neue Nachricht verfassen{endif}{endif}</title>
+<meta name="robots" content="noindex,nofollow" />
+<meta name="author" content="Stefan M&uuml;nz, stefan.muenz@selfhtml.org" />
+<meta name="DC.Publisher" content="SELFHTML Forum" />
+<meta name="DC.Identifier" content="{$script}" />
+<meta name="DC.Language" content="de" />
+<meta name="DC.Rights" content="" />
+<meta name="SELF.Pagetype" content="page" />
+<link rel="top" href="{$forumbase}" title="SELFHTML Forum" />
+{if $prev}<link rel="prev" href="{$prev}" title="Vorherige Nachricht" />
+{endif}{if $next}<link rel="next" href="{$next}" title="N&auml;chste Nachricht" />
+{endif}{if $first}<link rel="first" href="{$first}" title="Erste Nachricht" />
+{endif}{if $last}<link rel="last" href="{$last}" title="Letzte Nachricht" />
+{endif}<link rel="help" href="/faq/" title="Forums-FAQ" />
+<link rel="search" href="http://suche.de.selfhtml.org/" title="SELFHTML Suche" />
+<link rel="bookmark" href="/archiv/" title="Forums-Archiv" />
+<link rel="bookmark" href="http://de.selfhtml.org/" title="SELFHTML" />
+<link rel="bookmark" href="http://aktuell.de.selfhtml.org/artikel/" title="Feature-Artikel" />
+<link rel="bookmark" href="http://aktuell.de.selfhtml.org/tippstricks/" title="Tipps &amp; Tricks" />
+<link rel="bookmark" href="http://aktuell.de.selfhtml.org/links/" title="Linkverzeichnis" />
+<link rel="shortcut icon" href="http://src.selfhtml.org/favicon.ico" type="image/x-icon" title="SELFHTML Icon" />
+{if $owncss}{if $cssoverwrite}<link rel="stylesheet" type="text/css" href="http://src.selfhtml.org/forum_strict.css" title="SELFHTML Forum Stylesheet" />
+{endif}<link rel="stylesheet" type="text/css" href="{$owncss}" title="SELFHTML Forum Stylesheet" />
+{else}<link rel="stylesheet" type="text/css" href="http://src.selfhtml.org/forum_strict.css" title="SELFHTML Forum Stylesheet" />
+{endif}<style type="text/css" title="SELFHTML Forum Stylesheet">
+{if $font}body {
+{if $fontcolor}color:{$fontcolor};
+{endif}{if $fontsize}font-size:{$fontsize};
+{endif}{if $fontfamily}font-family:{$fontfamily};
+{endif}}
+{endif}.q {
+color:{if $qcolor}{$qcolor}{else}#333333{endif};
+{if $qcolorback}background-color:{$qcolorback};
+{endif}display:block;
+}
+.sig, .sig a {
+color:#999999;
+}
+textarea {
+{if !$twidth}width:580px;
+{endif}{if !$theight}height:380px;
+{endif}font-size:{if $fontsize}{$fontsize}{else}13px{endif};
+color:{if $fontcolor}{$fontcolor}{else}#0000C0{endif};
+}
+</style>
+</head>
+<body id="selfforum-neuenachricht">
 
-    <div class="updown" id="selfforumbottom"><a href="#top"><img src="http://src.selfhtml.org/up.gif" width="14" height="10" alt="nach oben" /></a></div>
-    <div class="nav"><a class="an" name="bottom"><img src="http://src.selfhtml.org/refkap.gif" width="16" height="13" alt="Teil von" /></a>&nbsp;<a href="{$forumbase}"{if $frame} onclick="window.open(this,'_top'); return false;"{endif}>SELFHTML Forum</a></div>
-    <p>&copy; 1998-2004 <img src="http://src.selfhtml.org/serverdoc.gif" width="15" height="10" border="0" alt="Seite" />&nbsp;<a href="http://www.selfhtml.org/de.impressum.html">Impressum</a>, f&uuml;r das <img src="http://src.selfhtml.org/de.gif" width="16" height="10" border="0" alt="deutschsprachige Seite" />&nbsp;<a href="http://wwwtech.de/cforum/">Classic Forum</a>: <img src="http://src.selfhtml.org/mail.gif" width="15" height="10" border="0" alt="E-Mail">&nbsp;<a href="mailto:ckruse@wwwtech.de">ckruse@wwwtech.de</a></p>
-  </body>
+<div id="top"><img src="http://src.selfhtml.org/refkap.gif" width="16" height="13" alt="Teil von" />&nbsp;<a href="{$forumbase}">SELFHTML Forum</a></div>
+
+<table id="kopf">
+<tr>
+<td id="kopf-logo"><img src="http://src.selfhtml.org/logo.gif" width="106" height="109" alt="SELFHTML" /></td>
+<td id="kopf-titel"><h1>SELFHTML Forum<br />{if $err}Fehler{else}{if $fupto}Antwort verfassen{else}Neue Nachricht verfassen{endif}{endif}</h1></td>
+</tr>
+<tr>
+<td id="kopf-seitentyp"><img src="http://src.selfhtml.org/dokx.gif" width="30" height="20" alt="Informationsseite" /></td>
+<td id="kopf-haupt">
+
+<ul>
+{if $genprev}<li><img src="http://src.selfhtml.org/down.gif" width="14" height="10" alt="nach unten" />&nbsp;<a href="#vorschau">Vorschau</a></li>
+{endif}{if $do_spellcheck}<li><img src="http://src.selfhtml.org/down.gif" width="14" height="10" alt="nach unten" />&nbsp;<a href="#rechtschreibpruefung">Rechtschreibpr&uuml;fung</a></li>
+{endif}<li><img src="http://src.selfhtml.org/down.gif" width="14" height="10" alt="nach unten" />&nbsp;<a href="#nachrichtverfassen">{if $err}Fehler{else}{if $fupto}Antwort verfassen{else}Neue Nachricht verfassen{endif}{endif}</a></li>
+</ul>
+
+{if !$err}<p id="zu_diesem_Forum">Dies ist ein Forum als Erg&auml;nzung zu <img src="http://src.selfhtml.org/serverkap.gif" width="15" height="13" alt="bereichs&uuml;bergreifendes Kapitel" />&nbsp;<a href="http://de.selfhtml.org/">SELFHTML</a>. Von allen hier Teilnehmenden werden HTML-Grundkenntnisse erwartet. Es wird erwartet, dass bei Problemen erst einmal in SELFHTML oder anderen Hilfen nach einer L&ouml;sung gesucht wird. Auch im <img src="http://src.selfhtml.org/dok.gif" width="15" height="10" alt="Seite" />&nbsp;<a href="http://aktuell.de.selfhtml.org/live/chat.htm">Chat</a> treffen sich fast den ganzen Tag &uuml;ber Gleichgesinnte und tauschen Infos und Hilfe aus!</p>
+
+{endif}</td>
+</tr>
+<tr>
+<td id="kopf-down" colspan="2"><a href="#bottom"><img src="http://src.selfhtml.org/down.gif" width="14" height="10" alt="nach unten" /></a></td>
+</tr>
+</table>
+
+{if $genprev}<h2 id="vorschau">Vorschau</h2>
+
+<p id="nachricht-autor">Die folgende Nachricht zum Thema stammt von: <strong>{$Name}</strong>{if $EMail}, <img src="http://src.selfhtml.org/mail.gif" width="15" height="10" alt="E-Mail" />&nbsp;<a href="mailto:{$EMail}">{$EMail}</a>{endif}, {$date}{if $HomepageUrl}<br />
+<a href="{$HomepageUrl}">{$HomepageUrl}</a>{endif}</p>
+
+<h3>{if $cat}({$cat}) {endif}{$subject}</h3>
+
+<p id="nachricht-text">{$message}</p>
+
+{if $ImageUrl}<p id="nachricht-bild"><img src="{$ImageUrl}" alt="" /></p>
+
+{endif}<div class="updown"><a href="#top"><img src="http://src.selfhtml.org/up.gif" width="14" height="10" alt="nach oben" /></a> <a href="#bottom"><img src="http://src.selfhtml.org/down.gif" width="14" height="10" alt="nach unten" /></a></div>
+
+{endif}{if $do_spellcheck}<h2 id="rechtschreibpruefung">Rechtschreibpr&uuml;fung</h2>
+
+<form method="post" action="{$script}" accept-charset="{$charset},UTF-8">
+
+<p id="nachricht-text">{$html_txt}</p>
+
+<p>
+{if $fupto}<input type="hidden" name="fupto" value="{$fupto}" />{endif}
+{if $assicheck}<input type="hidden" name="assicheck" value="1" />
+{endif}<input type="hidden" name="unid" value="{$unid}" />
+<input type="hidden" name="qchar" value="{$qchar}" />
+<input type="hidden" name="spellcheck_ok" value="1" />
+<input type="hidden" name="body" value="{$orig_txt}" />
+<input type="hidden" name="Name" value="{$Name}" />
+<input type="hidden" name="EMail" value="{$EMail}" />
+<input type="hidden" name="cat" value="{$cat}" />
+<input type="hidden" name="subject" value="{$subject}" />
+<input type="hidden" name="HomepageUrl" value="{$HomepageUrl}" />
+<input type="hidden" name="ImageUrl" value="{$ImageUrl}" />
+<input type="submit" name="spellcheck" value="&Auml;nderungen &uuml;bernehmen und Vorschau anzeigen" />
+<input type="submit" name="preview" value="Abbrechen und Vorschau anzeigen" />
+</p>
+
+</form>
+
+{else}{if $err}<h2 id="nachrichtverfassen">Fehler</h2>
+
+<p>{$err}</p>
+
+{else}<h2 id="nachrichtverfassen">{if $fupto}Antwort verfassen{else}Neue Nachricht verfassen{endif}</h2>
+
+{if !$fupto}<p>Mit einer neuen Nachricht wird auch ein neues Thema (neuer Thread) gestartet. Das ist sinnvoll, um eine Frage zu stellen oder eine neue Diskussion zu entfachen.</p>
+
+{endif}
+
+{endif}<form method="post" action="{$script}" accept-charset="{$charset},UTF-8">
+
+<table id="antwortformular">
+<tr>
+<th><label for="formular-name">Name:</label></th>
+<td>
+{if $fupto}<input type="hidden" name="fupto" value="{$fupto}" />
+{endif}{if $assicheck}<input type="hidden" name="assicheck" value="1" />
+{endif}<input type="hidden" name="unid" value="{$unid}" />
+<input type="hidden" name="qchar" value="{$qchar}" />
+<input type="text" name="Name" id="formular-name" value="{$Name}" size="40"{if $Name_max} maxlength="{$Name_max}"{endif} class="eingabefeld" />
+</td>
+</tr>
+<tr>
+<th><label for="formular-email">E-Mail:</label></th>
+<td><input type="text" name="EMail" id="formular-email" value="{$EMail}" {if $EMail_max} maxlength="{$EMail_max}" {endif}size="40" class="eingabefeld" /></td>
+</tr>
+<tr>
+<th><label for="formular-themenbereich">Themenbereich:</label></th>
+<td><select size="1" name="cat" id="formular-themenbereich"><option value="">Bitte ausw&auml;hlen!</option>{$cats}</select></td>
+</tr>
+<tr>
+<th><label for="formular-thema">Thema:</label></th>
+<td><input type="text" name="subject" id="formular-thema" value="{$subject}" size="40" class="eingabefeld" /></td>
+</tr>
+<tr>
+<td colspan="2"><label for="formular-nachricht"><strong>Nachrichtentext:</strong></label><br />
+<textarea cols="{if $twidth}{$twidth}{else}76{endif}" rows="{if $theight}{$theight}{else}25{endif}" name="body" id="formular-nachricht">{if $cite}{$cite}{else}{$body}{endif}</textarea></td>
+</tr>
+<tr>
+<th><label for="formular-homepage">URL (optional):</label></th>
+<td><input type="text" name="HomepageUrl" id="formular-homepage" value="{if $HomepageUrl}{$HomepageUrl}{else}http://{endif}" size="40" class="eingabefeld" /></td>
+</tr>
+<tr>
+<th><label for="formular-grafik">Grafik-URL (optional):</label></th>
+<td><input type="text" name="ImageUrl" id="formular-grafik" value="{if $ImageUrl}{$ImageUrl}{else}http://{endif}" size="40" class="eingabefeld" /></td>
+</tr>
+{if $previewswitchtype == "checkbox"}<tr>
+<th><label for="formular-vorschau">Vorschau generieren</label></th>
+<td><input type="checkbox" name="preview" id="formular-vorschau" value="1"{if $preview} checked="checked"{endif}/></td>
+</tr>
+<tr>
+<th><label for="formular-rechtschreibung">Rechtschreibung &uuml;berpr&uuml;fen</label></th>
+<td><input type="checkbox" name="spellcheck" id="formular-rechtschreibung" value="1" /></td>
+</tr>{endif}
+<tr>
+<td colspan="2">
+<input type="submit" id="formular-absenden" value="Nachricht absenden" />
+{if $previewswitchtype == "button"}<input type="submit" name="preview" id="formular-vorschau" value="Vorschau generieren" />
+<input type="submit" name="spellcheck" id="formular-rechtschreibung" value="Rechtschreibung &uuml;berpr&uuml;fen" />
+{endif}</td>
+</tr>
+</table>
+
+</form>
+
+<p id="doppelpostinghinweis">Bitte nur <strong>einmal</strong> auf <em>Nachricht absenden</em> klicken, dann abwarten!</p>
+
+{endif}<div class="updown"><a href="#top"><img src="http://src.selfhtml.org/up.gif" width="14" height="10" alt="nach oben" /></a></div>
+
+<div id="pfadunten"><img src="http://src.selfhtml.org/refkap.gif" width="16" height="13" alt="Teil von" />&nbsp;<a href="{$forumbase}">SELFHTML Forum</a></div>
+
+<p id="bottom">&copy; 1998-2004 <img src="http://src.selfhtml.org/mail.gif" width="15" height="10" alt="E-Mail" />&nbsp;<a href="mailto:stefan.muenz@selfhtml.org">stefan.muenz@selfhtml.org</a>, f&uuml;r das <img src="http://src.selfhtml.org/de.gif" width="16" height="10" alt="deutschsprachige Seite" />&nbsp;<a href="http://wwwtech.de/cforum/" style="font-weight:normal;">Classic Forum</a>: <img src="http://src.selfhtml.org/mail.gif" width="15" height="10" alt="E-Mail" />&nbsp;<a href="mailto:ckruse@wwwtech.de">ckruse@wwwtech.de</a></p>
+
+</body>
 </html>
