@@ -815,6 +815,24 @@ int flt_syntax_doit(flt_syntax_pattern_file_t *file,flt_syntax_block_t *block,u_
       *pos = ptr + (xhtml ? 6 : 4);
       return 0;
     }
+    else if(cf_strncmp(ptr,"<code",5) == 0) {
+      for(matched=0;*ptr;++ptr) {
+        if(cf_strncmp(ptr,"<code",5) == 0) {
+          ++matched;
+          str_chars_append(cnt,"<code",5);
+          ptr += 4;
+        }
+        else if(cf_strncmp(ptr,"</code>",7) == 0) {
+          --matched;
+          str_chars_append(cnt,"</code>",7);
+          ptr += 6;
+          if(matched == 0) break;
+        }
+        else str_char_append(cnt,*ptr);
+      }
+
+      continue;
+    }
 
     for(i=0,matched=0;i<block->statement.elements && matched == 0;++i) {
       statement = array_element_at(&block->statement,i);
@@ -1242,6 +1260,8 @@ int flt_syntax_highlight(t_string *content,t_string *bco,const u_char *lang,cons
 
   str_chars_append(bco,"<code title=\"",13);
   str_chars_append(bco,lang,strlen(lang));
+  str_chars_append(bco,"\" class=\"",9);
+  str_chars_append(bco,lang,strlen(lang));
   str_chars_append(bco,"\">",2);
   str_str_append(bco,&code);
   str_cleanup(&code);
@@ -1288,6 +1308,8 @@ int flt_syntax_execute(t_configuration *fdc,t_configuration *fvc,const u_char *d
   if(stat(str.content,&st) == -1) {
     str_chars_append(bco,"<code title=\"",13);
     str_chars_append(bco,parameters[1],strlen(parameters[1]));
+    str_chars_append(bco,"\" class=\"",9);
+    str_chars_append(bco,parameters[1],strlen(parameters[1]));
     str_chars_append(bco,"\">",2);
     str_str_append(bco,content);
     str_chars_append(bco,"</code>",7);
@@ -1307,6 +1329,8 @@ int flt_syntax_execute(t_configuration *fdc,t_configuration *fvc,const u_char *d
   /* {{{ highlight content */
   if(flt_syntax_highlight(content,bco,lang,str.content) != 0) {
     str_chars_append(bco,"<code title=\"",13);
+    str_chars_append(bco,parameters[1],strlen(parameters[1]));
+    str_chars_append(bco,"\" class=\"",9);
     str_chars_append(bco,parameters[1],strlen(parameters[1]));
     str_chars_append(bco,"\">",2);
     str_str_append(bco,content);

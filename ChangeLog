@@ -13,4 +13,6 @@
 	* src/perl/Plugins/Makefile.am: Added pathes plugin
 	* src/perl/Plugins/XMLRPCUserManagement.pm: Changed behavior of registering
 		users
+	* src/modules/flt_syntax.c: Added possibility to embed code, added class
+		attributes (class="lang")
 
