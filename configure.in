@@ -286,23 +286,19 @@ AC_TYPE_SIZE_T
 AC_TYPE_PID_T
 AC_TYPE_SIGNAL
 
-AC_OUTPUT(cgi-bin/Makefile
-cgi-bin/fo_userconf
-cgi-bin/fo_usermanagement
-cgi-bin/admin/Makefile
-cgi-bin/admin/fo_xmlrpc
-htdocs/Makefile
-htdocs/archiv/Makefile
-htdocs/my/Makefile
+AC_OUTPUT(
 Makefile
-cgi-shared/Makefile
-cgi-shared/config/Makefile
-cgi-shared/Plugins/Makefile
-cgi-shared/Plugins/Management/Makefile
-cgi-shared/docs/Makefile
-cgi-shared/data/Makefile
-cgi-shared/data/messages/Makefile
-src/Makefile src/modules/Makefile
+conf/Makefile
+scripts/fo_userconf
+scripts/fo_usermanagement
+scripts/admin/Makefile
+scripts/admin/fo_xmlrpc
+scripts/msgs2db.pl
+scripts/indextips.pl
+src/perl/Plugins/Makefile
+src/perl/Plugins/Management/Makefile
+src/Makefile
+src/modules/Makefile
 src/parsetpl/Makefile
 src/templates/Makefile
 src/templates/de/Makefile
@@ -312,22 +308,16 @@ src/templates/de/tpl_html4/Makefile
 src/templates/de/tpl_xhtml10/Makefile
 src/templates/fr/tpl_html4/Makefile
 src/templates/fr/tpl_xhtml10/Makefile
-cgi-shared/config/fo_arcview.conf
-cgi-shared/config/fo_default.conf
-cgi-shared/config/fo_post.conf
-cgi-shared/config/fo_userconf.conf
-cgi-shared/config/fo_view.conf
-cgi-shared/config/fo_server.conf
-cgi-shared/config/fo_vote.conf
-cgi-shared/config/fo_usermanagement.conf
-cgi-shared/config/fo_xmlrpc.conf
+conf/fo_arcview.conf
+conf/fo_default.conf
+conf/fo_post.conf
+conf/fo_userconf.conf
+conf/fo_view.conf
+conf/fo_server.conf
+conf/fo_vote.conf
+conf/fo_usermanagement.conf
+conf/fo_xmlrpc.conf
 Doxyfile
-scripts/msgs2db.pl
-src/perl/CForum-Clientlib/Makefile.PL
-src/perl/CForum-Configparser/Makefile.PL
-src/perl/CForum-Plugins/Makefile.PL
-src/perl/CForum-Template/Makefile.PL
-src/perl/CForum-Validator/Makefile.PL
 )
 
 dnl eof
