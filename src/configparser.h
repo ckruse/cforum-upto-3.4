@@ -267,6 +267,8 @@ void cfg_init(void);
 
 void cf_destroy_modules_array(void *arg);
 
+void cfg_destroy(void);
+
 #endif
 
 /* eof */

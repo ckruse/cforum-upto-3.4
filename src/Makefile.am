@@ -36,7 +36,7 @@ libserverlib_la_LIBADD=libcfhashlib.la libcfutils.la libcfreadline.la $(PTHREAD_
 libserverlib_la_LDFLAGS=-export-dynamic -avoid-version
 
 fo_server_SOURCES=fo_server.c
-fo_server_LDADD=libcfcharconvert.la libcfreadline.la libcfutils.la libserverlib.la libconfigparser.la $(PTHREAD_LIB)
+fo_server_LDADD=libcfcharconvert.la libcfreadline.la libcfutils.la libserverlib.la libconfigparser.la modules/flt_xmlstorage.la $(PTHREAD_LIB)
 fo_server_LDFLAGS=-export-dynamic
 
 # eof

@@ -140,6 +140,18 @@ void cf_run_archiver(void) {
         cf_unregister_thread(forum,oldest_t);
         cf_remove_thread(forum,oldest_t);
 
+	/*
+	 * lock is no longer needed, it's been removed from the thread list; but
+	 * there may be threads waiting for this thread. This would be fatal, e.g.
+	 * if we destroy the complete thread it would lead into undefined behavior!
+	 *
+	 * To avoid the situation described above wie lock the thread exclusively.
+	 * This forces the scheduler to run the other threads first. And the exclusive
+	 * write lock ensures that no thread waits for this thread.
+	 */
+	CF_RW_WR(&to_archive[len-1]->lock);
+	CF_RW_UN(&to_archive[len-1]->lock);
+
 
         /* all references to this thread are released, so run the archiver plugins */
         if(Modules[ARCHIVE_HANDLER].elements) {
@@ -154,8 +166,8 @@ void cf_run_archiver(void) {
 
         if(ret == FLT_EXIT) {
           cf_cleanup_thread(to_archive[len-1]);
-
           free(to_archive[len-1]);
+
           to_archive = fo_alloc(to_archive,--len,sizeof(t_thread *),FO_ALLOC_REALLOC);
         }
       }
@@ -173,27 +185,8 @@ void cf_run_archiver(void) {
       cf_archive_threads(forum,to_archive,len);
 
       for(j=0;j<len;++j) {
-        for(p=to_archive[j]->postings;p;p=p1) {
-          str_cleanup(&p->user.name);
-          str_cleanup(&p->user.ip);
-          str_cleanup(&p->subject);
-          str_cleanup(&p->unid);
-          str_cleanup(&p->content);
-
-          if(p->user.email.len) str_cleanup(&p->user.email);
-          if(p->user.img.len) str_cleanup(&p->user.img);
-          if(p->user.hp.len) str_cleanup(&p->user.hp);
-          if(p->category.len) str_cleanup(&p->category);
-
-          cf_list_destroy(&p->flags,cf_destroy_flag);
-
-          p1 = p->next;
-          free(p);
-        }
-
-        CF_RW_UN(&to_archive[j]->lock);
-        cf_rwlock_destroy(&to_archive[j]->lock);
-        free(to_archive[j]);
+	cf_cleanup_thread(to_archive[j]);
+	free(to_archive[j]);
       }
 
       free(to_archive);
@@ -210,15 +203,13 @@ void cf_archive_threads(t_forum *forum,t_thread **to_archive,size_t len) {
   t_handler_config *handler;
   t_archive_thread fkt;
 
-  for(i=0;i<len;i++) {
-    if(Modules[ARCHIVE_THREAD_HANDLER].elements) {
-      ret = FLT_DECLINE;
+  if(Modules[ARCHIVE_THREAD_HANDLER].elements) {
+    ret = FLT_DECLINE;
 
-      for(j=0;j<Modules[ARCHIVE_THREAD_HANDLER].elements && ret == FLT_DECLINE;j++) {
-        handler = array_element_at(&Modules[ARCHIVE_THREAD_HANDLER],j);
-        fkt     = (t_archive_thread)handler->func;
-        ret     = fkt(forum,to_archive[i]);
-      }
+    for(j=0;j<Modules[ARCHIVE_THREAD_HANDLER].elements && ret == FLT_DECLINE;j++) {
+      handler = array_element_at(&Modules[ARCHIVE_THREAD_HANDLER],j);
+      fkt     = (t_archive_thread)handler->func;
+      ret     = fkt(forum,to_archive,len);
     }
   }
 }

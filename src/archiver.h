@@ -40,7 +40,7 @@ typedef int (*t_archive_thrdlst_writer)(t_forum *forum);
  * \param thread The thread object
  * \return FLT_DECLINE if this plugin is not used, FLT_OK if everything was OK
  */
-typedef int (*t_archive_thread)(t_forum *forum,t_thread *thread);
+typedef int (*t_archive_thread)(t_forum *forum,t_thread **threads,size_t len);
 
 /**
  * This function archives a list of threads to their right position in the archive.

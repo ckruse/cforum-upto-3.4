@@ -1,9 +1,15 @@
+2005-01-07 Christian Kruse <ckruse@wwwtech.de>
+	* src/modules/flt_xmlstorage.c: Debugging, bugfixing and wrote
+		flt_xmlstorage_archive_threads
+	* src/archiver.[ch]: Debugging, bugfixing. Now the storage module gets a
+		complete list of threads to archive, this seems to make more sense
+	* src/configparser.h: Added prototype of cfg_destroy()
+
 2005-01-04 Christian Kruse <ckruse@wwwtech.de>
 	* src/utils.[ch]: Added cf_make_path() in utilities
 	* src/modules/flt_xmlstorage.c: Did several bugfixes, removed locking, added
 		support for new forum (empty or non-existant forum.xml)
 	* src/serverlib.c: Several bugfixes
-
 
 2005-01-02 Christian Kruse <ckruse@wwwtech.de>
 	* cf_pthread.h: Removed tabs
@@ -92,6 +98,13 @@
 	* src/perl/CForum-Clientlib/Clientlib.xs: Fixed bug in
 		CForum::Clientlib::Thread->deleted
 	* src/fo_arcview.c: Deleted unecessary cfg_get_value() call
+
+2004-11-29 Christian Kruse <ckruse@wwwtech.de>
+	* cgi-shared/Plugins/RandomSignature.pm: Added UTF-8 validation and it also
+		parses more than one [remote-signature:]
+	* src/modules/flt_include.c, src/templates/de/tpl_xhtml10/forum_posting.html,
+		src/templates/de/tpl_xhtml10/forum_begin.html,
+		cgi-shared/config/modules.de.xml: Added support for an XSLT template
 
 2004-11-28 Christian Kruse <ckruse@wwwtech.de>
 	* src/cfcgi.c: Fixed a really nasty bug in cf_cgi_url_decode(); now it is safe
@@ -1031,18 +1044,3 @@
 		errormessages.txt file. Valid placeholders are %d and %s.
 	* fo_view.c: replace error_message through str_error_message
 
-
-=======
->>>>>>> .merge-right.r356
-=======
-2004-11-29 Christian Kruse <ckruse@wwwtech.de>
-	* cgi-shared/Plugins/RandomSignature.pm: Added UTF-8 validation and it also
-		parses more than one [remote-signature:]
-	* src/modules/flt_include.c, src/templates/de/tpl_xhtml10/forum_posting.html,
-		src/templates/de/tpl_xhtml10/forum_begin.html,
-		cgi-shared/config/modules.de.xml: Added support for an XSLT template
-
-
->>>>>>> .merge-rechts.r368
-=======
->>>>>>> .merge-rechts.r382
