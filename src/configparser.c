@@ -240,7 +240,9 @@ t_conf_opt fo_vote_options[] = {
   { "</Filters>", NULL, CFG_OPT_CONFIG, NULL },
 
   { "<General>", NULL, CFG_OPT_CONFIG, NULL },
-  { "VotingDatabase",           handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG,   &fo_vote_conf    },
+  { "VotingDatabase",  handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG,              &fo_vote_conf },
+  { "Send204",         handle_command,   CFG_OPT_UNIQUE|CFG_OPT_CONFIG|CFG_OPT_USER, &fo_vote_conf },
+  { "OkTemplate",      handle_command,   CFG_OPT_CONFIG|CFG_OPT_NEEDED,              &fo_vote_conf },
   { "</General>", NULL, CFG_OPT_CONFIG, NULL },
 
   { NULL, NULL, 0, NULL }

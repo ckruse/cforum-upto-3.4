@@ -91,6 +91,30 @@ int is_id(const u_char *id) {
 }
 /* }}} */
 
+void send_ok_output(t_cf_hash *head,t_name_value *cs) {
+  t_name_value *cfg_tpl = cfg_get_first_value(&fo_vote_conf,"OkTemplate");
+  u_char tpl_name[256];
+  t_cf_template tpl;
+
+  generate_tpl_name(tpl_name,256,cfg_tpl);
+
+  if(tpl_cf_init(&tpl,tpl_name) != 0) {
+    printf("500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
+    str_error_message("E_TPL_NOT_FOUND",NULL);
+    return;
+  }
+
+  printf("Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
+  tpl_cf_parse(&tpl);
+}
+
+/**
+ * Dummy function, for ignoring unknown directives
+ */
+int ignre(t_configfile *cf,u_char *name,u_char **args,int argnum) {
+  return 0;
+}
+
 /**
  * The main function of the forum voting program. No command line switches
  * used.
@@ -108,13 +132,13 @@ int main(int argc,char *argv[],char *env[]) {
   int sock,ret;
   t_array *cfgfiles;
   t_configfile dconf,conf;
-  u_char *fname,*ctid,*cmid,*a,buff[512],*uname;
+  u_char *fname,*ctid,*cmid,*a,buff[512],*uname,*ucfg;
   t_cf_hash *head;
   size_t len;
   DB_ENV *dbenv;
   DB *db;
   DBT key,data;
-  t_name_value *dbname,*cs;
+  t_name_value *dbname,*cs,*send204;
   int fd;
 
   /* set signal handler for SIGSEGV (for error reporting) */
@@ -183,6 +207,29 @@ int main(int argc,char *argv[],char *env[]) {
     cmid = cf_cgi_get(head,"m");
     a    = cf_cgi_get(head,"a");
 
+    /* {{{ read user config */
+    ucfg = get_uconf_name(uname);
+    if(ucfg) {
+      free(conf.filename);
+      conf.filename = ucfg;
+
+      if(read_config(&conf,ignre,CFG_MODE_USER) != 0) {
+        fprintf(stderr,"config file error!\n");
+
+        printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
+        str_error_message("E_VOTE_INTERNAL",NULL);
+
+        cfg_cleanup_file(&conf);
+        cfg_cleanup_file(&dconf);
+
+        return EXIT_FAILURE;
+      }
+    }
+    /* }}} */
+
+    send204 = cfg_get_first_value(&fo_vote_conf,"Send204");
+
+
     if(cmid && ctid && a && is_id(cmid) && is_id(ctid)) {
       if((sock = set_us_up_the_socket()) != -1) {
         /* {{{ open database and lock it */
@@ -230,7 +277,7 @@ int main(int argc,char *argv[],char *env[]) {
         }
 
         if(ret != DB_NOTFOUND) {
-          printf("Status: 501 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
+          printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
           str_error_message("E_VOTE_INTERNAL",NULL);
           fprintf(stderr,"db->get() error: %s\n",db_strerror(ret));
           return EXIT_FAILURE;
@@ -249,7 +296,10 @@ int main(int argc,char *argv[],char *env[]) {
         flock(fd,LOCK_UN);
         db->close(db,0);
 
-        printf("Status: 204 No Content\015\012\015\012");
+
+        if(send204 && cf_strcmp(send204->values[0],"yes") == 0) printf("Status: 204 No Content\015\012\015\012");
+        else send_ok_output(head,cs);
+        
 
         len = snprintf(buff,512,"VOTE %s\nTid: %s\nMid: %s\n\nQUIT\n",*a=='g'?"GOOD":"BAD",ctid,cmid);
         writen(sock,buff,len);
@@ -267,7 +317,10 @@ int main(int argc,char *argv[],char *env[]) {
     }
   }
   else {
-    if(uname) printf("Status: 204 No Content\015\012\015\012");
+    if(uname) {
+      if(send204 && cf_strcmp(send204->values[0],"yes") == 0) printf("Status: 204 No Content\015\012\015\012");
+      else send_ok_output(head,cs);
+    }
   }
 
 

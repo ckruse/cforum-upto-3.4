@@ -15,6 +15,18 @@
         </argument>
       </directive>
 
+      <directive name="Send204" arguments="1">
+        <argument paramname="vote_send204" type="radio" encode="plain">
+          <validate>^(yes|no)$</validate>
+          <question>Soll das Voting-Programm &quot;204 No Content&quot; als Antwort auf eine erfolgreiche Abstimmung liefern?</question>
+          <error>Soll das Voting-Programm &quot;204 No Content&quot; als Antwort auf eine erfolgreiche Abstimmung liefern? Bitte geben Sie &quot;ja&quot; oder &quot;nein&quot; an!</error>
+          <formvalues>
+            <value val="yes">Ja</value>
+            <value val="no" default="yes">Nein</value>
+          </formvalues>
+        </argument>
+      </directive>
+
       <directive name="TPLMode" arguments="1">
         <argument paramname="tplmode" type="radio" encode="plain">
           <validate>^\S+$</validate>

@@ -16,5 +16,6 @@
 
 <General>
  VotingDatabase "@with_cgi_shared/data/voting.dat"
+ OkTemplate "@libdir@/cforum/%s_%s_vote_ok.so"
 </General>
 

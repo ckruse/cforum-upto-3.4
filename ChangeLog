@@ -1,30 +1,8 @@
 2004-11-23 Christian Kruse <ckruse@wwwtech.de>
-	* src/clientlib.c, src/clientlib.h, src/serverlib.c: Added support for voting
-		in the CFTP protocol
-	* src/modules/flt_directives.c: Added support for link templates in [pref:]
-	* src/modules/flt_voting.c: Now the cache will be rebuild on voting
-	* src/modules/Makefile.am: Added flt_votingvariables
-	* src/fo_vote.c: Added locking, fixed bugs in header sending
-	* src/templates/de/tpl_*/forum_posting.html: Added output for voting
-	* src/configparser.c: Added parameter for VotingURL
-	* cgi-shared/config/Makefile.am: Added fo_vote.conf
-
-2004-11-22 Christian Kruse <ckruse@wwwtech.de>
-	* src/modules/flt_visited.c: Added »mark all visited« functionality
-	* src/modules/flt_posting.c, src/fo_view.c: Fixed a bug in tree view
-	* src/templates/de/tpl_html4/forum_begin.html,
-		src/templates/de/tpl_xhtml10/forum_begin.html: Added link for »mark all
-		visited« functionality
-	* src/templates/de/tpl_*/sendpass.html,
-		src/templates/de/tpl_*/chpass.html,
-		src/templates/de/tpl_*/userregister.html,
-		src/templates/de/tpl_*/useredit.html,
-		src/templates/de/tpl_*/forum_posting.html,
-		src/templates/de/tpl_*/forum_begin.html,
-		src/templates/de/tpl_*/thread.html: Converted to UTF-8, changed
-		accept-charset to accept-charset="UTF-8"
-	* cgi-shared/config/fo_default.conf.in: Changed locale and ExternCharset to
-		UTF-8
-	* cgi-shared/ForumUtils.pm: Bugfix in UTF-8-<>-handling
-
+	* src/fo_view.c: Deleted an unecessary variable
+	* src/fo_vote.c: Added functionality for 200 Ok response
+	* src/templates/de/tpl_*/Makefile.am: Added vote_ok.html
+	* src/configparser.c: Added directives Send204 and OkTemplate
+	* cgi-shared/config/fo_vote.conf.in: Added OkTemplate directive
+	* cgi-shared/config/modules.de.xml: Added Send204 directive
 
