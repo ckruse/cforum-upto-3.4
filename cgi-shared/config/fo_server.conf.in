@@ -18,6 +18,7 @@ Load "flt_registerednames"
 #Load "flt_nntp"
 Load "flt_extern"
 Load "flt_voting"
+Load "flt_xmlstorage"
 
 Forums "FORUM1"
 RunArchiver "1800"
@@ -42,6 +43,9 @@ ExternPort "6666"
 Forums "FORUM1"
 
 Forum FORUM1 {
+ MessagePath "@with_message_dir@"
+ ArchivePath "@with_archive_dir@"
+
  SortThreads "ascending"
  SortMessages "ascending"
 

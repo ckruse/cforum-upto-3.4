@@ -6,11 +6,16 @@ bin_PROGRAMS= \
   fo_server
 
 pkglib_LTLIBRARIES= \
+	libcfcharconvert.la \
+  libcfreadline.la \
   libcfhashlib.la \
   libcfutils.la \
   libconfigparser.la \
-  libserverlib.la \
-  libcfreadline.la
+  libserverlib.la
+
+libcfcharconvert_la_SOURCES=charconvert.c
+libcfcharconvert_la_LIBADD=$(ICONV)
+libcfcharconvert_la_LDFLAGS=-export-dynamic -avoid-version
 
 libcfreadline_la_SOURCES=readline.c
 libcfreadline_la_LDFLAGS=-export-dynamic -avoid-version

@@ -9,13 +9,11 @@
 # $LastChangedBy$
 #
 
+SocketName "@with_socket_path@"
+
 Forum FORUM1 {
  TemplateMode "html4"
  XHTMLMode "no"
-
- MessagePath "@with_message_dir@"
- ArchivePath "@with_archive_dir@"
- SocketName "@with_socket_path@"
 
  ErrorTemplate "@libdir@/cforum/%s_%s_errortpl.so"
  ErrorMessages "@CONFIGDIR@/errormessages.txt"

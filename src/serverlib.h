@@ -204,4 +204,7 @@ void *cf_worker(void *arg);
 void cf_destroy_flag(void *data);
 void cf_remove_thread(t_forum *forum,t_thread *t);
 
+void cf_destroy_forum(t_forum *forum);
+void cf_cleanup_forumtree(t_forum *forum);
+
 /* eof */

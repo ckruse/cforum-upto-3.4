@@ -115,6 +115,28 @@ void terminate(int sig) {
 }
 /* }}} */
 
+/* {{{ cleanup_worker */
+void cleanup_worker(void *data) {
+  pthread_t *thread = (pthread_t *)data;
+  pthread_join(*thread,NULL);
+}
+/* }}} */
+
+/* {{{ destroy_client */
+void destroy_client(void *data) {
+  t_cf_client *client = (t_cf_client *)data;
+  close(client->sock);
+}
+/* }}} */
+
+/* {{{ destroy_server */
+void destroy_server(void *data) {
+  t_server *srv = (t_server *)data;
+  free(srv->addr);
+  close(srv->sock);
+}
+/* }}} */
+
 /* {{{ struct option server_cmdline_options[] */
 static struct option server_cmdline_options[] = {
   { "pid-file",         1, NULL, 'p' },
@@ -191,7 +213,6 @@ int main(int argc,char *argv[]) {
   head.log.std = NULL;
   head.log.err = NULL;
 
-  /* \todo write cleanup code */
   head.forums  = cf_hash_new(NULL);
 
   head.workers.num = 0;
@@ -463,10 +484,64 @@ int main(int argc,char *argv[]) {
   }
   /* }}} */
 
+  /*
+   * Cleanup code follows
+   */
 
-  /* \todo cleanup code */
+  cf_log(CF_STD|CF_FLSH,__FILE__,__LINE__,"Going down...\n");
 
-  /* cleanup */
+  /* {{{ destroy workers */
+  cf_log(CF_STD|CF_FLSH,__FILE__,__LINE__,"Destroying workers...\n");
+  cf_cond_broadcast(&head.clients.cond);
+  cf_rw_list_destroy(&head.workers.list,cleanup_worker);
+  /* }}} */
+
+  /* {{{ destroy servers */
+  cf_log(CF_STD|CF_FLSH,__FILE__,__LINE__,"Destroying server sockets...\n");
+  cf_list_destroy(&head.servers.list,destroy_server);
+  /* }}} */
+
+  /* {{{ destroy clients */
+  cf_log(CF_STD|CF_FLSH,__FILE__,__LINE__,"Destroying clients...\n");
+  cf_list_destroy(&head.clients.list,destroy_client);
+  /* }}} */
+
+  /* {{{ destroy forums */
+  cf_log(CF_STD|CF_FLSH,__FILE__,__LINE__,"Destroying forums...\n");
+
+  forums = cfg_get_first_value(&fo_server_conf,NULL,"Forums");
+  for(i=0;i<forums->valnum;i++) {
+    actforum = cf_hash_get(head.forums,forums->values[i],strlen(forums->values[i]));
+    cf_destroy_forum(actforum);
+    free(actforum);
+  }
+
+  cf_hash_destroy(head.forums);
+  /* }}} */
+
+  /* {{{ destroy locks and so on */
+  cf_log(CF_STD|CF_FLSH,__FILE__,__LINE__,"Destroying locks...\n");
+
+  cf_rwlock_destroy(&head.lock);
+
+  cf_cond_destroy(&head.clients.cond);
+  cf_mutex_destroy(&head.clients.lock);
+
+  cf_mutex_destroy(&head.servers.lock);
+  /* }}} */
+
+  cf_hash_destroy(head.protocol_handlers);
+
+  /* {{{ destroy log */
+  cf_log(CF_STD|CF_FLSH,__FILE__,__LINE__,"Closing logfiles, bye bye...\n");
+  pthread_mutex_destroy(&head.log.lock);
+
+  fclose(head.log.std);
+  fclose(head.log.err);
+  /* }}} */
+
+  cleanup_modules(Modules);
+
   remove(pidfile);
 
   /* also the config */

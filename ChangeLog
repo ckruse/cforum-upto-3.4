@@ -1,3 +1,11 @@
+2005-01-01 Christian Kruse <ckruse@wwwtech.de>
+	* src/modules/flt_xmlstorage.c: Debugging, now it compiles cleanly
+	* src/fo_server.c, src/serverlib.c: Wrote a lot of cleanup code
+	* src/archiver.c: Added debug output
+	* cgi-shared/config/fo_server.conf.in,
+		cgi-shared/config/fo_default.conf.in: Fixed bugs in configuration
+		files
+
 2004-12-31 Christian Kruse <ckruse@wwwtech.de>
 	* src/defines.h: Removed FORUM_DTD constant, its only important for
 		flt_xmlstorage.c

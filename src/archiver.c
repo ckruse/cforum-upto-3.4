@@ -257,6 +257,7 @@ void cf_write_threadlist(t_forum *forum) {
     for(i=0;i<Modules[THRDLST_WRITE_HANDLER].elements && ret == FLT_DECLINE;i++) {
       handler = array_element_at(&Modules[THRDLST_WRITE_HANDLER],i);
       fkt     = (t_archive_thrdlst_writer)handler->func;
+      cf_log(CF_DBG|CF_FLSH,__FILE__,__LINE__,"starting disc writer\n");
       ret     = fkt(forum);
     }
   }

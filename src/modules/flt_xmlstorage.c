@@ -7,7 +7,7 @@
  * uses XML to save all data
  */
 
-/* {{{ Initial comments */
+/* {{{ initial comments */
 /*
  * $LastChangedDate$
  * $LastChangedRevision$
@@ -16,7 +16,7 @@
  */
 /* }}} */
 
-/* {{{ Includes */
+/* {{{ includes */
 #include "config.h"
 #include "defines.h"
 
@@ -28,6 +28,9 @@
 #include <pthread.h>
 
 #include <gdome.h>
+
+#include <sys/stat.h>
+#include <sys/types.h>
 
 struct sockaddr_un;
 
@@ -66,7 +69,7 @@ int flt_xmlstorage_cmp_thread(const void *a,const void *b) {
 }
 /* }}} */
 
-/* {{{ t_h_p */
+/* {{{ struct s_h_p */
 /** This struct is used to sort the thread list. It contains a hierarchical structure. */
 typedef struct s_h_p {
   t_posting *node; /**< The pointer to the posting */
@@ -139,7 +142,7 @@ void flt_xmlstorage_quicksort_posts(t_h_p *list,long low,long high) {
 }
 /* }}} */
 
-/* {{{flt_xmlstorage_sort_them */
+/* {{{ flt_xmlstorage_sort_them */
 /**
  * Sorting function.
  * \param node The t_h_p structure node
@@ -158,7 +161,7 @@ void flt_xmlstorage_sort_them(t_h_p *node) {
 }
 /* }}} */
 
-/* {{{flt_xmlstorage_free_structs */
+/* {{{ flt_xmlstorage_free_structs */
 /**
  * This function cleans up a hierarchical structure
  * \param node The t_h_p node
@@ -298,14 +301,12 @@ int flt_xmlstorage_make_forumtree(t_forum *forum) {
   t_array ary;
   u_char buff[50];
 
-  /* {{{ xml definitions */
   GdomeException e;
   GdomeDOMImplementation *di = gdome_di_mkref();
   GdomeDocument *doc_index,*doc_thread;
   GdomeDOMString *thread_str = gdome_str_mkref("Thread");
   GdomeNode *n,*n1,*n2,*root;
   GdomeNodeList *nl;
-  /* }}} */
 
   array_init(&ary,sizeof(thread),NULL);
 
@@ -366,11 +367,9 @@ int flt_xmlstorage_make_forumtree(t_forum *forum) {
     gdome_doc_unref(doc_thread,&e);
   }
 
-  /* {{{ xml cleanup */
   gdome_str_unref(thread_str);
   gdome_nl_unref(nl,&e);
   gdome_doc_unref(doc_index,&e);
-  /* }}} */
 
   str_cleanup(&path);
 
@@ -441,13 +440,11 @@ void flt_xmlstorage_create_threadtree(t_forum *forum,t_thread *thread,t_posting 
 
   unsigned long len,i,z = 0;
 
-  /* {{{ xml elements */
   GdomeException e;
   GdomeNodeList *nl_thr = gdome_n_childNodes(msg_elem_thread,&e);
 
   GdomeNode *n,*msg_ind;
   GdomeDOMString *name;
-  /* }}} */
 
   t_posting *p;
 
@@ -468,7 +465,6 @@ void flt_xmlstorage_create_threadtree(t_forum *forum,t_thread *thread,t_posting 
 
   cf_list_init(&post->flags);
 
-  /* {{{ handle header, message content and child messages */
   len = gdome_nl_length(nl_thr,&e);
   for(i=0,z=0;i<len;++i) {
     n = gdome_nl_item(nl_thr,i,&e);
@@ -514,11 +510,8 @@ void flt_xmlstorage_create_threadtree(t_forum *forum,t_thread *thread,t_posting 
     gdome_str_unref(name);
     gdome_n_unref(n,&e);
   }
-  /* }}} */
 
-  /* {{{ xml destruction */
   gdome_nl_unref(nl_thr,&e);
-  /* }}} */
 }
 /* }}} */
 
@@ -547,56 +540,41 @@ void flt_xmlstorage_handle_header(t_posting *p,GdomeNode *n) {
 
   t_posting_flag flag;
 
-  /* {{{ get date */
   ls = xml_get_attribute(date,"longSec");
   p->date          = strtol(ls,NULL,10);
-  /* }}} */
 
-  /* {{{ get author name */
   tmp = xml_get_node_value(a_name);
-        str_char_set(&p->user.name,tmp,strlen(tmp));
-        free(tmp);
-  /* }}} */
+  str_char_set(&p->user.name,tmp,strlen(tmp));
+  free(tmp);
 
-  /* {{{ get subject */
   tmp = xml_get_node_value(subject);
-        str_char_set(&p->subject,tmp,strlen(tmp));
-        free(tmp);
-  /* }}} */
+  str_char_set(&p->subject,tmp,strlen(tmp));
+  free(tmp);
 
-  /* {{{ get category */
   tmp = xml_get_node_value(category);
-        if(tmp) {
-          str_char_set(&p->category,tmp,strlen(tmp));
-                free(tmp);
-        }
-  /* }}} */
+  if(tmp) {
+    str_char_set(&p->category,tmp,strlen(tmp));
+    free(tmp);
+  }
 
-  /* {{{ get email */
-        tmp = xml_get_node_value(a_email);
-        if(tmp) {
-          str_char_set(&p->user.email,tmp,strlen(tmp));
-                free(tmp);
-        }
-  /* }}} */
+  tmp = xml_get_node_value(a_email);
+  if(tmp) {
+    str_char_set(&p->user.email,tmp,strlen(tmp));
+    free(tmp);
+  }
 
-  /* {{{ get homepage */
   tmp = xml_get_node_value(a_hp);
-        if(tmp) {
-          str_char_set(&p->user.hp,tmp,strlen(tmp));
-                free(tmp);
-        }
-  /* }}} */
+  if(tmp) {
+    str_char_set(&p->user.hp,tmp,strlen(tmp));
+    free(tmp);
+  }
 
-  /* {{{ get image */
   tmp = xml_get_node_value(a_img);
-        if(tmp) {
-          str_char_set(&p->user.img,tmp,strlen(tmp));
-                free(tmp);
-        }
-  /* }}} */
+  if(tmp) {
+    str_char_set(&p->user.img,tmp,strlen(tmp));
+    free(tmp);
+  }
 
-  /* {{{ get flags */
   len = gdome_nl_length(flags_nl,&exc);
   for(i=0;i<len;i++) {
     n1 = gdome_nl_item(flags_nl,i,&exc);
@@ -609,9 +587,7 @@ void flt_xmlstorage_handle_header(t_posting *p,GdomeNode *n) {
 
     gdome_n_unref(n1,&exc);
   }
-  /* }}} */
 
-  /* {{{ xml destruction */
   gdome_n_unref(flags,&exc);
   gdome_nl_unref(flags_nl,&exc);
   gdome_n_unref(a_name,&exc);
@@ -624,7 +600,6 @@ void flt_xmlstorage_handle_header(t_posting *p,GdomeNode *n) {
   gdome_n_unref(subject,&exc);
   gdome_n_unref(date,&exc);
   gdome_nl_unref(nl,&exc);
-  /* }}} */
 }
 /* }}} */
 
@@ -674,8 +649,8 @@ t_posting *flt_xmlstorage_stringify_posting(GdomeDocument *doc1,GdomeElement *t1
   elem1 = xml_create_element(doc1,"Name");
   elem2 = xml_create_element(doc2,"Name");
 
-  xml_set_value(doc1,elem1,p->user.name);
-  xml_set_value(doc2,elem2,p->user.name);
+  xml_set_value(doc1,elem1,p->user.name.content);
+  xml_set_value(doc2,elem2,p->user.name.content);
 
   gdome_el_appendChild(author1,(GdomeNode *)elem1,&e);
   gdome_el_appendChild(author2,(GdomeNode *)elem2,&e);
@@ -687,9 +662,9 @@ t_posting *flt_xmlstorage_stringify_posting(GdomeDocument *doc1,GdomeElement *t1
   elem1 = xml_create_element(doc1,"Email");
   elem2 = xml_create_element(doc2,"Email");
 
-  if(p->user.email) {
-    xml_set_value(doc1,elem1,p->user.email);
-    xml_set_value(doc2,elem2,p->user.email);
+  if(p->user.email.len) {
+    xml_set_value(doc1,elem1,p->user.email.content);
+    xml_set_value(doc2,elem2,p->user.email.content);
   }
 
   gdome_el_appendChild(author1,(GdomeNode *)elem1,&e);
@@ -702,9 +677,9 @@ t_posting *flt_xmlstorage_stringify_posting(GdomeDocument *doc1,GdomeElement *t1
   elem1 = xml_create_element(doc1,"HomepageUrl");
   elem2 = xml_create_element(doc2,"HomepageUrl");
 
-  if(p->user.hp) {
-    xml_set_value(doc1,elem1,p->user.hp);
-    xml_set_value(doc2,elem2,p->user.hp);
+  if(p->user.hp.len) {
+    xml_set_value(doc1,elem1,p->user.hp.content);
+    xml_set_value(doc2,elem2,p->user.hp.content);
   }
 
   gdome_el_appendChild(author1,(GdomeNode *)elem1,&e);
@@ -717,9 +692,9 @@ t_posting *flt_xmlstorage_stringify_posting(GdomeDocument *doc1,GdomeElement *t1
   elem1 = xml_create_element(doc1,"ImageUrl");
   elem2 = xml_create_element(doc2,"ImageUrl");
 
-  if(p->user.img) {
-    xml_set_value(doc1,elem1,p->user.img);
-    xml_set_value(doc2,elem2,p->user.img);
+  if(p->user.img.len) {
+    xml_set_value(doc1,elem1,p->user.img.content);
+    xml_set_value(doc2,elem2,p->user.img.content);
   }
 
   gdome_el_appendChild(author1,(GdomeNode *)elem1,&e);
@@ -732,9 +707,9 @@ t_posting *flt_xmlstorage_stringify_posting(GdomeDocument *doc1,GdomeElement *t1
   elem1 = xml_create_element(doc1,"Category");
   elem2 = xml_create_element(doc2,"Category");
 
-  if(p->category) {
-    xml_set_value(doc1,elem1,p->category);
-    xml_set_value(doc2,elem2,p->category);
+  if(p->category.len) {
+    xml_set_value(doc1,elem1,p->category.content);
+    xml_set_value(doc2,elem2,p->category.content);
   }
 
   gdome_el_appendChild(header1,(GdomeNode *)elem1,&e);
@@ -747,8 +722,8 @@ t_posting *flt_xmlstorage_stringify_posting(GdomeDocument *doc1,GdomeElement *t1
   elem1 = xml_create_element(doc1,"Subject");
   elem2 = xml_create_element(doc2,"Subject");
 
-  xml_set_value(doc1,elem1,p->subject);
-  xml_set_value(doc2,elem2,p->subject);
+  xml_set_value(doc1,elem1,p->subject.content);
+  xml_set_value(doc2,elem2,p->subject.content);
 
   gdome_el_appendChild(header1,(GdomeNode *)elem1,&e);
   gdome_el_appendChild(header2,(GdomeNode *)elem2,&e);
@@ -775,15 +750,15 @@ t_posting *flt_xmlstorage_stringify_posting(GdomeDocument *doc1,GdomeElement *t1
   snprintf(buff,50,"m%lld",p->mid);
   xml_set_attribute(m1,"id",buff);
 
-  if(p->unid) xml_set_attribute(m1,"unid",p->unid);
+  if(p->unid.len) xml_set_attribute(m1,"unid",p->unid.content);
 
   xml_set_attribute(m2,"id",buff);
-  xml_set_attribute(m2,"ip",p->user.ip);
+  xml_set_attribute(m2,"ip",p->user.ip.content);
 
   gdome_el_appendChild(t1,(GdomeNode *)m1,&e);
   gdome_el_appendChild(t2,(GdomeNode *)m2,&e);
 
-  str = gdome_str_mkref_dup(p->content);
+  str = gdome_str_mkref_dup(p->content.content);
 
   cd = gdome_doc_createCDATASection(doc2,str,&e);
   gdome_el_appendChild(cnt,(GdomeNode *)cd,&e);
@@ -824,12 +799,13 @@ t_posting *flt_xmlstorage_stringify_posting(GdomeDocument *doc1,GdomeElement *t1
 /* }}} */
 
 /* {{{ flt_xmlstorage_thread2xml */
-void flt_xmlstorage_thread2xml(t_forum *forum,GdomeImplementation *impl,GdomeDocument *doc1,t_thread *t,t_name_value *mpath) {
+void flt_xmlstorage_thread2xml(t_forum *forum,GdomeDOMImplementation *impl,GdomeDocument *doc1,t_thread *t,t_name_value *mpath) {
   GdomeException e;
   u_char buff[256];
   GdomeDocument *doc2   = xml_create_doc(impl,"Forum",FORUM_DTD);
   GdomeElement *thread1 = xml_create_element(doc1,"Thread");
   GdomeElement *thread2 = xml_create_element(doc2,"Thread");
+  GdomeElement *root;
 
   snprintf(buff,256,"t%llu",t->tid);
 
@@ -844,18 +820,17 @@ void flt_xmlstorage_thread2xml(t_forum *forum,GdomeImplementation *impl,GdomeDoc
 
   root = gdome_doc_documentElement(doc2,&e);
   gdome_el_appendChild(root,(GdomeNode *)thread2,&e);
-  gdome_el_appendChild(root,(GdomeNode *)msgcnt,&e);
 
   /* save doc to file... */
   snprintf(buff,256,"%s/t%llu.xml",mpath->values[0],t->tid);
   if(!gdome_di_saveDocToFile(impl,doc2,buff,0,&e)) {
-    cf_log(LOG_ERR,__FILE__,__LINE__,"ERROR! COULD NOT WRITE XML FILE! Trying to write it to /tmp/%s/t%llu.xml\n",forum->name,t->tid);
+    cf_log(CF_ERR|CF_FLSH,__FILE__,__LINE__,"ERROR! COULD NOT WRITE XML FILE! Trying to write it to /tmp/%s/t%llu.xml\n",forum->name,t->tid);
 
     snprintf(buff,256,"/tmp/%s",forum->name);
     mkdir(buff,0755);
 
     snprintf(buff,256,"/tmp/%s/t%llu.xml",forum->name,t->tid);
-    gdome_di_saveDocToFile(impl,doc,buff);
+    gdome_di_saveDocToFile(impl,doc2,buff,0,&e);
   }
 
   gdome_el_unref(thread1,&e);
@@ -873,12 +848,10 @@ int flt_xmlstorage_threadlist_writer(t_forum *forum) {
 
   t_name_value *mpath = cfg_get_first_value(&fo_default_conf,forum->name,"MessagePath");
 
-  /* {{{ xml declarations */
   GdomeException e;
   GdomeDOMImplementation *impl = gdome_di_mkref();
   GdomeDocument *doc = xml_create_doc(impl,"Forum",FORUM_DTD);
   GdomeElement *elm = xml_create_element(doc,"Forum");
-  /* }}} */
 
   CF_RW_RD(&forum->threads.lock);
   t    = forum->threads.list;
@@ -890,12 +863,12 @@ int flt_xmlstorage_threadlist_writer(t_forum *forum) {
   xml_set_attribute(elm,"lastThread",buff);
 
   snprintf(buff,256,"m%llu",lmid);
-  xml_set_attribute(elm,"lastMessage",lmid);
+  xml_set_attribute(elm,"lastMessage",buff);
 
   do {
     CF_RW_RD(&t->lock);
 
-    flt_xmlstorage_thread2xml(impl,doc,t,mpath);
+    flt_xmlstorage_thread2xml(forum,impl,doc,t,mpath);
 
     t1 = t->next;
     CF_RW_UN(&t->lock);
@@ -904,19 +877,17 @@ int flt_xmlstorage_threadlist_writer(t_forum *forum) {
 
   snprintf(buff,256,"%s/forum.xml",mpath->values[0]);
   if(!gdome_di_saveDocToFile(impl,doc,buff,0,&e)) {
-    cf_log(LOG_ERR,__FILE__,__LINE__,"ERROR! COULD NOT WRITE XML FILE! Trying to write it to /tmp/%s/forum.xml\n",forum->name);
+    cf_log(CF_ERR|CF_FLSH,__FILE__,__LINE__,"ERROR! COULD NOT WRITE XML FILE! Trying to write it to /tmp/%s/forum.xml\n",forum->name);
 
     snprintf(buff,256,"/tmp/%s",forum->name);
     mkdir(buff,0755);
     snprintf(buff,256,"/tmp/%s/forum.xml",forum->name);
-    gdome_di_saveDocToFile(impl,doc,buff);
+    gdome_di_saveDocToFile(impl,doc,buff,0,&e);
   }
 
-  /* {{{ xml cleanup */
   gdome_el_unref(elm,&e);
   gdome_doc_unref(doc,&e);
   gdome_di_unref(impl,&e);
-  /* }}} */
 
   return FLT_OK;
 }
@@ -927,7 +898,6 @@ int flt_xmlstorage_archive_thread(t_forum *forum,t_thread *thread) {
   return FLT_OK;
 }
 /* }}} */
-
 
 t_conf_opt flt_xmlstorage_config[] = {
   { "MessagePath", handle_command, CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_default_conf },

@@ -208,6 +208,38 @@ t_forum *cf_register_forum(const u_char *name) {
 }
 /* }}} */
 
+void cf_destroy_forum(t_forum *forum) {
+  int i;
+
+  cf_rwlock_destroy(&forum->lock);
+  cf_rwlock_destroy(&forum->threads.lock);
+  cf_mutex_destroy(&forum->uniques.lock);
+
+  free(forum->name);
+  str_cleanup(&forum->cache.visible);
+  str_cleanup(&forum->cache.invisible);
+
+  #ifdef CF_SHARED_MEM
+  cf_mutex_destroy(&forum->shm.lock);
+
+  if(forum->shm.sem >= 0) if(semctl(forum->shm.sem,0,IPC_RMID,NULL) == -1) cf_log(CF_ERR,__FILE__,__LINE__,"semctl: %s\n",strerror(errno));
+
+  for(i=0;i<2;++i) {
+    if(forum->shm.ids[i] >= 0) {
+      if(forum->shm.ptrs[i])
+        if(shmdt(forum->shm.ptrs[i]) < 0) cf_log(CF_ERR,__FILE__,__LINE__,"shmdt: %s\n",strerror(errno));
+
+      if(shmctl(forum->shm.ids[i],IPC_RMID,0) < 0) cf_log(CF_ERR,__FILE__,__LINE__,"shmctl: %s\n",strerror(errno));
+    }
+  }
+  #endif
+
+  cf_hash_destroy(forum->threads.threads);
+  cf_hash_destroy(forum->uniques.ids);
+
+  if(forum->threads.list) cf_cleanup_forumtree(forum);
+}
+
 /* {{{ cf_log */
 void cf_log(int mode,const u_char *file,unsigned int line,const u_char *format, ...) {
   u_char str[300];
@@ -312,15 +344,15 @@ int cf_load_data(t_forum *forum) {
 /* }}} */
 
 /* {{{ cf_cleanup_forumtree */
-void cf_cleanup_forum(t_forum *forum) {
+void cf_cleanup_forumtree(t_forum *forum) {
   t_thread *t,*t1;
   t_posting *p,*p1;
 
   for(t=forum->threads.list;t;t=t1) {
     for(p=t->postings;p;p=p1) {
-                  str_cleanup(&p->user.name);
-                        str_cleanup(&p->subject);
-                        str_cleanup(&p->unid);
+      str_cleanup(&p->user.name);
+      str_cleanup(&p->subject);
+      str_cleanup(&p->unid);
       str_cleanup(&p->user.ip);
       str_cleanup(&p->content);
 
