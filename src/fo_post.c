@@ -987,7 +987,7 @@ int main(int argc,char *argv[],char *env[]) {
       if(new_thread == 0) p->level = thr.threadmsg->level + 1;
       p->may_show    = 1;
 
-      if(thr.threadmsg->invisible) p->invisible = 1;
+      if(new_thread == 0 && thr.threadmsg->invisible) p->invisible = 1;
       else p->invisible = 0;
       /* }}} */
 
