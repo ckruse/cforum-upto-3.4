@@ -273,7 +273,7 @@ int flt_cftp_handler(int sockfd,t_forum *forum,const u_char **tokens,int tnum,rl
                 cf_hash_set(forum->uniques.ids,p->unid.content,p->unid.len,&one,sizeof(one));
                 CF_UM(&forum->uniques.lock);
 
-                len = snprintf(buff,512,"200 Ok\nTid: %llu\nMid: %llu\n",t->tid,p->mid);
+                len = snprintf(buff,512,"200 Ok\nTid: %llu\nMid: %llu\n\n",t->tid,p->mid);
                 writen(sockfd,buff,len);
 
                 if(Modules[NEW_POST_HANDLER].elements) {
@@ -378,7 +378,7 @@ int flt_cftp_handler(int sockfd,t_forum *forum,const u_char **tokens,int tnum,rl
           cf_register_thread(forum,t);
           CF_RW_UN(&t->lock);
 
-          len = snprintf(buff,512,"200 Ok\nTid: %llu\nMid: %llu\n",t->tid,p->mid);
+          len = snprintf(buff,512,"200 Ok\nTid: %llu\nMid: %llu\n\n",t->tid,p->mid);
           writen(sockfd,buff,len);
 
           cf_generate_cache(forum);

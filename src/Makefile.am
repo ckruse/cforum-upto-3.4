@@ -3,16 +3,20 @@ SUBDIRS=. modules
 
 # fo_post not in 2.1!
 bin_PROGRAMS= \
-  fo_server
+  fo_server \
+	fo_view
 
 pkglib_LTLIBRARIES= \
 	libcfcharconvert.la \
   libcfreadline.la \
   libcfhashlib.la \
   libcfutils.la \
-  libconfigparser.la \
+  libcfconfigparser.la \
 	libcfserverutils.la \
-  libserverlib.la
+	libcfclientlib.la \
+	libcfcgi.la \
+	libcftemplate.la \
+  libcfserverlib.la
 
 libcfcharconvert_la_SOURCES=charconvert.c
 libcfcharconvert_la_LIBADD=$(ICONV)
@@ -28,19 +32,35 @@ libcfutils_la_SOURCES=utils.c arrayutils.c listutils.c memoryutils.c stringutils
 libcfutils_la_LIBADD=libcfhashlib.la libcfcharconvert.la -lz
 libcfutils_la_LDFLAGS=-export-dynamic -avoid-version
 
-libconfigparser_la_SOURCES=configparser.c
-libconfigparser_la_LIBADD=libcfutils.la $(DL)
-libconfigparser_la_LDFLAGS=-export-dynamic -avoid-version
+libcftemplate_la_SOURCES=template.c
+libcftemplate_la_LIBADD=libcfutils.la libcfhashlib.la libcfcharconvert.la
+libcftemplate_la_LDFLAGS=-export-dynamic -avoid-version
+
+libcfcgi_la_SOURCES=cfcgi.c
+libcfcgi_la_LIBADD=libcfhashlib.la
+libcfcgi_la_LDFLAGS=-export-dynamic -avoid-version
+
+libcfconfigparser_la_SOURCES=configparser.c
+libcfconfigparser_la_LIBADD=libcfutils.la $(DL)
+libcfconfigparser_la_LDFLAGS=-export-dynamic -avoid-version
 
 libcfserverutils_la_SOURCES=serverutils.c cf_pthread.c
 libcfserverutils_la_LDFLAGS=-export-dynamic -avoid-version
 
-libserverlib_la_SOURCES=serverlib.c shm_locking.c semaphores.c archiver.c cf_pthread.c
-libserverlib_la_LIBADD=libcfhashlib.la libcfutils.la libcfreadline.la $(PTHREAD_LIB)
-libserverlib_la_LDFLAGS=-export-dynamic -avoid-version
+libcfserverlib_la_SOURCES=serverlib.c shm_locking.c semaphores.c archiver.c cf_pthread.c
+libcfserverlib_la_LIBADD=libcfhashlib.la libcfutils.la libcfreadline.la $(PTHREAD_LIB)
+libcfserverlib_la_LDFLAGS=-export-dynamic -avoid-version
+
+libcfclientlib_la_SOURCES=clientlib.c handlerrunners.c communication.c messageutils.c semaphores.c
+libcfclientlib_la_LIBADD=libcfconfigparser.la libcfcharconvert.la libcfreadline.la libcfutils.la libcfhashlib.la libcfcgi.la $(BDB_LIB)
+libcfclientlib_la_LDFLAGS=-export-dynamic -avoid-version
+
+fo_view_SOURCES=fo_view.c
+fo_view_LDADD=libcfconfigparser.la libcftemplate.la libcfcharconvert.la libcfreadline.la libcfutils.la libcfhashlib.la libcfclientlib.la libcfcgi.la
+fo_server_LDFLAGS=-export-dynamic
 
 fo_server_SOURCES=fo_server.c
-fo_server_LDADD=libcfcharconvert.la libcfreadline.la libcfutils.la libserverlib.la libconfigparser.la libcfserverutils.la modules/flt_xmlstorage.la $(PTHREAD_LIB)
+fo_server_LDADD=libcfcharconvert.la libcfreadline.la libcfutils.la libcfserverlib.la libcfconfigparser.la libcfserverutils.la libcfhashlib.la $(PTHREAD_LIB)
 fo_server_LDFLAGS=-export-dynamic
 
 # eof

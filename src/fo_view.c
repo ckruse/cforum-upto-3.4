@@ -49,67 +49,49 @@
 /**
  * Dummy function, for ignoring unknown directives
  */
-int ignre(t_configfile *cf,u_char *name,u_char **args,int argnum) {
+int ignre(t_configfile *cfile,const u_char *context,u_char *name,u_char **args,size_t len) {
   return 0;
 }
 
-/* {{{ run_404_filters */
-int run_404_filters(t_cf_hash *head,u_int64_t tid,u_int64_t mid) {
-  int ret = FLT_OK;
-  t_handler_config *handler;
-  size_t i;
-  t_filter_404_handler fkt;
-
-  if(Modules[HANDLE_404_HANDLER].elements) {
-    for(i=0;i<Modules[HANDLE_404_HANDLER].elements && (ret == FLT_OK || ret == FLT_DECLINE);i++) {
-      handler = array_element_at(&Modules[HANDLE_404_HANDLER],i);
-      fkt     = (t_filter_404_handler)handler->func;
-      ret     = fkt(head,&fo_default_conf,&fo_view_conf,tid,mid);
-    }
-  }
-
-  return ret;
-}
-/* }}} */
-
-/* {{{ print_thread_structure
- * Returns: nothing
- * Parameters:
- *   - t_cl_thread *thr  the thread structure
- *
- * this function prints a thread list
- *
- */
+/* {{{ print_thread_structure */
 void print_thread_structure(t_cl_thread *thread,t_cf_hash *head) {
   t_message *msg;
-  int level = 0,len = 0;
-  u_char *date,*link;
-  int printed = 0,rc = 0;
-  t_name_value *cs = cfg_get_first_value(&fo_default_conf,"ExternCharset");
+
+  int level = 0,
+      len = 0,
+      printed = 0,
+      rc = 0;
+
+  u_char *date,
+         *link,
+         *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
+
+  t_name_value *cs  = cfg_get_first_value(&fo_default_conf,forum_name,"ExternCharset"),
+               *dnv = cfg_get_first_value(&fo_view_conf,forum_name,"DateFormatThreadList"),
+               *loc = cfg_get_first_value(&fo_default_conf,forum_name,"DateLocale");
+
   int ShowInvisible = cf_hash_get(GlobalValues,"ShowInvisible",13) == NULL ? 0 : 1;
 
   for(msg=thread->messages;msg;msg=msg->next) {
     if((msg->may_show && msg->invisible == 0) || ShowInvisible == 1) {
-      rc = handle_thread_list_posting(msg,head,thread->tid,0);
+      rc = cf_run_view_list_handlers(msg,head,thread->tid,0);
+
       if(ShowInvisible == 0 && ((rc != FLT_DECLINE && rc != FLT_OK) || msg->may_show == 0)) continue;
 
       printed = 1;
 
-      date = get_time(&fo_view_conf,"DateFormatThreadList",&len,&msg->date);
-      link = get_link(NULL,thread->tid,msg->mid);
-
-      cf_set_variable(&msg->tpl,cs,"author",msg->author,strlen(msg->author),1);
-      cf_set_variable(&msg->tpl,cs,"title",msg->subject,strlen(msg->subject),1);
-
-      if(msg->category) {
-        cf_set_variable(&msg->tpl,cs,"category",msg->category,strlen(msg->category),1);
-      }
-
+      date = cf_general_get_time(dnv->values[0],loc->values[0],&len,&msg->date);
       if(date) {
         cf_set_variable(&msg->tpl,cs,"time",date,len,1);
         free(date);
       }
 
+      cf_set_variable(&msg->tpl,cs,"author",msg->author.content,msg->author.len,1);
+      cf_set_variable(&msg->tpl,cs,"title",msg->subject.content,msg->subject.len,1);
+
+      if(msg->category.len) cf_set_variable(&msg->tpl,cs,"category",msg->category.content,msg->category.len,1);
+
+      link = cf_get_link(NULL,forum_name,thread->tid,msg->mid);
       if(link) {
         cf_set_variable(&msg->tpl,cs,"link",link,strlen(link),1);
         free(link);
@@ -123,12 +105,12 @@ void print_thread_structure(t_cl_thread *thread,t_cf_hash *head) {
 
       level = msg->level;
 
-      if(msg->next && has_answers(msg)) { /* this message has at least one answer */
+      if(msg->next && cf_msg_has_answers(msg)) { /* this message has at least one answer */
         printf("<li>");
         tpl_cf_parse(&msg->tpl);
         printf("<ul>");
 
-        level++;
+        ++level;
       }
       else {
         printf("<li>");
@@ -138,57 +120,48 @@ void print_thread_structure(t_cl_thread *thread,t_cf_hash *head) {
     }
   }
 
-  for(;level>0;level--) {
-    printf("</ul></li>");
-  }
-
-  if(printed) {
-    printf("\n<li>&nbsp;</li>\n");
-  }
+  for(;level>0;level--) printf("</ul></li>");
 }
 /* }}} */
 
-/* {{{ send_posting
- * Returns: nothing
- * Parameters:
- *   - int sock                 the socket handle
- *   - unsigned long long tid   the thread-id
- *   - unsigned long long mid   the message-id
- *
- * this function sends a posting to an user
- *
- */
+/* {{{ send_posting */
 #ifndef CF_SHARED_MEM
-void send_posting(t_cf_hash *head,int sock,u_int64_t tid,u_int64_t mid)
+void show_posting(t_cf_hash *head,int sock,u_int64_t tid,u_int64_t mid)
 #else
-void send_posting(t_cf_hash *head,void *shm_ptr,u_int64_t tid,u_int64_t mid)
+void show_posting(t_cf_hash *head,void *shm_ptr,u_int64_t tid,u_int64_t mid)
 #endif
 {
   t_cl_thread thread;
+
   #ifndef CF_SHARED_MEM
   rline_t tsd;
   #endif
-  t_name_value *fo_thread_tpl;
-  t_name_value *fo_posting_tpl = cfg_get_first_value(&fo_view_conf,"TemplatePosting");
+
+  u_char fo_thread_tplname[256],
+         fo_posting_tplname[256],
+         *UserName = cf_hash_get(GlobalValues,"UserName",8),
+         *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
+
+  t_name_value *fo_thread_tpl,
+               *fo_posting_tpl = cfg_get_first_value(&fo_view_conf,forum_name,"TemplatePosting"),
+               *cs             = cfg_get_first_value(&fo_default_conf,forum_name,"ExternCharset"),
+               *rm             = cfg_get_first_value(&fo_view_conf,forum_name,"ReadMode"),
+               *fbase          = NULL,
+               *name           = cfg_get_first_value(&fo_view_conf,NULL,"Name"),
+               *email          = cfg_get_first_value(&fo_view_conf,NULL,"EMail"),
+               *hpurl          = cfg_get_first_value(&fo_view_conf,NULL,"HomepageUrl"),
+               *imgurl         = cfg_get_first_value(&fo_view_conf,NULL,"ImageUrl");
+
   t_cf_template tpl;
-  u_char fo_thread_tplname[256],fo_posting_tplname[256];
+
   size_t len;
   char buff[128];
   int del = cf_hash_get(GlobalValues,"ShowInvisible",13) == NULL ? CF_KILL_DELETED : CF_KEEP_DELETED;
-  t_name_value *cs = cfg_get_first_value(&fo_default_conf,"ExternCharset");
-  u_char *UserName = cf_hash_get(GlobalValues,"UserName",8);
-  t_name_value *rm = cfg_get_first_value(&fo_view_conf,"ReadMode");
 
-  /* user definable variables */
-  t_name_value *fbase     = NULL;
-  t_name_value *name      = cfg_get_first_value(&fo_view_conf,"Name");
-  t_name_value *email     = cfg_get_first_value(&fo_view_conf,"EMail");
-  t_name_value *hpurl     = cfg_get_first_value(&fo_view_conf,"HomepageUrl");
-  t_name_value *imgurl    = cfg_get_first_value(&fo_view_conf,"ImageUrl");
 
-  if(cf_strcmp(rm->values[0],"thread") == 0)          fo_thread_tpl = cfg_get_first_value(&fo_view_conf,"TemplateForumThread");
-  else if(cf_strcmp(rm->values[0],"threadlist") == 0) fo_thread_tpl = cfg_get_first_value(&fo_view_conf,"TemplateForumThreadList");
-  else if(cf_strcmp(rm->values[0],"list") == 0)       fo_thread_tpl = cfg_get_first_value(&fo_view_conf,"TemplateForumList");
+  if(cf_strcmp(rm->values[0],"thread") == 0)          fo_thread_tpl = cfg_get_first_value(&fo_view_conf,forum_name,"TemplateForumThread");
+  else if(cf_strcmp(rm->values[0],"threadlist") == 0) fo_thread_tpl = cfg_get_first_value(&fo_view_conf,forum_name,"TemplateForumThreadList");
+  else if(cf_strcmp(rm->values[0],"list") == 0)       fo_thread_tpl = cfg_get_first_value(&fo_view_conf,forum_name,"TemplateForumList");
 
 
   /* {{{ init and get message from server */
@@ -197,15 +170,15 @@ void send_posting(t_cf_hash *head,void *shm_ptr,u_int64_t tid,u_int64_t mid)
   #endif
 
   if(!fo_thread_tpl || !fo_posting_tpl) {
-    str_error_message("E_TPL_NOT_FOUND",NULL);
+    cf_error_message("E_TPL_NOT_FOUND",NULL);
     return;
   }
 
-  generate_tpl_name(fo_thread_tplname,256,fo_thread_tpl);
-  generate_tpl_name(fo_posting_tplname,256,fo_posting_tpl);
+  cf_gen_tpl_name(fo_thread_tplname,256,fo_thread_tpl->values[0]);
+  cf_gen_tpl_name(fo_posting_tplname,256,fo_posting_tpl->values[0]);
 
   if(tpl_cf_init(&tpl,fo_posting_tplname) != 0) {
-    str_error_message("E_TPL_NOT_FOUND",NULL);
+    cf_error_message("E_TPL_NOT_FOUND",NULL);
     return;
   }
 
@@ -216,14 +189,14 @@ void send_posting(t_cf_hash *head,void *shm_ptr,u_int64_t tid,u_int64_t mid)
   #endif
   {
     if(cf_strcmp(ErrorString,"E_FO_404") == 0) {
-      if(run_404_filters(head,tid,mid) != FLT_EXIT) {
-        printf("Status: 404 Not Found\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs?cs->values[0]?cs->values[0]:(u_char *)"UTF-8":(u_char *)"UTF-8");
-        str_error_message(ErrorString,NULL);
+      if(cf_run_404_handlers(head,tid,mid) != FLT_EXIT) {
+        printf("Status: 404 Not Found\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
+        cf_error_message(ErrorString,NULL);
       }
     }
     else {
-      printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs?cs->values[0]?cs->values[0]:(u_char *)"UTF-8":(u_char *)"UTF-8");
-      str_error_message(ErrorString,NULL);
+      printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
+      cf_error_message(ErrorString,NULL);
     }
     return;
   }
@@ -233,8 +206,8 @@ void send_posting(t_cf_hash *head,void *shm_ptr,u_int64_t tid,u_int64_t mid)
   tpl_cf_setvar(&tpl,"charset",cs->values[0],strlen(cs->values[0]),0);
 
   UserName = cf_hash_get(GlobalValues,"UserName",8);
-  if(UserName) fbase = cfg_get_first_value(&fo_default_conf,"UBaseURL");
-  else         fbase = cfg_get_first_value(&fo_default_conf,"BaseURL");
+  if(UserName) fbase = cfg_get_first_value(&fo_default_conf,forum_name,"UBaseURL");
+  else         fbase = cfg_get_first_value(&fo_default_conf,forum_name,"BaseURL");
 
   cf_set_variable(&tpl,cs,"forumbase",fbase->values[0],strlen(fbase->values[0]),1);
 
@@ -251,31 +224,20 @@ void send_posting(t_cf_hash *head,void *shm_ptr,u_int64_t tid,u_int64_t mid)
   tpl_cf_setvar(&thread.messages->tpl,"answers",buff,len,0);
   /* }}} */
 
-  printf("Content-Type: text/html; charset=%s\015\012\015\012",cs?cs->values[0]?cs->values[0]:(u_char *)"UTF-8":(u_char *)"UTF-8");
+  printf("Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
 
-  if(handle_posting_filters(head,&thread,&tpl,&fo_view_conf) != FLT_EXIT) {
-    tpl_cf_parse(&tpl);
-  }
-
+  if(cf_run_posting_handlers(head,&thread,&tpl,&fo_view_conf) != FLT_EXIT) tpl_cf_parse(&tpl);
   tpl_cf_finish(&tpl);
 
-  cleanup_struct(&thread);
+  cf_cleanup_thread(&thread);
 }
 /* }}} */
 
-/* {{{ send_threadlist
- * Returns: nothing
- * Parameters:
- *   - int sock         the socket
- *   - t_cf_hash *head  the list of the cgi lib
- *
- * this function sends a threadlist to an user
- *
- */
+/* {{{ send_threadlist */
 #ifndef CF_SHARED_MEM
-void send_threadlist(int sock,t_cf_hash *head)
+void show_threadlist(int sock,t_cf_hash *head)
 #else
-void send_threadlist(void *shm_ptr,t_cf_hash *head)
+void show_threadlist(void *shm_ptr,t_cf_hash *head)
 #endif
 {
   int ret,len;
@@ -286,20 +248,29 @@ void send_threadlist(void *shm_ptr,t_cf_hash *head)
   void *ptr,*ptr1;
   #endif
 
-  t_name_value *fo_begin_tpl  = cfg_get_first_value(&fo_view_conf,"TemplateForumBegin");
-  t_name_value *fo_end_tpl    = cfg_get_first_value(&fo_view_conf,"TemplateForumEnd");
-  t_name_value *fo_thread_tpl = cfg_get_first_value(&fo_view_conf,"TemplateForumThread");
-  t_name_value *cs            = cfg_get_first_value(&fo_default_conf,"ExternCharset");
+  u_char fo_begin_tplname[256],
+         fo_end_tplname[256],
+         fo_thread_tplname[256],
+         buff[128],
+         *ltime,
+         *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10),
+         *UserName = cf_hash_get(GlobalValues,"UserName",8);
+
+  t_name_value *fo_begin_tpl  = cfg_get_first_value(&fo_view_conf,forum_name,"TemplateForumBegin"),
+               *fo_end_tpl    = cfg_get_first_value(&fo_view_conf,forum_name,"TemplateForumEnd"),
+               *fo_thread_tpl = cfg_get_first_value(&fo_view_conf,forum_name,"TemplateForumThread"),
+               *cs            = cfg_get_first_value(&fo_default_conf,forum_name,"ExternCharset"),
+               *fbase         = NULL,
+               *time_fmt      = cfg_get_first_value(&fo_view_conf,forum_name,"DateFormatLoadTime"),
+               *time_lc       = cfg_get_first_value(&fo_default_conf,forum_name,"DateLocale");
+
   t_cf_template tpl_begin,tpl_end;
-  u_char fo_begin_tplname[256],fo_end_tplname[256],fo_thread_tplname[256],buff[128],*ltime;
+
   time_t tm;
   t_cl_thread thread;
   size_t i;
-  t_handler_config *handler;
-  t_filter_init_view fkt;
   int del = cf_hash_get(GlobalValues,"ShowInvisible",13) == NULL ? CF_KILL_DELETED : CF_KEEP_DELETED;
-  u_char *UserName = cf_hash_get(GlobalValues,"UserName",8);
-  t_name_value *fbase     = NULL;
+
 
   /* initialization work */
 
@@ -308,14 +279,14 @@ void send_threadlist(void *shm_ptr,t_cf_hash *head)
   #endif
 
   if(!fo_begin_tpl || !fo_end_tpl || !fo_thread_tpl) {
-    printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs?cs->values[0]?cs->values[0]:(u_char *)"UTF-8":(u_char *)"UTF-8");
-    str_error_message("E_TPL_NOT_FOUND",NULL);
+    printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
+    cf_error_message("E_TPL_NOT_FOUND",NULL);
     return;
   }
 
-  generate_tpl_name(fo_begin_tplname,256,fo_begin_tpl);
-  generate_tpl_name(fo_end_tplname,256,fo_end_tpl);
-  generate_tpl_name(fo_thread_tplname,256,fo_thread_tpl);
+  cf_gen_tpl_name(fo_begin_tplname,256,fo_begin_tpl->values[0]);
+  cf_gen_tpl_name(fo_end_tplname,256,fo_end_tpl->values[0]);
+  cf_gen_tpl_name(fo_thread_tplname,256,fo_thread_tpl->values[0]);
 
   /*
    * if not in shm mode, request the threadlist from
@@ -324,9 +295,17 @@ void send_threadlist(void *shm_ptr,t_cf_hash *head)
    */
 
   #ifndef CF_SHARED_MEM
-  len = snprintf(buff,128,"GET THREADLIST invisible=%d\n",del);
+  len = snprintf(buff,128,"SELECT %s\n",forum_name);
   writen(sock,buff,len);
   line = readline(sock,&tsd);
+
+  if(line && cf_strncmp(line,"200 Ok",6) == 0) {
+    free(line);
+
+    len = snprintf(buff,128,"GET THREADLIST invisible=%d\n",del);
+    writen(sock,buff,len);
+    line = readline(sock,&tsd);
+  }
   #else
   ptr = shm_ptr;
   ptr1 = ptr + sizeof(time_t);
@@ -337,21 +316,19 @@ void send_threadlist(void *shm_ptr,t_cf_hash *head)
    */
   #ifndef CF_SHARED_MEM
   if(!line || cf_strcmp(line,"200 Ok\n")) {
-    printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs?cs->values[0]?cs->values[0]:(u_char *)"UTF-8":(u_char *)"UTF-8");
+    printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
 
     if(line) {
       ret = snprintf(buff,128,"E_FO_%d",atoi(line));
-      str_error_message(buff,NULL);
+      cf_error_message(buff,NULL);
       free(line);
     }
-    else {
-      str_error_message("E_NO_THREADLIST",NULL);
-    }
+    else cf_error_message("E_NO_THREADLIST",NULL);
   }
   #else
   if(!ptr) {
-    printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs?cs->values[0]?cs->values[0]:(u_char *)"UTF-8":(u_char *)"UTF-8");
-    str_error_message("E_NO_CONN",NULL,strerror(errno));
+    printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
+    cf_error_message("E_NO_CONN",NULL,strerror(errno));
   }
   #endif
 
@@ -360,29 +337,21 @@ void send_threadlist(void *shm_ptr,t_cf_hash *head)
    * go on with work
    */
   else {
-    tm    = time(NULL);
-    ltime = get_time(&fo_view_conf,"DateFormatLoadTime",&len,&tm);
-
     UserName = cf_hash_get(GlobalValues,"UserName",8);
-    if(UserName) {
-      fbase     = cfg_get_first_value(&fo_default_conf,"UBaseURL");
-    }
-    else {
-      fbase     = cfg_get_first_value(&fo_default_conf,"BaseURL");
-    }
+    fbase    = cfg_get_first_value(&fo_default_conf,forum_name,UserName ? "UBaseURL" : "BaseURL");
 
     if(tpl_cf_init(&tpl_begin,fo_begin_tplname) != 0) {
-      printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs?cs->values[0]?cs->values[0]:(u_char *)"UTF-8":(u_char *)"UTF-8");
+      printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
 
-      str_error_message("E_TPL_NOT_FOUND",NULL);
+      cf_error_message("E_TPL_NOT_FOUND",NULL);
       return;
     }
     cf_set_variable(&tpl_begin,cs,"forumbase",fbase->values[0],strlen(fbase->values[0]),1);
 
     if(tpl_cf_init(&tpl_end,fo_end_tplname) != 0) {
-      printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs?cs->values[0]?cs->values[0]:(u_char *)"UTF-8":(u_char *)"UTF-8");
+      printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
 
-      str_error_message("E_TPL_NOT_FOUND",NULL);
+      cf_error_message("E_TPL_NOT_FOUND",NULL);
       return;
     }
 
@@ -390,13 +359,7 @@ void send_threadlist(void *shm_ptr,t_cf_hash *head)
     tpl_cf_setvar(&tpl_begin,"charset",cs->values[0],strlen(cs->values[0]),0);
 
     /* run some plugins */
-    if(Modules[VIEW_INIT_HANDLER].elements) {
-      for(i=0;i<Modules[VIEW_INIT_HANDLER].elements;i++) {
-        handler = array_element_at(&Modules[VIEW_INIT_HANDLER],i);
-        fkt     = (t_filter_init_view)handler->func;
-        fkt(head,&fo_default_conf,&fo_view_conf,&tpl_begin,&tpl_end);
-      }
-    }
+    cf_run_view_init_handlers(head,&tpl_begin,&tpl_end);
 
     #ifndef CF_SHARED_MEM
     free(line);
@@ -407,13 +370,15 @@ void send_threadlist(void *shm_ptr,t_cf_hash *head)
     thread.last     = NULL;
     thread.msg_len  = 0;
 
+    tm    = time(NULL);
+    ltime = cf_general_get_time(time_fmt->values[0],time_lc->values[0],&len,&tm);
     if(ltime) {
       cf_set_variable(&tpl_begin,cs,"LOAD_TIME",ltime,len,1);
       free(ltime);
     }
 
     /* ok, seems to be all right, send headers */
-    printf("Content-Type: text/html; charset=%s\015\012\015\012",cs?cs->values[0]?cs->values[0]:(u_char *)"UTF-8":(u_char *)"UTF-8");
+    printf("Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
 
     tpl_cf_parse(&tpl_begin);
     tpl_cf_finish(&tpl_begin);
@@ -434,22 +399,22 @@ void send_threadlist(void *shm_ptr,t_cf_hash *head)
           len = snprintf(buff,128,"%d",thread.msg_len-1);
           tpl_cf_setvar(&thread.messages->tpl,"answers",buff,len,0);
 
-          ret = handle_thread(&thread,head,0);
+          ret = cf_run_view_handlers(&thread,head,0);
           if(ret == FLT_OK || ret == FLT_DECLINE || del == CF_KEEP_DELETED) print_thread_structure(&thread,head);
 
-          cleanup_struct(&thread);
+          cf_cleanup_thread(&thread);
         }
       }
     }
 
     #ifndef CF_SHARED_MEM
     if(*ErrorString) {
-      str_error_message(ErrorString,NULL);
+      cf_error_message(ErrorString,NULL);
       return;
     }
     #else
     if(ptr1 == NULL && *ErrorString) {
-      str_error_message(ErrorString,NULL);
+      cf_error_message(ErrorString,NULL);
       return;
     }
     #endif
@@ -503,6 +468,7 @@ void sighandler(int segnum) {
  * \return EXIT_SUCCESS on success, EXIT_FAILURE on error
  */
 int main(int argc,char *argv[],char *env[]) {
+  /* {{{ variables */
   #ifndef CF_SHARED_MEM
   int sock;
   #else
@@ -513,23 +479,28 @@ int main(int argc,char *argv[],char *env[]) {
     "fo_default", "fo_view"
   };
 
-  int ret,ext = 0;
-  u_char  *ucfg,*m  = NULL,*t = NULL;
+  int ret;
+  u_char  *ucfg,*m  = NULL,*t = NULL,*UserName,*fname;
   t_array *cfgfiles;
   t_cf_hash *head;
   t_configfile conf,dconf;
   t_name_value *cs = NULL;
-  u_char *UserName;
-  u_char *fname;
   t_name_value *pt;
+  u_char *forum_name = NULL;
 
-  /* set signal handler for SIGSEGV (for error reporting) */
+  u_int64_t tid = 0,mid = 0;
+  /* }}} */
+
+  /* {{{ set signal handler for SIGSEGV (for error reporting) */
   signal(SIGSEGV,sighandler);
   signal(SIGILL,sighandler);
   signal(SIGFPE,sighandler);
   signal(SIGBUS,sighandler);
+  /* }}} */
 
+  /* {{{ initialization */
   if((cfgfiles = get_conf_file(wanted,2)) == NULL) {
+    fprintf(stderr,"Could not find configuration files...\n");
     return EXIT_FAILURE;
   }
 
@@ -544,7 +515,9 @@ int main(int argc,char *argv[],char *env[]) {
   #endif
 
   ret  = FLT_OK;
+  /* }}} */
 
+  /* {{{ read configuration */
   fname = *((u_char **)array_element_at(cfgfiles,0));
   cfg_init_file(&dconf,fname);
   free(fname);
@@ -564,31 +537,57 @@ int main(int argc,char *argv[],char *env[]) {
 
     return EXIT_FAILURE;
   }
+  /* }}} */
 
-  pt = cfg_get_first_value(&fo_view_conf,"ParamType");
+  /* {{{ ensure that CF_FORUM_NAME is set and we have got a context in every file */
+  if((forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10)) == NULL) {
+    fprintf(stderr,"Could not get forum name!");
+
+    cfg_cleanup_file(&conf);
+    cfg_cleanup_file(&dconf);
+
+    cfg_destroy();
+    cf_fini();
+
+    return EXIT_FAILURE;
+  }
+
+  if(cfg_get_first_value(&fo_default_conf,forum_name,"ThreadIndexFile") == NULL) {
+    fprintf(stderr,"Have no context for forum %s in default configuration file!\n",forum_name);
+
+    cfg_cleanup_file(&conf);
+    cfg_cleanup_file(&dconf);
+
+    cfg_destroy();
+    cf_fini();
+
+    return EXIT_FAILURE;
+  }
+
+  if(cfg_get_first_value(&fo_view_conf,forum_name,"ParamType") == NULL) {
+    fprintf(stderr,"Have no context for forum %s in fo_view configuration file!\n",forum_name);
+
+    cfg_cleanup_file(&conf);
+    cfg_cleanup_file(&dconf);
+
+    cfg_destroy();
+    cf_fini();
+
+    return EXIT_FAILURE;
+  }
+  /* }}} */
+
+  pt = cfg_get_first_value(&fo_view_conf,forum_name,"ParamType");
   head = cf_cgi_new();
   if(*pt->values[0] == 'P') cf_cgi_parse_path_info_nv(head);
 
-
   /* first action: authorization modules */
-  if(Modules[AUTH_HANDLER].elements) {
-    size_t i;
-    t_filter_begin exec;
-    t_handler_config *handler;
+  ret = cf_run_auth_handlers(head);
 
-    ret = FLT_DECLINE;
-
-    for(i=0;i<Modules[AUTH_HANDLER].elements && ret == FLT_DECLINE;i++) {
-      handler = array_element_at(&Modules[AUTH_HANDLER],i);
-
-      exec = (t_filter_begin)handler->func;
-      ret = exec(head,&fo_default_conf,&fo_view_conf);
-    }
-  }
-
-  if((UserName = cf_hash_get(GlobalValues,"UserName",8)) != NULL) {
+  /* {{{ read user configuration */
+  if(ret != FLT_EXIT && (UserName = cf_hash_get(GlobalValues,"UserName",8)) != NULL) {
     /* get user config */
-    ucfg = get_uconf_name(UserName);
+    ucfg = cf_get_uconf_name(UserName);
     if(ucfg) {
       free(conf.filename);
       conf.filename = ucfg;
@@ -599,70 +598,53 @@ int main(int argc,char *argv[],char *env[]) {
         cfg_cleanup_file(&conf);
         cfg_cleanup_file(&dconf);
 
+	cfg_destroy();
+	cf_fini();
+
         return EXIT_FAILURE;
       }
     }
   }
+  /* }}} */
 
-  /* first state: let the begin-filters run! :-) */
-  if(ret != FLT_EXIT && Modules[INIT_HANDLER].elements) {
-    size_t i;
-    t_handler_config *handler;
-    t_filter_begin exec;
+  /* run init handlers */
+  if(ret != FLT_EXIT) ret = cf_run_init_handlers(head);
 
-    for(i=0;i<Modules[INIT_HANDLER].elements && (ret == FLT_OK || ret == FLT_DECLINE);i++) {
-      handler = array_element_at(&Modules[INIT_HANDLER],i);
-      exec    = (t_filter_begin)handler->func;
-      ret     = exec(head,&fo_default_conf,&fo_view_conf);
-    }
-  }
-
-  cs = cfg_get_first_value(&fo_default_conf,"ExternCharset");
+  cs = cfg_get_first_value(&fo_default_conf,forum_name,"ExternCharset");
 
   if(ret != FLT_EXIT) {
+    /* {{{ now, we need a socket connection/shared mem pointer */
     #ifndef CF_SHARED_MEM
-    if((sock = set_us_up_the_socket()) <= 0) {
+    if((sock = cf_socket_setup()) <= 0) {
       printf("Content-Type: text/html; charset=%s\015\012\015\012",cs?cs->values[0]?cs->values[0]:(u_char *)"UTF-8":(u_char *)"UTF-8");
-      str_error_message("E_NO_SOCK",NULL,strerror(errno));
+      cf_error_message("E_NO_SOCK",NULL,strerror(errno));
       exit(0);
     }
     #else
-    if((sock = get_shm_ptr()) == NULL) {
+    if((sock = cf_get_shm_ptr()) == NULL) {
       printf("Content-Type: text/html; charset=%s\015\012\015\012",cs?cs->values[0]?cs->values[0]:(u_char *)"UTF-8":(u_char *)"UTF-8");
-      str_error_message("E_NO_CONN",NULL,strerror(errno));
+      cf_error_message("E_NO_CONN",NULL,strerror(errno));
       exit(0);
     }
     #endif
+    /* }}} */
 
-    /* now, we need a socket connection */
-    // main source
-    if(Modules[CONNECT_INIT_HANDLER].elements) {
-      size_t i;
-      t_filter_connect exec;
-      t_handler_config *handler;
+    /* run connect init handlers */
+    ret = cf_run_connect_init_handlers(head,sock);
 
-      for(i=0;i<Modules[CONNECT_INIT_HANDLER].elements;i++) {
-        handler = array_element_at(&Modules[CONNECT_INIT_HANDLER],i);
-        exec    = (t_filter_connect)handler->func;
-        ret     = exec(head,&fo_default_conf,&fo_view_conf,sock);
-
-        if(ret == FLT_EXIT) ext = 1;
-      }
-    }
-
-    if(!ext) {
+    if(ret != FLT_EXIT) {
       /* after that, look for m= and t= */
       if(head) {
         t = cf_cgi_get(head,"t");
         m = cf_cgi_get(head,"m");
       }
 
-      if(t && m) {
-        send_posting(head,sock,strtoull(t,NULL,10),strtoull(m,NULL,10));
-      }
-      else {
-        send_threadlist(sock,head);
-      }
+      if(t) tid = str_to_u_int64(t);
+      if(m) mid = str_to_u_int64(m);
+
+      if(tid && mid) show_posting(head,sock,tid,mid);
+      /** \todo else if(tid)   show_thread(head,sock,tid); */
+      else           show_threadlist(sock,head);
     }
 
     #ifndef CF_SHARED_MEM
@@ -682,6 +664,7 @@ int main(int argc,char *argv[],char *env[]) {
 
   cleanup_modules(Modules);
   cf_fini();
+  cfg_destroy();
 
   if(head) cf_hash_destroy(head);
 

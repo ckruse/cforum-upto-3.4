@@ -16,8 +16,8 @@
  */
 /* }}} */
 
-#ifndef CF_CLIENTLIB_H
-#define CF_CLIENTLIB_H
+#ifndef _CF_CLIENTLIB_H
+#define _CF_CLIENTLIB_H
 
 /**
  * module api function.
@@ -34,32 +34,30 @@ typedef struct s_mod_api_ent {
 } t_mod_api_ent;
 
 
+typedef struct s_flag {
+  u_char *name;
+  u_char *val;
+} t_cf_post_flag;
+
+
 /** This struct is used to store and handle a posting */
 typedef struct s_message {
   u_int64_t mid; /**< The message id */
-  u_char *author; /**< The author of the posting */
-  unsigned long author_len; /**< The length of the author string */
 
-  u_char *subject; /**< The subject of the posting */
-  unsigned long subject_len; /**< The length of the subject string */
+  t_cf_list_head flags; /**< contains the flags of the posting */
 
-  u_char *category; /**< The category of the posting */
-  unsigned long category_len; /**< The length of the category string */
+  t_string author; /**< The author of the posting */
+  t_string email; /**< The email address of the author */
+  t_string hp; /**< The homepage URL of the poster */
+  t_string img; /**< The image URL of the poster */
 
-  u_char *content; /**< The content of the posting */
-  unsigned long content_len; /**< The length of the content string */
-
-  u_char *email; /**< The email-address of the poster */
-  unsigned long email_len; /**< The length of the email string */
-
-  u_char *hp; /**< The homepage URL of the poster */
-  unsigned long hp_len; /**< The length of the homepage string */
-
-  u_char *img; /**< The image URL of the poster */
-  unsigned long img_len; /**< The length of the image string */
+  t_string subject; /**< The subject of the posting */
+  t_string category; /**< The category of the posting */
+  t_string content; /**< The content of the posting */
 
   time_t date; /**< The date this message was created */
   unsigned short level; /**< The indent level of the posting */
+
   u_int32_t votes_good; /**< The good votings */
   u_int32_t votes_bad; /**< The bad votings */
   
@@ -206,146 +204,46 @@ extern t_cf_hash *GlobalValues;
  */
 extern t_cf_hash *APIEntries;
 
+
+extern int shm_id;
+extern void *shm_ptr;
+extern int shm_lock_sem;
+
+
 /**
  * contains error string in failure case
  */
 extern u_char ErrorString[];
+
+#ifdef CF_SHARED_MEM
+/**
+ * This function gets a pointer to the shared memory segment
+ * \return Returns NULL if segment does not exist, otherwise it returns the pointer
+ */
+void *cf_get_shm_ptr(void);
+
+/**
+ * This function re-gets the pointer to the shared memory segment
+ * \return Returns NULL if segment does not exist, otherwise it returns the pointer
+ */
+void *cf_reget_shm_ptr(void);
+#endif
+
 
 /**
  * This function tries to find the path to the user configuration file
  * \param uname The username
  * \return NULL If the configuration file of the user could not be found, the full path if it could be found
  */
-u_char *get_uconf_name(const u_char *uname);
+u_char *cf_get_uconf_name(const u_char *uname);
 
 /**
  * This function creates a socket handle an connects to the server
  * \return -1 on error, the socket on success
  */
-int set_us_up_the_socket(void);
+int cf_socket_setup(void);
 
-/**
- * This function spits out an error message by a error string
- * \param msg The error string
- * \param out A file handle to write to. If NULL, stdout will be used
- * \param rd The length of the error string
- */
-void str_error_message(const u_char *msg,FILE *out, ...);
 
-/**
- * This function returns an error message
- * \param msg The error string
- * \param rd The length of the error string
- * \param len A reference to a size_t-variable. This variable will be set to the length of the error message.
- * \return NULL on error or a u_char pointer to the error message on success.
- * \attention You have to free() the returned u_char pointer!
- */
-u_char *get_error_message(const u_char *msg,size_t *len, ...);
-
-/**
- * This function creates a date string. It's more general than get_time(),
- * actually get_time() is a wrapper around it
- * \param fmt Date format
- * \param locale The date locale
- * \param len In this variable the length of the string will be stored
- * \param date The date itself
- * \return NULL on failure, the date string on success
- */
-u_char *general_get_time(u_char *fmt,u_char *locale,int *len,time_t *date);
-
-/**
- * This function creates a date string
- * \param cfg The configuration structure
- * \param symbol The configuration symbol. E.g. "DateFormatThreadView"
- * \param len In this variable the length of the string will be stored
- * \param date The date
- * \return Returns NULL on failure or the string on success
- */
-u_char *get_time(t_configuration *cfg,const u_char *symbol,int *len,time_t *date);
-
-/**
- * This function generates a link to a thread
- * \param link The link string (if NULL, PostingURL or UPostingURL will be used)
- * \param tid The thread id
- * \param mid The message id
- * \return Returns NULL on failure or the link string on success
- * \attention You have to free() the returned pointer!
- */
-u_char *get_link(const u_char *link,u_int64_t tid,u_int64_t mid);
-
-/**
- * This function generates a link to a thread and appends some parameters (as query string)
- * \param link The link string
- * \param tid The thread id
- * \param mid The message id
- * \param l A reference, the new length will be stored in it (if NULL, it'll be ignored)
- * \return Returns the link string
- * \attention You have to free() the returned pointer!
- */
-u_char *advanced_get_link(const u_char *link,u_int64_t tid,u_int64_t mid,const u_char *parameters,size_t plen,size_t *l);
-
-/**
- * This function checks if a message has answers
- * \param msg The message structure
- * \returns
- */
-int has_answers(t_message *msg);
-
-/**
- * This function runs VIEW_HANDLER plugins on a
- * completely read thread.
- * \param thr Thread structure
- * \param head The CGI hash
- * \param mode 0 if in thread list, 1 if in thread view
- * \return Returns the return value of the last plugin
- */
-int handle_thread(t_cl_thread *thr,t_cf_hash *head,int mode);
-
-/**
- * This function runs VIEW_LIST_HANDLER plugins
- * \param p The posting structure
- * \param head The CGI hash
- * \param tid The ID of the thread
- * \param mode 0 if in thread list, 1 if in thread view
- * \return Returns the return value of the last plugin
- */
-int handle_thread_list_posting(t_message *p,t_cf_hash *head,u_int64_t tid,int mode);
-
-/**
- * This function deletes a posting subtree
- * \param msg The message structure
- * \return Returns the next posting which has not been deleted
- */
-t_message *delete_subtree(t_message *msg);
-
-/**
- * This function search the first message in the next subtree
- * \param msg The message structure
- * \return Returns the pointer to the first message in the next subtree
- */
-t_message *next_subtree(t_message *msg);
-
-/**
- * This function search the first message in the previous subtree
- * \param msg The message structure
- * \return Returns the pointer to the first message in the previous subtree
- */
-t_message *prev_subtree(t_message *msg);
-
-/**
- * This function searches for the parent message of the given posting
- * \param tmsg The message
- * \return NULL if there is no parent posting, otherwise a pointer to the parent posting
- */
-t_message *parent_message(t_message *tmsg);
-
-/**
- * This function generates a template name
- * \param buff The buffer in which the name should be saved
- * \param len The maximal length of the buffer
- * \param v The configuration entry of the template
- */
-void generate_tpl_name(u_char buff[],int len,t_name_value *v);
 
 /**
  * This function generates a template name
@@ -353,21 +251,7 @@ void generate_tpl_name(u_char buff[],int len,t_name_value *v);
  * \param len The maximal length of the buffer
  * \param name The template name string
  */
-void gen_tpl_name(u_char buff[],int len,const u_char *name);
-
-#ifdef CF_SHARED_MEM
-/**
- * This function gets a pointer to the shared memory segment
- * \return Returns NULL if segment does not exist, otherwise it returns the pointer
- */
-void *get_shm_ptr(void);
-
-/**
- * This function re-gets the pointer to the shared memory segment
- * \return Returns NULL if segment does not exist, otherwise it returns the pointer
- */
-void *reget_shm_ptr();
-#endif
+void cf_gen_tpl_name(u_char *buff,size_t len,const u_char *name);
 
 /**
  * This function sets a variable in a template.
@@ -381,21 +265,196 @@ void *reget_shm_ptr();
  */
 void cf_set_variable(t_cf_template *tpl,t_name_value *cs,u_char *vname,const u_char *val,size_t len,int html);
 
-/**
- * This function frees the complete thread structure
- * \param thr The thread structure
- */
-void cleanup_struct(t_cl_thread *thr);
 
 /**
- * This function runs POSTING_HANDLER plugins
- * \param head The CGI hash
- * \param thr The thread structure
- * \param tpl The template structure
- * \param vc The alternative configuration file
- * \return The last return value of the filter
+ * This function spits out an error message by a error string
+ * \param msg The error string
+ * \param out A file handle to write to. If NULL, stdout will be used
+ * \param rd The length of the error string
  */
-int handle_posting_filters(t_cf_hash *head,t_cl_thread *thr,t_cf_template *tpl,t_configuration *vc);
+void cf_error_message(const u_char *msg,FILE *out, ...);
+
+/**
+ * This function returns an error message
+ * \param msg The error string
+ * \param rd The length of the error string
+ * \param len A reference to a size_t-variable. This variable will be set to the length of the error message.
+ * \return NULL on error or a u_char pointer to the error message on success.
+ * \attention You have to free() the returned u_char pointer!
+ */
+u_char *cf_get_error_message(const u_char *msg,size_t *len, ...);
+
+
+
+/**
+ * Returns first visible message in tree
+ * \param msg The message list head
+ * \return msg if no invisible message could be found, first visible message if a visible message could be found
+ */
+t_message *cf_msg_get_first_visible(t_message *msg);
+
+/**
+ * This function deletes a posting subtree
+ * \param msg The message structure
+ * \return Returns the next posting which has not been deleted
+ */
+t_message *cf_msg_delete_subtree(t_message *msg);
+
+/**
+ * This function search the first message in the next subtree
+ * \param msg The message structure
+ * \return Returns the pointer to the first message in the next subtree
+ */
+t_message *cf_msg_next_subtree(t_message *msg);
+
+/**
+ * This function search the first message in the previous subtree
+ * \param msg The message structure
+ * \return Returns the pointer to the first message in the previous subtree
+ */
+t_message *cf_msg_prev_subtree(t_message *msg);
+
+/**
+ * This function searches for the parent message of the given posting
+ * \param tmsg The message
+ * \return NULL if there is no parent posting, otherwise a pointer to the parent posting
+ */
+t_message *cf_msg_parent_message(t_message *tmsg);
+
+/**
+ * This function checks if a message has answers
+ * \param msg The message structure
+ * \returns
+ */
+int cf_msg_has_answers(t_message *msg);
+
+/**
+ * cleans up (== free()s needed memory) a message structure
+ * \param msg The message to clean up
+ */
+void cf_cleanup_message(t_message *msg);
+
+/**
+ * cleans up (== free()s needed memory) a thread structure
+ * \param thr The thread to clean up
+ */
+void cf_cleanup_thread(t_cl_thread *thr);
+
+/**
+ * Run VIEW_LIST_HANDLER handlers.
+ * \param p The message pointer
+ * \param head The CGI hash
+ * \param tid The thread id
+ * \param mode The mode which we run (0 == threadlist, 1 == thread view)
+ * \return FLT_OK, FLT_EXIT or FLT_DECLINE
+ */
+int cf_run_view_list_handlers(t_message *p,t_cf_hash *head,u_int64_t tid,int mode);
+
+/**
+ * Runs VIEW_HANDLER handlers
+ * \param thr The thread pointer
+ * \param head The CGI hash
+ * \param mode The mode which we run (0 == threadlist, 1 == thread view)
+ * \return FLT_OK, FLT_EXIT or FLT_DECLINE
+ */
+int cf_run_view_handlers(t_cl_thread *thr,t_cf_hash *head,int mode);
+
+/**
+ * Runs POSTING_HANDLER handlers
+ * \param head The CGI hash
+ * \param thr The thread pointer
+ * \param tpl The template pointer
+ * \param vc The fo_view_config pointer
+ * \return FLT_OK, FLT_EXIT or FLT_DECLINE
+ */
+int cf_run_posting_handlers(t_cf_hash *head,t_cl_thread *thr,t_cf_template *tpl,t_configuration *vc);
+
+/**
+ * Runs the 404 handlers
+ * \param head The CGI hash
+ * \param tid The Thread-ID
+ * \param mid The Message-ID
+ * \return FLT_OK, FLT_EXIT or FLT_DECLINE
+ */
+int cf_run_404_handlers(t_cf_hash *head,u_int64_t tid,u_int64_t mid);
+
+/**
+ * Runs the INIT_HANDLER handlers
+ * \param head The CGI hash
+ * \return FLT_OK, FLT_EXIT or FLT_DECLINE
+ */
+int cf_run_init_handlers(t_cf_hash *head);
+
+/**
+ * Runs the authentification handlers
+ * \param head The CGI hash
+ * \return FLT_OK, FLT_EXIT or FLT_DECLINE
+ */
+int cf_run_auth_handlers(t_cf_hash *head);
+
+#ifdef CF_SHARED_MEM
+/**
+ * Runs the connection init handlers
+ * \param head The CGI hash
+ * \param sock The pointer to the shared memory segment
+ * \return FLT_OK, FLT_EXIT or FLT_DECLINE
+ */
+int cf_run_connect_init_handlers(t_cf_hash *head,void *sock);
+#else
+/**
+ * Runs the connection init handlers
+ * \param head The CGI hash
+ * \param sock The socket to the server
+ * \return FLT_OK, FLT_EXIT or FLT_DECLINE
+ */
+int cf_run_connect_init_handlers(t_cf_hash *head,int sock);
+#endif
+
+/**
+ * Runs the VIEW_INIT_HANDLER handlers
+ * \param head The CGI hash
+ * \param tpl_begin The forum header template
+ * \param tpl_end The forum footer template
+ * \return FLT_OK, FLT_DECLINE or FLT_EXIT
+ */
+int cf_run_view_init_handlers(t_cf_hash *head,t_cf_template *tpl_begin,t_cf_template *tpl_end);
+
+
+
+/**
+ * This function generates a link to a thread
+ * \param link The link string (if NULL, PostingURL or UPostingURL will be used)
+ * \param forum_name The name of the forum context. May be NULL if parameter link is given
+ * \param tid The thread id
+ * \param mid The message id
+ * \return Returns NULL on failure or the link string on success
+ * \attention You have to free() the returned pointer!
+ */
+u_char *cf_get_link(const u_char *link,const u_char *forum_name,u_int64_t tid,u_int64_t mid);
+
+/**
+ * This function generates a link to a thread and appends some parameters (as query string)
+ * \param link The link string
+ * \param tid The thread id
+ * \param mid The message id
+ * \param l A reference, the new length will be stored in it (if NULL, it'll be ignored)
+ * \return Returns the link string
+ * \attention You have to free() the returned pointer!
+ */
+u_char *cf_advanced_get_link(const u_char *link,u_int64_t tid,u_int64_t mid,const u_char *parameters,size_t plen,size_t *l);
+
+/**
+ * This function creates a date string. It's more general than get_time(),
+ * actually get_time() is a wrapper around it
+ * \param fmt Date format
+ * \param locale The date locale
+ * \param len In this variable the length of the string will be stored
+ * \param date The date itself
+ * \return NULL on failure, the date string on success
+ */
+u_char *cf_general_get_time(u_char *fmt,u_char *locale,int *len,time_t *date);
+
+
 
 /**
  * This function gets a message from the server
@@ -442,6 +501,8 @@ int cf_get_message_through_shm(void *shm_ptr,t_cl_thread *thr,const u_char *tpln
 void *cf_get_next_thread_through_shm(void *shm_ptr,t_cl_thread *thr,const u_char *tplname);
 #endif
 
+
+
 /**
  * This function registeres a module API entry
  * \param mod_name The name of the module which registeres
@@ -466,6 +527,7 @@ int cf_unregister_mod_api_ent(const u_char *unid);
 t_mod_api cf_get_mod_api_ent(const u_char *unid);
 
 
+
 /**
  * client library initialization
  */
@@ -476,12 +538,6 @@ void cf_init(void);
  */
 void cf_fini(void);
 
-/**
- * Returns first visible message in tree
- * \param msg The message list head
- * \return msg if no invisible message could be found, first visible message if a visible message could be found
- */
-t_message *cf_get_first_visible(t_message *msg);
 
 #endif
 

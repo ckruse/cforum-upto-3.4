@@ -1,3 +1,17 @@
+2005-01-10 Christian Kruse <ckruse@wwwtech.de>
+	* src/fo_view.c: Migrated to 3.0 API
+	* src/clientlib.c: Migrated to 3.0 API, code cleanup, moved several functions
+		to new files, invented flags
+	* src/clientlib.h: Code cleanup, invented flags
+	* src/modules/flt_cftp.c: Bugfix in answer to new posts and threads
+	* src/communication.c: Moved cf_get_* to this file
+	* src/handlerrunners.c: Moved handler running functions to this file
+	* src/messageutils.c: Moved message utilities to this file
+	* src/configparser.c: Bugfixes for configuration directives
+	* src/Makefile.am: Made entries for several libraries and the fo_view program
+	* cgi-shared/Plugins/MarkOwnVisited.pm, cgi-bin/fo_post_old.in:	Bugfix for
+		this f** endless read() call
+
 2005-01-09 Christian Kruse <ckruse@wwwtech.de>
 	* src/modules/flt_registerednames.c: Migrated to 3.0 API
 	* src/modules/flt_cftp.c: Replaced \t by spaces
