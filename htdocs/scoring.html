@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="ISO-8859-15" standalone="yes"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-loose.dtd">
+
+<html>
+<head>
+<title>SELFHTML Forum: Scoring-Syntax und -Erklärungen</title>
+
+<link rel="shortcut icon" href="http://src.selfhtml.org/favicon.ico" />
+<link rel="stylesheet" type="text/css" href="http://src.selfhtml.org/forum.css" />
+</head>
+
+<body>
+<table cellpadding="4" cellspacing="0" border="0" width="100%">
+<tr><td bgcolor="#FFEEDD" class="nav"><a class="an" name="top"><img src="http://src.selfhtml.org/x2.gif" width="16" height="13" border="0" alt="Teil von" /></a> <a href="http://selfaktuell.teamone.de/"><b>SELFHTML Aktuell</b></a> <img src="http://src.selfhtml.org/x2.gif" width="16" height="13" border="0" alt="Teil von" /> <a href="http://selfaktuell.teamone.de/live/"><b>SELFHTML Live</b></a><img src="http://src.selfhtml.org/x2.gif" width="16" height="13" border="0" alt="Teil von" /> <a href="/"><b>SELFHTML Forum</b></a></td></tr>
+</table>
+<table cellpadding="4" cellspacing="0" border="0" width="100%">
+<tr><td bgcolor="#EEEEEE" class="doc" width="110"><img src="http://src.selfhtml.org/xweb.gif" width="106" height="109" border="0" alt="SELFHTML" /></td>
+<td bgcolor="#EEEEEE" class="doc" valign="bottom" width="100%"><h2>SELFHTML Forum<br />Scoring-Syntax und -Erklärungen</h2></td></tr>
+<tr><td bgcolor="#EEEEEE" class="doc" valign="top" align="center"><img src="http://src.selfhtml.org/x5.gif" width="30" height="20" vspace="6" border="0" alt="Informationsseite" /></td>
+<td bgcolor="#FFFFFF" valign="top">
+<p>
+ <img src="http://src.selfhtml.org/xgdown.gif" width="14" height="10" border="0" alt="weiter unten" />&nbsp;<a href="#tutorial"><b>Einführung</b></a><br />
+ <img src="http://src.selfhtml.org/xgdown.gif" width="14" height="10" border="0" alt="weiter unten" />&nbsp;<a href="#syntax"><b>Syntax-Definition</b></a><br />
+</p>
+<tr><td colspan="2" bgcolor="#EEEEEE" class="doc"><a href="#bottom"><img src="http://src.selfhtml.org/xgdown.gif" width="14" height="10" border="0" alt="nach unten" /></a>&nbsp;</td></tr>
+</table>
+
+<h2 class="Sh2"><a class="an" name="tutorial">Einführung</a></h2>
+<p>
+ Der Scoring-Filter wurde entworfen, um es den Benutzern einfacher zu machen, eventuell interessante Themen und Beiträge
+ aus der Threadliste zu finden. Er funktioniert auf eine recht einfache Art und Weise: es wird eine Reihe von Regeln
+ angegeben und für jede Regel wird eine Punkt-Zahl definiert, die sowohl positiv als auch negativ sein kann. Das Basis-Scoring
+ liegt bei 0 Punkten. Die Regeln werden dann in der Threadliste auf jeden Beitrag angewandt. Dabei wird bei jeder zutreffenden
+ Regel die Punktezahl der Regel hinzuaddiert. Zum Schluss wird aus diesen Punkten eine Farbe berechnet, in der der Beitrag dann
+ angezeigt wird. Hat ein Beitrag weniger als eine definierte Zahl von Punkten, wird er komplett ausgeblendet. Hat ein Beitrag
+ keinerlei Punkte erhalten, fällt aber nicht unter das Punkte-Minimum, so wird keine Farbe gesetzt. Ein kleines Beispiel: folgende
+ Regeln seien gegeben.
+</p>
+
+<table width="100%" cellpadding="10"><tr><td class="xmpcode" bgcolor="#FFFFE0"><pre>
+Score: 10
+Field: Category
+Regex: perl
+
+Score: 10
+Field: Subject
+Regex: reg((ular|ulärer) )?(ex|ausdruck)
+
+Score: -9999
+Field: Author
+Regex: Christian Kruse
+</pre></td></tr></table>
+
+<p>
+ Bei diesem Regel-Set würde ein Posting von »Hans Wurst« mit dem Titel »Komme nicht mit Regex klar« und der Kategorie »PERL«
+ 20 Punkte bekommen. Ein Posting von »Christian Kruse« würde erstmal -9999 Punkte bekommen. Hätte es im Titel das Wort »regex«
+ und als Kategorie »PERL«, so würden wieder 20 Punkte aufaddiert. Die Farbe des Hans-Wurst-Posting würde sich wie folgt berechnen:
+</p>
+
+<table width="100%" cellpadding="10"><tr><td class="xmpcode" bgcolor="#FFFFE0"><pre>
+Rot-Anteil der neuen Farbe = Rot-Anteil der eingestellten Basis-Farbe + 20
+</pre></td></tr></table>
+
+<p>
+Sie sollten also darauf achten, dass der maximale Scoring-Werte 255 nicht übersteigt. Passiert das, so wird wieder bei 0 angefangen
+zu zählen (255 + 1 ergäbe dann einen Rot-Anteil von 0, 255 + 2 ergäbe einen Rot-Anteil von 1).
+</p>
+
+<table bgcolor="#EEEEEE" class="doc" width="100%"><tr><td><a href="#top"><img src="http://src.selfhtml.org/xgoup.gif" width="14" height="10" border="0" alt="nach oben" /></a><a href="#bottom"><img src="http://src.selfhtml.org/xgdown.gif" width="14" height="10" border="0" alt="nach unten" /></a>&#160;</td></tr></table>
+
+<h2 class="Sh2"><a class="an" name="syntax">Syntax-Definition</a></h2>
+<p>
+ Jede Regel ist ein zusammenhängender Block. Jeder Block besteht aus drei Angaben: Punkte-Wert, Feld, regulärer Ausdruck.
+ Alle drei Felder müssen vorhanden sein. Ist eines der Felder nicht vorhanden oder fehlerhaft, so führt dies (noch) zu einem
+ internen Server-Fehler. Es gibt folgende Felder: <tt>Subject</tt>, <tt>Category</tt> und <tt>Author</tt>. Der reguläre Ausdruck
+ muss in Perl-Notation angegeben werden (Perl-Kompatible reguläre Ausdrücke).
+</p>
+
+<table cellpadding="4" cellspacing="0" border="0" width="100%">
+<tr><td bgcolor="#EEEEEE" class="doc"><a href="#top"><img src="http://src.selfhtml.org/xgoup.gif" width="14" height="10" border="0" alt="nach oben" /></a></td></tr>
+<tr><td bgcolor="#FFEEDD" class="nav"><a class="an" name="top"><img src="http://src.selfhtml.org/x2.gif" width="16" height="13" border="0" alt="Teil von" /></a> <a href="http://selfaktuell.teamone.de/"><b>SELFHTML Aktuell</b></a> <img src="http://src.selfhtml.org/x2.gif" width="16" height="13" border="0" alt="Teil von" /> <a href="http://selfaktuell.teamone.de/live/"><b>SELFHTML Live</b></a><img src="http://src.selfhtml.org/x2.gif" width="16" height="13" border="0" alt="Teil von" /> <a href="/"><b>SELFHTML Forum</b></a></td></tr>
+</table>
+
+<p><a class="an" name="bottom">&copy; 2000/2001</a> <img src="http://src.selfhtml.org/xgmail.gif" width="15" height="10" border="0" alt="E-Mail" />&nbsp;<a href="mailto:stefan.muenz@selfhtml.org">stefan.muenz@selfhtml.org</a></p>
+</body>
+</html>

@@ -59,6 +59,7 @@ static u_char flt_scoring_base_color[3] = { 127, 0, 0 };
 
 #define FLT_SCORING_SUBJECT 1
 #define FLT_SCORING_AUTHOR  2
+#define FLT_SCORING_CAT     4
 
 #define FLT_SCORING_SCORE 0x1
 #define FLT_SCORING_FIELD 0x2
@@ -131,6 +132,9 @@ int flt_scoring_execute(t_cf_hash *head,t_configuration *dc,t_configuration *vc,
           case FLT_SCORING_AUTHOR:
             res = pcre_exec(flt->regex,flt->regex_extra,msg->author,msg->author_len,0,0,NULL,0);
             break;
+          case FLT_SCORING_CAT:
+            if(msg->category) res = pcre_exec(flt->regex,flt->regex_extra,msg->category,msg->category_len,0,0,NULL,0);
+            break;
           default:
             res = -1;
         }
@@ -175,8 +179,9 @@ int flt_scoring_parse(t_configfile *cf,t_conf_opt *opt,u_char **args,int argnum)
     
     switch(ret) {
       case FLT_SCORING_FIELD:
-        if(toupper(*flt_scoring_str.content) == 'S') filter.field = FLT_SCORING_SUBJECT;
-        else                                         filter.field = FLT_SCORING_AUTHOR;
+        if(toupper(*flt_scoring_str.content) == 'S')      filter.field = FLT_SCORING_SUBJECT;
+        else if(toupper(*flt_scoring_str.content) == 'A') filter.field = FLT_SCORING_AUTHOR;
+        else                                              filter.field = FLT_SCORING_CAT;
         break;
       case FLT_SCORING_REGEX:
         if((filter.regex = pcre_compile(flt_scoring_str.content,PCRE_UTF8,(const char **)&error,&err_offset,NULL)) == NULL) {

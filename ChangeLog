@@ -15,6 +15,9 @@
 		messages should be displayed first
 	* cgi-shared/config/modules.xml: Added LinkNoVisited directive
 	* htdocs/: Cleanup of the htdocs directory
+	* htdocs/live_syntax.html: Fixed some bugs in HTML
+	* htdocs/scoring.html: Added documentation for flt_scoring
+	* src/modules/flt_scoring.lex: Added support for field category
 
 2004-07-27 Christian Kruse <ckruse@wwwtech.de>
 	* cgi-bin/fo_userconf: Added 'mail me my password' functionality
