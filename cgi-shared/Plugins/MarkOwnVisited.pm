@@ -24,7 +24,6 @@ use CGI::Carp qw/fatalsToBrowser/;
 
 use BerkeleyDB;
 
-use CheckRFC;
 use ForumUtils qw(
   get_error
   rel_uri

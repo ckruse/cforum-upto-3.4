@@ -21,7 +21,6 @@ sub VERSION {(q$LastChangedRevision: 235 $ =~ /([\d.]+)\s*$/)[0] or '0.0'}
 use CGI;
 use CGI::Carp qw/fatalsToBrowser/;
 
-use CheckRFC;
 use ForumUtils qw(
   generate_unid
   get_error
