@@ -624,14 +624,6 @@
           </formvalues>
         </argument>
       </directive>
-
-      <directive name="LineWidth" arguments="1">
-        <argument paramname="linewidth" type="text" encode="plain">
-          <validate>^\d*$</validate>
-          <question>Soll der Text automatisch umgebrochen werden? Wenn ja, geben Sie hier die maximale Zeilenlänge an.</question>
-          <error>Bitte geben Sie hier die maximale Zeilenlänge an!</error>
-        </argument>
-      </directive>
     </section>
   </page>
 
