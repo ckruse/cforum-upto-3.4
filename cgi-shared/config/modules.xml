@@ -481,6 +481,32 @@
   </page>
 
   <page title="Filter-Funktionen" id="filterfuncs">
+    <section name="Scoring-Filter">
+      <directive name="ScoringFilter" arguments="1">
+        <argument paramname="scoringfilter" type="textarea" encode="plain">
+          <validate/>
+          <question>Möchten Sie den Scoring-Filter benutzen? Wenn ja, geben Sie hier ihre Scoring-Regeln ein.</question>
+          <error/>
+        </argument>
+      </directive>
+
+      <directive name="ScoringStartColor" arguments="1">
+        <argument paramname="scoringfilterstart" type="text" encode="plain">
+          <validate/>
+          <question>Mit welcher Farbe soll der Scoring-Filter beginnen? Vorgeschlagen wird hier #F70000 (127 Rot).</question>
+          <error>^[0-9a-f]{3,6}$</error>
+        </argument>
+      </directive>
+
+      <directive name="ScoringHideScore" arguments="1">
+        <argument paramname="scoringfilterhide" type="text" encode="plain">
+          <validate/>
+          <question>Ab welchem Score sollen Postings angezeigt werden? Alle Postings, die weniger Punkte als hier angegeben haben, werden ausgeblendet.</question>
+          <error>^\d+$</error>
+        </argument>
+      </directive>
+    </section>
+
     <section name="Live-Filter">
       <directive name="ActivateLiveFilter" arguments="1">
         <argument paramname="activatelivefilter" type="radio" encode="plain">

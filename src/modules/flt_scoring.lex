@@ -49,9 +49,10 @@ struct s_scoring_filter {
   pcre_extra *regex_extra;
 };
 
-static t_array flt_scoring_ary     = { 0, 0, 0, NULL, NULL };
-static t_string flt_scoring_str    = { 0, 0, NULL };
-static int      flt_scoring_number = 0;
+static t_array flt_scoring_ary         = { 0, 0, 0, NULL, NULL };
+static t_string flt_scoring_str        = { 0, 0, NULL };
+static int      flt_scoring_number     = 0;
+static int      flt_scoring_hide_score = 0;
 
 static u_char flt_scoring_base_color[3] = { 127, 0, 0 };
 
@@ -139,8 +140,13 @@ int flt_scoring_execute(t_cf_hash *head,t_configuration *dc,t_configuration *vc,
 
       /* calculate color from score */
       if(score) {
-        len = snprintf(buff,8,"#%02x%02x%02x",flt_scoring_base_color[0]+score,flt_scoring_base_color[1],flt_scoring_base_color[2]);
-        tpl_cf_setvar(&msg->tpl,"flt_scoring_color",buff,len,0);
+        if(flt_scoring_hide_score && score <= flt_scoring_hide_score) {
+          msg->may_show = 0;
+        }
+        else {
+          len = snprintf(buff,8,"#%02x%02x%02x",flt_scoring_base_color[0]+score,flt_scoring_base_color[1],flt_scoring_base_color[2]);
+          tpl_cf_setvar(&msg->tpl,"flt_scoring_color",buff,len,0);
+        }
       }
 
       return FLT_OK;
@@ -229,6 +235,10 @@ int flt_scoring_cols(t_configfile *cf,t_conf_opt *opt,u_char **args,int argnum) 
 }
 /* }}} */
 
+int flt_scoring_hide(t_configfile *cf,t_conf_opt *opt,u_char **args,int argnum) {
+  flt_scoring_hide_score = atoi(args[0]);
+}
+
 void flt_scoring_finish(void) {
   size_t i = 0;
   struct s_scoring_filter *f;
@@ -244,7 +254,8 @@ void flt_scoring_finish(void) {
 
 t_conf_opt flt_scoring_config[] = {
   { "ScoringFilter",     flt_scoring_parse, NULL },
-  { "ScoringStartColor", flt_scoring_cols, NULL  },
+  { "ScoringStartColor", flt_scoring_cols,  NULL },
+  { "ScoringHideScore",  flt_scoring_hide,  NULL },
   { NULL, NULL, NULL }
 };
 
