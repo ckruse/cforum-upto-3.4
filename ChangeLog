@@ -1,3 +1,6 @@
+2004-10-15 Christian Kruse <ckruse@wwwtech.de>
+	* cgi-shared/ForumUtils.pm: Fixed a typo (nval instead of val)
+
 2004-10-13 Christian Kruse <ckruse@wwwtech.de>
 	* cgi-shared/ForumUtils.pm: Fixed another bug in linebreak and quoting
 		handling

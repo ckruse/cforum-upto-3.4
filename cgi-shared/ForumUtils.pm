@@ -461,7 +461,7 @@ sub uniquify_params {
         return get_error($dcfg,'posting','charset') if !defined $nval;
 
         # we want non-breaking space and unicode whitespaces as normal whitespaces
-        $val =~ s/\xC2\xA0|\xE2\x80[\x80-\x8B\xA8-\xAF]/ /g;
+        $nval =~ s/\xC2\xA0|\xE2\x80[\x80-\x8B\xA8-\xAF]/ /g;
 
         push @newvals,$nval;
       }
