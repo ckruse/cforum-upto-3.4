@@ -41,6 +41,7 @@
 static u_char *flt_directives_link      = NULL;
 static int flt_directives_imagesaslink  = 0;
 static int flt_directives_iframesaslink = 0;
+static int flt_directives_rel_no_follow = 0;
 
 typedef struct {
   u_char *id;
@@ -123,6 +124,8 @@ void flt_directives_generate_uri(const u_char *uri,const u_char *title,t_string 
     str_chars_append(content,"<a href=\"",9);
     str_chars_append(content,tmp2,len);
 
+    if(flt_directives_rel_no_follow) str_chars_append(content,"\" rel=\"nofollow",15);
+
     if(flt_directives_link) {
       str_chars_append(content,"\" target=\"",10);
       str_chars_append(content,flt_directives_link,strlen(flt_directives_link));
@@ -174,6 +177,8 @@ void flt_directives_generate_uri(const u_char *uri,const u_char *title,t_string 
 
     str_chars_append(content,"<a href=\"",9);
     str_chars_append(content,tmp2,len);
+
+    if(flt_directives_rel_no_follow) str_chars_append(content,"\" rel=\"nofollow",15);
 
     if(flt_directives_link) {
       str_chars_append(content,"\" target=\"",10);
@@ -470,6 +475,11 @@ int flt_directives_handle_ref(t_configfile *cfile,t_conf_opt *opt,const u_char *
   return 0;
 }
 
+int flt_directives_handle_rel(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
+  flt_directives_rel_no_follow = cf_strcmp(args[0],"yes") == 0;
+  return 0;
+}
+
 int flt_directives_handle_lt(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
   u_char *ptr;
   t_string str;
@@ -552,7 +562,8 @@ t_conf_opt flt_directives_config[] = {
   { "ShowIframeAsLink",     flt_directives_handle_iframe,   CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL,  NULL },
   { "ShowImageAsLink",      flt_directives_handle_image,    CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL,  NULL },
   { "PostingLinkTarget",    flt_directives_handle_link,     CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL,  NULL },
-  { "ReferenceURI",         flt_directives_handle_ref,      CFG_OPT_CONFIG|CFG_OPT_LOCAL,  NULL },
+  { "SetRelNoFollow",       flt_directives_handle_rel,      CFG_OPT_CONFIG|CFG_OPT_LOCAL, NULL },
+  { "ReferenceURI",         flt_directives_handle_ref,      CFG_OPT_CONFIG|CFG_OPT_LOCAL, NULL },
   { "LinkTemplate",         flt_directives_handle_lt,       CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL,  NULL },
   { NULL, NULL, 0, NULL }
 };
