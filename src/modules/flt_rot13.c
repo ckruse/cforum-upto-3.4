@@ -2,7 +2,7 @@
  * \file flt_rot13.c
  * \author Christian Kruse, <ckruse@wwwtech.de>
  *
- * This plugin handles lot of standard directives
+ * This plugin implements the rot13-feature for the forum
  */
 
 /* {{{ Initial comments */
