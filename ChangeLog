@@ -30,6 +30,7 @@
 	* scripts/fo_userconf.in: Moved to new SWIG module API
 	* src/perl/Plugins/RegisterName.pm: Moved to new SWIG module API
 	* src/perl/Plugins/ImportExport.pm: Moved to new SWIG module API
+	* conf/modules.de.xml: Added several configuration options
 
 2005-02-06 Christian Seiler <self@christian-seiler.de>
 	* conf/patterns/php.pat: Some improvements

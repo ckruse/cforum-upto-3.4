@@ -162,6 +162,58 @@
     </section>
 
     <section name="Die Funktionalität beeinflussende Anzeige-Funktionen">
+      <directive name="SortThreads" arguments="1">
+        <argument paramname="sortthreads" type="radio" encode="plain">
+          <validate>^(ascending|descending|newestfirst|default)$</validate>
+          <question>Wie sollen die Threads sortiert werden?</question>
+          <error>Wie sollen die Threads sortiert werden? Bitte geben Sie &quot;ansteigend&quot;, &quot;absteigend&quot;, &quot;nach jüngstem Posting&quot; oder &quot;Default-Reihenfolge&quot; an!</error>
+          <formvalues>
+            <value val="default" default="yes">Default-Reihenfolge</value>
+            <value val="ascending">Aufsteigend</value>
+            <value val="descending">Absteigend</value>
+            <value val="newestfirst">Nach jüngstem Posting</value>
+          </formvalues>
+        </argument>
+      </directive>
+
+      <directive name="SortThreads" arguments="1">
+        <argument paramname="sortmessages" type="radio" encode="plain">
+          <validate>^(ascending|descending|default)$</validate>
+          <question>Wie sollen die Nachrichten sortiert werden?</question>
+          <error>Wie sollen die Nachrichten sortiert werden? Bitte geben Sie &quot;ansteigend&quot;, &quot;absteigend&quot; oder &quot;Default-Reihenfolge&quot; an!</error>
+          <formvalues>
+            <value val="default" default="yes">Default-Reihenfolge</value>
+            <value val="ascending">Ja</value>
+            <value val="descending">Nein</value>
+          </formvalues>
+        </argument>
+      </directive>
+
+      <directive name="ActivateSyntax" arguments="1">
+        <argument paramname="activatesyntax" type="radio" encode="plain">
+          <validate>^(yes|no)$</validate>
+          <question>Soll das Syntax-Highlighting aktiviert werden?</question>
+          <error>Soll das Syntax-Highlighting aktiviert werden? Bitte geben Sie &quot;ja&quot; oder &quot;nein&quot; an!</error>
+          <formvalues>
+            <value val="yes">Ja</value>
+            <value val="no" default="yes">Nein</value>
+          </formvalues>
+        </argument>
+      </directive>
+
+      <directive name="LatexMode" arguments="1">
+        <argument paramname="latexmode" type="radio" encode="plain">
+          <validate>^(INLINE|OBJECT|PNG)$</validate>
+          <question>Wie sollen LaTeX-Formeln eingebunden werden?</question>
+          <error>Wie sollen LaTeX-Formeln eingebunden werden? Bitte geben Sie &quot;Inline-MathML&quot;, &quot;MathML per object-Tag&quot; oder &quot;PNG&quot; an!</error>
+          <formvalues>
+            <value val="PNG" default="yes">PNG</value>
+            <value val="INLINE">Inline-MathML</value>
+            <value val="OBJECT">MathML per object-Tag</value>
+          </formvalues>
+        </argument>
+      </directive>
+
       <directive name="HideCategoriesInThreadView" arguments="1">
         <argument paramname="hidecategoriesinthreadview" type="radio" encode="plain">
           <validate>^(yes|no)$</validate>
