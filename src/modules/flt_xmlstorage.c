@@ -51,9 +51,6 @@ struct sockaddr_un;
 #include "xml_handling.h"
 /* }}} */
 
-#define CF_SORT_ASCENDING 1
-#define CF_SORT_DESCENDING 2
-
 /** The URL of the selfforum DTD */
 #define FORUM_DTD "http://wwwtech.de/cforum/download/cforum-3.dtd"
 

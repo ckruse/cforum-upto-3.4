@@ -13,6 +13,10 @@
 	* src/fo_server.c: Fixed bug of logfile handler
 	* src/modules/flt_link.c: Bugfix, now directives are local
 	* scripts/cf-indextips.pl: Bugfix, forgot a ;
+	* src/modules/flt_cftp.c: Fixed nasty bug in message insertion on posting
+		answers to existing threads
+	* src/modules/flt_xmlstorage.c: removed CF_SORT_* and added it to defines.h
+	* src/defines.h: Added CF_SORT_* symbols
 
 2005-02-03 Christian Kruse <ckruse@wwwtech.de>
 	* conf/patterns/perl.pat, conf/patterns/php.pat: Corrected escaping

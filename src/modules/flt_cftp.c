@@ -47,8 +47,8 @@ int flt_cftp_handler(int sockfd,t_forum *forum,const u_char **tokens,int tnum,rl
   t_name_value *sort_t_v = cfg_get_first_value(&fo_server_conf,forum->name,"SortThreads"),
                *sort_m_v = cfg_get_first_value(&fo_server_conf,forum->name,"SortMessages");
 
-  int sort_m = atoi(sort_m_v->values[0]),
-      sort_t = atoi(sort_t_v->values[0]),
+  int sort_m = cf_strcmp(sort_m_v->values[0],"ascending") == 0 ? CF_SORT_ASCENDING : CF_SORT_DESCENDING,
+      sort_t = cf_strcmp(sort_t_v->values[0],"ascending") == 0 ? CF_SORT_ASCENDING : CF_SORT_DESCENDING,
       ret;
 
   size_t i,
@@ -66,7 +66,8 @@ int flt_cftp_handler(int sockfd,t_forum *forum,const u_char **tokens,int tnum,rl
            *t1;
 
   t_posting *p,
-            *p1;
+            *p1,
+            *p2;
 
   t_string str;
   u_char buff[512];
@@ -251,7 +252,7 @@ int flt_cftp_handler(int sockfd,t_forum *forum,const u_char **tokens,int tnum,rl
                 t->newest    = p;
                 t->posts    += 1;
 
-                if(sort_m == 2 || p1->next == NULL) {
+                if(sort_m == CF_SORT_DESCENDING || p1->next == NULL) {
                   p->next       = p1->next;
                   p1->next      = p;
                   p->prev       = p1;
@@ -260,13 +261,18 @@ int flt_cftp_handler(int sockfd,t_forum *forum,const u_char **tokens,int tnum,rl
                   else        t->last = p;
                 }
                 else {
-                  for(p1=p1->next;p1->next && p1->level == p->level;p1=p1->next);
-                  p->next       = p1->next;
-                  p1->next      = p;
-                  p->prev       = p1;
-
-                  if(p->next) p->next->prev = p;
-                  else        t->last       = p;
+                  /* let's find the end of the subtree */
+                  for(p2=p1->next;p2->next && p2->level > p1->level;p2=p2->next);
+                  if(p2->level > p1->level) {
+                    p2->next = p;
+                    p->prev = p2;
+                  }
+                  else {
+                    p->next = p2;
+                    p->prev = p2->prev;
+                    p2->prev->next = p;
+                    p2->prev = p;
+                  }
                 }
 
                 CF_LM(&forum->uniques.lock);
@@ -349,7 +355,7 @@ int flt_cftp_handler(int sockfd,t_forum *forum,const u_char **tokens,int tnum,rl
           if(t1) {
             CF_RW_WR(&t1->lock);
 
-            if(sort_t == 1) {
+            if(sort_t == CF_SORT_ASCENDING) {
               t1->next    = t;
               t->prev     = t1;
             }

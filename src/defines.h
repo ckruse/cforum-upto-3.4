@@ -18,6 +18,9 @@
 #ifndef __DEFINES_H
 #define __DEFINES_H
 
+#define CF_SORT_ASCENDING 1
+#define CF_SORT_DESCENDING 2
+
 #define CF_VERSION "3.0"
 
 #define CF_BUFSIZ 2048
