@@ -207,7 +207,7 @@ void send_posting(t_cf_hash *head,void *shm_ptr,u_int64_t tid,u_int64_t mid) {
     str_error_message("E_TPL_NOT_FOUND",NULL);
     return;
   }
-  
+
   #ifndef CF_SHARED_MEM
   if(cf_get_message_through_sock(sock,&tsd,&thread,fo_thread_tplname,tid,mid,del) == -1) {
   #else
@@ -464,7 +464,7 @@ void sighandler(int segnum) {
   if(fd) {
     qs    = getenv("QUERY_STRING");
     if(GlobalValues) uname = cf_hash_get(GlobalValues,"UserName",8);
-    
+
     switch(segnum) {
       case SIGSEGV:
         snprintf(buff,10,"SIGSEGV");
@@ -618,21 +618,6 @@ int main(int argc,char *argv[],char *env[]) {
   if(ret != FLT_EXIT) {
     /* now, we need a socket connection */
     // main source
-
-    #ifndef CF_SHARED_MEM
-    if((sock = set_us_up_the_socket()) <= 0) {
-      printf("Content-Type: text/html; charset=%s\015\012\015\012",cs?cs->values[0]?cs->values[0]:(u_char *)"UTF-8":(u_char *)"UTF-8");
-      str_error_message("E_NO_SOCK",NULL,strerror(errno));
-      exit(0);
-    }
-    #else
-    if((sock = get_shm_ptr()) == NULL) {
-      printf("Content-Type: text/html; charset=%s\015\012\015\012",cs?cs->values[0]?cs->values[0]:(u_char *)"UTF-8":(u_char *)"UTF-8");
-      str_error_message("E_NO_CONN",NULL,strerror(errno));
-      exit(0);
-    }
-    #endif
-
     if(Modules[CONNECT_INIT_HANDLER].elements) {
       size_t i;
       t_filter_connect exec;
@@ -646,6 +631,20 @@ int main(int argc,char *argv[],char *env[]) {
     }
 
     if(ret != FLT_EXIT) {
+      #ifndef CF_SHARED_MEM
+      if((sock = set_us_up_the_socket()) <= 0) {
+        printf("Content-Type: text/html; charset=%s\015\012\015\012",cs?cs->values[0]?cs->values[0]:(u_char *)"UTF-8":(u_char *)"UTF-8");
+        str_error_message("E_NO_SOCK",NULL,strerror(errno));
+        exit(0);
+      }
+      #else
+      if((sock = get_shm_ptr()) == NULL) {
+        printf("Content-Type: text/html; charset=%s\015\012\015\012",cs?cs->values[0]?cs->values[0]:(u_char *)"UTF-8":(u_char *)"UTF-8");
+        str_error_message("E_NO_CONN",NULL,strerror(errno));
+        exit(0);
+      }
+      #endif
+
       /* after that, look for m= and t= */
       if(head) {
         t = cf_cgi_get(head,"t");

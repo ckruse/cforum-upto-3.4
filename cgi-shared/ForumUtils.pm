@@ -37,7 +37,7 @@ BEGIN {
   );
 }
 
-sub VERSION {(q$Revision: 1.22 $ =~ /([\d.]+)\s*$/)[0] or '0.0'}
+sub VERSION {(q$Revision$ =~ /([\d.]+)\s*$/)[0] or '0.0'}
 
 # needed because of this fucking Windows-1252
 use Text::Iconv;
@@ -204,7 +204,7 @@ sub transform_body {
   # ... messages
   foreach(@{$pcfg->{Image}}) {
     my ($name,$url,$alt) = (quotemeta $_->[0],recode($dcfg,$_->[1]),recode($dcfg,$_->[2]));
-    $txt =~ s!\[[mM][sS][gG]:\s*$name\]![image:$url\@alt=$alt]!g;
+    $txt =~ s!\[msg:\s*$name\]![image:$url\@alt=$alt]!g;
   }
 
   # ... all quoting characters to \177
@@ -306,18 +306,18 @@ sub message_field {
   # (efficience analysis is relly nice :-)
 
   my @links = ();
-  while($posting =~ /\[[Ll][Ii][Nn][Kk]:\s*([^\]\s]+?)\s*(?:\@title=([^\[\]<]+)\s*)?\]/g) {
+  while($posting =~ /\[link:\s*([^\]\s]+?)\s*(?:\@title=([^\[\]<]+)\s*)?\]/g) {
     my ($uri,$title) = ($1,$2);
     next if
       !is_valid_link($uri) &&
-      !is_valid_http_link(($uri =~ /^[Vv][Ii][Ee][Ww]-[Ss][Oo][Uu][Rr][Cc][Ee]:(.+)/)[0],CForum::Validator::VALIDATE_STRICT) &&
+      !is_valid_http_link(($uri =~ /^view-source:(.+)/)[0],CForum::Validator::VALIDATE_STRICT) &&
       !($uri =~ m{^(?:\.?\.?/(?!/)|\?)} and is_valid_http_link(rel_uri($uri,$base)));
 
     push @links,[$uri,$title];
   }
 
   my @images = ();
-  while($posting =~ /\[[Ii][Mm][Aa][Gg][Ee]:\s*([^\]\s]+?)\s*(?:\@alt=([^\[\]<]+)\s*)?\]/g) {
+  while($posting =~ /\[image:\s*([^\]\s]+?)\s*(?:\@alt=([^\[\]<]+)\s*)?\]/g) {
     my ($uri,$alt) = ($1,$2);
     next if
       !is_valid_http_link($uri,CForum::Validator::VALIDATE_STRICT) &&
@@ -327,7 +327,7 @@ sub message_field {
   }
 
   my @iframes = ();
-  while($posting =~ /\[[Ii][Ff][Rr][Aa][Mm][Ee]:\s*([^\[\]<\s]+)\s*\]/g) {
+  while($posting =~ /\[iframe:\s*([^\[\]<\s]+)\s*\]/g) {
     my $uri = $1;
     next if
       !is_valid_http_link($uri,CForum::Validator::VALIDATE_STRICT) &&
@@ -339,7 +339,7 @@ sub message_field {
   # Phase 2: Ok, we collected the links, lets transform them
   # ... links
   $posting =~ s!$_!'<a href="'.$1.'">'.($2||$1).'</a>'!eg for map {
-    '\[[Ll][Ii][Nn][Kk]:\s*('.
+    '\[link:\s*('.
     quotemeta($_->[0]).
     ')'.
     ($_->[1] ? '\s*\@title=('.quotemeta($_->[1]).')' : '').
@@ -348,7 +348,7 @@ sub message_field {
 
   # ... images
   $posting =~ s!$_!'<img src="'.$1.'" border="0" alt="'.($2||'').'">'!eg for map {
-    '\[[Ii][Mm][Aa][Gg][Ee]:\s*('.
+    '\[image:\s*('.
     quotemeta($_->[0]).
     ')'.
     ($_->[1] ? '\s*\@alt=('.quotemeta($_->[1]).')' : '').
@@ -357,7 +357,7 @@ sub message_field {
 
   # ... iframes
   $posting =~ s!$_!'<iframe src="'.$1.'" width="90%" height="90%"><a href="'.$1.'">'.$1.'</a></iframe>'!eg for map {
-    '\[[Ii][Ff][Rr][Aa][Mm][Ee]:\s*('.quotemeta($_).')\]'
+    '\[iframe:\s*('.quotemeta($_).')\]'
   } @iframes;
 
   # return
@@ -580,10 +580,6 @@ sub parse_argument {
       push @{$cfg->{$directive}},[@vals];
       return 1;
     }
-    else {
-      return;
-    }
-
   }
 
   return;
