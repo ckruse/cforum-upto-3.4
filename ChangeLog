@@ -1,3 +1,9 @@
+2004-06-15 Jan Rieger <jr@occuris.de>
+  * cgi-shared/config/templates/tpl_*/forum_begin.html:
+    Changed meta refresh to only contain URL in frameset view
+	* cgi-shared/config/templates/tpl_*/forum_thread.html:
+    Fixed bug #194
+
 2004-06-15 Christian Kruse <ckruse@wwwtech.de>
 	* src/fo_arcview.c: Bugfix for bug #180, #173
 	* src/configparser.c: Added directive DateFormatViewList
