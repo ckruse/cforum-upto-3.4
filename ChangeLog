@@ -1,3 +1,6 @@
+2005-03-29 Christian Kruse <ckruse@wwwtech.de>
+	* scripts/fo_userconf.in: Fixed bug #654
+
 2005-03-23 Christian Kruse <ckruse@wwwtech.de>
 	* src/modules/flt_votingvariables.c: Fixed bug #620
 	* src/modules/flt_posting.c: Fixed bug #607
