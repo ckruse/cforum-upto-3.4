@@ -39,7 +39,12 @@
 #include "fo_post.h"
 /* }}} */
 
-int flt_categorycheck_execute(t_cf_hash *head,t_configuration *dc,t_configuration *pc,t_message *p,int sock,int mode) {
+#ifdef CF_SHARED_MEM
+int flt_categorycheck_execute(t_cf_hash *head,t_configuration *dc,t_configuration *pc,t_message *p,void *ptr,int sock,int mode)
+#else
+int flt_categorycheck_execute(t_cf_hash *head,t_configuration *dc,t_configuration *pc,t_message *p,int sock,int mode)
+#endif
+{
   u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   t_name_value *v = cfg_get_first_value(&fo_default_conf,forum_name,"Categories");
   size_t i;

@@ -117,7 +117,12 @@ u_char *flt_remotesignature_get_url(const u_char *url) {
 /* }}} */
 
 /* {{{ flt_remotesignature_execute */
-int flt_remotesignature_execute(t_cf_hash *head,t_configuration *dc,t_configuration *pc,t_message *p,int sock,int mode) {
+#ifdef CF_SHARED_MEM
+int flt_remotesignature_execute(t_cf_hash *head,t_configuration *dc,t_configuration *pc,t_message *p,void *mptr,int sock,int mode)
+#else
+int flt_remotesignature_execute(t_cf_hash *head,t_configuration *dc,t_configuration *pc,t_message *p,int sock,int mode)
+#endif
+{
   u_char *rs = strstr(p->content.content,"[remote-signature:"),*url,*cnt;
   register u_char *ptr;
   t_string *str;

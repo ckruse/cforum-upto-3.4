@@ -25,6 +25,20 @@
 		handling file uploads in CGI.pm
 	* src/clientlib.h: Added t_filter_urlrewrite
 	* src/modules/flt_directives.c: Added hook for URL rewriting
+	* src/clientlib.h: Corrected prototypes for t_new_post_filter and
+		cf_run_post_filters()
+	* src/modules/flt_categorycheck.c, src/modules/flt_remotesignature.c,
+		src/modules/flt_postingassistant.c, src/modules/flt_preview.c: Fixed handler
+		run functions to new prototype
+	* src/perl/Plugins/RegisterName.pm: Fixed small bug, SocketName is in global
+		scope, not in local scope
+	* src/fo_post.c: Fixed bug in new post handlers, now the socket to the server
+		will always be given
+	* src/handlerrunners.c: Changed cf_run_post_filters(), now it uses always the
+		server socket
+	* src/modules/flt_registerednames.c: Added debug output
+	* src/modules/flt_checkregisteredname.c: Added plugin to check if user name is
+		registered
 
 2005-02-07 Christian Kruse <ckruse@wwwtech.de>
 	* src/modules/flt_link.c: Fixed bug in variable setting

@@ -165,4 +165,8 @@ flt_syntax_la_SOURCES=flt_syntax.c
 flt_syntax_la_LDFLAGS=-module -export-dynamic -avoid-version
 flt_syntax_la_LIBADD=$(PCRE_LIBS)
 
+pkglib_LTLIBRARIES+=flt_checkregisteredname.la
+flt_checkregisteredname_la_SOURCES=flt_checkregisteredname.c
+flt_checkregisteredname_la_LDFLAGS=-module -export-dynamic -avoid-version
+
 # eof

@@ -341,7 +341,12 @@ int flt_poas_qp_check(t_message *p) {
 /* }}} */
 
 /* {{{ flt_poas_execute */
-int flt_poas_execute(t_cf_hash *head,t_configuration *dc,t_configuration *pc,t_message *p,int sock,int mode) {
+#ifdef CF_SHARED_MEM
+int flt_poas_execute(t_cf_hash *head,t_configuration *dc,t_configuration *pc,t_message *p,void *ptr,int sock,int mode)
+#else
+int flt_poas_execute(t_cf_hash *head,t_configuration *dc,t_configuration *pc,t_message *p,int sock,int mode)
+#endif
+{
   /* first: standard checks */
   if(cf_cgi_get(head,"assicheck") == NULL || flt_poas_conf.poas_must_validate) {
     if(flt_poas_standardchecks(p) != 0) {

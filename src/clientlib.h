@@ -199,7 +199,7 @@ typedef int (*t_filter_init_view)(t_cf_hash *,t_configuration *,t_configuration 
 #ifndef CF_SHARED_MEM
 typedef int (*t_new_post_filter)(t_cf_hash *,t_configuration *,t_configuration *,t_message *,int,int);
 #else
-typedef int (*t_new_post_filter)(t_cf_hash *,t_configuration *,t_configuration *,t_message *,void *,int);
+typedef int (*t_new_post_filter)(t_cf_hash *,t_configuration *,t_configuration *,t_message *,void *,int,int);
 #endif
 
 /**
@@ -469,7 +469,7 @@ int cf_run_sorting_handlers(t_cf_hash *head,int sock,rline_t *tsd,t_array *threa
 
 void cf_run_after_post_handlers(t_cf_hash *head,t_message *p,u_int64_t tid);
 #ifdef CF_SHARED_MEM
-int cf_run_post_filters(t_cf_hash *head,t_message *p,void *sock);
+int cf_run_post_filters(t_cf_hash *head,t_message *p,void *ptr,int sock);
 #else
 int cf_run_post_filters(t_cf_hash *head,t_message *p,int sock);
 #endif

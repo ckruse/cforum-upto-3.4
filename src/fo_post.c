@@ -874,22 +874,22 @@ int main(int argc,char *argv[],char *env[]) {
       p->invisible   = 0;
       /* }}} */
 
+      #ifdef CF_SHARED_MEM
+      /* filters finished... send posting */
+      if((sock = cf_socket_setup()) == -1) {
+        printf("Status: 500 Internal Server Error\015\012\015\012");
+        cf_error_message("E_NO_SOCK",NULL,strerror(errno));
+        return EXIT_SUCCESS;
+      }
+      #endif
+
       /* ok, we did everything we had to do, let filters run */
       #ifndef CF_SHARED_MEM
       if(cf_run_post_filters(head,p,sock) != FLT_EXIT)
       #else
-      if(cf_run_post_filters(head,p,shm) != FLT_EXIT)
+      if(cf_run_post_filters(head,p,shm,sock) != FLT_EXIT)
       #endif
       {
-      #ifdef CF_SHARED_MEM
-        /* filters finished... send posting */
-        if((sock = cf_socket_setup()) == -1) {
-          printf("Status: 500 Internal Server Error\015\012\015\012");
-          cf_error_message("E_NO_SOCK",NULL,strerror(errno));
-          return EXIT_SUCCESS;
-        }
-      #endif
-
         /* {{{ submit posting */
         len = snprintf(buff,256,"SELECT %s\n",forum_name);
         writen(sock,buff,len);

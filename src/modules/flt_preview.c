@@ -48,7 +48,12 @@ static int flt_preview_is_preview = 0;
 static u_char *flt_preview_fn = NULL;
 
 /* {{{ flt_preview_execute */
-int flt_preview_execute(t_cf_hash *head,t_configuration *dc,t_configuration *pc,t_message *p,int sock,int mode) {
+#ifdef CF_SHARED_MEM
+int flt_preview_execute(t_cf_hash *head,t_configuration *dc,t_configuration *pc,t_message *p,void *ptr,int sock,int mode)
+#else
+int flt_preview_execute(t_cf_hash *head,t_configuration *dc,t_configuration *pc,t_message *p,int sock,int mode)
+#endif
+{
   u_char *date;
   size_t len;
   t_name_value *v;

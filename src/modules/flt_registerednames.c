@@ -132,6 +132,8 @@ int flt_registerednames_handler(int connfd,t_forum *forum,const u_char **tokens,
 
     do {
       ln  = readline(connfd,tsd);
+      cf_log(CF_DBG,__FILE__,__LINE__,"%s",ln);
+
       if(ln) {
         llen = tsd->rl_len;
         while(ln[llen] != '\n') ln[llen--] = '\0'; /* delete the \n */

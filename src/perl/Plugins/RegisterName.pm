@@ -45,9 +45,9 @@ sub execute {
 
   my $sock = new IO::Socket::UNIX(
     Type => SOCK_STREAM,
-    Peer => get_conf_val($fo_default_conf,$main::Forum,'SocketName')
+    Peer => get_conf_val($fo_default_conf,'global','SocketName')
   ) or do {
-    main::generate_edit_output($cgi,$fo_default_conf,$fo_view_conf,$fo_userconf_conf,$new_uconf,get_error($fo_default_conf,'NO_CONN'));
+    main::generate_edit_output($cgi,$fo_default_conf,$fo_view_conf,$fo_userconf_conf,$new_uconf,sprintf(get_error($fo_default_conf,'NO_CONN'),"$!"));
     return;
   };
 
