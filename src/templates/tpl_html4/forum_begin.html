@@ -121,8 +121,7 @@
         }
 
         return true;
-      }
-{endif}
+      }{endif}
     //--></script>
   </head>
   <body bgcolor="#FFFFFF" text="#000000" link="#AA5522" vlink="#772200" alink="#000000" id="selfforumbody">
@@ -170,8 +169,7 @@
                 </p>
                 <p>
                   <b>Optionen:</b><br>{if $authed}
-
-                  <a href="{$ubase}?a=nd">Ausgeblendete Threads anzeigen</a>{endif}
+                  <a href="{$ubase}?a=nd">Ausgeblendete Threads anzeigen</a>{endif}
                   <a href="{$userconfig}"{if $frame} target="_top"{endif}>{if $authed}Benutzer-Einstellungen{else}Benutzer-Registrierung{endif}</a><br>{if !$authed}
                   <a href="{$ubase}"{if $frame} target="_top"{endif}>Benutzerspezifische Ansicht</a><br>{endif}{if $admin}{if $aaf}
                   <a href="{$ubase}"{if $frame} target="_top"{endif}>Administrator-Ansicht deaktivieren</a>{else}<a href="{$ubase}?aaf=1"{if $frame} target="_top"{endif}>Administrator-Ansicht</a>{endif}<br>{endif}
@@ -183,7 +181,8 @@
         <td bgcolor="#FFFFFF" valign="top" width="100%">
           <p>{if $livefilter}
             <img src="http://src.selfhtml.org/down.gif" width="14" height="10" border="0" alt="nach unten">&nbsp;<a href="#live-filter"><b>Live-Filter</b></a><br>{endif}
-            <img src="http://src.selfhtml.org/down.gif" width="14" height="10" border="0" alt="nach unten">&nbsp;<a href="#nachrichten">Aktuelle Nachrichten</a><br>
+            <img src="http://src.selfhtml.org/down.gif" width="14" height="10" border="0" alt="nach unten">&nbsp;<a href="#aktuelle_nachrichten">Aktuelle Nachrichten</a><br>
+            <img src="http://src.selfhtml.org/down.gif" width="14" height="10" border="0" alt="nach unten">&nbsp;<a href="#alte_nachrichten">Alte Nachrichten</a><br>
             <img src="http://src.selfhtml.org/dok.gif" width="15" height="10" border="0" alt="Seite">&nbsp;<a href="{if $authed}/cgi-bin/user/fo_post{else}/cgi-bin/fo_post{endif}"{if $frame} target="_top"{endif}>Neue Nachricht verfassen</a><br>
           </p>
           <p>
@@ -210,13 +209,11 @@
     <form method="get" action="{$ubase}" accept-charset="{$charset},UTF-8">
       <p><label for="lf">Filter-String:</label> <input type="text" name="lf" id="lf" value="{$lf}" size="50"> <input type="submit" value="Filtern!"></p>
     </form>{endif}
-    <h2 class="sh2"><a class="an" name="nachrichten">Aktuelle Nachrichten</a></h2>
+    <h2 class="sh2"><a class="an" name="aktuelle_nachrichten">Aktuelle Nachrichten</a></h2>
     <p>
       <b>Mitmachen:</b> Um auf eine aktuelle Nachricht zu antworten, einfach diese &ouml;ffnen und lesen. Alle Nachrichten enthalten ein Formular zum Antworten.<br><b>Tip:</b> Nachrichten in neuem Fenster &ouml;ffnen (rechte Maustaste). Dann bleibt diese Indexdatei im Hintergrund ge&ouml;ffnet.
     </p>{if $delcheckbox}
-
     <form method="post" action="{$ubase}">
-
       <div style="display:none;"><input type="hidden" name="a" value="d"></div>
       <ol id="root">{else}
     <ol id="root">{endif}

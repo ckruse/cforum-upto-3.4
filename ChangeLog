@@ -1,4 +1,9 @@
-2004-06-16 Christian Kruye <ckruse@wwwtech.de>
+2004-06-19 Jan Rieger <jr@occuris.de>
+	* src/templates/tpl_*/forum_begin.html:
+	* src/templates/tpl_*/forum_end.html:
+	  Changed/added anchor
+
+2004-06-16 Christian Kruse <ckruse@wwwtech.de>
 	* configure.in: Stripped some uneccessary WITH arguments
 	* cgi-shared/config/templates/: Moved to src/templates/
 	* src/fo_arcview.c: Fixed bug #199
