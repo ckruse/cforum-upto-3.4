@@ -107,7 +107,7 @@ sub get_config_files {
   my @ret = ();
 
   foreach my $fname (@_) {
-    my $f = $ENV{'CF_CONF_DIR'}.'/'.$fname;
+    my $f = $ENV{'CF_CONF_DIR'}.'/'.$fname.'.conf';
     return unless -f $f || !-r $f;
 
     push @ret,$f;

@@ -19,7 +19,7 @@ BEGIN {
   $Bin     = ($null =~ /^(.*)\/.*$/)? $1 : '.';
   $Script  = ($null =~ /^.*\/(.*)$/)? $1 : $null;
 
-  # get the path to the configuration
+  # get needed environments
   die "Could not get config path, set CF_CONF_DIR!" unless $ENV{CF_CONF_DIR};
   die "Could not get forum name, set CF_FORUM_NAME!" unless $ENV{CF_FORUM_NAME};
 

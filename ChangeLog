@@ -1,3 +1,7 @@
+2005-01-16 Christian Kruse <ckruse@wwwtech.de>
+	* cgi-shared/ForumUtils.pm: Small bugfix
+	* cgi-bin/fo_usermanagement.in: Moved to 3.0 API
+
 2005-01-15 Christian Kruse <ckruse@wwwtech.de>
 	* src/modules/flt_directives.c: Bugfix for [ref:], now it supports @title=
 	* cgi-shared/Plugins/MarkOwnVisited.pm: Removed CheckRFC.pm, fixed little bug
