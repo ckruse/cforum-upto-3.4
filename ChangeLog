@@ -1,3 +1,6 @@
+2005-02-06 Christian Seiler <self@christian-seiler.de>
+	* conf/patterns/php.pat: Some improvements
+
 2005-02-06 Christian Kruse <ckruse@wwwtech.de>
 	* conf/errormessages.de.txt: Patric Canterino fixed some typos
 	* conf/patterns/perl.pat: Corrected some misstakes in the patterns
