@@ -9,31 +9,30 @@
 # $LastChangedBy$
 #
 
-<Filters>
- AddFilter "@libdir@/cforum/flt_tplmode.so" "flt_tplmode"
- AddFilter "@libdir@/cforum/flt_http.so" "flt_http"
- AddFilter "@libdir@/cforum/flt_frameset.so" "flt_frameset"
- AddFilter "@libdir@/cforum/flt_openclose.so" "flt_openclose"
- AddFilter "@libdir@/cforum/flt_posting.so" "flt_posting"
- AddFilter "@libdir@/cforum/flt_basic.so" "flt_basic"
- AddFilter "@libdir@/cforum/flt_listhighlight.so" "flt_listhighlight"
- AddFilter "@libdir@/cforum/flt_category.so" "flt_category"
- AddFilter "@libdir@/cforum/flt_deleted.so" "flt_deleted"
- AddFilter "@libdir@/cforum/flt_visited.so" "flt_visited"
- AddFilter "@libdir@/cforum/flt_owncss.so" "flt_owncss"
- AddFilter "@libdir@/cforum/flt_livefilter.so" "flt_livefilter"
- AddFilter "@libdir@/cforum/flt_httpauth.so" "flt_httpauth"
- AddFilter "@libdir@/cforum/flt_admin.so" "flt_admin"
- AddFilter "@libdir@/cforum/flt_link.so" "flt_link"
- AddFilter "@libdir@/cforum/flt_threadreturnanchor.so" "flt_threadreturnanchor"
- AddFilter "@libdir@/cforum/flt_handle404.so" "flt_handle404"
- AddFilter "@libdir@/cforum/flt_motd.so" "flt_motd"
- AddFilter "@libdir@/cforum/flt_tipoftheday.so" "flt_tipoftheday"
-</Filters>
+ModulePath "@libdir@"
 
-<ForumBehavior>
- XHTMLMode "yes"
+Load "flt_tplmode"
+Load "flt_http"
+Load "flt_frameset"
+Load "flt_openclose"
+Load "flt_posting"
+Load "flt_basic"
+Load "flt_listhighlight"
+Load "flt_category"
+Load "flt_deleted"
+Load "flt_visited"
+Load "flt_owncss"
+Load "flt_livefilter"
+Load "flt_httpauth"
+Load "flt_admin"
+Load "flt_link"
+Load "flt_threadreturnanchor"
+Load "flt_handle404"
+Load "flt_motd"
+Load "flt_tipoftheday"
 
+
+Forum "FORUM1" {
  ThreadsOpenByDefault    "yes"
  DoQuote                 "yes"
  QuotingChars            "»» "
@@ -54,18 +53,14 @@
 
  MotdFile "/etc/motd"
  EnableMotd "yes"
-</ForumBehavior>
 
-<Templates>
  TemplatesFrameset      "@libdir@/cforum/%s_%s_frameset.so" "@libdir@/cforum/%s_%s_blank.so"
 
  TemplateForumBegin     "@libdir@/cforum/%s_%s_forum_begin.so"
  TemplateForumEnd       "@libdir@/cforum/%s_%s_forum_end.so"
  TemplateForumThread    "@libdir@/cforum/%s_%s_forum_thread.so"
  TemplatePosting        "@libdir@/cforum/%s_%s_forum_posting.so"
-</Templates>
 
-<DateConfig>
  # Date format
  #
  # see 'man strftime` for more informations to the
@@ -75,7 +70,8 @@
  DateFormatLoadTime     "%A, %d. %B %Y, %H:%M:%S"
  DateFormatThreadList   "%d. %m. %Y, %H:%M"
  DateFormatThreadView   "%d. %B %Y, %H:%M"
-</DateConfig>
+
+}
 
 # eof
 

@@ -38,14 +38,14 @@
  * 20 or 30 values in it.
  *
  */
-static u_int64_t flt_openclose_saved_threads[512];  /* Maximum 512 opened/closed threads. This should be enough */
-static int flt_openclose_sclen = 0;
-static t_string flt_openclose_cgi;
-static int flt_openclose_tobd = -1;
-static int flt_openclose_use_javascript = 1;
-static int flt_openclose_otin = 0;
+static u_int64_t saved_threads[512];  /* Maximum 512 opened/closed threads. This should be enough */
+static int sclen = 0;
+static t_string Cgi;
+static int ThreadsOpenByDefault = -1;
+static int UseJavaScript = 1;
+static int OpenThreadIfNew = 0;
 
-void flt_openclose_parse_query_string(t_cf_hash *head,int cl) {
+void parse_query_string(t_cf_hash *head,int cl) {
   u_char *val = cf_cgi_get(head,"o");
   u_char *pos = val;
   u_char buff[50];
@@ -56,7 +56,7 @@ void flt_openclose_parse_query_string(t_cf_hash *head,int cl) {
   if(val) {
     while((tid = strtoull(pos,(char **)&pos,10)) > 0) {
       pos += 1;
-      flt_openclose_saved_threads[flt_openclose_sclen++] = tid;
+      saved_threads[sclen++] = tid;
     }
   }
 
@@ -66,7 +66,7 @@ void flt_openclose_parse_query_string(t_cf_hash *head,int cl) {
       if(cf_strcmp(val,"open") == 0) {
         val = cf_cgi_get(head,"t");
         if(val) {
-          flt_openclose_saved_threads[flt_openclose_sclen++] = strtoull(val,NULL,10);
+          saved_threads[sclen++] = strtoull(val,NULL,10);
         }
       }
       else {
@@ -74,9 +74,9 @@ void flt_openclose_parse_query_string(t_cf_hash *head,int cl) {
         if(val) {
           tid = strtoull(val,NULL,10);
 
-          for(i=0;i<flt_openclose_sclen;i++) {
-            if(tid == flt_openclose_saved_threads[i]) {
-              flt_openclose_saved_threads[i] = 0;
+          for(i=0;i<sclen;i++) {
+            if(tid == saved_threads[i]) {
+              saved_threads[i] = 0;
               break;
             }
           }
@@ -89,9 +89,9 @@ void flt_openclose_parse_query_string(t_cf_hash *head,int cl) {
         if(val) {
           tid = strtoull(val,NULL,10);
 
-          for(i=0;i<flt_openclose_sclen;i++) {
-            if(tid == flt_openclose_saved_threads[i]) {
-              flt_openclose_saved_threads[i] = 0;
+          for(i=0;i<sclen;i++) {
+            if(tid == saved_threads[i]) {
+              saved_threads[i] = 0;
               break;
             }
           }
@@ -100,35 +100,35 @@ void flt_openclose_parse_query_string(t_cf_hash *head,int cl) {
       else {
         val = cf_cgi_get(head,"t");
         if(val) {
-          flt_openclose_saved_threads[flt_openclose_sclen++] = strtoull(val,NULL,10);
+          saved_threads[sclen++] = strtoull(val,NULL,10);
         }
       }
 
     } /* end else */
   }
 
-  for(i=0;i<flt_openclose_sclen;i++) {
-    if(flt_openclose_saved_threads[i] != 0) {
-      str_init(&flt_openclose_cgi);
-      len = sprintf(buff,"%llu",flt_openclose_saved_threads[i]);
-      str_chars_append(&flt_openclose_cgi,buff,len);
+  for(i=0;i<sclen;i++) {
+    if(saved_threads[i] != 0) {
+      str_init(&Cgi);
+      len = sprintf(buff,"%llu",saved_threads[i]);
+      str_chars_append(&Cgi,buff,len);
       break;
     }
   }
 
-  if(i+1 < flt_openclose_sclen) {
-    for(i++;i<flt_openclose_sclen;i++) {
-      if(flt_openclose_saved_threads[i] != 0) {
-        len = sprintf(buff,"%%2C%llu",flt_openclose_saved_threads[i]);
-        str_chars_append(&flt_openclose_cgi,buff,len);
+  if(i+1 < sclen) {
+    for(i++;i<sclen;i++) {
+      if(saved_threads[i] != 0) {
+        len = sprintf(buff,"%%2C%llu",saved_threads[i]);
+        str_chars_append(&Cgi,buff,len);
       }
     }
   }
 
 }
 
-int flt_openclose_execute_filter(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cl_thread *thread,int mode) {
-  int cl = !flt_openclose_tobd;
+int execute_filter(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cl_thread *thread,int mode) {
+  int cl = !ThreadsOpenByDefault;
   t_name_value *vs = NULL;
   t_message *msg;
   int i = 0;
@@ -137,18 +137,20 @@ int flt_openclose_execute_filter(t_cf_hash *head,t_configuration *dc,t_configura
   t_mod_api is_visited;
 
 
-  if(flt_openclose_tobd != -1 && mode == 0) {
+  if(ThreadsOpenByDefault != -1 && mode == 0) {
     if(UserName) vs = cfg_get_first_value(dc,NULL,"UBaseURL");
     else         vs = cfg_get_first_value(dc,NULL,"BaseURL");
 
-    if(!flt_openclose_sclen && head) flt_openclose_parse_query_string(head,cl);
+    if(!sclen && head) { // get me the list of opened threads
+      parse_query_string(head,cl);
+    }
 
     tpl_cf_setvar(&thread->messages->tpl,"openclose","1",1,0);
 
     /* user wants to use java script */
-    if(flt_openclose_use_javascript) {
-      if(flt_openclose_tobd && flt_openclose_otin == 0) {
-        tpl_cf_setvar(&thread->messages->tpl,"flt_openclose_use_javascript","1",1,0);
+    if(UseJavaScript) {
+      if(ThreadsOpenByDefault && OpenThreadIfNew == 0) {
+        tpl_cf_setvar(&thread->messages->tpl,"UseJavaScript","1",1,0);
       }
     }
 
@@ -156,15 +158,15 @@ int flt_openclose_execute_filter(t_cf_hash *head,t_configuration *dc,t_configura
     tpl_cf_setvar(&thread->messages->tpl,"unanch",buff,i,0);
 
     if(cl) { /* threads are closed by default! */
-      for(i=0;i<flt_openclose_sclen;i++) {
-        if(flt_openclose_saved_threads[i] == thread->tid) {
+      for(i=0;i<sclen;i++) {
+        if(saved_threads[i] == thread->tid) {
           tpl_cf_setvar(&thread->messages->tpl,"open","1",1,0);
           i = sprintf(buff,"%s?t=%lld&a=close",vs->values[0],thread->tid);
           tpl_cf_setvar(&thread->messages->tpl,"link_oc",buff,i,1);
 
-          if(flt_openclose_cgi.len) {
+          if(Cgi.len) {
             tpl_cf_appendvar(&thread->messages->tpl,"link_oc","&o=",7);
-            tpl_cf_appendvar(&thread->messages->tpl,"link_oc",flt_openclose_cgi.content,flt_openclose_cgi.len);
+            tpl_cf_appendvar(&thread->messages->tpl,"link_oc",Cgi.content,Cgi.len);
           }
 
           return FLT_DECLINE; /* thread is open */
@@ -177,7 +179,7 @@ int flt_openclose_execute_filter(t_cf_hash *head,t_configuration *dc,t_configura
       if(cf_hash_get(GlobalValues,"openclose",9) != NULL) return FLT_DECLINE;
 
       /* Ok, thread should normaly be closed. But lets check for new posts */
-      if(flt_openclose_otin) {
+      if(OpenThreadIfNew) {
         if((is_visited = cf_get_mod_api_ent("is_visited")) != NULL) {
           for(msg=thread->messages;msg;msg=msg->next) {
             /* Thread has at least one not yet visited messages -- leave it open */
@@ -186,9 +188,9 @@ int flt_openclose_execute_filter(t_cf_hash *head,t_configuration *dc,t_configura
               i = sprintf(buff,"%s?t=%lld&a=close",vs->values[0],thread->tid);
               tpl_cf_setvar(&thread->messages->tpl,"link_oc",buff,i,1);
 
-              if(flt_openclose_cgi.len) {
+              if(Cgi.len) {
                 tpl_cf_appendvar(&thread->messages->tpl,"link_oc","&o=",7);
-                tpl_cf_appendvar(&thread->messages->tpl,"link_oc",flt_openclose_cgi.content,flt_openclose_cgi.len);
+                tpl_cf_appendvar(&thread->messages->tpl,"link_oc",Cgi.content,Cgi.len);
               }
 
               return FLT_DECLINE;
@@ -200,9 +202,9 @@ int flt_openclose_execute_filter(t_cf_hash *head,t_configuration *dc,t_configura
       i = sprintf(buff,"%s?t=%lld&a=open",vs->values[0],thread->tid);
       tpl_cf_setvar(&thread->messages->tpl,"link_oc",buff,i,1);
 
-      if(flt_openclose_cgi.len) {
+      if(Cgi.len) {
         tpl_cf_appendvar(&thread->messages->tpl,"link_oc","&o=",7);
-        tpl_cf_appendvar(&thread->messages->tpl,"link_oc",flt_openclose_cgi.content,flt_openclose_cgi.len);
+        tpl_cf_appendvar(&thread->messages->tpl,"link_oc",Cgi.content,Cgi.len);
       }
 
       msg = thread->messages->next;
@@ -216,14 +218,14 @@ int flt_openclose_execute_filter(t_cf_hash *head,t_configuration *dc,t_configura
     }
     else { /* threads are open by default! */
       /* check, if the actual thread is in the closed threads list */
-      for(i=0;i<flt_openclose_sclen;i++) {
-        if(thread->tid == flt_openclose_saved_threads[i]) { /* this thread is closed */
+      for(i=0;i<sclen;i++) {
+        if(thread->tid == saved_threads[i]) { /* this thread is closed */
           i = sprintf(buff,"%s?t=%lld&a=open",vs->values[0],thread->tid);
           tpl_cf_setvar(&thread->messages->tpl,"link_oc",buff,i,1);
 
-          if(flt_openclose_cgi.len) {
+          if(Cgi.len) {
             tpl_cf_appendvar(&thread->messages->tpl,"link_oc","&o=",7);
-            tpl_cf_appendvar(&thread->messages->tpl,"link_oc",flt_openclose_cgi.content,flt_openclose_cgi.len);
+            tpl_cf_appendvar(&thread->messages->tpl,"link_oc",Cgi.content,Cgi.len);
           }
 
           msg = thread->messages->next;
@@ -244,9 +246,9 @@ int flt_openclose_execute_filter(t_cf_hash *head,t_configuration *dc,t_configura
       i = sprintf(buff,"%s?t=%lld&a=close",vs->values[0],thread->tid);
       tpl_cf_setvar(&thread->messages->tpl,"link_oc",buff,i,1);
 
-      if(flt_openclose_cgi.len) {
+      if(Cgi.len) {
         tpl_cf_appendvar(&thread->messages->tpl,"link_oc","&o=",7);
-        tpl_cf_appendvar(&thread->messages->tpl,"link_oc",flt_openclose_cgi.content,flt_openclose_cgi.len);
+        tpl_cf_appendvar(&thread->messages->tpl,"link_oc",Cgi.content,Cgi.len);
       }
     }
 
@@ -256,11 +258,11 @@ int flt_openclose_execute_filter(t_cf_hash *head,t_configuration *dc,t_configura
   return FLT_DECLINE;
 }
 
-int flt_openclose_set_js(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cf_template *begin,t_cf_template *end) {
+int flt_oc_set_js(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cf_template *begin,t_cf_template *end) {
   /* user wants to use java script */
-  if(flt_openclose_use_javascript) {
-    if(flt_openclose_tobd && flt_openclose_otin == 0) {
-      tpl_cf_setvar(begin,"flt_openclose_use_javascript","1",1,0);
+  if(UseJavaScript) {
+    if(ThreadsOpenByDefault && OpenThreadIfNew == 0) {
+      tpl_cf_setvar(begin,"UseJavaScript","1",1,0);
       return FLT_OK;
     }
   }
@@ -268,26 +270,26 @@ int flt_openclose_set_js(t_cf_hash *head,t_configuration *dc,t_configuration *vc
   return FLT_DECLINE;
 }
 
-int flt_openclose_get_conf(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
-  if(*opt->name == 'T')   flt_openclose_tobd = cf_strcmp(args[0],"yes") == 0;
+int get_conf(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
+  if(*opt->name == 'T')   ThreadsOpenByDefault = cf_strcmp(args[0],"yes") == 0;
   else {
-    if(*opt->name == 'O') flt_openclose_otin = cf_strcmp(args[0],"yes") == 0;
-    else                  flt_openclose_use_javascript = cf_strcmp(args[0],"yes") == 0;
+    if(*opt->name == 'O') OpenThreadIfNew = cf_strcmp(args[0],"yes") == 0;
+    else                  UseJavaScript = cf_strcmp(args[0],"yes") == 0;
   }
 
   return 0;
 }
 
 t_conf_opt flt_openclose_config[] = {
-  { "ThreadsOpenByDefault", flt_openclose_get_conf, CFG_OPT_CONFIG|CFG_OPT_USER, NULL },
-  { "UseJavaScript",        flt_openclose_get_conf, CFG_OPT_CONFIG|CFG_OPT_USER, NULL },
-  { "OpenThreadIfNew",      flt_openclose_get_conf, CFG_OPT_CONFIG|CFG_OPT_USER, NULL },
+  { "ThreadsOpenByDefault", get_conf, CFG_OPT_CONFIG|CFG_OPT_USER, NULL },
+  { "UseJavaScript",        get_conf, CFG_OPT_CONFIG|CFG_OPT_USER, NULL },
+  { "OpenThreadIfNew",      get_conf, CFG_OPT_CONFIG|CFG_OPT_USER, NULL },
   { NULL, NULL, 0, NULL }
 };
 
 t_handler_config flt_openclose_handlers[] = {
-  { VIEW_HANDLER,      flt_openclose_execute_filter },
-  { VIEW_INIT_HANDLER, flt_openclose_set_js  },
+  { VIEW_HANDLER,      execute_filter },
+  { VIEW_INIT_HANDLER, flt_oc_set_js  },
   { 0, NULL }
 };
 

@@ -9,7 +9,15 @@
 # $LastChangedBy$
 #
 
-<General>
+AddPlugin "Plugins::PostOkLink"
+AddPlugin "Plugins::SpellCheck"
+AddPlugin "Plugins::Preview"
+AddPlugin "Plugins::PostingAssistant"
+AddPlugin "Plugins::Variables"
+AddPlugin "Plugins::CheckRegisteredName"
+AddPlugin "Plugins::HTTPAuth"
+
+Forum "FORUM1" {
  PostingUrl "http://selfforum.teamone.de/\?"
  PostingUrl "http://selfforum.teamone.de/my/\?"
  PostingUrl "/\?"
@@ -31,12 +39,6 @@
  FieldNeeded "qchar"
  FieldNeeded "cat"
 
- AddPlugin "Plugins::SpellCheck"
- AddPlugin "Plugins::Preview"
- AddPlugin "Plugins::PostingAssistant"
- AddPlugin "Plugins::Variables"
- AddPlugin "Plugins::CheckRegisteredName"
- AddPlugin "Plugins::HTTPAuth"
 
  PostingAssistantMustValidate "yes"
 
@@ -53,9 +55,7 @@
 
  SMTPHost "localhost"
  SMTPFrom "cforum@wwwtech.de"
-</General>
 
-<Images>
  Image "selbermachen" "/images/01.gif" "Für dein Problem gibt es nur eine Lösung: SELFmade von Selbermachen."
  Image "archiv" "/images/02.gif" "Die Antwort auf deine Frage findest du im Archiv."
  Image "formulierung" "/images/03.gif" "Was willst du jetzt eigentlich wissen?"
@@ -72,11 +72,10 @@
  Image "nein" "/images/15.gif" "Nein!"
  Image "noe" "/images/16.gif" "Noe!"
  Image "board" "/images/17.gif" "Board?"
-</Images>
 
-<Templates>
  ThreadTemplate "@libdir@/cforum/%s_%s_thread.so"
  FatalTemplate "@libdir@/cforum/%s_%s_fatal.so"
  OkTemplate "@libdir@/cforum/%s_%s_post_ok.so"
-</Templates>
+}
+
 

@@ -50,11 +50,11 @@ int flt_tplmode_execute(t_cf_hash *head,t_configuration *dc,t_configuration *vc)
 
     if(strstr(TPLMode,"xhtml")) {
       free(v1->values[0]);
-      v1->values[0] = strdup("xhtml");
+      v1->values[0] = strdup("yes");
     }
     else {
       free(v1->values[0]);
-      v1->values[0] = strdup("html");
+      v1->values[0] = strdup("no");
     }
 
     return FLT_OK;

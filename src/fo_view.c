@@ -49,7 +49,7 @@
 /**
  * Dummy function, for ignoring unknown directives
  */
-int ignre(t_configfile *cf,const u_char *context,u_char *name,u_char **args,size_t argnum) {
+int ignre(t_configfile *cf,u_char *name,u_char **args,int argnum) {
   return 0;
 }
 

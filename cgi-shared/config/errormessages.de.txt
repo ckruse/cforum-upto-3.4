@@ -20,10 +20,10 @@ E_subject_long: Sie haben ein zu langes Thema angegeben.
 E_subject_invalid: Sind Sie sicher, dass Sie mit diesem Titel posten möchten?
 E_body_short: Haben Sie so wenig zu sagen?
 E_body_long: Das war jetzt etwas viel.
-E_email: Ihre E-Mail-Adresse scheint ungültig zu sein.
+E_email_invalid: Ihre E-Mail-Adresse scheint ungültig zu sein.
 E_manipulated: Falsche oder fehlende Daten. Die Daten scheinen in irgendeiner Weise manipuliert worden zu sein.
-E_image: Die Bild-URL scheint ungültig zu sein.
-E_homepage: Die Homepage-URL scheint ungültig zu sein.
+E_image_invalid: Die Bild-URL scheint ungültig zu sein.
+E_homepage_invalud: Die Homepage-URL scheint ungültig zu sein.
 E_cat: Bitte wählen Sie eine Kategorie aus!
 E_unid: Die Daten scheinen manipuliert worden zu sein...
 E_server: Der Server hat zurück gegeben:
@@ -50,6 +50,7 @@ E_FO_506: Der Server wird gerade heruntergefahren. Versuchen Sie es doch später
 E_FO_507: Der Server scheint gerade etwas ausgelastet zu sein. Versuchen sie es doch später noch einmal.
 E_FO_600: Das Forum ist aus administrativen oder technischen Gründen gesperrt. Bitte versuchen Sie es später noch einmal.
 E_ARCHIVE_ERROR: Leider ist ein interner Fehler aufgetreten.
+E_ARCHIVE_GENERIC404: Sie haben einen ungültige URL angegeben.
 E_ARCHIVE_YEARNOTPRESENT: Leider gibt es das von Ihnen ausgewählte Jahr nicht.
 E_ARCHIVE_MONTHNOTPRESENT: Leider gibt es den von Ihnen ausgewählten Monat nicht.
 E_ARCHIVE_THREADNOTPRESENT: Leider gibt es den von Ihnen ausgewählten Thread nicht.
@@ -66,3 +67,6 @@ E_sendpw_subject: SELFHTML-Forum-Passwort
 E_sendpw_body: Ihr SELFHTML-Forum-Passwort lautet: {$pass}
 E_new_post_mail_subject: Neue Antwort auf http://forum.de.selfhtml.org/my/?t={tid}&m={mid}
 E_new_post_mail_body: Hallo {name},\n\nes gibt eine neue Antwort auf:\n\n  http://forum.de.selfhtml.org/my/?t={tid}&m={mid}\n\nGrüsse,\n das Forum\n
+E_SQL_connect: Ein Datenbankfehler ist aufgetreten. Bitte wenden Sie sich an den Systemadministrator.
+E_SQL_execute: Ein Datenbankfehler ist aufgetreten. Bitte wenden Sie sich an den Systemadministrator.
+E_SMTP_failed: Auf Grund eines internen Fehlers konnte die Mail nicht verschickt werden.

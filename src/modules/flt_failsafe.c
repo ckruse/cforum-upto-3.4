@@ -186,7 +186,7 @@ int flt_failsafe_init(int main_socket) {
 /* }}} */
 
 /* {{{ flt_failsafe_handle_command */
-int flt_failsafe_handle_command(t_configfile *cf,t_conf_opt *opt,u_char **args,int argnum) {
+int flt_failsafe_handle_command(t_configfile *cf,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
   if(argnum == 1) {
     if(BackupFile) free(BackupFile);
     BackupFile = strdup(args[0]);

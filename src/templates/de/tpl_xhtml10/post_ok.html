@@ -70,7 +70,8 @@
       </tbody>
     </table>
     <h2 class="sh2"><a class="an" name="bestaetigung">Diese Nachricht ist nun im Forum lesbar</a></h2>
-    <p>Die folgende Nachricht zum Thema stammt von: <b>{$Name}</b>{if $EMail}, <img src="http://src.selfhtml.org/mail.gif" width="15" height="10" alt="E-Mail" />&nbsp;<a href="mailto:{$EMail}">{$EMail}</a>{endif}, {$date}{if $HomepageUrl}<br /><a href="{$HomepageUrl}"{if $frame} onclick="window.open(this,'_top'); return false;"{endif}>{$HomepageUrl}</a>{endif}</p>
+{if $new_link}    <p>Die Nachricht ist nun unter <img src="http://src.selfhtml.org/doc.gif" width="15" height="10" border="0" alt="Seite" />&nbsp;<a href="{$new_link}"><b>{$new_link}</b></a> erreichbar.</p>
+{endif}    <p>Die folgende Nachricht zum Thema stammt von: <b>{$Name}</b>{if $EMail}, <img src="http://src.selfhtml.org/mail.gif" width="15" height="10" alt="E-Mail" />&nbsp;<a href="mailto:{$EMail}">{$EMail}</a>{endif}, {$date}{if $HomepageUrl}<br /><a href="{$HomepageUrl}"{if $frame} onclick="window.open(this,'_top'); return false;"{endif}>{$HomepageUrl}</a>{endif}</p>
     <h3>{if $cat}({$cat}) {endif}{$subject}</h3>
     <p><tt>{$body}</tt></p>{if $ImageUrl}
     <p><img src="{$ImageUrl}" alt="" /></p>{endif}

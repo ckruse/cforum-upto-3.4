@@ -58,8 +58,9 @@ u_char *transform(const u_char *val) {
   for(;*ptr && isspace(*ptr);++ptr);
 
   for(;*ptr;++ptr) {
-    if(isspace(*ptr)) {
-      if(ws == 0) str_char_append(&str,*ptr);
+    /* we want &nbsp; as a whitespace, too */
+    if(isspace(*ptr) || (*ptr == 0xC2 && *ptr == 0xA0)) {
+      if(ws == 0) str_char_append(&str,' ');
       ws = 1;
     }
     else {

@@ -8,6 +8,9 @@ package Plugins::Management::SQL;
 #
 
 use DBI;
+use ForumUtils qw(
+  get_error
+);
 
 $main::Management = new Plugins::Management::SQL;
 
@@ -52,15 +55,17 @@ sub change_pass {
 
   my ($table,$usercol,$passwdcol,$emailcol) = sql_data($fuc);
 
-
   my $connstr = connstr($fuc);
   my $dbh     = DBI->connect($connstr,$fuc->{SQLUser}->[0]->[0],$fuc->{SQLPass}->[0]->[0]);
+  return get_error($main::fo_default_conf, 'SQL', 'connect') unless defined $dbh;
 
   # the password and the username are only ASCII, so it doesn't need a recode
   # to another charset
   my $dbq = $dbh->prepare('UPDATE '.$table.' SET '.$passwdcol.' = ? WHERE '.$usercol.' = ?');
-  $dbq->execute($pass,$uname) or main::fatal('error executing query: '.$dbh->errstr);
+  return get_error($main::fo_default_conf, 'SQL', 'execute') unless defined($dbq) && $dbq;
+  $dbq->execute($pass,$uname) or return get_error($main::fo_default_conf, 'SQL', 'execute');
   $dbh->disconnect;
+  return undef;
 }
 # }}}
 
@@ -73,12 +78,15 @@ sub remove_user {
 
   my $connstr = connstr($fuc);
   my $dbh     = DBI->connect($connstr,$fuc->{SQLUser}->[0]->[0],$fuc->{SQLPass}->[0]->[0]);
+  return get_error($main::fo_default_conf, 'SQL', 'connect') unless defined $dbh;
 
   my ($table,$usercol,$passwdcol,$emailcol) = sql_data($fuc);
 
   my $dbq = $dbh->prepare('DELETE FROM '.$table.' WHERE '.$usercol.' = ?');
-  $dbq->execute($UserName) or die 'Error in sql: '.$dbh->errstr;
+  return get_error($main::fo_default_conf, 'SQL', 'execute') unless defined($dbq) && $dbq;
+  $dbq->execute($uname) or return get_error($main::fo_default_conf, 'SQL', 'execute');
   $dbh->disconnect;
+  return undef;
 }
 # }}}
 
@@ -91,14 +99,19 @@ sub get_password {
 
   my $connstr = connstr($fuc);
   my $dbh     = DBI->connect($connstr,$fuc->{SQLUser}->[0]->[0],$fuc->{SQLPass}->[0]->[0]);
+  return get_error($main::fo_default_conf, 'SQL', 'connect') unless defined $dbh;
 
   my ($table,$usercol,$passwdcol,$emailcol) = sql_data($fuc);
 
   my $dbq = $dbh->prepare('SELECT '.$passwdcol.','.$emailcol.' FROM '.$table.' WHERE '.$usercol.' = ?');
-  $dbq->execute($uname);
+  return get_error($main::fo_default_conf, 'SQL', 'execute') unless defined($dbq) && $dbq;
+  $dbq->execute($uname) or return get_error($main::fo_default_conf, 'SQL', 'execute');
 
   if($dbq->rows) {
     my $result = $dbq->fetchrow_hashref;
+    
+    $dbq->finish;
+    $dbh->disconnect;
 
     return {
       pass => $result->{$passwdcol},
@@ -106,6 +119,8 @@ sub get_password {
     };
   }
 
+  $dbq->finish;
+  $dbh->disconnect;
   return;
 }
 # }}}
@@ -121,12 +136,15 @@ sub add_user {
 
   my $connstr = connstr($fuc);
   my $dbh     = DBI->connect($connstr,$fuc->{SQLUser}->[0]->[0],$fuc->{SQLPass}->[0]->[0]);
+  return get_error($main::fo_default_conf, 'SQL', 'connect') unless defined $dbh;
 
   my ($table,$usercol,$passwdcol,$emailcol) = sql_data($fuc);
-
+  
   my $dbq = $dbh->prepare('INSERT INTO '.$table.' ('.$usercol.','.$passwdcol.','.$emailcol.') VALUES (?,?,?)');
-  $dbq->execute($uname,$pass,$email);
+  return get_error($main::fo_default_conf, 'SQL', 'execute') unless defined($dbq) && $dbq;
+  $dbq->execute($uname,$pass,$email) or return get_error($main::fo_default_conf, 'SQL', 'execute');
   $dbh->disconnect;
+  return undef;
 }
 # }}}
 

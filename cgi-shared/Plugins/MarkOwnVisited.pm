@@ -17,7 +17,7 @@ package Plugins::PostingAssistant;
 
 use strict;
 
-our $VERSION = q$Revision: 1.9 $ =~ /([\d.]+)\s*$/)[0] or '0.0';
+our $VERSION = (q$Revision: 1.9 $ =~ /([\d.]+)\s*$/)[0] or '0.0';
 
 use CGI;
 use CGI::Carp qw/fatalsToBrowser/;

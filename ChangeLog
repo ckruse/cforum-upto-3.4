@@ -1,3 +1,6 @@
+2004-10-18 Christian Kruse <ckruse@wwwtech.de>
+	* *: Merged changes from 2.1 branch back to trunk (manually, *grml*)
+
 2004-10-15 Christian Kruse <ckruse@wwwtech.de>
 	* Changed configuration parser API to implement multi forum management ability
 

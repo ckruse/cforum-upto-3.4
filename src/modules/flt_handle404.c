@@ -46,7 +46,7 @@ void flt_handle404_gen_url(u_char *buff,u_char *aurl,u_char *url,u_int64_t tid,u
   size_t len;
 
   server = getenv("SERVER_NAME");
-  port   = getenv("SERVER_NAME");
+  port   = getenv("SERVER_PORT");
 
 
   if(!port || cf_strcmp(port,"80") == 0) len = snprintf(ptr,256,"http://%s/",server);

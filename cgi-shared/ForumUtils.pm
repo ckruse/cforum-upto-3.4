@@ -182,6 +182,11 @@ sub transform_body {
   # first we transform all newlines to \n
   $txt =~ s/\015\012|\015|\012/\n/g;
 
+  # after that, we collect all links to postings...
+  foreach(@{$pcfg->{PostingUrl}}) {
+    $txt =~ s{\[link:\s*$_->[0]([\dtm=&]+)(?:#\w+)?\]}{my $tidpid = $1; $tidpid =~ s!&!;!; '[pref:'.$tidpid.']'}eg;
+  }
+
   # encode to html (entities, and so on -- if we do it once,
   # we don't need to do it every time a message will be viewed)
   $txt = recode($dcfg,$txt);
@@ -191,7 +196,7 @@ sub transform_body {
   # ... messages
   foreach(@{$pcfg->{Image}}) {
     my ($name,$url,$alt) = (quotemeta $_->[0],recode($dcfg,$_->[1]),recode($dcfg,$_->[2]));
-    $txt =~ s!\[[mM][sS][gG]:\s*$name\]![image:$url]!g;
+    $txt =~ s!\[[mM][sS][gG]:\s*$name\]![image:$url\@alt=$alt]!g;
   }
 
   # ... all quoting characters to \177
@@ -230,8 +235,8 @@ sub message_field {
   my $fdcfg   = shift;
   my $archive = shift;
 
-  my $break   = '<br />';
   my $xhtml   = $fdcfg->{XHTMLMode} && $fdcfg->{XHTMLMode}->[0]->[0] eq 'yes';
+  my $break   = $xhtml ? '<br />' : '<br>';
 
   my $base   = $ENV{SCRIPT_NAME};
 
@@ -250,9 +255,9 @@ sub message_field {
       $qmode = 1;
     }
     elsif(substr($posting,$i,6) eq '<br />') {
-      $txt .= $xhtml ? '<br />' : '<br>';
+      $txt .= $break;
 
-      if($qmode && substr($posting,$i+6,1) ne "\177") {
+      if($qmode && substr($posting,$i+6,length $qchar) ne $qchar) {
         $txt .= '</span>';
         $qmode = 0;
       }
@@ -294,11 +299,11 @@ sub message_field {
 
   my @links = ();
   while($posting =~ /\[[Ll][Ii][Nn][Kk]:\s*([^\]\s]+?)\s*(?:\@title=([^\]]+)\s*)?\]/g) {
-    my ($uri,$title) = ($1,$2,$3);
+    my ($uri,$title) = ($1,$2);
     next if
       !is_valid_link($uri) &&
-      !is_valid_http_url(($uri =~ /^[Vv][Ii][Ee][Ww]-[Ss][Oo][Uu][Rr][Cc][Ee]:(.+)/)[0],CForum::Validator::VALIDATE_STRICT) &&
-      !($uri =~ m{^(?:\.?\.?/(?!/)|\?)} and is_valid_http_url(rel_uri($uri,$base)));
+      !is_valid_http_link(($uri =~ /^[Vv][Ii][Ee][Ww]-[Ss][Oo][Uu][Rr][Cc][Ee]:(.+)/)[0],CForum::Validator::VALIDATE_STRICT) &&
+      !($uri =~ m{^(?:\.?\.?/(?!/)|\?)} and is_valid_http_link(rel_uri($uri,$base)));
 
     push @links,[$uri,$title];
   }
@@ -307,8 +312,8 @@ sub message_field {
   while($posting =~ /\[[Ii][Mm][Aa][Gg][Ee]:\s*([^\]\s]+?)\s*(?:\@alt=([^\]]+)\s*)?\]/g) {
     my ($uri,$alt) = ($1,$2);
     next if
-      !is_valid_http_url($uri,CForum::Validator::VALIDATE_STRICT) &&
-      !($uri =~ m{^(?:\.?\.?/(?!/)|\?)} and is_valid_http_url(rel_uri($uri, $base),CForum::Validator::VALIDATE_STRICT));
+      !is_valid_http_link($uri,CForum::Validator::VALIDATE_STRICT) &&
+      !($uri =~ m{^(?:\.?\.?/(?!/)|\?)} and is_valid_http_link(rel_uri($uri, $base),CForum::Validator::VALIDATE_STRICT));
 
     push @images,[$uri,$alt];
   }
@@ -317,34 +322,34 @@ sub message_field {
   while($posting =~ /\[[Ii][Ff][Rr][Aa][Mm][Ee]:\s*([^\]\s]+)\s*\]/g) {
     my $uri = $1;
     next if
-      !is_valid_http_url($uri,CForum::Validator::VALIDATE_STRICT) &&
-      !($uri =~ m{^(?:\.?\.?/(?!/)|\?)} and is_valid_http_url(rel_uri($uri, $base),CForum::Validator::VALIDATE_STRICT));
+      !is_valid_http_link($uri,CForum::Validator::VALIDATE_STRICT) &&
+      !($uri =~ m{^(?:\.?\.?/(?!/)|\?)} and is_valid_http_link(rel_uri($uri, $base),CForum::Validator::VALIDATE_STRICT));
 
     push @iframes,$uri;
   }
 
   # Phase 2: Ok, we collected the links, lets transform them
   # ... links
-  $posting =~ s!$_!'<a href="'.$1.'">'.($2||$1).'</a>'!eg for map {
+  $posting =~ s!$_!'<a href="'.$Clientlib->htmlentities($1,1).'">'.$Clientlib->htmlentities($2||$1,1).'</a>'!eg for map {
     '\[[Ll][Ii][Nn][Kk]:\s*('.
-    quotemeta(recode($fdcfg,$_->[0])).
+    quotemeta($_->[0]).
     ')'.
-    ($_->[1] ? '\s*\@title=('.quotemeta(recode($fdcfg,$_->[1])).')' : '').
+    ($_->[1] ? '\s*\@title=('.quotemeta($_->[1]).')' : '').
     '\s*\]'
   } @links;
 
   # ... images
-  $posting =~ s!$_!'<img src="'.$1.'" border="0" alt="'.($2?$2:'').'">'!eg for map {
+  $posting =~ s!$_!'<img src="'.$Clientlib->htmlentities($1,1).'" border="0" alt="'.$Clientlib->htmlentities($2?$2:'',1).'">'!eg for map {
     '\[[Ii][Mm][Aa][Gg][Ee]:\s*('.
-    quotemeta(recode($fdcfg,$_->[1])).
+    quotemeta($_->[0]).
     ')'.
-    ($_->[1] ? '\s*\@alt=('.quotemeta(recode($fdcfg,$_->[1])).')' : '').
+    ($_->[1] ? '\s*\@alt=('.quotemeta($_->[1]).')' : '').
     '\s*\]'
   } @images;
 
   # ... iframes
-  $posting =~ s!$_!<iframe src="$1" width="90%" height="90%"><a href="$1">$1</a></iframe>! for map {
-    '\[[Ii][Ff][Rr][Aa][Mm][Ee]:\s*('.quotemeta(recode($fdcfg,$_->[1])).')\]'
+  $posting =~ s!$_!'<iframe src="'.$Clientlib->htmlentities($1,1).'" width="90%" height="90%"><a href="'.$Clientlib->htmlentities($1,1).'">'.$Clientlib->htmlentities($1,1).'</a></iframe>'!eg for map {
+    '\[[Ii][Ff][Rr][Aa][Mm][Ee]:\s*('.quotemeta($_->[0]).')\]'
   } @iframes;
 
   # return
@@ -371,6 +376,7 @@ sub plaintext {
   $posting =~ s!\177!$qchar!g;
   $posting =~ s!<br />!\n!g;
   $posting =~ s!&nbsp;! !g;
+  $posting =~ s!&#39;!'!g;
   $posting =~ s!_/_SIG_/_!\n-- \n!;
 
   return decode $posting;
@@ -407,11 +413,18 @@ sub uniquify_params {
     # are many broken browsers which send e.g. binary input not
     # well-encoded as UTF-8
     foreach($cgi->param) {
+      my @nvals  = ();
       my @values = $cgi->param($_);
 
       foreach my $val (@values) {
         return get_error($dcfg,'posting','charset') unless $Clientlib->is_valid_utf8_string($val,length($val));
+
+        # we want non-breaking space and unicode whitespaces as normal whitespaces
+        $val =~ s/\xC2\xA0|\xE2\x80[\x80-\x8B\xA8-\xAF]/ /g;
+        push @nvals,$val;
       }
+
+      $cgi->param(-name => $_,-value => \@nvals);
     }
   }
   else {
@@ -442,9 +455,14 @@ sub uniquify_params {
             $dcfg->{ExternCharset}->[0]->[0],
             "UTF-8"
           );
+
         }
 
         return get_error($dcfg,'posting','charset') if !defined $nval;
+
+        # we want non-breaking space and unicode whitespaces as normal whitespaces
+        $nval =~ s/\xC2\xA0|\xE2\x80[\x80-\x8B\xA8-\xAF]/ /g;
+
         push @newvals,$nval;
       }
 

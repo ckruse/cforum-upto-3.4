@@ -9,12 +9,11 @@
 # $LastChangedBy$
 #
 
-<Filters>
- AddFilter "@libdir@/cforum/flt_httpauth.so" "flt_httpauth"
-</Filters>
+ModulePath "@libdir@"
+Load "flt_httpauth"
 
 
-<General>
- VotingDatabase "@with_cgi_shared/data/voting.dat"
-</General>
+Forum "FORUM1" {
+  VotingDatabase "@with_cgi_shared/data/voting.dat"
+}
 

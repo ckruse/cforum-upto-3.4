@@ -189,9 +189,17 @@ int main(int argc,char *argv[],char *envp[]) {
     fprintf(stderr,"Wrong argument, no tid\n");
     return EXIT_FAILURE;
   }
-  v = cfg_get_first_value(&fo_default_conf,NULL,"ThreadIndexFile");
+  if((v = cfg_get_first_value(&fo_default_conf,NULL,"ThreadIndexFile")) == NULL) {
+    /** \todo Cleanup code */
+    fprintf(stderr,"ThreadIndexFile not found\n");
+    return EXIT_FAILURE;
+  }
 
-  archive_path = cfg_get_first_value(&fo_default_conf,NULL,"ArchiveURL");
+  if((archive_path = cfg_get_first_value(&fo_default_conf,NULL,"ArchiveURL")) == NULL) {
+    /** \todo cleanup file */
+    fprintf(stderr,"ArchiveURL not found\n");
+    return EXIT_FAILURE;
+  }
   /* }}} */
 
   /* {{{ open database */

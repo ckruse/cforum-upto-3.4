@@ -238,8 +238,14 @@ int main(int argc,char *argv[],char *envp[]) {
     return EXIT_FAILURE;
   }
 
-  ent = cfg_get_first_value(&fo_default_conf,NULL,"ArchivePath");
-  idxfile = cfg_get_first_value(&fo_default_conf,NULL,"ThreadIndexFile");
+  if((ent = cfg_get_first_value(&fo_default_conf,NULL,"ArchivePath")) == NULL) {
+    fprintf(stderr,"error getting archive path\n");
+    return EXIT_FAILURE;
+  }
+  if((idxfile = cfg_get_first_value(&fo_default_conf,NULL,"ThreadIndexFile")) == NULL) {
+    fprintf(stderr,"error getting index file\n");
+    return EXIT_FAILURE;
+  }
 
   /* {{{ open database */
   if((ret = db_create(&Tdb,NULL,0)) != 0) {

@@ -9,12 +9,11 @@
 # $LastChangedBy$
 #
 
-<Modules>
-  AddModule "Plugins::RegisterName"
-  AddModule "Plugins::HTTPAuth"
-</Modules>
+AddModule "Plugins::RegisterName"
+AddModule "Plugins::HTTPAuth"
 
-<Form>
+Forum "FORUM1" {
+
   # Edit-Options
   MinLength "QuotingChars" "1"
   MinLength "Name" "2"
@@ -29,17 +28,11 @@
 
   MinVal "AutoReload"   "2"
   MaxVal "AutoReload"   "30"
-</Form>
 
-</General>
   ModuleConfig "@CONFIGDIR@/modules.%s.xml"
-</General>
 
-<DateConfig>
   FromUntilFormat "%d. %m. %Y, %H:%M"
-</DateConfig>
 
-<Templates>
   Edit "@libdir@/cforum/%s_%s_useredit.so"
   EditEntry "@libdir@/cforum/%s_%s_setting.so"
   SectEntry "@libdir@/cforum/%s_%s_section.so"
@@ -48,5 +41,5 @@
   UpDown "@libdir@/cforum/%s_%s_updown.so"
 
   ViewSettings "@libdir@/cforum/%s_%s_usersettings.so"
-</Templates>
+}
 

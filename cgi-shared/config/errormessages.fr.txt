@@ -50,6 +50,7 @@ E_FO_506: Le serveur vient d'être redémarré. Veuillez réessayer plus tard.
 E_FO_507: Le serveur semble être quelque peu surchargé. Veuillez réessayer plus tard.
 E_FO_600: Le forum est bloqué pour des raisons administratives ou techniques. Veuillez réessayer plus tard.
 E_ARCHIVE_ERROR: Une erreur interne est malheureusement survenue.
+E_ARCHIVE_GENERIC404: Sie haben einen ungültige URL angegeben.
 E_ARCHIVE_YEARNOTPRESENT: L'année que vous avez choisie n'existe malheureusement pas dans les archives.
 E_ARCHIVE_MONTHNOTPRESENT: Le mois que vous avez choisi n'existe malheureusement pas dans les archives.
 E_ARCHIVE_THREADNOTPRESENT: La discussion que vous avez choisie n'existe malheureusement pas dans les archives.
@@ -60,3 +61,6 @@ E_posting_charset: Sie haben ein Zeichen eingegeben, dass weder gültiges UTF-8 
 E_POST_NOT_ALLOWED: La rédaction de nouveaux messages n'est provisoirement pas permise.
 E_new_post_mail_subject: Neue Antwort auf http://forum.de.selfhtml.org/my/?t={tid}&m={mid}
 E_new_post_mail_body: Hallo {name},\n\nes gibt eine neue Antwort auf:\n\n  http://forum.de.selfhtml.org/my/?t={tid}&m={mid}\n\nGrüsse,\n das Forum\n
+E_SQL_connect: Ein Datenbankfehler ist aufgetreten. Bitte wenden Sie sich an den Systemadministrator.
+E_SQL_execute: Ein Datenbankfehler ist aufgetreten. Bitte wenden Sie sich an den Systemadministrator.
+E_SMTP_failed: Auf Grund eines internen Fehlers konnte die Mail nicht verschickt werden.

@@ -103,8 +103,8 @@ int run_post_filters(t_cf_hash *head,t_message *p,int sock)
 void display_finishing_screen(t_message *p) {
   t_cf_template tpl;
   u_char tplname[256];
-  t_name_value *tt = cfg_get_first_value(&fo_post_conf,NULL,"OkTemplate");
-  t_name_value *cs = cfg_get_first_value(&fo_default_conf,NULL,"ExternCharset");;
+  t_name_value *tt = cfg_get_first_value(&fo_post_conf,"OkTemplate");
+  t_name_value *cs = cfg_get_first_value(&fo_default_conf,"ExternCharset");;
   size_t len;
   u_char *val;
   t_mod_api msg_to_html = cf_get_mod_api_ent("msg_to_html");
@@ -153,9 +153,9 @@ void display_posting_form(t_cf_hash *head) {
   /* display him the fucking formular */
   t_cf_template tpl;
   u_char tplname[256];
-  t_name_value *tt  = cfg_get_first_value(&fo_post_conf,NULL,"ThreadTemplate");
-  t_name_value *cs  = cfg_get_first_value(&fo_default_conf,NULL,"ExternCharset");
-  t_cf_list_head *cats = cfg_get_value(&fo_default_conf,NULL,"Category");
+  t_name_value *tt  = cfg_get_first_value(&fo_post_conf,"ThreadTemplate");
+  t_name_value *cs  = cfg_get_first_value(&fo_default_conf,"ExternCharset");
+  t_cf_list_head *cats = cfg_get_value(&fo_default_conf,"Category");
   t_cf_list_element *catelem;
   t_name_value *catnm;
   size_t len;
@@ -237,7 +237,7 @@ int normalize_cgi_variables(t_cf_hash *head,const u_char *field_name) {
   u_int32_t i;
   t_cf_hash_entry *ent;
   u_char *converted;
-  t_name_value *cs = cfg_get_first_value(&fo_default_conf,NULL,"ExternCharset");
+  t_name_value *cs = cfg_get_first_value(&fo_default_conf,"ExternCharset");
   t_cf_cgi_param *param;
   char buff[50];
 
@@ -301,7 +301,7 @@ int validate_cgi_variables(t_cf_hash *head) {
   size_t maxlen,minlen,len;
   int fupto = cf_cgi_get(head,"fupto") != NULL;
 
-  if((list = cfg_get_value(&fo_post_conf,NULL,"FieldNeeded")) != NULL) {
+  if((list = cfg_get_value(&fo_post_conf,"FieldNeeded")) != NULL) {
     for(elem = list->elements;elem;elem=elem->next) {
       cfg = (t_name_value *)elem->data;
 
@@ -318,7 +318,7 @@ int validate_cgi_variables(t_cf_hash *head) {
     }
   }
 
-  if((list = cfg_get_value(&fo_post_conf,NULL,"FieldConfig")) != NULL) {
+  if((list = cfg_get_value(&fo_post_conf,"FieldConfig")) != NULL) {
     for(elem=list->elements;elem;elem=elem->next) {
       cfg = (t_name_value *)elem->data;
 
@@ -351,7 +351,7 @@ int validate_cgi_variables(t_cf_hash *head) {
 int get_message_url(const u_char *msgstr,t_name_value **v) {
   t_name_value *ent;
   t_cf_list_element *elem;
-  t_cf_list_head *list = cfg_get_value(&fo_post_conf,NULL,"Image");
+  t_cf_list_head *list = cfg_get_value(&fo_post_conf,"Image");
 
   for(elem=list->elements;elem;elem=elem->next) {
     ent = (t_name_value *)elem->data;
@@ -633,15 +633,33 @@ u_char *get_remote_addr(void) {
 /* }}} */
 
 /* {{{ handle_post_command */
-int handle_post_command(t_configfile *cfile,const u_char *context,u_char *name,u_char **args,size_t argnum) {
-  t_conf_opt opt = {
-    name,
-    NULL,
-    0,
-    &fo_post_conf
-  };
+int handle_post_command(t_configfile *cfile,u_char *name,u_char **args,int argnum) {
+  t_name_value tmp;
+  t_cf_tree_dataset dt;
+  const t_cf_tree_dataset *dt1;
+  t_cf_list_head *head;
 
-  return handle_command(cfile,&opt,context,args,argnum);
+  tmp.values = args;
+  tmp.valnum = argnum;
+  tmp.name   = strdup(name);
+
+  dt.key = name;
+
+  if((dt1 = cf_tree_find(&fo_post_conf.directives,fo_post_conf.directives.root,&dt)) != NULL) {
+    head = dt1->data;
+    cf_list_append(head,&tmp,sizeof(tmp));
+  }
+  else {
+    head = fo_alloc(NULL,1,sizeof(*head),FO_ALLOC_CALLOC);
+    cf_list_append(head,&tmp,sizeof(tmp));
+
+    dt.key = strdup(name);
+    dt.data = head;
+
+    cf_tree_insert(&fo_post_conf.directives,NULL,&dt);
+  }
+
+  return -1;
 }
 /* }}} */
 
@@ -822,7 +840,7 @@ int main(int argc,char *argv[],char *env[]) {
     }
   }
 
-  cs = cfg_get_first_value(&fo_default_conf,NULL,"ExternCharset");
+  cs = cfg_get_first_value(&fo_default_conf,"ExternCharset");
 
   if(ret != FLT_EXIT) {
     /* fine -- lets spit out http headers */
@@ -1005,13 +1023,13 @@ int main(int argc,char *argv[],char *env[]) {
                         mid = strtoull(val+5,NULL,10);
                       }
 
-                      cfg_val = cfg_get_first_value(&fo_post_conf,NULL,"RedirectOnPost");
+                      cfg_val = cfg_get_first_value(&fo_post_conf,"RedirectOnPost");
 
                       p->mid = mid;
                       run_after_post_filters(head,p,tid);
 
                       if(cfg_val && cf_strcmp(cfg_val->values[0],"yes") == 0) {
-                        cfg_val = cfg_get_first_value(&fo_default_conf,NULL,UserName ? "PostingURL" : "UPostingURL");
+                        cfg_val = cfg_get_first_value(&fo_default_conf,UserName ? "PostingURL" : "UPostingURL");
                         link = get_link(cfg_val->values[0],tid,mid);
                         printf("Status: 302 Moved Temporarily\015\012Location: %s\015\012\015\012",link);
                         free(link);
