@@ -293,8 +293,6 @@ scripts/Makefile
 scripts/fo_userconf
 scripts/fo_usermanagement
 scripts/fo_xmlrpc
-scripts/msgs2db.pl
-scripts/indextips.pl
 src/perl/Plugins/Makefile
 src/perl/Plugins/Management/Makefile
 src/Makefile
