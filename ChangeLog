@@ -1,3 +1,7 @@
+2005-01-08 Christian Kruse <ckruse@wwwtech.de>
+	* src/validate.c: Fixed bug in is_valid_link() function (now it is view-source
+		aware)
+
 2005-01-07 Christian Kruse <ckruse@wwwtech.de>
 	* src/modules/flt_xmlstorage.c: Debugging, bugfixing and wrote
 		flt_xmlstorage_archive_threads
