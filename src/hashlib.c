@@ -42,7 +42,7 @@
  * This code has been developed by Bob Jenkins.
  */
 
-/*
+/* {{{ #define mix
  * mix -- mix 3 32-bit values reversibly.
  * For every delta with one or two bit set, and the deltas of all three
  * high bits or all three low bits, whether the original value of a,b,c
@@ -80,10 +80,10 @@
   b -= c; b -= a; b ^= (a<<10); \
   c -= a; c -= b; c ^= (b>>15); \
 }
-
+/* }}} */
 #endif
 
-/*
+/* {{{ lookup()
  * lookup() -- hash a variable-length key into a 32-bit value
  *
  * k     : the key (the unaligned variable-length array of bytes)
@@ -149,6 +149,7 @@ ub4 lookup(register ub1 *k,register ub4 length,register ub4 level) {
   /*-------------------------------------------- report the result */
   return c;
 }
+/* }}} */
 
 /******************************* HASHING ALGORITHM END *************************************/
 
@@ -156,7 +157,7 @@ ub4 lookup(register ub1 *k,register ub4 length,register ub4 level) {
  * at this point the hashlib code begins ((c) by CK)
  */
 
-/*
+/* {{{ cf_hash_new()
  * Returns:                the new hashtable object
  * Parameters:
  *   - t_cf_hash_cleanup   a destructor function for the entry data
@@ -194,15 +195,16 @@ t_cf_hash *cf_hash_new(t_cf_hash_cleanup cl) {
    * this *sucks*. It costs a lot of time, but we need it because
    * we have to know if an element is set or not
    */
-  hsh->table     = calloc(elems,sizeof(t_cf_hash_entry *));
+  hsh->table     = calloc(elems,sizeof(t_cf_hash_entry **));
 
   hsh->destroy   = cl;
 
   return hsh;
 }
+/* }}} */
 
 #ifndef DOXYGEN
-/*
+/* {{{ _cf_hash_save()
  * Returns:                the data of the hash entry if found or NULL
  * Parameters:
  *   - t_cf_hash *hsh      the hash object
@@ -256,8 +258,9 @@ t_cf_hash_entry *_cf_hash_save(unsigned char *key,size_t keylen,void *data,size_
 
   return ent;
 }
+/* }}} */
 
-/*
+/* {{{ _cf_hash_split
  * Returns:                nothing
  * Parameters:
  *   - t_cf_hash *hsh      the hash object
@@ -361,9 +364,11 @@ void _cf_hash_split(t_cf_hash *hsh,unsigned char *key,size_t keylen,void *data,s
   }
 
 }
+/* }}} */
+
 #endif
 
-/*
+/* {{{ cf_hash_set
  * Returns:                0 if unsuccessful, 1 if successful
  * Parameters:
  *   - t_cf_hash *hsh      the hash object
@@ -438,8 +443,9 @@ int cf_hash_set(t_cf_hash *hsh,unsigned char *key,size_t keylen,void *data,size_
 
   return 0;
 }
+/* }}} */
 
-/*
+/* {{{ cf_hash_set_static
  * Returns:                0 if unsuccessful, 1 if successful
  * Parameters:
  *   - t_cf_hash *hsh      the hash object
@@ -512,8 +518,9 @@ int cf_hash_set_static(t_cf_hash *hsh,unsigned char *key,size_t keylen,void *dat
 
   return 0;
 }
+/* }}} */
 
-/*
+/* {{{ cf_hash_get
  * Returns:                the data of the hash entry if found or NULL
  * Parameters:
  *   - t_cf_hash *hsh      the hash object
@@ -539,8 +546,9 @@ void *cf_hash_get(t_cf_hash *hsh,unsigned char *key,size_t keylen) {
 
   return NULL;
 }
+/* }}} */
 
-/*
+/* {{{ cf_hash_entry_delete
  * Returns:                0 or 1
  * Parameters:
  *   - t_cf_hash *hsh      the hash object
@@ -587,8 +595,9 @@ int cf_hash_entry_delete(t_cf_hash *hsh,unsigned char *key,size_t keylen) {
 
   return 0;
 }
+/* }}} */
 
-/*
+/* {{{ cf_hash_destroy()
  * Returns:                nothing
  * Parameters:
  *   - t_cf_hash *hsh      the hash object
@@ -622,6 +631,7 @@ void cf_hash_destroy(t_cf_hash *hsh) {
   free(hsh->table);
   free(hsh);
 }
+/* }}} */
 
 /*
  * this is a small example
