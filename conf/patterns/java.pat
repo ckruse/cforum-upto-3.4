@@ -1,7 +1,7 @@
 start = "default"
 
 list "symbols" = "(,),{,},[,],;,\,"
-list "keywords" = "abstract,default,if,private,this,boolean,do,implements,protected,throw,break,double,import,public,throws,byte,else,instanceof,return,transient,case,extends,int,short,try,catch,final,interface,static,void,char,finally,long,strictfp,volatile,class,float,native,super,while,const,for,new,switch,continue,goto,package,synchronized,null,true"
+list "keywords" = "abstract,default,if,private,this,boolean,do,implements,protected,throw,break,double,import,public,throws,byte,else,instanceof,return,transient,case,extends,int,short,try,catch,final,interface,static,void,char,finally,long,strictfp,volatile,class,float,native,super,while,const,for,new,switch,continue,goto,package,synchronized,null,true,false"
 
 block "default"
   lineend stay
