@@ -20,7 +20,7 @@ package Plugins::SendMailOnActivity;
 # {{{ Program headers
 use strict;
 
-our $VERSION = q$Revision$ =~ /([\d.]+)\s*$/)[0] or '0.0';
+our $VERSION = (q$Revision$ =~ /([\d.]+)\s*$/)[0] or '0.0';
 
 use ForumUtils qw(
   get_error

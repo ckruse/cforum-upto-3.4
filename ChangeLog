@@ -12,6 +12,8 @@
 		whitespace handling
 	* cgi-shared/ForumUtils.pm: Now transforming non-breaking spaces to
 		whitespaces
+	* cgi-shared/Plugins/MarkOwnVisited.pm: Fixed bug (forget left parentesis)
+	* cgi-shared/Plugins/SendMailOnAnswer.pm: Fixed bug (forget left parentesis)
 
 2004-10-10 Christian Seiler <self@christian-seiler.de>
 	* src/modules/flt_handle404.c: fixed bug #408
