@@ -185,9 +185,13 @@ int flt_posting_execute_filter(t_cf_hash *head,t_configuration *dc,t_configurati
   tpl_cf_setvar(tpl,"unid",buff,len,1);
   /* }}} */
 
-  /* {{{ set title, name and time */
-  cf_set_variable(tpl,cs,"title",thread->threadmsg->subject,strlen(thread->threadmsg->subject),1);
-  cf_set_variable(tpl,cs,"name",thread->threadmsg->author,strlen(thread->threadmsg->author),1);
+  /* {{{ set title, name, email, homepage, time and category */
+  cf_set_variable(tpl,cs,"title",thread->threadmsg->subject,thread->threadmsg->subject_len,1);
+  cf_set_variable(tpl,cs,"name",thread->threadmsg->author,thread->threadmsg->author_len,1);
+  if(thread->threadmsg->email) cf_set_variable(tpl,cs,"email",thread->threadmsg->email,thread->threadmsg->email_len,1);
+  if(thread->threadmsg->hp) cf_set_variable(tpl,cs,"link",thread->threadmsg->hp,thread->threadmsg->hp_len,1);
+  if(thread->threadmsg->img) cf_set_variable(tpl,cs,"image",thread->threadmsg->img,thread->threadmsg->img_len,1);
+  if(thread->threadmsg->category) cf_set_variable(tpl,cs,"category",thread->threadmsg->category,thread->threadmsg->category_len,1);
 
   tmp  = get_time(vc,"DateFormatThreadView",&len,&thread->threadmsg->date);
   cf_set_variable(tpl,cs,"time",tmp,len,1);
