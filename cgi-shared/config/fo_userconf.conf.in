@@ -12,7 +12,7 @@
 AddModule "Plugins::RegisterName"
 AddModule "Plugins::HTTPAuth"
 
-Forum "FORUM1" {
+Forum FORUM1 {
 
   # Edit-Options
   MinLength "QuotingChars" "1"

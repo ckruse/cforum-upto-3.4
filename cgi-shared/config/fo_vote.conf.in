@@ -9,11 +9,11 @@
 # $LastChangedBy$
 #
 
-ModulePath "@libdir@"
+ModulePath "@libdir@/cforum/"
 Load "flt_httpauth"
 
 
-Forum "FORUM1" {
+Forum FORUM1 {
   VotingDatabase "@DATADIR@/data/voting.dat"
   OkTemplate "@libdir@/cforum/%s_%s_vote_ok.so"
 }

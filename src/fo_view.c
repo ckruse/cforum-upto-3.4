@@ -693,7 +693,7 @@ int main(int argc,char *argv[],char *env[]) {
   if(ret != FLT_EXIT) {
     /* {{{ now, we need a socket connection/shared mem pointer */
     #ifndef CF_SHARED_MEM
-    if((sock = cf_socket_setup()) <= 0) {
+    if((sock = cf_socket_setup()) < 0) {
       printf("Content-Type: text/html; charset=%s\015\012\015\012",cs?cs->values[0]?cs->values[0]:(u_char *)"UTF-8":(u_char *)"UTF-8");
       cf_error_message("E_NO_SOCK",NULL,strerror(errno));
       exit(0);

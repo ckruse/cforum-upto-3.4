@@ -96,7 +96,7 @@ t_conf_opt default_options[] = {
 };
 /* }}} */
 
-/* {{{ forum client config options */
+/* {{{ fo_view config options */
 t_conf_opt fo_view_options[] = {
   { "<ForumBehavior>", NULL, 0, NULL },
   { "DoQuote",                    handle_command,   CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_UNIQUE|CFG_OPT_LOCAL, &fo_view_conf },
@@ -133,7 +133,7 @@ t_conf_opt fo_view_options[] = {
 };
 /* }}} */
 
-/* {{{ Posting configuration options */
+/* {{{ fo_post configuration options */
 t_conf_opt fo_post_options[] = {
   {  "<General>", NULL, 0, NULL },
   {  "PostingUrl",                handle_command,   CFG_OPT_CONFIG|CFG_OPT_GLOBAL, &fo_post_conf },
@@ -179,7 +179,7 @@ t_conf_opt fo_server_options[] = {
 };
 /* }}} */
 
-/* {{{ archiv viewer options */
+/* {{{ fo_arcview viewer options */
 t_conf_opt fo_arcview_options[] = {
   { "<General>", NULL, 0, NULL },
   { "SortYearList",            handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_GLOBAL,   &fo_arcview_conf },
@@ -209,13 +209,11 @@ t_conf_opt fo_arcview_options[] = {
 };
 /* }}} */
 
-/* {{{ vote options */
+/* {{{ fo_vote options */
 t_conf_opt fo_vote_options[] = {
-  { "<General>", NULL, 0, NULL },
-  { "VotingDatabase",  handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL,                &fo_vote_conf },
-  { "Send204",         handle_command,   CFG_OPT_UNIQUE|CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_GLOBAL,  &fo_vote_conf },
-  { "OkTemplate",      handle_command,   CFG_OPT_CONFIG|CFG_OPT_NEEDED,                              &fo_vote_conf },
-  { "</General>", NULL, 0, NULL },
+  { "VotingDatabase",  handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL,               &fo_vote_conf },
+  { "Send204",         handle_command,   CFG_OPT_UNIQUE|CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL,  &fo_vote_conf },
+  { "OkTemplate",      handle_command,   CFG_OPT_CONFIG|CFG_OPT_NEEDED|CFG_OPT_LOCAL,               &fo_vote_conf },
 
   { NULL, NULL, 0, NULL }
 };
@@ -373,7 +371,9 @@ int read_config(t_configfile *conf,t_take_default deflt,int mode) {
   size_t len,j;
   t_cf_hash *hsh;
   t_array ary;
+  int noload = mode & CFG_MODE_NOLOAD;
 
+  mode &= ~CFG_MODE_NOLOAD;
   hsh = cf_hash_new(NULL);
   array_init(&ary,sizeof(u_char **),destroy_str_ptr);
 
@@ -558,23 +558,25 @@ int read_config(t_configfile *conf,t_take_default deflt,int mode) {
     /* {{{ we got a Load directive -- go and load the module */
     if(cf_strcmp(directive_name,"Load") == 0) {
       if(argnum != 1) {
-        fprintf(stderr,"[%s:%d] Hey, wrong argument count for ModulePath!",conf->filename,linenum);
+        fprintf(stderr,"[%s:%d] Hey, wrong argument count for Load directive!",conf->filename,linenum);
         close(fd);
         munmap(buff,st.st_size);
         return 1;
       }
 
-      i = mpath.len;
-      str_chars_append(&mpath,args[0],strlen(args[0]));
-      str_chars_append(&mpath,".so",3);
+      if(noload == 0) {
+        i = mpath.len;
+        str_chars_append(&mpath,args[0],strlen(args[0]));
+        str_chars_append(&mpath,".so",3);
 
-      if(add_module(conf,mpath.content,args[0]) != 0) {
-        close(fd);
-        munmap(buff,st.st_size);
-        return 1;
+        if(add_module(conf,mpath.content,args[0]) != 0) {
+          close(fd);
+          munmap(buff,st.st_size);
+          return 1;
+        }
+
+        mpath.len = i;
       }
-
-      mpath.len = i;
 
       free(args[0]);
       free(args);

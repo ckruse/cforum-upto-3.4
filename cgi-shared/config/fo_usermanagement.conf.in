@@ -12,7 +12,7 @@
 AddModule "Plugins::HTTPAuth"
 AddModule "Plugins::RegisterName"
 
-Forum "FORUM1" {
+Forum FORUM1 {
   MinLength "UserName" "3"
   MinLength "Password" "3"
 

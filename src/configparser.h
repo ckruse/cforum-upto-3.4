@@ -59,6 +59,7 @@ typedef int (*t_take_default)(t_configfile *cfile,const u_char *context,u_char *
 
 #define CFG_MODE_CONFIG CFG_OPT_CONFIG /**< We are in configuration mode */
 #define CFG_MODE_USER   CFG_OPT_USER   /**< We are in user configuration mode */
+#define CFG_MODE_NOLOAD (0x1<<8) /**< load no plugins */
 
 /** This describes the structure of a config file */
 struct s_conf_opt {

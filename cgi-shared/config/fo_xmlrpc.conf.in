@@ -9,11 +9,10 @@
 # $LastChangedBy$
 #
 
-<Modules>
-  AddModule "Plugins::HTTPAuth"
-  AddModule "Plugins::XMLRPCUserManagement"
-</Modules>
+AddModule "Plugins::HTTPAuth"
+AddModule "Plugins::XMLRPCUserManagement"
 
-<General>
+Forum FORUM1 {
   Umask "0022"
-</General>
+}
+
