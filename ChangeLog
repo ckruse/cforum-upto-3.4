@@ -1,3 +1,19 @@
+2004-11-09 Christian Kruse <ckruse@wwwtech.de>
+	* cgi-shared/Plugins/PostingAssistant.pm: Fixed a bug in link check behavior
+		(used old patterns, updated them now)
+	* src/templates/de/tpl_xhtml10/forum_thread.html,
+		src/templates/de/tpl_xhtml10/forum_posting.html,
+		src/templates/de/tpl_xhtml10/forum_begin.html,
+		src/templates/de/tpl_xhtml10/arcthread.html,
+		src/templates/de/tpl_xhtml10/arcmonths.html,
+		src/templates/de/tpl_xhtml10/thread.html,
+		src/templates/de/tpl_xhtml10/post_ok.html,
+		src/templates/de/tpl_xhtml10/arcyears.html: Molily fixed several bugs in
+		these template files
+
+2004-11-08 Christian Kruse <ckruse@wwwtech.de>
+	* src/modules/flt_posting.c: Added variable $activecolor
+
 2004-11-07 Christian Kruse <ckruse@wwwtech.de>
 	* cgi-shared/ForumUtils.pm: Fixed typo
 	* src/validate.c: Fixed bug in ftp URI validation, added is_valid_file_link()

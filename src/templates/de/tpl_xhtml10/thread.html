@@ -30,25 +30,19 @@
 {endif}<link rel="stylesheet" type="text/css" href="{$owncss}" title="SELFHTML Forum Stylesheet" />
 {else}<link rel="stylesheet" type="text/css" href="http://src.selfhtml.org/forum_strict.css" title="SELFHTML Forum Stylesheet" />
 {endif}<style type="text/css" title="SELFHTML Forum Stylesheet">
-{if $font}body {
+{if $font}body, h1, h2, h3, p, ul, ol, dl, div, th, td {
 {if $fontcolor}color:{$fontcolor};
 {endif}{if $fontsize}font-size:{$fontsize};
 {endif}{if $fontfamily}font-family:{$fontfamily};
 {endif}}
-{endif}.q {
-color:{if $qcolor}{$qcolor}{else}#333333{endif};
-{if $qcolorback}background-color:{$qcolorback};
-{endif}display:block;
-}
-.sig, .sig a {
-color:#999999;
-}
-textarea {
-{if !$twidth}width:580px;
-{endif}{if !$theight}height:380px;
-{endif}font-size:{if $fontsize}{$fontsize}{else}13px{endif};
-color:{if $fontcolor}{$fontcolor}{else}#0000C0{endif};
-}
+{endif}.q, .q a {{if $qcolor}
+color:{$qcolor};{endif}{if $qcolorback}
+background-color:{$qcolorback};
+{endif}}
+#antwortformular textarea {{if $fontsize}
+font-size:{$fontsize};{endif}{if $fontcolor}
+color:{$fontcolor};
+{endif}}
 </style>
 </head>
 <body id="selfforum-neuenachricht">

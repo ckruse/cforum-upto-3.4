@@ -27,7 +27,7 @@
 {endif}<link rel="stylesheet" type="text/css" href="{$owncss}" title="SELFHTML Forum Stylesheet" />
 {else}<link rel="stylesheet" type="text/css" href="http://src.selfhtml.org/forum_strict.css" title="SELFHTML Forum Stylesheet" />
 {endif}<style type="text/css" title="SELFHTML Forum Stylesheet">
-{if $font}body {
+{if $font}body, h1, h2, h3, p, ul, ol, dl, div, th, td {
 {if $fontcolor}color:{$fontcolor};
 {endif}{if $fontsize}font-size:{$fontsize};
 {endif}{if $fontfamily}font-family:{$fontfamily};
@@ -37,26 +37,22 @@
 {endif}{if $colorownbg}background-color:{$colorownbg};
 {endif}}
 {endif}{if $vipcol}.vip {
-color:{if $vipcolfg}{$vipcolfg}{else}#FF0000{endif};
-{if $vipcolbg}background-color:{$vipcolbg};
+{if $vipcolfg}color:{$vipcolfg};
+{endif}{if $vipcolbg}background-color:{$vipcolbg};
 {endif}}
 {endif}{if $wlcol}.whitelist {
-color:{if $wlcolfg}{$wlcolfg}{else}#0000FF{endif};
-{if $wlcolbg}background-color:{$wlcolbg};
+{if $wlcolfg}color:{$wlcolfg};
+{endif}{if $wlcolbg}background-color:{$wlcolbg};
 {endif}}
 {endif}{if $cathighcolor}.cathigh {
 {if $cathighcolorfg}color:{$cathighcolorfg};
 {endif}{if $cathighcolorbg}background-color:{$cathighcolorbg};
 {endif}}
-{endif}{if $visitedcol}.visited, dl a:visited {
+{endif}{if $visitedcol}a.visited {
 {if $visitedcolfg}color:{$visitedcolfg};
 {endif}{if $visitedcolbg}background-color:{$visitedcolbg};
-{endif}text-decoration:underline;
-}
-dl a:visited img {
-background-color:#FFFFFF;
-}{endif}
-</style>
+{endif}}
+{endif}</style>
 <script type="text/javascript">
 // <![CDATA[
 function Chat() {
@@ -107,19 +103,19 @@ function snap(obj) {
 <td id="kopf-menue">
 <div id="kopf-menue2">
 
-<p id="newslink"><a href="http://aktuell.de.selfhtml.org/news.htm" onclick="if (!window.News) return true; News(); return false;"{if $frame} target="_top"{endif}><img src="http://src.selfhtml.org/xview.gif" width="30" height="20" alt="News"/><br/>News</a></p>
+<p id="newslink"><a href="http://aktuell.de.selfhtml.org/news.htm" onclick="if (!window.News) return true; News(); return false;"{if $frame} target="_top"{endif}><img src="http://src.selfhtml.org/xview.gif" width="30" height="20" alt="News" /><br />News</a></p>
 
 <form method="post" action="http://suche.de.selfhtml.org/">
 <p>
-<strong><label for="suchausdruck">Suche nach:</label></strong><br/>
+<strong><label for="suchausdruck">Suche nach:</label></strong><br />
 <input type="text" name="suchausdruck" id="suchausdruck" size="10" maxlength="50" />
-<input type="hidden" name="feld" value="alle"/>
-<input type="hidden" name="hits" value="100"/>
-<input type="hidden" name="case" value="on"/>
-<input type="hidden" name="index_1" value="on"/>
-<input type="hidden" name="index_2" value="on"/>
-<input type="hidden" name="index_3" value="on"/>
-<input type="hidden" name="index_4" value="on"/>
+<input type="hidden" name="feld" value="alle" />
+<input type="hidden" name="hits" value="100" />
+<input type="hidden" name="case" value="on" />
+<input type="hidden" name="index_1" value="on" />
+<input type="hidden" name="index_2" value="on" />
+<input type="hidden" name="index_3" value="on" />
+<input type="hidden" name="index_4" value="on" />
 </p>
 </form>
 
@@ -152,6 +148,8 @@ function snap(obj) {
 {endif}</ul>
 
 </div>
+
+</div>
 </td>
 <td id="kopf-haupt">
 
@@ -174,9 +172,9 @@ function snap(obj) {
 
 {if $LOAD_TIME}<p id="ladezeitpunkt">Ladezeitpunkt: {$LOAD_TIME}{if $autoreload}, automatischer Reload: {$autoreloadtime}{endif}</p>
 
-{endif}{if $flt_admin_errmsg}<p><strong>{$flt_admin_errmsg}</strong></p>
+{endif}{if $flt_admin_errmsg}<p id="errormessage"><strong>{$flt_admin_errmsg}</strong></p>
 
-{endif}{if $tipoftheday}<p>Wussten Sie, {$tipoftheday}</p>
+{endif}{if $tipoftheday}<p id="tipoftheday">Wussten Sie, {$tipoftheday}</p>
 
 {endif}{if $motd}
 {$motd}
@@ -192,7 +190,7 @@ function snap(obj) {
 
 {if $livefilter}<div id="livefilter">
 
-<h2 id="livefilter">Live-Filter</h2>
+<h2>Live-Filter</h2>
 
 <p>Der Live-Filter filtert die Thread-Liste nach Kriterien, die Sie in diesem Text-Feld angeben k&ouml;nnen. Die Bedienungsweise wird in der <img src="http://src.selfhtml.org/dok.gif" width="15" height="10" alt="Seite" />&nbsp;<a href="/live_syntax.html"{if $frame} target="_top"{endif}>Syntax-Beschreibung</a> erkl&auml;rt.</p>
 

@@ -25,25 +25,31 @@
 {endif}<link rel="stylesheet" type="text/css" href="{$owncss}" title="SELFHTML Forum Stylesheet" />
 {else}<link rel="stylesheet" type="text/css" href="http://src.selfhtml.org/forum_strict.css" title="SELFHTML Forum Stylesheet" />
 {endif}<style type="text/css" title="SELFHTML Forum Stylesheet">
-{if $font}body {
+{if $font}body, h1, h2, h3, p, ul, ol, dl, div, th, td {
 {if $fontcolor}color:{$fontcolor};
 {endif}{if $fontsize}font-size:{$fontsize};
 {endif}{if $fontfamily}font-family:{$fontfamily};
 {endif}}
-{endif}.q {
-color:{if $qcolor}{$qcolor}{else}#333333{endif};
-{if $qcolorback}background-color:{$qcolorback};
-{endif}display:block;
-}
-.active {
-color:{if $activecolorf}{$activecolorf}{else}#552200{endif};
-font-weight:bold;
-{if $activecolorb}background-color:{$activecolorb};
-{endif}/* text-decoration:underline; */
-}
-.sig, .sig a {
-color:#999999;
-}
+{endif}{if $colorown}.own {
+{if $colorownfg}color:{$colorownfg};
+{endif}{if $colorownbg}background-color:{$colorownbg};
+{endif}}
+{endif}{if $vipcol}.vip {
+{if $vipcolfg}color:{$vipcolfg};
+{endif}{if $vipcolbg}background-color:{$vipcolbg};
+{endif}}
+{endif}{if $wlcol}.whitelist {
+{if $wlcolfg}color:{$wlcolfg};
+{endif}{if $wlcolbg}background-color:{$wlcolbg};
+{endif}}
+{endif}{if $cathighcolor}.cathigh {
+{if $cathighcolorfg}color:{$cathighcolorfg};
+{endif}{if $cathighcolorbg}background-color:{$cathighcolorbg};
+{endif}}
+{endif}.q, .q a {{if $qcolor}
+color:{$qcolor};{endif}{if $qcolorback}
+background-color:{$qcolorback};
+{endif}}
 </style>
 </head>
 <body id="selfforum-archiv-thread">

@@ -24,13 +24,12 @@
 {endif}<link rel="stylesheet" type="text/css" href="{$owncss}" title="SELFHTML Forum Stylesheet" />
 {else}<link rel="stylesheet" type="text/css" href="http://src.selfhtml.org/forum_strict.css" title="SELFHTML Forum Stylesheet" />
 {endif}<style type="text/css" title="SELFHTML Forum Stylesheet">
-{if $font}body {
+{if $font}body, h1, h2, h3, p, ul, ol, dl, div, th, td {
 {if $fontcolor}color:{$fontcolor};
 {endif}{if $fontsize}font-size:{$fontsize};
 {endif}{if $fontfamily}font-family:{$fontfamily};
 {endif}}
-{endif}
-</style>
+{endif}</style>
 </head>
 <body id="selfforum-archiv-jahresuebersicht">
 
