@@ -1,3 +1,6 @@
+2004-08-24 Jan Rieger <jr@occuris.de>
+	* src/templates/de/tpl_*/forum_end.html: changed "Threads löschen" to "Markierte Threads ausblenden"
+
 2004-08-13 Christian Kruse <ckruse@wwwtech.de>
 	* src/fo_view.c: Changed behavior of the fo_view program: now it sets the
 		standard variables itself. It provides »ReadMode« now.
