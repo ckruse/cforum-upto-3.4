@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="ISO-8859-1" standalone="yes"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-loose.dtd">
+
+<html>
+<head>
+<title>SELFHTML Forum: Doku: Konfiguration: Default-Konfiguration</title>
+
+<meta name="description"    content="Die Doku des neuen SELFHTML Forums" />
+<meta name="keywords"       content="SELFHTML Forum, Doku, Dokumentation" />
+<meta name="author"         content="Christian Kruse, ckruse@wwwtech.de" />
+<meta name="DC.Publisher"   content="Christian Kruse, ckruse@wwwtech.de" />
+<meta name="DC.Date"        content="2002-04-08T16:46+02:00" />
+<meta name="DC.Identifier"  content="---" />
+<meta name="DC.Language"    content="de" />
+<meta name="DC.Rights"      content="" />
+<meta name="SELF.Firstdate" content="2002-04-08T16:46+02:00" />
+<meta name="SELF.Version"   content="0.01" />
+<meta name="SELF.Pagetype"  content="Information" />
+
+<link rel="shortcut icon" href="../../src/favicon.ico" />
+<link rel="stylesheet" type="text/css" href="../../src/forum.css" />
+</head>
+
+<body>
+<table cellpadding="4" cellspacing="0" border="0" width="100%">
+<tr><td bgcolor="#FFEEDD" class="nav"><a class="an" name="top"><img src="../../src/x2.gif" width="16" height="13" border="0" alt="Teil von" /></a> <a href="../../"><b>SELFHTML Developer</b></a> <img src="../../src/x2.gif" width="16" height="13" border="0" alt="Teil von" /> <a href="../../"><b>SELFHTML Forum</b></a> <img src="../../src/x2.gif" width="16" height="13" border="0" alt="Teil von" /> <a href="../"><b>SELFHTML Forum Doku</b></a></td></tr>
+</table>
+<table cellpadding="4" cellspacing="0" border="0" width="100%">
+<tr><td bgcolor="#EEEEEE" class="doc" width="110"><img src="../../src/xweb.gif" width="106" height="109" border="0" alt="SELFHTML" /></td>
+<td bgcolor="#EEEEEE" class="doc" valign="bottom" width="100%"><h2>SELFHTML Forum<br />Doku: Konfiguration: Default-Konfiguration</h2></td></tr>
+<tr><td bgcolor="#EEEEEE" class="doc" valign="top" align="center"><img src="../../src/x5.gif" width="30" height="20" vspace="6" border="0" alt="Informationsseite" /></td>
+<td bgcolor="#FFFFFF" valign="top">
+<p>
+<img src="../../src/xgdown.gif" width="14" height="10" border="0" alt="weiter unten" />&nbsp;<a href="#a1"><b>fo_default.conf</b></a><br />
+<img src="../../src/xgdown.gif" width="14" height="10" border="0" alt="weiter unten" />&nbsp;<a href="#a2"><b>MessagePath</b></a><br />
+<img src="../../src/xgdown.gif" width="14" height="10" border="0" alt="weiter unten" />&nbsp;<a href="#a3"><b>ArchivePath</b></a><br />
+<img src="../../src/xgdown.gif" width="14" height="10" border="0" alt="weiter unten" />&nbsp;<a href="#a4"><b>SocketName</b></a><br />
+<img src="../../src/xgdown.gif" width="14" height="10" border="0" alt="weiter unten" />&nbsp;<a href="#a5"><b>BaseURL</b></a><br />
+<img src="../../src/xgdown.gif" width="14" height="10" border="0" alt="weiter unten" />&nbsp;<a href="#a6"><b>UseCache</b></a><br />
+<img src="../../src/xgdown.gif" width="14" height="10" border="0" alt="weiter unten" />&nbsp;<a href="#a7"><b>SortThreads</b></a><br />
+<img src="../../src/xgdown.gif" width="14" height="10" border="0" alt="weiter unten" />&nbsp;<a href="#a8"><b>SortMessages</b></a><br />
+<img src="../../src/xgdown.gif" width="14" height="10" border="0" alt="weiter unten" />&nbsp;<a href="#a9"><b>ArchiveOnVote</b></a><br />
+<img src="../../src/xgdown.gif" width="14" height="10" border="0" alt="weiter unten" />&nbsp;<a href="#a10"><b>MainFileMaxBytes</b></a><br />
+<img src="../../src/xgdown.gif" width="14" height="10" border="0" alt="weiter unten" />&nbsp;<a href="#a11"><b>MainFileMaxPostings</b></a><br />
+<img src="../../src/xgdown.gif" width="14" height="10" border="0" alt="weiter unten" />&nbsp;<a href="#a12"><b>MainFileMaxThreads</b></a><br />
+<img src="../../src/xgdown.gif" width="14" height="10" border="0" alt="weiter unten" />&nbsp;<a href="#a13"><b>ThreadsMaxOld</b></a><br />
+<img src="../../src/xgdown.gif" width="14" height="10" border="0" alt="weiter unten" />&nbsp;<a href="#a14"><b>ConfigDirectory</b></a><br />
+<img src="../../src/xgdown.gif" width="14" height="10" border="0" alt="weiter unten" />&nbsp;<a href="#a15"><b>InactivityDelete</b></a><br />
+<img src="../../src/xgdown.gif" width="14" height="10" border="0" alt="weiter unten" />&nbsp;<a href="#a16"><b>SendMailBeforeDelete</b></a><br />
+</p>
+<tr><td colspan="2" bgcolor="#EEEEEE" class="doc"><a href="#bottom"><img src="../../src/xgdown.gif" width="14" height="10" border="0" alt="nach unten" /></a>&nbsp;</td></tr>
+</table>
+
+<h2 class="Sh2"><a class="an" name="a1">fo_default.conf</a></h2>
+
+<table width="100%" cellpadding="10"><tr><td class="xmpcode" bgcolor="#FFFFE0"><pre>
+&lt;General&gt;
+ MessagePath      &quot;/home/ckruse/www/fo_data/messages&quot;
+ ArchivePath      &quot;/home/ckruse/www/fo_data/archive&quot;
+ SocketName       &quot;/tmp/sock_forum&quot;
+ BaseURL          &quot;/&quot;
+ UseCache         &quot;yes&quot;
+ SortThreads      &quot;1&quot; # 1 or 2
+ SortMessages     &quot;1&quot; # 1 or 2
+&lt;/General&gt;
+
+&lt;Archiving&gt;
+ ArchiveOnVote        &quot;10&quot; # archive on 10% votings
+ MainFileMaxBytes     &quot;25000&quot; # archive at 25k bytes
+ MainFileMaxPostings  &quot;2000&quot;
+ MainFileMaxThreads   &quot;1000&quot;
+ ThreadsMaxOld        &quot;10&quot;   # archive after 10 days
+&lt;/Archiving&gt;
+
+&lt;Users&gt;
+ ConfigDirectory      &quot;/home/ckruse/www/selfforum/config/users/&quot;
+ InactivityDelete     &quot;50&quot;
+ SendMailBeforeDelete &quot;yes&quot;
+&lt;/Users&gt;
+</pre></table>
+
+<p>
+ Eine typische <tt>fo_default.conf</tt>-Datei.
+</p>
+
+<table bgcolor="#EEEEEE" class="doc" width="100%"><tr><td><a href="#top"><img src="../../src/xgoup.gif" width="14" height="10" border="0" alt="nach oben" /></a><a href="#bottom"><img src="../../src/xgdown.gif" width="14" height="10" border="0" alt="nach unten" /></a>&#160;</td></tr></table>
+
+<h2 class="Sh2"><a class="an" name="a2">MessagePath</a></h2>
+
+<table bgcolor="#EEEEEE" class="doc" width="100%"><tr><td><a href="#top"><img src="../../src/xgoup.gif" width="14" height="10" border="0" alt="nach oben" /></a><a href="#bottom"><img src="../../src/xgdown.gif" width="14" height="10" border="0" alt="nach unten" /></a>&#160;</td></tr></table>
+
+<h2 class="Sh2"><a class="an" name="a3">ArchivePath</a></h2>
+
+<table bgcolor="#EEEEEE" class="doc" width="100%"><tr><td><a href="#top"><img src="../../src/xgoup.gif" width="14" height="10" border="0" alt="nach oben" /></a><a href="#bottom"><img src="../../src/xgdown.gif" width="14" height="10" border="0" alt="nach unten" /></a>&#160;</td></tr></table>
+
+<h2 class="Sh2"><a class="an" name="a4">SocketName</a></h2>
+
+<table bgcolor="#EEEEEE" class="doc" width="100%"><tr><td><a href="#top"><img src="../../src/xgoup.gif" width="14" height="10" border="0" alt="nach oben" /></a><a href="#bottom"><img src="../../src/xgdown.gif" width="14" height="10" border="0" alt="nach unten" /></a>&#160;</td></tr></table>
+
+<h2 class="Sh2"><a class="an" name="a5">BaseURL</a></h2>
+
+<table bgcolor="#EEEEEE" class="doc" width="100%"><tr><td><a href="#top"><img src="../../src/xgoup.gif" width="14" height="10" border="0" alt="nach oben" /></a><a href="#bottom"><img src="../../src/xgdown.gif" width="14" height="10" border="0" alt="nach unten" /></a>&#160;</td></tr></table>
+
+<h2 class="Sh2"><a class="an" name="a6">UseCache</a></h2>
+
+<table bgcolor="#EEEEEE" class="doc" width="100%"><tr><td><a href="#top"><img src="../../src/xgoup.gif" width="14" height="10" border="0" alt="nach oben" /></a><a href="#bottom"><img src="../../src/xgdown.gif" width="14" height="10" border="0" alt="nach unten" /></a>&#160;</td></tr></table>
+
+<h2 class="Sh2"><a class="an" name="a7">SortThreads</a></h2>
+
+<table bgcolor="#EEEEEE" class="doc" width="100%"><tr><td><a href="#top"><img src="../../src/xgoup.gif" width="14" height="10" border="0" alt="nach oben" /></a><a href="#bottom"><img src="../../src/xgdown.gif" width="14" height="10" border="0" alt="nach unten" /></a>&#160;</td></tr></table>
+
+<h2 class="Sh2"><a class="an" name="a8">SortMessages</a></h2>
+
+<table bgcolor="#EEEEEE" class="doc" width="100%"><tr><td><a href="#top"><img src="../../src/xgoup.gif" width="14" height="10" border="0" alt="nach oben" /></a><a href="#bottom"><img src="../../src/xgdown.gif" width="14" height="10" border="0" alt="nach unten" /></a>&#160;</td></tr></table>
+
+<h2 class="Sh2"><a class="an" name="a9">ArchiveOnVote</a></h2>
+
+<table bgcolor="#EEEEEE" class="doc" width="100%"><tr><td><a href="#top"><img src="../../src/xgoup.gif" width="14" height="10" border="0" alt="nach oben" /></a><a href="#bottom"><img src="../../src/xgdown.gif" width="14" height="10" border="0" alt="nach unten" /></a>&#160;</td></tr></table>
+
+<h2 class="Sh2"><a class="an" name="a10">MainFileMaxBytes</a></h2>
+
+<table bgcolor="#EEEEEE" class="doc" width="100%"><tr><td><a href="#top"><img src="../../src/xgoup.gif" width="14" height="10" border="0" alt="nach oben" /></a><a href="#bottom"><img src="../../src/xgdown.gif" width="14" height="10" border="0" alt="nach unten" /></a>&#160;</td></tr></table>
+
+<h2 class="Sh2"><a class="an" name="a11">MainFileMaxPostings</a></h2>
+
+<table bgcolor="#EEEEEE" class="doc" width="100%"><tr><td><a href="#top"><img src="../../src/xgoup.gif" width="14" height="10" border="0" alt="nach oben" /></a><a href="#bottom"><img src="../../src/xgdown.gif" width="14" height="10" border="0" alt="nach unten" /></a>&#160;</td></tr></table>
+
+<h2 class="Sh2"><a class="an" name="a12">MainFileMaxThreads</a></h2>
+
+<table bgcolor="#EEEEEE" class="doc" width="100%"><tr><td><a href="#top"><img src="../../src/xgoup.gif" width="14" height="10" border="0" alt="nach oben" /></a><a href="#bottom"><img src="../../src/xgdown.gif" width="14" height="10" border="0" alt="nach unten" /></a>&#160;</td></tr></table>
+
+<h2 class="Sh2"><a class="an" name="a13">ThreadsMaxOld</a></h2>
+
+<table bgcolor="#EEEEEE" class="doc" width="100%"><tr><td><a href="#top"><img src="../../src/xgoup.gif" width="14" height="10" border="0" alt="nach oben" /></a><a href="#bottom"><img src="../../src/xgdown.gif" width="14" height="10" border="0" alt="nach unten" /></a>&#160;</td></tr></table>
+
+<h2 class="Sh2"><a class="an" name="a14">ConfigDirectory</a></h2>
+
+<table bgcolor="#EEEEEE" class="doc" width="100%"><tr><td><a href="#top"><img src="../../src/xgoup.gif" width="14" height="10" border="0" alt="nach oben" /></a><a href="#bottom"><img src="../../src/xgdown.gif" width="14" height="10" border="0" alt="nach unten" /></a>&#160;</td></tr></table>
+
+<h2 class="Sh2"><a class="an" name="a15">InactivityDelete</a></h2>
+
+<table bgcolor="#EEEEEE" class="doc" width="100%"><tr><td><a href="#top"><img src="../../src/xgoup.gif" width="14" height="10" border="0" alt="nach oben" /></a><a href="#bottom"><img src="../../src/xgdown.gif" width="14" height="10" border="0" alt="nach unten" /></a>&#160;</td></tr></table>
+
+<h2 class="Sh2"><a class="an" name="a16">SendMailBeforeDelete</a></h2>
+
+<table cellpadding="4" cellspacing="0" border="0" width="100%">
+<tr><td bgcolor="#EEEEEE" class="doc"><a href="#top"><img src="../../src/xgoup.gif" width="14" height="10" border="0" alt="nach oben" /></a></td></tr>
+<tr><td bgcolor="#FFEEDD" class="nav"><a class="an"><img src="../../src/x2.gif" width="16" height="13" border="0" alt="Teil von" /></a> <a href="../../../"><b>SELFHTML Developer</b></a> <img src="../../src/x2.gif" width="16" height="13" border="0" alt="Teil von" /> <a href="../../"><b>SELFHTML Forum</b></a> <img src="../../src/x2.gif" width="16" height="13" border="0" alt="Teil von" /> <a href="../"><b>SELFHTML Forum Doku</b></a></td></tr>
+</table>
+
+<p><a class="an" name="bottom">&copy; 2000/2001</a> <img src="../../src/xgmail.gif" width="15" height="10" border="0" alt="E-Mail" />&nbsp;<a href="mailto:selfhtml@teamone.de">selfhtml@teamone.de</a> / version 1.0 by <img src="../../src/xgmail.gif" width="15" height="10" border="0" alt="E-Mail" />&nbsp;<a href="mailto:ckruse@wwwtech.de">Christian Kruse</a></p>
+</body>
+</html>

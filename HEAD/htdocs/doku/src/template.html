@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="ISO-8859-1" standalone="yes"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-loose.dtd">
+
+<html>
+<head>
+<title>SELFHTML Forum: Doku: Konfiguration: Das src-Verzeichnis</title>
+
+<meta name="description"    content="Die Doku des neuen SELFHTML Forums" />
+<meta name="keywords"       content="SELFHTML Forum, Doku, Dokumentation" />
+<meta name="author"         content="Christian Kruse, ckruse@wwwtech.de" />
+<meta name="DC.Publisher"   content="Christian Kruse, ckruse@wwwtech.de" />
+<meta name="DC.Date"        content="2002-04-08T16:46+02:00" />
+<meta name="DC.Identifier"  content="---" />
+<meta name="DC.Language"    content="de" />
+<meta name="DC.Rights"      content="" />
+<meta name="SELF.Firstdate" content="2002-04-08T16:46+02:00" />
+<meta name="SELF.Version"   content="0.01" />
+<meta name="SELF.Pagetype"  content="Information" />
+
+<link rel="shortcut icon" href="../../src/favicon.ico" />
+<link rel="stylesheet" type="text/css" href="../../src/forum.css" />
+</head>
+
+<body>
+<table cellpadding="4" cellspacing="0" border="0" width="100%">
+<tr><td bgcolor="#FFEEDD" class="nav"><a class="an" name="top"><img src="../../src/x2.gif" width="16" height="13" border="0" alt="Teil von" /></a> <a href="../../../"><b>SELFHTML Developer</b></a> <img src="../../src/x2.gif" width="16" height="13" border="0" alt="Teil von" /> <a href="../../"><b>SELFHTML Forum</b></a> <img src="../../src/x2.gif" width="16" height="13" border="0" alt="Teil von" /> <a href="../"><b>SELFHTML Forum Doku</b></a></td></tr>
+</table>
+<table cellpadding="4" cellspacing="0" border="0" width="100%">
+<tr><td bgcolor="#EEEEEE" class="doc" width="110"><img src="../../src/xweb.gif" width="106" height="109" border="0" alt="SELFHTML" /></td>
+<td bgcolor="#EEEEEE" class="doc" valign="bottom" width="100%"><h2>SELFHTML Forum<br />Dokumentation: Template-Bibliothek</h2></td></tr>
+<tr><td bgcolor="#EEEEEE" class="doc" valign="top" align="center"><img src="../../src/x5.gif" width="30" height="20" vspace="6" border="0" alt="Informationsseite" /></td>
+<td bgcolor="#FFFFFF" valign="top">
+<p><img src="../../src/xgdown.gif" width="14" height="10" border="0" alt="weiter unten" />&nbsp;<a href="#a1"><b>Template-Bibliothek</b></a><br />
+<img src="../../src/xgdown.gif" width="14" height="10" border="0" alt="weiter unten" />&nbsp;<a href="#a2"><b>tpl_init</b></a><br />
+<img src="../../src/xgdown.gif" width="14" height="10" border="0" alt="weiter unten" />&nbsp;<a href="#a3"><b>tpl_setvar</b></a><br />
+<img src="../../src/xgdown.gif" width="14" height="10" border="0" alt="weiter unten" />&nbsp;<a href="#a4"><b>tpl_appendvar</b></a><br />
+<img src="../../src/xgdown.gif" width="14" height="10" border="0" alt="weiter unten" />&nbsp;<a href="#a5"><b>tpl_freevar</b></a><br />
+<img src="../../src/xgdown.gif" width="14" height="10" border="0" alt="weiter unten" />&nbsp;<a href="#a6"><b>tpl_parse</b></a><br />
+<img src="../../src/xgdown.gif" width="14" height="10" border="0" alt="weiter unten" />&nbsp;<a href="#a7"><b>tpl_parse_to_mem</b></a><br />
+<img src="../../src/xgdown.gif" width="14" height="10" border="0" alt="weiter unten" />&nbsp;<a href="#a8"><b>tpl_finish</b></a><br />
+<img src="../../src/xgdown.gif" width="14" height="10" border="0" alt="weiter unten" />&nbsp;<a href="#a9"><b>tpl_getvar</b></a><br />
+</p>
+<tr><td colspan="2" bgcolor="#EEEEEE" class="doc"><a href="#bottom"><img src="../../src/xgdown.gif" width="14" height="10" border="0" alt="nach unten" /></a>&nbsp;</td></tr>
+</table>
+
+<h2 class="Sh2"><a class="an" name="a1">Template-Bibliothek</a></h2>
+<p>
+  In dieser Datei wird die Template-Bibliothek definiert. Die Template-Bibliothek arbeitet recht einfach: ein Script
+  transformiert Template-Dateien nach C und compiliert sie in DSO-Dateien. Diese DSO-Dateien werden dynamisch gelinkt
+  und ausgef&uuml;hrt.
+</p>
+
+<h2 class="Sh2"><a class="an" name="a2">int tpl_init(t_template *tpl,const char *fname)</a></h2>
+<p>
+  Diese Funktion initialisiert ein Template. Es erwartet eine Template-Struktur und einen Datei-Namen (kompletter,
+  absoluter Pfad!) als Parameter. Beispiel:
+</p>
+
+<table width="100%" cellpadding="10"><tr><td class="xmpcode" bgcolor="#FFFFE0"><pre>
+  t_template tpl;
+  if(tpl_init(&amp;tpl,&quot;/home/ckruse/template.so&quot;) != 0) {
+    printf(&quot;Template-Initialisierung ist fehlgeschlagen!\n&quot;);
+    exit(1);
+  }
+
+  tpl_finish(&amp;tpl);
+</pre></table>
+
+<h2 class="Sh2"><a class="an" name="a3">void tpl_setvar(t_template *tpl,const char *vname,const char *value,int len)</a></h2>
+<p>
+  Diese Funktion setzt eine Template-Variable. Sie erwartet die Template-Struktur, den Variablen-Namen, den Wert und
+  die L&auml;nge des Wertes. Beispiel:
+</p>
+
+<table width="100%" cellpadding="10"><tr><td class="xmpcode" bgcolor="#FFFFE0"><pre>
+tpl_setvar(&amp;tpl,&quot;username&quot;,&quot;ck&quot;,2);
+</pre></table>
+
+<h2 class="Sh2"><a class="an" name="a4">int tpl_appendvar(t_template *tpl,const char *vname,const char *value,int len)</a></h2>
+<p>
+  Diese Funktion h&auml;ngt einen Wert an eine Template-Variable an. Benutzung wie <tt>tpl_setvar</tt>. Beispiel:
+</p>
+
+<table width="100%" cellpadding="10"><tr><td class="xmpcode" bgcolor="#FFFFE0"><pre>
+tpl_appendvar(&amp;tpl,&quot;username&quot;,&quot;ruse&quot;,4);
+</pre></table>
+
+<h2 class="Sh2"><a class="an" name="a5">void tpl_freevar(t_template *tpl,const char *vname)</a></h2>
+<p>
+  Diese Funktion l&ouml;scht eine Template-Variable. Beispiel:
+</p>
+
+<table width="100%" cellpadding="10"><tr><td class="xmpcode" bgcolor="#FFFFE0"><pre>
+tpl_freevar(&amp;tpl,&quot;username&quot;);
+</pre></table>
+
+<h2 class="Sh2"><a class="an" name="a6">void tpl_parse(t_template *tpl)</a></h2>
+<p>
+  Diese Funktion parsed ein Template. Es wird beim Parsen direkt ausgegeben. Beispiel:
+</p>
+
+<table width="100%" cellpadding="10"><tr><td class="xmpcode" bgcolor="#FFFFE0"><pre>
+tpl_parse(&tpl);
+</pre></table>
+
+<h2 class="Sh2"><a class="an" name="a7">void tpl_parse_to_mem(t_template *tpl)</a></h2>
+<p>
+  Diese Funktion parsed eine Template-Variable und schreibt den geparseden Inhalt in den Speicher. Beispiel:
+</p>
+
+<table width="100%" cellpadding="10"><tr><td class="xmpcode" bgcolor="#FFFFE0"><pre>
+tpl_parse_to_mem(&amp;tpl);
+printf(&quot;%s&quot;,tpl.parsed.content);
+</pre></table>
+
+<h2 class="Sh2"><a class="an" name="a8">void tpl_finish(t_template *tpl)</a></h2>
+<p>
+  Diese Funktion r&auml;mt eine Template-Struktur auf. Beispiel:
+</p>
+
+<table width="100%" cellpadding="10"><tr><td class="xmpcode" bgcolor="#FFFFE0"><pre>
+tpl_finish(&amp;tpl);
+</pre></table>
+
+<h2 class="Sh2"><a class="an" name="a9">t_variable *tpl_getvar(t_template *tpl,const char *name)</a></h2>
+<p>
+  Diese Funktion gibt einen Pointer auf eine Variablen-Struktur zur&uuml;ck, wenn die mit <tt>name</tt> bezeichnete
+  Variable vorhanden ist, ansonsten NULL. Beispiel:
+</p>
+
+<table width="100%" cellpadding="10"><tr><td class="xmpcode" bgcolor="#FFFFE0"><pre>
+t_variable *v = tpl_getvar(&amp;tpl,&quot;username&quot;);
+if(v) {
+  printf(&quot;%s\n&quot;,v-&gt;content.content);
+}
+</pre></table>
+
+<table cellpadding="4" cellspacing="0" border="0" width="100%">
+<tr><td bgcolor="#EEEEEE" class="doc"><a href="#top"><img src="../../src/xgoup.gif" width="14" height="10" border="0" alt="nach oben" /></a></td></tr>
+<tr><td bgcolor="#FFEEDD" class="nav"><a class="an"><img src="../../src/x2.gif" width="16" height="13" border="0" alt="Teil von" /></a> <a href="../../../"><b>SELFHTML Developer</b></a> <img src="../../src/x2.gif" width="16" height="13" border="0" alt="Teil von" /> <a href="../../"><b>SELFHTML Forum</b></a> <img src="../../src/x2.gif" width="16" height="13" border="0" alt="Teil von" /> <a href="../"><b>SELFHTML Forum Doku</b></a></td></tr>
+</table>
+
+<p><a class="an" name="bottom">&copy; 2000/2001</a> <img src="../../src/xgmail.gif" width="15" height="10" border="0" alt="E-Mail" />&nbsp;<a href="mailto:selfhtml@teamone.de">selfhtml@teamone.de</a> / version 1.0 by <img src="../../src/xgmail.gif" width="15" height="10" border="0" alt="E-Mail" />&nbsp;<a href="mailto:ckruse@wwwtech.de">Christian Kruse</a></p>
+</body>
+</html>

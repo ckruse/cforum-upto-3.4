@@ -1,0 +1,679 @@
+# Makefile.in generated automatically by automake 1.4-p6 from Makefile.am
+
+# Copyright (C) 1994, 1995-8, 1999, 2001 Free Software Foundation, Inc.
+# This Makefile.in is free software; the Free Software Foundation
+# gives unlimited permission to copy and/or distribute it,
+# with or without modifications, as long as this notice is preserved.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY, to the extent permitted by law; without
+# even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+# PARTICULAR PURPOSE.
+
+
+SHELL = @SHELL@
+
+srcdir = @srcdir@
+top_srcdir = @top_srcdir@
+VPATH = @srcdir@
+prefix = @prefix@
+exec_prefix = @exec_prefix@
+
+bindir = @bindir@
+sbindir = @sbindir@
+libexecdir = @libexecdir@
+datadir = @datadir@
+sysconfdir = @sysconfdir@
+sharedstatedir = @sharedstatedir@
+localstatedir = @localstatedir@
+libdir = @libdir@
+infodir = @infodir@
+mandir = @mandir@
+includedir = @includedir@
+oldincludedir = /usr/include
+
+DESTDIR =
+
+pkgdatadir = $(datadir)/@PACKAGE@
+pkglibdir = $(libdir)/@PACKAGE@
+pkgincludedir = $(includedir)/@PACKAGE@
+
+top_builddir = ../../../..
+
+ACLOCAL = @ACLOCAL@
+AUTOCONF = @AUTOCONF@
+AUTOMAKE = @AUTOMAKE@
+AUTOHEADER = @AUTOHEADER@
+
+INSTALL = @INSTALL@
+INSTALL_PROGRAM = @INSTALL_PROGRAM@ $(AM_INSTALL_PROGRAM_FLAGS)
+INSTALL_DATA = @INSTALL_DATA@
+INSTALL_SCRIPT = @INSTALL_SCRIPT@
+transform = @program_transform_name@
+
+NORMAL_INSTALL = :
+PRE_INSTALL = :
+POST_INSTALL = :
+NORMAL_UNINSTALL = :
+PRE_UNINSTALL = :
+POST_UNINSTALL = :
+host_alias = @host_alias@
+host_triplet = @host@
+AS = @AS@
+BASH = @BASH@
+BDB_LIB = @BDB_LIB@
+CC = @CC@
+DL = @DL@
+DLLTOOL = @DLLTOOL@
+ECHO = @ECHO@
+EXEEXT = @EXEEXT@
+FLEX = @FLEX@
+GDOMECFG = @GDOMECFG@
+GDOME_LIBS = @GDOME_LIBS@
+GREP = @GREP@
+ICONV = @ICONV@
+IDN = @IDN@
+INSTALL = @INSTALL@
+LIBTOOL = @LIBTOOL@
+LIBWWWCFG = @LIBWWWCFG@
+LIBWWW_LIBS = @LIBWWW_LIBS@
+LN = @LN@
+LN_S = @LN_S@
+LS = @LS@
+MAKEINFO = @MAKEINFO@
+MAKEPGM = @MAKEPGM@
+MKDIR = @MKDIR@
+OBJDUMP = @OBJDUMP@
+OBJEXT = @OBJEXT@
+PACKAGE = @PACKAGE@
+PERL = @PERL@
+PTHREAD_LIB = @PTHREAD_LIB@
+RANLIB = @RANLIB@
+RM = @RM@
+SED = @SED@
+STRIP = @STRIP@
+VERSION = @VERSION@
+with_archive_dir = @with_archive_dir@
+with_cgi_bin = @with_cgi_bin@
+with_cgi_shared = @with_cgi_shared@
+with_compiled_template_dir = @with_compiled_template_dir@
+with_config_dir = @with_config_dir@
+with_group = @with_group@
+with_lib_dir = @with_lib_dir@
+with_log_dir = @with_log_dir@
+with_message_dir = @with_message_dir@
+with_modules_dir = @with_modules_dir@
+with_owner = @with_owner@
+with_socket_path = @with_socket_path@
+with_src_dir = @with_src_dir@
+with_template_dir = @with_template_dir@
+with_userconfig_dir = @with_userconfig_dir@
+
+SUFFIXES = .html
+mode = html4
+
+pkglib_LTLIBRARIES =  html4_arcmonthlist.la html4_arcmonths.la html4_arcperthread.la html4_arcthread.la html4_arcthreadlist.la html4_arcthreadlist_month.la html4_arcyearlist.la html4_arcyears.la html4_blank.la html4_cats.la html4_chpass.la html4_chpassok.la html4_errortpl.la html4_fatal.la html4_forum_begin.la html4_forum_end.la html4_forum_posting.la html4_forum_thread.la html4_frameset.la html4_post_ok.la html4_setting.la html4_thread.la html4_unreg.la html4_unregok.la html4_updown.la html4_useredit.la html4_usereditok.la html4_userregister.la html4_userregok.la html4_usersettings.la html4_pageentry.la html4_section.la
+html4_arcmonthlist_la_SOURCES = arcmonthlist.c
+html4_arcmonthlist_la_LIBADD = $(top_builddir)/src/libcfutils.la $(top_builddir)/src/libcftemplate.la
+html4_arcmonthlist_la_LDFLAGS = -module -export-dynamic -avoid-version
+html4_arcmonths_la_SOURCES = arcmonths.c
+html4_arcmonths_la_LIBADD = $(top_builddir)/src/libcfutils.la $(top_builddir)/src/libcftemplate.la
+html4_arcmonths_la_LDFLAGS = -module -export-dynamic -avoid-version
+html4_arcperthread_la_SOURCES = arcperthread.c
+html4_arcperthread_la_LIBADD = $(top_builddir)/src/libcfutils.la $(top_builddir)/src/libcftemplate.la
+html4_arcperthread_la_LDFLAGS = -module -export-dynamic -avoid-version
+html4_arcthread_la_SOURCES = arcthread.c
+html4_arcthread_la_LIBADD = $(top_builddir)/src/libcfutils.la $(top_builddir)/src/libcftemplate.la
+html4_arcthread_la_LDFLAGS = -module -export-dynamic -avoid-version
+html4_arcthreadlist_la_SOURCES = arcthreadlist.c
+html4_arcthreadlist_la_LIBADD = $(top_builddir)/src/libcfutils.la $(top_builddir)/src/libcftemplate.la
+html4_arcthreadlist_la_LDFLAGS = -module -export-dynamic -avoid-version
+html4_arcthreadlist_month_la_SOURCES = arcthreadlist_month.c
+html4_arcthreadlist_month_la_LIBADD = $(top_builddir)/src/libcfutils.la $(top_builddir)/src/libcftemplate.la
+html4_arcthreadlist_month_la_LDFLAGS = -module -export-dynamic -avoid-version
+html4_arcyearlist_la_SOURCES = arcyearlist.c
+html4_arcyearlist_la_LIBADD = $(top_builddir)/src/libcfutils.la $(top_builddir)/src/libcftemplate.la
+html4_arcyearlist_la_LDFLAGS = -module -export-dynamic -avoid-version
+html4_arcyears_la_SOURCES = arcyears.c
+html4_arcyears_la_LIBADD = $(top_builddir)/src/libcfutils.la $(top_builddir)/src/libcftemplate.la
+html4_arcyears_la_LDFLAGS = -module -export-dynamic -avoid-version
+html4_blank_la_SOURCES = blank.c
+html4_blank_la_LIBADD = $(top_builddir)/src/libcfutils.la $(top_builddir)/src/libcftemplate.la
+html4_blank_la_LDFLAGS = -module -export-dynamic -avoid-version
+html4_cats_la_SOURCES = cats.c
+html4_cats_la_LIBADD = $(top_builddir)/src/libcfutils.la $(top_builddir)/src/libcftemplate.la
+html4_cats_la_LDFLAGS = -module -export-dynamic -avoid-version
+html4_chpass_la_SOURCES = chpass.c
+html4_chpass_la_LIBADD = $(top_builddir)/src/libcfutils.la $(top_builddir)/src/libcftemplate.la
+html4_chpass_la_LDFLAGS = -module -export-dynamic -avoid-version
+html4_chpassok_la_SOURCES = chpassok.c
+html4_chpassok_la_LIBADD = $(top_builddir)/src/libcfutils.la $(top_builddir)/src/libcftemplate.la
+html4_chpassok_la_LDFLAGS = -module -export-dynamic -avoid-version
+html4_errortpl_la_SOURCES = errortpl.c
+html4_errortpl_la_LIBADD = $(top_builddir)/src/libcfutils.la $(top_builddir)/src/libcftemplate.la
+html4_errortpl_la_LDFLAGS = -module -export-dynamic -avoid-version
+html4_fatal_la_SOURCES = fatal.c
+html4_fatal_la_LIBADD = $(top_builddir)/src/libcfutils.la $(top_builddir)/src/libcftemplate.la
+html4_fatal_la_LDFLAGS = -module -export-dynamic -avoid-version
+html4_forum_begin_la_SOURCES = forum_begin.c
+html4_forum_begin_la_LIBADD = $(top_builddir)/src/libcfutils.la $(top_builddir)/src/libcftemplate.la
+html4_forum_begin_la_LDFLAGS = -module -export-dynamic -avoid-version
+html4_forum_end_la_SOURCES = forum_end.c
+html4_forum_end_la_LIBADD = $(top_builddir)/src/libcfutils.la $(top_builddir)/src/libcftemplate.la
+html4_forum_end_la_LDFLAGS = -module -export-dynamic -avoid-version
+html4_forum_posting_la_SOURCES = forum_posting.c
+html4_forum_posting_la_LIBADD = $(top_builddir)/src/libcfutils.la $(top_builddir)/src/libcftemplate.la
+html4_forum_posting_la_LDFLAGS = -module -export-dynamic -avoid-version
+html4_forum_thread_la_SOURCES = forum_thread.c
+html4_forum_thread_la_LIBADD = $(top_builddir)/src/libcfutils.la $(top_builddir)/src/libcftemplate.la
+html4_forum_thread_la_LDFLAGS = -module -export-dynamic -avoid-version
+html4_frameset_la_SOURCES = frameset.c
+html4_frameset_la_LIBADD = $(top_builddir)/src/libcfutils.la $(top_builddir)/src/libcftemplate.la
+html4_frameset_la_LDFLAGS = -module -export-dynamic -avoid-version
+html4_post_ok_la_SOURCES = post_ok.c
+html4_post_ok_la_LIBADD = $(top_builddir)/src/libcfutils.la $(top_builddir)/src/libcftemplate.la
+html4_post_ok_la_LDFLAGS = -module -export-dynamic -avoid-version
+html4_setting_la_SOURCES = setting.c
+html4_setting_la_LIBADD = $(top_builddir)/src/libcfutils.la $(top_builddir)/src/libcftemplate.la
+html4_setting_la_LDFLAGS = -module -export-dynamic -avoid-version
+html4_thread_la_SOURCES = thread.c
+html4_thread_la_LIBADD = $(top_builddir)/src/libcfutils.la $(top_builddir)/src/libcftemplate.la
+html4_thread_la_LDFLAGS = -module -export-dynamic -avoid-version
+html4_unreg_la_SOURCES = unreg.c
+html4_unreg_la_LIBADD = $(top_builddir)/src/libcfutils.la $(top_builddir)/src/libcftemplate.la
+html4_unreg_la_LDFLAGS = -module -export-dynamic -avoid-version
+html4_unregok_la_SOURCES = unregok.c
+html4_unregok_la_LIBADD = $(top_builddir)/src/libcfutils.la $(top_builddir)/src/libcftemplate.la
+html4_unregok_la_LDFLAGS = -module -export-dynamic -avoid-version
+html4_updown_la_SOURCES = updown.c
+html4_updown_la_LIBADD = $(top_builddir)/src/libcfutils.la $(top_builddir)/src/libcftemplate.la
+html4_updown_la_LDFLAGS = -module -export-dynamic -avoid-version
+html4_useredit_la_SOURCES = useredit.c
+html4_useredit_la_LIBADD = $(top_builddir)/src/libcfutils.la $(top_builddir)/src/libcftemplate.la
+html4_useredit_la_LDFLAGS = -module -export-dynamic -avoid-version
+html4_usereditok_la_SOURCES = usereditok.c
+html4_usereditok_la_LIBADD = $(top_builddir)/src/libcfutils.la $(top_builddir)/src/libcftemplate.la
+html4_usereditok_la_LDFLAGS = -module -export-dynamic -avoid-version
+html4_userregister_la_SOURCES = userregister.c
+html4_userregister_la_LIBADD = $(top_builddir)/src/libcfutils.la $(top_builddir)/src/libcftemplate.la
+html4_userregister_la_LDFLAGS = -module -export-dynamic -avoid-version
+html4_userregok_la_SOURCES = userregok.c
+html4_userregok_la_LIBADD = $(top_builddir)/src/libcfutils.la $(top_builddir)/src/libcftemplate.la
+html4_userregok_la_LDFLAGS = -module -export-dynamic -avoid-version
+html4_usersettings_la_SOURCES = usersettings.c
+html4_usersettings_la_LIBADD = $(top_builddir)/src/libcfutils.la $(top_builddir)/src/libcftemplate.la
+html4_usersettings_la_LDFLAGS = -module -export-dynamic -avoid-version
+html4_pageentry_la_SOURCES = pageentry.c
+html4_pageentry_la_LIBADD = $(top_builddir)/src/libcfutils.la $(top_builddir)/src/libcftemplate.la
+html4_pageentry_la_LDFLAGS = -module -export-dynamic -avoid-version
+html4_section_la_SOURCES = section.c
+html4_section_la_LIBADD = $(top_builddir)/src/libcfutils.la $(top_builddir)/src/libcftemplate.la
+html4_section_la_LDFLAGS = -module -export-dynamic -avoid-version
+mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
+CONFIG_HEADER = ../../../../src/config.h
+CONFIG_CLEAN_FILES = 
+LTLIBRARIES =  $(pkglib_LTLIBRARIES)
+
+
+DEFS = @DEFS@ -I. -I$(srcdir) -I../../../../src
+CPPFLAGS = @CPPFLAGS@
+LDFLAGS = @LDFLAGS@
+LIBS = @LIBS@
+html4_arcmonthlist_la_DEPENDENCIES =  $(top_builddir)/src/libcfutils.la \
+$(top_builddir)/src/libcftemplate.la
+html4_arcmonthlist_la_OBJECTS =  arcmonthlist.lo
+html4_arcmonths_la_DEPENDENCIES =  $(top_builddir)/src/libcfutils.la \
+$(top_builddir)/src/libcftemplate.la
+html4_arcmonths_la_OBJECTS =  arcmonths.lo
+html4_arcperthread_la_DEPENDENCIES =  $(top_builddir)/src/libcfutils.la \
+$(top_builddir)/src/libcftemplate.la
+html4_arcperthread_la_OBJECTS =  arcperthread.lo
+html4_arcthread_la_DEPENDENCIES =  $(top_builddir)/src/libcfutils.la \
+$(top_builddir)/src/libcftemplate.la
+html4_arcthread_la_OBJECTS =  arcthread.lo
+html4_arcthreadlist_la_DEPENDENCIES =  $(top_builddir)/src/libcfutils.la \
+$(top_builddir)/src/libcftemplate.la
+html4_arcthreadlist_la_OBJECTS =  arcthreadlist.lo
+html4_arcthreadlist_month_la_DEPENDENCIES =  \
+$(top_builddir)/src/libcfutils.la $(top_builddir)/src/libcftemplate.la
+html4_arcthreadlist_month_la_OBJECTS =  arcthreadlist_month.lo
+html4_arcyearlist_la_DEPENDENCIES =  $(top_builddir)/src/libcfutils.la \
+$(top_builddir)/src/libcftemplate.la
+html4_arcyearlist_la_OBJECTS =  arcyearlist.lo
+html4_arcyears_la_DEPENDENCIES =  $(top_builddir)/src/libcfutils.la \
+$(top_builddir)/src/libcftemplate.la
+html4_arcyears_la_OBJECTS =  arcyears.lo
+html4_blank_la_DEPENDENCIES =  $(top_builddir)/src/libcfutils.la \
+$(top_builddir)/src/libcftemplate.la
+html4_blank_la_OBJECTS =  blank.lo
+html4_cats_la_DEPENDENCIES =  $(top_builddir)/src/libcfutils.la \
+$(top_builddir)/src/libcftemplate.la
+html4_cats_la_OBJECTS =  cats.lo
+html4_chpass_la_DEPENDENCIES =  $(top_builddir)/src/libcfutils.la \
+$(top_builddir)/src/libcftemplate.la
+html4_chpass_la_OBJECTS =  chpass.lo
+html4_chpassok_la_DEPENDENCIES =  $(top_builddir)/src/libcfutils.la \
+$(top_builddir)/src/libcftemplate.la
+html4_chpassok_la_OBJECTS =  chpassok.lo
+html4_errortpl_la_DEPENDENCIES =  $(top_builddir)/src/libcfutils.la \
+$(top_builddir)/src/libcftemplate.la
+html4_errortpl_la_OBJECTS =  errortpl.lo
+html4_fatal_la_DEPENDENCIES =  $(top_builddir)/src/libcfutils.la \
+$(top_builddir)/src/libcftemplate.la
+html4_fatal_la_OBJECTS =  fatal.lo
+html4_forum_begin_la_DEPENDENCIES =  $(top_builddir)/src/libcfutils.la \
+$(top_builddir)/src/libcftemplate.la
+html4_forum_begin_la_OBJECTS =  forum_begin.lo
+html4_forum_end_la_DEPENDENCIES =  $(top_builddir)/src/libcfutils.la \
+$(top_builddir)/src/libcftemplate.la
+html4_forum_end_la_OBJECTS =  forum_end.lo
+html4_forum_posting_la_DEPENDENCIES =  $(top_builddir)/src/libcfutils.la \
+$(top_builddir)/src/libcftemplate.la
+html4_forum_posting_la_OBJECTS =  forum_posting.lo
+html4_forum_thread_la_DEPENDENCIES =  $(top_builddir)/src/libcfutils.la \
+$(top_builddir)/src/libcftemplate.la
+html4_forum_thread_la_OBJECTS =  forum_thread.lo
+html4_frameset_la_DEPENDENCIES =  $(top_builddir)/src/libcfutils.la \
+$(top_builddir)/src/libcftemplate.la
+html4_frameset_la_OBJECTS =  frameset.lo
+html4_post_ok_la_DEPENDENCIES =  $(top_builddir)/src/libcfutils.la \
+$(top_builddir)/src/libcftemplate.la
+html4_post_ok_la_OBJECTS =  post_ok.lo
+html4_setting_la_DEPENDENCIES =  $(top_builddir)/src/libcfutils.la \
+$(top_builddir)/src/libcftemplate.la
+html4_setting_la_OBJECTS =  setting.lo
+html4_thread_la_DEPENDENCIES =  $(top_builddir)/src/libcfutils.la \
+$(top_builddir)/src/libcftemplate.la
+html4_thread_la_OBJECTS =  thread.lo
+html4_unreg_la_DEPENDENCIES =  $(top_builddir)/src/libcfutils.la \
+$(top_builddir)/src/libcftemplate.la
+html4_unreg_la_OBJECTS =  unreg.lo
+html4_unregok_la_DEPENDENCIES =  $(top_builddir)/src/libcfutils.la \
+$(top_builddir)/src/libcftemplate.la
+html4_unregok_la_OBJECTS =  unregok.lo
+html4_updown_la_DEPENDENCIES =  $(top_builddir)/src/libcfutils.la \
+$(top_builddir)/src/libcftemplate.la
+html4_updown_la_OBJECTS =  updown.lo
+html4_useredit_la_DEPENDENCIES =  $(top_builddir)/src/libcfutils.la \
+$(top_builddir)/src/libcftemplate.la
+html4_useredit_la_OBJECTS =  useredit.lo
+html4_usereditok_la_DEPENDENCIES =  $(top_builddir)/src/libcfutils.la \
+$(top_builddir)/src/libcftemplate.la
+html4_usereditok_la_OBJECTS =  usereditok.lo
+html4_userregister_la_DEPENDENCIES =  $(top_builddir)/src/libcfutils.la \
+$(top_builddir)/src/libcftemplate.la
+html4_userregister_la_OBJECTS =  userregister.lo
+html4_userregok_la_DEPENDENCIES =  $(top_builddir)/src/libcfutils.la \
+$(top_builddir)/src/libcftemplate.la
+html4_userregok_la_OBJECTS =  userregok.lo
+html4_usersettings_la_DEPENDENCIES =  $(top_builddir)/src/libcfutils.la \
+$(top_builddir)/src/libcftemplate.la
+html4_usersettings_la_OBJECTS =  usersettings.lo
+html4_pageentry_la_DEPENDENCIES =  $(top_builddir)/src/libcfutils.la \
+$(top_builddir)/src/libcftemplate.la
+html4_pageentry_la_OBJECTS =  pageentry.lo
+html4_section_la_DEPENDENCIES =  $(top_builddir)/src/libcfutils.la \
+$(top_builddir)/src/libcftemplate.la
+html4_section_la_OBJECTS =  section.lo
+CFLAGS = @CFLAGS@
+COMPILE = $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
+LTCOMPILE = $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
+CCLD = $(CC)
+LINK = $(LIBTOOL) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(LDFLAGS) -o $@
+DIST_COMMON =  Makefile.am Makefile.in
+
+
+DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
+
+TAR = tar
+GZIP_ENV = --best
+DEP_FILES =  .deps/arcmonthlist.P .deps/arcmonths.P .deps/arcperthread.P \
+.deps/arcthread.P .deps/arcthreadlist.P .deps/arcthreadlist_month.P \
+.deps/arcyearlist.P .deps/arcyears.P .deps/blank.P .deps/cats.P \
+.deps/chpass.P .deps/chpassok.P .deps/errortpl.P .deps/fatal.P \
+.deps/forum_begin.P .deps/forum_end.P .deps/forum_posting.P \
+.deps/forum_thread.P .deps/frameset.P .deps/pageentry.P .deps/post_ok.P \
+.deps/section.P .deps/setting.P .deps/thread.P .deps/unreg.P \
+.deps/unregok.P .deps/updown.P .deps/useredit.P .deps/usereditok.P \
+.deps/userregister.P .deps/userregok.P .deps/usersettings.P
+SOURCES = $(html4_arcmonthlist_la_SOURCES) $(html4_arcmonths_la_SOURCES) $(html4_arcperthread_la_SOURCES) $(html4_arcthread_la_SOURCES) $(html4_arcthreadlist_la_SOURCES) $(html4_arcthreadlist_month_la_SOURCES) $(html4_arcyearlist_la_SOURCES) $(html4_arcyears_la_SOURCES) $(html4_blank_la_SOURCES) $(html4_cats_la_SOURCES) $(html4_chpass_la_SOURCES) $(html4_chpassok_la_SOURCES) $(html4_errortpl_la_SOURCES) $(html4_fatal_la_SOURCES) $(html4_forum_begin_la_SOURCES) $(html4_forum_end_la_SOURCES) $(html4_forum_posting_la_SOURCES) $(html4_forum_thread_la_SOURCES) $(html4_frameset_la_SOURCES) $(html4_post_ok_la_SOURCES) $(html4_setting_la_SOURCES) $(html4_thread_la_SOURCES) $(html4_unreg_la_SOURCES) $(html4_unregok_la_SOURCES) $(html4_updown_la_SOURCES) $(html4_useredit_la_SOURCES) $(html4_usereditok_la_SOURCES) $(html4_userregister_la_SOURCES) $(html4_userregok_la_SOURCES) $(html4_usersettings_la_SOURCES) $(html4_pageentry_la_SOURCES) $(html4_section_la_SOURCES)
+OBJECTS = $(html4_arcmonthlist_la_OBJECTS) $(html4_arcmonths_la_OBJECTS) $(html4_arcperthread_la_OBJECTS) $(html4_arcthread_la_OBJECTS) $(html4_arcthreadlist_la_OBJECTS) $(html4_arcthreadlist_month_la_OBJECTS) $(html4_arcyearlist_la_OBJECTS) $(html4_arcyears_la_OBJECTS) $(html4_blank_la_OBJECTS) $(html4_cats_la_OBJECTS) $(html4_chpass_la_OBJECTS) $(html4_chpassok_la_OBJECTS) $(html4_errortpl_la_OBJECTS) $(html4_fatal_la_OBJECTS) $(html4_forum_begin_la_OBJECTS) $(html4_forum_end_la_OBJECTS) $(html4_forum_posting_la_OBJECTS) $(html4_forum_thread_la_OBJECTS) $(html4_frameset_la_OBJECTS) $(html4_post_ok_la_OBJECTS) $(html4_setting_la_OBJECTS) $(html4_thread_la_OBJECTS) $(html4_unreg_la_OBJECTS) $(html4_unregok_la_OBJECTS) $(html4_updown_la_OBJECTS) $(html4_useredit_la_OBJECTS) $(html4_usereditok_la_OBJECTS) $(html4_userregister_la_OBJECTS) $(html4_userregok_la_OBJECTS) $(html4_usersettings_la_OBJECTS) $(html4_pageentry_la_OBJECTS) $(html4_section_la_OBJECTS)
+
+all: all-redirect
+.SUFFIXES:
+.SUFFIXES: .S .c .html .lo .o .obj .s
+$(srcdir)/Makefile.in: Makefile.am $(top_srcdir)/configure.in $(ACLOCAL_M4) 
+	cd $(top_srcdir) && $(AUTOMAKE) --gnu cgi-shared/config/templates/tpl_html4/Makefile
+
+Makefile: $(srcdir)/Makefile.in  $(top_builddir)/config.status $(BUILT_SOURCES)
+	cd $(top_builddir) \
+	  && CONFIG_FILES=$(subdir)/$@ CONFIG_HEADERS= $(SHELL) ./config.status
+
+
+mostlyclean-pkglibLTLIBRARIES:
+
+clean-pkglibLTLIBRARIES:
+	-test -z "$(pkglib_LTLIBRARIES)" || rm -f $(pkglib_LTLIBRARIES)
+
+distclean-pkglibLTLIBRARIES:
+
+maintainer-clean-pkglibLTLIBRARIES:
+
+install-pkglibLTLIBRARIES: $(pkglib_LTLIBRARIES)
+	@$(NORMAL_INSTALL)
+	$(mkinstalldirs) $(DESTDIR)$(pkglibdir)
+	@list='$(pkglib_LTLIBRARIES)'; for p in $$list; do \
+	  if test -f $$p; then \
+	    echo "$(LIBTOOL)  --mode=install $(INSTALL) $$p $(DESTDIR)$(pkglibdir)/$$p"; \
+	    $(LIBTOOL)  --mode=install $(INSTALL) $$p $(DESTDIR)$(pkglibdir)/$$p; \
+	  else :; fi; \
+	done
+
+uninstall-pkglibLTLIBRARIES:
+	@$(NORMAL_UNINSTALL)
+	list='$(pkglib_LTLIBRARIES)'; for p in $$list; do \
+	  $(LIBTOOL)  --mode=uninstall rm -f $(DESTDIR)$(pkglibdir)/$$p; \
+	done
+
+# FIXME: We should only use cygpath when building on Windows,
+# and only if it is available.
+.c.obj:
+	$(COMPILE) -c `cygpath -w $<`
+
+.s.o:
+	$(COMPILE) -c $<
+
+.S.o:
+	$(COMPILE) -c $<
+
+mostlyclean-compile:
+	-rm -f *.o core *.core
+	-rm -f *.$(OBJEXT)
+
+clean-compile:
+
+distclean-compile:
+	-rm -f *.tab.c
+
+maintainer-clean-compile:
+
+.s.lo:
+	$(LIBTOOL) --mode=compile $(COMPILE) -c $<
+
+.S.lo:
+	$(LIBTOOL) --mode=compile $(COMPILE) -c $<
+
+mostlyclean-libtool:
+	-rm -f *.lo
+
+clean-libtool:
+	-rm -rf .libs _libs
+
+distclean-libtool:
+
+maintainer-clean-libtool:
+
+html4_arcmonthlist.la: $(html4_arcmonthlist_la_OBJECTS) $(html4_arcmonthlist_la_DEPENDENCIES)
+	$(LINK) -rpath $(pkglibdir) $(html4_arcmonthlist_la_LDFLAGS) $(html4_arcmonthlist_la_OBJECTS) $(html4_arcmonthlist_la_LIBADD) $(LIBS)
+
+html4_arcmonths.la: $(html4_arcmonths_la_OBJECTS) $(html4_arcmonths_la_DEPENDENCIES)
+	$(LINK) -rpath $(pkglibdir) $(html4_arcmonths_la_LDFLAGS) $(html4_arcmonths_la_OBJECTS) $(html4_arcmonths_la_LIBADD) $(LIBS)
+
+html4_arcperthread.la: $(html4_arcperthread_la_OBJECTS) $(html4_arcperthread_la_DEPENDENCIES)
+	$(LINK) -rpath $(pkglibdir) $(html4_arcperthread_la_LDFLAGS) $(html4_arcperthread_la_OBJECTS) $(html4_arcperthread_la_LIBADD) $(LIBS)
+
+html4_arcthread.la: $(html4_arcthread_la_OBJECTS) $(html4_arcthread_la_DEPENDENCIES)
+	$(LINK) -rpath $(pkglibdir) $(html4_arcthread_la_LDFLAGS) $(html4_arcthread_la_OBJECTS) $(html4_arcthread_la_LIBADD) $(LIBS)
+
+html4_arcthreadlist.la: $(html4_arcthreadlist_la_OBJECTS) $(html4_arcthreadlist_la_DEPENDENCIES)
+	$(LINK) -rpath $(pkglibdir) $(html4_arcthreadlist_la_LDFLAGS) $(html4_arcthreadlist_la_OBJECTS) $(html4_arcthreadlist_la_LIBADD) $(LIBS)
+
+html4_arcthreadlist_month.la: $(html4_arcthreadlist_month_la_OBJECTS) $(html4_arcthreadlist_month_la_DEPENDENCIES)
+	$(LINK) -rpath $(pkglibdir) $(html4_arcthreadlist_month_la_LDFLAGS) $(html4_arcthreadlist_month_la_OBJECTS) $(html4_arcthreadlist_month_la_LIBADD) $(LIBS)
+
+html4_arcyearlist.la: $(html4_arcyearlist_la_OBJECTS) $(html4_arcyearlist_la_DEPENDENCIES)
+	$(LINK) -rpath $(pkglibdir) $(html4_arcyearlist_la_LDFLAGS) $(html4_arcyearlist_la_OBJECTS) $(html4_arcyearlist_la_LIBADD) $(LIBS)
+
+html4_arcyears.la: $(html4_arcyears_la_OBJECTS) $(html4_arcyears_la_DEPENDENCIES)
+	$(LINK) -rpath $(pkglibdir) $(html4_arcyears_la_LDFLAGS) $(html4_arcyears_la_OBJECTS) $(html4_arcyears_la_LIBADD) $(LIBS)
+
+html4_blank.la: $(html4_blank_la_OBJECTS) $(html4_blank_la_DEPENDENCIES)
+	$(LINK) -rpath $(pkglibdir) $(html4_blank_la_LDFLAGS) $(html4_blank_la_OBJECTS) $(html4_blank_la_LIBADD) $(LIBS)
+
+html4_cats.la: $(html4_cats_la_OBJECTS) $(html4_cats_la_DEPENDENCIES)
+	$(LINK) -rpath $(pkglibdir) $(html4_cats_la_LDFLAGS) $(html4_cats_la_OBJECTS) $(html4_cats_la_LIBADD) $(LIBS)
+
+html4_chpass.la: $(html4_chpass_la_OBJECTS) $(html4_chpass_la_DEPENDENCIES)
+	$(LINK) -rpath $(pkglibdir) $(html4_chpass_la_LDFLAGS) $(html4_chpass_la_OBJECTS) $(html4_chpass_la_LIBADD) $(LIBS)
+
+html4_chpassok.la: $(html4_chpassok_la_OBJECTS) $(html4_chpassok_la_DEPENDENCIES)
+	$(LINK) -rpath $(pkglibdir) $(html4_chpassok_la_LDFLAGS) $(html4_chpassok_la_OBJECTS) $(html4_chpassok_la_LIBADD) $(LIBS)
+
+html4_errortpl.la: $(html4_errortpl_la_OBJECTS) $(html4_errortpl_la_DEPENDENCIES)
+	$(LINK) -rpath $(pkglibdir) $(html4_errortpl_la_LDFLAGS) $(html4_errortpl_la_OBJECTS) $(html4_errortpl_la_LIBADD) $(LIBS)
+
+html4_fatal.la: $(html4_fatal_la_OBJECTS) $(html4_fatal_la_DEPENDENCIES)
+	$(LINK) -rpath $(pkglibdir) $(html4_fatal_la_LDFLAGS) $(html4_fatal_la_OBJECTS) $(html4_fatal_la_LIBADD) $(LIBS)
+
+html4_forum_begin.la: $(html4_forum_begin_la_OBJECTS) $(html4_forum_begin_la_DEPENDENCIES)
+	$(LINK) -rpath $(pkglibdir) $(html4_forum_begin_la_LDFLAGS) $(html4_forum_begin_la_OBJECTS) $(html4_forum_begin_la_LIBADD) $(LIBS)
+
+html4_forum_end.la: $(html4_forum_end_la_OBJECTS) $(html4_forum_end_la_DEPENDENCIES)
+	$(LINK) -rpath $(pkglibdir) $(html4_forum_end_la_LDFLAGS) $(html4_forum_end_la_OBJECTS) $(html4_forum_end_la_LIBADD) $(LIBS)
+
+html4_forum_posting.la: $(html4_forum_posting_la_OBJECTS) $(html4_forum_posting_la_DEPENDENCIES)
+	$(LINK) -rpath $(pkglibdir) $(html4_forum_posting_la_LDFLAGS) $(html4_forum_posting_la_OBJECTS) $(html4_forum_posting_la_LIBADD) $(LIBS)
+
+html4_forum_thread.la: $(html4_forum_thread_la_OBJECTS) $(html4_forum_thread_la_DEPENDENCIES)
+	$(LINK) -rpath $(pkglibdir) $(html4_forum_thread_la_LDFLAGS) $(html4_forum_thread_la_OBJECTS) $(html4_forum_thread_la_LIBADD) $(LIBS)
+
+html4_frameset.la: $(html4_frameset_la_OBJECTS) $(html4_frameset_la_DEPENDENCIES)
+	$(LINK) -rpath $(pkglibdir) $(html4_frameset_la_LDFLAGS) $(html4_frameset_la_OBJECTS) $(html4_frameset_la_LIBADD) $(LIBS)
+
+html4_post_ok.la: $(html4_post_ok_la_OBJECTS) $(html4_post_ok_la_DEPENDENCIES)
+	$(LINK) -rpath $(pkglibdir) $(html4_post_ok_la_LDFLAGS) $(html4_post_ok_la_OBJECTS) $(html4_post_ok_la_LIBADD) $(LIBS)
+
+html4_setting.la: $(html4_setting_la_OBJECTS) $(html4_setting_la_DEPENDENCIES)
+	$(LINK) -rpath $(pkglibdir) $(html4_setting_la_LDFLAGS) $(html4_setting_la_OBJECTS) $(html4_setting_la_LIBADD) $(LIBS)
+
+html4_thread.la: $(html4_thread_la_OBJECTS) $(html4_thread_la_DEPENDENCIES)
+	$(LINK) -rpath $(pkglibdir) $(html4_thread_la_LDFLAGS) $(html4_thread_la_OBJECTS) $(html4_thread_la_LIBADD) $(LIBS)
+
+html4_unreg.la: $(html4_unreg_la_OBJECTS) $(html4_unreg_la_DEPENDENCIES)
+	$(LINK) -rpath $(pkglibdir) $(html4_unreg_la_LDFLAGS) $(html4_unreg_la_OBJECTS) $(html4_unreg_la_LIBADD) $(LIBS)
+
+html4_unregok.la: $(html4_unregok_la_OBJECTS) $(html4_unregok_la_DEPENDENCIES)
+	$(LINK) -rpath $(pkglibdir) $(html4_unregok_la_LDFLAGS) $(html4_unregok_la_OBJECTS) $(html4_unregok_la_LIBADD) $(LIBS)
+
+html4_updown.la: $(html4_updown_la_OBJECTS) $(html4_updown_la_DEPENDENCIES)
+	$(LINK) -rpath $(pkglibdir) $(html4_updown_la_LDFLAGS) $(html4_updown_la_OBJECTS) $(html4_updown_la_LIBADD) $(LIBS)
+
+html4_useredit.la: $(html4_useredit_la_OBJECTS) $(html4_useredit_la_DEPENDENCIES)
+	$(LINK) -rpath $(pkglibdir) $(html4_useredit_la_LDFLAGS) $(html4_useredit_la_OBJECTS) $(html4_useredit_la_LIBADD) $(LIBS)
+
+html4_usereditok.la: $(html4_usereditok_la_OBJECTS) $(html4_usereditok_la_DEPENDENCIES)
+	$(LINK) -rpath $(pkglibdir) $(html4_usereditok_la_LDFLAGS) $(html4_usereditok_la_OBJECTS) $(html4_usereditok_la_LIBADD) $(LIBS)
+
+html4_userregister.la: $(html4_userregister_la_OBJECTS) $(html4_userregister_la_DEPENDENCIES)
+	$(LINK) -rpath $(pkglibdir) $(html4_userregister_la_LDFLAGS) $(html4_userregister_la_OBJECTS) $(html4_userregister_la_LIBADD) $(LIBS)
+
+html4_userregok.la: $(html4_userregok_la_OBJECTS) $(html4_userregok_la_DEPENDENCIES)
+	$(LINK) -rpath $(pkglibdir) $(html4_userregok_la_LDFLAGS) $(html4_userregok_la_OBJECTS) $(html4_userregok_la_LIBADD) $(LIBS)
+
+html4_usersettings.la: $(html4_usersettings_la_OBJECTS) $(html4_usersettings_la_DEPENDENCIES)
+	$(LINK) -rpath $(pkglibdir) $(html4_usersettings_la_LDFLAGS) $(html4_usersettings_la_OBJECTS) $(html4_usersettings_la_LIBADD) $(LIBS)
+
+html4_pageentry.la: $(html4_pageentry_la_OBJECTS) $(html4_pageentry_la_DEPENDENCIES)
+	$(LINK) -rpath $(pkglibdir) $(html4_pageentry_la_LDFLAGS) $(html4_pageentry_la_OBJECTS) $(html4_pageentry_la_LIBADD) $(LIBS)
+
+html4_section.la: $(html4_section_la_OBJECTS) $(html4_section_la_DEPENDENCIES)
+	$(LINK) -rpath $(pkglibdir) $(html4_section_la_LDFLAGS) $(html4_section_la_OBJECTS) $(html4_section_la_LIBADD) $(LIBS)
+
+tags: TAGS
+
+ID: $(HEADERS) $(SOURCES) $(LISP)
+	list='$(SOURCES) $(HEADERS)'; \
+	unique=`for i in $$list; do echo $$i; done | \
+	  awk '    { files[$$0] = 1; } \
+	       END { for (i in files) print i; }'`; \
+	here=`pwd` && cd $(srcdir) \
+	  && mkid -f$$here/ID $$unique $(LISP)
+
+TAGS:  $(HEADERS) $(SOURCES)  $(TAGS_DEPENDENCIES) $(LISP)
+	tags=; \
+	here=`pwd`; \
+	list='$(SOURCES) $(HEADERS)'; \
+	unique=`for i in $$list; do echo $$i; done | \
+	  awk '    { files[$$0] = 1; } \
+	       END { for (i in files) print i; }'`; \
+	test -z "$(ETAGS_ARGS)$$unique$(LISP)$$tags" \
+	  || (cd $(srcdir) && etags $(ETAGS_ARGS) $$tags  $$unique $(LISP) -o $$here/TAGS)
+
+mostlyclean-tags:
+
+clean-tags:
+
+distclean-tags:
+	-rm -f TAGS ID
+
+maintainer-clean-tags:
+
+distdir = $(top_builddir)/$(PACKAGE)-$(VERSION)/$(subdir)
+
+subdir = cgi-shared/config/templates/tpl_html4
+
+distdir: $(DISTFILES)
+	here=`cd $(top_builddir) && pwd`; \
+	top_distdir=`cd $(top_distdir) && pwd`; \
+	distdir=`cd $(distdir) && pwd`; \
+	cd $(top_srcdir) \
+	  && $(AUTOMAKE) --include-deps --build-dir=$$here --srcdir-name=$(top_srcdir) --output-dir=$$top_distdir --gnu cgi-shared/config/templates/tpl_html4/Makefile
+	@for file in $(DISTFILES); do \
+	  d=$(srcdir); \
+	  if test -d $$d/$$file; then \
+	    cp -pr $$d/$$file $(distdir)/$$file; \
+	  else \
+	    test -f $(distdir)/$$file \
+	    || ln $$d/$$file $(distdir)/$$file 2> /dev/null \
+	    || cp -p $$d/$$file $(distdir)/$$file || :; \
+	  fi; \
+	done
+
+DEPS_MAGIC := $(shell mkdir .deps > /dev/null 2>&1 || :)
+
+-include $(DEP_FILES)
+
+mostlyclean-depend:
+
+clean-depend:
+
+distclean-depend:
+	-rm -rf .deps
+
+maintainer-clean-depend:
+
+%.o: %.c
+	@echo '$(COMPILE) -c $<'; \
+	$(COMPILE) -Wp,-MD,.deps/$(*F).pp -c $<
+	@-cp .deps/$(*F).pp .deps/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*F).P; \
+	rm .deps/$(*F).pp
+
+%.lo: %.c
+	@echo '$(LTCOMPILE) -c $<'; \
+	$(LTCOMPILE) -Wp,-MD,.deps/$(*F).pp -c $<
+	@-sed -e 's/^\([^:]*\)\.o[ 	]*:/\1.lo \1.o :/' \
+	  < .deps/$(*F).pp > .deps/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*F).P; \
+	rm -f .deps/$(*F).pp
+info-am:
+info: info-am
+dvi-am:
+dvi: dvi-am
+check-am: all-am
+check: check-am
+installcheck-am:
+installcheck: installcheck-am
+install-exec-am: install-pkglibLTLIBRARIES
+install-exec: install-exec-am
+
+install-data-am:
+install-data: install-data-am
+
+install-am: all-am
+	@$(MAKE) $(AM_MAKEFLAGS) install-exec-am install-data-am
+install: install-am
+uninstall-am: uninstall-pkglibLTLIBRARIES
+uninstall: uninstall-am
+all-am: Makefile $(LTLIBRARIES)
+all-redirect: all-am
+install-strip:
+	$(MAKE) $(AM_MAKEFLAGS) AM_INSTALL_PROGRAM_FLAGS=-s install
+installdirs:
+	$(mkinstalldirs)  $(DESTDIR)$(pkglibdir)
+
+
+mostlyclean-generic:
+
+clean-generic:
+
+distclean-generic:
+	-rm -f Makefile $(CONFIG_CLEAN_FILES)
+	-rm -f config.cache config.log stamp-h stamp-h[0-9]*
+
+maintainer-clean-generic:
+mostlyclean-am:  mostlyclean-pkglibLTLIBRARIES mostlyclean-compile \
+		mostlyclean-libtool mostlyclean-tags mostlyclean-depend \
+		mostlyclean-generic
+
+mostlyclean: mostlyclean-am
+
+clean-am:  clean-pkglibLTLIBRARIES clean-compile clean-libtool \
+		clean-tags clean-depend clean-generic mostlyclean-am
+
+clean: clean-am
+
+distclean-am:  distclean-pkglibLTLIBRARIES distclean-compile \
+		distclean-libtool distclean-tags distclean-depend \
+		distclean-generic clean-am
+	-rm -f libtool
+
+distclean: distclean-am
+
+maintainer-clean-am:  maintainer-clean-pkglibLTLIBRARIES \
+		maintainer-clean-compile maintainer-clean-libtool \
+		maintainer-clean-tags maintainer-clean-depend \
+		maintainer-clean-generic distclean-am
+	@echo "This command is intended for maintainers to use;"
+	@echo "it deletes files that may require special tools to rebuild."
+
+maintainer-clean: maintainer-clean-am
+
+.PHONY: mostlyclean-pkglibLTLIBRARIES distclean-pkglibLTLIBRARIES \
+clean-pkglibLTLIBRARIES maintainer-clean-pkglibLTLIBRARIES \
+uninstall-pkglibLTLIBRARIES install-pkglibLTLIBRARIES \
+mostlyclean-compile distclean-compile clean-compile \
+maintainer-clean-compile mostlyclean-libtool distclean-libtool \
+clean-libtool maintainer-clean-libtool tags mostlyclean-tags \
+distclean-tags clean-tags maintainer-clean-tags distdir \
+mostlyclean-depend distclean-depend clean-depend \
+maintainer-clean-depend info-am info dvi-am dvi check check-am \
+installcheck-am installcheck install-exec-am install-exec \
+install-data-am install-data install-am install uninstall-am uninstall \
+all-redirect all-am all installdirs mostlyclean-generic \
+distclean-generic clean-generic maintainer-clean-generic clean \
+mostlyclean distclean maintainer-clean
+
+
+.html.c:
+	$(top_builddir)/template_gen.pl $<
+
+# eof
+
+# Tell versions [3.59,3.63) of GNU make to not export all variables.
+# Otherwise a system limit (for SysV at least) may be exceeded.
+.NOEXPORT:

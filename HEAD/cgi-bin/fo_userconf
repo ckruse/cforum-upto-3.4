@@ -1,0 +1,875 @@
+#!/usr/bin/perl -w
+
+# {{{ initial comments
+#
+# $LastChangedDate$
+# $LastChangedRevision$
+# $LastChangedBy$
+#
+# }}}
+
+# {{{ program header
+
+#
+use strict;
+use vars qw($Bin $Config $Script $Plugins $UserName);
+
+BEGIN {
+  my $null = $0; $null =~ tr!\\!/!; # for win :-(
+  $Bin     = ($null =~ /^(.*)\/.*$/)? $1 : '.';
+  $Script  = ($null =~ /^.*\/(.*)$/)? $1 : $null;
+
+  # get the path to the configuration
+  $Config = $ENV{CF_CONF_DIR} or die 'Could not get config path';
+
+  $Plugins = {};
+  $UserName = '';
+}
+
+use lib ($Config.'..', $Config.'../lib');
+
+sub VERSION {(q$Revision: 1.24 $ =~ /([\d.]+)\s*$/)[0] or '0.0'}
+
+use CGI;
+use CGI::Carp qw/fatalsToBrowser/;
+
+use DBI;
+
+use XML::GDOME;
+
+use HTML::Entities;
+use CForum::Template;
+
+use Storable qw(dclone);
+use POSIX qw/mktime/;
+use File::Path;
+
+use ForumUtils qw/read_configuration get_node_data get_template get_error recode uniquify_params get_config_file create_directory_structure/;
+use CheckRFC;
+
+# }}}
+
+# {{{ fatal
+sub fatal {
+  my $err = shift;
+
+  print <<HTML;
+Content-Type: text/html
+
+$err
+HTML
+
+  exit;
+}
+# }}}
+
+# {{{ get_argument_values
+sub get_argument_values {
+  my $arg     = shift;
+  my $default = shift;
+  my ($fo_default_conf,$fo_view_conf,$fo_userconf_conf,$user_config) = @_;
+
+  my $fvalues = ($arg->getElementsByTagName('formvalues'))[0];
+
+  if($fvalues) {
+    if($fvalues->hasChildNodes) {
+      my @values = $fvalues->getElementsByTagName('value');
+      my @ret    = ();
+
+      foreach(@values) {
+        my $val = $_->getAttribute('val');
+        my $txt = get_node_data($_) || $val;
+        push @ret,[$val,$txt];
+
+        if($_->getAttribute('default') eq 'yes') {
+          $$default = $val;
+        }
+      }
+
+      return @ret;
+    }
+    else {
+      my $loc = $fvalues->getAttribute('location');
+      my $dir = $fvalues->getAttribute('directive');
+
+      if($loc eq 'fo_default.conf') {
+        return exists $fo_default_conf->{$dir} ? @{$fo_default_conf->{$dir}} : ();
+      }
+      elsif($loc eq 'fo_view.conf') {
+        return exists $fo_view_conf->{$dir} ? @{$fo_view_conf->{$dir}} : ();
+      }
+      elsif($loc eq 'fo_userconf.conf') {
+        return exists $fo_userconf_conf->{$dir} ? @{$fo_userconf_conf->{$dir}} : ();
+      }
+      else {
+        return exists $user_config->{$dir} ? @{$user_config->{$dir}} : ();
+      }
+    }
+  }
+
+  return ();
+}
+# }}}
+
+# {{{ htmlize
+sub htmlize {
+  my $dname    = shift;
+  my $arg      = shift;
+  my $cgi      = shift;
+  my $cfgval   = shift;
+
+  my ($fo_default_conf,$fo_view_conf,$fo_userconf_conf,$user_config) = @_;
+
+  my $default  = '';
+  my $fname    = $arg->getAttribute('paramname');
+  my $type     = uc $arg->getAttribute('type');
+  my $question = recode($fo_default_conf,get_node_data(($arg->getElementsByTagName('question'))[0]));
+  my $element  = '';
+  my $multiple = lc($arg->getAttribute('multiple') || 'no');
+  my @fvals    = get_argument_values($arg,\$default,$fo_default_conf,$fo_view_conf,$fo_userconf_conf,$user_config);
+
+  my @vals     = $cgi->param($fname);
+  my %vals     = ();
+  my $val      = '';
+
+  unless(@vals) {
+    @vals = ($default) if $default;
+    @vals = ($cfgval) if $cfgval;
+  }
+
+  if($multiple eq 'yes' || $type eq 'CHECKBOX') {
+    @vals = split /,/,$vals[0] unless $#vals;
+    $vals{$_} = 1 foreach @vals;
+  }
+  else {
+    $val      = $vals[0];
+  }
+
+  if($val) {
+    $val   =~ s/\\n/\n/g;
+    $val   =~ s/\\"/"/g;
+  }
+  if(@vals) {
+    foreach(@vals) {
+      s/\\n/\n/g;
+      s/\\"/"/g;
+    }
+  }
+
+  if($arg->getAttribute('parse') eq 'date' && $val) {
+    my ($sec,$min,$hour,$day,$mon,$year) = localtime $val;
+
+    $mon  += 1;
+    $year += 1900;
+
+    $val = sprintf('%02d. %02d. %4d %02d:%02d:%02d',$day,$mon,$year,$hour,$min,$sec);
+  }
+
+  if($type eq 'TEXT') {
+    $element = '<input type="text" name="'.$fname.'" value="'.recode($fo_default_conf,$val).'">';
+  }
+  elsif($type eq 'RADIO') {
+    foreach my $v (@fvals) {
+      $element .= '<input type="radio" name="'.$fname.'" value="'.recode($fo_default_conf,$v->[0]).'" '.($v->[0] eq $val ? ' checked' : '').'> '.recode($fo_default_conf,$v->[1] || $v->[0]).'<br>';
+    }
+
+  }
+  elsif($type eq 'CHECKBOX') {
+    foreach my $v (@fvals) {
+      $element .= '<input type="checkbox" name="'.$fname.'" value="'.recode($fo_default_conf,$v->[0]).'"'.($vals{$v->[0]} ? ' checked' : '').'> '.recode($fo_default_conf,$v->[1] || $v->[0]).'<br>';
+    }
+  }
+  elsif($type eq 'SELECT') {
+    $element = '<select name="'.$fname.'"';
+    $element .= ' size="5" multiple="yes"' if $multiple eq 'yes';
+    $element .= '>';
+
+    if($multiple eq 'no') {
+      foreach my $v (@fvals) {
+        $element .= '<option value="'.recode($fo_default_conf,$v->[0]).'"'.($v->[0] eq $val ? ' selected' : '').'>'.recode($fo_default_conf,$v->[1] || $v->[0]).'</option>';
+      }
+    }
+    else {
+      foreach my $v (@fvals) {
+        $element .= '<option value="'.recode($fo_default_conf,$v->[0]).'"'.($vals{$v->[0]} ? ' selected' : '').'>'.recode($fo_default_conf,$v->[1] || $v->[0]).'</option>';
+      }
+    }
+
+    $element .= '</select>';
+  }
+  elsif($type eq 'TEXTAREA') {
+    $element = '<textarea name="'.$fname.'">'.recode($fo_default_conf,$val).'</textarea>';
+  }
+  else {
+    die 'Directive '.$dname.': unknown type '.$type;
+  }
+
+  return ($question,$element);
+}
+# }}}
+
+# {{{ generate_edit_output
+
+sub generate_edit_output {
+  my $cgi              = shift;
+  my $fo_default_conf  = shift;
+  my $fo_view_conf     = shift;
+  my $fo_userconf_conf = shift;
+  my $user_config      = shift;
+
+  my $err              = shift;
+
+  my $page             = $cgi->param('p');
+  my $doit             = 1;
+
+  my $tpl              = new CForum::Template(get_template($fo_default_conf,$user_config,$fo_userconf_conf->{Edit}->[0]->[0]));
+  my $txt              = '';
+
+  my $doc   = XML::GDOME->createDocFromURI($fo_userconf_conf->{ModuleConfig}->[0]->[0]) or die $!;
+
+  if($page) {
+    # hmpf, findnodes doesn't work properly for /config/page@id="$page", nor for /config/page/@id="$page", neither
+    # for both versions without quotations
+    my ($node) = grep { $_->getAttribute('id') eq $page } $doc->findnodes('/config/page');
+
+    if($node) {
+      # Ooookey, we don't want to bother the user
+      $doit = 0;
+
+      my $i        = 0;
+      my $ud       = 0;
+      my $setting  = new CForum::Template(get_template($fo_default_conf,$user_config,$fo_userconf_conf->{EditEntry}->[0]->[0]));
+      my $section  = new CForum::Template(get_template($fo_default_conf,$user_config,$fo_userconf_conf->{SectEntry}->[0]->[0]));
+      my $updown   = new CForum::Template(get_template($fo_default_conf,$user_config,$fo_userconf_conf->{UpDown}->[0]->[0]));
+      my @sections = $node->findnodes('./section');
+
+      foreach my $sect (@sections) {
+        my @nodes  = $sect->findnodes('./directive');
+        my $tmptxt = '';
+        $i++;
+
+        if($ud) {
+          $txt .= $updown->parseToMem;
+          $ud = 0;
+        }
+
+        foreach my $directive (@nodes) {
+          my $dname     = $directive->getAttribute('name');
+          my @arguments = $directive->getElementsByTagName('argument');
+          my $i         = 0;
+
+          foreach my $arg (@arguments) {
+            my $pname = $arg->getAttribute('paramname');
+            my ($question,$arg) = htmlize($dname,$arg,$cgi,$user_config->{$dname}->[0]->[$i++],$fo_default_conf,$fo_view_conf,$fo_userconf_conf,$user_config);
+
+            $setting->setVar('empty','no');
+            $setting->setVar('formentry',$arg);
+            $setting->setVar('question',$question);
+            $tmptxt .= $setting->parseToMem;
+
+            $setting->setVar('empty','yes');
+            $tmptxt .= $setting->parseToMem;
+          }
+        }
+
+        $section->setVar('title',recode($fo_default_conf,$sect->getAttribute('name')));
+        $section->setVar('anchor','a'.$i);
+        $section->setVar('content',$tmptxt);
+
+        $txt .= $section->parseToMem;
+        $ud = 1;
+      }
+    }
+  }
+
+  if($doit) {
+    my @nodes = $doc->findnodes('/config/page');
+
+    my $pagetpl = new CForum::Template(get_template($fo_default_conf,$user_config,$fo_userconf_conf->{PageEntry}->[0]->[0]));
+
+    foreach my $page (@nodes) {
+      $pagetpl->setVar('title' => recode($fo_default_conf,$page->getAttribute('title')));
+      $pagetpl->setVar('id' => $page->getAttribute('id'));
+
+      $txt .= $pagetpl->parseToMem;
+    }
+
+    $tpl->setVar('page','1');
+  }
+
+  $tpl->setVar('p',$page) if $page;
+  $tpl->setVar('forumbase',recode($fo_default_conf,$fo_default_conf->{UBaseURL}->[0]->[0]));
+  $tpl->setVar('script',recode($fo_default_conf,$fo_default_conf->{UserConfig}->[0]->[0]));
+  $tpl->setVar('editcontent',$txt);
+  $tpl->setVar('error',recode($fo_default_conf,$err)) if defined $err;
+  $tpl->setVar('charset',$fo_default_conf->{ExternCharset}->[0]->[0]);
+  $tpl->setVar('acceptcharset',$fo_default_conf->{ExternCharset}->[0]->[0].', UTF-8');
+
+  print $cgi->header(-type => 'text/html; charset='.$fo_default_conf->{ExternCharset}->[0]->[0]),$tpl->parseToMem;
+}
+
+# }}}
+
+# {{{ validate_input
+sub validate_input {
+  my $val   = shift;
+  my $dname = shift;
+  my $cfg   = shift;
+
+  if(exists $cfg->{MinVal}) {
+    my ($minval) = grep { $_->[0] eq $dname } @{$cfg->{MinVal}};
+    return if defined $minval && $minval->[1] > $val;
+  }
+
+  if(exists $cfg->{MaxVal}) {
+    my ($maxval) = grep { $_->[0] eq $dname } @{$cfg->{MaxVal}};
+    return if defined $maxval && $maxval->[1] < $val;
+  }
+
+  if(exists $cfg->{MinLength}) {
+    my ($minlen) = grep { $_->[0] eq $dname } @{$cfg->{MinLength}};
+    return if defined $minlen && $minlen->[1] > length($val);
+  }
+
+  if(exists $cfg->{MaxVal}) {
+    my ($maxlen) = grep { $_->[0] eq $dname } @{$cfg->{MaxLength}};
+    return if defined $maxlen && $maxlen->[1] < length($val);
+  }
+
+  return 1;
+}
+# }}}
+
+# {{{ show_register_form
+
+sub show_register_form {
+  my $cgi              = shift;
+  my $fo_default_conf  = shift;
+  my $fo_view_conf     = shift;
+  my $fo_userconf_conf = shift;
+  my $user_config      = shift;
+  my $err              = shift;
+
+  my $tpl = new CForum::Template(get_template($fo_default_conf,$user_config,$fo_userconf_conf->{Register}->[0]->[0])) or die $@;
+
+  $tpl->setVar('forumbase',recode($fo_default_conf,$fo_default_conf->{BaseURL}->[0]->[0]));
+  $tpl->setVar('script',recode($fo_default_conf,$fo_default_conf->{UserRegister}->[0]->[0]));
+  $tpl->setVar('error',recode($fo_default_conf,$err)) if defined $err;
+  $tpl->setVar('charset',$fo_default_conf->{ExternCharset}->[0]->[0]);
+  $tpl->setVar('acceptcharset',$fo_default_conf->{ExternCharset}->[0]->[0].', UTF-8');
+
+  $tpl->setVar($_,recode($fo_default_conf,$cgi->param($_))) foreach $cgi->param;
+
+  print $cgi->header(-type => 'text/html; charset='.$fo_default_conf->{ExternCharset}->[0]->[0]),$tpl->parseToMem;
+}
+
+# }}}
+
+my $fo_default_conf  = read_configuration($Config.'fo_default.conf')  or die $!;
+my $fo_view_conf     = read_configuration($Config.'fo_view.conf')     or die $!;
+my $fo_userconf_conf = read_configuration($Config.'fo_userconf.conf') or die $!;
+my $user_config      = {};
+
+# {{{ load plugins and authenticate
+foreach(@{$fo_userconf_conf->{AddModule}}) {
+  eval "use $_->[0];";
+  die $@ if $@;
+}
+
+foreach(@{$Plugins->{auth}}) {
+  last if &$_($fo_default_conf,$fo_view_conf,$fo_userconf_conf);
+}
+# }}}
+
+my $cgi              = new CGI;
+my $action           = $cgi->param('a') || 'view';
+
+if($cgi->param('cs')) {
+  my $err = uniquify_params($fo_default_conf,$cgi,'cs');
+  fatal(recode($fo_default_conf,$err)) if $err;
+}
+
+if($UserName) {
+  my $cfile = get_config_file($fo_default_conf,$UserName);
+
+  if($cfile) {
+    $user_config = read_configuration($cfile) or die $!;
+  }
+  else {
+    undef $UserName;
+  }
+}
+else {
+  $action = '' unless $action eq 'register';
+}
+
+if($action eq 'edit') {
+  generate_edit_output($cgi,$fo_default_conf,$fo_view_conf,$fo_userconf_conf,$user_config);
+}
+elsif($action eq 'save') {
+  my $own_ucfg = dclone($user_config);
+
+  my $page  = $cgi->param('p');
+
+  unless($page) {
+    generate_edit_output($cgi,$fo_default_conf,$fo_view_conf,$fo_userconf_conf,$user_config);
+    exit;
+  }
+
+  my $doc      = XML::GDOME->createDocFromURI($fo_userconf_conf->{ModuleConfig}->[0]->[0]) or die $!;
+  my ($pgnode) = grep { $_->getAttribute('id') eq $page } $doc->findnodes('/config/page');
+  my @nodes    = $pgnode->findnodes('./section/directive');
+
+  my @tmp      = $doc->findnodes('/config/directive');
+
+  push @nodes,@tmp if @tmp;
+
+  foreach my $directive (@nodes) {
+    next if $directive->getAttribute('invisible') eq 'yes';
+
+    my $dname     = $directive->getAttribute('name');
+    my @arguments = $directive->getElementsByTagName('argument');
+    my $i         = 0;
+
+    foreach my $arg (@arguments) {
+      my $pname    = $arg->getAttribute('paramname');
+      my $vali     = ($arg->getElementsByTagName('validate'))[0];
+      my $validate = get_node_data($vali);
+      my $val      = join ',',$cgi->param($pname);
+      my $enc      = $arg->getAttribute('encode');
+
+      if(!$val || $val eq 'default') {
+        if($i == 0) {
+          delete $own_ucfg->{$dname} if exists $own_ucfg->{$dname};
+        }
+        else {
+          $own_ucfg->{$dname}->[0]->[$i] = '' if exists $own_ucfg->{$dname};
+        }
+
+        $i++;
+        next;
+      }
+
+      # we deleted the first value
+      unless(exists $own_ucfg->{$dname}) {
+        $own_ucfg->{$dname} = [ [ ] ];
+        if($enc eq 'html') {
+          $own_ucfg->{$dname}->[0]->[$i] = encode_entities($val);
+        }
+        else {
+          $own_ucfg->{$dname}->[0]->[$i] = $val;
+        }
+      }
+
+      # lets validate the input; if no validate content is given, we look for the
+      # 'type' attribute and use a predefined validation
+      if($validate) {
+        if($val !~ /$validate/ || !validate_input($val,$dname,$fo_userconf_conf)) {
+          my $err = $fo_default_conf,get_node_data(($arg->getElementsByTagName('error'))[0]);
+          generate_edit_output($cgi,$fo_default_conf,$fo_view_conf,$fo_userconf_conf,$user_config,$err);
+          exit;
+        }
+      }
+      else {
+        my $type = $vali->getAttribute('type');
+
+        # http-url is a specialization for 'url'
+        if($type eq 'http-url') {
+          if(!is_URL($val,'http') || !validate_input($val,$dname,$fo_userconf_conf)) {
+            my $err = get_node_data(($arg->getElementsByTagName('error'))[0]);
+            generate_edit_output($cgi,$fo_default_conf,$fo_view_conf,$fo_userconf_conf,$user_config,$err);
+            exit;
+          }
+        }
+        # url means, *all* urls, inkl. gopher and so on
+        elsif($type eq 'url') {
+          if(!is_URL($val,':ALL') || !validate_input($val,$dname,$fo_userconf_conf)) {
+            my $err = get_node_data(($arg->getElementsByTagName('error'))[0]);
+            generate_edit_output($cgi,$fo_default_conf,$fo_view_conf,$fo_userconf_conf,$user_config,$err);
+            exit;
+          }
+        }
+        # email means, input is a mail address
+        elsif($type eq 'email') {
+          if(!is_email($val) || !validate_input($val,$dname,$fo_userconf_conf)) {
+            my $err = get_node_data(($arg->getElementsByTagName('error'))[0]);
+            generate_edit_output($cgi,$fo_default_conf,$fo_view_conf,$fo_userconf_conf,$user_config,$err);
+            exit;
+          }
+        }
+        else {
+          die 'unknown type "'.$type.'" for directive "'.$dname.'"';
+        }
+      }
+
+      if($arg->getAttribute('parse') eq 'date') {
+        unless($val =~ /^(\d+)\.\s*(\d+)\.\s*(\d{2,4})(?:\s*(\d+):(\d+)(?::(\d+))?)?$/) {
+          my $err = get_node_data(($arg->getElementsByTagName('error'))[0]);
+          generate_edit_output($cgi,$fo_default_conf,$fo_view_conf,$fo_userconf_conf,$user_config,$err);
+          exit;
+        }
+
+        my ($day,$month,$year,$hour,$min,$sec) = ($1,$2,$3,$4||0,$5||0,$6||0);
+
+        $year  -= 1900 if $year > 1900;
+        $month -= 1;
+
+        $val   = mktime($sec,$min,$hour,$day,$month,$year);
+      }
+
+      if($enc eq 'html') {
+        $own_ucfg->{$dname}->[0]->[$i++] = recode($fo_default_conf,$val);
+      }
+      else {
+        $own_ucfg->{$dname}->[0]->[$i++] = $val;
+      }
+    }
+  }
+
+  #
+  # run config plugins
+  #
+  foreach(@{$Plugins->{writeconf}}) {
+    &$_($fo_default_conf,$fo_view_conf,$fo_userconf_conf,$user_config,$own_ucfg,$cgi);
+  }
+
+  # all checks are ok, lets write the config file
+  my $cfile = get_config_file($fo_default_conf,$UserName);
+  open DAT,'>'.$cfile or die fatal($!);
+
+  foreach my $dir (keys %{$own_ucfg}) {
+    next if !$own_ucfg->{$dir} || !@{$own_ucfg->{$dir}};
+
+    print DAT $dir;
+    foreach my $entry (@{$own_ucfg->{$dir}}) {
+      foreach(@{$entry}) {
+        my $val = $_ || '';
+
+        $val =~ s/\015\012|\015|\012/\\n/sg;
+        $val =~ s/"/\\"/g;
+
+        print DAT ' "'.$val.'"';
+      }
+    }
+
+    print DAT "\n";
+  }
+
+  close DAT;
+
+
+  my $tpl = new CForum::Template(get_template($fo_default_conf,$user_config,$fo_userconf_conf->{EditOk}->[0]->[0])) or die $!;
+
+  $tpl->setVar('forumbase',recode($fo_default_conf,$fo_default_conf->{UBaseURL}->[0]->[0]));
+  $tpl->setVar('script',recode($fo_default_conf,$fo_default_conf->{UserConfig}->[0]->[0]));
+  $tpl->setVar('charset',$fo_default_conf->{ExternCharset}->[0]->[0]);
+  $tpl->setVar('acceptcharset',$fo_default_conf->{ExternCharset}->[0]->[0].', UTF-8');
+
+  print $cgi->header(-type => 'text/html; charset='.$fo_default_conf->{ExternCharset}->[0]->[0]),$tpl->parseToMem;
+}
+elsif($action eq 'changepw') {
+  my $form = 1;
+  my $err  = undef;
+
+  if($cgi->param('p') && $cgi->param('p1')) {
+    my $p = $cgi->param('p');
+
+    if($p eq $cgi->param('p1')) {
+      $form = 0;
+
+      my ($min_passwd) = grep { $_->[0] eq 'Password' } @{$fo_userconf_conf->{MinLength}};
+
+      if($p !~ /^[a-zA-Z0-9!\"§$_<>.%&\\\/()=?-]+$/ || $p !~ /\d/ || $p !~ /[a-zA-Z]/) {
+        $form = 1;
+        $err  = get_error($fo_default_conf,'pass','invalid');
+      }
+
+      if(length($p) < $min_passwd->[1]) {
+        $form = 1;
+        $err  = sprintf(get_error($fo_default_conf,'pass','short'),$min_passwd->[1]);
+      }
+
+      if(!$form) {
+        my $connstr = 'DBI:'.$fo_userconf_conf->{SQLDriver}->[0]->[0].':dbname='.$fo_userconf_conf->{SQLDatabase}->[0]->[0].
+                      ($fo_userconf_conf->{SQLHost} ? ';host='.$fo_userconf_conf->{SQLHost}->[0]->[0] : '').
+                      ($fo_userconf_conf->{SQLPort} ? ';port='.$fo_userconf_conf->{SQLPort}->[0]->[0] : '');
+
+        my $dbh     = DBI->connect($connstr,$fo_userconf_conf->{SQLUser}->[0]->[0],$fo_userconf_conf->{SQLPass}->[0]->[0]);
+        die 'could not connect to database: '.DBI::errstr unless $dbh;
+
+        # the password and the username are only ASCII, so it doesn't need a recode
+        # to another charset
+        my $dbq = $dbh->prepare('UPDATE auth SET passwd = ? WHERE username = ?');
+        $dbq->execute($cgi->param('p'),$UserName) or die 'error executing query: '.$dbh->errstr;
+        $dbh->disconnect;
+      }
+    }
+    else {
+      $err = get_error($fo_default_conf,'pass','match');
+    }
+  }
+
+  if($form) {
+    my $tpl = new CForum::Template(get_template($fo_default_conf,$user_config,$fo_userconf_conf->{ChangePass}->[0]->[0]));
+
+    $tpl->setVar('script',recode($fo_default_conf,$fo_default_conf->{UserConfig}->[0]->[0]));
+    $tpl->setVar('forumbase',recode($fo_default_conf,$fo_default_conf->{UBaseURL}->[0]->[0]));
+    $tpl->setVar('error',recode($fo_default_conf,$err)) if $err;
+    $tpl->setVar('charset',$fo_default_conf->{ExternCharset}->[0]->[0]);
+    $tpl->setVar('acceptcharset',$fo_default_conf->{ExternCharset}->[0]->[0].', UTF-8');
+
+    print $cgi->header(-type => 'text/html; charset='.$fo_default_conf->{ExternCharset}->[0]->[0]),$tpl->parseToMem;
+  }
+  else {
+    my $tpl = new CForum::Template(get_template($fo_default_conf,$user_config,$fo_userconf_conf->{ChangePassOk}->[0]->[0]));
+    $tpl->setVar('script',recode($fo_default_conf,$fo_default_conf->{UserConfig}->[0]->[0]));
+    $tpl->setVar('forumbase',recode($fo_default_conf,$fo_default_conf->{UBaseURL}->[0]->[0]));
+    $tpl->setVar('charset',$fo_default_conf->{ExternCharset}->[0]->[0]);
+    $tpl->setVar('acceptcharset',$fo_default_conf->{ExternCharset}->[0]->[0].', UTF-8');
+
+    print $cgi->header(-type => 'text/html; charset='.$fo_default_conf->{ExternCharset}->[0]->[0]),$tpl->parseToMem;
+  }
+}
+elsif($action eq 'unreg') {
+  my $tpl = new CForum::Template(get_template($fo_default_conf,$user_config,$fo_userconf_conf->{Unregister}->[0]->[0]));
+  $tpl->setVar('script',recode($fo_default_conf,$fo_default_conf->{UserConfig}->[0]->[0]));
+  $tpl->setVar('forumbase',recode($fo_default_conf,$fo_default_conf->{UBaseURL}->[0]->[0]));
+  $tpl->setVar('charset',$fo_default_conf->{ExternCharset}->[0]->[0]);
+  $tpl->setVar('acceptcharset',$fo_default_conf->{ExternCharset}->[0]->[0].', UTF-8');
+
+  print $cgi->header(-type => 'text/html; charset='.$fo_default_conf->{ExternCharset}->[0]->[0]),$tpl->parseToMem;
+}
+elsif($action eq 'unregok') {
+  my $connstr = 'DBI:'.$fo_userconf_conf->{SQLDriver}->[0]->[0].':dbname='.$fo_userconf_conf->{SQLDatabase}->[0]->[0].
+       ($fo_userconf_conf->{SQLHost} ? ';host='.$fo_userconf_conf->{SQLHost}->[0]->[0] : '').
+       ($fo_userconf_conf->{SQLPort} ? ';port='.$fo_userconf_conf->{SQLPort}->[0]->[0] : '');
+
+  my $dbh     = DBI->connect($connstr,$fo_userconf_conf->{SQLUser}->[0]->[0],$fo_userconf_conf->{SQLPass}->[0]->[0]);
+        die 'could not connect to database: '.DBI::errstr unless $dbh;
+
+  #
+  # run config plugins
+  #
+  foreach(@{$Plugins->{unregister}}) {
+    &$_($fo_default_conf,$fo_view_conf,$fo_userconf_conf,$user_config);
+  }
+
+  my $cfile = get_config_file($fo_default_conf,$UserName);
+  my $dir   = $cfile;
+  $dir =~ s!\.conf$!!;
+
+  rmtree($dir) or die $!;
+  unlink($cfile) or die $!;
+
+  my $dbq = $dbh->prepare('DELETE FROM auth WHERE username = ?');
+  $dbq->execute($UserName) or die 'Error in sql: '.$dbh->errstr;
+  $dbh->disconnect;
+
+  my $tpl = new CForum::Template(get_template($fo_default_conf,$user_config,$fo_userconf_conf->{UnregisterOk}->[0]->[0]));
+  $tpl->setVar('script',recode($fo_default_conf,$fo_default_conf->{UserRegister}->[0]->[0]));
+  $tpl->setVar('forumbase',recode($fo_default_conf,$fo_default_conf->{BaseURL}->[0]->[0]));
+  $tpl->setVar('charset',$fo_default_conf->{ExternCharset}->[0]->[0]);
+  $tpl->setVar('acceptcharset',$fo_default_conf->{ExternCharset}->[0]->[0].', UTF-8');
+
+  print $cgi->header(-type => 'text/html; charset='.$fo_default_conf->{ExternCharset}->[0]->[0]),$tpl->parseToMem;
+}
+elsif($action eq 'sendpw') {
+  if($cgi->param('email')) {
+  }
+  else {
+    my $tpl = new CForum::Template(get_template($fo_default_conf,$user_config,$fo_userconf_conf->{SendPass}->[0]->[0]));
+
+    $tpl->setVar('script',recode($fo_default_conf,$fo_default_conf->{UserRegister}->[0]->[0]));
+    $tpl->setVar('forumbase',recode($fo_default_conf,$fo_default_conf->{BaseURL}->[0]->[0]));
+    $tpl->setVar('charset',$fo_default_conf->{ExternCharset}->[0]->[0]);
+    $tpl->setVar('acceptcharset',$fo_default_conf->{ExternCharset}->[0]->[0].', UTF-8');
+
+    print $cgi->header(-type => 'text/html; charset='.$fo_default_conf->{ExternCharset}->[0]->[0]),$tpl->parseToMem;
+  }
+}
+else {
+  if($UserName) {
+    my $tpl = new CForum::Template(get_template($fo_default_conf,$user_config,$fo_userconf_conf->{ViewSettings}->[0]->[0])) or die $@;
+
+    $tpl->setVar('forumbase',recode($fo_default_conf,$fo_default_conf->{UBaseURL}->[0]->[0]));
+    $tpl->setVar('script',recode($fo_default_conf,$fo_default_conf->{UserConfig}->[0]->[0]));
+
+    foreach my $modconf (@{$fo_userconf_conf->{ModuleConfig}}) {
+      my $doc   = XML::GDOME->createDocFromURI($modconf->[0]) or die $!;
+      my @nodes = $doc->findnodes('/config/page/section/*');
+
+      foreach my $directive (@nodes) {
+        my $dname     = $directive->getAttribute('name');
+        my @arguments = $directive->getElementsByTagName('argument');
+        my $i         = 0;
+
+        foreach my $arg (@arguments) {
+          my $pname = $arg->getAttribute('paramname');
+          my $val   = $user_config->{$dname}->[0]->[$i++];
+
+          next if !defined($val) || !length($val);
+
+          if($arg->getAttribute('parse') eq 'date') {
+            my ($sec,$min,$hour,$day,$mon,$year) = localtime $val;
+
+            $mon  += 1;
+            $year += 1900;
+
+            $val = sprintf('%02d. %02d. %4d %02d:%02d:%02d',$day,$mon,$year,$hour,$min,$sec);
+          }
+          else {
+            $val =~ s/\"/"/g; #";
+            $val =~ s/\\n/<br>\n/g;
+          }
+
+          $tpl->setVar($pname,recode($fo_default_conf,$val||''));
+        }
+      }
+    }
+
+    $tpl->setVar('charset',$fo_default_conf->{ExternCharset}->[0]->[0]);
+    $tpl->setVar('acceptcharset',$fo_default_conf->{ExternCharset}->[0]->[0].', UTF-8');
+
+    print $cgi->header(-type => 'text/html; charset='.$fo_default_conf->{ExternCharset}->[0]->[0]),$tpl->parseToMem;
+  }
+  else {
+    if($action eq 'register') {
+      my ($user,$passwd,$passwd1) = ($cgi->param('username'),$cgi->param('passwd'),$cgi->param('passwd1'));
+
+      my ($min_uname)  = grep { $_->[0] eq 'UserName' } @{$fo_userconf_conf->{MinLength}};
+      my ($min_passwd) = grep { $_->[0] eq 'Password' } @{$fo_userconf_conf->{MinLength}};
+
+      if(length($user) < $min_uname->[1]) {
+        show_register_form(
+          $cgi,
+          $fo_default_conf,
+          $fo_view_conf,
+          $fo_userconf_conf,
+          $user_config,
+          sprintf(get_error($fo_default_conf,'uname','short'),$min_uname->[1])
+        );
+        exit;
+      }
+
+      if(length($passwd) < $min_passwd->[1]) {
+        show_register_form(
+          $cgi,
+          $fo_default_conf,
+          $fo_view_conf,
+          $fo_userconf_conf,
+          $user_config,
+          sprintf(get_error($fo_default_conf,'pass','short'),$min_passwd->[1])
+        );
+        exit;
+      }
+
+      if($passwd ne $passwd1) {
+        show_register_form(
+          $cgi,
+          $fo_default_conf,
+          $fo_view_conf,
+          $fo_userconf_conf,
+          $user_config,
+          get_error($fo_default_conf,'pass','match')
+        );
+        exit;
+      }
+
+      if($user !~ /^[\da-z]+$/) {
+        show_register_form(
+          $cgi,
+          $fo_default_conf,
+          $fo_view_conf,
+          $fo_userconf_conf,
+          $user_config,
+          get_error($fo_default_conf,'uname','invalid')
+        );
+        exit;
+      }
+
+      if($passwd !~ /^[a-zA-Z0-9!\"§$_<>.%&\\\/()=?-]+$/ || $passwd !~ /\d/ || $passwd !~ /[a-zA-Z]/) {
+        show_register_form(
+          $cgi,
+          $fo_default_conf,
+          $fo_view_conf,
+          $fo_userconf_conf,
+          $user_config,
+          get_error($fo_default_conf,'pass','invalid')
+        );
+        exit;
+      }
+
+      my $ufile = get_config_file($fo_default_conf,$user);
+      if(-f $ufile) {
+        show_register_form(
+          $cgi,
+          $fo_default_conf,
+          $fo_view_conf,
+          $fo_userconf_conf,
+          $user_config,
+          get_error($fo_default_conf,'uname','exists')
+        );
+        exit;
+      }
+
+      if(!create_directory_structure($fo_default_conf,$user)) {
+        show_register_form(
+          $cgi,
+          $fo_default_conf,
+          $fo_view_conf,
+          $fo_userconf_conf,
+          $user_config,
+          get_error($fo_default_conf,'user','create')
+        );
+        exit;
+      }
+
+      my $connstr = 'DBI:'.$fo_userconf_conf->{SQLDriver}->[0]->[0].':dbname='.$fo_userconf_conf->{SQLDatabase}->[0]->[0].
+                    ($fo_userconf_conf->{SQLHost} ? ';host='.$fo_userconf_conf->{SQLHost}->[0]->[0] : '').
+                    ($fo_userconf_conf->{SQLPort} ? ';port='.$fo_userconf_conf->{SQLPort}->[0]->[0] : '');
+
+      my $dbh = DBI->connect($connstr,$fo_userconf_conf->{SQLUser}->[0]->[0],$fo_userconf_conf->{SQLPass}->[0]->[0]);
+      die 'could not connect to database: '.DBI::errstr unless $dbh;
+
+      my $dbq = $dbh->prepare('INSERT INTO auth (username,passwd) VALUES (?,?)');
+      $dbq->execute($user,$passwd) or do {
+        show_register_form(
+          $cgi,
+          $fo_default_conf,
+          $fo_view_conf,
+          $fo_userconf_conf,
+          $user_config,
+          get_error($fo_default_conf,'user','create')
+        );
+        exit;
+      };
+      $dbh->disconnect;
+
+      my $dir = $ufile;
+      $dir =~ s!\.conf$!!;
+
+      mkdir $dir,0771 or die $!;
+
+      open DAT,'>'.$ufile or die $!;
+      print DAT 'DeletedFile "',$dir,"/dt.dat\"\n";
+      print DAT 'VisitedFile "',$dir,"/vt.dat\"\n";
+      close DAT;
+
+      my $tpl = new CForum::Template(get_template($fo_default_conf,$user_config,$fo_userconf_conf->{RegisterOk}->[0]->[0]));
+
+      $tpl->setVar('ubase',recode($fo_default_conf,$fo_default_conf->{UBaseURL}->[0]->[0]));
+      $tpl->setVar('forumbase',recode($fo_default_conf,$fo_default_conf->{BaseURL}->[0]->[0]));
+      $tpl->setVar('script',recode($fo_default_conf,$fo_default_conf->{UserRegister}->[0]->[0]));
+      $tpl->setVar('uscript',recode($fo_default_conf,$fo_default_conf->{UserConfig}->[0]->[0]));
+      $tpl->setVar('charset',$fo_default_conf->{ExternCharset}->[0]->[0]);
+      $tpl->setVar('acceptcharset',$fo_default_conf->{ExternCharset}->[0]->[0].', UTF-8');
+
+      print $cgi->header(-type => 'text/html; charset='.$fo_default_conf->{ExternCharset}->[0]->[0]),$tpl->parseToMem;
+    }
+    else {
+      show_register_form($cgi,$fo_default_conf,$fo_view_conf,$fo_userconf_conf,$user_config);
+    }
+  }
+}
+
+# eof

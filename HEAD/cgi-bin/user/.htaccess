@@ -1,0 +1,25 @@
+
+AuthName "SELFHTML Forum"
+AuthType basic
+AuthUserFile "/home/ckruse/users.dat"
+
+#Auth_MySQL_DB forum_users
+#Auth_MySQL_Password_Table auth
+#Auth_MySQL_Group_Table groups
+#
+#Auth_MySQL_Username_Field username
+#Auth_MySQL_Password_Field passwd
+#Auth_MySQL_Group_Field grp
+#Auth_MySQL_Empty_Passwords off
+#
+#Auth_MySQL_Encryption_Types Plaintext
+#Auth_MySQL_Encrypted_Passwords off
+#Auth_MySQL_Scrambled_Passwords off
+#
+#Auth_MySQL_Authoritative off
+#Auth_MySQL_Non_Persistent off
+#Auth_MYSQL On
+
+
+require valid-user
+

@@ -1,0 +1,47 @@
+#
+# \file fo_server.conf.in
+# \author Christian Kruse, <ckruse@wwwtech.de>
+#
+# The configuration for the server
+#
+# $LastChangedDate$
+# $LastChangedRevision$
+# $LastChangedBy$
+#
+
+<Filters>
+  AddFilter "@pkglibdir@/flt_tid_index.so" "flt_tid_index"
+  AddFilter "@pkglibdir@/flt_cftp.so" "flt_cftp"
+  AddFilter "@pkglibdir@/flt_registerednames.so" "flt_registerednames"
+#  AddFilter "@pkglibdir@/flt_nntp.so" "flt_nntp"
+  AddFilter "@pkglibdir@/flt_extern.so" "flt_extern"
+</Filters>
+
+<General>
+ SortThreads "2" # 1 or 2
+ SortMessages "2" # 1 or 2
+
+ RunArchiver "1800"
+
+ ErrorLog "@with_log_dir@/fo_errors"
+ StdLog "@with_log_dir@/fo_stdlog"
+
+ PIDFile "@with_log_dir@/fo_pid"
+</General>
+
+<Archiving>
+ ArchiveOnVote "10" # archive on 10% votings
+ MainFileMaxBytes "250000" # archive at 250k bytes
+ MainFileMaxPostings "2000"
+ MainFileMaxThreads "150"
+</Archiving>
+
+AuthNames "@with_cgi_shared@/data/registered_names.db"
+
+# external interface
+ExternPort "6666"
+# ExternInterface 192.168.50.2
+
+#NNTPPort "2048"
+#NNTPHost "teamone.de"
+

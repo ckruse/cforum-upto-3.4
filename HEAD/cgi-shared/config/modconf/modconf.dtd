@@ -1,0 +1,70 @@
+<!--
+  - modconf.dtd
+  - This DTD describes the module config structure.
+  -
+  - $Id: modconf.dtd,v 1.1 2002/10/31 07:32:17 ckruse Exp $
+  - $Log: modconf.dtd,v $
+  - Revision 1.1  2002/10/31 07:32:17  ckruse
+  - codecleaning, bugfixes
+  -
+  -
+  -->
+
+<!ELEMENT config (directive*,page+)>                               <!-- document contains invisible directives and pages -->
+
+  <!ELEMENT page (section+)>                                        <!-- each page containes sections -->
+  <!ATTLIST page
+              title  CDATA   #REQUIRED
+              id     NMTOKEN #REQUIRED
+            >                                                       <!-- each page has a name -->
+
+    <!ELEMENT section (directive+)>                                 <!-- each section has directives -->
+    <!ATTLIST section
+                name  CDATA  #REQUIRED
+              >                                                     <!-- each section has a name -->
+
+      <!ELEMENT directive (argument*)>                              <!-- each directive has a name and arguments -->
+      <!ATTLIST directive
+                  name       CDATA  #REQUIRED
+                  arguments  CDATA  #IMPLIED
+                  invisible  CDATA  #IMPLIED
+                >                                                   <!-- each directive has a name and a number of arguments -->
+
+
+        <!ELEMENT argument (validate,question,error,formvalues?)>   <!-- each argument contains validation infos, a question, an error message and formvalues -->
+        <!--
+          Each argument
+            - has a cgi paramter name (must be unique!),
+            - has a type (e.g. select, text, textarea, radio)
+            - it is perhaps multiple (multiple="yes")
+            - perhaps has to be parsed (parse="date")
+        -->
+        <!ATTLIST argument                                            
+                    paramname  CDATA  #REQUIRED
+                    type       CDATA  #REQUIRED
+                    multiple   CDATA  #IMPLIED
+                    parse      CDATA  #IMPLIED
+                    encode     CDATA  #IMPLIED
+                  >                                                   
+
+          <!ELEMENT validate (#PCDATA)>                               <!-- validation contains a regex -->
+          <!ATTLIST validate
+                      type  CDATA  #IMPLIED
+                    >                                                 <!-- or a type (http-url, url or email) -->
+
+          <!ELEMENT question (#PCDATA)>                               <!-- each question consists of text :) -->
+          <!ELEMENT error (#PCDATA)>                                  <!-- dito each error -->
+
+          <!ELEMENT formvalues (value*)>                              <!-- a formvalue contains values -->
+          <!ATTLIST formvalues
+                      location   CDATA  #IMPLIED
+                      directive  CDATA  #IMPLIED
+                    >                                                 <!-- or it's source is a configuration directive -->
+
+            <!ELEMENT value (#PCDATA)>                                <!-- each value has (optional) text (for visiblity) -->
+            <!ATTLIST value
+                        default  CDATA  #IMPLIED
+                        val      CDATA  #REQUIRED
+                      >                                               <!-- it may be a default value, but the value itself is required -->
+
+<!-- eof -->

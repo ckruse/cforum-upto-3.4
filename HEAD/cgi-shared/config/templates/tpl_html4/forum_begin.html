@@ -1,0 +1,216 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html lang="de">
+  <head>
+    <title>SELFHTML Forum</title>
+    <meta http-equiv="content-type" content="text/html; charset={$charset}">{if $autoreload}
+    <meta http-equiv="refresh" content="{$autoreload}; URL={if $frame}?a=f{endif}">{endif}
+    <meta name="robots" content="noarchive,nofollow">
+    <meta name="description" content="Forum als Erg&auml;nzung zu der Dokumentation SELFHTML">
+    <meta name="keywords" content="SELFHTML Forum, SELFHTML, Forum, SELFForum">
+    <meta name="author" content="Stefan M&uuml;nz, stefan.muenz@selfhtml.org">
+    <meta name="DC.Publisher" content="SELFHTML Forum">
+    <meta name="DC.Identifier" content="{$forumbase}">
+    <meta name="DC.Language" content="de">
+    <meta name="DC.Rights" content="">
+    <meta name="SELF.Pagetype" content="portal">{if $owncss}{if $cssoverwrite}
+    <link rel="stylesheet" type="text/css" href="http://src.selfhtml.org/forum.css" title="SELFHTML Forum Stylesheet">
+    <style type="text/css"><!--{if $vipcol}
+      span.vip {
+        color:{if $vipcolfg}{$vipcolfg}{else}#FF0000{endif};{if $vipcolbg}
+        background-color:{$vipcolbg};{endif}
+      }{endif}{if $wlcol}
+      span.whitelist {
+        color:{if $wlcolfg}{$wlcolfg}{else}#0000FF{endif};{if $wlcolbg}
+        background-color:{$wlcolbg};{endif}
+      }{endif}{if $cathighcolor}
+      span.cathigh {{if $cathighcolorfg}
+        color:{$cathighcolorfg};{endif}{if $cathighcolorbg}
+        background-color:{$cathighcolorbg};{endif}
+      }{endif}{if $visitedcol}
+      span.visited,dl a:visited {{if $visitedcolfg}
+        color:{$visitedcolfg};{endif}{if $visitedcolbg}
+        background-color:{$visitedcolbg};{endif}
+        text-decoration:underline;
+      }
+      dl a:visited img {
+        background-color:#FFFFFF;
+      }{endif}{if $colorown}
+      span.own {{if $colorownfg}
+        color:{$colorownfg};{endif}{if $colorownbg}
+        background-color:{$colorownbg};{endif}
+      }{endif}{if $font}
+      p,h1,h2,h3,h4,ul,ol,li,div,td,th,address,nobr,b,i,dl,dd,dt,a,a:link,a:visited,a:active {{if $fontcolor}
+        color:{$fontcolor};{endif}{if $fontsize}
+        font-size:{$fontsize};{endif}{if $fontfamily}
+        font-family:{$fontfamily};{endif}
+      }{endif}
+    //--></style>{endif}
+    <link rel="stylesheet" type="text/css" href="{$owncss}">{else}
+    <link rel="stylesheet" type="text/css" href="http://src.selfhtml.org/forum.css" title="SELFHTML Forum Stylesheet">
+    <style type="text/css"><!--{if $vipcol}
+      span.vip {
+        color:{if $vipcolfg}{$vipcolfg}{else}#FF0000{endif};{if $vipcolbg}
+        background-color:{$vipcolbg};{endif}
+      }{endif}{if $wlcol}
+      span.whitelist {
+        color:{if $wlcolfg}{$wlcolfg}{else}#0000FF{endif};{if $wlcolbg}
+        background-color:{$wlcolbg};{endif}
+      }{endif}{if $cathighcolor}
+      span.cathigh {{if $cathighcolorfg}
+        color:{$cathighcolorfg};{endif}{if $cathighcolorbg}
+        background-color:{$cathighcolorbg};{endif}
+      }{endif}{if $visitedcol}
+      span.visited,dl a:visited {{if $visitedcolfg}
+        color:{$visitedcolfg};{endif}{if $visitedcolbg}
+        background-color:{$visitedcolbg};{endif}
+        text-decoration:underline;
+      }
+      dl a:visited img {
+        background-color:#FFFFFF;
+      }{endif}{if $colorown}
+      span.own {{if $colorownfg}
+        color:{$colorownfg};{endif}{if $colorownbg}
+        background-color:{$colorownbg};{endif}
+      }{endif}{if $font}
+      p,h1,h2,h3,h4,ul,ol,li,div,td,th,address,nobr,b,i,dl,dd,dt,a,a:link,a:visited,a:active {{if $fontcolor}
+        color:{$fontcolor};{endif}{if $fontsize}
+        font-size:{$fontsize};{endif}{if $fontfamily}
+        font-family:{$fontfamily};{endif}
+      }{endif}
+    //--></style>{endif}
+    <link rel="search" href="http://selfsuche.teamone.de/" title="SELF-Suche">
+    <link rel="bookmark" href="http://selfhtml.teamone.de/" title="SELFHTML">
+    <link rel="bookmark" href="/faq/" title="Forums-FAQ">
+    <link rel="bookmark" href="/archiv/" title="Forums-Archiv">
+    <link rel="bookmark" href="http://selfsuche.teamone.de/" title="SELF-Suche">
+    <link rel="bookmark" href="http://selfaktuell.teamone.de/artikel/" title="Feature-Artikel">
+    <link rel="bookmark" href="http://selfaktuell.teamone.de/tippstricks/" title="Tipps+Tricks">
+    <link rel="bookmark" href="http://selfaktuell.teamone.de/links/" title="Linkverzeichnis">
+    <link rel="shortcut icon" href="http://src.selfhtml.org/favicon.ico" type="image/x-icon" title="SELFHTML Icon">
+    <script type="text/javascript"><!--
+      function Chat() {
+        F1 = window.open("http://selfaktuell.teamone.de/live/chat.htm","Fenster1","width=600,height=450");
+      }
+      function News() {
+        F2 = window.open("http://selfaktuell.teamone.de/news.htm","Fenster2","width=520,height=400,scrollbars=yes,resizable=yes,status=yes");
+      }
+{if $UseJavaScript}
+      /* thanks to Stefan 'Zapp' (xzapp@nexgo.de) */
+      function snap(obj) {
+        if(obj.getElementsByTagName) {
+          var img   = obj.firstChild;
+          var answ  = obj.parentNode.getElementsByTagName("span")[0];
+          var stat  = img.src.indexOf("open.gif") > 0 ? 1 : 0;
+          var disp  = stat ? "none" : "block";
+
+          answ.style.display = stat ? "inline" : "none";
+
+          if(obj.parentNode.tagName == "LI") {
+            for(i=1;i<obj.parentNode.childNodes.length;i++) {
+              if(obj.parentNode.childNodes[i].tagName == "UL") {
+                obj.parentNode.childNodes[i].style.display = disp;
+                break;
+              }
+            }
+          }
+
+          img.src   = stat ? "http://src.selfhtml.org/xclosed.gif" : "http://src.selfhtml.org/xopen.gif";
+          img.title = stat ? "Thread aufklappen" : "Thread zuklappen";
+
+          return false;
+        }
+
+        return true;
+      }
+{endif}
+    //--></script>
+  </head>
+  <body bgcolor="#FFFFFF" text="#000000" link="#AA5522" vlink="#772200" alink="#000000" id="selfforumbody">
+    <table cellpadding="4" cellspacing="0" border="0" width="100%" id="selfforumnav">
+      <tr>
+        <td bgcolor="#FFEEDD" class="nav"><a class="an" name="top"><b>Die Energie des Verstehens</b></a></td>
+      </tr>
+    </table>
+    <table cellpadding="4" cellspacing="0" border="0" width="100%" id="selfforumheader">
+      <tr>
+        <td bgcolor="#EEEEEE" class="doc" width="110"><img src="http://src.selfhtml.org/logo.gif" width="106" height="109" border="0" alt="SELFHTML"></td>
+        <td bgcolor="#EEEEEE" class="doc" valign="bottom" width="100%"><span class="blue">Das Forum zu SELFHTML</span><h1 class="ph1">SELFHTML Forum</h1></td>
+      </tr>
+
+
+      <tr>
+        <td bgcolor="#EEEEEE" class="doc" valign="top" align="center">
+          <table border="0" cellpadding="5" cellspacing="5" width="100%">
+            <tr>
+              <td bgcolor="#FFEEDD" align="center">
+                <p>
+                  <a href="http://selfaktuell.teamone.de/news.htm" onclick="if(!window.News) return true; News(); return false;"{if $frame} target="_top"{endif}><img src="http://src.selfhtml.org/xview.gif" width="30" height="20" border="0" alt="News"></a><br>
+                  <a href="http://selfaktuell.teamone.de/news.htm" onclick="if(!window.News) return true; News(); return false;"{if $frame} target="_top"{endif}><b>News</b></a>
+                </p>
+                <form method="POST" action="http://selfsuche.teamone.de/cgi-bin/such.pl">
+                  <p>
+                    <b><label for="suchausdruck">Suche nach:</label></b><br>
+                    <input type="text" name="suchausdruck" id="suchausdruck" size="10" maxlength="50" style="width:90px; font-family:monospace; font-size:10pt;">
+                    <input type="hidden" name="feld" value="alle">
+                    <input type="hidden" name="hits" value="100">
+                    <input type="hidden" name="case" value="on">
+                    <input type="hidden" name="index_1" value="on">
+                    <input type="hidden" name="index_2" value="on">
+                    <input type="hidden" name="index_3" value="on">
+                    <input type="hidden" name="index_4" value="on">
+                  </p>
+                </form>
+                <p>
+                  <b>QuickLinks:</b><br>{if $authed}
+                  <a href="{$ubase}?a=nd">Gelöschte Threads einblenden</a>
+                  {endif}<a href="{$userconfig}"{if $frame} target="_top"{endif}>{if $authed}Benutzer-Administration{else}Benutzer-Registrierung{endif}</a><br>{if !$authed}
+                  <a href="{$ubase}"{if $frame} target="_top"{endif}>Benutzerspezifische Ansicht</a><br>{endif}{if $admin}{if $aaf}
+                  <a href="{$ubase}"{if $frame} target="_top"{endif}>Administrator-Ansicht deaktivieren</a>{else}<a href="{$ubase}?aaf=1"{if $frame} target="_top"{endif}>Administrator-Ansicht</a>{endif}<br>{endif}
+                  <a href="http://selfforum.selfhtml.com.fr/"{if $frame} target="_top"{endif}>en fran&ccedil;ais!</a><br>
+                  <a href="/archiv/"{if $frame} target="_top"{endif}>Forumsarchiv</a><br>
+                  <a href="/faq/"{if $frame} target="_top"{endif}>Forums-FAQ</a><br>
+                  <a href="http://selfhtml.teamone.de/"{if $frame} target="_top"{endif}>SELFHTML</a><br>
+                  <a href="http://selfsuche.teamone.de/"{if $frame} target="_top"{endif}>Suche</a><br>
+                  <a href="http://selfaktuell.teamone.de/live/chat.htm" onclick="if (!window.Chat) return true; Chat(); return false;"{if $frame} target="_top"{endif}>Chat</a><br>
+                </p>
+              </td>
+            </tr>
+          </table>
+        </td>
+        <td bgcolor="#FFFFFF" valign="top" width="100%">
+          <p>{if $livefilter}
+            <img src="http://src.selfhtml.org/down.gif" width="14" height="10" border="0" alt="nach unten">&nbsp;<a href="#live-filter"><b>Live-Filter</b></a><br>{endif}
+            <img src="http://src.selfhtml.org/down.gif" width="14" height="10" border="0" alt="nach unten">&nbsp;<a href="#nachrichten">Aktuelle Nachrichten</a><br>
+            <img src="http://src.selfhtml.org/dok.gif" width="15" height="10" border="0" alt="Seite">&nbsp;<a href="{if $authed}/cgi-bin/user/fo_post{else}/cgi-bin/fo_post{endif}"{if $frame} target="_top"{endif}>Neue Nachricht verfassen</a><br>
+          </p>
+          <p>
+            <a name="zu_diesem_Forum" class="an">Dies</a> ist ein Forum als Erg&auml;nzung zu der Dokumentation <img src="http://src.selfhtml.org/serverkap.gif" width="15" height="13" border="0" alt="bereichs&uuml;bergreifendes Kapitel">&nbsp;<a href="http://selfhtml.teamone.de/"{if $frame} target="_top"{endif}>SELFHTML</a>.
+          </p>
+          <p>
+            Von allen hier Teilnehmenden werden HTML-Grundkenntnisse erwartet. Es wird erwartet, daß bei Problemen erst einmal in SELFHTML, im <img src="http://src.selfhtml.org/kap.gif" width="15" height="13" border="0" alt="Kapitel">&nbsp;<a href="/archiv/"{if $frame} target="_top"{endif}>Forumsarchiv</a> oder in anderen Quellen nach einer L&ouml;sung gesucht wird.
+          </p>
+          <p>
+            Zum Mitmachen im SELFHTML Forum gibt es einige grunds&auml;tzliche Verhaltensregeln. Diese Regeln sind in der <img src="http://src.selfhtml.org/dok.gif" width="15" height="10" border="0" alt="Seite">&nbsp;<a href="/faq/"{if $frame} target="_top"{endif}>Forums-FAQ</a> nachzulesen. Es wird erwartet, da&szlig; Forumsteilnehmer die Forums-FAQ kennen und die dort genannten Regeln einhalten.
+          </p>{if $LOAD_TIME}
+          <p>Ladezeitpunkt: {$LOAD_TIME}{if $autoreload}, automatischer Reload: {$autoreloadtime}{endif}</p>{endif}{if $flt_admin_errmsg}
+          <p><b>{$flt_admin_errmsg}</b></p>{endif}
+        </td>
+      </tr>
+      <tr>
+        <td colspan="2" bgcolor="#EEEEEE" class="doc"><a href="#bottom"><img src="http://src.selfhtml.org/down.gif" width="14" height="10" border="0" alt="nach unten"></a>&nbsp;</td>
+      </tr>
+    </table>{if $livefilter}
+    <h2 class="sh2"><a class="an" name="live-filter">Live-Filter</a></h2>
+    <p>
+      Der Live-Filter filtert die Thread-Liste nach Kriterien, die Sie in diesem Text-Feld angeben k&ouml;nnen. Die Bedienungsweise wird in der <img src="http://src.selfhtml.org/dok.gif" width="15" height="10" border="0" alt="Seite">&nbsp;<a href="/live_syntax.html"{if $frame} target="_top"{endif}>Syntax-Beschreibung</a> erkl&auml;rt.
+    </p>
+    <form method="get" action="{$forumbase}" accept-charset="{$charset},UTF-8">
+      <p><label for="lf">Filter-String:</label> <input type="text" name="lf" id="lf" value="{$lf}" size="50"> <input type="submit" value="Filtern!"></p>
+    </form>{endif}
+    <h2 class="sh2"><a class="an" name="nachrichten">Aktuelle Nachrichten</a></h2>
+    <p>
+      <b>Mitmachen:</b> Um auf eine aktuelle Nachricht zu antworten, einfach diese &ouml;ffnen und lesen. Alle Nachrichten enthalten ein Formular zum Antworten.<br><b>Tip:</b> Nachrichten in neuem Fenster &ouml;ffnen (rechte Maustaste). Dann bleibt diese Indexdatei im Hintergrund ge&ouml;ffnet.
+    </p>{if $delcheckbox}
+    <form method="post" action="{$ubase}">
+      <div style="display:none;"><input type="hidden" name="a" value="d"></div>
+{endif}    <ol id="root">

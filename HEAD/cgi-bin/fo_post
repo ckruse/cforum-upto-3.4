@@ -1,0 +1,427 @@
+#!/usr/bin/perl -w
+
+# {{{ initial comments
+#
+# $LastChangedDate: 2004-06-07 21:39:13 +0200 (Mon, 07 Jun 2004) $
+# $LastChangedRevision: 104 $
+# $LastChangedBy: ckruse $
+#
+# }}}
+
+# {{{ program header
+#
+use strict;
+use vars qw($Bin $Config $Script $Plugins $UserName);
+
+BEGIN {
+  my $null = $0; $null =~ tr!\\!/!; # for win :-(
+  $Bin     = ($null =~ /^(.*)\/.*$/)? $1 : '.';
+  $Script  = ($null =~ /^.*\/(.*)$/)? $1 : $null;
+
+  # get the path to the configuration
+  $Config = $ENV{CF_CONF_DIR} or die 'Could not get config directory';
+
+  $Plugins  = {};
+  $UserName = '';
+}
+
+use lib ($Config.'../', $Config.'../lib');
+
+sub VERSION {(q$Revision: 1.48 $ =~ /([\d.]+)\s*$/)[0] or '0.0'}
+
+use CGI;
+use CGI::Carp qw/fatalsToBrowser/;
+
+use CForum::Template;
+
+use CheckRFC;
+use ForumUtils qw(
+  read_configuration
+  generate_unid
+  get_error
+  decode_params
+  message_field
+  transform_body
+  gen_time
+  rel_uri
+  get_template
+  recode
+  encode
+  fatal
+  get_config_file
+);
+
+use Unicode::MapUTF8 qw(from_utf8);
+
+use IO::Socket;
+
+# }}}
+
+# {{{ show_form
+sub show_form {
+  my ($fo_default_conf,$fo_view_conf,$fo_post_conf,$user_config,$cgi,$err) = @_;
+
+  my $tpl = new CForum::Template(get_template($fo_default_conf,$user_config,$fo_post_conf->{ThreadTemplate}->[0]->[0])) or die $!;
+  $tpl->setVar(forumbase => recode($fo_default_conf,$ENV{REMOTE_USER} ? $fo_default_conf->{UBaseURL}->[0]->[0] : $fo_default_conf->{BaseURL}->[0]->[0]));
+  $tpl->setVar(script => $ENV{SCRIPT_NAME});
+  $tpl->setVar(unid   => recode($fo_default_conf,generate_unid())) unless $cgi->param('unid');
+
+  foreach($cgi->param) {
+    next unless $cgi->param($_);
+    next if $_ =~ m!Url$! && $cgi->param($_) eq 'http://';
+
+    if(m/^ne_/) {
+      $tpl->setVar(substr($_,3),$cgi->param($_)||'');
+    }
+    else {
+      $tpl->setVar($_,recode($fo_default_conf,$cgi->param($_)||''));
+    }
+  }
+
+  my $html = '';
+  my $cat  = $cgi->param('cat')||'';
+
+  foreach(@{$fo_default_conf->{Category}}) {
+    my $str  = recode($fo_default_conf,$_->[0]);
+
+    $html .= '<option value="'.$str.'"'.($cat eq $_->[0] ? ' selected' : '').'>'.$str.'</option>';
+  }
+
+  $tpl->setVar('cats',$html);
+  $tpl->setVar('err',recode($fo_default_conf,$err)) if $err;
+  $tpl->setVar('qchar','&#255;'.recode($fo_default_conf,$user_config->{QuotingChars}->[0]->[0] || $fo_view_conf->{QuotingChars}->[0]->[0]));
+
+  $tpl->setVar('fupto',recode($fo_default_conf,$cgi->param('fupto'))) if $cgi->param('fupto');
+
+  foreach(@{$Plugins->{display}}) {
+    &$_($fo_default_conf,$fo_view_conf,$fo_post_conf,$user_config,$cgi,$tpl);
+  }
+
+  $tpl->setVar('charset',$fo_default_conf->{ExternCharset}->[0]->[0]);
+  $tpl->setVar('acceptcharset',$fo_default_conf->{ExternCharset}->[0]->[0].', UTF-8');
+
+  print $cgi->header(-type => 'text/html; charset='.$fo_default_conf->{ExternCharset}->[0]->[0]),$tpl->parseToMem;
+}
+# }}}
+
+# {{{ get_message_entries
+sub get_message_entries {
+  my $fo_default_conf = shift;
+  my $fo_post_conf    = shift;
+  my $user_config     = shift;
+  my $cgi             = shift;
+  my $sock            = shift;
+  my $msg             = 0;
+  my $lastline        = 0;
+  my $message         = {};
+
+  my ($tid,$mid) = split /,/ => $cgi->param('fupto') || '';
+
+  print $sock "GET POSTING t$tid m$mid\n";
+
+  my $firstline = <$sock>;
+  unless($firstline =~ /^200/) {
+    $firstline =~ s/^\D*(\d+).*$/$1/s;
+    fatal($cgi,$fo_default_conf,$user_config,get_error($fo_default_conf,'FO',$firstline),$fo_post_conf->{FatalTemplate}->[0]->[0]);
+    exit(0);
+  }
+
+  while(<$sock>) {
+    if(/^\s*$/) { # hu... we could not find the posting
+      $lastline = 2;
+      last;
+    }
+
+    if($msg) {
+      last if m/^MSG/;
+      next unless m/^([^:]+):(.*)$/;
+      $message->{$1} = $2;
+    }
+
+    $msg = 1 if m/^MSG m$mid/ || m/THREAD t$tid m$mid/;
+  }
+
+  # read the rest of the buffer
+  if(!$lastline) { # we only need to read it if we didn't get the last line
+    while(<$sock>) {
+      last if /^\s*$/;
+    }
+  }
+
+  return unless $message;
+
+  $cgi->param('cat',$message->{Category}||'') unless $cgi->param('cat');
+  $cgi->param('subject',$message->{Subject} || '') unless $cgi->param('subject');
+
+  return 1;
+}
+# }}}
+
+# {{{ check_input
+sub check_input {
+  my $dcfg   = shift;
+  my $pcfg   = shift;
+  my $cgi    = shift;
+
+  my %needed         = ();
+
+  foreach(@{$pcfg->{FieldNeeded}}) {
+    if($cgi->param($_->[0])) {
+      $needed{$_->[0]} = 1;
+    }
+    else {
+      return get_error($dcfg,"field_missing");
+    }
+  }
+
+  foreach my $field (@{$pcfg->{FieldConfig}}) {
+    my $val = $cgi->param($field->[0]);
+
+    if($cgi->param($field->[0])) {
+      if($field->[1]) {
+        if(length $val > $field->[1]) {
+          return get_error($dcfg,$field->[0],'long');
+        }
+      }
+
+      # we will check only the visible characters to avoid whitespace spam values
+      if($field->[2]) {
+        $val =~ s/\s+//g;
+        if(length $val < $field->[2]) {
+          return get_error($dcfg,$field->[0],'short');
+        }
+      }
+    }
+  }
+
+  return get_error($dcfg,'image','invalid') if $cgi->param('ImageUrl') && $cgi->param('ImageUrl') ne 'http://' && !is_URL($cgi->param('ImageUrl'));
+  return get_error($dcfg,'homepage','invalid') if $cgi->param('HomepageUrl') && $cgi->param('HomepageUrl') ne 'http://' && !is_URL($cgi->param('HomepageUrl'));
+  return get_error($dcfg,'email','invalid') if $cgi->param('EMail') && !is_email($cgi->param('EMail'));
+
+  return 0;
+}
+# }}}
+
+# {{{ get_rem_addr
+sub get_rem_addr {
+  return $ENV{HTTP_X_FORWARED_FOR} || $ENV{REMOTE_ADDR} || '666.666.666.666';
+}
+# }}}
+
+my $fo_default_conf  = read_configuration($Config.'fo_default.conf')  or die $!;
+my $fo_view_conf     = read_configuration($Config.'fo_view.conf')     or die $!;
+my $fo_post_conf     = read_configuration($Config.'fo_post.conf')     or die $!;
+my $user_config      = {};
+
+# {{{ load plugins and authenticate
+foreach(@{$fo_post_conf->{AddPlugin}}) {
+  eval "use $_->[0];";
+  die $@ if $@;
+}
+
+foreach(@{$Plugins->{auth}}) {
+  last if &$_($fo_default_conf,$fo_view_conf,$fo_post_conf);
+}
+# }}}
+
+my $cgi              = new CGI;
+
+if($UserName) {
+  my $cfgfile = get_config_file($fo_default_conf,$UserName);
+  if($cfgfile) {
+    $user_config = read_configuration($cfgfile) or die $!;
+  }
+}
+
+if($cgi->param) {
+  my $valref = {};
+  my $err = decode_params($fo_default_conf,$fo_post_conf,$cgi);
+  fatal($cgi,$fo_default_conf,$user_config,$err,$fo_post_conf->{FatalTemplate}->[0]->[0]) if $err;
+
+  my $sock = new IO::Socket::UNIX(
+    Type => SOCK_STREAM,
+    Peer => $fo_default_conf->{SocketName}->[0]->[0]
+  ) or fatal($cgi,$fo_default_conf,$user_config,get_error($fo_default_conf,'NO_CONN'),$fo_post_conf->{FatalTemplate}->[0]->[0]);
+
+  if($cgi->param('fupto')) {
+    fatal($cgi,$fo_default_conf,$user_config,get_error($fo_default_conf,'DATA_FAILURE'),$fo_post_conf->{FatalTemplate}->[0]->[0],$sock) unless get_message_entries($fo_default_conf,$fo_post_conf,$user_config,$cgi,$sock);
+  }
+
+  if(my $err = check_input($fo_default_conf,$fo_post_conf,$cgi)) {
+    show_form($fo_default_conf,$fo_view_conf,$fo_post_conf,$user_config,$cgi,$err);
+    print $sock "QUIT\n";
+    close $sock;
+    exit;
+  }
+
+  # transform the body...
+  $cgi->param(newbody => transform_body($fo_default_conf,$fo_post_conf,$cgi->param('body'),$cgi->param('qchar')));
+
+  #
+  # run plugins...
+  #
+  if($cgi->param('fupto')) {
+    foreach(@{$Plugins->{newpost}}) {
+      &$_($fo_default_conf,$fo_view_conf,$fo_post_conf,$user_config,$cgi);
+    }
+  }
+  else {
+    foreach(@{$Plugins->{newthread}}) {
+      &$_($fo_default_conf,$fo_view_conf,$fo_post_conf,$user_config,$cgi);
+    }
+  }
+
+  # is this a follow up?
+  my ($tid,$mid) = split /,/,$cgi->param('fupto') || '';
+
+  #
+  # hrm, now everything should be done. Go and talk to the server...
+  #
+  # we try three times to send the posting. If we get something
+  # other than 500 Sorry, the error must be reported to the user
+  # A 500 Sorry means "Oops, we're so sorry, but we're don't know
+  # what happend" so we just try it again
+  #
+
+  my $answer;
+  my $i   = 0;
+  my $j   = 0;
+  my $ret = 0;
+
+  # {{{ send the posting
+  do {
+    foreach(@{$Plugins->{conn}}) {
+      &$_($fo_default_conf,$fo_view_conf,$fo_post_conf,$user_config,$cgi,$sock);
+    }
+
+    $j = 0;
+    if($tid) {
+      do {
+        $ret = print $sock "POST ANSWER t=$tid m=$mid\n";
+        $j  += 1;
+      } while(!$ret && $j <= 3);
+    }
+    else {
+      do {
+        $ret = print $sock "POST THREAD\n";
+        $j  += 1;
+      } while(!$ret && $j <= 3);
+    }
+
+    $j = 0;
+    do {
+      $ret = print $sock "Unid: ".$cgi->param('unid')."\n";
+      $j  += 1;
+    } while(!$ret && $j <= 3);
+
+    $j = 0;
+    do {
+      $ret = print $sock "Author: ".$cgi->param('Name')."\n";
+      $j  += 1;
+    } while(!$ret && $j <= 3);
+
+    $j = 0;
+    do {
+      $ret = print $sock "EMail: ".$cgi->param('EMail')."\n" if $cgi->param('EMail');
+      $j  += 1;
+    } while(!$ret && $j <= 3);
+
+    $j = 0;
+    do {
+      $ret = print $sock "Category: ".$cgi->param('cat')."\n" if $cgi->param('cat');
+      $j  += 1;
+    } while(!$ret && $j <= 3);
+
+    $j = 0;
+    do {
+      $ret = print $sock "Subject: ".$cgi->param('subject')."\n";
+      $j  += 1;
+    } while(!$ret && $j <= 3);
+
+    if($cgi->param('HomepageUrl') && $cgi->param('HomepageUrl') ne 'http://') {
+      $j = 0;
+      do {
+        $ret = print $sock "HomepageUrl: ".$cgi->param('HomepageUrl')."\n";
+        $j  += 1;
+      } while(!$ret && $j <= 3);
+    }
+
+    if($cgi->param('ImageUrl') && $cgi->param('ImageUrl') ne 'http://') {
+      $j = 0;
+      do {
+        $ret = print $sock "ImageUrl: ".$cgi->param('ImageUrl')."\n";
+        $j  += 1;
+      } while(!$ret && $j <= 3);
+    }
+
+    $j = 0;
+    do {
+      $ret = print $sock "RemoteAddr: ".get_rem_addr()."\n";
+      $j  += 1;
+    } while(!$ret && $j <= 3);
+
+    $j = 0;
+    do {
+      $ret = print $sock "Body: ".$cgi->param('newbody')."\n\n";
+      $j  += 1;
+    } while(!$ret && $j <= 3);
+
+    $answer = <$sock>;
+    $i     += 1;
+  } while($answer =~ /^500 Sorry/ && $i <= 3);
+  # }}}
+
+  foreach(@{$Plugins->{afterpost}}) {
+    &$_($fo_default_conf,$fo_view_conf,$fo_post_conf,$user_config,$cgi,$sock,$answer);
+  }
+
+  print $sock "QUIT\n";
+  close($sock);
+
+  if($answer =~ /^200/) {
+    if($user_config->{RedirectOnPost} && $user_config->{RedirectOnPost}->[0]->[0] eq 'yes' && $cgi->param('fupto')) {
+      my $fupto      = $cgi->param('fupto');
+      my $url        = $UserName ? $fo_default_conf->{UBaseURL}->[0]->[0] : $fo_default_conf->{BaseURL}->[0]->[0];
+
+      print "Status: 302 Moved Temporarily\015\012Location: $url?t=$tid&m=$mid\015\012\015\012";
+    }
+    else {
+      my $tpl = new CForum::Template(get_template($fo_default_conf,$user_config,$fo_post_conf->{OkTemplate}->[0]->[0]));
+      my $txt = $fo_default_conf->{ExternCharset}->[0]->[0] eq "UTF-8" ? $cgi->param('newbody') : from_utf8(-string => $cgi->param('newbody'), -charset => $fo_default_conf->{ExternCharset}->[0]->[0]);
+      $tpl->setVar(body => message_field($txt,$cgi->param('qchar'),$fo_default_conf));
+
+      $cgi->delete('body');
+
+      foreach($cgi->param) {
+        if(!m/Url$/) {
+          $tpl->setVar($_ => recode($fo_default_conf,$cgi->param($_)));
+        }
+        else {
+          $tpl->setVar($_ => recode($fo_default_conf,$cgi->param($_))) if $cgi->param($_) ne 'http://';
+        }
+      }
+
+      $tpl->setVar('forumbase',$UserName ? recode($fo_default_conf,$fo_default_conf->{UBaseURL}->[0]->[0]) : recode($fo_default_conf,$fo_default_conf->{BaseURL}->[0]->[0]));
+      $tpl->setVar('date',gen_time(time,$fo_default_conf,$fo_view_conf->{DateFormatThreadView}->[0]->[0]));
+
+      foreach(@{$Plugins->{display}}) {
+        &$_($fo_default_conf,$fo_view_conf,$fo_post_conf,$user_config,$cgi,$tpl);
+      }
+
+      $tpl->setVar('charset',$fo_default_conf->{ExternCharset}->[0]->[0]);
+      $tpl->setVar('acceptcharset',$fo_default_conf->{ExternCharset}->[0]->[0].', UTF-8');
+      print $cgi->header(-type => 'text/html; charset='.$fo_default_conf->{ExternCharset}),$tpl->parseToMem;
+    }
+  }
+  else {
+    print STDERR "ERR: ",$answer,"\n";
+    $answer =~ s/^\s*(\d+).*$/$1/s;
+    fatal($cgi,$fo_default_conf,$user_config,get_error($fo_default_conf,'FO_'.$answer),$fo_post_conf->{FatalTemplate}->[0]->[0]);
+  }
+
+}
+else {
+  show_form($fo_default_conf,$fo_view_conf,$fo_post_conf,$user_config,$cgi);
+}
+
+# eof

@@ -1,0 +1,197 @@
+2004-06-07 Christian Kruse <ckruse@wwwtech.de>
+	* src/utils.h: corrected documentation
+	* src/configparser.[ch]: Changed access to configuration directives to AVL
+		tree algorithms, added output of filename on syntax error
+	* src/*, src/modules/*: Changed to new configparser API
+	* src/fo_cleanup.c: Changed to BDB format
+	* src/Makefile.am: added BDB linking to fo_cleanup
+	* src/modules/flt_reference.c: Added a module for defining URI references
+		(e.g. [ref:SELF7;tda.htm]), fixed a bug
+	* cgi-shared/config/fo_server.conf.in: Added quotation marks around the
+		extern port
+
+2004-06-03 Christian Kruse <ckruse@wwwtech.de>
+	* src/modules/flt_{deleted,visited,http}.c: Now If-Modified-Since and
+		Last-Modified are handled correctly
+	* src/modules/flt_admin.c: Fixed a bug in Last-Modified handling
+	* src/modules/flt_deleted.c: Added functionality for undelete deleted
+		threads
+	* src/modules/flt_cftp.c: Bugfix in unique id handling
+	* cgi-shared/templates/tpl_{html4,xhtml10}/forum_thread.html: Added link for
+		undeleting threads, added checkbox for easier deletion of threads, added
+		link for marking the whole thread visited
+	* cgi-shared/templates/tpl_{html4,xhtml10}/forum_begin.html: Added formular,
+		added link for deactivating the 'deleted threads view'
+	* cgi-shared/templates/tpl_{html4,xhtml10}/forum_end.html: Added formular
+		and submit button
+	* cgi-shared/config/modconf/modconf.dtd: Added attribute id for page,
+		changed element modules to element config
+	* cgi-shared/config/modconf/modules.xml: Changed <!DOCTYPE modules to
+		<!DOCTYPE config, added directives ThreadReturnAnchor and
+		DeletedUseCheckbox
+	* cgi-shared/ForumUtils.pm: Added fix for browser bugs (some browsers may
+		send Windows-1252 instead of UTF-8 or Latin-1)
+	* src/serverlib.c: Changed some sprintf() to snprintf()
+	* src/serverlib.h: Added cf_tokenizer() prototype
+	* src/modules/flt_extern.c: Added advanced external read-only interface
+	* src/modules/flt_selfhtml.c: Added functionality for parsing
+		[selfhtml:]-links (not yet tested!)
+	* src/utils.[ch]: Added list abstraction class
+
+2004-06-03 Christian Seiler <self@christian-seiler.de>
+	* cgi-shared/config/templates/tpl_html4/arcmonths.html:
+	* cgi-shared/config/templates/tpl_html4/arcthread.html:
+	* cgi-shared/config/templates/tpl_xhtml10/arcmonths.html:
+	* cgi-shared/config/templates/tpl_xhtml10/arcthread.html:
+		added links back to year and month overview to navigation bar
+
+2004-06-02 Christian Kruse <ckruse@wwwtech.de>
+	* src/modules/flt_openclose.c: Added new feature, threads can now
+		automatically be opened if there are new messages in it
+	* src/modules/flt_livefilter.c: You can now use the keywords 'true' and
+		'false', identifier 'visited' is now also supported, you can now use
+		the identifier 'visible'
+	* src/modules/flt_visited.c: Stripped debug code
+	* src/modules/flt_basic.c: Corrected indenting code
+	* src/modules/flt_posting.c: Fixed a bug with iframes, added new feature:
+		you can show images and iframes as a link instead of <img>/<iframe>
+	* src/modules/flt_link.c: Bugfix. Now <link> tags do no longer point to
+		invisible messages. <link> tags have a aaf=1 now, too, if aaf is set
+
+2004-05-27 Christian Kruse <ckruse@wwwtech.de>
+	* src/clienlib.h: Stripped some #ifdef because they were a failure
+	* src/modules/flt_deleted.c: Fixed a bug in BerkeleyDB handling
+	* src/Makefile.am: Added libcfclientlib_la_LDFLAGS
+	* src/modules/flt_visited.c: fixed bugs in BerkeleyDB handling
+	* cgi-shared/Plugins/MarkOwnVisited.pm: Changed BerkeleyDB handling
+	* cgi-shared/config/templates/tpl_*/*.html: Updated HTML templates; xhtml
+		1.0 templates are now valid xhtml 1.0, etc, pp
+	* cgi-shared/config/templates/tpl_{xhtml10,html4}/thread.html: Fixed bug (if
+		not closed)
+	* cgi-shared/config/templates/tpl_xhtml10/arcyears.html: Fixed bug (missing
+		{if $font})
+	* template_gen.pl: Changed a bug in \r handling
+	* cgi-shared/config/templates/tpl_{xhtml10,html4}/useredit.html: Added the
+		necessary {if $page} entry
+
+2004-05-18 Christian Kruse <ckruse@wwwtech.de>
+	* src/modules/flt_visited.c: Changed to BerkeleyDB. My tree algorithms are
+		very good for disk storaged databases.
+	* src/modules/flt_deleted.c: Also changed to BerkeleyDB.
+	* src/modules/flt_posting.c: Fixed some small bugs, added {$vname} variable
+	* src/fo_arcview.[ch]: Added configparser to this release
+	* src/clientlib.[ch]: Bugfixes, cleanup
+	* src/modules/*: Some 64-Bit-Fixes
+	* src/configparser.h: Some 64-Bit-Fixes
+
+2004-04-26 Christian Kruse <ckruse@wwwtech.de>
+	* src/clientlib.h, src/defines.h: Added another plugin type
+		(AFTER_POST_FILTER) which will be called after a successfully transmitted
+		posting
+	* src/fo_post.[ch]: Added a lot of functionality of the posting script
+	* cgi-bin/fo_{post,arcview}: removed perl scripts because they've been
+		replaced by C programs
+	* cgi-shared/templates/tpl_*/fatal.html: Removed because it's no longer
+		needed
+
+2004-04-25 Christian Kruse <ckruse@wwwtech.de>
+	* configure, src/modules/compile_modules.sh.in: Added support for libwww
+	* src/modules/Makefile.flt_remotesignature.in: Added new makefile for the
+		remote signature plugin
+	* src/fo_cleanup.c: Migrated program to the new directory structure (should
+		have been happen at release of beta4!)
+	* src/*.[ch]: Added documentation
+	* cgi-shared/docs: Added some documentation (not very much)
+	* src/fo_server.[ch], src/initfinish.c, src/modules/flt_cftp.c: added
+		a hash for unique ids
+
+2004-04-15 Christian Kruse <ckruse@wwwtech.de>
+	* src/fo_arcview.[ch]: Added thread view support for the archiv viewer
+	* src/configparser.[ch]: Deleted option QuotingChars for fo_arcview_conf
+	* src/modules/flt_posting.c: Added API function to convert message strings
+		to proper HTML format
+
+2004-04-14 Christian Kruse <ckruse@wwwtech.de>
+	* src/fo_arcview.[ch]: Added the archiv viewer. This nasty damned code is
+		*relly* fast. It manages to parse a 1mb XML index file and generate the
+		HTML output in 0.7 seconds :-)
+
+2004-04-06 Christian Kruse <ckruse@wwwtech.de>
+	* src/validate.[ch]: Added validation functions for the FTP protocol.
+
+2004-04-01 Christian Kruse <ckruse@wwwtech.de>
+	* src/validate.[ch]: Added validation functions for a lot of protocols.
+		Thanks to Christian Seiler for helping.
+
+2004-03-20 Christian Kruse <ckruse@wwwtech.de>
+	* src/validate.[ch]: Added validation functions for http links
+
+2004-03-13 Christian Kruse <ckruse@wwwtech.de>
+	* src/entitytable.h: Added a HTML entity table
+	* src/charconvert.[ch]: Added two functions to convert UTF-8
+		characters to HTML entities, if necessary.
+	* src/modules/flt_posting.c: Added support for HTML entities
+		for characters which cannot be displayed in the target charset
+	* src/clientlib.[hc]: Added module API functions
+
+2004-02-21 Christian Kruse <ckruse@wwwtech.de>
+	* src/modules/*.c: Stripped #include "fo_view.h" from lot
+		of files.
+	* src/perl/CForum-Configparser: Did some bugfixes and changed
+		interface. Now Perl plugins can define their own configuration
+		directives and callbacks (cool! ;)
+	* cgi-shared/Plugins/*.pm: Changed to the new API
+	* cgi-bin/fo_post: Changed to the new API
+	* cgi-shared/config/fo_post.conf.in: Deleted HTTPAuth.pm
+
+2004-02-20 Christian Kruse <ckruse@wwwtech.de>
+	* src/perl/CForum-Clientlib: Added an Perl interface for the
+		client library
+
+2004-02-18 Christian Kruse <ckruse@wwwtech.de>
+	* fo_post, fo_userconf: Changed plugin architecture; plugins now
+		call 'register_plugin' to register their callback routines.
+	* ForumUtils.pm: added 'register_plugin' and 'get_plugin_group'.
+		Now plugin handling is no longer script dependent.
+
+2004-02-17 Christian Kruse <ckruse@wwwtech.de>
+	* src/clientlib.h, src/fo_view.h: Migrated some of the
+		Datatypes from fo_view.h to clientlib.h due to they
+		are client independent.
+
+2004-02-13 Christian Kruse <ckruse@wwwtech.de>
+	* configparser.c: Changed behavior of get_conf_file,
+		added configuration options to this file
+	* fo_*: changed because of the new behavior of the
+		configuration file finding algorithm
+	* Makefile.in: added index target to the all dependencies
+	* fo_tid_index.c: changed global variable index to idx
+		because of the standard function index
+	* flt_admin.c: Sends no username in administration actions
+	* clientlib.c: fixed a little bug
+	* Makefile.in: added a perllibs-install target, added
+		CForum::Configparser
+	* src/perl/CForum-Configparser: initial release
+	* configure.in, configure: added CForum::Configparser
+
+2004-02-12 Christian Kruse <ckruse@wwwtech.de>
+	* ChangeLog: Added this ChangeLog file
+	* clientlib.c: code cleanup, no it is truly a library
+	* fo_view.c: moved send_posting and send_threadlist to
+		this file. These routines are client dependent
+	* src/perl/CForum-Template: added a perl interface for the
+		Classic Forum template engine
+	* templates: Changed template format to the Classic Forum
+		template engine
+	* Makefile.in: changed template handling and added perl
+		module
+	* template_gen.pl: several bugfixes because of line endings
+
+2004-02-11 Christian Kruse <ckruse@wwwtech.de>
+	* clientlib.c: stripped error_message and replaced it through
+		str_error_message. str_error_message now can use arguments
+		like printf(), the format string is the error string in the
+		errormessages.txt file. Valid placeholders are %d and %s.
+	* fo_view.c: replace error_message through str_error_message
+
+

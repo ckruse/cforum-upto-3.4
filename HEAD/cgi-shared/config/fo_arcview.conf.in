@@ -1,0 +1,55 @@
+#
+# \file fo_arcview.conf.in
+# \author Christian Kruse, <ckruse@wwwtech.de>
+#
+# The configuration for the archive viewer
+#
+# $LastChangedDate$
+# $LastChangedRevision$
+# $LastChangedBy$
+#
+
+<Filters>
+ AddFilter "@pkglibdir@/flt_tplmode.so" "flt_tplmode"
+ AddFilter "@pkglibdir@/flt_http.so" "flt_http"
+ AddFilter "@pkglibdir@/flt_frameset.so" "flt_frameset"
+ AddFilter "@pkglibdir@/flt_openclose.so" "flt_openclose"
+ AddFilter "@pkglibdir@/flt_posting.so" "flt_posting"
+ AddFilter "@pkglibdir@/flt_basic.so" "flt_basic"
+ AddFilter "@pkglibdir@/flt_listhighlight.so" "flt_listhighlight"
+ AddFilter "@pkglibdir@/flt_category.so" "flt_category"
+ AddFilter "@pkglibdir@/flt_deleted.so" "flt_deleted"
+ AddFilter "@pkglibdir@/flt_visited.so" "flt_visited"
+ AddFilter "@pkglibdir@/flt_owncss.so" "flt_owncss"
+ AddFilter "@pkglibdir@/flt_livefilter.so" "flt_livefilter"
+ AddFilter "@pkglibdir@/flt_httpauth.so" "flt_httpauth"
+ AddFilter "@pkglibdir@/flt_admin.so" "flt_admin"
+</Filters>
+
+<General>
+ SortYearList "up" # up or down
+ SortMonthList "down" # up or down
+ QuotingChars  "»» "
+
+ DateFormatList "%d. %m. %Y"
+</General>
+
+<Templates>
+  FatalTemplate "@pkglibdir@/%s_fatal.so"
+
+  YearsTemplate "@pkglibdir@/%s_arcyears.so"
+  YearListTemplate "@pkglibdir@/%s_arcyearlist.so"
+
+  MonthsTemplate "@pkglibdir@/%s_arcmonths.so"
+  MonthsListTemplate "@pkglibdir@/%s_arcmonthlist.so"
+
+  ThreadListMonthTemplate "@pkglibdir@/%s_arcthreadlist_month.so"
+
+  ThreadTemplate "@pkglibdir@/%s_arcthread.so"
+  ThreadListTemplate "@pkglibdir@/%s_arcthreadlist.so"
+  PerThreadTemplate "@pkglibdir@/%s_arcperthread.so"
+
+  UpDownTemplate "@pkglibdir@/%s_updown.so"
+</Templates>
+
+

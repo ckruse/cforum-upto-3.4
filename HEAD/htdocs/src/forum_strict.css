@@ -1,0 +1,304 @@
+table {
+  border-spacing:0px;
+  border-collapse:collapse;
+}
+
+table.header {
+  width:100%;
+}
+
+table.gray {
+  background-color:#EEEEEE;
+  color:inherit;
+}
+
+td {
+  padding:4px 4px 4px 4px;
+}
+
+td.hdrelse {
+  background-color:#EEEEEE;
+  vertical-align:bottom;
+}
+
+td.hdrquick {
+  color:inherit;
+  background-color:#EEEEEE;
+  vertical-align:top;
+}
+
+td.hdrtxt {
+  vertical-align:top;
+  background-color:#FFFFFF;
+  color:inherit;
+}
+
+td.info {
+  color:inherit;
+  background-color:#EEEEEE;
+  width:110px;
+  vertical-align:middle;
+  text-align:center;
+}
+
+td.descr {
+  text-align:right;
+  vertical-align:middle;
+}
+td.field {
+  vertical-algin:top;
+}
+
+input.inpfield {
+  width:410px;
+  font-family:Arial,Sans-serif;
+  font-size:10pt;
+}
+
+tt textarea {
+  font-family:Courier New,Courier;
+}
+
+div.nav {
+  color:inherit;
+  background-color:#FFEEDD;
+  padding:4px 4px 4px 4px;
+}
+
+div.updown {
+  background-color:#EEEEEE;
+  padding:4px 4px 4px 4px;
+}
+
+a {
+  font-weight:bold;
+}
+tt a {
+  font-weight:normal;
+}
+a:link {
+  color:#AA5522;
+  background-color:inherit;
+  text-decoration:underline;
+}
+a:visited {
+  color:#552200;
+  background-color:inherit;
+  text-decoration:underline;
+}
+
+a:active {
+  color:#000000;
+  background-color:inherit;
+  text-decoration:none;
+}
+a.an {
+  text-decoration:none;
+}
+a img {
+  border:0px;
+}
+
+div.quicklinks {
+  color:inherit;
+  background-color:#FFEEDD;
+  margin:2px 5px 2px 5px;
+  text-align:center;
+  padding:2px 2px 2px 2px;
+}
+div.quicklinks a {
+  font-weight:normal;
+}
+
+span.q {
+  color:#333333;
+  background-color:inherit;
+  display:block;
+}
+
+body {
+  margin-top:10px;
+  margin-bottom:10px;
+  background-color:#FFFFFF;
+  color:#000000;
+}
+
+/*dl,dd,dt {*/
+ol li {
+  margin-top:0px;
+  margin-bottom:0px;
+  white-space:nowrap;
+  list-style-type:none;
+}
+
+ol>li>a {
+  font-weight:bold;
+}
+ul>li>a {
+  font-weight:normal;
+}
+ul li {
+  margin-top:0px;
+  margin-bottom:0px;
+  white-space:nowrap;
+  list-style-image:url(/src/x3.gif);
+}
+
+p,h1,h2,h3,h4,ul,ol,li,div,td,th,address,nobr,b,i,dl,dd,dt {
+  font-family:Arial,sans-serif;
+  font-size:13.4px;
+}
+
+blockquote {
+  font-family:Arial,sans-serif;
+}
+
+h1,h2 {
+  margin-bottom:18px;
+}
+
+h1 {
+  font-size:26px;
+}
+
+h2 {
+  font-size:21px;
+}
+
+h3 {
+  font-size:16px;
+}
+
+li {
+  margin-top:3px;
+}
+
+pre {
+  font-family:'Courier New',Courier,monospace;
+  font-size:13.4px;
+  color:#0000C0;
+  background-color:inherit;
+}
+
+code,kbd,tt {
+  font-family:'Courier New',Courier,monospace;
+  color:#0000C0;
+  background-color:inherit;
+}
+
+var {
+  font-style:normal;
+  color:#0000C0;
+  background-color:inherit;
+}
+
+blockquote, cite {
+  font-style:italic;
+}
+
+.xmpcode {
+  border-width:10px;
+  border-style:solid;
+  border-color:#EEEEEE;
+  color:inherit;
+  background-color:#FFFFE0;
+}
+
+.code {
+  color:inherit;
+  background-color:#FFFFE0;
+}
+
+.tabxpl {
+  color:inherit;
+  background-color:#E4EEFF;
+}
+
+/* grauer balken */
+
+td.doc {
+  color:inherit;
+  background-color:#EEEEEE;
+}
+
+/* linkleisten */
+
+td.nav {
+  color:inherit;
+  background-color:#FFEEDD;
+}
+
+.qbar {
+  color:inherit;
+  background-color:#FFFFE0;
+  font-size:13.4px;
+  font-family:Arial,sans-serif;
+}
+
+.blue {
+  color:#0000C0;
+  background-color:inherit;
+}
+
+.toplinks {
+  color:inherit;
+  background-color:#FFEEDD;
+  border:1px solid #FFFFFF;
+  margin:0px;
+  padding:3px;
+}
+
+.bottomlinks {
+  color:inherit;
+  background-color:#FFEEDD;
+  border:1px solid #FFFFFF;
+  margin:0px;
+  padding:3px;
+}
+
+pre.normal {
+  color:#000000;
+  background-color:inherit;
+}
+
+.unicode {
+  font-size:15px;
+  font-family:Arial Unicode MS,Arial,sans-serif;
+}
+
+ins {
+  color:#009900;
+  background-color:inherit;
+  font-weight:bold;
+  text-decoration:none;
+}
+
+del {
+  color:#990000;
+  background-color:inherit;
+  font-weight:bold;
+  text-decoration:line-through;
+}
+
+big {
+  font-size:16px;
+}
+
+small {
+  font-size:10px;
+}
+
+.balken {
+  font-family:'Courier New',Courier,monospace;
+  font-size:10pt;
+  color:#000000;
+  background-color:inherit;
+  border-left:thick solid #AA5522;
+  padding-left:2mm;
+}
+
+span.answers {
+  display:none;
+}
+
+/* eof */

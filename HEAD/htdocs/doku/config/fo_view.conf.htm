@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="ISO-8859-1" standalone="yes"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-loose.dtd">
+
+<html>
+<head>
+<title>SELFHTML Forum: Doku: Konfiguration: Forums-Viewer</title>
+
+<meta name="description"    content="Die Doku des neuen SELFHTML Forums" />
+<meta name="keywords"       content="SELFHTML Forum, Doku, Dokumentation" />
+<meta name="author"         content="Christian Kruse, ckruse@wwwtech.de" />
+<meta name="DC.Publisher"   content="Christian Kruse, ckruse@wwwtech.de" />
+<meta name="DC.Date"        content="2002-04-08T16:46+02:00" />
+<meta name="DC.Identifier"  content="---" />
+<meta name="DC.Language"    content="de" />
+<meta name="DC.Rights"      content="" />
+<meta name="SELF.Firstdate" content="2002-04-08T16:46+02:00" />
+<meta name="SELF.Version"   content="0.01" />
+<meta name="SELF.Pagetype"  content="Information" />
+
+<link rel="shortcut icon" href="../../src/favicon.ico" />
+<link rel="stylesheet" type="text/css" href="../../src/forum.css" />
+</head>
+
+<body>
+<table cellpadding="4" cellspacing="0" border="0" width="100%">
+<tr><td bgcolor="#FFEEDD" class="nav"><a class="an" name="top"><img src="../../src/x2.gif" width="16" height="13" border="0" alt="Teil von" /></a> <a href="../../../"><b>SELFHTML Developer</b></a> <img src="../../src/x2.gif" width="16" height="13" border="0" alt="Teil von" /> <a href="../../"><b>SELFHTML Forum</b></a> <img src="../../src/x2.gif" width="16" height="13" border="0" alt="Teil von" /> <a href="../"><b>SELFHTML Forum Doku</b></a></td></tr>
+</table>
+<table cellpadding="4" cellspacing="0" border="0" width="100%">
+<tr><td bgcolor="#EEEEEE" class="doc" width="110"><img src="../../src/xweb.gif" width="106" height="109" border="0" alt="SELFHTML" /></td>
+<td bgcolor="#EEEEEE" class="doc" valign="bottom" width="100%"><h2>SELFHTML Forum<br />Doku: Konfiguration: Forums-Viewer</h2></td></tr>
+<tr><td bgcolor="#EEEEEE" class="doc" valign="top" align="center"><img src="../../src/x5.gif" width="30" height="20" vspace="6" border="0" alt="Informationsseite" /></td>
+<td bgcolor="#FFFFFF" valign="top">
+<p>
+<img src="../../src/xgdown.gif" width="14" height="10" border="0" alt="weiter unten" />&nbsp;<a href="#a1"><b>fo_view.conf</b></a><br />
+<img src="../../src/xgdown.gif" width="14" height="10" border="0" alt="weiter unten" />&nbsp;<a href="#a2"><b>ThreadsOpenByDefault</b></a><br />
+<img src="../../src/xgdown.gif" width="14" height="10" border="0" alt="weiter unten" />&nbsp;<a href="#a3"><b>DoQuote</b></a><br />
+<img src="../../src/xgdown.gif" width="14" height="10" border="0" alt="weiter unten" />&nbsp;<a href="#a4"><b>QuotingChars</b></a><br />
+<img src="../../src/xgdown.gif" width="14" height="10" border="0" alt="weiter unten" />&nbsp;<a href="#a5"><b>ShowThread</b></a><br />
+<img src="../../src/xgdown.gif" width="14" height="10" border="0" alt="weiter unten" />&nbsp;<a href="#a6"><b>VIPList</b></a><br />
+<img src="../../src/xgdown.gif" width="14" height="10" border="0" alt="weiter unten" />&nbsp;<a href="#a7"><b>ShowForumAsFrameset</b></a><br />
+<img src="../../src/xgdown.gif" width="14" height="10" border="0" alt="weiter unten" />&nbsp;<a href="#a8"><b>ReadMode</b></a><br />
+<img src="../../src/xgdown.gif" width="14" height="10" border="0" alt="weiter unten" />&nbsp;<a href="#a9"><b>DateFormatLoadTime</b></a><br />
+<img src="../../src/xgdown.gif" width="14" height="10" border="0" alt="weiter unten" />&nbsp;<a href="#a10"><b>DateFormatThreadList</b></a><br />
+<img src="../../src/xgdown.gif" width="14" height="10" border="0" alt="weiter unten" />&nbsp;<a href="#a11"><b>DateFormatThreadView</b></a><br />
+<img src="../../src/xgdown.gif" width="14" height="10" border="0" alt="weiter unten" />&nbsp;<a href="#a12"><b>Tage</b></a><br />
+<img src="../../src/xgdown.gif" width="14" height="10" border="0" alt="weiter unten" />&nbsp;<a href="#a13"><b>Monate</b></a><br />
+</p>
+<tr><td colspan="2" bgcolor="#EEEEEE" class="doc"><a href="#bottom"><img src="../../src/xgdown.gif" width="14" height="10" border="0" alt="nach unten" /></a>&nbsp;</td></tr>
+</table>
+
+<h2 class="Sh2"><a class="an" name="a1">fo_view.conf</a></h2>
+
+<table width="100%" cellpadding="10"><tr><td class="xmpcode" bgcolor="#FFFFE0"><pre>
+&lt;ForumBehavior&gt;
+ ThreadsOpenByDefault    &quot;yes&quot;
+ DoQuote                 &quot;yes&quot;
+ QuotingChars            &quot;&amp;#187;&amp;#187; &quot;
+ ShowThread              &quot;partitial&quot; # partitial, yes, none
+ VIPList                 &quot;&quot;
+ ShowForumAsFrameset     &quot;no&quot;
+ ReadMode                &quot;normal&quot; # normal, table
+&lt;/ForumBehavior&gt;
+
+&lt;Templates&gt;
+ # template configuration
+&lt;/Templates&gt;
+
+&lt;DateConfig&gt;
+ # Date format
+ #
+ # %D   long dayname
+ # %d   day
+ # %M   long monthname
+ # %m   month
+ # %y   year
+ # %i   minutes
+ # %h   hours
+ # %s   seconds
+ #
+ DateFormatLoadTime     &quot;%D, %d. %M %y, %h:%i:%s&quot;
+ DateFormatThreadList   &quot;%d. %m. %y, %h:%i&quot;
+ DateFormatThreadView   &quot;%d. %M %y, %h:%i&quot;
+
+ Monday                 &quot;Montag&quot;
+ Tuesday                &quot;Dienstag&quot;
+ Wednesday              &quot;Mittwoch&quot;
+ Thursday               &quot;Donnerstag&quot;
+ Friday                 &quot;Freitag&quot;
+ Saturday               &quot;Samstag&quot;
+ Sunday                 &quot;Sonntag&quot;
+
+ January                &quot;Januar&quot;
+ February               &quot;Februar&quot;
+ March                  &quot;M&amp;auml;rz&quot;
+ April                  &quot;April&quot;
+ May                    &quot;Mai&quot;
+ June                   &quot;Juni&quot;
+ July                   &quot;Juli&quot;
+ August                 &quot;August&quot;
+ September              &quot;September&quot;
+ October                &quot;Oktober&quot;
+ November               &quot;November&quot;
+ December               &quot;Dezember&quot;
+&lt;/DateConfig&gt;
+</pre></table>
+
+<p>
+ Eine typische Forums-Viewer-Konfiguration
+</p>
+
+
+<table bgcolor="#EEEEEE" class="doc" width="100%"><tr><td><a href="#top"><img src="../../src/xgoup.gif" width="14" height="10" border="0" alt="nach oben" /></a><a href="#bottom"><img src="../../src/xgdown.gif" width="14" height="10" border="0" alt="nach unten" /></a>&#160;</td></tr></table>
+
+<h2 class="Sh2"><a class="an" name="a2">ThreadsOpenByDefault</a></h2>
+
+<table bgcolor="#EEEEEE" class="doc" width="100%"><tr><td><a href="#top"><img src="../../src/xgoup.gif" width="14" height="10" border="0" alt="nach oben" /></a><a href="#bottom"><img src="../../src/xgdown.gif" width="14" height="10" border="0" alt="nach unten" /></a>&#160;</td></tr></table>
+
+<h2 class="Sh2"><a class="an" name="a3">DoQuote</a></h2>
+
+<table bgcolor="#EEEEEE" class="doc" width="100%"><tr><td><a href="#top"><img src="../../src/xgoup.gif" width="14" height="10" border="0" alt="nach oben" /></a><a href="#bottom"><img src="../../src/xgdown.gif" width="14" height="10" border="0" alt="nach unten" /></a>&#160;</td></tr></table>
+
+<h2 class="Sh2"><a class="an" name="a4">QuotingChars</a></h2>
+
+<table bgcolor="#EEEEEE" class="doc" width="100%"><tr><td><a href="#top"><img src="../../src/xgoup.gif" width="14" height="10" border="0" alt="nach oben" /></a><a href="#bottom"><img src="../../src/xgdown.gif" width="14" height="10" border="0" alt="nach unten" /></a>&#160;</td></tr></table>
+
+<h2 class="Sh2"><a class="an" name="a5">ShowThread</a></h2>
+
+<table bgcolor="#EEEEEE" class="doc" width="100%"><tr><td><a href="#top"><img src="../../src/xgoup.gif" width="14" height="10" border="0" alt="nach oben" /></a><a href="#bottom"><img src="../../src/xgdown.gif" width="14" height="10" border="0" alt="nach unten" /></a>&#160;</td></tr></table>
+
+<h2 class="Sh2"><a class="an" name="a6">VIPList</a></h2>
+
+<table bgcolor="#EEEEEE" class="doc" width="100%"><tr><td><a href="#top"><img src="../../src/xgoup.gif" width="14" height="10" border="0" alt="nach oben" /></a><a href="#bottom"><img src="../../src/xgdown.gif" width="14" height="10" border="0" alt="nach unten" /></a>&#160;</td></tr></table>
+
+<h2 class="Sh2"><a class="an" name="a7">ShowForumAsFrameset</a></h2>
+
+<table bgcolor="#EEEEEE" class="doc" width="100%"><tr><td><a href="#top"><img src="../../src/xgoup.gif" width="14" height="10" border="0" alt="nach oben" /></a><a href="#bottom"><img src="../../src/xgdown.gif" width="14" height="10" border="0" alt="nach unten" /></a>&#160;</td></tr></table>
+
+<h2 class="Sh2"><a class="an" name="a8">ReadMode</a></h2>
+
+<table bgcolor="#EEEEEE" class="doc" width="100%"><tr><td><a href="#top"><img src="../../src/xgoup.gif" width="14" height="10" border="0" alt="nach oben" /></a><a href="#bottom"><img src="../../src/xgdown.gif" width="14" height="10" border="0" alt="nach unten" /></a>&#160;</td></tr></table>
+
+<h2 class="Sh2"><a class="an" name="a9">DateFormatLoadTime</a></h2>
+
+<table bgcolor="#EEEEEE" class="doc" width="100%"><tr><td><a href="#top"><img src="../../src/xgoup.gif" width="14" height="10" border="0" alt="nach oben" /></a><a href="#bottom"><img src="../../src/xgdown.gif" width="14" height="10" border="0" alt="nach unten" /></a>&#160;</td></tr></table>
+
+<h2 class="Sh2"><a class="an" name="a10">DateFormatThreadList</a></h2>
+
+<table bgcolor="#EEEEEE" class="doc" width="100%"><tr><td><a href="#top"><img src="../../src/xgoup.gif" width="14" height="10" border="0" alt="nach oben" /></a><a href="#bottom"><img src="../../src/xgdown.gif" width="14" height="10" border="0" alt="nach unten" /></a>&#160;</td></tr></table>
+
+<h2 class="Sh2"><a class="an" name="a11">DateFormatThreadView</a></h2>
+
+<table bgcolor="#EEEEEE" class="doc" width="100%"><tr><td><a href="#top"><img src="../../src/xgoup.gif" width="14" height="10" border="0" alt="nach oben" /></a><a href="#bottom"><img src="../../src/xgdown.gif" width="14" height="10" border="0" alt="nach unten" /></a>&#160;</td></tr></table>
+
+<h2 class="Sh2"><a class="an" name="a12">Tage</a></h2>
+
+<table bgcolor="#EEEEEE" class="doc" width="100%"><tr><td><a href="#top"><img src="../../src/xgoup.gif" width="14" height="10" border="0" alt="nach oben" /></a><a href="#bottom"><img src="../../src/xgdown.gif" width="14" height="10" border="0" alt="nach unten" /></a>&#160;</td></tr></table>
+
+<h2 class="Sh2"><a class="an" name="a13">Monate</a></h2>
+
+<table cellpadding="4" cellspacing="0" border="0" width="100%">
+<tr><td bgcolor="#EEEEEE" class="doc"><a href="#top"><img src="../../src/xgoup.gif" width="14" height="10" border="0" alt="nach oben" /></a></td></tr>
+<tr><td bgcolor="#FFEEDD" class="nav"><a class="an"><img src="../../src/x2.gif" width="16" height="13" border="0" alt="Teil von" /></a> <a href="../../../"><b>SELFHTML Developer</b></a> <img src="../../src/x2.gif" width="16" height="13" border="0" alt="Teil von" /> <a href="../../"><b>SELFHTML Forum</b></a> <img src="../../src/x2.gif" width="16" height="13" border="0" alt="Teil von" /> <a href="../"><b>SELFHTML Forum Doku</b></a></td></tr>
+</table>
+
+<p><a class="an" name="bottom">&copy; 2000/2001</a> <img src="../../src/xgmail.gif" width="15" height="10" border="0" alt="E-Mail" />&nbsp;<a href="mailto:selfhtml@teamone.de">selfhtml@teamone.de</a> / version 1.0 by <img src="../../src/xgmail.gif" width="15" height="10" border="0" alt="E-Mail" />&nbsp;<a href="mailto:ckruse@wwwtech.de">Christian Kruse</a></p>
+</body>
+</html>

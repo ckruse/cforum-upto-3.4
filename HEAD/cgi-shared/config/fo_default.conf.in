@@ -1,0 +1,84 @@
+#
+# \file fo_default.conf.in
+# \author Christian Kruse, <ckruse@wwwtech.de>
+#
+# The default configuration
+#
+# $LastChangedDate$
+# $LastChangedRevision$
+# $LastChangedBy$
+#
+
+
+<General>
+ TemplateMode "html4"
+ MessagePath "@with_message_dir@"
+ ArchivePath "@with_archive_dir@"
+ SocketName "@with_socket_path@"
+
+ ErrorTemplate "@pkglibdir@/%s_errortpl.so"
+ ErrorMessages "@with_config_dir@/errormessages.txt"
+
+ BaseURL "/forum/"
+ UBaseURL "/forum/my/"
+ ArchiveURL "/forum/archive/"
+
+ PostScript "/cgi-bin/fo_post"
+ UPostScript "/cgi-bin/user/fo_post"
+
+ UserConfig "/cgi-bin/user/fo_userconf"
+ UserRegister "/cgi-bin/fo_userconf"
+
+ SharedMemIds "10000" "10001" "10002"
+
+ ExternCharset "ISO-8859-15"
+
+ AuthMode "http"
+</General>
+
+<DateConfig>
+ DateLocale "de_DE.ISO8859-1"
+</DateConfig>
+
+<Categories>
+ Category "ASP"
+ Category "BROWSER"
+ Category "CGI"
+ Category "CSS"
+ Category "DATENBANK"
+ Category "DESIGN"
+ Category "DHTML"
+ Category "E-MAIL"
+ Category "FTP"
+ Category "GRAFIK"
+ Category "HTML"
+ Category "HTTP"
+ Category "INTERNET-ANBINDUNG"
+ Category "JAVA"
+ Category "JAVASCRIPT"
+ Category "MEINUNG"
+ Category "MENSCHELEI"
+ Category "PERL"
+ Category "PHP"
+ Category "PROGRAMMIERTECHNIK"
+ Category "PROJEKTVERWALTUNG"
+ Category "PROVIDER"
+ Category "RECHT"
+ Category "SERVER"
+ Category "SOFTWARE"
+ Category "SONSTIGES"
+ Category "VB-SCRIPT"
+ Category "XML"
+ Category "XML-DERIVAT"
+ Category "XSL"
+ Category "ZUR INFO"
+ Category "ZU DIESEM FORUM"
+</Categories>
+
+<Users>
+ ConfigDirectory "@with_userconfig_dir@"
+ InactivityDelete "50"
+ SendMailBeforeDelete "yes"
+</Users>
+
+

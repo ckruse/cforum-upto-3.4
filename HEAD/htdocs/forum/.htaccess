@@ -1,0 +1,10 @@
+
+RewriteEngine On
+
+#RewriteCond %{REQUEST_URI} !^/?forum/my/
+#RewriteRule ^/?forum/(.*) /cgi-bin/fo_view$1 [L]
+DirectoryIndex /cgi-bin/fo_view
+
+RewriteCond %{REQUEST_URI} /?forum/my/
+RewriteRule /?forum/my/(.*) /cgi-bin/user/fo_view$1 [L]
+

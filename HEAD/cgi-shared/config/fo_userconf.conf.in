@@ -1,0 +1,77 @@
+#
+# \file fo_userconf.conf
+# \author Christian Kruse, <ckruse@wwwtech.de>
+#
+# The configuration for the user config program
+#
+# $LastChangedDate$
+# $LastChangedRevision$
+# $LastChangedBy$
+#
+
+<Modules>
+  AddModule "Plugins::RegisterName"
+  AddModule "Plugins::HTTPAuth"
+</Modules>
+
+<Form>
+  NecessaryField "EMail"
+
+  MinLength "UserName" "3"
+  MinLength "Password" "3"
+
+  # Edit-Options
+  MinLength "QuotingChars" "1"
+  MinLength "Name" "2"
+  MinLength "EMail" "2"
+  MinLength "Bye" "2"
+  MinLength "Hi" "2"
+
+  MaxLength "Bye" "120"
+  MaxLength "Hi" "120"
+  MaxLength "Name" "60"
+  MaxLength "EMail" "60"
+
+  MinVal "AutoReload"   "2"
+  MaxVal "AutoReload"   "30"
+</Form>
+
+<General>
+  SQLUser "forum"
+  SQLPass "9489500"
+  SQLDatabase "forum_users"
+  SQLHost "localhost"
+  SQLPort "3360"
+  SQLDriver "Pg"
+
+  ModuleConfig "@with_config_dir@/modconf/modules.xml"
+</General>
+
+<DateConfig>
+  FromUntilFormat "%d. %m. %Y, %H:%M"
+</DateConfig>
+
+<Templates>
+  Edit "@pkglibdir@/%s_useredit.so"
+  EditEntry "@pkglibdir@/%s_setting.so"
+  SectEntry "@pkglibdir@/%s_section.so"
+  PageEntry "@pkglibdir@/%s_pageentry.so"
+  EditOk "@pkglibdir@/%s_usereditok.so"
+  UpDown "@pkglibdir@/%s_updown.so"
+
+  ViewSettings "@pkglibdir@/%s_usersettings.so"
+
+  Register "@pkglibdir@/%s_userregister.so"
+  RegisterOk "@pkglibdir@/%s_userregok.so"
+
+  ChangePass "@pkglibdir@/%s_chpass.so"
+  ChangePassOk "@pkglibdir@/%s_chpassok.so"
+
+  Unregister "@pkglibdir@/%s_unreg.so"
+  UnregisterOk "@pkglibdir@/%s_unregok.so"
+
+  SendPass "@pkglibdir@/%s_send_pass.so"
+  SendPassErr "@pkglibdir@/%s_send_pass_err.so"
+  SendPassOk "@pkglibdir@/%s_send_pass_ok.so"
+</Templates>
+

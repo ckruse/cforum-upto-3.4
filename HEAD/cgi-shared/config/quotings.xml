@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<quotings>
+ <quote id="1">
+  <source>
+   <author email="ckruse@wwwtech.de">Christian Kruse</author>
+  </source>
+  <text>Blahr!</text>
+ </quote>
+ <quote id="2">
+  <source>
+   <author email="selfhtml@teamone.de">Stefan Muenz</author>
+   <document>http://selfhtml.teamone.de/</document>
+  </source>
+  <text>Blubb!!</text>
+ </quote>
+</quotings>
+

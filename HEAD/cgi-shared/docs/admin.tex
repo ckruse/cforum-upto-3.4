@@ -1,0 +1,420 @@
+\documentclass[a4paper,11pt]{article}
+
+\usepackage[T1]{fontenc}
+\usepackage[latin1]{inputenc}
+\usepackage{german}
+\usepackage[dvips,pdftex]{graphicx}
+\usepackage{ae,aecompl}
+
+\begin{document}
+
+\tableofcontents
+
+\section{Einleitung}
+Die Administration des Classic Forums gestaltet sich nach anfänglicher Konfiguration als recht
+einfach, da es weitestgehend autonom arbeitet. In dieser Dokumentation sollen die
+Konfigurations-Variablen durchgesprochen werden. Ausserdem wird auf einige Besonderheiten aufmerksam
+gemacht, die notwendig sind, um das Forum zu verwalten.
+
+Ich habe alle Konfigurations-Optionen beschrieben. Optionen, die nicht in der Beschreibung hier
+auftauchen, sind bisher wirkunglos und noch nicht implementiert.
+
+\section{Konfigurationsdatei \texttt{fo\_default.conf}}
+Diese Konfigurationsdatei ist die Haupt-Konfigurationsdatei des Classic Forums. Sie wird von allem
+Programmen und Scripten geparsed und ausgewertet. Sie enthält lediglich globale
+Konfigurations-Daten, die für alle Scripte notwendig sind.
+
+\subsection{Sektion \texttt{General}}
+
+\subsubsection{TemplateMode}
+\begin{tabular}{l|p{9cm}}
+Gültige Werte&Vorhandene Template-Modi (z. B. \texttt{html4} oder \texttt{xhtml10})\\
+\hline
+Beschreibung&Angabe des Standard-Template-Modus des Classic Forums.\\
+\hline
+Nutzung durch&alle HTML generierenden Scripte des Forums
+\end{tabular}
+
+\subsubsection{MessagePath}
+\begin{tabular}{l|p{9cm}}
+Gültige Werte&Pfad zu den Nachrichten-Dateien\\
+\hline
+Beschreibung&Pfad zu dem Nachrichten-Datei des Forums.\\
+\hline
+Nutzung durch&\texttt{fo\_server}, eventuelle Hilfs-Scripte
+\end{tabular}
+
+\subsubsection{ArchivePath}
+\begin{tabular}{l|p{9cm}}
+Gültige Werte&Pfad zu den Archiv-Dateien\\
+\hline
+Beschreibung&Pfad zum Wurzel-Verzeichnis des Archivs.\\
+\hline
+Nutzung durch&\texttt{fo\_arcview}, \texttt{fo\_server}
+\end{tabular}
+
+\subsubsection{SocketName}
+\begin{tabular}{l|p{9cm}}
+Gültige Werte&Pfad zum Unix-Domain-Socket des Forum-Servers\\
+\hline
+Beschreibung&Gibt den Pfad zum Unix-Domain-Socket des Forum-Server an.\\
+\hline
+Nutzung durch&\texttt{fo\_post}, \texttt{fo\_view}, \texttt{fo\_userconf}, \texttt{fo\_server}
+\end{tabular}
+
+\subsubsection{ErrorTemplate}
+\begin{tabular}{l|p{9cm}}
+Gültige Werte&Pfad zum Standard-Fehler-Template des Forums\\
+\hline
+Beschreibung&Gibt den Pfad zum Standard-Fehler-Template des Forums an. Vergessen Sie nicht das \texttt{\%s\%s} innerhalb des Pfads: das wird ersetzt durch den Template-Modus\\
+\hline
+Nutzung durch&Alle HTML generierenden Scripte des Forums
+\end{tabular}
+
+\subsubsection{ErrorMessages}
+\begin{tabular}{l|p{9cm}}
+Gültige Werte&Pfad zur Fehlermeldungen-Datei des Forums\\
+\hline
+Beschreibung&Gibt den Pfad zur Fehlermeldungen-Datei des Forums an.\\
+\hline
+Nutzung durch&Alle Scripte des Forums
+\end{tabular}
+
+\subsubsection{BaseURL}
+\begin{tabular}{l|p{9cm}}
+Gültige Werte&Basis-URL der Foren-Instanz\\
+\hline
+Beschreibung&Gibt die Basis-URL der Foren-Instanz an.\\
+\hline
+Nutzung durch&Alle HTML generierenden Scripte des Forums
+\end{tabular}
+
+\subsubsection{UBaseURL}
+\begin{tabular}{l|p{9cm}}
+Gültige Werte&Basis-URL der User-Ansicht der Foren-Instanz\\
+\hline
+Beschreibung&Gibt die Basis-URL der User-Ansicht dieser Foren-Instanz an.\\
+\hline
+Nutzung durch&Alle HTML generierenden Scripte des Forums
+\end{tabular}
+
+\subsubsection{ArchiveURL}
+\begin{tabular}{l|p{9cm}}
+Gültige Werte&Basis-URL zum Archiv der Foren-Instanz\\
+\hline
+Beschreibung&Gibt die Basis-URL des Archivs dieser Foren-Instanz an.\\
+\hline
+Nutzung durch&Alle HTML generierenden Scripte des Forums
+\end{tabular}
+
+\subsubsection{UserConfig}
+\begin{tabular}{l|p{9cm}}
+Gültige Werte&URL zum Konfigurationsscript der Foren-Instanz\\
+\hline
+Beschreibung&Gibt die URL zum Userprofil-Konfigurationsscript dieser Foren-Instanz an.\\
+\hline
+Nutzung durch&Alle HTML generierenden Scripte des Forums
+\end{tabular}
+
+\subsubsection{UserRegister}
+\begin{tabular}{l|p{9cm}}
+Gültige Werte&URL zum Registrierungsscript der Foren-Instanz\\
+\hline
+Beschreibung&Gibt die URL zum Registrierungsscript dieser Foren-Instanz an.\\
+\hline
+Nutzung durch&Alle HTML generierenden Scripte des Forums
+\end{tabular}
+
+\subsubsection{SharedMemIds}
+\begin{tabular}{l|p{9cm}}
+Gültige Werte&ID des Shared-Memory-Segments und ID der Semaphore\\
+\hline
+Beschreibung&Gibt als erstes Argument die ID des Shared-Memory-Segments an und als zweites Argument die ID der zugehörigen Semaphore.\\
+\hline
+Nutzung durch&Alle HTML generierenden Scripte des Forums
+\end{tabular}
+
+\subsubsection{ExternCharset}
+\begin{tabular}{l|p{9cm}}
+Gültige Werte&Erwartetes Characterset bei Eingaben vom User\\
+\hline
+Beschreibung&Der Character-Set, den das Classic Forum an den User schicken soll und den es vom User erwartet. Diese Option dient zur Lokalisierung des Forums. In Zukunft wird diese Option jedoch wahrscheinlich wegfallen, da aufgrund von Browser-Bugs nur noch UTF-8 unterstützt werden wird.\\
+\hline
+Nutzung durch&Alle HTML generierenden Scripte des Forums
+\end{tabular}
+
+\subsubsection{AuthMode}
+\begin{tabular}{l|p{9cm}}
+Gültige Werte&Authentifizierungs-Modi\\
+\hline
+Beschreibung&Diese Angabe legt den Authentifizierungs-Modus fest, der vom Forum verwandt wird. Bisher ist nur \texttt{http} implementiert.\\
+\hline
+Nutzung durch&Alle Scripte des Forums, die eine User-abhängige Ansicht zur Verfügung stellen
+\end{tabular}
+
+
+\subsection{Sektion \texttt{DateConfig}}
+\subsubsection{DateLocale}
+\begin{tabular}{l|p{9cm}}
+Gültige Werte&ein gültiges Locale\\
+\hline
+Beschreibung&Diese Angabe legt fest, mit welcher Lokalisierungs-Datei die Daten im Forum generiert werden sollen.\\
+\hline
+Nutzung durch&\texttt{fo\_post}, \texttt{fo\_view}, \texttt{fo\_arcview}
+\end{tabular}
+
+\subsection{Sektion \texttt{Categories}}
+\subsubsection{Category}
+\begin{tabular}{l|p{9cm}}
+Gültige Werte&Gültige Kategorien des Forums\\
+\hline
+Beschreibung&Diese Angabe legt fest, welche Kategorien für das Forum gültig sind. Die Angabe ist als Liste implementiert, so dass pro Kategorie ein \texttt{Category}-Eintrag gemacht werden muss.\\
+\hline
+Nutzung durch&\texttt{fo\_post}, \texttt{fo\_server}, \texttt{fo\_view}
+\end{tabular}
+
+\subsection{Sektion \texttt{Users}}
+\subsubsection{ConfigDirectory}
+\begin{tabular}{l|p{9cm}}
+Gültige Werte&Basis-Pfad zu den User-Konfigurationsdateien\\
+\hline
+Beschreibung&Diese Angabe legt den Basis-Pfad zu den User-Konfigurationsdateien des Forums fest.\\
+\hline
+Nutzung durch&Alle Programme ausser \texttt{fo\_server}
+\end{tabular}
+
+
+\section{Konfigurations-Datei \texttt{fo\_server.conf}}
+
+Diese Konfigurations-Datei konfiguriert den Forums-Server. In ihr sind rein Server-spezifische
+Einstellungen aufgehoben.
+
+\subsection{Sektion \texttt{Filters}}
+\subsubsection{AddFilter}
+\begin{tabular}{l|p{9cm}}
+Gültige Werte&Ein gültiges Server-Plugin\\
+\hline
+Beschreibung&Diese Angabe lädt pro Eintrag ein Server-Plugin.\\
+\end{tabular}
+
+\subsection{Sektion \texttt{General}}
+\subsubsection{SortThreads}
+\begin{tabular}{l|p{9cm}}
+Gültige Werte&»1« oder »2«\\
+\hline
+Beschreibung&Diese Angabe beschreibt, wie die Threads sortiert werden sollen. Dabei steht »1« für aufsteigend und »2« für absteigend jeweils nach Datum sortiert.\\
+\end{tabular}
+
+\subsubsection{SortMessages}
+\begin{tabular}{l|p{9cm}}
+Gültige Werte&»1« oder »2«\\
+\hline
+Beschreibung&Diese Angabe beschreibt, wie die Thread-Nachrichten sortiert werden sollen. Analog zu \texttt{SortThreads} steht dabei »1« für aufsteigende und »2« für absteigende Sortierung nach Datum.\\
+\end{tabular}
+
+\subsubsection{RunArchiver}
+\begin{tabular}{l|p{9cm}}
+Gültige Werte&Integer-Zahl\\
+\hline
+Beschreibung&Diese Angabe legt die Anzahl der Sekunden des Archiver-Intervalls fest. Nach jeweils \texttt{RunArchiver} Sekunden wird der Archiver gestartet und die Threads auf die Festplatte geschrieben.\\
+\end{tabular}
+
+\subsubsection{ErrorLog}
+\begin{tabular}{l|p{9cm}}
+Gültige Werte&Pfad zur Log-Datei für Fehler\\
+\hline
+Beschreibung&Diese Direktive legt den Pfad zur Log-Datei für Fehler fest.
+\end{tabular}
+
+\subsubsection{StdLog}
+\begin{tabular}{l|p{9cm}}
+Gültige Werte&Pfad zur Log-Datei für Standard-Ausgaben\\
+\hline
+Beschreibung&Diese Direktive legt den Pfad zur Log-Datei für Standard-Ausgaben fest.
+\end{tabular}
+
+\subsubsection{PIDFile}
+\begin{tabular}{l|p{9cm}}
+Gültige Werte&Pfad zur PID-Datei\\
+\hline
+Beschreibung&Diese Direktive legt den Pfad zur PID-Datei des Forum-Servers fest. Beim Starten wird diese Datei (falls sie existiert) ausgelesen und überprüft, ob bereits ein Forums-Server läuft. Ist das der Fall, so wird der Start unterbunden und das Programm beendet sich.
+\end{tabular}
+
+\subsection{Sektion \texttt{Archiving}}
+\subsubsection{MainFileMaxBytes}
+\begin{tabular}{l|p{9cm}}
+Gültige Werte&Integer-Zahl\\
+\hline
+Beschreibung&Diese Direktive beschreibt, wie gross die Hauptdatei maximal sein darf. Dabei werden jedoch nur die reinen Daten beachtet. Das HTML-Gerüst wird ignoriert. Die Angabe muss in Byte erfolgen.
+\end{tabular}
+
+\subsubsection{MainFileMaxPostings}
+\begin{tabular}{l|p{9cm}}
+Gültige Werte&Integer-Zahl\\
+\hline
+Beschreibung&Diese Direktive beschreibt, wieviele Postings die Hauptdatei maximal haben darf.
+\end{tabular}
+
+\subsubsection{MainFileMaxThreads}
+\begin{tabular}{l|p{9cm}}
+Gültige Werte&Integer-Zahl\\
+\hline
+Beschreibung&Diese Direktive beschreibt, wieviele Threads die Hauptdatei maximal haben darf.
+\end{tabular}
+
+\section{fo\_arcview.conf}
+Diese Konfigurations-Datei konfiguriert den Forums-Archivviewer. Im wesentlichen sind das Angaben
+von Templates und ansonsten nicht viel mehr.
+
+\subsection{Sektion \texttt{Filters}}
+\subsubsection{AddFilter}
+\begin{tabular}{l|p{9cm}}
+Gültige Werte&Archivviewer-Plugins\\
+\hline
+Beschreibung&Mit dieser Direktive ist es möglich, Plugins für den Archiv-Viewer zu laden. Pro Direktive muss ein Plugin angegeben werden.
+\end{tabular}
+
+\subsection{Sektion \texttt{General}}
+\subsubsection{SortYearList}
+\begin{tabular}{l|p{9cm}}
+Gültige Werte&»up« und »down«\\
+\hline
+Beschreibung&Diese Direktive legt fest, ob die Jahres-Ansicht aufsteigend (»up«) oder absteigend (»down«) sortiert werden soll.
+\end{tabular}
+
+\subsubsection{SortMonthList}
+\begin{tabular}{l|p{9cm}}
+Gültige Werte&»up« und »down«\\
+\hline
+Beschreibung&Diese Direktive legt fest, ob die Monats-Ansicht aufsteigend (»up«) oder absteigend (»down«) sortiert werden soll.
+\end{tabular}
+
+\subsubsection{QuotingChars}
+\begin{tabular}{l|p{9cm}}
+Gültige Werte&Ein beliebiges Quotingzeichen\\
+\hline
+Beschreibung&Diese Direktive legt die Standard-Quotingzeichen fest.
+\end{tabular}
+
+\subsubsection{DateFormatList}
+\begin{tabular}{l|p{9cm}}
+Gültige Werte&Ein Datumsformat-String. Siehe auch »man strftime«\\
+\hline
+Beschreibung&Diese Direktive legt das Datumsformat für die Monats-Ansicht fest.
+\end{tabular}
+
+\subsection{Sektion \texttt{Templates}}
+
+\subsubsection{FatalTemplate}
+\begin{tabular}{l|p{9cm}}
+Gültige Werte&Pfad zum Fehler-Template des Archivviewers\\
+\hline
+Beschreibung&Diese Direktive beschreibt den Pfad zum Fehler-Template des Archivviewers
+\end{tabular}
+
+\subsubsection{YearsTemplate}
+\begin{tabular}{l|p{9cm}}
+Gültige Werte&Pfad zum Template für die Jahres-Ansicht des Archivviewers\\
+\hline
+Beschreibung&Diese Direktive beschreibt den Pfad zum Template für die Jahres-Ansicht des Archivviewers
+\end{tabular}
+
+\subsubsection{YearListTemplate}
+\begin{tabular}{l|p{9cm}}
+Gültige Werte&Pfad zum Jahres-Listen-Template des Archivviewers\\
+\hline
+Beschreibung&Diese Direktive beschreibt den Pfad zum Listen-Template für die Jahres-Ansicht des Archivviewers
+\end{tabular}
+
+\subsubsection{MonthsTemplate}
+\begin{tabular}{l|p{9cm}}
+Gültige Werte&Pfad zum Template für die Monats-Ansicht und die Threadlisten-Ansicht \\
+\hline
+Beschreibung&Diese Direktive beschreibt den Pfad zum Template für die Monats-Ansicht und die Threadlisten-Ansicht des Archivviewers. Dabei bilden alle Threads eines Monats die Threadlisten-Ansicht
+\end{tabular}
+
+\subsubsection{MonthsListTemplate}
+\begin{tabular}{l|p{9cm}}
+Gültige Werte&Pfad zum Listen-Template für die Monats-Ansicht\\
+\hline
+Beschreibung&Diese Direktive beschreibt den Pfad zum Listen-Template für die Monats-Ansicht des Archivviewers
+\end{tabular}
+
+\subsubsection{ThreadListMonthTemplate}
+\begin{tabular}{l|p{9cm}}
+Gültige Werte&Pfad zum Listen-Template für die Threadlisten-Ansicht\\
+\hline
+Beschreibung&Diese Direktive beschreibt den Pfad zum Listen-Template für die Threadlisten-Ansicht des Archivviewers
+\end{tabular}
+
+\subsubsection{ThreadTemplate}
+\begin{tabular}{l|p{9cm}}
+Gültige Werte&Pfad zum Template für die Thread-Ansicht\\
+\hline
+Beschreibung&Diese Direktive beschreibt den Pfad zum Template für die Thread-Ansicht des Archivviewers
+\end{tabular}
+
+\subsubsection{ThreadListTemplate}
+\begin{tabular}{l|p{9cm}}
+Gültige Werte&Pfad zum Listen-Template für die Thread-Ansicht\\
+\hline
+Beschreibung&Diese Direktive beschreibt den Pfad zum Listen-Template für die Thread-Ansicht des Archivviewers
+\end{tabular}
+
+\subsubsection{PerThreadTemplate}
+\begin{tabular}{l|p{9cm}}
+Gültige Werte&Pfad zum Posting-Template für die Thread-Ansicht\\
+\hline
+Beschreibung&Diese Direktive beschreibt den Pfad zum Posting-Template für die Thread-Ansicht des Archivviewers
+\end{tabular}
+
+\subsubsection{UpDownTemplate}
+\begin{tabular}{l|p{9cm}}
+Gültige Werte&Pfad zum Trennungs-Template für die Thread-Ansicht\\
+\hline
+Beschreibung&Diese Direktive beschreibt den Pfad zum Trennungs-Template für die Thread-Ansicht des Archivviewers. Das Template wird dazu benutzt, Postings im resultierenden HTML-Dokument voneinander zu trennen.
+\end{tabular}
+
+\section{fo\_post.conf}
+\subsection{Sektion \texttt{General}}
+
+\subsubsection{AddFilter}
+\begin{tabular}{l|p{9cm}}
+Gültige Werte&Laden von Plugins\\
+\hline
+Beschreibung&Diese Direktive lädt Plugins für das Posting-Programm des Forums.
+\end{tabular}
+
+\subsubsection{PostingUrl}
+\begin{tabular}{l|p{9cm}}
+Gültige Werte&Patterns für URLs, die URLs zu einem Posting (Posting-Referenz) darstellen\\
+\hline
+Beschreibung&Das Forum verwaltet Links auf Postings (Posting-Referenzen) intern anders als »normale« Links. Deshalb ist es notwendig, dem Posting-Script klarzumachen, welche URLs Links auf Postings darstellen.
+\end{tabular}
+
+\subsubsection{FieldConfig}
+\begin{tabular}{l|p{9cm}}
+Gültige Werte&1. Argument: Feldname, 2. Argument: minimale Länge, 3. Argument: maximale Länge\\
+\hline
+Beschreibung&Die Validierungs-Funktionen des Forums sind darauf ausgelegt, dass nichts im Code geändert werden muss, wenn sich mal die Bedingungen für die Validierung ändern. Deshalb ist es notwendig, für jedes vom Formular übertragene Feld, dass validiert werden soll, anzugeben, wie lang es maximal sein darf und wie lang es minimal sein muss. \textbf{Wichtig:} es werden nur Felder überprüft, die auch übermittelt wurden. Wurde ein Feld nicht übermittelt, wird \textbf{kein} Fehler zurückgegeben.
+\end{tabular}
+
+\subsubsection{FieldNeeded}
+\begin{tabular}{l|p{9cm}}
+Gültige Werte&1. Argument: Feldname, 2. Argument: yes|no, 3. Argument: yes|no\\
+\hline
+Beschreibung&Mit dieser Direktive kann man bestimmen, welcher Felder wann zwingend angegeben werden müssen. Im ersten Argument wird der Name des Feldes übergeben, während im zweiten Argument bestimmt wird, ob das Feld bei einem neuen Thread angegeben werden muss (»yes« oder »no«). Das dritte Argument bestimmt, ob ein Feld bei einem neuen Posting angegeben werden muss (wieder »yes« oder »no«).
+\end{tabular}
+
+\subsection{Sektion \texttt{Images}}
+\subsubsection{Image}
+\begin{tabular}{l|p{9cm}}
+Gültige Werte&1. Argument: Kürzel, 2. Argument: URL zum Bild, 3. Argument: alt-Text\\
+\hline
+Beschreibung&Diese Direktive definiert die \texttt{msg}-Elemente.
+\end{tabular}
+
+
+
+\end{document}
+
