@@ -63,6 +63,16 @@ static const u_char *symbols[] = {
 #define TOK_RPAREN       0x09
 #define TOK_CONTAINS_NOT 0x0A
 
+#define T_STRING 0x00
+#define T_INT    0x01
+#define T_DATE   0x02
+#define T_BOOL   0x04
+
+typedef struct {
+  int type;
+  void *val;
+} t_flt_lf_result;
+
 typedef struct s_node {
   int type,prec;
   u_char *content;
@@ -372,218 +382,336 @@ int flt_lf_form(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cf_tem
 }
 /* }}} */
 
+
+/* {{{ flt_lf_to_int */
+int flt_lf_intval(const u_char *val) {
+  register u_char *ptr;
+
+  for(ptr=(u_char *)val;*ptr && !isdigit(*ptr);++ptr);
+
+  if(*ptr) return strtol(ptr,NULL,10);
+  return 0;
+}
+/* }}} */
+
+/* {{{ flt_fl_to_string */
+void flt_lf_to_string(t_flt_lf_result *v) {
+  u_char buff[256];
+
+  switch(v->type) {
+    case T_BOOL:
+      v->val = strdup(v->val ? "true" : "false");
+      break;
+    case T_STRING:
+      break;
+    case T_INT:
+      snprintf(buff,256,"%d",(int)v->val);
+      v->val = strdup(buff);
+      break;
+    case T_DATE:
+      snprintf(buff,256,"%ld",(time_t)v->val);
+      v->val = strdup(buff);
+      break;
+  }
+
+  v->type = T_STRING;
+}
+/* }}} */
+
+/* {{{ flt_lf_to_bool */
+void flt_lf_to_bool(t_flt_lf_result *v) {
+  u_char *tmp;
+
+  switch(v->type) {
+    case T_BOOL:
+      break;
+    case T_STRING:
+      tmp = v->val;
+
+      if(*((u_char *)v->val)) v->val = (void *)1;
+      else v->val = (void *)0;
+
+      free(tmp);
+      break;
+    case T_INT:
+    case T_DATE:
+      if(v->val) v->val = (void *)1;
+      else v->val = (void *)0;
+  }
+
+  v->type = T_BOOL;
+}
+/* }}} */
+
+/* {{{ flt_lf_to_int */
+void flt_lf_to_int(t_flt_lf_result *v) {
+  u_char *tmp;
+
+  switch(v->type) {
+    case T_STRING:
+      tmp = v->val;
+      v->val = (void *)flt_lf_intval(v->val);
+      break;
+    case T_BOOL:
+    case T_DATE:
+    case T_INT:
+      break;
+  }
+
+  v->type = T_INT;
+}
+/* }}} */
+
+/* {{{ flt_lf_to_date */
+void flt_lf_to_date(t_flt_lf_result *v) {
+  u_char *tmp;
+
+  switch(v->type) {
+    case T_STRING:
+      tmp = v->val;
+      v->val = (void *)transform_date(v->val);
+      free(tmp);
+      break;
+    case T_BOOL:
+      v->val = 0;
+      break;
+    case T_INT:
+    case T_DATE:
+      break;
+  }
+
+  v->type = T_DATE;
+}
+/* }}} */
+
+/* {{{ flt_lf_r2l */
+void flt_lf_r2l(t_flt_lf_result *l,t_flt_lf_result *r) {
+  switch(l->type) {
+    case T_BOOL:
+      flt_lf_to_bool(r);
+      break;
+    case T_STRING:
+      flt_lf_to_string(r);
+      break;
+    case T_INT:
+      flt_lf_to_int(r);
+      break;
+    case T_DATE:
+      flt_lf_to_date(r);
+      break;
+  }
+}
+/* }}} */
+
+/* {{{ flt_lf_is_true */
+int flt_lf_is_true(t_flt_lf_result *v) {
+  switch(v->type) {
+    case T_STRING:
+      return *((u_char *)v->val);
+    default:
+      return (int)v->val;
+  }
+}
+/* }}} */
+
+
 /* {{{ flt_lf_evaluate */
-u_char *flt_lf_evaluate(t_flt_lf_node *n,t_message *msg,u_int64_t tid) {
-  u_char *l = NULL,*r = NULL;
+t_flt_lf_result *flt_lf_evaluate(t_flt_lf_node *n,t_message *msg,u_int64_t tid) {
   u_char buff[50];
   u_char *ret = NULL;
   t_mod_api is_visited = cf_get_mod_api_ent("is_visited");
+  t_flt_lf_result *result = fo_alloc(NULL,1,sizeof(*result),FO_ALLOC_CALLOC);
+  t_flt_lf_result *l = NULL,*r = NULL,*tmp;
 
   if(!n) return NULL;
 
   switch(n->type) {
     case TOK_CONTAINS:
+      /* {{{ contains */
       l = flt_lf_evaluate(n->left,msg,tid);
       r = flt_lf_evaluate(n->right,msg,tid);
 
-      if(l == NULL && r == NULL) {
-        ret = (u_char *)1;
-      }
-      else {
-        if(l == (u_char *)1 && r == (u_char *)1) {
-          ret = (u_char *)1;
-        }
-        else {
-          if(l == NULL || r == NULL || l == (u_char *)1 || r == (u_char *)1) {
-            ret = NULL;
-          }
-          else {
-            if(flt_lf_case_strstr(l,r)) {
-              ret = (u_char *)1;
-            }
-            else {
-              ret = NULL;
-            }
-          }
-        }
-      }
+      flt_lf_to_string(l);
+      flt_lf_to_string(r);
 
-      return ret;
+      result->type = T_BOOL;
+
+      if(flt_lf_case_strstr(l->val,r->val)) result->val  = (void *)1;
+      else result->val  = (void *)0;
+
+      if(l->type == T_STRING) free(l->val);
+      if(r->type == T_STRING) free(r->val);
+      free(r);
+      free(l);
+
+      return result;
+      /* }}} */
 
     case TOK_CONTAINS_NOT:
+      /* {{{ contains not */
       l = flt_lf_evaluate(n->left,msg,tid);
       r = flt_lf_evaluate(n->right,msg,tid);
 
-      if(l == NULL && r == NULL) {
-        ret = NULL;
-      }
-      else {
-        if(l == (u_char *)1 && r == (u_char *)1) {
-          ret = NULL;
-        }
-        else {
-          if(l == NULL || r == NULL || l == (u_char *)1 || r == (u_char *)1) {
-            ret = (u_char *)1;
-          }
-          else {
-            if(flt_lf_case_strstr(l,r)) {
-              ret = NULL;
-            }
-            else {
-              ret = (u_char *)1;
-            }
-          }
-        }
-      }
+      flt_lf_to_string(l);
+      flt_lf_to_string(r);
 
-      return ret;
+      result->type = T_BOOL;
+
+      if(flt_lf_case_strstr(l->val,r->val)) result->val = (void *)0;
+      else result->val = (void *)1;
+
+      if(l->type == T_STRING) free(l->val);
+      if(r->type == T_STRING) free(r->val);
+      free(r);
+      free(l);
+
+      return result;
+      /* }}} */
 
     case TOK_EQ:
+      /* {{{ equal */
       l = flt_lf_evaluate(n->left,msg,tid);
       r = flt_lf_evaluate(n->right,msg,tid);
 
-      if(l == NULL && r == NULL) {
-        ret = (u_char *)1; /* true: both undefined */
+      flt_lf_r2l(l,r);
+      result->type = T_BOOL;
+
+      if(l->type == T_STRING) {
+        if(cf_strcasecmp(l->val,r->val) == 0) result->val = (void *)1; /* true: strings are equal */
+        else result->val = (void *)0;
       }
       else {
-        if(l == (u_char *)1 && r == (u_char *)1) {
-          ret = (u_char *)1; /* true: both true */
-        }
-        else {
-          if(!l || !r || l == (u_char *)1 || r == (u_char *)1) {
-            ret = NULL;      /* false: only one of them has this value */
-          }
-          else {
-            if(cf_strcasecmp(l,r) == 0) {
-              ret = (u_char *)1; /* true: strings are equal */
-            }
-            else {
-              ret = NULL;
-            }
-          }
-        }
+        if(l->val == r->val) result->val = (void *)1;
+        else result->val = (void *)0;
       }
 
-      if(l > (u_char *)1) free(l);
-      if(r > (u_char *)1) free(r);
+      if(l->type == T_STRING) free(l->val);
+      if(r->type == T_STRING) free(r->val);
+      free(r);
+      free(l);
 
-      return ret;
+      return result;
+      /* }}} */
 
     case TOK_NE:
+      /* {{{ not equal */
       l = flt_lf_evaluate(n->left,msg,tid);
       r = flt_lf_evaluate(n->right,msg,tid);
 
-      if(l == NULL && r == NULL) {
-        ret = NULL;      /* false: both are undefined */
+      if(l->type == T_STRING) {
+        if(cf_strcasecmp(l->val,r->val) == 0) result->val = (void *)0; /* false: strings are equal */
+        else result->val = (void *)1;
       }
       else {
-        if(l == (u_char *)1 && r == (u_char *)1) {
-          ret = NULL;      /* false: both are true */
-        }
-        else {
-          if(!l || !r || l == (u_char *)1 || r == (u_char *)1) {
-            ret = (u_char *)1; /* true: only one of them has this value */
-          }
-          else {
-            if(cf_strcasecmp(l,r) == 0) {
-              ret = NULL;      /* false: strings are equal */
-            }
-            else {
-              ret = (u_char *)1;
-            }
-          }
-        }
+        if(l->val == r->val) result->val = (void *)0;
+        else result->val = (void *)1;
       }
 
-      if(l > (u_char *)1) free(l);
-      if(r > (u_char *)1) free(r);
+      flt_lf_r2l(l,r);
+      result->type = T_BOOL;
 
-      return ret;
+      if(l->type == T_STRING) free(l->val);
+      if(r->type == T_STRING) free(r->val);
+      free(r);
+      free(l);
+
+      return result;
+      /* }}} */
 
     case TOK_OR:
+      /* {{{ or */
+      result->type = T_BOOL;
       l = flt_lf_evaluate(n->left,msg,tid);
-      if(l) ret = (u_char *)1;
+      if(flt_lf_is_true(l)) result->val = (void *)1;
 
-      if(!ret) {
+      if(!result->val) {
         r = flt_lf_evaluate(n->right,msg,tid);
-        if(r) ret = (u_char *)1;
+        if(flt_lf_is_true(r)) result->val = (void *)1;
       }
 
-      if(l > (u_char *)1) free(l);
-      if(r > (u_char *)1) free(r);
+      if(l->type == T_STRING) free(l->val);
+      if(r && r->type == T_STRING) free(r->val);
+      free(r);
+      free(l);
 
-      return ret;
+      return result;
+      /* }}} */
 
     case TOK_AND:
+      /* {{{ and */
       l = flt_lf_evaluate(n->left,msg,tid);
       r = flt_lf_evaluate(n->right,msg,tid);
 
-      if(!l && !r) {
-        ret = (u_char *)1; /* true: both are undefined */
-      }
-      else {
-        if(r == (u_char *)1 && l == (u_char *)1) {
-          ret = (u_char *)1;
-        }
-        else {
-          if(!l || !r || r == (u_char *)1 || l == (u_char *)1) {
-            ret = NULL;      /* false: only one undefined */
-          }
-          else {
-            if(cf_strcasecmp(r,l) == 0) {
-              ret = (char *)1; /* true: strings are equal */
-            }
-            else {
-              ret = NULL;
-            }
-          }
-        }
-      }
+      flt_lf_to_bool(l);
+      flt_lf_to_bool(r);
 
-      if(l > (u_char *)1) free(l);
-      if(r > (u_char *)1) free(r);
+      result->type = T_BOOL;
 
-      return ret;
+      if(!l->val || !r->val) result->val = (void *)0;
+      else result->val = (void *)1;
+
+      free(l);
+      free(r);
+
+      return result;
+      /* }}} */
 
     case TOK_ID:
+      /* {{{ id */
       if(n->content > (u_char *)1) {
         switch(*n->content) {
-          case 'm':
-            snprintf(buff,50,"%lld",msg->mid);
-            return strdup(buff);
-          case 't':
-            snprintf(buff,50,"%lld",tid);
-            return strdup(buff);
           case 'a':
-            return strdup(msg->author.content);
+            result->type = T_STRING;
+            result->val  = strdup(msg->author.content);
+            return result;
           case 's':
-            return strdup(msg->subject.content);
+            result->type = T_STRING;
+            result->val  = strdup(msg->subject.content);
+            return result;
           case 'c':
-            return msg->category.len ? strdup(msg->category.content) : NULL;
+            result->type = T_STRING;
+            result->val  = msg->category.len ? strdup(msg->category.content) : strdup("");
+            return result;
           case 'd':
-            snprintf(buff,50,"%ld",msg->date);
-            return strdup(buff);
+            result->type = T_DATE;
+            result->val  = (void *)msg->date;
+            return result;
           case 'l':
-            snprintf(buff,50,"%d",msg->level);
-            return strdup(buff);
+            result->type = T_INT;
+            result->val = (void *)msg->level;
+            return result;
           case 'v':
+            result->type = T_BOOL;
             if(cf_strcasecmp(n->content,"visited") == 0) {
-              if(is_visited) return (u_char *)(is_visited(&(msg->mid)) == NULL ? 0 : 1);
-              else return NULL;
+              if(is_visited) result->val = (void *)(is_visited(&(msg->mid)) == NULL ? 0 : 1);
+              else result->val = (void *)0;
             }
-            else return (u_char *)(msg->may_show == 0 ? 0 : 1);
+            else result->val = (void *)(msg->may_show == 0 ? 0 : 1);
+            return result;
         }
       }
-      else return (u_char *)(n->content == (u_char *)1 ? 1 : 0);
+      else {
+        result->type = T_BOOL;
+        result->val  = (void *)(n->content == (u_char *)1 ? 1 : 0);
+        return result;
+      }
+      /* }}} */
 
     case TOK_STR:
-      return strdup(n->content);
+      result->type = T_STRING;
+      result->val  = strdup(n->content);
+      return result;
 
     case TOK_LPAREN:
-      if(n->argument) ret = flt_lf_evaluate(n->argument,msg,tid);
-
-      else ret = NULL;
-      return ret;
+      result->type = T_BOOL;
+      if(n->argument) {
+        tmp = flt_lf_evaluate(n->argument,msg,tid);
+        flt_lf_to_bool(tmp);
+        result->val = tmp->val;
+        free(tmp);
+      }
+      else result->val = (void *)0;
+      return result;
   }
 
   return NULL;
@@ -593,13 +721,19 @@ u_char *flt_lf_evaluate(t_flt_lf_node *n,t_message *msg,u_int64_t tid) {
 /* {{{ flt_lf_filter */
 int flt_lf_filter(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_message *msg,u_int64_t tid,int mode) {
   if(mode & CF_MODE_THREADVIEW) return FLT_DECLINE;
+  t_flt_lf_result *res;
 
   if(flt_lf_active) {
     if(flt_lf_first && flt_lf_success) {
-      if(flt_lf_evaluate(flt_lf_first,msg,tid) == 0) msg->may_show = 0;
+      res = flt_lf_evaluate(flt_lf_first,msg,tid) ;
+      flt_lf_to_bool(res);
+
+      if(res->val == NULL) msg->may_show = 0;
       else {
         if(flt_lf_overwrite) msg->may_show = 1;
       }
+
+      free(res);
     }
 
     return FLT_OK;

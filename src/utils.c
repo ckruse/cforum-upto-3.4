@@ -40,7 +40,7 @@
  * Parameters:
  *   - const u_char *datestr the date string
  *
- * This function tries to create a timestamp
+ * This function tries to create a timestamp from dd.mm.yyyy[ hh:mm[:ss]]
  *
  */
 time_t transform_date(const u_char *datestr) {
@@ -61,7 +61,7 @@ time_t transform_date(const u_char *datestr) {
   }
   else {
     free(str);
-    return (time_t)-1;                    /* no valid date */
+    return (time_t)0;                    /* no valid date */
   }
 
   for(before= ++ptr;*ptr && *ptr != '.';ptr++);        /* search the next dot (for the month) */
@@ -72,7 +72,7 @@ time_t transform_date(const u_char *datestr) {
   }
   else {
     free(str);
-    return (time_t)-1;                                  /* no valid date */
+    return (time_t)0;                                  /* no valid date */
   }
 
   for(before= ++ptr;*ptr && !isspace(*ptr);ptr++);     /* search the '\0' or a whitespace; if a whitespace
@@ -82,7 +82,7 @@ time_t transform_date(const u_char *datestr) {
   }
   else {
     free(str);
-    return (time_t)-1;                                  /* not a valid entry */
+    return (time_t)0;                                  /* not a valid entry */
   }
 
   if(*ptr == ' ') {                                    /* follows an hour and a minute? */
@@ -99,7 +99,7 @@ time_t transform_date(const u_char *datestr) {
       }
       else {
         free(str);
-        return (time_t)-1;
+        return (time_t)0;
       }
 
       for(before= ++ptr;*ptr && *ptr != ':';ptr++);    /* search for the end of the string or another colon */
@@ -115,7 +115,7 @@ time_t transform_date(const u_char *datestr) {
       }
       else {
         free(str);
-        return (time_t)-1;
+        return (time_t)0;
       }
 
       if(*ptr == ':') {                                /* seconds following */

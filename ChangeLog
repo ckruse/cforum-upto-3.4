@@ -1,6 +1,9 @@
 2005-03-31 Christian Kruse <ckruse@wwwtech.de>
 	* src/perl/Plugins/ImportExport.pm: Fixed a bug in import function, empty
 		values should not be validated
+	* src/utils.c: Added description for transform_date()
+	* src/modules/flt_livefilter.c: Added typing mechanisms; this fixed a lot of
+		bugs
 
 2005-03-29 Christian Kruse <ckruse@wwwtech.de>
 	* scripts/fo_userconf.in: Fixed bug #654
