@@ -1044,4 +1044,27 @@ int is_valid_link(const u_char *link) {
 }
 /* }}} */
 
+#ifdef CF_VALIDATE_AS_PROGRAM
+int main(int argc,char *argv[]) {
+  int i;
+  
+  if(argc == 1) {
+    fprintf(stderr,"Usage:\n\t%s uris\n");
+    return EXIT_FAILURE;
+  }
+
+  for(i=1;i<argc;i++) {
+    if(is_valid_link(argv[i]) == -1) {
+      printf("%s is not a valid URI\n",argv[i]);
+    }
+    else {
+      printf("%s is a valid URI\n",argv[i]);
+    }
+
+    return EXIT_SUCCESS;
+  }
+  
+}
+#endif
+
 /* eof */

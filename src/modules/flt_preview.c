@@ -52,6 +52,7 @@ int flt_preview_execute(t_cf_hash *head,t_configuration *dc,t_configuration *pc,
 
       date = general_get_time(flt_preview_datefmt,v->values[0],&len,&p->date);
       _cf_cgi_save_param(head,"date",4,date);
+
       free(date);
     }
   }

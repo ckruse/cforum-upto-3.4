@@ -1,3 +1,6 @@
+2004-07-13 Christian Kruse <ckruse@wwwtech.de>
+	* src/validate.c: Added (optional) main program
+
 2004-07-03 Christian Kruse <ckruse@wwwtech.de>
 	* src/fo_view.c, src/configparser.[ch], src/fo_arcview.c: Changed behavior
 		of the default action (now, the directive name is part of the parameters)
