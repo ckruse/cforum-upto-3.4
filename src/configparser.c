@@ -719,6 +719,7 @@ void cfg_init(void) {
   cf_tree_init(&fo_view_conf.directives,cfg_compare,NULL);
   cf_tree_init(&fo_arcview_conf.directives,cfg_compare,NULL);
   cf_tree_init(&fo_post_conf.directives,cfg_compare,NULL);
+  cf_tree_init(&fo_vote_conf.directives,cfg_compare,NULL);
 }
 
 /* eof */

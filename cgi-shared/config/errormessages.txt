@@ -58,4 +58,6 @@ E_user_create: Leider konnte der User aus servertechnischen Gründen nicht angel
 E_posting_category: Sie haben eine ungültige Kategorie ausgewählt.
 E_posting_charset: Sie haben ein Zeichen eingegeben, dass in ISO-8859-1 nicht darstellbar ist. Vielleicht haben Sie ja Binär-Code oder ein Euro-Zeichen ein
 E_POST_NOT_ALLOWED: Das Schreiben neuer Nachrichten ist Momentan nicht erlaubt.
-
+E_VOTE_INTERNAL: Interner Fehler aufgetreten. Vielleicht haben sie keine Thread- oder Nachrichten-ID übermittelt?
+E_VOTE_MULTIPLE: Sie dürfen nur einmal abstimmen!
+E_VOTE_AUTH: Sie müssen angemeldet sein, um abzustimmen!

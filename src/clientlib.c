@@ -164,9 +164,9 @@ u_char *get_uconf_name(const u_char *uname) {
   sprintf(path,"%s%c/%c/%c/%s.conf",confpath->values[0],name[0],name[1],name[2],name);
 
   if(stat(path,&sb) == -1) {
+    fprintf(stderr,"user config file '%s' not found!\n",path);
     free(path);
     free(name);
-    fprintf(stderr,"user config file '%s' not found!\n",path);
     return NULL;
   }
 

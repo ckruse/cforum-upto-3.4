@@ -1,3 +1,10 @@
+2004-07-21 Christian Kruse <ckruse@wwwtech.de>
+	* src/clientlib.c: Fixed bug (free() before fprintf())
+	* src/fo_vote.c: Fixed bug, made it more userfriendly
+	* src/configparser.c: Added fo_vote_conf in initialization
+	* cgi-shared/config/errormessages.txt: Added error messages for fo_vote
+	* cgi-shared/config/fo_server.conf.in: Added flt_voting
+
 2004-07-20 Christian Kruse <ckruse@wwwtech.de>
 	* src/hashlib.c: Fixed bug in calloc() call, changed cf_hash_set() behavior:
 		now _cf_hash_split() will only be called if the number of elements is bigger

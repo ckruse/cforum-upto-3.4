@@ -15,6 +15,7 @@
   AddFilter "@libdir@/cforum/flt_registerednames.so" "flt_registerednames"
 #  AddFilter "@libdir@/cforum/flt_nntp.so" "flt_nntp"
   AddFilter "@libdir@/cforum/flt_extern.so" "flt_extern"
+  AddFilter "@libdir@/cforum/flt_voting.so" "flt_voting"
 </Filters>
 
 <General>
