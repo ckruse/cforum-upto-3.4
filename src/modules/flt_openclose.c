@@ -24,6 +24,9 @@
 #include <time.h>
 #include <sys/types.h>
 
+#include <sys/file.h>
+#include <db.h>
+
 #include "readline.h"
 #include "hashlib.h"
 #include "utils.h"
@@ -34,80 +37,44 @@
 #include "htmllib.h"
 /* }}} */
 
-static t_cf_hash *flt_oc_cookies = NULL;
 static int ThreadsOpenByDefault = 1;
-static int OpenThreadIfNew = 0;
-static int UseJavaScript = 1;
+static int OpenThreadIfNew      = 0;
+static int UseJavaScript        = 1;
+static u_char *flt_oc_dbfile    = NULL;
 
-static u_int64_t *flt_oc_opened = NULL;
-static u_char *flt_oc_fn = NULL;
-size_t flt_oc_opened_len = 0;
+static DB *flt_oc_db            = NULL;
+static u_char *flt_oc_fn        = NULL;
 
-/* {{{ flt_oc_parse */
-void flt_oc_parse(t_cf_hash *head) {
-  u_char *pos,*val = cf_cgi_get(flt_oc_cookies,"o");
 
-  u_int64_t tid;
+/* {{{ flt_oc_opendb */
+int flt_oc_opendb(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc) {
+  int ret,fd;
 
-  size_t i;
-
-  if(val) {
-    pos = val;
-    while((tid = strtoull(pos,(char **)&pos,10)) > 0) {
-      pos += 1;
-      flt_oc_opened = fo_alloc(flt_oc_opened,sizeof(tid),++flt_oc_opened_len,FO_ALLOC_REALLOC);
-      flt_oc_opened[flt_oc_opened_len-1] = tid;
+  if(flt_oc_dbfile) {
+    if((ret = db_create(&flt_oc_db,NULL,0)) != 0) {
+      fprintf(stderr,"DB error: %s\n",db_strerror(ret));
+      return FLT_EXIT;
     }
+
+    if((ret = flt_oc_db->open(flt_oc_db,NULL,flt_oc_dbfile,NULL,DB_BTREE,DB_CREATE,0644)) != 0) {
+      fprintf(stderr,"DB error: %s\n",db_strerror(ret));
+      return FLT_EXIT;
+    }
+
+    if((ret = flt_oc_db->fd(flt_oc_db,&fd)) != 0) {
+      fprintf(stderr,"DB error: %s\n",db_strerror(ret));
+      return FLT_EXIT;
+    }
+
+    if((ret = flock(fd,LOCK_EX)) != 0) {
+      fprintf(stderr,"DB error: %s\n",db_strerror(ret));
+      return FLT_EXIT;
+    }
+
+    return FLT_OK;
   }
 
-  if(head) {
-    if((val = cf_cgi_get(head,"a")) != NULL) {
-      if(ThreadsOpenByDefault == 0) {
-        if(cf_strcmp(val,"open") == 0) {
-          if((val = cf_cgi_get(head,"oc_t")) != NULL) {
-            if((tid = strtoull(val,NULL,10)) != 0) {
-              flt_oc_opened = fo_alloc(flt_oc_opened,sizeof(tid),++flt_oc_opened_len,FO_ALLOC_REALLOC);
-              flt_oc_opened[flt_oc_opened_len-1] = tid;
-            }
-          }
-        }
-        else {
-          if((val = cf_cgi_get(head,"oc_t")) != NULL) {
-            if((tid = strtoull(val,NULL,10)) != 0) {
-              for(i=0;i<flt_oc_opened_len;++i) {
-                if(tid == flt_oc_opened[i]) {
-                  flt_oc_opened[i] = 0;
-                  break;
-                }
-              }
-            }
-          }
-        }
-      }
-      else {
-        if(cf_strcmp(val,"close") == 0) {
-          if((val = cf_cgi_get(head,"oc_t")) != NULL) {
-            if((tid = strtoull(val,NULL,10)) != 0) {
-              flt_oc_opened = fo_alloc(flt_oc_opened,sizeof(tid),++flt_oc_opened_len,FO_ALLOC_REALLOC);
-              flt_oc_opened[flt_oc_opened_len-1] = tid;
-            }
-          }
-        }
-        else {
-          if((val = cf_cgi_get(head,"oc_t")) != NULL) {
-            if((tid = strtoull(val,NULL,10)) != 0) {
-              for(i=0;i<flt_oc_opened_len;++i) {
-                if(tid == flt_oc_opened[i]) {
-                  flt_oc_opened[i] = 0;
-                  break;
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  }
+  return FLT_DECLINE;
 }
 /* }}} */
 
@@ -124,15 +91,41 @@ int flt_oc_exec_xmlhttp(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc,v
   size_t len;
   t_string str;
   rline_t rl;
+  int ret;
+  char one[] = "1";
+
+  DBT key,data;
 
   t_name_value *fo_thread_tpl,*cs,*ot,*ct;
 
-  if(!cgi) return FLT_DECLINE;
+  if(cgi == NULL || flt_oc_dbfile == NULL) return FLT_DECLINE;
 
-  if((val = cf_cgi_get(cgi,"a")) != NULL && cf_strcmp(val,"open") == 0) {
-    if((val = cf_cgi_get(cgi,"mode")) != NULL && cf_strcmp(val,"xmlhttp") == 0) {
-      if((val = cf_cgi_get(cgi,"oc_t")) != NULL && (tid = str_to_u_int64(val)) != 0) {
-        /* ok, all parameters are fine, go and generate content */
+  if((val = cf_cgi_get(cgi,"a")) != NULL && (cf_strcmp(val,"open") == 0 || cf_strcmp(val,"close") == 0)) {
+    if((val = cf_cgi_get(cgi,"oc_t")) != NULL && (tid = str_to_u_int64(val)) != 0) {
+      /* {{{ put tid to database or remove it from database */
+      len = snprintf(buff,512,"%llu",tid);
+
+      memset(&key,0,sizeof(key));
+      memset(&data,0,sizeof(data));
+
+      key.data = buff;
+      key.size = len;
+
+      if((ret = flt_oc_db->get(flt_oc_db,NULL,&key,&data,0)) != 0) {
+        if(ret == DB_NOTFOUND) {
+          memset(&data,0,sizeof(data));
+          data.data = one;
+          data.size = sizeof(one);
+
+          if((ret = flt_oc_db->put(flt_oc_db,NULL,&key,&data,0)) != 0) fprintf(stderr,"db->put(): %s\n",db_strerror(ret));
+        }
+      }
+      else flt_oc_db->del(flt_oc_db,NULL,&key,0);
+      /* }}} */
+
+      /* {{{ xmlhttp mode */
+      if((val = cf_cgi_get(cgi,"mode")) != NULL && cf_strcmp(val,"xmlhttp") == 0) {
+        /* {{{ init variables to get content */
         fo_thread_tpl  = cfg_get_first_value(vc,fn,"TemplateForumThread");
         cs             = cfg_get_first_value(dc,fn,"ExternCharset");
         ot             = cfg_get_first_value(vc,fn,"OpenThread");
@@ -142,6 +135,7 @@ int flt_oc_exec_xmlhttp(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc,v
 
         memset(&thread,0,sizeof(thread));
         memset(&rl,0,sizeof(rl));
+        /* }}} */
 
         #ifndef CF_SHARED_MEM
         if(cf_get_message_through_sock(sock,&tsd,&thread,fo_thread_tplname,tid,0,CF_KILL_DELETED) == -1)
@@ -169,6 +163,7 @@ int flt_oc_exec_xmlhttp(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc,v
 
         return FLT_EXIT;
       }
+      /* }}} */
     }
   }
 
@@ -185,16 +180,14 @@ int flt_oc_execute_filter(t_cf_hash *head,t_configuration *dc,t_configuration *v
   t_message *msg;
   t_mod_api is_visited;
 
+  DBT key,data;
+
   if(mode & CF_MODE_PRE) return FLT_DECLINE;
   if(mode & CF_MODE_THREADVIEW) return FLT_DECLINE;
-
+  if(flt_oc_dbfile == NULL) return FLT_DECLINE;
   if(flt_oc_fn == NULL) flt_oc_fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
-  
-  if(UserName) vs = cfg_get_first_value(dc,flt_oc_fn,"UBaseURL");
-  else         vs = cfg_get_first_value(dc,flt_oc_fn,"BaseURL");
 
-  if(flt_oc_opened_len == 0) flt_oc_parse(head);
-
+  vs = cfg_get_first_value(dc,flt_oc_fn,UserName ? "UBaseURL" : "BaseURL");
   cf_tpl_setvalue(&thread->messages->tpl,"openclose",TPL_VARIABLE_INT,1);
 
   i = snprintf(buff,512,"t%llu",thread->tid);
@@ -204,14 +197,20 @@ int flt_oc_execute_filter(t_cf_hash *head,t_configuration *dc,t_configuration *v
   if(UseJavaScript) cf_tpl_setvalue(&thread->messages->tpl,"UseJavaScript",TPL_VARIABLE_INT,1);
 
   if(ThreadsOpenByDefault == 0) {
-    for(i=0;i<flt_oc_opened_len;++i) {
-      if(flt_oc_opened[i] == thread->tid) {
-        cf_tpl_setvalue(&thread->messages->tpl,"open",TPL_VARIABLE_INT,1);
-        i = snprintf(buff,512,"%s?oc_t=%lld&a=close",vs->values[0],thread->tid);
-        cf_tpl_setvalue(&thread->messages->tpl,"link_oc",TPL_VARIABLE_STRING,buff,i);
+    i = snprintf(buff,512,"%llu",thread->tid);
 
-        return FLT_DECLINE; /* thread is open */
-      }
+    memset(&key,0,sizeof(key));
+    memset(&data,0,sizeof(data));
+
+    key.data = buff;
+    key.size = i;
+
+    if(flt_oc_db->get(flt_oc_db,NULL,&key,&data,0) == 0) {
+      cf_tpl_setvalue(&thread->messages->tpl,"open",TPL_VARIABLE_INT,1);
+      i = snprintf(buff,512,"%s?oc_t=%lld&a=close",vs->values[0],thread->tid);
+      cf_tpl_setvalue(&thread->messages->tpl,"link_oc",TPL_VARIABLE_STRING,buff,i);
+
+      return FLT_DECLINE; /* thread is open */
     }
 
     /* shall we close threads? Other filters can tell us not to do
@@ -242,15 +241,19 @@ int flt_oc_execute_filter(t_cf_hash *head,t_configuration *dc,t_configuration *v
   }
   else {
     /* check, if the actual thread is in the closed threads list */
-    for(i=0;i<flt_oc_opened_len;++i) {
-      if(thread->tid == flt_oc_opened[i]) { /* this thread is closed */
-        i = snprintf(buff,512,"%s?oc_t=%lld&a=open",vs->values[0],thread->tid);
-        cf_tpl_setvalue(&thread->messages->tpl,"link_oc",TPL_VARIABLE_STRING,buff,i,1);
+    i = snprintf(buff,512,"%llu",thread->tid);
 
-        cf_msg_delete_subtree(thread->messages);
+    memset(&key,0,sizeof(key));
+    memset(&data,0,sizeof(data));
 
-        return FLT_DECLINE; /* thread is open */
-      }
+    key.data = buff;
+    key.size = i;
+
+    if(flt_oc_db->get(flt_oc_db,NULL,&key,&data,0) == 0) {
+      i = snprintf(buff,512,"%s?oc_t=%lld&a=open",vs->values[0],thread->tid);
+      cf_tpl_setvalue(&thread->messages->tpl,"link_oc",TPL_VARIABLE_STRING,buff,i,1);
+      cf_msg_delete_subtree(thread->messages);
+      return FLT_DECLINE; /* thread is closed */
     }
 
     /* this thread must be open */
@@ -276,51 +279,7 @@ int flt_oc_set_js(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cf_t
 }
 /* }}} */
 
-/* {{{ flt_oc_headers */
-#ifndef CF_SHARED_MEM
-int flt_oc_headers(t_cf_hash *cgi,t_cf_hash *header_table,t_configuration *dc,t_configuration *vc,int sock)
-#else
-int flt_oc_headers(t_cf_hash *cgi,t_cf_hash *header_table,t_configuration *dc,t_configuration *vc,void *sock)
-#endif
-{
-  t_string str;
-  u_char *val;
-  u_int64_t tid;
-  size_t i;
-
-  flt_oc_cookies = cf_hash_new(cf_cgi_destroy_entry);
-  cf_cgi_parse_cookies(flt_oc_cookies);
-
-  if(cgi) {
-    flt_oc_parse(cgi);
-    if((val = cf_cgi_get(cgi,"a")) != NULL) {
-      if((val = cf_cgi_get(cgi,"oc_t")) != NULL) {
-        if((tid = str_to_u_int64(val)) != 0) {
-          str_init(&str);
-          str_char_set(&str,"o=",2);
-          for(i=0;i<flt_oc_opened_len;++i) {
-            if(flt_oc_opened[i] == 0) continue;
-            u_int64_to_str(&str,flt_oc_opened[i]);
-            if(i != flt_oc_opened_len-1) str_chars_append(&str,"%2C",3);
-          }
-          str_chars_append(&str,"; Domain=",9);
-          val = getenv("HTTP_HOST");
-          str_chars_append(&str,val,strlen(val));
-          str_chars_append(&str,"; Path=/",9);
-
-          cf_hash_set(header_table,"Set-Cookie",10,str.content,str.len);
-          str_cleanup(&str);
-          return FLT_OK;
-        }
-      }
-    }
-  }
-
-  return FLT_DECLINE;
-}
-/* }}} */
-
-/* {{{ flt_deleted_validate */
+/* {{{ flt_oc_validate */
 #ifndef CF_SHARED_MEM
 int flt_oc_validate(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc,time_t last_modified,int sock)
 #else
@@ -347,29 +306,40 @@ int flt_oc_get_conf(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_
   if(flt_oc_fn == NULL) flt_oc_fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   if(!context || cf_strcmp(flt_oc_fn,context) != 0) return 0;
 
-  if(*opt->name == 'T')   ThreadsOpenByDefault = cf_strcmp(args[0],"yes") == 0;
-  else {
-    if(*opt->name == 'O') OpenThreadIfNew = cf_strcmp(args[0],"yes") == 0;
-    else                  UseJavaScript = cf_strcmp(args[0],"yes") == 0;
-  }
+  if(cf_strcmp(opt->name,"ThreadsOpenByDefault") == 0) ThreadsOpenByDefault = cf_strcmp(args[0],"yes") == 0;
+  else if(cf_strcmp(opt->name,"OpenThreadIfNew") == 0) OpenThreadIfNew = cf_strcmp(args[0],"yes") == 0;
+  else if(cf_strcmp(opt->name,"UseJavaScript") == 0) UseJavaScript = cf_strcmp(args[0],"yes") == 0;
+  else if(cf_strcmp(opt->name,"OcDbFile") == 0) flt_oc_dbfile = strdup(args[0]);
 
   return 0;
 }
 /* }}} */
 
+/* {{{ flt_oc_cleanup */
 void flt_oc_cleanup(void) {
-  if(flt_oc_cookies) cf_hash_destroy(flt_oc_cookies);
-  if(flt_oc_opened) free(flt_oc_opened);
+  int fd;
+  long i;
+
+  if(flt_oc_db) {
+    flt_oc_db->fd(flt_oc_db,&fd);
+    flock(fd,LOCK_UN);
+    flt_oc_db->close(flt_oc_db,0);
+  }
+
+  if(flt_oc_dbfile) free(flt_oc_dbfile);
 }
+/* }}} */
 
 t_conf_opt flt_openclose_config[] = {
   { "ThreadsOpenByDefault", flt_oc_get_conf, CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
   { "UseJavaScript",        flt_oc_get_conf, CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
   { "OpenThreadIfNew",      flt_oc_get_conf, CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
+  { "OcDbFile",             flt_oc_get_conf, CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
   { NULL, NULL, 0, NULL }
 };
 
 t_handler_config flt_openclose_handlers[] = {
+  { INIT_HANDLER,         flt_oc_opendb },
   { CONNECT_INIT_HANDLER, flt_oc_exec_xmlhttp },
   { VIEW_HANDLER,         flt_oc_execute_filter },
   { VIEW_INIT_HANDLER,    flt_oc_set_js  },
@@ -381,7 +351,7 @@ t_module_config flt_openclose = {
   flt_openclose_handlers,
   flt_oc_validate,
   NULL,
-  flt_oc_headers,
+  NULL,
   flt_oc_cleanup
 };
 

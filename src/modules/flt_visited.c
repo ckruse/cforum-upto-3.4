@@ -137,7 +137,7 @@ int flt_visited_execute_filter(t_cf_hash *head,t_configuration *dc,t_configurati
   u_char *fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   u_char *cmid,fo_thread_tplname[256],*ctid,*mode;
   u_int64_t mid,tid;
-  int ret,fd,xmlhttp = 0;
+  int ret,fd,xmlhttp = 0,we_set_it = 0;
   char one[] = "1";
   rline_t tsd;
   t_message *msg;
@@ -174,7 +174,10 @@ int flt_visited_execute_filter(t_cf_hash *head,t_configuration *dc,t_configurati
 
       if(mode) xmlhttp = cf_strcmp(mode,"xmlhttp") == 0;
 
-      if((cf_strcmp(rm->values[0],"list") == 0 || cf_strcmp(rm->values[0],"nested") == 0) && ctid == NULL) ctid = cf_cgi_get(head,"t");
+      if((cf_strcmp(rm->values[0],"list") == 0 || cf_strcmp(rm->values[0],"nested") == 0) && ctid == NULL) {
+        ctid = cf_cgi_get(head,"t");
+        we_set_it = 1;
+      }
 
       /* we shall mark a whole thread visited */
       if(ctid) {
@@ -209,13 +212,8 @@ int flt_visited_execute_filter(t_cf_hash *head,t_configuration *dc,t_configurati
 
           }
 
-          if(Cfg.resp_204) {
-            printf("Status: 204 No Content\015\012\015\012");
-            cf_cleanup_thread(&thread);
-            return FLT_EXIT;
-          }
           /* {{{ we're in XMLHttpRequest mode */
-          else if(xmlhttp) {
+          if(xmlhttp) {
             /* ok, all parameters are fine, go and generate content */
             cs             = cfg_get_first_value(dc,fn,"ExternCharset");
             ot             = cfg_get_first_value(vc,fn,"OpenThread");
@@ -243,6 +241,11 @@ int flt_visited_execute_filter(t_cf_hash *head,t_configuration *dc,t_configurati
             return FLT_EXIT;
           }
           /* }}} */
+          else if(Cfg.resp_204 && we_set_it == 0) {
+            printf("Status: 204 No Content\015\012\015\012");
+            cf_cleanup_thread(&thread);
+            return FLT_EXIT;
+          }
 
           cf_cleanup_thread(&thread);
         }

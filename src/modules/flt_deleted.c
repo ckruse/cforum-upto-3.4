@@ -187,6 +187,7 @@ int flt_deleted_del_thread(t_cf_hash *head,t_configuration *dc,t_configuration *
     if(a) {
       if(cf_strcmp(a,"d") == 0) {
         if((parm = cf_cgi_get_multiple(head,"dt")) != NULL) {
+          /* {{{ put tids to database */
           for(;parm;parm=parm->next) {
             tid = strtoull(parm->value,NULL,10);
 
@@ -206,24 +207,30 @@ int flt_deleted_del_thread(t_cf_hash *head,t_configuration *dc,t_configuration *
               if((ret = Cfg.db->put(Cfg.db,NULL,&key,&data,0)) != 0) fprintf(stderr,"db->put(): %s\n",db_strerror(ret));
             }
           }
+          /* }}} */
 
-          /* set timestamp on file */
+          /* {{{ set timestamp on file */
           snprintf(buff,256,"%s.tm",Cfg.DeletedFile);
           remove(buff);
           if((fd = open(buff,O_CREAT|O_TRUNC|O_WRONLY)) != -1) close(fd);
 
           cf_hash_entry_delete(head,"dt",1);
           cf_hash_entry_delete(head,"a",1);
+          /* }}} */
 
-          if(Cfg.resp_204) {
-            printf("Status: 204 No Content\015\012\015\012");
-            return FLT_EXIT;
-          }
-          else if((tmp = cf_cgi_get(head,"mode")) != NULL && cf_strcmp(tmp,"xmlhttp") == 0) {
+          /* {{{ XMLHttp mode */
+          if((tmp = cf_cgi_get(head,"mode")) != NULL && cf_strcmp(tmp,"xmlhttp") == 0) {
             printf("Content-Type: text/html\015\012\015\012");
             printf("Ok\015\012");
             return FLT_EXIT;
           }
+          /* }}} */
+          /* {{{ 204 Response */
+          else if(Cfg.resp_204) {
+            printf("Status: 204 No Content\015\012\015\012");
+            return FLT_EXIT;
+          }
+          /* }}} */
         }
       }
       else if(cf_strcmp(a,"nd") == 0) {
@@ -231,6 +238,7 @@ int flt_deleted_del_thread(t_cf_hash *head,t_configuration *dc,t_configuration *
       }
       else if(cf_strcmp(a,"u") == 0) {
         if((tmp = cf_cgi_get(head,"dt")) != NULL) {
+          /* {{{ remove tid from database */
           if((tid = strtoull(tmp,NULL,10)) > 0) {
             memset(&key,0,sizeof(key));
 
@@ -245,6 +253,7 @@ int flt_deleted_del_thread(t_cf_hash *head,t_configuration *dc,t_configuration *
             cf_hash_entry_delete(head,"dt",1);
             cf_hash_entry_delete(head,"a",1);
           }
+          /* }}} */
         }
       }
 

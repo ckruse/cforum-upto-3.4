@@ -1,3 +1,9 @@
+2005-04-03 Christian Kruse <ckruse@wwwtech.de>
+	* src/modules/flt_visited.c: Fixed bug #691, small bugfix in order
+	* src/modules/flt_deleted.c: Small bugfix in order
+	* src/modules/flt_openclose.c: Changed behavior; opened and closed threads are
+		now saved on the server
+
 2005-04-02 Christian Kruse <ckruse@wwwtech.de>
 	* src/fo_view.c: Removed print_thread_structure()
 	* src/modules/flt_deleted.c: Added support for XMLHttpRequest() for deletion,
