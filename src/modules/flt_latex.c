@@ -337,6 +337,12 @@ int flt_latex_execute(t_configuration *fdc,t_configuration *fvc,const u_char *di
 
   if(sig) return FLT_DECLINE;
 
+  if(bci) {
+    str_chars_append(bci,"[latex]",7);
+    str_str_append(bci,cite);
+    str_chars_append(bci,"[/latex]",8);
+  }
+
   str_init(&my_cnt);
   flt_latex_nohtml(content->content,&my_cnt);
   str_str_set(content,&my_cnt);
