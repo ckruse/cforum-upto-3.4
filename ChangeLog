@@ -1,6 +1,10 @@
 2005-01-25 Christian Seiler <self@christian-seiler.de>
 	* src/utils.h, src/stringutils.c: Added str_cstr_append function to
 		append NULL-terminated strings.
+	* src/template.c: Fixed bug in cf_tpl_setvar()
+	* src/parsetpl/parsetpl.lex: Added {elseif} support; it now does not
+		create a new stack on each {if}, {foreach}, variable
+		assignment, etc.
 
 2005-01-25 Christian Kruse <ckruse@wwwtech.de>
 	* src/swig/CForum-Configparser/CForum-Configparser.i: Several bugfixes, added

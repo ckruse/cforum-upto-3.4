@@ -78,7 +78,17 @@ int cf_tpl_init(t_cf_template *tpl,const u_char *fname) {
  *   - t_cf_tpl_variable *var   the variable that is to be added
  */
 void cf_tpl_setvar(t_cf_template *tpl,const u_char *vname,t_cf_tpl_variable *var) {
-   cf_hash_set(tpl->varlist,(u_char *)vname,strlen(vname),var,sizeof(t_cf_tpl_variable));
+  int tmp = 0;
+  cf_hash_set(tpl->varlist,(u_char *)vname,strlen(vname),var,sizeof(t_cf_tpl_variable));
+  if(var->temporary) {
+    tmp = 1;
+  }
+  var->temporary = 0;
+  // cleanup if it's temporary
+  if(tmp) {
+    // don't destroy the var, only free it
+    free(var);
+  }
 }
 
 /*
