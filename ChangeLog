@@ -7,6 +7,8 @@
 	* src/templates/{de,fr}/tpl_*/forum_posting.html: changed {$forumbase} to
 		{if $forumreturn}{$forumreturn}{else}{$forumbase}{endif}
 	* src/fo_threadlookup.c: Fixed the bug that caused /2004/8#@%10/t1/-URLs.
+	* cgi-shared/config/fo_usermanagement.conf.in, cgi-shared/config/fo_default.conf.in:
+		Corrected some values.
 
 2004-08-05 Christian Kruse <ckruse@wwwtech.de>
 	* src/templates/de/tpl_*/Makefile.am: Fixed bug, source file is <tplname>.c,

@@ -33,7 +33,8 @@
  UPostScript "/cgi-bin/user/fo_post"
 
  UserConfig "/cgi-bin/user/fo_userconf"
- UserRegister "/cgi-bin/fo_userconf"
+ UserRegister "/cgi-bin/fo_usermanagement"
+ UserManagement "/cgi-bin/user/fo_usermanagement"
 
  SharedMemIds "10000" "10001" "10002"
 

@@ -62,6 +62,6 @@
   UnregisterOk "@libdir@/cforum/%s_%s_unregok.so"
 
   SendPass "@libdir@/cforum/%s_%s_sendpass.so"
-  SendPassOk "@libdir@/cforum/%s_%s_sendpass_ok.so"
+  SendPassOk "@libdir@/cforum/%s_%s_sendpassok.so"
 </Templates>
 
