@@ -41,7 +41,7 @@ int flt_tplmode_execute(t_cf_hash *head,t_configuration *dc,t_configuration *vc)
   t_name_value *v,*v1;
 
   if(TPLMode) {
-    v1 = cfg_get_first_value(vc,"XHTMLMode");
+    v1 = cfg_get_first_value(dc,"XHTMLMode");
     v  = cfg_get_first_value(dc,"TemplateMode");
 
     free(v->values[0]);

@@ -1,5 +1,5 @@
 /**
- * \file flt_safe.c
+ * \file flt_failsafe.c
  * \author Christian Kruse
  *
  * This plugin writes every new posting in an special format to
@@ -44,11 +44,13 @@
 #include "serverlib.h"
 /* }}} */
 
+#define CFFS_VERSION "0.1"
+
 static u_char *BackupFile = NULL;
 t_cf_mutex BackupMutex;
 
-/* {{{ flt_safe_thread_handler */
-int flt_safe_thread_handler(t_configuration *dcfg,t_configuration *scfg,t_thread *t) {
+/* {{{ flt_failsafe_thread_handler */
+int flt_failsafe_thread_handler(t_configuration *dcfg,t_configuration *scfg,t_thread *t) {
   FILE *fd;
   t_posting *p;
 
@@ -129,16 +131,19 @@ int flt_safe_thread_handler(t_configuration *dcfg,t_configuration *scfg,t_thread
 }
 /* }}} */
 
-/* {{{ flt_safe_post_handler */
-int flt_safe_post_handler(t_configuration *dcfg,t_configuration *scfg,u_int64_t tid,t_posting *p) {
+/* {{{ flt_failsafe_post_handler */
+int flt_failsafe_post_handler(t_configuration *dcfg,t_configuration *scfg,u_int64_t tid,t_posting *p) {
   FILE *fd;
-
-  if(BackupFile == NULL) return FLT_DECLINE;
+  struct stat st;
+  int x;
 
   /* lock backup mutex */
   CF_LM(&BackupMutex);
+  x = stat(BackupFile,&st);
 
   if((fd = fopen(BackupFile,"ab")) != NULL) {
+    if(x == -1) fprintf(fd,"CFFS%s",CFFS_VERSION);
+
     /* write thread id */
     fwrite(&tid,sizeof(tid),1,fd);
 
@@ -209,55 +214,53 @@ int flt_safe_post_handler(t_configuration *dcfg,t_configuration *scfg,u_int64_t 
 }
 /* }}} */
 
-/* {{{ flt_safe_init */
-int flt_safe_init(int main_socket) {
+/* {{{ flt_failsafe_init */
+int flt_failsafe_init(int main_socket) {
   cf_mutex_init("BackupMutex",&BackupMutex);
   return FLT_DECLINE;
 }
 /* }}} */
 
-/* {{{ flt_safe_handle_command */
-int flt_safe_handle_command(t_configfile *cf,t_conf_opt *opt,u_char **args,int argnum) {
+/* {{{ flt_failsafe_handle_command */
+int flt_failsafe_handle_command(t_configfile *cf,t_conf_opt *opt,u_char **args,int argnum) {
   if(argnum == 1) {
     if(BackupFile) free(BackupFile);
     BackupFile = strdup(args[0]);
   }
   else {
-    cf_log(LOG_ERR,__FILE__,__LINE__,"flt_safe: expecting one argument for directive BackupFile!\n");
+    cf_log(LOG_ERR,__FILE__,__LINE__,"flt_failsafe: expecting one argument for directive BackupFile!\n");
   }
 
   return 0;
 }
 /* }}} */
 
-/* {{{ flt_safe_cleanup */
-void flt_safe_cleanup(void) {
-  if(BackupFile) {
-    free(BackupFile);
-    cf_mutex_destroy(&BackupMutex);
-  }
+/* {{{ flt_failsafe_cleanup */
+void flt_failsafe_cleanup(void) {
+  free(BackupFile);
+  cf_mutex_destroy(&BackupMutex);
 }
 /* }}} */
 
-t_conf_opt flt_safe_config[] = {
-  { "BackupFile", flt_safe_handle_command, CFG_OPT_CONFIG|CFG_OPT_NEEDED, NULL },
+t_conf_opt flt_failsafe_config[] = {
+  { "BackupFile", flt_failsafe_handle_command, CFG_OPT_CONFIG|CFG_OPT_NEEDED, NULL },
   { NULL, NULL, 0, NULL }
 };
 
-t_handler_config flt_safe_handlers[] = {
-  { INIT_HANDLER,       flt_safe_init           },
-  { NEW_POST_HANDLER,   flt_safe_post_handler   },
-  { NEW_THREAD_HANDLER, flt_safe_thread_handler },
+t_handler_config flt_failsafe_handlers[] = {
+  { INIT_HANDLER,       flt_failsafe_init           },
+  { NEW_POST_HANDLER,   flt_failsafe_post_handler   },
+  { NEW_THREAD_HANDLER, flt_failsafe_thread_handler },
   { 0, NULL }
 };
 
-t_module_config flt_safe = {
-  flt_safe_config,
-  flt_safe_handlers,
+t_module_config flt_failsafe = {
+  flt_failsafe_config,
+  flt_failsafe_handlers,
   NULL,
   NULL,
   NULL,
-  flt_safe_cleanup
+  flt_failsafe_cleanup
 };
 
 /* eof */

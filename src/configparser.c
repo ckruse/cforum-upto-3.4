@@ -62,6 +62,7 @@ t_conf_opt default_options[] = {
   { "<General>", NULL, 0, NULL },
   { "ExternCharset",            handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG, &fo_default_conf },
   { "TemplateMode",             handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG, &fo_default_conf },
+  { "XHTMLMode",                handle_command,   CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_UNIQUE, &fo_default_conf },
   { "MessagePath",              handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG, &fo_default_conf },
   { "ArchivePath",              handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG, &fo_default_conf },
   { "ThreadIndexFile",          handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG, &fo_default_conf },
@@ -107,7 +108,6 @@ t_conf_opt default_options[] = {
 /* {{{ forum client config options */
 t_conf_opt fo_view_options[] = {
   { "<ForumBehavior>", NULL, 0, NULL },
-  { "XHTMLMode",                  handle_command,   CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_UNIQUE,                &fo_view_conf },
   { "DoQuote",                    handle_command,   CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_UNIQUE,                &fo_view_conf },
   { "QuotingChars",               handle_command,   CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_NEEDED|CFG_OPT_UNIQUE, &fo_view_conf },
   { "ShowThread",                 handle_command,   CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_UNIQUE,                &fo_view_conf },

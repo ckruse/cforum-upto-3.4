@@ -48,7 +48,7 @@ int flt_cftp_handler(int sockfd,const u_char **tokens,int tnum,rline_t *tsd) {
   size_t i,
          l,
          len,
-         err,
+         err = 0,
          one = 1;
   t_handler_config *handler;
   u_int64_t tid,
@@ -211,12 +211,18 @@ int flt_cftp_handler(int sockfd,const u_char **tokens,int tnum,rline_t *tsd) {
         }
         else {
           p1 = cf_get_posting(t,mid);
+          CF_RW_RD(&t->lock);
+
           if(!p1 || p1->invisible == 1) {
             writen(sockfd,"404 Posting Not Found\n",22);
             cf_log(LOG_ERR,__FILE__,__LINE__,"Posting not found\n");
             err = 1;
+
+            CF_RW_UN(&t->lock);
           }
           else {
+            CF_RW_UN(&t->lock);
+
             if(cf_read_posting(p,sockfd,tsd)) {
               CF_RW_WR(&t->lock);
 

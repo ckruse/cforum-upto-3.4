@@ -182,7 +182,8 @@ sub transform_body {
   # first we transform all newlines to \n
   $txt =~ s/\015\012|\015|\012/\n/g;
 
-  # encode to html
+  # encode to html (entities, and so on -- if we do it once,
+  # we don't need to do it every time a message will be viewed)
   $txt = recode($dcfg,$txt);
 
   # now transform...
@@ -230,31 +231,11 @@ sub message_field {
   my $archive = shift;
 
   my $break   = '<br />';
+  my $xhtml   = $fdcfg->{XHTMLMode} && $fdcfg->{XHTMLMode}->[0]->[0] eq 'yes';
 
-  my @array = [0 => []];
+  my $base   = $ENV{SCRIPT_NAME};
 
-# {{{
-#  for (split /<br(?:\s*\/)?>/ => $posting) {
-#    my $l = length ((/^(\177*)/)[0]);
-#    if ($array[-1][0] == $l) {
-#      push @{$array[-1][-1]} => $_;
-#    }
-#    else {
-#      push @array => [$l => [$_]];
-#    }
-#  }
-#  shift @array unless @{$array[0][-1]};
-#
-#  my $ll=0;
-#  $posting = join $break => map {
-#    my $string = $_->[0]
-#      ? (($ll and $ll != $_->[0]) ? $break : '') .
-#        join join ($break => @{$_->[-1]})
-#          => ('<span class="q">', '</span>')
-#            : (join $break => @{$_->[-1]});
-#    $ll = $_->[0]; $string;
-#  } @array;
-# }}}
+  $base =~ s![^/]*$!!; #!;
 
   #
   # maybe not as fast as the previous code, but even
@@ -264,15 +245,13 @@ sub message_field {
   my $qmode = 0;
   for(my $i=0;$i<length($posting);$i++) {
     if(substr($posting,$i,1) eq "\177") {
-      if(!$qmode) {
-        $txt .= '<span class="q">';
-      }
-
+      $txt .= '<span class="q">' unless $qmode;
       $txt  .= recode($fdcfg,$qchar);
       $qmode = 1;
     }
     elsif(substr($posting,$i,6) eq '<br />') {
-      $txt .= '<br />';
+      $txt .= $xhtml ? '<br />' : '<br>';
+
       if($qmode && substr($posting,$i+6,1) ne "\177") {
         $txt .= '</span>';
         $qmode = 0;
@@ -291,60 +270,81 @@ sub message_field {
   $posting =~ s!_/_SIG_/_(.*)!$break<span class="sig">-- $break$1</span>!s;
 
   # we want all posting refs to be transformed to links
-  unless(defined $archive) {
-    my $posturl;
-    if($main::UserName) {
-      $posturl = $fdcfg->{UPostingURL}->[0]->[0];
-    }
-    else {
-      $posturl = $fdcfg->{PostingURL}->[0]->[0];
-    }
-
-    $posting =~ s{\[pref:t=(\d+);m=(\d+)\]}{
-      my $txt = $posturl;
-      my ($tid,$mid) = ($1,$2);
-      $txt =~ s!\%t!$tid!g;
-      $txt =~ s!\%m!$mid!g;
-      '<a href="'.$txt.'">'.$txt.'</a>';
-    }eg;
+  my $posturl;
+  if($main::UserName) {
+    $posturl = $fdcfg->{UPostingURL}->[0]->[0];
+  }
+  else {
+    $posturl = $fdcfg->{PostingURL}->[0]->[0];
   }
 
+  $posting =~ s{\[pref:t=(\d+);m=(\d+)\]}{
+    my $txt = $posturl;
+    my ($tid,$mid) = ($1,$2);
+    $txt =~ s!\%t!$tid!g;
+    $txt =~ s!\%m!$mid!g;
+    '<a href="'.$txt.'">'.$txt.'</a>';
+  }eg;
+
+
+  # Phase 1: collect links, images, etc, pp
+
+  # this is much faster than the code used before
+  # (efficience analysis is relly nice :-)
+
   my @links = ();
-  push @links,[$1, $2] while $txt =~ /\[([Ll][Ii][Nn][Kk]):\s*([^\]\s]+)\s*\]/g;
-  @links = grep {
-    is_valid_url($_->[1])
-      or is_valid_http_url(($_->[1] =~ /^[Vv][Ii][Ee][Ww]-[Ss][Oo][Uu][Rr][Cc][Ee]:(.+)/)[0],CForum::Validator::VALIDATE_STRICT)
-      or ($_->[1] =~ m<^(?:\.?\.?/(?!/)|\?)> and is_valid_http_url(rel_uri($_ -> [1],$base)))
-  } @links;
+  while($posting =~ /\[[Ll][Ii][Nn][Kk]:\s*([^\]\s]+?)\s*(?:\@title=([^\]]+)\s*)?\]/g) {
+    my ($uri,$title) = ($1,$2,$3);
+    next if
+      !is_valid_link($uri) &&
+      !is_valid_http_url(($uri =~ /^[Vv][Ii][Ee][Ww]-[Ss][Oo][Uu][Rr][Cc][Ee]:(.+)/)[0],CForum::Validator::VALIDATE_STRICT) &&
+      !($uri =~ m{^(?:\.?\.?/(?!/)|\?)} and is_valid_http_url(rel_uri($uri,$base)));
+
+    push @links,[$uri,$title];
+  }
 
   my @images = ();
-  push @images, [$1, $2] while $txt =~ /\[([Ii][Mm][Aa][Gg][Ee]):\s*([^\]\s]+)\s*\]/g;
-  @images = grep {
-    is_valid_http_url($_->[1],CForum::Validator::VALIDATE_STRICT)
-      or ($_->[1] =~ m<^(?:\.?\.?/(?!/)|\?)> and is_valid_http_url(rel_uri($_->[1], $base),CForum::Validator::VALIDATE_STRICT)) #/
-  } @images;
+  while($posting =~ /\[[Ii][Mm][Aa][Gg][Ee]:\s*([^\]\s]+?)\s*(?:\@alt=([^\]]+)\s*)?\]/g) {
+    my ($uri,$alt) = ($1,$2);
+    next if
+      !is_valid_http_url($uri,CForum::Validator::VALIDATE_STRICT) &&
+      !($uri =~ m{^(?:\.?\.?/(?!/)|\?)} and is_valid_http_url(rel_uri($uri, $base),CForum::Validator::VALIDATE_STRICT));
 
-  my @iframes;
-  push @iframes,[$1, $2] while $txt =~ /\[([Ii][Ff][Rr][Aa][Mm][Ee]):\s*([^\]\s]+)\s*\]/g;
-  @iframes = grep {
-    is_valid_http_url($_->[1],CForum::Validator::VALIDATE_STRICT)
-    or ($_ -> [1] =~ m<^(?:\.?\.?/(?!/)|\?)> and is_valid_http_url(rel_uri($_->[1], $base),CForum::Validator::VALIDATE_STRICT)) #/
-  } @iframes;
+    push @images,[$uri,$alt];
+  }
 
-  # Ok, we collected the links, lets transform them
+  my @iframes = ();
+  while($posting =~ /\[[Ii][Ff][Rr][Aa][Mm][Ee]:\s*([^\]\s]+)\s*\]/g) {
+    my $uri = $1;
+    next if
+      !is_valid_http_url($uri,CForum::Validator::VALIDATE_STRICT) &&
+      !($uri =~ m{^(?:\.?\.?/(?!/)|\?)} and is_valid_http_url(rel_uri($uri, $base),CForum::Validator::VALIDATE_STRICT));
+
+    push @iframes,$uri;
+  }
+
+  # Phase 2: Ok, we collected the links, lets transform them
   # ... links
-  $txt =~ s!$_!<a href="$1">$1</a>!g for map {
-    '\[[Ll][Ii][Nn][Kk]:\s*('.quotemeta(recode($dcfg,$_->[1])).')\]'
+  $posting =~ s!$_!'<a href="'.$1.'">'.($2||$1).'</a>'!eg for map {
+    '\[[Ll][Ii][Nn][Kk]:\s*('.
+    quotemeta(recode($fdcfg,$_->[0])).
+    ')'.
+    ($_->[1] ? '\s*\@title=('.quotemeta(recode($fdcfg,$_->[1])).')' : '').
+    '\s*\]'
   } @links;
 
   # ... images
-  $txt =~ s!$_!<img src="$1" border="0" alt="">!g for map {
-    '\[[Ii][Mm][Aa][Gg][Ee]:\s*('.quotemeta(recode($dcfg,$_->[1])).')\]'
+  $posting =~ s!$_!'<img src="'.$1.'" border="0" alt="'.($2?$2:'').'">'!eg for map {
+    '\[[Ii][Mm][Aa][Gg][Ee]:\s*('.
+    quotemeta(recode($fdcfg,$_->[1])).
+    ')'.
+    ($_->[1] ? '\s*\@alt=('.quotemeta(recode($fdcfg,$_->[1])).')' : '').
+    '\s*\]'
   } @images;
 
   # ... iframes
-  $txt =~ s!$_!<iframe src="$1" width="90%" height="90%"><a href="$1">$1</a></iframe>! for map {
-    '\[[Ii][Ff][Rr][Aa][Mm][Ee]:\s*('.quotemeta(recode($dcfg,$_->[1])).')\]'
+  $posting =~ s!$_!<iframe src="$1" width="90%" height="90%"><a href="$1">$1</a></iframe>! for map {
+    '\[[Ii][Ff][Rr][Aa][Mm][Ee]:\s*('.quotemeta(recode($fdcfg,$_->[1])).')\]'
   } @iframes;
 
   # return

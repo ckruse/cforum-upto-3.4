@@ -332,22 +332,30 @@ int flt_posting_execute_filter(t_cf_hash *head,t_configuration *dc,t_configurati
 
 /* {{{ standard directives ([link:], [ref:], [iframe:], [image:], [pref:]) */
 int flt_posting_directives(t_configuration *fdc,t_configuration *fvc,const u_char *directive,const u_char *parameter,t_string *content,t_string *cite,const u_char *qchars,int sig) {
-  size_t len;
-  t_name_value *xhtml = cfg_get_first_value(fvc,"XHTMLMode");
+  size_t len,i,len1;
+  t_name_value *xhtml = cfg_get_first_value(fdc,"XHTMLMode");
   u_int64_t tid,mid;
-  u_char *ptr,*tmp1 = NULL,**list = NULL;
+  u_char *ptr,*tmp1 = NULL,**list = NULL,*title_alt = NULL;
   t_name_value *vs = cfg_get_first_value(fdc,cf_hash_get(GlobalValues,"UserName",8) ? "UPostingURL" : "PostingURL");
   t_ref_uri *uri;
-  size_t i;
 
   if(*directive == 'l') {
     /* {{{ [link:] */
     if(cf_strcmp(directive,"link") == 0) {
-      if(is_valid_link(parameter) == 0) {
-        len = strlen(parameter);
+      if((ptr = strstr(parameter,"@title=")) != NULL) {
+        tmp1      = strndup(parameter,ptr-parameter);
+        len       = ptr - parameter;
+        title_alt = ptr + 7;
+        len1      = strlen(title_alt);
+      }
+      else {
+        tmp1 = parameter;
+        len  = strlen(parameter);
+      }
 
+      if(is_valid_link(tmp1) == 0) {
         str_chars_append(content,"<a href=\"",9);
-        str_chars_append(content,parameter,len);
+        str_chars_append(content,tmp1,len);
 
         if(Cfg.link) {
           str_chars_append(content,"\" target=\"",10);
@@ -355,12 +363,13 @@ int flt_posting_directives(t_configuration *fdc,t_configuration *fvc,const u_cha
         }
 
         str_chars_append(content,"\">",2);
-        str_chars_append(content,parameter,len);
+        if(title_alt) str_chars_append(content,title_alt,len1);
+        else          str_chars_append(content,tmp1,len);
         str_chars_append(content,"</a>",4);
 
         if(cite && sig == 0) {
           str_chars_append(cite,"[link:",6);
-          str_chars_append(cite,parameter,len);
+          str_chars_append(cite,parameter,strlen(parameter));
           str_char_append(cite,']');
         }
 
@@ -372,12 +381,21 @@ int flt_posting_directives(t_configuration *fdc,t_configuration *fvc,const u_cha
   else if(*directive == 'i') {
     /* {{{ [image:] */
     if(cf_strcmp(directive,"image") == 0) {
-      if(is_valid_http_link(parameter,1) == 0) {
-        len = strlen(parameter);
+      if((ptr = strstr(parameter,"@alt=")) != NULL) {
+        tmp1      = strndup(parameter,ptr-parameter);
+        len       = ptr - parameter;
+        title_alt = ptr + 5;
+        len1      = strlen(title_alt);
+      }
+      else {
+        tmp1 = parameter;
+        len  = strlen(parameter);
+      }
 
+      if(is_valid_http_link(tmp1,1) == 0) {
         if(Cfg.ImageAsLink) {
           str_chars_append(content,"<a href=\"",9);
-          str_chars_append(content,parameter,len);
+          str_chars_append(content,tmp1,len);
 
           if(Cfg.link) {
             str_chars_append(content,"\" target=\"",10);
@@ -385,12 +403,18 @@ int flt_posting_directives(t_configuration *fdc,t_configuration *fvc,const u_cha
           }
 
           str_chars_append(content,"\">",2);
-          str_chars_append(content,parameter,len);
+          if(title_alt) str_chars_append(content,title_alt,len1);
+          else          str_chars_append(content,tmp1,len);
           str_chars_append(content,"</a>",4);
         }
         else {
           str_chars_append(content,"<img src=\"",10);
           str_chars_append(content,parameter,len);
+          if(title_alt) {
+            str_chars_append(content,"alt=\"",5);
+            str_chars_append(content,title_alt,len1);
+            str_char_append(content,'"');
+          }
 
           if(*xhtml->values[0] == 'y')  str_chars_append(content,"\"/>",3);
           else str_chars_append(content,"\">",2);

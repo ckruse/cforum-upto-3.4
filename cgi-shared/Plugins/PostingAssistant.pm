@@ -80,35 +80,27 @@ sub links_check {
 
   $base =~ s![^/]*$!!; #!
 
-  my @links = ();
-  push @links,[$1, $2] while $body =~ /\[([Ll][Ii][Nn][Kk]):\s*([^\]\s]+)\s*\]/g;
-  @links = grep {
-    !(is_valid_link($_->[1])
-      or is_valid_http_link(($_->[1] =~ /^[Vv][Ii][Ee][Ww]-[Ss][Oo][Uu][Rr][Cc][Ee]:(.+)/)[0] || '',CForum::Validator::VALIDATE_STRICT)
-      or ($_->[1] =~ m<^(?:\.?\.?/(?!/)|\?)> and is_valid_http_link(rel_uri($_ -> [1],$base),CForum::Validator::VALIDATE_STRICT))) #/
-  } @links;
+  while($body =~ /\[[Ll][Ii][Nn][Kk]:\s*([^\]\s]+)\s*(?:\@title=([^\]]+)\s*)?\]/g) {
+    my ($uri,$title) = ($1,$2,$3);
+    return -1 if
+      !is_valid_url($uri) &&
+      !is_valid_http_url(($uri =~ /^[Vv][Ii][Ee][Ww]-[Ss][Oo][Uu][Rr][Cc][Ee]:(.+)/)[0],CForum::Validator::VALIDATE_STRICT) &&
+      !($uri =~ m{^(?:\.?\.?/(?!/)|\?)} and is_valid_http_url(rel_uri($uri,$base)));
+  }
 
-  return -1 if @links;
+  while($body =~ /\[[Ii][Mm][Aa][Gg][Ee]:\s*([^\]\s]+)\s*(?:\@alt=([^\]]+)\s*)?\]/g) {
+    my ($uri,$alt) = ($1,$2);
+    return -1 if
+      !is_valid_http_url($uri,CForum::Validator::VALIDATE_STRICT) &&
+      !($uri =~ m{^(?:\.?\.?/(?!/)|\?)} and is_valid_http_url(rel_uri($uri, $base),CForum::Validator::VALIDATE_STRICT));
+  }
 
-  # lets collect all images
-  my @images = ();
-  push @images, [$1, $2] while $body =~ /\[([Ii][Mm][Aa][Gg][Ee]):\s*([^\]\s]+)\s*\]/g;
-  @images = grep {
-    !(is_valid_http_url($_->[1],CForum::Validator::VALIDATE_STRICT)
-      or ($_->[1] =~ m<^(?:\.?\.?/(?!/)|\?)> and is_valid_http_url(rel_uri($_->[1], $base),CForum::Validator::VALIDATE_STRICT))) #/
-  } @images;
-
-  return -1 if @images;
-
-  # lets collect all iframes
-  my @iframes;
-  push @iframes,[$1, $2] while $body =~ /\[([Ii][Ff][Rr][Aa][Mm][Ee]):\s*([^\]\s]+)\s*\]/g;
-  @iframes = grep {
-    !(is_valid_http_url($_ -> [1],CForum::Validator::VALIDATE_STRICT)
-    or ($_->[1] =~ m<^(?:\.?\.?/(?!/)|\?)> and is_valid_http_url(rel_uri($_ -> [1], $base),CForum::Validator::VALIDATE_STRICT))) #/
-  } @iframes;
-
-  return -1 if @iframes;
+  while($body =~ /\[[Ii][Ff][Rr][Aa][Mm][Ee]:\s*([^\]\s]+)\s*\]/g) {
+    my $uri = $1;
+    return -1 if
+      !is_valid_http_url($uri,CForum::Validator::VALIDATE_STRICT) &&
+      !($uri =~ m{^(?:\.?\.?/(?!/)|\?)} and is_valid_http_url(rel_uri($uri, $base),CForum::Validator::VALIDATE_STRICT));
+  }
 
   return 0;
 }

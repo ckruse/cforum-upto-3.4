@@ -398,7 +398,12 @@ if($cgi->param) {
         $txt = $cgi->param('newbody');
       }
       else {
-        $txt = $clientlib->htmlentities_charset_convert($cgi->param('newbody'),"UTF-8", $fo_default_conf->{ExternCharset}->[0]->[0],0);
+        $txt = $clientlib->charset_convert_entities(
+          $cgi->param('newbody'),
+          length($cgi->param('newbody')),
+          "UTF-8",
+          $fo_default_conf->{ExternCharset}->[0]->[0]
+        );
       }
 
       $tpl->setVar(body => message_field($txt,$cgi->param('qchar'),$fo_default_conf));

@@ -20,10 +20,11 @@ package Plugins::Preview;
 # {{{ Program headers
 use strict;
 
-our $VERSION = q$Revision: 1.6 $ =~ /([\d.]+)\s*$/)[0] or '0.0';
+our $VERSION = (q$Revision: 1.6 $ =~ /([\d.]+)\s*$/)[0] or '0.0';
 
 use CGI::Carp qw/fatalsToBrowser/;
 
+use CForum::Clientlib;
 use CheckRFC;
 use ForumUtils qw(
   message_field
@@ -37,6 +38,7 @@ push @{$main::Plugins->{newthread}},\&execute;
 sub execute {
   my ($fo_default_conf,$fo_view_conf,$fo_post_conf,$user_config,$cgi) = @_;
   return unless $cgi->param('preview');
+  my $clientlib = new CForum::Clientlib;
 
   my $body = message_field(
     $clientlib->charset_convert_entities(
