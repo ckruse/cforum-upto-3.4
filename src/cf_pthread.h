@@ -26,6 +26,11 @@
 #define CF_RW_WR(rwlock) cf_rwlock_wrlock(__FILE__,__LINE__,(rwlock)) /**< Lock a rwlock writable */
 #define CF_RW_UN(rwlock) cf_rwlock_unlock(__FILE__,__LINE__,(rwlock)) /**< Unlock a rwlock */
 
+#define CF_CD_SG(cnd) cf_cond_signal(__FILE__,__LINE__,(cnd))
+#define CF_CD_BC(cnd) cf_cond_broadcast(__FILE__,__LINE__,(cnd))
+#define CF_CD_WT(cnd) cf_cond_wait(__FILE__,__LINE__,(cnd))
+#define CF_CD_TW(cnd,ts) cf_cond_timedwait(__FILE__,__LINE__,(cnd),(ts))
+
 /**
  * This struct is used to store a mutex and it's name
  */
@@ -116,10 +121,10 @@ void cf_rwlock_unlock(const u_char *file,const int line,t_cf_rwlock *rwlock);
 
 void cf_cond_init(const u_char *name,t_cf_cond *cond,const pthread_condattr_t *attr);
 void cf_cond_destroy(t_cf_cond *cond);
-void cf_cond_signal(t_cf_cond *cond);
-void cf_cond_broadcast(t_cf_cond *cond);
-void cf_cond_wait(t_cf_cond *cond);
-int cf_cond_timedwait(t_cf_cond *cond,const struct timespec *ts);
+void cf_cond_signal(const u_char *file,int line,t_cf_cond *cond);
+void cf_cond_broadcast(const u_char *file,int line,t_cf_cond *cond);
+void cf_cond_wait(const u_char *file,int line,t_cf_cond *cond);
+int cf_cond_timedwait(const u_char *file,int line,t_cf_cond *cond,const struct timespec *ts);
 
 
 #endif

@@ -79,7 +79,7 @@ void cf_lock_mutex(const u_char *file,const int line,t_cf_mutex *mutex) {
   #endif
 
   if((status = pthread_mutex_lock(&mutex->mutex)) != 0) {
-    cf_log(CF_ERR,__FILE__,__LINE__,"pthread_mutex_lock: (%s) %s\n",mutex->name,strerror(status));
+    cf_log(CF_ERR,__FILE__,__LINE__,"%s:%d:pthread_mutex_lock(%s) %s\n",file,line,mutex->name,strerror(status));
     exit(-1);
   }
 
@@ -114,7 +114,7 @@ void cf_unlock_mutex(const u_char *file,const int line,t_cf_mutex *mutex) {
   #endif
 
   if((status = pthread_mutex_unlock(&mutex->mutex)) != 0) {
-    cf_log(CF_ERR,__FILE__,__LINE__,"pthread_mutex_unlock: (%s) %s\n",mutex->name,strerror(status));
+    cf_log(CF_ERR,__FILE__,__LINE__,"%s:%d:pthread_mutex_unlock(%s): %s\n",file,line,mutex->name,strerror(status));
     exit(-1);
   }
 
@@ -166,7 +166,7 @@ void cf_rwlock_rdlock(const u_char *file,const int line,t_cf_rwlock *rwlock) {
   #endif
 
   if((status = pthread_rwlock_rdlock(&rwlock->rwlock)) != 0) {
-    cf_log(CF_ERR,__FILE__,__LINE__,"pthread_rwlock_rdlock: (%s) %s\n",rwlock->name,strerror(status));
+    cf_log(CF_ERR,__FILE__,__LINE__,"%s:%d:pthread_rwlock_rdlock(%s): %s\n",file,line,rwlock->name,strerror(status));
     exit(-1);
   }
 
@@ -201,7 +201,7 @@ void cf_rwlock_wrlock(const u_char *file,const int line,t_cf_rwlock *rwlock) {
   #endif
 
   if((status = pthread_rwlock_wrlock(&rwlock->rwlock)) != 0) {
-    cf_log(CF_ERR,__FILE__,__LINE__,"pthread_rwlock_wrlock: (%s) %s\n",rwlock->name,strerror(status));
+    cf_log(CF_ERR,__FILE__,__LINE__,"%s:%d:pthread_rwlock_wrlock(%s): %s\n",file,line,rwlock->name,strerror(status));
     exit(-1);
   }
 
@@ -224,7 +224,7 @@ void cf_rwlock_unlock(const u_char *file,const int line,t_cf_rwlock *rwlock) {
   int status;
 
   if((status = pthread_rwlock_unlock(&rwlock->rwlock)) != 0) {
-    cf_log(CF_ERR,__FILE__,__LINE__,"pthread_rwlock_unlock: (%s) %s\n",rwlock->name,strerror(status));
+    cf_log(CF_ERR,__FILE__,__LINE__,"%s:%d:pthread_rwlock_unlock(%s): %s\n",file,line,rwlock->name,strerror(status));
     exit(-1);
   }
 
@@ -262,7 +262,7 @@ void cf_cond_destroy(t_cf_cond *cond) {
 /* }}} */
 
 /* {{{ cf_cond_signal */
-void cf_cond_signal(t_cf_cond *cond) {
+void cf_cond_signal(const u_char *file,int line,t_cf_cond *cond) {
   #ifdef _FO_LOCK_DEBUG
   struct timeval tv1,tv2;
   struct timezone tz;
@@ -278,12 +278,12 @@ void cf_cond_signal(t_cf_cond *cond) {
   #endif
 
   if((status = pthread_mutex_lock(&cond->lock)) != 0) {
-    cf_log(CF_ERR,__FILE__,__LINE__,"pthread_mutex_lock: (%s) %s\n",cond->name,strerror(status));
+    cf_log(CF_ERR,__FILE__,__LINE__,"%s:%d:pthread_mutex_lock(%s): %s\n",file,line,cond->name,strerror(status));
     exit(-1);
   }
 
   if((status = pthread_cond_signal(&cond->cond)) != 0) {
-    cf_log(CF_ERR,__FILE__,__LINE__,"pthread_cond_signal: (%s) %s\n",cond->name,strerror(status));
+    cf_log(CF_ERR,__FILE__,__LINE__,"%s:%d:pthread_cond_signal(%s): %s\n",file,line,cond->name,strerror(status));
     exit(-1);
   }
 
@@ -304,7 +304,7 @@ void cf_cond_signal(t_cf_cond *cond) {
 /* }}} */
 
 /* {{{ cf_cond_broadcast */
-void cf_cond_broadcast(t_cf_cond *cond) {
+void cf_cond_broadcast(const u_char *file,int line,t_cf_cond *cond) {
   #ifdef _FO_LOCK_DEBUG
   struct timeval tv1,tv2;
   struct timezone tz;
@@ -320,12 +320,12 @@ void cf_cond_broadcast(t_cf_cond *cond) {
   #endif
 
   if((status = pthread_mutex_lock(&cond->lock)) != 0) {
-    cf_log(CF_ERR,__FILE__,__LINE__,"pthread_mutex_lock: (%s) %s\n",cond->name,strerror(status));
+    cf_log(CF_ERR,__FILE__,__LINE__,"%s:%d:pthread_mutex_lock(%s): %s\n",file,line,cond->name,strerror(status));
     exit(-1);
   }
 
   if((status = pthread_cond_broadcast(&cond->cond)) != 0) {
-    cf_log(CF_ERR,__FILE__,__LINE__,"pthread_cond_broadcast: (%s) %s\n",cond->name,strerror(status));
+    cf_log(CF_ERR,__FILE__,__LINE__,"%s:%d:pthread_cond_broadcast(%s): %s\n",file,line,cond->name,strerror(status));
     exit(-1);
   }
 
@@ -346,7 +346,7 @@ void cf_cond_broadcast(t_cf_cond *cond) {
 /* }}} */
 
 /* {{{ cf_cond_wait */
-void cf_cond_wait(t_cf_cond *cond) {
+void cf_cond_wait(const u_char *file,int line,t_cf_cond *cond) {
   #ifdef _FO_LOCK_DEBUG
   struct timeval tv1,tv2;
   struct timezone tz;
@@ -362,12 +362,12 @@ void cf_cond_wait(t_cf_cond *cond) {
   #endif
 
   if((status = pthread_mutex_lock(&cond->lock)) != 0) {
-    cf_log(CF_ERR,__FILE__,__LINE__,"pthread_mutex_lock: (%s) %s\n",cond->name,strerror(status));
+    cf_log(CF_ERR,__FILE__,__LINE__,"%s:%d:pthread_mutex_lock(%s): %s\n",file,line,cond->name,strerror(status));
     exit(-1);
   }
 
   if((status = pthread_cond_wait(&cond->cond,&cond->lock)) != 0) {
-    cf_log(CF_ERR,__FILE__,__LINE__,"pthread_cond_wait: (%s) %s\n",cond->name,strerror(status));
+    cf_log(CF_ERR,__FILE__,__LINE__,"%s:%d:pthread_cond_wait(%s): %s\n",file,line,cond->name,strerror(status));
     exit(-1);
   }
 
@@ -388,7 +388,7 @@ void cf_cond_wait(t_cf_cond *cond) {
 /* }}} */
 
 /* {{{ cf_cond_timedwait */
-int cf_cond_timedwait(t_cf_cond *cond,const struct timespec *ts) {
+int cf_cond_timedwait(const u_char *file,int line,t_cf_cond *cond,const struct timespec *ts) {
   #ifdef _FO_LOCK_DEBUG
   struct timeval tv1,tv2;
   struct timezone tz;
@@ -404,13 +404,13 @@ int cf_cond_timedwait(t_cf_cond *cond,const struct timespec *ts) {
   #endif
 
   if((status = pthread_mutex_lock(&cond->lock)) != 0) {
-    cf_log(CF_ERR,__FILE__,__LINE__,"pthread_mutex_lock: (%s) %s\n",cond->name,strerror(status));
+    cf_log(CF_ERR,__FILE__,__LINE__,"%s:%d:pthread_mutex_lock(%s): %s\n",file,line,cond->name,strerror(status));
     exit(-1);
   }
 
   if((status = pthread_cond_timedwait(&cond->cond,&cond->lock,ts)) != 0) {
     if(status != ETIMEDOUT) {
-      cf_log(CF_ERR,__FILE__,__LINE__,"pthread_cond_wait: (%s) %s\n",cond->name,strerror(status));
+      cf_log(CF_ERR,__FILE__,__LINE__,"%s:%d:pthread_cond_wait(%s): %s\n",file,line,cond->name,strerror(status));
       exit(-1);
     }
   }

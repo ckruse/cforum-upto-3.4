@@ -587,7 +587,7 @@ int main(int argc,char *argv[]) {
 
   /* {{{ destroy workers */
   cf_log(CF_STD|CF_FLSH,__FILE__,__LINE__,"Destroying workers...\n");
-  cf_cond_broadcast(&head.clients.cond);
+  CF_CD_BC(&head.clients.cond);
   cf_rw_list_destroy(&head.workers.list,cleanup_worker);
   /* }}} */
 

@@ -89,31 +89,27 @@ u_char *readline(int fd,rline_t *tsd) {
     if((rc = my_read(tsd,fd,&c)) == 1) {
 
       if(n >= len) {
-  len += MAXLINE;
+        len += MAXLINE;
 
-  line = realloc(line,len);
+        line = realloc(line,len);
         if(!line) return NULL;
 
-  ptr = &line[n-1];
+        ptr = &line[n-1];
 
-  tsd->rl_mem = len;
+        tsd->rl_mem = len;
       }
 
       *ptr++ = c;
       tsd->rl_len++;
 
-      if(c == '\n') {
-  break;
-      }
+      if(c == '\n') break;
     }
     else if(rc == 0) {
       if(n == 1) { /* no data read */
-  free(line);
-  return NULL;
+        free(line);
+        return NULL;
       }
-      else {
-  break;
-      }
+      else break;
     }
     else {
       free(line);
