@@ -91,6 +91,7 @@ int is_id(const u_char *id) {
 }
 /* }}} */
 
+/* {{{ send_ok_output */
 void send_ok_output(t_cf_hash *head,t_name_value *cs) {
   t_name_value *fbase;
   t_name_value *cfg_tpl = cfg_get_first_value(&fo_vote_conf,"OkTemplate");
@@ -128,6 +129,7 @@ void send_ok_output(t_cf_hash *head,t_name_value *cs) {
   tpl_cf_parse(&tpl);
   tpl_cf_finish(&tpl);
 }
+/* }}} */
 
 /**
  * Dummy function, for ignoring unknown directives
@@ -221,6 +223,7 @@ int main(int argc,char *argv[],char *env[]) {
   if((uname = cf_hash_get(GlobalValues,"UserName",8)) == NULL) {
     printf("Status: 403 Forbidden\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
     str_error_message("E_VOTE_AUTH",NULL);
+    return EXIT_SUCCESS;
   }
 
   if(head && uname) {
@@ -291,6 +294,7 @@ int main(int argc,char *argv[],char *env[]) {
         key.data = buff;
         key.size = len;
 
+        /* {{{ check if user already voted */
         if((ret = db->get(db,NULL,&key,&data,0)) == 0) {
           printf("Status: 403 Forbidden\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
           str_error_message("E_VOTE_MULTIPLE",NULL);
@@ -303,7 +307,9 @@ int main(int argc,char *argv[],char *env[]) {
           fprintf(stderr,"db->get() error: %s\n",db_strerror(ret));
           return EXIT_FAILURE;
         }
+        /* }}} */
 
+        /* {{{ register this voting */
         data.data = "1";
         data.size = 1;
 
@@ -316,15 +322,16 @@ int main(int argc,char *argv[],char *env[]) {
 
         flock(fd,LOCK_UN);
         db->close(db,0);
-
-
-        if(send204 && cf_strcmp(send204->values[0],"yes") == 0) printf("Status: 204 No Content\015\012\015\012");
-        else send_ok_output(head,cs);
-
+        /* }}} */
 
         len = snprintf(buff,512,"VOTE %s\nTid: %s\nMid: %s\n\nQUIT\n",*a=='g'?"GOOD":"BAD",ctid,cmid);
         writen(sock,buff,len);
         close(sock);
+
+        /* {{{ send output */
+        if(send204 && cf_strcmp(send204->values[0],"yes") == 0) printf("Status: 204 No Content\015\012\015\012");
+        else send_ok_output(head,cs);
+        /* }}} */
       }
       else {
         printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
@@ -338,10 +345,8 @@ int main(int argc,char *argv[],char *env[]) {
     }
   }
   else {
-    if(uname) {
-      if(send204 && cf_strcmp(send204->values[0],"yes") == 0) printf("Status: 204 No Content\015\012\015\012");
-      else send_ok_output(head,cs);
-    }
+    printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
+    str_error_message("E_VOTE_INTERNAL",NULL);
   }
 
 

@@ -338,7 +338,7 @@ void str_error_message(const u_char *err,FILE *out, ...) {
         key.size = size;
 
         if(Msgs->get(Msgs,NULL,&key,&value,0) == 0) {
-          buff = value.data;
+          buff = strndup(value.data,value.size);
         }
       }
 
@@ -379,6 +379,7 @@ void str_error_message(const u_char *err,FILE *out, ...) {
 
         cf_set_variable(&tpl,cs,"error",msg.content,msg.len,1);
         str_cleanup(&msg);
+        free(buff);
 
         if(out) {
           tpl_cf_parse_to_mem(&tpl);
@@ -443,7 +444,7 @@ u_char *get_error_message(const u_char *err,size_t *len, ...) {
       key.size = size;
 
       if(Msgs->get(Msgs,NULL,&key,&value,0) == 0) {
-        buff = value.data;
+        buff = strndup(value.data,value.size);
       }
     }
 
@@ -481,6 +482,7 @@ u_char *get_error_message(const u_char *err,size_t *len, ...) {
       }
 
       va_end(ap);
+      free(buff);
       if(len) *len = msg.len;
       return msg.content;
     }

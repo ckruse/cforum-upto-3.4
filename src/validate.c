@@ -198,6 +198,7 @@ int is_valid_http_link(const u_char *link,int strict) {
           case '&':
           case '=':
           case '~':
+          case '/':
             continue;
           default:
             if(*ptr != '?') return -1;
