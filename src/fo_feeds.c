@@ -269,7 +269,7 @@ void rss_head(t_string *str,t_cl_thread *thread) {
     str_chars_append(str,rss_cat->values[0],strlen(rss_cat->values[0]));
     str_chars_append(str,"</category>",11);
   }
-  if(thread->messages->category.len) {
+  if(thread && thread->messages->category.len) {
     str_chars_append(str,"<category>",10);
     str_str_append(str,&thread->messages->category);
     str_chars_append(str,"</category>",11);
