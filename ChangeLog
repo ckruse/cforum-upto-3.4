@@ -1,5 +1,5 @@
 2005-01-03 Christian Seiler <self@christian-seiler.de>
-	* Added forgotten admin/ to path in cgi-bin/admin/Makefile.am
+	* cgi-bin/admin/Makefile.am: Added forgotten admin/ to path
 
 2005-01-03 Christian Kruse <ckruse@wwwtech.de>
 	* src/modules/flt_votingvariables.c: Ups, forgot it to add it to the
