@@ -86,7 +86,7 @@ int cf_get_next_thread_through_sock(int sock,rline_t *tsd,t_cl_thread *thr,const
 
         thr->messages           = fo_alloc(NULL,1,sizeof(t_message),FO_ALLOC_CALLOC);
         thr->last               = thr->messages;
-	thr->newest             = thr->messages;
+        thr->newest             = thr->messages;
         thr->last->mid          = str_to_u_int64(&line[chtmp-line+1]);
         thr->messages->may_show = 1;
         thr->msg_len            = 1;
@@ -118,16 +118,16 @@ int cf_get_next_thread_through_sock(int sock,rline_t *tsd,t_cl_thread *thr,const
         if(tplname) tpl_cf_init(&thr->last->tpl,tplname);
       }
       else if(cf_strncmp(line,"Flag:",5) == 0) {
-	chtmp = strstr(line+5,"=");
+        chtmp = strstr(line+5,"=");
 
-	flag.name = strndup(line+5,chtmp-line-5);
-	flag.val  = strndup(chtmp+1,strlen(chtmp+1)-1);
+        flag.name = strndup(line+5,chtmp-line-5);
+        flag.val  = strndup(chtmp+1,strlen(chtmp+1)-1);
 
-	cf_list_append(&thr->last->flags,&flag,sizeof(flag));
+        cf_list_append(&thr->last->flags,&flag,sizeof(flag));
       }
       else if(cf_strncmp(line,"Date:",5) == 0) {
-	thr->last->date = strtoul(line+5,NULL,10);
-	if(thr->last->date > thr->newest->date) thr->newest = thr->last;
+        thr->last->date = strtoul(line+5,NULL,10);
+        if(thr->last->date > thr->newest->date) thr->newest = thr->last;
       }
       else if(cf_strncmp(line,"Author:",7) == 0)   str_char_set(&thr->last->author,line+7,tsd->rl_len-8);
       else if(cf_strncmp(line,"Subject:",8) == 0)  str_char_set(&thr->last->subject,line+8,tsd->rl_len-9);
@@ -386,27 +386,27 @@ int cf_get_message_through_sock(int sock,rline_t *tsd,t_cl_thread *thr,const u_c
       thr->last     = NULL;
 
       if(cf_get_next_thread_through_sock(sock,tsd,thr,tplname) < 0 && *ErrorString) {
-	strcpy(ErrorString,"E_COMMUNICATION");
-	return -1;
+        strcpy(ErrorString,"E_COMMUNICATION");
+        return -1;
       }
       else {
-	/* set thread message pointer to the right message */
-	if(mid == 0) thr->threadmsg = thr->messages;
-	else {
-	  for(msg = thr->messages;msg;msg=msg->next) {
-	    if(msg->mid == mid) {
-	      thr->threadmsg = msg;
-	      break;
-	    }
-	  }
-	}
+        /* set thread message pointer to the right message */
+        if(mid == 0) thr->threadmsg = thr->messages;
+        else {
+          for(msg = thr->messages;msg;msg=msg->next) {
+            if(msg->mid == mid) {
+              thr->threadmsg = msg;
+              break;
+            }
+          }
+        }
       }
     }
     else {
       /* bye, bye */
       if(line) {
-	snprintf(ErrorString,50,"E_FO_%d",atoi(line));
-	free(line);
+        snprintf(ErrorString,50,"E_FO_%d",atoi(line));
+        free(line);
       }
       else strcpy(ErrorString,"E_COMMUNICATION");
 
@@ -469,12 +469,12 @@ int cf_get_message_through_shm(void *shm_ptr,t_cl_thread *thr,const u_char *tpln
       ptr1 += sizeof(u_int32_t);
 
       for(x=0;x<flagnum;++x) {
-	/* size of name */
-	val = *((u_int32_t *)ptr1);
-	ptr1 += sizeof(u_int32_t) + val;
+        /* size of name */
+        val = *((u_int32_t *)ptr1);
+        ptr1 += sizeof(u_int32_t) + val;
 
-	val = *((u_int32_t *)ptr1);
-	ptr1 += sizeof(u_int32_t) + val;
+        val = *((u_int32_t *)ptr1);
+        ptr1 += sizeof(u_int32_t) + val;
       }
 
       /* then: length of the subject + subject */

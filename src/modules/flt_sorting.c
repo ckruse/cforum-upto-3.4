@@ -43,6 +43,7 @@
 static int sort_threads  = CF_SORT_DESCENDING;
 static int sort_messages = CF_SORT_DESCENDING;
 
+/* {{{ flt_sorting_threads_cmp */
 int flt_sorting_threads_cmp(const void *a,const void *b) {
   t_cl_thread *ta = (t_cl_thread *)a;
   t_cl_thread *tb = (t_cl_thread *)b;
@@ -62,21 +63,18 @@ int flt_sorting_threads_cmp(const void *a,const void *b) {
 
   return 0;
 }
-
-void flt_sorting_sort_threads_newest(t_array *threads) {
-
-}
+/* }}} */
 
 void flt_sorting_sort_messages(t_array *threads) {
 }
 
+/* {{{ flt_sorting_sort */
 #ifndef CF_SHARED_MEM
 int flt_sorting_sort(t_cf_hash *head,t_configuration *dc,t_configuration *vc,int sock,rline_t *tsd,t_array *threads)
 #else
 int flt_sorting_sort(t_cf_hash *head,t_configuration *dc,t_configuration *vc,void *ptr,t_array *threads)
 #endif
 {
-
   /* sort threads first */
   array_sort(threads,flt_sorting_threads_cmp);
 
@@ -84,6 +82,7 @@ int flt_sorting_sort(t_cf_hash *head,t_configuration *dc,t_configuration *vc,voi
 
   return FLT_OK;
 }
+/* }}} */
 
 /* {{{ flt_sorting_cfg */
 int flt_sorting_cfg(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {

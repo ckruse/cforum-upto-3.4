@@ -163,16 +163,16 @@ int flt_oc_execute_filter(t_cf_hash *head,t_configuration *dc,t_configuration *v
   if(cl) { /* threads are closed by default! */
     for(i=0;i<sclen;i++) {
       if(saved_threads[i] == thread->tid) {
-	tpl_cf_setvar(&thread->messages->tpl,"open","1",1,0);
-	i = sprintf(buff,"%s?t=%lld&a=close",vs->values[0],thread->tid);
-	tpl_cf_setvar(&thread->messages->tpl,"link_oc",buff,i,1);
+        tpl_cf_setvar(&thread->messages->tpl,"open","1",1,0);
+        i = sprintf(buff,"%s?t=%lld&a=close",vs->values[0],thread->tid);
+        tpl_cf_setvar(&thread->messages->tpl,"link_oc",buff,i,1);
 
-	if(Cgi.len) {
-	  tpl_cf_appendvar(&thread->messages->tpl,"link_oc","&o=",7);
-	  tpl_cf_appendvar(&thread->messages->tpl,"link_oc",Cgi.content,Cgi.len);
-	}
+        if(Cgi.len) {
+          tpl_cf_appendvar(&thread->messages->tpl,"link_oc","&o=",7);
+          tpl_cf_appendvar(&thread->messages->tpl,"link_oc",Cgi.content,Cgi.len);
+        }
 
-	return FLT_DECLINE; /* thread is open */
+        return FLT_DECLINE; /* thread is open */
       }
     }
 
@@ -184,21 +184,21 @@ int flt_oc_execute_filter(t_cf_hash *head,t_configuration *dc,t_configuration *v
     /* Ok, thread should normaly be closed. But lets check for new posts */
     if(OpenThreadIfNew) {
       if((is_visited = cf_get_mod_api_ent("is_visited")) != NULL) {
-	for(msg=thread->messages;msg;msg=msg->next) {
-	  /* Thread has at least one not yet visited messages -- leave it open */
-	  if(is_visited(&(msg->mid)) == NULL && msg->invisible == 0 && msg->may_show == 1) {
-	    tpl_cf_setvar(&thread->messages->tpl,"open","1",1,0);
-	    i = snprintf(buff,500,"%s?t=%lld&a=close",vs->values[0],thread->tid);
-	    tpl_cf_setvar(&thread->messages->tpl,"link_oc",buff,i,1);
+        for(msg=thread->messages;msg;msg=msg->next) {
+          /* Thread has at least one not yet visited messages -- leave it open */
+          if(is_visited(&(msg->mid)) == NULL && msg->invisible == 0 && msg->may_show == 1) {
+            tpl_cf_setvar(&thread->messages->tpl,"open","1",1,0);
+            i = snprintf(buff,500,"%s?t=%lld&a=close",vs->values[0],thread->tid);
+            tpl_cf_setvar(&thread->messages->tpl,"link_oc",buff,i,1);
 
-	    if(Cgi.len) {
-	      tpl_cf_appendvar(&thread->messages->tpl,"link_oc","&o=",7);
-	      tpl_cf_appendvar(&thread->messages->tpl,"link_oc",Cgi.content,Cgi.len);
-	    }
+            if(Cgi.len) {
+              tpl_cf_appendvar(&thread->messages->tpl,"link_oc","&o=",7);
+              tpl_cf_appendvar(&thread->messages->tpl,"link_oc",Cgi.content,Cgi.len);
+            }
 
-	    return FLT_DECLINE;
-	  }
-	}
+            return FLT_DECLINE;
+          }
+        }
       }
     }
 
@@ -221,22 +221,22 @@ int flt_oc_execute_filter(t_cf_hash *head,t_configuration *dc,t_configuration *v
     /* check, if the actual thread is in the closed threads list */
     for(i=0;i<sclen;i++) {
       if(thread->tid == saved_threads[i]) { /* this thread is closed */
-	i = sprintf(buff,"%s?t=%lld&a=open",vs->values[0],thread->tid);
-	tpl_cf_setvar(&thread->messages->tpl,"link_oc",buff,i,1);
+        i = sprintf(buff,"%s?t=%lld&a=open",vs->values[0],thread->tid);
+        tpl_cf_setvar(&thread->messages->tpl,"link_oc",buff,i,1);
 
-	if(Cgi.len) {
-	  tpl_cf_appendvar(&thread->messages->tpl,"link_oc","&o=",7);
-	  tpl_cf_appendvar(&thread->messages->tpl,"link_oc",Cgi.content,Cgi.len);
-	}
+        if(Cgi.len) {
+          tpl_cf_appendvar(&thread->messages->tpl,"link_oc","&o=",7);
+          tpl_cf_appendvar(&thread->messages->tpl,"link_oc",Cgi.content,Cgi.len);
+        }
 
-	msg = thread->messages->next;
+        msg = thread->messages->next;
 
-	/* hide postings */
-	if(msg) {
-	  for(;msg;msg=msg->next) msg->may_show = 0;
-	}
+        /* hide postings */
+        if(msg) {
+          for(;msg;msg=msg->next) msg->may_show = 0;
+        }
 
-	return FLT_DECLINE; /* thread is open */
+        return FLT_DECLINE; /* thread is open */
       }
     }
 

@@ -1215,7 +1215,7 @@ int is_valid_link(const u_char *link) {
   else {
     for(i=0;scheme_list[i].validator;i++) {
       if(cf_strcmp(scheme_list[i].scheme,scheme) == 0) {
-	return scheme_list[i].validator(link);
+        return scheme_list[i].validator(link);
       }
     }
   }

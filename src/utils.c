@@ -184,7 +184,7 @@ int cf_make_path(const u_char *path,mode_t mode) {
       *ptr = '\0';
 
       if(mkdir(mpath,mode) != 0) {
-	if(errno != EEXIST) return -1;
+        if(errno != EEXIST) return -1;
       }
 
       *ptr = '/';

@@ -663,26 +663,26 @@ int read_config(t_configfile *conf,t_take_default deflt,int mode) {
     for(lelem=conf->options_list.elements;lelem;lelem = lelem->next) {
       opt = (t_conf_opt *)lelem->data;
       if(opt->flags & CFG_OPT_NEEDED) {
-	if(opt->flags & mode) {
-	  /* ah, this directive has to be in every context */
-	  if(opt->flags & CFG_OPT_LOCAL) {
-	    for(j=0;j<ary.elements;++j) {
-	      context = *((u_char **)array_element_at(&ary,j));
-	      len = snprintf(buff1,512,"%s_%s",context,opt->name);
-	      if(cf_hash_get(hsh,buff1,len) == NULL) {
-		fatal = 1;
-		fprintf(stderr,"missing configuration entry %s in %s for context %s\n",opt->name,conf->filename,context);
-	      }
-	    }
-	  }
-	  /* global directive */
-	  else {
-	    if((opt->flags & CFG_OPT_SEEN) == 0) {
-	      fatal = 1;
-	      fprintf(stderr,"missing configuration entry %s in %s\n",opt->name,conf->filename);
-	    }
-	  }
-	}
+        if(opt->flags & mode) {
+          /* ah, this directive has to be in every context */
+          if(opt->flags & CFG_OPT_LOCAL) {
+            for(j=0;j<ary.elements;++j) {
+              context = *((u_char **)array_element_at(&ary,j));
+              len = snprintf(buff1,512,"%s_%s",context,opt->name);
+              if(cf_hash_get(hsh,buff1,len) == NULL) {
+                fatal = 1;
+                fprintf(stderr,"missing configuration entry %s in %s for context %s\n",opt->name,conf->filename,context);
+              }
+            }
+          }
+          /* global directive */
+          else {
+            if((opt->flags & CFG_OPT_SEEN) == 0) {
+              fatal = 1;
+              fprintf(stderr,"missing configuration entry %s in %s\n",opt->name,conf->filename);
+            }
+          }
+        }
       }
     }
   }

@@ -1065,42 +1065,42 @@ int cf_read_posting(t_forum *forum,t_posting *p,int sock,rline_t *tsd) {
       cf_log(CF_DBG,__FILE__,__LINE__,"read_posting: got line %s\n",line);
 
       if(cf_strncmp(line,"Unid:",5) == 0) {
-	str_char_set(&p->unid,line+6,llen-7);
+        str_char_set(&p->unid,line+6,llen-7);
       }
       else if(cf_strncmp(line,"Author:",7) == 0) {
-	str_char_set(&p->user.name,line+8,llen-9);
+        str_char_set(&p->user.name,line+8,llen-9);
       }
       else if(cf_strncmp(line,"EMail:",6) == 0) {
-	str_char_set(&p->user.email,line+7,llen-8);
+        str_char_set(&p->user.email,line+7,llen-8);
       }
       else if(cf_strncmp(line,"Category:",9) == 0) {
-	str_char_set(&p->category,line+10,llen-11);
+        str_char_set(&p->category,line+10,llen-11);
       }
       else if(cf_strncmp(line,"Subject:",8) == 0) {
-	str_char_set(&p->subject,line+9,llen-10);
+        str_char_set(&p->subject,line+9,llen-10);
       }
       else if(cf_strncmp(line,"HomepageUrl:",12) == 0) {
-	str_char_set(&p->user.hp,line+13,llen-14);
+        str_char_set(&p->user.hp,line+13,llen-14);
       }
       else if(cf_strncmp(line,"ImageUrl:",9) == 0) {
-	str_char_set(&p->user.img,line+12,llen-13);
+        str_char_set(&p->user.img,line+12,llen-13);
       }
       else if(cf_strncmp(line,"Body:",5) == 0) {
-	str_char_set(&p->content,line+6,llen-13);
+        str_char_set(&p->content,line+6,llen-13);
       }
       else if(cf_strncmp(line,"RemoteAddr:",11) == 0) {
-	str_char_set(&p->user.ip,line+12,llen-13);
+        str_char_set(&p->user.ip,line+12,llen-13);
       }
       else if(cf_strncmp(line,"Flag:",5) == 0) {
-	if((ptr = strstr(line+6,"=")) == NULL) {
-	  writen(sock,"500 Sorry\n",10);
-	  return 0;
-	}
+        if((ptr = strstr(line+6,"=")) == NULL) {
+          writen(sock,"500 Sorry\n",10);
+          return 0;
+        }
 
-	flag.name = strndup(line+6,ptr-line-6);
-	flag.val  = strdup(ptr+1);
+        flag.name = strndup(line+6,ptr-line-6);
+        flag.val  = strdup(ptr+1);
 
-	cf_list_append(&p->flags,&flag,sizeof(flag));
+        cf_list_append(&p->flags,&flag,sizeof(flag));
       }
       else {
         free(line);
@@ -1263,12 +1263,12 @@ void cf_generate_list(t_forum *forum,t_string *str,int del) {
 
       /* {{{ serialize flags */
       for(elem=p->flags.elements;elem;elem=elem->next) {
-	flag = (t_posting_flag *)elem->data;
-	str_chars_append(str,"Flag: ",6);
-	str_chars_append(str,flag->name,strlen(flag->name));
-	str_char_append(str,'=');
-	str_chars_append(str,flag->val,strlen(flag->val));
-	str_char_append(str,'\n');
+        flag = (t_posting_flag *)elem->data;
+        str_chars_append(str,"Flag: ",6);
+        str_chars_append(str,flag->name,strlen(flag->name));
+        str_char_append(str,'=');
+        str_chars_append(str,flag->val,strlen(flag->val));
+        str_char_append(str,'\n');
       }
       /* }}} */
 

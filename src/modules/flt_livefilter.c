@@ -595,7 +595,7 @@ int flt_lf_filter(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_mess
     if(flt_lf_first && flt_lf_success) {
       if(flt_lf_evaluate(flt_lf_first,msg,tid) == 0) msg->may_show = 0;
       else {
-	if(flt_lf_overwrite) msg->may_show = 1;
+        if(flt_lf_overwrite) msg->may_show = 1;
       }
     }
 

@@ -141,17 +141,17 @@ void cf_run_archiver(void) {
         cf_unregister_thread(forum,oldest_t);
         cf_remove_thread(forum,oldest_t);
 
-	/*
-	 * lock is no longer needed, it's been removed from the thread list; but
-	 * there may be threads waiting for this thread. This would be fatal, e.g.
-	 * if we destroy the complete thread it would lead into undefined behavior!
-	 *
-	 * To avoid the situation described above wie lock the thread exclusively.
-	 * This forces the scheduler to run the other threads first. And the exclusive
-	 * write lock ensures that no thread waits for this thread.
-	 */
-	CF_RW_WR(&to_archive[len-1]->lock);
-	CF_RW_UN(&to_archive[len-1]->lock);
+        /*
+         * lock is no longer needed, it's been removed from the thread list; but
+         * there may be threads waiting for this thread. This would be fatal, e.g.
+         * if we destroy the complete thread it would lead into undefined behavior!
+         *
+         * To avoid the situation described above wie lock the thread exclusively.
+         * This forces the scheduler to run the other threads first. And the exclusive
+         * write lock ensures that no thread waits for this thread.
+         */
+        CF_RW_WR(&to_archive[len-1]->lock);
+        CF_RW_UN(&to_archive[len-1]->lock);
 
 
         /* all references to this thread are released, so run the archiver plugins */
@@ -186,8 +186,8 @@ void cf_run_archiver(void) {
       cf_archive_threads(forum,to_archive,len);
 
       for(j=0;j<len;++j) {
-	cf_cleanup_thread(to_archive[j]);
-	free(to_archive[j]);
+        cf_cleanup_thread(to_archive[j]);
+        free(to_archive[j]);
       }
 
       free(to_archive);
@@ -234,7 +234,7 @@ void cf_write_threadlist(t_forum *forum) {
 
         cf_log(CF_DBG|CF_FLSH,__FILE__,__LINE__,"starting disc writer\n");
         ret     = fkt(forum);
-	cf_log(CF_DBG|CF_FLSH,__FILE__,__LINE__,"Discwriter ended\n");
+        cf_log(CF_DBG|CF_FLSH,__FILE__,__LINE__,"Discwriter ended\n");
       }
     }
   }
@@ -250,7 +250,7 @@ void cf_write_threadlist(t_forum *forum) {
 
           cf_log(CF_DBG|CF_FLSH,__FILE__,__LINE__,"starting disc writer\n");
           ret     = fkt(forum);
-	  cf_log(CF_DBG|CF_FLSH,__FILE__,__LINE__,"Discwriter ended\n");
+          cf_log(CF_DBG|CF_FLSH,__FILE__,__LINE__,"Discwriter ended\n");
         }
       }
     }

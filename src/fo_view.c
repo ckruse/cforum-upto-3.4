@@ -413,19 +413,19 @@ void show_threadlist(void *shm_ptr,t_cf_hash *head)
           len = snprintf(buff,128,"%d",thread.msg_len-1);
           tpl_cf_setvar(&thread.messages->tpl,"answers",buff,len,0);
 
-	  /* first: run VIEW_HANDLER handlers in pre-mode */
+          /* first: run VIEW_HANDLER handlers in pre-mode */
           ret = cf_run_view_handlers(&thread,head,CF_MODE_THREADLIST|CF_MODE_PRE);
 
           if(ret == FLT_OK || ret == FLT_DECLINE || del == CF_KEEP_DELETED) {
-	    /* run list handlers */
-	    for(msg=thread.messages;msg;msg=msg->next) cf_run_view_list_handlers(msg,head,thread.tid,CF_MODE_THREADLIST);
+            /* run list handlers */
+            for(msg=thread.messages;msg;msg=msg->next) cf_run_view_list_handlers(msg,head,thread.tid,CF_MODE_THREADLIST);
 
-	    /* after that, run VIEW_HANDLER handlers in post-mode */
-	    ret = cf_run_view_handlers(&thread,head,CF_MODE_THREADLIST|CF_MODE_POST);
+            /* after that, run VIEW_HANDLER handlers in post-mode */
+            ret = cf_run_view_handlers(&thread,head,CF_MODE_THREADLIST|CF_MODE_POST);
 
-	    /* if thread is still visible print it out */
-	    if(ret == FLT_OK || ret == FLT_DECLINE || del == CF_KEEP_DELETED) print_thread_structure(&thread,head);
-	  }
+            /* if thread is still visible print it out */
+            if(ret == FLT_OK || ret == FLT_DECLINE || del == CF_KEEP_DELETED) print_thread_structure(&thread,head);
+          }
 
           cf_cleanup_thread(&thread);
         }
@@ -465,19 +465,19 @@ void show_threadlist(void *shm_ptr,t_cf_hash *head)
           len = snprintf(buff,128,"%d",thread.msg_len-1);
           tpl_cf_setvar(&threadp->messages->tpl,"answers",buff,len,0);
 
-	  /* first: run VIEW_HANDLER handlers in pre-mode */
+          /* first: run VIEW_HANDLER handlers in pre-mode */
           ret = cf_run_view_handlers(threadp,head,CF_MODE_THREADLIST|CF_MODE_PRE);
 
           if(ret == FLT_OK || ret == FLT_DECLINE || del == CF_KEEP_DELETED) {
-	    /* run list handlers */
-	    for(msg=threadp->messages;msg;msg=msg->next) cf_run_view_list_handlers(msg,head,threadp->tid,CF_MODE_THREADLIST);
+            /* run list handlers */
+            for(msg=threadp->messages;msg;msg=msg->next) cf_run_view_list_handlers(msg,head,threadp->tid,CF_MODE_THREADLIST);
 
-	    /* after that, run VIEW_HANDLER handlers in post-mode */
-	    ret = cf_run_view_handlers(threadp,head,CF_MODE_THREADLIST|CF_MODE_POST);
+            /* after that, run VIEW_HANDLER handlers in post-mode */
+            ret = cf_run_view_handlers(threadp,head,CF_MODE_THREADLIST|CF_MODE_POST);
 
-	    /* if thread is still visible print it out */
-	    if(ret == FLT_OK || ret == FLT_DECLINE || del == CF_KEEP_DELETED) print_thread_structure(threadp,head);
-	  }
+            /* if thread is still visible print it out */
+            if(ret == FLT_OK || ret == FLT_DECLINE || del == CF_KEEP_DELETED) print_thread_structure(threadp,head);
+          }
         }
       }
 
@@ -676,8 +676,8 @@ int main(int argc,char *argv[],char *env[]) {
         cfg_cleanup_file(&conf);
         cfg_cleanup_file(&dconf);
 
-	cfg_destroy();
-	cf_fini();
+        cfg_destroy();
+        cf_fini();
 
         return EXIT_FAILURE;
       }
