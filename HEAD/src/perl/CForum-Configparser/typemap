@@ -1,0 +1,18 @@
+u_char *                        T_PV
+t_configuration *               CF_OBJECT
+const t_name_value *            CF_OBJECT
+const u_char *                  T_PV
+
+INPUT
+CF_OBJECT
+  if(sv_isobject($arg) && (SvTYPE(SvRV($arg)) == SVt_PVMG)) {
+    $var = ($type)SvIV((SV *)SvRV($arg));
+  }
+  else {
+    $var = NULL;
+  }
+
+OUTPUT
+CF_OBJECT
+  sv_setref_pv($arg,(char *)CLASS,(void *)$var);
+

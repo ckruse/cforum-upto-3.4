@@ -1,0 +1,10 @@
+Changes
+Makefile.PL
+MANIFEST
+Plugins.xs
+ppport.h
+README
+t/CForum-Plugins.t
+fallback/const-c.inc
+fallback/const-xs.inc
+lib/CForum/Plugins.pm

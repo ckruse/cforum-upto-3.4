@@ -1,0 +1,22 @@
+u_char *                        T_PV
+const u_char *                  T_PV
+t_cfxs_conn *                   CF_OBJECT
+t_cl_thread *                   CF_OBJECT
+t_message *                     CF_OBJECT
+t_cf_template *                 CF_OBJECT
+t_mod_api_ent *                 CF_OBJECT
+t_cfxs_param *                  CF_OBJECT
+
+INPUT
+CF_OBJECT
+  if(sv_isobject($arg) && (SvTYPE(SvRV($arg)) == SVt_PVMG)) {
+    $var = ($type)SvIV((SV *)SvRV($arg));
+  }
+  else {
+    $var = NULL;
+  }
+
+OUTPUT
+CF_OBJECT
+  sv_setref_pv($arg,(char *)CLASS,(void *)$var);
+

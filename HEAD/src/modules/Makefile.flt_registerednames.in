@@ -1,0 +1,25 @@
+SED=__SED__
+FLEX=__FLEX__
+MAKE=__MAKE__
+
+SRC=__SRC__
+LIBDIR=__LIBDIR__
+PLUGINS_DIR=__PLUGINS_DIR__
+
+BUILDROOT=__BUILDROOT__
+
+CC=__CC__
+CFLAGS=__CFLAGS__
+LIBS=__LIBS__
+LINKOPTS=__LINKOPTS__
+
+DL=__DL__
+DB3=__DB3__
+ICONV=__ICONV__
+MOD_LIBS=__MOD_LIBS__
+
+COMPILE=__COMPILE__
+
+$(BUILDROOT)/.lib/plugins/flt_registerednames.so: flt_registerednames.c
+	${COMPILE} -shared -o $(BUILDROOT)/.lib/plugins/flt_registerednames.so flt_registerednames.c ${LINKOPTS} ${MOD_LIBS} ${DB3}
+

@@ -1,0 +1,371 @@
+/**
+ * \file flt_deleted.c
+ * \author Christian Kruse, <ckruse@wwwtech.de>
+ *
+ * This plugin hides deleted postings
+ */
+
+/* {{{ Initial comments */
+/*
+ * $LastChangedDate$
+ * $LastChangedRevision$
+ * $LastChangedBy$
+ *
+ */
+/* }}} */
+
+/* {{{ Includes */
+#include "config.h"
+#include "defines.h"
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
+#include <time.h>
+
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <fcntl.h>
+#include <unistd.h>
+
+#include <db.h>
+
+#include "readline.h"
+#include "hashlib.h"
+#include "utils.h"
+#include "configparser.h"
+#include "cfcgi.h"
+#include "template.h"
+#include "clientlib.h"
+/* }}} */
+
+struct {
+  u_char **BlackList;
+  long BLlen;
+  int FollowUps;
+  time_t ShowFrom;
+  time_t ShowUntil;
+  u_char *DeletedFile;
+  int CheckBoxes;
+  DB *db;
+  int DoDelete;
+} Cfg = { NULL, 0, 0, 0, 0, NULL, 0, NULL, 1 };
+
+int execute_filter(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cl_thread *thread,int mode) {
+  t_name_value *url;
+  u_char *UserName = cf_hash_get(GlobalValues,"UserName",8);
+  DBT key,data;
+  size_t len;
+  u_char buff[256];
+  u_char one[] = "1";
+
+  if(mode == 0) {
+    if(UserName) {
+      url = cfg_get_first_value(dc,"UBaseURL");
+
+      if(Cfg.DeletedFile) {
+        memset(&key,0,sizeof(key));
+        memset(&data,0,sizeof(data));
+
+        len = snprintf(buff,256,"%llu",thread->tid);
+        key.data = buff;
+        key.size = len;
+
+        data.data = one;
+        data.size = sizeof(one);
+
+        if(Cfg.db->get(Cfg.db,NULL,&key,&data,0) == 0) {
+          if(Cfg.DoDelete) {
+            thread->messages->may_show = 0;
+            delete_subtree(thread->messages);
+          }
+          else {
+            len = snprintf(buff,256,"?a=u&t=%llu",thread->tid);
+            tpl_cf_setvar(&thread->messages->tpl,"undel",buff,len,1);
+          }
+        }
+        else {
+          if(Cfg.CheckBoxes) {
+            tpl_cf_setvar(&thread->messages->tpl,"delcheckbox","1",1,0);
+            tpl_cf_setvar(&thread->messages->tpl,"deltid",buff,len,0);
+          }
+
+          len = snprintf(buff,150,"%s?a=d&t=%lld",url->values[0],thread->tid);
+          tpl_cf_setvar(&thread->messages->tpl,"dellink",buff,len,1);
+        }
+      }
+    }
+
+    return FLT_OK;
+  }
+
+  return FLT_DECLINE;
+}
+
+int posting_list_filter(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_message *msg,u_int64_t tid,int mode) {
+  long i;
+
+  if(Cfg.BLlen) {
+    for(i=0;i<Cfg.BLlen;i++) {
+      if(cf_strcasecmp(msg->author,Cfg.BlackList[i]) == 0) {
+        msg->may_show = 0;
+
+        if(Cfg.FollowUps == 0) {
+          if(!delete_subtree(msg)) {
+            return FLT_OK;
+          }
+        }
+      }
+    }
+  }
+
+  if(mode == 0) {
+    if(Cfg.ShowFrom) {
+      if(msg->may_show) {
+        if(msg->date < Cfg.ShowFrom) {
+          msg->may_show = 0;
+        }
+      }
+    }
+
+    if(Cfg.ShowUntil) {
+      if(msg->may_show) {
+        if(msg->date > Cfg.ShowUntil) {
+          msg->may_show = 0;
+        }
+      }
+    }
+  }
+
+  return FLT_OK;
+}
+
+#ifndef CF_SHARED_MEM
+int delete_thread(t_cf_hash *head,t_configuration *dc,t_configuration *vc,int sock) {
+#else
+int delete_thread(t_cf_hash *head,t_configuration *dc,t_configuration *vc,void *sock) {
+#endif
+  u_char *c_tid,*qs,*a;
+  u_int64_t tid;
+  DBT key,data;
+  char one[] = "1";
+  int ret,fd;
+  char buff[256];
+  size_t len;
+  t_cf_cgi_param *parm;
+  u_char *tmp;
+
+  if(head && Cfg.DeletedFile) {
+    qs = getenv("QUERY_STRING");
+
+    if(qs) {
+      a = cf_cgi_get(head,"a");
+
+      if(a) {
+        if(cf_strcmp(a,"d") == 0) {
+          if((parm = cf_cgi_get_multiple(head,"t")) != NULL) {
+            memset(&data,0,sizeof(data));
+            data.data = one;
+            data.size = sizeof(one);
+
+            for(;parm;parm=parm->next) {
+              tid = strtoull(parm->value,NULL,10);
+
+              if(tid) {
+                memset(&key,0,sizeof(key));
+
+                /* we transform the value again to a string because there could be trash in it... */
+                len = snprintf(buff,256,"%llu",tid);
+
+                key.data = buff;
+                key.size = len;
+
+                Cfg.db->put(Cfg.db,NULL,&key,&data,DB_NODUPDATA|DB_NOOVERWRITE);
+              }
+            }
+
+            /* set timestamp on file */
+            snprintf(buff,256,"%s.tm",Cfg.DeletedFile);
+            remove(buff);
+            if((fd = open(buff,O_CREAT|O_TRUNC|O_WRONLY)) != -1) close(fd);
+
+            cf_hash_entry_delete(head,"t",1);
+            cf_hash_entry_delete(head,"a",1);
+          }
+        }
+        else if(cf_strcmp(a,"nd") == 0) {
+          Cfg.DoDelete = 0;
+        }
+        else if(cf_strcmp(a,"u") == 0) {
+          if((tmp = cf_cgi_get(head,"t")) != NULL) {
+            if((tid = strtoull(tmp,NULL,10)) > 0) {
+              memset(&key,0,sizeof(key));
+
+              /* we transform the value again to a string because there could be trash in it... */
+              len = snprintf(buff,256,"%llu",tid);
+
+              key.data = buff;
+              key.size = len;
+
+              Cfg.db->del(Cfg.db,NULL,&key,0);
+              
+              cf_hash_entry_delete(head,"t",1);
+              cf_hash_entry_delete(head,"a",1);
+            }
+          }
+        }
+
+        return FLT_OK;
+      }
+    }
+  }
+
+  return FLT_DECLINE;
+}
+
+int flt_del_init_handler(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc) {
+  int ret;
+
+  if(Cfg.DeletedFile) {
+    if((ret = db_create(&Cfg.db,NULL,0)) != 0) {
+      fprintf(stderr,"DB error: %s\n",db_strerror(ret));
+      return FLT_EXIT;
+    }
+
+    if((ret = Cfg.db->open(Cfg.db,NULL,Cfg.DeletedFile,NULL,DB_BTREE,DB_CREATE,0644)) != 0) {
+      fprintf(stderr,"DB error: %s\n",db_strerror(ret));
+      return FLT_EXIT;
+    }
+
+    return FLT_OK;
+  }
+
+  return FLT_DECLINE;
+}
+
+int flt_del_view_init_handler(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cf_template *begin,t_cf_template *end) {
+  if(end && Cfg.CheckBoxes && Cfg.DeletedFile) {
+    tpl_cf_setvar(begin,"delcheckbox","1",1,0);
+    tpl_cf_setvar(end,"delcheckbox","1",1,0);
+  }
+
+  return FLT_DECLINE;
+}
+
+int flt_del_handle_command(t_configfile *cf,t_conf_opt *opt,u_char **args,int argnum) {
+  long i;
+
+  if(cf_strcmp(opt->name,"BlackList") == 0) {
+    if(Cfg.BLlen) {
+      for(i=0;i<Cfg.BLlen;i++) {
+        free(Cfg.BlackList[i]);
+      }
+      free(Cfg.BlackList);
+    }
+
+    Cfg.BLlen = split(args[0],",",&Cfg.BlackList);
+  }
+  else if(cf_strcmp(opt->name,"ShowBlacklistFollowups") == 0) {
+    Cfg.FollowUps = cf_strcasecmp(args[0],"yes") == 0;
+  }
+  else if(cf_strcmp(opt->name,"ShowFrom") == 0) {
+    Cfg.ShowFrom = strtol(args[0],NULL,10);
+  }
+  else if(cf_strcmp(opt->name,"ShowUntil") == 0) {
+    Cfg.ShowUntil = strtol(args[0],NULL,10);
+  }
+  else if(cf_strcmp(opt->name,"DeletedFile") == 0) {
+    if(Cfg.DeletedFile) free(Cfg.DeletedFile);
+    Cfg.DeletedFile = strdup(args[0]);
+  }
+  else if(cf_strcmp(opt->name,"DeletedUseCheckboxes") == 0) {
+    Cfg.CheckBoxes = cf_strcmp(args[0],"yes") == 0;
+  }
+
+  return 0;
+}
+
+void flt_del_cleanup(void) {
+  long i;
+  if(Cfg.BLlen) {
+    for(i=0;i<Cfg.BLlen;i++) {
+      free(Cfg.BlackList[i]);
+    }
+    free(Cfg.BlackList);
+  }
+
+  if(Cfg.DeletedFile) free(Cfg.DeletedFile);
+
+  if(Cfg.db) Cfg.db->close(Cfg.db,0);
+}
+
+#ifndef CF_SHARED_MEM
+int flt_deleted_validate(t_cf_hash *head,t_configuration *dc,t_configuration *vc,time_t last_modified,int sock) {
+#else
+int flt_deleted_validate(t_cf_hash *head,t_configuration *dc,t_configuration *vc,time_t last_modified,void *sock) {
+#endif
+  struct stat st;
+  char buff[256];
+
+  if(Cfg.DeletedFile) {
+    snprintf(buff,256,"%s.tm",Cfg.DeletedFile);
+
+    if(stat(buff,&st) == -1) return FLT_DECLINE;
+    #ifdef DEBUG
+    printf("X-Debug: stat(): %s",ctime(&st.st_mtime));
+    printf("X-Debug: last_modified: %s",ctime(&last_modified));
+    #endif
+    if(st.st_mtime > last_modified) return FLT_EXIT;
+  }
+
+  return FLT_OK;
+}
+
+#ifndef CF_SHARED_MEM
+time_t flt_deleted_lm(t_cf_hash *head,t_configuration *dc,t_configuration *vc,int sock) {
+#else
+time_t flt_deleted_lm(t_cf_hash *head,t_configuration *dc,t_configuration *vc,void *sock) {
+#endif
+  struct stat st;
+  char buff[256];
+
+  if(Cfg.DeletedFile) {
+    snprintf(buff,256,"%s.tm",Cfg.DeletedFile);
+    if(stat(buff,&st) == -1) return -1;
+    return st.st_mtime;
+  }
+
+
+  return -1;
+}
+
+t_conf_opt config[] = {
+  { "BlackList",               flt_del_handle_command, NULL },
+  { "ShowBlacklistFollowups",  flt_del_handle_command, NULL },
+  { "ShowFrom",                flt_del_handle_command, NULL },
+  { "ShowUntil",               flt_del_handle_command, NULL },
+  { "DeletedFile",             flt_del_handle_command, NULL },
+  { "DeletedUseCheckboxes",    flt_del_handle_command, NULL },
+  { NULL, NULL, NULL }
+};
+
+t_handler_config handlers[] = {
+  { VIEW_INIT_HANDLER,    flt_del_view_init_handler },
+  { INIT_HANDLER,         flt_del_init_handler      },
+  { CONNECT_INIT_HANDLER, delete_thread             },
+  { VIEW_HANDLER,         execute_filter            },
+  { VIEW_LIST_HANDLER,    posting_list_filter       },
+  { 0, NULL }
+};
+
+t_module_config flt_deleted = {
+  config,
+  handlers,
+  flt_deleted_validate,
+  flt_deleted_lm,
+  NULL,
+  flt_del_cleanup
+};
+
+/* eof */

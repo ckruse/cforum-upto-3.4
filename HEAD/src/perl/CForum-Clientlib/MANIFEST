@@ -1,0 +1,13 @@
+Changes
+Clientlib.xs
+Makefile.PL
+MANIFEST
+ppport.h
+README
+t/CForum-Clientlib.t
+fallback/const-c.inc
+fallback/const-xs.inc
+lib/CForum/Clientlib.pm
+const-c.inc
+const-xs.inc
+typemap

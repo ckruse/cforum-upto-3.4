@@ -1,0 +1,11 @@
+Changes
+Configparser.xs
+Makefile.PL
+MANIFEST
+ppport.h
+README
+t/CForum-Configparser.t
+t/fo_default.conf
+fallback/const-c.inc
+fallback/const-xs.inc
+lib/CForum/Configparser.pm
