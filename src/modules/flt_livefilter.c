@@ -698,9 +698,11 @@ t_flt_lf_result *flt_lf_evaluate(t_flt_lf_node *n,t_message *msg,u_int64_t tid) 
       /* }}} */
 
     case TOK_STR:
+      /* {{{ string */
       result->type = T_STRING;
       result->val  = strdup(n->content);
       return result;
+      /* }}} */
 
     case TOK_LPAREN:
       result->type = T_BOOL;
