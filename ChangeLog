@@ -2,6 +2,8 @@
 	* src/modules/flt_link.c: Fixed bug in variable setting
 	* src/serverlib.c: Initialized variable
 	* src/fo_server.c: Initialized variable
+	* conf/patterns/perl.pat: Fixed several bugs in patterns
+	* conf/patterns/php.pat: Removed second heredoc block
 
 2005-02-06 Christian Seiler <self@christian-seiler.de>
 	* conf/patterns/php.pat: Some improvements

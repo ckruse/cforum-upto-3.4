@@ -80,8 +80,4 @@ block "sqstring"
   onstring "'" pop
 end
 
-block "heredoc"
-
-end
-
 # eof
