@@ -16,6 +16,7 @@
 	* src/handlerrunners.c: Added handler runner function for the
 		POSTING_DISPLAY_HANDLER hook
 	* src/configparser.c: Fixed small bug
+	* src/modules/flt_directives.c: Bugfix for bug #484
 
 2005-01-19 Christian Seiler <self@christian-seiler.de>
 	* src/parsetpl/parsetpl.lex: lot's of feature improvements, it is

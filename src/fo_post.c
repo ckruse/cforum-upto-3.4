@@ -429,8 +429,6 @@ int validate_cgi_variables(t_cf_hash *head) {
   }
   /* }}} */
 
-  exit(0);
-
   /* everything is fine */
   return 0;
 }
@@ -504,7 +502,6 @@ t_string *body_plain2coded(const u_char *text) {
             free(tmp);
           }
         }
-        else str_char_append(str,*ptr);
       default:
         if(cf_strncmp(ptr,qchars,len) == 0) str_char_append(str,(u_char)127);
         else str_char_append(str,*ptr);
@@ -524,7 +521,11 @@ t_string *body_plain2coded(const u_char *text) {
   str_init(str);
 
   for(ptr=body;*ptr;ptr++) {
-    if(*ptr == '\012') str_chars_append(str,"<br />",6);
+    if(cf_strncmp(ptr,"\012-- \012",5) == 0) {
+      str_chars_append(str,"_/_SIG_/_",9);
+      ptr += 4;
+    }
+    else if(*ptr == '\012') str_chars_append(str,"<br />",6);
     else if(isspace(*ptr)) {
       for(end=ptr;*end && isspace(*end) && *end != '\012';++end);
 
@@ -541,10 +542,6 @@ t_string *body_plain2coded(const u_char *text) {
       str_char_append(str,' ');
 
       ptr = end - 1;
-    }
-    else if(cf_strncmp(ptr,"-- \012",4) == 0) {
-      str_chars_append(str,"_/_SIG_/_",9);
-      ptr += 4;
     }
     else str_char_append(str,*ptr);
   }

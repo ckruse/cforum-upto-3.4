@@ -381,15 +381,16 @@ int flt_directives_execute(t_configuration *fdc,t_configuration *fvc,const u_cha
             /* check for title */
             if((title_alt = strstr(list[1],"@title=")) != NULL) {
               tmp2 = strndup(list[1],title_alt-list[1]);
-              title_alt = strdup(title_alt+7);
+              title_alt = htmlentities(title_alt+7,0);
             }
-            else tmp2 = htmlentities(list[1],1);
+            else tmp2 = strdup(list[1]);
 
-            tmp = htmlentities(list[0],1);
-            tmp1 = htmlentities(uri->uri,1);
+            tmp = htmlentities(list[0],0);
+            tmp1 = htmlentities(uri->uri,0);
+            ptr = htmlentities(tmp2,0);
 
             str_init(&tmpstr);
-            str_chars_append(&tmpstr,tmp1,strlen(tmp1));
+            str_chars_append(&tmpstr,uri->uri,strlen(tmp1));
             str_chars_append(&tmpstr,tmp2,strlen(tmp2));
 
             flt_directives_generate_uri(tmpstr.content,title_alt,content,NULL,0);
@@ -398,7 +399,7 @@ int flt_directives_execute(t_configuration *fdc,t_configuration *fvc,const u_cha
               str_chars_append(cite,"[ref:",5);
               str_chars_append(cite,tmp,strlen(tmp));
               str_char_append(cite,';');
-              str_chars_append(cite,tmp2,strlen(tmp2));
+              str_chars_append(cite,ptr,strlen(ptr));
               if(title_alt) {
                 str_chars_append(cite,"@title=",7);
                 str_chars_append(cite,title_alt,strlen(title_alt));
@@ -413,6 +414,7 @@ int flt_directives_execute(t_configuration *fdc,t_configuration *fvc,const u_cha
             free(tmp);
             free(tmp1);
             free(tmp2);
+            free(ptr);
 
             return FLT_OK;
           }
@@ -547,11 +549,11 @@ void flt_directives_cleanup(void) {
 /* }}} */
 
 t_conf_opt flt_directives_config[] = {
-  { "ShowIframeAsLink",     flt_directives_handle_iframe,   CFG_OPT_CONFIG|CFG_OPT_USER,  NULL },
-  { "ShowImageAsLink",      flt_directives_handle_image,    CFG_OPT_CONFIG|CFG_OPT_USER,  NULL },
-  { "PostingLinkTarget",    flt_directives_handle_link,     CFG_OPT_CONFIG|CFG_OPT_USER,  NULL },
-  { "ReferenceURI",         flt_directives_handle_ref,      CFG_OPT_CONFIG|CFG_OPT_USER,  NULL },
-  { "LinkTemplate",         flt_directives_handle_lt,       CFG_OPT_CONFIG|CFG_OPT_USER,  NULL },
+  { "ShowIframeAsLink",     flt_directives_handle_iframe,   CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL,  NULL },
+  { "ShowImageAsLink",      flt_directives_handle_image,    CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL,  NULL },
+  { "PostingLinkTarget",    flt_directives_handle_link,     CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL,  NULL },
+  { "ReferenceURI",         flt_directives_handle_ref,      CFG_OPT_CONFIG|CFG_OPT_LOCAL,  NULL },
+  { "LinkTemplate",         flt_directives_handle_lt,       CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL,  NULL },
   { NULL, NULL, 0, NULL }
 };
 

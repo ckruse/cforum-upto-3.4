@@ -240,7 +240,7 @@ void cf_set_variable(t_cf_template *tpl,t_name_value *cs,u_char *vname,const u_c
       /* This should only happen if we use charset_convert() -- and we should not use it. */
       if(!tmp) {
         tmp = htmlentities(val,0);
-        len = strlen(val);
+        len1 = strlen(val);
       }
 
       cf_tpl_setvalue(tpl,vname,TPL_VARIABLE_STRING,tmp,len1);
@@ -250,7 +250,7 @@ void cf_set_variable(t_cf_template *tpl,t_name_value *cs,u_char *vname,const u_c
     else {
       if(html) {
         tmp = htmlentities(val,0);
-        len = strlen(val);
+        len = strlen(tmp);
 
         cf_tpl_setvalue(tpl,vname,TPL_VARIABLE_STRING,tmp,len);
         free(tmp);
@@ -261,7 +261,7 @@ void cf_set_variable(t_cf_template *tpl,t_name_value *cs,u_char *vname,const u_c
   else {
     if(html) {
       tmp = htmlentities(val,0);
-      len = strlen(val);
+      len = strlen(tmp);
 
       cf_tpl_setvalue(tpl,vname,TPL_VARIABLE_STRING,tmp,len);
       free(tmp);
