@@ -184,7 +184,7 @@ int flt_nested_execute_filter(t_cf_hash *head,t_configuration *dc,t_configuratio
         else str_chars_append(&allcnt,cp->values[0],cp_l);
       }
 
-      str_cleanup(&pt_tpl.parsed);
+      pt_tpl.parsed.len = 0;
     }
   }
 
