@@ -207,8 +207,21 @@ void cf_log(int mode,const u_char *file,unsigned int line,const u_char *format, 
 }
 /* }}} */
 
+/* {{{ cf_load_data */
 int cf_load_data(t_forum *forum) {
-  
+  /* all references to this thread are released, so run the archiver plugins */
+  if(Modules[DATA_LOADING_HANDLER].elements) {
+    ret = FLT_OK;
+
+    for(i=0;i<Modules[DATA_LOADING_HANDLER].elements && ret == FLT_DECLINE;i++) {
+      handler = array_element_at(&Modules[DATA_LOADING_HANDLER],i);
+      fkt     = (t_dataloading_filter)handler->func;
+      ret     = fkt(forum);
+    }
+  }
+
+  return ret;
 }
+/* }}} */
 
 /* eof */

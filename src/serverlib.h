@@ -12,6 +12,8 @@ struct s_cf_rwlocked_list_head {
   t_cf_list_head head;
 } t_cf_rw_list_head;
 
+typedef int (*t_data_loading_filter)(t_forum *);
+
 void cf_rw_list_init(const u_char *name,t_cf_rw_list_head *head);
 void cf_rw_list_append(t_cf_rw_list_head *head,void *data,size_t size);
 void cf_rw_list_append_static(t_cf_rw_list_head *head,void *data,size_t size);

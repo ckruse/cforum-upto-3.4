@@ -1,3 +1,10 @@
+2004-10-21 Christian Kruse <ckruse@wwwtech.de>
+	* src/modules/flt_xmlstorage.c: Moved src/initfinish.c to flt_xmlstorage.c,
+		'cause the new forum server has its data storage system implemented as a
+		plugin (so that we can use a rdbms also, if wanted)
+	* src/serverlib.c: Implemented cf_load_data()
+	* src/serverlib.h: Added t_data_loading_filter datatype
+
 2004-10-20 Christian Kruse <ckruse@wwwtech.de>
 	* src/fo_server.h, src/utils.h, src/serverlib.c, src/serverlib.h,
 		src/listutils.c, src/configparser.c, src/fo_server.c, src/defines.h: Began
