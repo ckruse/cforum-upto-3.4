@@ -8,6 +8,7 @@
 		src/templates/de/tpl_xhtml10/post_ok.html,
 		src/templates/de/tpl_xhtml10/arcyears.html: Mathias did several updates and
 		bugfixes on	the templates.
+	* cgi-shared/Plugins/PostingAssistant.pm: Fixed typo
 
 2004-11-17 Christian Kruse <ckruse@wwwtech.de>
 	* src/fo_view.c, src/modules/flt_posting.c: Fixed bug in HTML generation of

@@ -80,7 +80,7 @@ sub links_check {
 
   $base =~ s![^/]*$!!; #!
 
-  while($posting =~ /\[[Ll][Ii][Nn][Kk]:\s*([^\]\s]+?)\s*(?:\@title=([^\[\]<]+)\s*)?\]/g) {
+  while($body =~ /\[[Ll][Ii][Nn][Kk]:\s*([^\]\s]+?)\s*(?:\@title=([^\[\]<]+)\s*)?\]/g) {
     my ($uri,$title) = ($1,$2);
     return -1 if
       !is_valid_link($uri) &&
@@ -88,14 +88,14 @@ sub links_check {
       !($uri =~ m{^(?:\.?\.?/(?!/)|\?)} and is_valid_http_link(rel_uri($uri,$base)));
   }
 
-  while($posting =~ /\[[Ii][Mm][Aa][Gg][Ee]:\s*([^\]\s]+?)\s*(?:\@alt=([^\[\]<]+)\s*)?\]/g) {
+  while($body =~ /\[[Ii][Mm][Aa][Gg][Ee]:\s*([^\]\s]+?)\s*(?:\@alt=([^\[\]<]+)\s*)?\]/g) {
     my ($uri,$alt) = ($1,$2);
     return -1 if
       !is_valid_http_link($uri,CForum::Validator::VALIDATE_STRICT) &&
       !($uri =~ m{^(?:\.?\.?/(?!/)|\?)} and is_valid_http_link(rel_uri($uri, $base),CForum::Validator::VALIDATE_STRICT));
   }
 
-  while($posting =~ /\[[Ii][Ff][Rr][Aa][Mm][Ee]:\s*([^\[\]<\s]+)\s*\]/g) {
+  while($body =~ /\[[Ii][Ff][Rr][Aa][Mm][Ee]:\s*([^\[\]<\s]+)\s*\]/g) {
     my $uri = $1;
     return -1 if
       !is_valid_http_link($uri,CForum::Validator::VALIDATE_STRICT) &&
