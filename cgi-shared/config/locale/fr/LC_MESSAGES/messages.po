@@ -1,0 +1,178 @@
+msgid "E_NO_SOCK"
+msgstr "L'interface de connexion n'a malheureusement pas pu être établie."
+
+msgid "E_NO_CONN"
+msgstr "Aucune connexion au serveur n'a malheureuseument pu être établie."
+
+msgid "E_TPL_NOT_FOUND"
+msgstr "Le modèle (template) n'a malheureusement pas pu être trouvé. Veuillez vous adresser à l'administrateur-système."
+
+msgid "E_NO_THREADLIST"
+msgstr "La liste des discussions n'a malheureusement pas pu être réclamée. Veuillez vous adresser à l'administrateur-système."
+
+msgid "E_COMMUNICATION"
+msgstr "Une erreur de communication avec le serveur est survenue. Veuillez vous adresser à votre administrateur système."
+
+msgid "E_DATA_FAILURE"
+msgstr "Les données transmises par le serveur sont erronées pour une raison quelconque."
+
+msgid "E_UNAME_INVALID"
+msgstr "Le nom d'utilisateur est invalide."
+
+msgid "E_PW_TOO_SHORT"
+msgstr "Le mot de passe est trop court."
+
+msgid "E_PW_DISACCORD"
+msgstr "Les mots de passe ne correspondent pas."
+
+msgid "E_PW_INVALID"
+msgstr "Le mot de passe n'est pas valide."
+
+msgid "E_ADDUSER_FAILED"
+msgstr "Le nom d'utilisateur mentionné existe déjà. Veuillez en choisir un autre."
+
+msgid "E_CONFIG_ERR"
+msgstr "Il semble y avoir une erreur de configuration ou le vérificateur syntaxique de configuration est obsolète."
+
+msgid "E_IO_ERR"
+msgstr "Une erreur de fichier est malheureusement survenue."
+
+msgid "E_name_short"
+msgstr "Vous avez mentionné un nom trop court."
+
+msgid "E_name_long"
+msgstr "Vous avez mentionné un nom trop long."
+
+msgid "E_name_invalid"
+msgstr "Êtes-vous certain de vouloir signer sous un nom pareil?"
+
+msgid "E_subject_short"
+msgstr "Vous avez mentionné un intitulé de message trop court."
+
+msgid "E_subject_long"
+msgstr "Vous avez mentionné un intitulé de message trop long."
+
+msgid "E_subject_invalid"
+msgstr "Êtes-vous certain de vouloir poster cet intitulé?"
+
+msgid "E_body_short"
+msgstr "Avez vous si peu à dire?"
+
+msgid "E_body_long"
+msgstr "Maintenant c'est un peu long."
+
+msgid "E_email"
+msgstr "Votre adresse électronique paraît être invalide."
+
+msgid "E_manipulated"
+msgstr "Données falsifiées ou manquantes. Les données semblent avoir été trafiquées d'une manière quelconque."
+
+msgid "E_image"
+msgstr "L'URL du graphique semble être invalide."
+
+msgid "E_homepage"
+msgstr "L'URL de votre page d'accueil semble être invalide."
+
+msgid "E_cat"
+msgstr "Veuillez choisir une catégorie!"
+
+msgid "E_unid"
+msgstr "Les données semblent avoir été trafiquées..."
+
+msgid "E_server"
+msgstr "Le serveur a renvoyé: "
+
+msgid "E_field_missing"
+msgstr "Les données semblent être incomplètes."
+
+msgid "E_posting_format"
+msgstr "Le format de votre message semble n'être pas correct (par exemple passages à la ligne manquants, ponctuation absente, pas d'accents). Ce genre de messages n'est pas le bienvenu, car leur lecture est souvent difficile. Êtes-vous certain de vouloir poster le message sous cette forme?"
+
+msgid "E_posting_badwords"
+msgstr "Votre message semble contenir plus de mots grossiers qu'il n'est permis."
+
+msgid "E_posting_quoting"
+msgstr "Plus de 25% des lignes de votre message proviennent d'une citation. Êtes-vous certain de vouloir poster le message sous cette forme?"
+
+msgid "E_uname_short"
+msgstr "Le nom d'utilisateur doit comporter au moins %d caractères."
+
+msgid "E_pass_short"
+msgstr "Le mot de passe doit comporter au moins %d caractères."
+
+msgid "E_pass_match"
+msgstr "Les mots de passe ne correspondent pas!"
+
+msgid "E_uname_invalid"
+msgstr "Le nom d'utilisateur est invalide!"
+
+msgid "E_pass_invalid"
+msgstr "Le mot de passe est invalide!"
+
+msgid "E_uname_exists"
+msgstr "Le nom d'utilisateur existe déjà!"
+
+msgid "E_auth_required"
+msgstr "Pour pouvoir poster votre message sous ce nom, il vous faut vous authentifier!"
+
+msgid "E_FO_403"
+msgstr "Accès refusé."
+
+msgid "E_FO_404"
+msgstr "Le message que vous réclamez n'a pas pu être trouvé."
+
+msgid "E_FO_500"
+msgstr "Il n'a malheureusement pas pu être donné suite à votre requête en raison de problèmes techniques côté serveur."
+
+msgid "E_FO_501"
+msgstr "Le numéro d'identification (ID) de la discussion ou du message semble manquer."
+
+msgid "E_FO_502"
+msgstr "Il semblerait que vous ayez envoyé votre message en double."
+
+msgid "E_FO_503"
+msgstr "Une requête invalide a été envoyée au serveur."
+
+msgid "E_FO_504"
+msgstr "L'authentification a malheureusement échoué. Il est possible que vous essayez d'enregistrer un nom qui a déjà été enregistré ou que vous ayez simplement oublié d'entrer toutes les informations nécessaires."
+
+msgid "E_FO_505"
+msgstr "Le serveur semble être quelque peu surchargé. Veuillez réessayer plus tard."
+
+msgid "E_FO_506"
+msgstr "Le serveur vient d'être redémarré. Veuillez réessayer plus tard."
+
+msgid "E_FO_507"
+msgstr "Le serveur semble être quelque peu surchargé. Veuillez réessayer plus tard."
+
+msgid "E_FO_600"
+msgstr "Le forum est bloqué pour des raisons administratives ou techniques. Veuillez réessayer plus tard."
+
+msgid "E_ARCHIVE_ERROR"
+msgstr "Une erreur interne est malheureusement survenue."
+
+msgid "E_ARCHIVE_YEARNOTPRESENT"
+msgstr "L'année que vous avez choisie n'existe malheureusement pas dans les archives."
+
+msgid "E_ARCHIVE_MONTHNOTPRESENT"
+msgstr "Le mois que vous avez choisi n'existe malheureusement pas dans les archives."
+
+msgid "E_ARCHIVE_THREADNOTPRESENT"
+msgstr "La discussion que vous avez choisie n'existe malheureusement pas dans les archives."
+
+msgid "E_posting_links"
+msgstr "Certaines URIs d'éléments [link:]-, [image:]- ou [iframe:] ne peuvent pas être rectifiées. êtes-vous certains que toutes les URIs sont correctes?"
+
+msgid "E_user_create"
+msgstr "L'utilisateur n'a pas pu être créé suite à des problèmes techniques du serveur."
+
+msgid "E_posting_category"
+msgstr "Le sujet que vous avez choisi n'est pas valide."
+
+msgid "E_posting_charset"
+msgstr "Vous avez entré un caractère qui ne peut pas être représenté par le jeu de caractères ISO-8859-1. Peut-être avez-vous entré du code binaire ou un signe euro."
+
+msgid "E_POST_NOT_ALLOWED"
+msgstr "La rédaction de nouveaux messages n'est provisoirement pas permise."
+
+

@@ -1,0 +1,186 @@
+msgid "E_NO_SOCK"
+msgstr "Leider konnte kein Socket erstellt werden (Grund: %s)."
+
+msgid "E_NO_CONN"
+msgstr "Leider konnte keine Verbindung zum Server hergestellt werden (Grund: %s)"
+
+msgid "E_TPL_NOT_FOUND"
+msgstr "Leider konnte das Template nicht gefunden werden. Bitte wenden Sie sich an den System-Administrator."
+
+msgid "E_NO_THREADLIST"
+msgstr "Leider konnte die Threadliste nicht angefordert werden. Bitte wenden Sie sich an den System-Administrator."
+
+msgid "E_COMMUNICATION"
+msgstr "Es ist ein Fehler in der Kommunikation mit dem Server aufgetreten. Bitte wenden Sie sich an den System-Administrator."
+
+msgid "E_DATA_FAILURE"
+msgstr "Fehlende oder fehlerhafte Daten."
+
+msgid "E_UNAME_INVALID"
+msgstr "Der User-Name ist invalide."
+
+msgid "E_PW_TOO_SHORT"
+msgstr "Das Passwort ist zu kurz."
+
+msgid "E_PW_DISACCORD"
+msgstr "Die Passörter stimmen nicht überein."
+
+msgid "E_PW_INVALID"
+msgstr "Das Passwort ist nicht valide."
+
+msgid "E_ADDUSER_FAILED"
+msgstr "Der angegebene Username existiert schon. Bitte wählen Sie einen anderen."
+
+msgid "E_CONFIG_ERR"
+msgstr "Es scheint ein Konfigurations-Fehler vorzuliegen oder der Konfigurations-Parser ist veraltet."
+
+msgid "E_IO_ERR"
+msgstr "Leider ist ein Datei-Fehler aufgetreten."
+
+msgid "E_name_short"
+msgstr "Sie haben einen zu kurzen Namen angegeben."
+
+msgid "E_name_long"
+msgstr "Sie haben einen zu langen Namen angegeben."
+
+msgid "E_name_invalid"
+msgstr "Sind Sie sicher, dass Sie unter einem solchen Namen posten möchten?"
+
+msgid "E_subject_short"
+msgstr "Sie haben ein zu kurzes Thema angegeben."
+
+msgid "E_subject_long"
+msgstr "Sie haben ein zu langes Thema angegeben."
+
+msgid "E_subject_invalid"
+msgstr "Sind Sie sicher, dass Sie mit diesem Titel posten möchten?"
+
+msgid "E_body_short"
+msgstr "Haben Sie so wenig zu sagen?"
+
+msgid "E_body_long"
+msgstr "Das war jetzt etwas viel."
+
+msgid "E_email"
+msgstr "Ihre E-Mail-Adresse scheint ungültig zu sein."
+
+msgid "E_manipulated"
+msgstr "Falsche oder fehlende Daten. Die Daten scheinen in irgendeiner Weise manipuliert worden zu sein."
+
+msgid "E_image"
+msgstr "Die Bild-URL scheint ungültig zu sein."
+
+msgid "E_homepage"
+msgstr "Die Homepage-URL scheint ungültig zu sein."
+
+msgid "E_cat"
+msgstr "Bitte wählen Sie eine Kategorie aus!"
+
+msgid "E_unid"
+msgstr "Die Daten scheinen manipuliert worden zu sein..."
+
+msgid "E_server"
+msgstr "Der Server hat zurück gegeben:"
+
+msgid "E_field_missing"
+msgstr "Die Daten scheinen unvollständig zu sein."
+
+msgid "E_posting_format"
+msgstr "Das Format Ihres Postings scheint unsauber zu sein (z. B. keine Zeilenumbrüche, keine Satzzeichen, alles Kleingeschrieben oder ähnliches). Solche Postings sind ungern gesehen, da sie oft schwer zu lesen sind. Sind Sie sicher, dass Sie so posten möchten?"
+
+msgid "E_posting_badwords"
+msgstr "Ihr Posting scheint mehr als die erlaubte Zahl von Schimpfwörtern zu enthalten."
+
+msgid "E_posting_quoting"
+msgstr "Sie haben mehr als 25% zitierte Zeilen in Ihrem Posting. Sind Sie sicher, dass Sie das Posting so abschicken wollen?"
+
+msgid "E_uname_short"
+msgstr "Der Username muss mindestens %d Zeichen lang sein."
+
+msgid "E_pass_short"
+msgstr "Das Passwort muss mindestens %d Zeichen lang sein."
+
+msgid "E_pass_match"
+msgstr "Die Passwörter stimmen nicht überein!"
+
+msgid "E_uname_invalid"
+msgstr "Der Username ist ungültig!"
+
+msgid "E_pass_invalid"
+msgstr "Das Passwort ist ungültig!"
+
+msgid "E_uname_exists"
+msgstr "Der Username existiert bereits!"
+
+msgid "E_auth_required"
+msgstr "Um unter diesem Namen posten zu können, müssen Sie sich authentifizieren!"
+
+msgid "E_FO_403"
+msgstr "Zugriff verweigert."
+
+msgid "E_FO_404"
+msgstr "Die von Ihnen angeforderte Nachricht konnte nicht gefunden werden."
+
+msgid "E_FO_500"
+msgstr "Leider konnte die Abfrage aufgrund von Servertechnischen Gründen nicht beantwortet werden."
+
+msgid "E_FO_501"
+msgstr "Die Thread- oder Nachrichten-ID scheint zu fehlen."
+
+msgid "E_FO_502"
+msgstr "Sie scheinen ein Posting doppelt abgeschickt zu haben."
+
+msgid "E_FO_503"
+msgstr "Es wurde eine ungültige Anfrage an den Server geschickt."
+
+msgid "E_FO_504"
+msgstr "Leider ist die Authentifizierung fehlgeschlagen. Es könnte sein, dass Sie versuchen, einen Namen zu registrieren, der bereits registriert ist oder einfach vergessen haben, alle notwendigen Informationen anzugeben."
+
+msgid "E_FO_505"
+msgstr "Der Server ist anscheinend etwas ausgelastet. Versuchen Sie es doch später noch einmal."
+
+msgid "E_FO_506"
+msgstr "Der Server wird gerade heruntergefahren. Versuchen Sie es doch später noch einmal."
+
+msgid "E_FO_507"
+msgstr "Der Server scheint gerade etwas ausgelastet zu sein. Versuchen sie es doch später noch einmal."
+
+msgid "E_FO_600"
+msgstr "Das Forum ist aus administrativen oder technischen Gründen gesperrt. Bitte versuchen Sie es später noch einmal."
+
+msgid "E_ARCHIVE_ERROR"
+msgstr "Leider ist ein interner Fehler aufgetreten."
+
+msgid "E_ARCHIVE_YEARNOTPRESENT"
+msgstr "Leider gibt es das von Ihnen ausgewählte Jahr nicht."
+
+msgid "E_ARCHIVE_MONTHNOTPRESENT"
+msgstr "Leider gibt es den von Ihnen ausgewählten Monat nicht."
+
+msgid "E_ARCHIVE_THREADNOTPRESENT"
+msgstr "Leider gibt es den von Ihnen ausgewählten Thread nicht."
+
+msgid "E_posting_links"
+msgstr "Einige [link:]-, [image:]- oder [iframe:]-URIs können nicht umgewandelt werden. Sicher, dass alle URIs korrekt sind?"
+
+msgid "E_user_create"
+msgstr "Leider konnte der User aus servertechnischen Gründen nicht angelegt werden."
+
+msgid "E_posting_category"
+msgstr "Sie haben eine ungültige Kategorie ausgewählt."
+
+msgid "E_posting_charset"
+msgstr "Sie haben ein Zeichen eingegeben, dass in ISO-8859-1 nicht darstellbar ist. Vielleicht haben Sie ja Binär-Code oder ein Euro-Zeichen ein"
+
+msgid "E_POST_NOT_ALLOWED"
+msgstr "Das Schreiben neuer Nachrichten ist Momentan nicht erlaubt."
+
+msgid "E_VOTE_INTERNAL"
+msgstr "Interner Fehler aufgetreten. Vielleicht haben sie keine Thread- oder Nachrichten-ID übermittelt?"
+
+msgid "E_VOTE_MULTIPLE"
+msgstr "Sie dürfen nur einmal abstimmen!"
+
+msgid "E_VOTE_AUTH"
+msgstr "Sie müssen angemeldet sein, um abzustimmen!"
+
