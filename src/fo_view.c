@@ -128,7 +128,6 @@ void print_thread_structure(t_cl_thread *thread,t_cf_hash *head) {
 }
 /* }}} */
 
-
 /* {{{ send_posting
  * Returns: nothing
  * Parameters:
@@ -367,6 +366,40 @@ void send_threadlist(void *shm_ptr,t_cf_hash *head) {
 }
 /* }}} */
 
+/* {{{ signal handler for bad signals */
+void sighandler(int segnum) {
+  FILE *fd = fopen(PROTOCOL_FILE,"a");
+  u_char buff[10],*uname = NULL,*qs = NULL;
+
+  if(fd) {
+    qs    = getenv("QUERY_STRING");
+    if(GlobalValues) uname = cf_hash_get(GlobalValues,"UserName",8);
+    
+    switch(segnum) {
+      case SIGSEGV:
+        snprintf(buff,10,"SIGSEGV");
+        break;
+      case SIGILL:
+        snprintf(buff,10,"SIGILL");
+        break;
+      case SIGFPE:
+        snprintf(buff,10,"SIGFPE");
+        break;
+      case SIGBUS:
+        snprintf(buff,10,"SIGBUS");
+        break;
+      default:
+        snprintf(buff,10,"UKNOWN");
+        break;
+    }
+
+    fprintf(fd,"Got signal %s!Username: %s\nQuery-String: %s\n----\n",buff,uname?uname:"(null)",qs?qs:"(null)");
+    flcose(fd);
+  }
+
+}
+/* }}} */
+
 /**
  * The main function of the forum viewer. No command line switches used.
  * \param argc The argument count
@@ -387,16 +420,24 @@ int main(int argc,char *argv[],char *env[]) {
 
   int ret;
   u_char  *ucfg,*m  = NULL,*t = NULL;
-  t_array *cfgfiles = get_conf_file(wanted,2);
-  t_cf_hash *head = cf_cgi_new();
+  t_array *cfgfiles;
+  t_cf_hash *head;
   t_configfile conf,dconf,uconf;
   t_name_value *cs = NULL;
   u_char *UserName;
   u_char *fname;
 
-  if(!cfgfiles) {
+  /* set signal handler for SIGSEGV (for error reporting) */
+  signal(SIGSEGV,sighandler);
+  signal(SIGILL,sighandler);
+  signal(SIGFPE,sighandler);
+  signal(SIGBUS,sighandler);
+
+  if((cfgfiles = get_conf_file(wanted,2)) == NULL) {
     return EXIT_FAILURE;
   }
+
+  head = cf_cgi_new();
 
   cf_init();
   init_modules();

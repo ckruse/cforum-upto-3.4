@@ -56,23 +56,23 @@ dnl
 
 dnl check for iconv funktion
 AC_CHECK_FUNC(iconv,ICONV="",[
-  AC_CHECK_LIB(iconv,iconv,ICONV="-liconv",AC_MSG_ERROR(iconv library cannot be found))
+  AC_CHECK_LIB(iconv,iconv,ICONV="-liconv",[AC_MSG_ERROR([iconv library cannot be found])])
 ])
 
 dnl check for dlopen funktion
 AC_CHECK_FUNC(dlopen,DL="",[
-  AC_CHECK_LIB(dl,dlopen,DL="-ldl",AC_MSG_ERROR(dl library cannot be found))
+  AC_CHECK_LIB(dl,dlopen,DL="-ldl",[AC_MSG_ERROR([dl library cannot be found])])
 ])
 
 dnl lets check for gdome-config and the right version of gdome
 AC_PATH_PROG(GDOMECFG, gdome-config)
 if test ! -n "$GDOMECFG" ; then
-  AC_MSG_ERROR(cannot find gdome-config. Be sure that GDOME2 is installed and gdome-config is in your PATH)
+  AC_MSG_ERROR([cannot find gdome-config. Be sure that GDOME2 is installed and gdome-config is in your PATH])
 fi
 
 AC_PATH_PROG(LIBWWWCFG, libwww-config)
 if test ! -n "$LIBWWWCFG" ; then
-  AC_MSG_ERROR(cannot find libwww-config. Be sure that libwww is installed and libwww-config is in your PATH)
+  AC_MSG_ERROR([cannot find libwww-config. Be sure that libwww is installed and libwww-config is in your PATH])
 fi
 
 GDOME_CFLAGS=`$GDOMECFG --cflags`
@@ -102,7 +102,7 @@ AC_TRY_LINK([ #include <pthread.h> ],
   [
     AC_MSG_RESULT(no)
     CFLAGS="$CFLAGS_SAVE"
-    AC_CHECK_LIB(pthread, pthread_create,[ PTHREAD_LIB="-lpthread" ],AC_MSG_ERROR(pthread library cannot be found))
+    AC_CHECK_LIB(pthread, pthread_create,[ PTHREAD_LIB="-lpthread" ],AC_MSG_ERROR([pthread library cannot be found]))
   ]
 )
 
@@ -148,19 +148,24 @@ AC_ARG_WITH(log-dir,
   [  --with-log-dir=DIR      the path where the forum log files should be located],[fake=1],
   [ with_log_dir="`pwd`/logs" ]
 )
+AC_ARG_WITH(proto-file,
+  [  --with-proto-file       the path where the protocol file for bad signals is located (used for debugging)],[fake=1],
+  [ with_proto_file="`pwd`/cgi-shared/data/sigprotocol.txt" ]
+)
+AC_DEFINE(PROTOCOL_FILE,"${with_protocol_file}",[needed to collect debugging infos])
 
 AX_PATH_BDB([3],[
     BDB_LIB="$BDB_LIBS";
     CFLAGS="$CFLAGS $BDB_CPPFLAGS"
   ],
-  [AC_MSG_ERROR(BerkeleyDB library could not be found)]
+  [AC_MSG_ERROR([BerkeleyDB library could not be found])]
 )
 
 AC_CHECK_LIB(
   idn,
   idna_to_ascii_8z,
   IDN="-lidn",
-  AC_MSG_ERROR(idn library cannot be found)
+  AC_MSG_ERROR([idn library cannot be found])
 )
 
 AC_SUBST(IDN)

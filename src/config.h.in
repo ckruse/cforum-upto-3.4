@@ -171,6 +171,9 @@
 /* Define to the version of this package. */
 #undef PACKAGE_VERSION
 
+/* needed to collect debugging infos */
+#undef PROTOCOL_FILE
+
 /* Define as the return type of signal handlers (`int' or `void'). */
 #undef RETSIGTYPE
 
