@@ -36,6 +36,7 @@ system $PERL,'-pi','-e','s!\@EXPORT = qw\( \);!\@EXPORT_OK = qw(
   is_valid_utf8_string
   htmlentities_decode
   cf_has_shm
+  new_rlinet
 );!','Clientlib.pm';
 
 WriteMakefile(

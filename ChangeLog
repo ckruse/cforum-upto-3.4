@@ -11,6 +11,10 @@
 	* scripts/fo_usermanagement.in, scripts/cf-cleanup.pl.in,
 		scripts/fo_userconf.in, scripts/fo_xmlrpc.in: Code cleaning, now argument of
 		'use lib' points to @libdir@/cforum (pkglibdir)
+	* src/swig/CForum-Clientlib/CForum-Clientlib.i: Added a new function for
+		creating a new rline_t pointer, forgot it to write in first version
+	* src/swig/CForum-Clientlib/Makefile.PL.in: Added new_rlinet() function to
+		@EXPORT_OK variable
 
 2005-02-15 Christian Kruse <ckruse@wwwtech.de>
 	* src/cf-recovery.c: Migration finished, seems to work fine

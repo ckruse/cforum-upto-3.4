@@ -348,4 +348,17 @@ bool cf_has_shm(void) {
 
 bool cf_has_shm(void);
 
+typedef struct s_rline_t {
+  int rl_len;
+} rline_t;
+
+%{
+rline_t *new_rlinet(void) {
+  rline_t *ret = fo_alloc(NULL,1,sizeof(*ret),FO_ALLOC_CALLOC);
+  return ret;
+}
+%}
+
+rline_t *new_rlinet(void);
+
 /* eof */
