@@ -1,3 +1,7 @@
+2005-02-04 Christian Kruse <ckruse@wwwtech.de>
+	* src/fo_post.c, src/fo_feeds.c: Fixed two small compile errors in
+		non-shm-mode
+
 2005-03-03 Christian Kruse <ckruse@wwwtech.de>
 	* src/modules/flt_latex.c: Enhanced behavior, now PNG will alwas be created
 		and HTML will never be created

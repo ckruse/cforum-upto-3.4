@@ -657,6 +657,7 @@ int get_thread(t_cl_thread *thr,t_cf_hash *head) {
   u_char *tidmid,*val;
   u_int64_t tid,mid;
   #ifndef CF_SHARED_MEM
+  int sock;
   rline_t rl;
   #else
   void *shm;
