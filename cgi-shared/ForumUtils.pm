@@ -38,9 +38,6 @@ BEGIN {
 
 sub VERSION {(q$Revision$ =~ /([\d.]+)\s*$/)[0] or '0.0'}
 
-# needed because of this fucking Windows-1252
-use Text::Iconv;
-
 use BerkeleyDB;
 use POSIX qw/setlocale strftime LC_ALL/;
 
