@@ -408,17 +408,19 @@ int cf_hash_set(t_cf_hash *hsh,unsigned char *key,size_t keylen,void *data,size_
       /*
        * We got a double value, so we have to free the actual value
        */
-      if(ent->hashval == hval && strcmp(ent->key,key) == 0) {
-        if(ent->stat == 0) {
-          if(hsh->destroy) hsh->destroy(ent->data);
-          free(ent->data);
+      if(ent->hashval == hval) {
+        if(ent->keylen == keylen && memcmp(ent->key,key,keylen) == 0) {
+          if(ent->stat == 0) {
+            if(hsh->destroy) hsh->destroy(ent->data);
+            free(ent->data);
+          }
+
+          ent->data = malloc(datalen);
+          if(!ent->data) return 0;
+          memcpy(ent->data,data,datalen);
+
+          return 1;
         }
-
-        ent->data = malloc(datalen);
-        if(!ent->data) return 0;
-        memcpy(ent->data,data,datalen);
-
-        return 1;
       }
 
       prev = ent;
@@ -483,16 +485,18 @@ int cf_hash_set_static(t_cf_hash *hsh,unsigned char *key,size_t keylen,void *dat
       /*
        * We got a double value, so we have to free the actual value
        */
-      if(ent->hashval == hval && strcmp(ent->key,key) == 0) {
-        if(ent->stat == 0) {
-          if(hsh->destroy) hsh->destroy(ent->data);
-          free(ent->data);
+      if(ent->hashval == hval) {
+        if(ent->keylen == keylen && memcmp(ent->key,key,keylen) == 0) {
+          if(ent->stat == 0) {
+            if(hsh->destroy) hsh->destroy(ent->data);
+            free(ent->data);
+          }
+
+          ent->data = data;
+          ent->stat = 1;
+
+          return 1;
         }
-
-        ent->data = data;
-        ent->stat = 1;
-
-        return 1;
       }
 
       prev = ent;
@@ -539,7 +543,7 @@ void *cf_hash_get(t_cf_hash *hsh,unsigned char *key,size_t keylen) {
   hval_short = hval & hashmask(hsh->tablesize);
 
   if(hsh->table[hval_short]) {
-    for(ent = hsh->table[hval_short];ent && (ent->hashval != hval || strcmp(ent->key,key) != 0);ent=ent->next);
+    for(ent = hsh->table[hval_short];ent && (ent->hashval != hval || ent->keylen != keylen || memcmp(ent->key,key,keylen) != 0);ent=ent->next);
 
     if(ent) return ent->data;
   }
@@ -568,7 +572,7 @@ int cf_hash_entry_delete(t_cf_hash *hsh,unsigned char *key,size_t keylen) {
   hval_short = hval & hashmask(hsh->tablesize);
 
   if(hsh->table[hval_short]) {
-    for(ent = hsh->table[hval_short];ent && (ent->hashval != hval || strcmp(ent->key,key) != 0);ent=ent->next);
+    for(ent = hsh->table[hval_short];ent && (ent->hashval != hval || ent->keylen != keylen || memcmp(ent->key,key,keylen) != 0);ent=ent->next);
 
     if(ent) {
       if(ent->stat == 0) {
