@@ -540,8 +540,8 @@ void flt_urlrewrite_cleanup(void) {
 }
 
 t_conf_opt flt_urlrewrite_config[] = {
-  { "URLRewrite",  add_rewriterule, NULL },
-  { NULL, NULL, NULL }
+  { "URLRewrite",  add_rewriterule, CFG_OPT_CONFIG, NULL },
+  { NULL, NULL, 0, NULL }
 };
 
 t_handler_config flt_urlrewrite_handlers[] = {

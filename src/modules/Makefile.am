@@ -97,10 +97,6 @@ pkglib_LTLIBRARIES+=flt_threadreturnanchor.la
 flt_threadreturnanchor_la_SOURCES=flt_threadreturnanchor.c
 flt_threadreturnanchor_la_LDFLAGS=-module -export-dynamic -avoid-version
 
-pkglib_LTLIBRARIES+=flt_reference.la
-flt_reference_la_SOURCES=flt_reference.c
-flt_reference_la_LDFLAGS=-module -export-dynamic -avoid-version
-
 pkglib_LTLIBRARIES+=flt_tipoftheday.la
 flt_tipoftheday_la_SOURCES=flt_tipoftheday.c
 flt_tipoftheday_la_LDFLAGS=-module -export-dynamic -avoid-version

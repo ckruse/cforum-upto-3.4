@@ -226,7 +226,7 @@ sub generate_edit_output {
   my $tpl              = new CForum::Template(get_template($fo_default_conf,$user_config,$fo_userconf_conf->{Edit}->[0]->[0]));
   my $txt              = '';
 
-  my $doc   = XML::GDOME->createDocFromURI($fo_userconf_conf->{ModuleConfig}->[0]->[0]) or die $!;
+  my $doc   = XML::GDOME->createDocFromURI(sprintf($fo_userconf_conf->{ModuleConfig}->[0]->[0],$fo_default_conf->{Language}->[0]->[0])) or die $!;
 
   if($page) {
     # hmpf, findnodes doesn't work properly for /config/page@id="$page", nor for /config/page/@id="$page", neither
@@ -420,7 +420,7 @@ elsif($action eq 'save') {
     exit;
   }
 
-  my $doc      = XML::GDOME->createDocFromURI($fo_userconf_conf->{ModuleConfig}->[0]->[0]) or die $!;
+  my $doc      = XML::GDOME->createDocFromURI(sprintf($fo_userconf_conf->{ModuleConfig}->[0]->[0],$fo_default_conf->{Language}->[0]->[0])) or die $!;
   my ($pgnode) = grep { $_->getAttribute('id') eq $page } $doc->findnodes('/config/page');
   my @nodes    = $pgnode->findnodes('./section/directive');
 
@@ -777,7 +777,7 @@ else {
     $tpl->setVar('script',recode($fo_default_conf,$fo_default_conf->{UserConfig}->[0]->[0]));
 
     foreach my $modconf (@{$fo_userconf_conf->{ModuleConfig}}) {
-      my $doc   = XML::GDOME->createDocFromURI($modconf->[0]) or die $!;
+      my $doc   = XML::GDOME->createDocFromURI(sprintf($modconf->[0],$fo_default_conf->{Language}->[0]->[0])) or die $!;
       my @nodes = $doc->findnodes('/config/page/section/*');
 
       foreach my $directive (@nodes) {

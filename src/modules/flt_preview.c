@@ -68,8 +68,8 @@ int flt_preview_cmd(t_configfile *cfile,t_conf_opt *opt,u_char **args,int argnum
 }
 
 t_conf_opt flt_preview_config[] = {
-  { "PreviewDateFormat", flt_preview_cmd, NULL },
-  { NULL, NULL, NULL }
+  { "PreviewDateFormat", flt_preview_cmd, CFG_OPT_CONFIG, NULL },
+  { NULL, NULL, 0, NULL }
 };
 
 t_handler_config flt_preview_handlers[] = {

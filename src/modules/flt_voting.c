@@ -164,7 +164,7 @@ int flt_voting_register_handlers(int sock) {
 }
 
 t_conf_opt flt_voting_config[] = {
-  { NULL, NULL, NULL }
+  { NULL, NULL, 0, NULL }
 };
 
 t_handler_config flt_voting_handlers[] = {

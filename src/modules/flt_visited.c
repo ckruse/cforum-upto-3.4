@@ -364,11 +364,11 @@ void flt_visited_cleanup(void) {
 }
 
 t_conf_opt flt_visited_config[] = {
-  { "HighlightVisitedPostings", flt_visit_handle_command, NULL },
-  { "VisitedPostingsColors",    flt_visit_handle_command, NULL },
-  { "VisitedFile",              flt_visit_handle_command, NULL },
-  { "MarkOwnPostsVisited",      flt_visit_handle_command, NULL },
-  { NULL, NULL, NULL }
+  { "HighlightVisitedPostings", flt_visit_handle_command, CFG_OPT_USER,                NULL },
+  { "VisitedPostingsColors",    flt_visit_handle_command, CFG_OPT_USER,                NULL },
+  { "VisitedFile",              flt_visit_handle_command, CFG_OPT_USER|CFG_OPT_NEEDED, NULL },
+  { "MarkOwnPostsVisited",      flt_visit_handle_command, CFG_OPT_USER,                NULL },
+  { NULL, NULL, 0, NULL }
 };
 
 t_handler_config flt_visited_handlers[] = {

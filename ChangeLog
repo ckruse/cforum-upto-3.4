@@ -1,3 +1,19 @@
+2004-07-30 Christian Kruse <ckruse@wwwtech.de>
+	* TODO: actualized
+	* cgi-shared/config/locale/: Added gettext usage for error messages
+	* cgi-shared/modules.*.xml: Added locale dependend modules configuration
+	* cgi-bin/fo_userconf.in: Added locale depended handling of the modules
+		configuration
+	* scr/templates/: Reorganized for multi-language architecture
+	* src/configparser.[ch]: Added parsing mode feature for the config parser
+		(currently there are two modes, CFG_OPT_CONFIG and CFG_OPT_USER)
+	* src/fo_*.c: Changed to new config parser behavior
+	* src/modules/*.{c,lex}: Changed to new config parser behavior
+	* src/clientlib.c, cgi-shared/ForumUtils.pm: Changed to gettext(), changed to
+		multi language API
+	* cgi-shared/config/fo_*.in, cgi-shared/config/modules.*.xml: Changed to new
+		multi language api
+
 2004-07-29 Christian Kruse <ckruse@wwwtech.de>
 	* cgi-bin/fo_post_old.in: Bugfix for URL handling
 	* src/serverlib.c: Fixed bug in log message (thread <mid>, posting <tid> -- it

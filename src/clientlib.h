@@ -227,7 +227,7 @@ int set_us_up_the_socket(void);
  * \param out A file handle to write to. If NULL, stdout will be used
  * \param rd The length of the error string
  */
-void str_error_message(const u_char *msg,FILE *out,int rd, ...);
+void str_error_message(const u_char *msg,FILE *out, ...);
 
 /**
  * This function returns an error message
@@ -237,7 +237,7 @@ void str_error_message(const u_char *msg,FILE *out,int rd, ...);
  * \return NULL on error or a u_char pointer to the error message on success.
  * \attention You have to free() the returned u_char pointer!
  */
-u_char *get_error_message(const u_char *msg,int rd,size_t *len, ...);
+u_char *get_error_message(const u_char *msg,size_t *len, ...);
 
 /**
  * This function creates a date string. It's more general than get_time(),

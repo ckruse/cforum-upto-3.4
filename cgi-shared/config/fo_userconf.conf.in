@@ -49,7 +49,7 @@
   SMTPSubject "Passwort fuer den SELFHTML Forumsaccount"
   SMTPBody "Ihr Passwort lautet fuer den Usernamen {$user} lautet:\n  {$pass}\n\nEs wird empfohlen, dass Passwort zu wechseln.\n"
 
-  ModuleConfig "@CONFIGDIR@/modules.xml"
+  ModuleConfig "@CONFIGDIR@/modules.%s.xml"
 </General>
 
 <DateConfig>
@@ -57,26 +57,26 @@
 </DateConfig>
 
 <Templates>
-  Edit "@libdir@/cforum/%s_useredit.so"
-  EditEntry "@libdir@/cforum/%s_setting.so"
-  SectEntry "@libdir@/cforum/%s_section.so"
-  PageEntry "@libdir@/cforum/%s_pageentry.so"
-  EditOk "@libdir@/cforum/%s_usereditok.so"
-  UpDown "@libdir@/cforum/%s_updown.so"
+  Edit "@libdir@/cforum/%s_%s_useredit.so"
+  EditEntry "@libdir@/cforum/%s_%s_setting.so"
+  SectEntry "@libdir@/cforum/%s_%s_section.so"
+  PageEntry "@libdir@/cforum/%s_%s_pageentry.so"
+  EditOk "@libdir@/cforum/%s_%s_usereditok.so"
+  UpDown "@libdir@/cforum/%s_%s_updown.so"
 
-  ViewSettings "@libdir@/cforum/%s_usersettings.so"
+  ViewSettings "@libdir@/cforum/%s_%s_usersettings.so"
 
-  Register "@libdir@/cforum/%s_userregister.so"
-  RegisterOk "@libdir@/cforum/%s_userregok.so"
+  Register "@libdir@/cforum/%s_%s_userregister.so"
+  RegisterOk "@libdir@/cforum/%s_%s_userregok.so"
 
-  ChangePass "@libdir@/cforum/%s_chpass.so"
-  ChangePassOk "@libdir@/cforum/%s_chpassok.so"
+  ChangePass "@libdir@/cforum/%s_%s_chpass.so"
+  ChangePassOk "@libdir@/cforum/%s_%s_chpassok.so"
 
-  Unregister "@libdir@/cforum/%s_unreg.so"
-  UnregisterOk "@libdir@/cforum/%s_unregok.so"
+  Unregister "@libdir@/cforum/%s_%s_unreg.so"
+  UnregisterOk "@libdir@/cforum/%s_%s_unregok.so"
 
-  SendPass "@libdir@/cforum/%s_send_pass.so"
-  SendPassErr "@libdir@/cforum/%s_send_pass_err.so"
-  SendPassOk "@libdir@/cforum/%s_send_pass_ok.so"
+  SendPass "@libdir@/cforum/%s_%s_send_pass.so"
+  SendPassErr "@libdir@/cforum/%s_%s_send_pass_err.so"
+  SendPassOk "@libdir@/cforum/%s_%s_send_pass_ok.so"
 </Templates>
 

@@ -16,7 +16,7 @@
  ArchivePath "@with_archive_dir@"
  SocketName "@with_socket_path@"
 
- ErrorTemplate "@libdir@/cforum/%s_errortpl.so"
+ ErrorTemplate "@libdir@/cforum/%s_%s_errortpl.so"
  ErrorMessages "@CONFIGDIR@/errormessages.txt"
 
  ThreadIndexFile "@DATADIR@/tididx.dat"
@@ -42,9 +42,11 @@
  AuthMode "http"
 </General>
 
-<DateConfig>
+<LocaleConfig>
  DateLocale "de_DE.ISO8859-1"
-</DateConfig>
+ Language "de"
+ LocaleDir "@CONFIGDIR@/locale"
+</LocaleConfig>
 
 <Categories>
  Category "ASP"

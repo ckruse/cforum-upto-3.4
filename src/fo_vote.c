@@ -141,7 +141,7 @@ int main(int argc,char *argv[],char *env[]) {
   cfg_register_options(&dconf,default_options);
   cfg_register_options(&conf,fo_vote_options);
 
-  if(read_config(&dconf,NULL) != 0 || read_config(&conf,NULL) != 0) {
+  if(read_config(&dconf,NULL,CFG_MODE_CONFIG) != 0 || read_config(&conf,NULL,CFG_MODE_CONFIG) != 0) {
     fprintf(stderr,"config file error!\n");
     cfg_cleanup_file(&dconf);
     cfg_cleanup_file(&conf);
@@ -170,7 +170,7 @@ int main(int argc,char *argv[],char *env[]) {
 
   if((uname = cf_hash_get(GlobalValues,"UserName",8)) == NULL) {
     printf("Status: 403 Forbidden\015\012Content-Type: text/html\015\012\015\012");
-    str_error_message("E_VOTE_AUTH",NULL,11);
+    str_error_message("E_VOTE_AUTH",NULL);
   }
   
   if(head && uname) {
@@ -182,14 +182,14 @@ int main(int argc,char *argv[],char *env[]) {
       if((sock = set_us_up_the_socket()) != -1) {
         if((ret = db_create(&db,NULL,0)) != 0) {
           printf("Status: 500 Internal Server Error\015\012\015\012");
-          str_error_message("E_FO_500",NULL,8);
+          str_error_message("E_FO_500",NULL);
           fprintf(stderr,"db_create() error: %s\n",db_strerror(ret));
           return EXIT_FAILURE;
         }
 
         if((ret = db->open(db,NULL,dbname->values[0],NULL,DB_BTREE,DB_CREATE,0644)) != 0) {
           printf("Status: 500 Internal Server Error\015\012\015\012");
-          str_error_message("E_FO_500",NULL,8);
+          str_error_message("E_FO_500",NULL);
           fprintf(stderr,"db->open() error: %s\n",db_strerror(ret));
           return EXIT_FAILURE;
         }
@@ -204,20 +204,20 @@ int main(int argc,char *argv[],char *env[]) {
 
         if((ret = db->get(db,NULL,&key,&data,0)) == 0) {
           printf("Status: 403 Forbidden\015\012Content-Type: text/html\015\012\015\012");
-          str_error_message("E_VOTE_MULTIPLE",NULL,15);
+          str_error_message("E_VOTE_MULTIPLE",NULL);
           return EXIT_FAILURE;
         }
 
         if(ret != DB_NOTFOUND) {
           printf("Status: 500 Internal Server Error\015\012Content-Type: text/html\015\012\015\012");
-          str_error_message("E_VOTE_INTERNAL",NULL,15);
+          str_error_message("E_VOTE_INTERNAL",NULL);
           fprintf(stderr,"db->get() error: %s\n",db_strerror(ret));
           return EXIT_FAILURE;
         }
 
         if((ret = db->put(db,NULL,&key,&data,DB_NODUPDATA|DB_NOOVERWRITE)) != 0) {
           printf("Status: 500 Internal Server Error\015\012Content-Type: text/html\015\012\015\012");
-          str_error_message("E_VOTE_INTERNAL",NULL,15);
+          str_error_message("E_VOTE_INTERNAL",NULL);
           fprintf(stderr,"db->put() error: %s\n",db_strerror(ret));
           return EXIT_FAILURE;
         }
@@ -233,12 +233,12 @@ int main(int argc,char *argv[],char *env[]) {
       else {
         printf("Status: 500 Internal Server Error\015\012Content-Type: text/html\015\012\015\012");
         perror("socket");
-        str_error_message("E_VOTE_INTERNAL",NULL,15);
+        str_error_message("E_VOTE_INTERNAL",NULL);
       }
     }
     else {
       printf("Status: 500 Internal Server Error\015\012Content-Type: text/html\015\012\015\012");
-      str_error_message("E_VOTE_INTERNAL",NULL,15);
+      str_error_message("E_VOTE_INTERNAL",NULL);
     }
   }
   else {

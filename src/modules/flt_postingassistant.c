@@ -240,13 +240,13 @@ void flt_poas_finish(void) {
 }
 
 t_conf_opt flt_poas_config[] = {
-  { "PostingAssistantMustValidate", flt_poas_handle, NULL },
-  { "BadWords",                     flt_poas_handle, NULL },
-  { "BadwordsAllowed",              flt_poas_handle, NULL },
-  { "FormateDeficitesAllowed",      flt_poas_handle, NULL },
-  { "QuotingPercent",               flt_poas_handle, NULL },
-  { "QuoteMustValidate",            flt_poas_handle, NULL },
-  { NULL, NULL, NULL }
+  { "PostingAssistantMustValidate", flt_poas_handle, CFG_OPT_CONFIG, NULL },
+  { "BadWords",                     flt_poas_handle, CFG_OPT_CONFIG, NULL },
+  { "BadwordsAllowed",              flt_poas_handle, CFG_OPT_CONFIG, NULL },
+  { "FormateDeficitesAllowed",      flt_poas_handle, CFG_OPT_CONFIG, NULL },
+  { "QuotingPercent",               flt_poas_handle, CFG_OPT_CONFIG, NULL },
+  { "QuoteMustValidate",            flt_poas_handle, CFG_OPT_CONFIG, NULL },
+  { NULL, NULL, 0, NULL }
 };
 
 t_handler_config flt_poas_handlers[] = {

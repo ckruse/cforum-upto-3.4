@@ -324,8 +324,8 @@ void flt_registerednames_cleanup(void) {
 }
 
 t_conf_opt flt_registerednames_config[] = {
-  { "AuthNames", flt_registerednames_handle_command, NULL },
-  { NULL, NULL, NULL }
+  { "AuthNames", flt_registerednames_handle_command, CFG_OPT_CONFIG|CFG_OPT_NEEDED, NULL },
+  { NULL, NULL, 0, NULL }
 };
 
 t_handler_config flt_registerednames_handlers[] = {

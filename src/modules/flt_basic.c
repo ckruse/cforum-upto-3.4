@@ -185,13 +185,13 @@ void flt_basic_cleanup(void) {
 }
 
 t_conf_opt flt_basic_config[] = {
-  { "FontColor",  flt_basic_handle_command, NULL },
-  { "FontSize",   flt_basic_handle_command, NULL },
-  { "FontFamily", flt_basic_handle_command, NULL },
-  { "AutoReload", flt_basic_handle_command, NULL },
-  { "BaseTarget", flt_basic_handle_command, NULL },
-  { "QuoteColor", flt_basic_handle_command, NULL },
-  { NULL, NULL, NULL }
+  { "FontColor",  flt_basic_handle_command, CFG_OPT_USER|CFG_OPT_CONFIG, NULL },
+  { "FontSize",   flt_basic_handle_command, CFG_OPT_USER|CFG_OPT_CONFIG, NULL },
+  { "FontFamily", flt_basic_handle_command, CFG_OPT_USER|CFG_OPT_CONFIG, NULL },
+  { "AutoReload", flt_basic_handle_command, CFG_OPT_USER|CFG_OPT_CONFIG, NULL },
+  { "BaseTarget", flt_basic_handle_command, CFG_OPT_USER|CFG_OPT_CONFIG, NULL },
+  { "QuoteColor", flt_basic_handle_command, CFG_OPT_USER|CFG_OPT_CONFIG, NULL },
+  { NULL, NULL, 0, NULL }
 };
 
 t_handler_config flt_basic_handlers[] = {

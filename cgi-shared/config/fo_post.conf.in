@@ -72,8 +72,8 @@
 </Images>
 
 <Templates>
- ThreadTemplate "@libdir@/cforum/%s_thread.so"
- FatalTemplate "@libdir@/cforum/%s_fatal.so"
- OkTemplate "@libdir@/cforum/%s_post_ok.so"
+ ThreadTemplate "@libdir@/cforum/%s_%s_thread.so"
+ FatalTemplate "@libdir@/cforum/%s_%s_fatal.so"
+ OkTemplate "@libdir@/cforum/%s_%s_post_ok.so"
 </Templates>
 

@@ -111,7 +111,7 @@ int main(int argc,char *argv[],char *envp[]) {
   cfg_register_options(&dconf,default_options);
   free(file);
 
-  if(read_config(&dconf,NULL) != 0) {
+  if(read_config(&dconf,NULL,CFG_MODE_CONFIG) != 0) {
     fprintf(stderr,"config file error!\n");
 
     cfg_cleanup_file(&dconf);
@@ -146,7 +146,7 @@ int main(int argc,char *argv[],char *envp[]) {
   /* {{{ open database */
   if(stat(v->values[0],&st) == -1) {
     printf("Status: 404 Not Found\015\012Content-Type: text/html\015\012\015\012");
-    str_error_message("E_FO_404",NULL,8);
+    str_error_message("E_FO_404",NULL);
     return EXIT_FAILURE;
   }
   if((ret = db_create(&Tdb,NULL,0)) != 0) {
@@ -171,7 +171,7 @@ int main(int argc,char *argv[],char *envp[]) {
 
   if((ret = Tdb->get(Tdb,NULL,&key,&data,0)) != 0) {
     printf("Status: 404 Not Found\015\012Content-Type: text/html\015\012\015\012");
-    str_error_message("E_FO_404",NULL,8);
+    str_error_message("E_FO_404",NULL);
     return EXIT_FAILURE;
   }
   /* }}} */
@@ -199,7 +199,7 @@ int main(int argc,char *argv[],char *envp[]) {
       printf("Location: http://%s:%s%s/%s/t%s/#m%s\015\012\015\012",getenv("SERVER_NAME"),getenv("SERVER_PORT"),archive_path->values[0],(u_char *)data.data,ctid,*((char **)array_element_at(&infos,3)));
     }
     else {
-      printf("Location: http://%s:%s%s/t%s/\015\012\015\012",getenv("SERVER_NAME"),getenv("SERVER_PORT"),archive_path->values[0],(u_char *)data.data,ctid);
+      printf("Location: http://%s:%s%s/%s/t%s/\015\012\015\012",getenv("SERVER_NAME"),getenv("SERVER_PORT"),archive_path->values[0],(u_char *)data.data,ctid);
     }
   }
   /* }}} */

@@ -293,8 +293,13 @@ cgi-shared/data/Makefile
 cgi-shared/data/messages/Makefile
 src/Makefile src/modules/Makefile
 src/templates/Makefile
-src/templates/tpl_html4/Makefile
-src/templates/tpl_xhtml10/Makefile
+src/templates/de/Makefile
+src/templates/en/Makefile
+src/templates/fr/Makefile
+src/templates/de/tpl_html4/Makefile
+src/templates/de/tpl_xhtml10/Makefile
+src/templates/fr/tpl_html4/Makefile
+src/templates/fr/tpl_xhtml10/Makefile
 cgi-shared/config/fo_arcview.conf
 cgi-shared/config/fo_default.conf
 cgi-shared/config/fo_post.conf
@@ -303,6 +308,13 @@ cgi-shared/config/fo_view.conf
 cgi-shared/config/fo_server.conf
 cgi-shared/config/fo_vote.conf
 Doxyfile
+cgi-shared/config/locale/Makefile
+cgi-shared/config/locale/de/Makefile
+cgi-shared/config/locale/en/Makefile
+cgi-shared/config/locale/fr/Makefile
+cgi-shared/config/locale/de/LC_MESSAGES/Makefile
+cgi-shared/config/locale/en/LC_MESSAGES/Makefile
+cgi-shared/config/locale/fr/LC_MESSAGES/Makefile
 )
 
 dnl eof

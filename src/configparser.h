@@ -46,10 +46,18 @@ typedef int (*t_take)(t_configfile *cfile,t_conf_opt *entry,u_char **args,int le
  */
 typedef int (*t_take_default)(t_configfile *cfile,u_char *name,u_char **args,int len);
 
+#define CFG_OPT_NEEDED  1 /**< directive _must_ exist */
+#define CFG_OPT_CONFIG  2 /**< directive may exist in fo_*.conf */
+#define CFG_OPT_USER    4 /**< directive may exist in user config */
+
+#define CFG_MODE_CONFIG CFG_OPT_CONFIG /**< We are in configuration mode */
+#define CFG_MODE_USER   CFG_OPT_USER   /**< We are in user configuration mode */
+
 /** This describes the structure of a config file */
 struct s_conf_opt {
   u_char *name; /**< The name of the configuration directive */
   t_take callback; /**< The callback function */
+	u_int32_t flags; /**< Flags for this entry */
   void *data; /**< User defined data */
 };
 
@@ -161,7 +169,7 @@ t_array *get_conf_file(const u_char **which,size_t llen);
  * \param deflt The default callback function
  * \return 0 on success, a value unequal 0 on failure
  */
-int read_config(t_configfile *conf,t_take_default deflt);
+int read_config(t_configfile *conf,t_take_default deflt,int mode);
 
 /**
  * This function initializes a configuration file structure

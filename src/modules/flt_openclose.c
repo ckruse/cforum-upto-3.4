@@ -284,10 +284,10 @@ int get_conf(t_configfile *cfile,t_conf_opt *opt,u_char **args,int argnum) {
 }
 
 t_conf_opt flt_openclose_config[] = {
-  { "ThreadsOpenByDefault", get_conf, NULL },
-  { "UseJavaScript",        get_conf, NULL },
-  { "OpenThreadIfNew",      get_conf, NULL },
-  { NULL, NULL, NULL }
+  { "ThreadsOpenByDefault", get_conf, CFG_OPT_CONFIG|CFG_OPT_USER, NULL },
+  { "UseJavaScript",        get_conf, CFG_OPT_CONFIG|CFG_OPT_USER, NULL },
+  { "OpenThreadIfNew",      get_conf, CFG_OPT_CONFIG|CFG_OPT_USER, NULL },
+  { NULL, NULL, 0, NULL }
 };
 
 t_handler_config flt_openclose_handlers[] = {

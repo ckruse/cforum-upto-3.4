@@ -40,21 +40,21 @@
 </General>
 
 <Templates>
-  FatalTemplate "@libdir@/cforum/%s_fatal.so"
+  FatalTemplate "@libdir@/cforum/%s_%s_fatal.so"
 
-  YearsTemplate "@libdir@/cforum/%s_arcyears.so"
-  YearListTemplate "@libdir@/cforum/%s_arcyearlist.so"
+  YearsTemplate "@libdir@/cforum/%s_%s_arcyears.so"
+  YearListTemplate "@libdir@/cforum/%s_%s_arcyearlist.so"
 
-  MonthsTemplate "@libdir@/cforum/%s_arcmonths.so"
-  MonthsListTemplate "@libdir@/cforum/%s_arcmonthlist.so"
+  MonthsTemplate "@libdir@/cforum/%s_%s_arcmonths.so"
+  MonthsListTemplate "@libdir@/cforum/%s_%s_arcmonthlist.so"
 
-  ThreadListMonthTemplate "@libdir@/cforum/%s_arcthreadlist_month.so"
+  ThreadListMonthTemplate "@libdir@/cforum/%s_%s_arcthreadlist_month.so"
 
-  ThreadTemplate "@libdir@/cforum/%s_arcthread.so"
-  ThreadListTemplate "@libdir@/cforum/%s_arcthreadlist.so"
-  PerThreadTemplate "@libdir@/cforum/%s_arcperthread.so"
+  ThreadTemplate "@libdir@/cforum/%s_%s_arcthread.so"
+  ThreadListTemplate "@libdir@/cforum/%s_%s_arcthreadlist.so"
+  PerThreadTemplate "@libdir@/cforum/%s_%s_arcperthread.so"
 
-  UpDownTemplate "@libdir@/cforum/%s_updown.so"
+  UpDownTemplate "@libdir@/cforum/%s_%s_updown.so"
 </Templates>
 
 

@@ -352,7 +352,7 @@ void print_thread_structure(t_arc_thread *thr,const u_char *year,const u_char *m
     || tpl_cf_init(&threadlist_tpl,threadlist_tpl_name) != 0
     || tpl_cf_init(&per_thread_tpl,per_thread_tpl_name) != 0
     || tpl_cf_init(&up_down_tpl,up_down_tpl_name) != 0) {
-    str_error_message("E_TPL_NOT_FOUND",NULL,15);
+    str_error_message("E_TPL_NOT_FOUND",NULL);
     return;
   }
 
@@ -535,7 +535,7 @@ void make_thread_tree(t_arc_thread *thread,t_arc_message *msg,GdomeNode *posting
   }
   else {
     fprintf(stderr,"thread %llu: no id found\n",thread->tid);
-    str_error_message("E_ARCHIVE_ERROR",NULL,15);
+    str_error_message("E_ARCHIVE_ERROR",NULL);
     exit(0);
   }
 
@@ -561,7 +561,7 @@ void make_thread_tree(t_arc_thread *thread,t_arc_message *msg,GdomeNode *posting
   }
   else {
     fprintf(stderr,"thread %llu: no posting content found for message %llu\n",thread->tid,msg->mid);
-    str_error_message("E_ARCHIVE_ERROR",NULL,15);
+    str_error_message("E_ARCHIVE_ERROR",NULL);
     exit(0);
   }
 
@@ -728,7 +728,7 @@ void show_thread(const u_char *year,const u_char *month,const u_char *tid) {
 
   if(stat(path.content,&st) == -1) {
     printf("Status: 404 Not Found\015\012\015\012");
-    str_error_message("E_ARCHIVE_THREADNOTPRESENT",NULL,26);
+    str_error_message("E_ARCHIVE_THREADNOTPRESENT",NULL);
     return;
   }
 
@@ -736,7 +736,7 @@ void show_thread(const u_char *year,const u_char *month,const u_char *tid) {
     impl = gdome_di_mkref();
     if((doc = gdome_di_createDocFromURI(impl,path.content,GDOME_LOAD_PARSING,&e)) == NULL) {
       printf("Status: 404 Not Found\015\012\015\012");
-      str_error_message("E_ARCHIVE_THREADNOTPRESENT",NULL,26);
+      str_error_message("E_ARCHIVE_THREADNOTPRESENT",NULL);
       gdome_di_unref(impl,&e);
       return;
     }
@@ -754,7 +754,7 @@ void show_thread(const u_char *year,const u_char *month,const u_char *tid) {
       print_thread_structure(&thr,year,month,admin,show_invisible);
     }
     else {
-      str_error_message("E_FO_404",NULL,8);
+      str_error_message("E_FO_404",NULL);
     }
   }
   else {
@@ -864,7 +864,7 @@ void show_month_content(const u_char *year,const u_char *month) {
   if(stat(path.content,&st) == -1) {
     printf("Status: 404 Not Found\015\012\015\012");
     perror("stat");
-    str_error_message("E_ARCHIVE_MONTHNOTPRESENT",NULL,25);
+    str_error_message("E_ARCHIVE_MONTHNOTPRESENT",NULL);
     return;
   }
 
@@ -879,20 +879,20 @@ void show_month_content(const u_char *year,const u_char *month) {
     generate_tpl_name(tl_name,256,tl_tp);
 
     if(tpl_cf_init(&m_tpl,mt_name) != 0 || tpl_cf_init(&tl_tpl,tl_name) != 0) {
-      str_error_message("E_CONFIG_ERR",NULL,12);
+      str_error_message("E_CONFIG_ERR",NULL);
       return;
     }
 
     /* open file for mmap */
     if((fd = open(path.content,O_RDONLY)) == -1) {
       perror("open");
-      str_error_message("E_ARCHIVE_MONTHNOTPRESENT",NULL,25);
+      str_error_message("E_ARCHIVE_MONTHNOTPRESENT",NULL);
       return;
     }
 
     if((caddr_t)(file = ptr = mmap(0,st.st_size,PROT_READ,MAP_FILE|MAP_SHARED,fd,0)) == (caddr_t)-1) {
       perror("mmap");
-      str_error_message("E_ARCHIVE_MONTHNOTPRESENT",NULL,25);
+      str_error_message("E_ARCHIVE_MONTHNOTPRESENT",NULL);
       return;
     }
 
@@ -1030,14 +1030,14 @@ void show_year_content(const u_char *year) {
   fwrite("\015\012",1,2,stdout);
 
   if(!v || !mt || !mlt) {
-    str_error_message("E_CONFIG_ERR",NULL,12);
+    str_error_message("E_CONFIG_ERR",NULL);
     return;
   }
 
   snprintf(path,256,"%s/%s",v->values[0],year);
   if(stat(path,&st) == -1) {
     perror("stat");
-    str_error_message("E_ARCHIVE_YEARNOTPRESENT",NULL,24);
+    str_error_message("E_ARCHIVE_YEARNOTPRESENT",NULL);
     return;
   }
 
@@ -1045,12 +1045,12 @@ void show_year_content(const u_char *year) {
   generate_tpl_name(mlt_name,256,mlt);
 
   if(tpl_cf_init(&mt_tpl,mt_name) != 0 || tpl_cf_init(&mlt_tpl,mlt_name) != 0) {
-    str_error_message("E_CONFIG_ERR",NULL,12);
+    str_error_message("E_CONFIG_ERR",NULL);
     return;
   }
 
   if((months = read_dir_content(path)) == NULL) {
-    str_error_message("E_ARCHIVE_YEARNOTPRESENT",NULL,24);
+    str_error_message("E_ARCHIVE_YEARNOTPRESENT",NULL);
     tpl_cf_finish(&mlt_tpl);
     tpl_cf_finish(&mt_tpl);
     return;
@@ -1105,7 +1105,7 @@ void show_year_list(void) {
   fwrite("\015\012",1,2,stdout);
 
   if(!ap || !yt || !ylt) {
-    str_error_message("E_CONFIG_ERR",NULL,12);
+    str_error_message("E_CONFIG_ERR",NULL);
     return;
   }
 
@@ -1113,7 +1113,7 @@ void show_year_list(void) {
   generate_tpl_name(ylt_name,256,ylt);
 
   if(tpl_cf_init(&years,yt_name) != 0 || tpl_cf_init(&year,ylt_name) != 0) {
-    str_error_message("E_CONFIG_ERR",NULL,12);
+    str_error_message("E_CONFIG_ERR",NULL);
     return;
   }
 
@@ -1231,7 +1231,7 @@ int main(int argc,char *argv[],char *env[]) {
   cfg_register_options(&dconf,default_options);
   cfg_register_options(&conf,fo_arcview_options);
 
-  if(read_config(&dconf,NULL) != 0 || read_config(&conf,NULL) != 0) {
+  if(read_config(&dconf,NULL,CFG_MODE_CONFIG) != 0 || read_config(&conf,NULL,CFG_MODE_CONFIG) != 0) {
     fprintf(stderr,"config file error!\n");
 
     cfg_cleanup_file(&conf);
@@ -1263,7 +1263,7 @@ int main(int argc,char *argv[],char *env[]) {
       free(conf.filename);
       conf.filename = ucfg;
 
-      if(read_config(&conf,ignre) != 0) {
+      if(read_config(&conf,ignre,CFG_MODE_USER) != 0) {
         fprintf(stderr,"config file error!\n");
 
         cfg_cleanup_file(&conf);

@@ -181,7 +181,7 @@ void send_posting(t_cf_hash *head,void *shm_ptr,u_int64_t tid,u_int64_t mid) {
   #endif
 
   if(!fo_thread_tpl || !fo_posting_tpl) {
-    str_error_message("E_TPL_NOT_FOUND",NULL,15);
+    str_error_message("E_TPL_NOT_FOUND",NULL);
     return;
   }
 
@@ -189,7 +189,7 @@ void send_posting(t_cf_hash *head,void *shm_ptr,u_int64_t tid,u_int64_t mid) {
   generate_tpl_name(fo_posting_tplname,256,fo_posting_tpl);
 
   if(tpl_cf_init(&tpl,fo_posting_tplname) != 0) {
-    str_error_message("E_TPL_NOT_FOUND",NULL,15);
+    str_error_message("E_TPL_NOT_FOUND",NULL);
     return;
   }
 
@@ -201,12 +201,12 @@ void send_posting(t_cf_hash *head,void *shm_ptr,u_int64_t tid,u_int64_t mid) {
     if(cf_strcmp(ErrorString,"E_FO_404") == 0) {
       if(run_404_filters(head,tid,mid) != FLT_EXIT) {
         printf("Status: 404 Not Found\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs?cs->values[0]?cs->values[0]:(u_char *)"UTF-8":(u_char *)"UTF-8");
-        str_error_message(ErrorString,NULL,strlen(ErrorString));
+        str_error_message(ErrorString,NULL);
       }
     }
     else {
       printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs?cs->values[0]?cs->values[0]:(u_char *)"UTF-8":(u_char *)"UTF-8");
-      str_error_message(ErrorString,NULL,strlen(ErrorString));
+      str_error_message(ErrorString,NULL);
     }
     return;
   }
@@ -272,7 +272,7 @@ void send_threadlist(void *shm_ptr,t_cf_hash *head) {
 
   if(!fo_begin_tpl || !fo_end_tpl || !fo_thread_tpl) {
     printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs?cs->values[0]?cs->values[0]:(u_char *)"UTF-8":(u_char *)"UTF-8");
-    str_error_message("E_TPL_NOT_FOUND",NULL,15);
+    str_error_message("E_TPL_NOT_FOUND",NULL);
     return;
   }
 
@@ -304,17 +304,17 @@ void send_threadlist(void *shm_ptr,t_cf_hash *head) {
 
     if(line) {
       ret = snprintf(buff,128,"E_FO_%d",atoi(line));
-      str_error_message(buff,NULL,ret);
+      str_error_message(buff,NULL);
       free(line);
     }
     else {
-      str_error_message("E_NO_THREADLIST",NULL,15);
+      str_error_message("E_NO_THREADLIST",NULL);
     }
   }
   #else
   if(!ptr) {
     printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs?cs->values[0]?cs->values[0]:(u_char *)"UTF-8":(u_char *)"UTF-8");
-    str_error_message("E_NO_CONN",NULL,9,strerror(errno));
+    str_error_message("E_NO_CONN",NULL,strerror(errno));
   }
   #endif
 
@@ -329,13 +329,13 @@ void send_threadlist(void *shm_ptr,t_cf_hash *head) {
     if(tpl_cf_init(&tpl_begin,fo_begin_tplname) != 0) {
       printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs?cs->values[0]?cs->values[0]:(u_char *)"UTF-8":(u_char *)"UTF-8");
 
-      str_error_message("E_TPL_NOT_FOUND",NULL,15);
+      str_error_message("E_TPL_NOT_FOUND",NULL);
       return;
     }
     if(tpl_cf_init(&tpl_end,fo_end_tplname) != 0) {
       printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs?cs->values[0]?cs->values[0]:(u_char *)"UTF-8":(u_char *)"UTF-8");
 
-      str_error_message("E_TPL_NOT_FOUND",NULL,15);
+      str_error_message("E_TPL_NOT_FOUND",NULL);
       return;
     }
 
@@ -395,12 +395,12 @@ void send_threadlist(void *shm_ptr,t_cf_hash *head) {
 
     #ifndef CF_SHARED_MEM
     if(*ErrorString) {
-      str_error_message(ErrorString,NULL,strlen(ErrorString));
+      str_error_message(ErrorString,NULL);
       return;
     }
     #else
     if(ptr1 == NULL && *ErrorString) {
-      str_error_message(ErrorString,NULL,strlen(ErrorString));
+      str_error_message(ErrorString,NULL);
       return;
     }
     #endif
@@ -507,7 +507,7 @@ int main(int argc,char *argv[],char *env[]) {
   cfg_register_options(&dconf,default_options);
   cfg_register_options(&conf,fo_view_options);
 
-  if(read_config(&dconf,NULL) != 0 || read_config(&conf,NULL) != 0) {
+  if(read_config(&dconf,NULL,CFG_MODE_CONFIG) != 0 || read_config(&conf,NULL,CFG_MODE_CONFIG) != 0) {
     fprintf(stderr,"config file error!\n");
 
     cfg_cleanup_file(&conf);
@@ -544,7 +544,7 @@ int main(int argc,char *argv[],char *env[]) {
       free(conf.filename);
       conf.filename = ucfg;
 
-      if(read_config(&conf,ignre) != 0) {
+      if(read_config(&conf,ignre,CFG_MODE_USER) != 0) {
         fprintf(stderr,"config file error!\n");
 
         cfg_cleanup_file(&conf);
@@ -578,13 +578,13 @@ int main(int argc,char *argv[],char *env[]) {
     #ifndef CF_SHARED_MEM
     if((sock = set_us_up_the_socket()) <= 0) {
       printf("Content-Type: text/html; charset=%s\015\012\015\012",cs?cs->values[0]?cs->values[0]:(u_char *)"UTF-8":(u_char *)"UTF-8");
-      str_error_message("E_NO_SOCK",NULL,9,strerror(errno));
+      str_error_message("E_NO_SOCK",NULL,strerror(errno));
       exit(0);
     }
     #else
     if((sock = get_shm_ptr()) == NULL) {
       printf("Content-Type: text/html; charset=%s\015\012\015\012",cs?cs->values[0]?cs->values[0]:(u_char *)"UTF-8":(u_char *)"UTF-8");
-      str_error_message("E_NO_CONN",NULL,9,strerror(errno));
+      str_error_message("E_NO_CONN",NULL,strerror(errno));
       exit(0);
     }
     #endif

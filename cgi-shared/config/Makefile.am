@@ -1,3 +1,4 @@
+SUBDIRS=locale
 
 EXTRA_DIST=fo_arcview.conf \
   fo_default.conf \
@@ -7,11 +8,13 @@ EXTRA_DIST=fo_arcview.conf \
   fo_view.conf \
   errormessages.txt \
 	tipoftheday.txt \
-  modules.xml
+  modules.de.xml \
+  modules.en.xml \
+  modules.fr.xml
 
 
 install-data-local:
-	if ! -d $(CONFIGDIR); then \
+	if test ! -d $(CONFIGDIR); then \
 		$(MKDIR) -p $(CONFIGDIR); \
 	fi; \
 	for file in $(EXTRA_DIST); do \

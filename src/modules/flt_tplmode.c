@@ -63,8 +63,8 @@ void flt_tplmode_finish(void) {
 }
 
 t_conf_opt flt_tplmode_config[] = {
-  { "TPLMode",        flt_tplmode_handle, NULL },
-  { NULL, NULL, NULL }
+  { "TPLMode",        flt_tplmode_handle, CFG_OPT_USER, NULL },
+  { NULL, NULL, 0, NULL }
 };
 
 t_handler_config flt_tplmode_handlers[] = {

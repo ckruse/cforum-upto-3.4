@@ -38,6 +38,8 @@
 
 #include <pwd.h>
 
+#include <libintl.h>
+
 #ifdef CF_SHARED_MEM
 #include <sys/ipc.h>
 #include <sys/shm.h>
@@ -222,13 +224,9 @@ int set_us_up_the_socket(void) {
  */
 void generate_tpl_name(u_char buff[],int len,t_name_value *v) {
   t_name_value *vn = cfg_get_first_value(&fo_default_conf,"TemplateMode");
+  t_name_value *lang = cfg_get_first_value(&fo_default_conf,"Language");
 
-  if(vn) {
-    snprintf(buff,len,v->values[0],vn->values[0]);
-  }
-  else {
-    snprintf(buff,len,v->values[0],"");
-  }
+  snprintf(buff,len,v->values[0],lang->values[0],vn->values[0]);
 }
 /* }}} */
 
@@ -275,189 +273,155 @@ void cf_set_variable(t_cf_template *tpl,t_name_value *cs,u_char *vname,const u_c
  * this function spits out an error message
  *
  */
-void str_error_message(const u_char *err,FILE *out,int rd, ...) {
-  t_name_value *v  = cfg_get_first_value(&fo_default_conf,"ErrorTemplate");
-  t_name_value *v1 = cfg_get_first_value(&fo_default_conf,"ErrorMessages");
+void str_error_message(const u_char *err,FILE *out, ...) {
+  t_name_value *v = cfg_get_first_value(&fo_default_conf,"ErrorTemplate");
+  t_name_value *loc_dir = cfg_get_first_value(&fo_default_conf,"LocaleDir");
+  t_name_value *loc = cfg_get_first_value(&fo_default_conf,"Language");
   t_name_value *cs = cfg_get_first_value(&fo_default_conf,"ExternCharset");
   t_cf_template tpl;
   u_char tplname[256];
   va_list ap;
 
-  FILE *fd;
-  u_char *buff = NULL;
-  u_char *fmt  = NULL;
+  u_char *buff = NULL,ibuff[256];
   register u_char *ptr;
   t_string msg;
-  int found = 0;
-  size_t size,chars;
-  u_char ibuff[50];
 
   int ivar;
   u_char *svar;
 
-  if(v && v1) {
-    fd = fopen(v1->values[0],"r");
+  size_t size;
 
-    if(fd) {
-      generate_tpl_name(tplname,256,v);
+  if(v && loc_dir && loc) {
+    generate_tpl_name(tplname,256,v);
+    tpl_cf_init(&tpl,tplname);
 
-      tpl_cf_init(&tpl,tplname);
+    bind_textdomain_codeset("messages","UTF-8");
+    bindtextdomain("messages",loc_dir->values[0]);
+    textdomain("messages");
 
-      if(tpl.tpl) {
-        while((chars = getline((char **)&buff,&size,fd)) != 0) {
-          if(cf_strncmp(buff,err,rd) == 0) {
-            /* cf_set_variable(&tpl,cs,"error",buff+rd+1,chars-rd-1,1); */
-            str_init(&msg);
-            fmt = strndup(buff+rd+2,chars-rd-3);
-            va_start(ap,rd);
+    if(tpl.tpl) {
+      setlocale(LC_MESSAGES,loc->values[0]);
+      str_init(&msg);
+      buff = gettext(err);
 
-            for(ptr=fmt;*ptr;ptr++) {
-              if(*ptr == '%') {
-                ptr++;
+      va_start(ap,out);
 
-                switch(*ptr) {
-                  case '%':
-                    str_char_append(&msg,*ptr);
-                    break;
+      for(ptr=buff;*ptr;ptr++) {
+        if(*ptr == '%') {
+          ptr++;
 
-                  case 's':
-                    svar = va_arg(ap,u_char *);
-                    str_chars_append(&msg,svar,strlen(svar));
-                    break;
+          switch(*ptr) {
+            case '%':
+              str_char_append(&msg,*ptr);
+              break;
 
-                  case 'd':
-                    ivar = va_arg(ap,int);
-                    size = snprintf(ibuff,50,"%d",ivar);
-                    str_chars_append(&msg,ibuff,50);
-                    break;
+            case 's':
+              svar = va_arg(ap,u_char *);
+              str_chars_append(&msg,svar,strlen(svar));
+              break;
 
-                  default:
-                    str_char_append(&msg,*ptr);
-                    break;
-                }
-              }
-              else {
-                str_char_append(&msg,*ptr);
-              }
-            }
+            case 'd':
+              ivar = va_arg(ap,int);
+              size = snprintf(ibuff,50,"%d",ivar);
+              str_chars_append(&msg,ibuff,50);
+              break;
 
-            va_end(ap);
-            free(fmt);
-
-            cf_set_variable(&tpl,cs,"error",msg.content,msg.len,1);
-
-            str_cleanup(&msg);
-            found = 1;
-            break;
+            default:
+              str_char_append(&msg,*ptr);
+              break;
           }
         }
-
-        fclose(fd);
-
-        if(found == 0) {
-          found = snprintf(buff,2048,"Message not found: %s\n",err);
-          tpl_cf_setvar(&tpl,"error",buff,found,1);
-        }
-
-        if(out) {
-          tpl_cf_parse_to_mem(&tpl);
-          fwrite(tpl.parsed.content,1,tpl.parsed.len,out);
-        }
         else {
-          tpl_cf_parse(&tpl);
+          str_char_append(&msg,*ptr);
         }
+      }
 
-        tpl_cf_finish(&tpl);
+      va_end(ap);
+
+      cf_set_variable(&tpl,cs,"error",msg.content,msg.len,1);
+      str_cleanup(&msg);
+
+      if(out) {
+        tpl_cf_parse_to_mem(&tpl);
+        fwrite(tpl.parsed.content,1,tpl.parsed.len,out);
       }
       else {
-        printf("Sorry, could not find template file. I got error %s\n",err);
+        tpl_cf_parse(&tpl);
       }
+
+      tpl_cf_finish(&tpl);
     }
     else {
-      printf("Sorry, could not find error messages. I got error %s\n",err);
+      printf("Sorry, could not find template file. I got error %s\n",err);
     }
   }
   else {
-    printf("Sorry, but I could not find my templates.\nI got error %s\n",err);
+    printf("Sorry, but I could not find my configuration.\nI got error %s\n",err);
   }
-
-  if(size) free(buff);
 }
 /* }}} */
 
 /* {{{ get_error_message */
-u_char *get_error_message(const u_char *err,int rd,size_t *len, ...) {
-  t_name_value *v1 = cfg_get_first_value(&fo_default_conf,"ErrorMessages");
-  FILE *fd;
-  u_char *buff = NULL;
-  size_t size = 0,chars;
-  t_string msg;
-  u_char *fmt = NULL,*svar;
-  register u_char *ptr;
+u_char *get_error_message(const u_char *err,size_t *len, ...) {
+  t_name_value *loc_dir = cfg_get_first_value(&fo_default_conf,"LocaleDir");
+  t_name_value *loc = cfg_get_first_value(&fo_default_conf,"Language");
   va_list ap;
+
+  u_char *buff = NULL,ibuff[256];
+  register u_char *ptr;
+  t_string msg;
+
   int ivar;
-  u_char ibuff[50];
+  u_char *svar;
 
-  if(v1) {
-    fd = fopen(v1->values[0],"r");
+  size_t size;
 
-    if(fd) {
-      while((chars = getline((char **)&buff,&size,fd)) != 0) {
-        if(cf_strncmp(buff,err,rd) == 0) {
-        str_init(&msg);
-        fmt = strndup(buff+rd+1,chars-rd-1);
-        va_start(ap,len);
+  if(loc_dir && loc) {
+    bind_textdomain_codeset("messages","UTF-8");
+    bindtextdomain("messages",loc_dir->values[0]);
+    textdomain("messages");
 
-        for(ptr=fmt;*ptr;ptr++) {
-          if(*ptr == '%') {
-            ptr++;
+    setlocale(LC_MESSAGES,loc->values[0]);
+    str_init(&msg);
+    buff = gettext(err);
 
-            switch(*ptr) {
-              case '%':
-                str_char_append(&msg,*ptr);
-                  break;
+    va_start(ap,len);
 
-                case 's':
-                  svar = va_arg(ap,u_char *);
-                  str_chars_append(&msg,svar,strlen(svar));
-                  break;
+    for(ptr=buff;*ptr;ptr++) {
+      if(*ptr == '%') {
+        ptr++;
 
-                case 'd':
-                  ivar = va_arg(ap,int);
-                  size = snprintf(ibuff,50,"%d",ivar);
-                  str_chars_append(&msg,ibuff,50);
-                  break;
+        switch(*ptr) {
+          case '%':
+            str_char_append(&msg,*ptr);
+            break;
 
-                default:
-                  str_char_append(&msg,*ptr);
-                  break;
-              }
-            }
-            else {
-              str_char_append(&msg,*ptr);
-            }
-          }
+          case 's':
+            svar = va_arg(ap,u_char *);
+            str_chars_append(&msg,svar,strlen(svar));
+            break;
 
-          va_end(ap);
-          free(fmt);
-          free(buff);
+          case 'd':
+            ivar = va_arg(ap,int);
+            size = snprintf(ibuff,50,"%d",ivar);
+            str_chars_append(&msg,ibuff,50);
+            break;
 
-          fclose(fd);
-          return msg.content;
+          default:
+            str_char_append(&msg,*ptr);
+            break;
         }
       }
-
-      fclose(fd);
+      else {
+        str_char_append(&msg,*ptr);
+      }
     }
-    else {
-      return NULL;
-    }
-  }
-  else {
-    return NULL;
+
+    va_end(ap);
+    if(len) *len = msg.len;
+    return msg.content;
   }
 
-  if(buff && size) free(buff);
   return NULL;
 }
 /* }}} */

@@ -472,7 +472,7 @@ int execute_filter(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cl_
   /* needed in shared memory */
   if(thread) {
     if((thread->messages->invisible == 1 || thread->threadmsg->invisible == 1) && !ShowInvisible) {
-      str_error_message("E_FO_404",NULL,8);
+      str_error_message("E_FO_404",NULL);
       return FLT_EXIT;
     }
   }
@@ -952,23 +952,23 @@ int register_hooks(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc) {
 
 /* {{{ t_conf_opt config[] */
 t_conf_opt config[] = {
-  { "DoQuote",                    handle_q,        NULL },
-  { "QuotingChars",               handle_q,        NULL },
-  { "ShowThread",                 handle_st,       NULL },
-  { "Hi",                         handle_greet,    NULL },
-  { "Bye",                        handle_greet,    NULL },
-  { "Signature",                  handle_greet,    NULL },
-  { "PostingLinkTarget",          handle_link,     NULL },
-  { "ShowSig",                    handle_sig,      NULL },
-  { "MaxSigLines",                handle_sig,      NULL },
-  { "TextBox",                    handle_box,      NULL },
-  { "GeneratePreview",            handle_prev,     NULL },
-  { "PreviewSwitchType",          handle_prevt,    NULL },
-  { "ActivePostingColor",         handle_actpcol,  NULL },
-  { "ShowIframeAsLink",           handle_iframe,   NULL },
-  { "ShowImageAsLink",            handle_image,    NULL },
-  { "ReferenceURI",               handle_ref,      NULL },
-  { NULL, NULL, NULL }
+  { "DoQuote",                    handle_q,        CFG_OPT_CONFIG|CFG_OPT_USER,                NULL },
+  { "QuotingChars",               handle_q,        CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_NEEDED, NULL },
+  { "ShowThread",                 handle_st,       CFG_OPT_CONFIG|CFG_OPT_USER,                NULL },
+  { "Hi",                         handle_greet,    CFG_OPT_CONFIG|CFG_OPT_USER,                NULL },
+  { "Bye",                        handle_greet,    CFG_OPT_CONFIG|CFG_OPT_USER,                NULL },
+  { "Signature",                  handle_greet,    CFG_OPT_CONFIG|CFG_OPT_USER,                NULL },
+  { "PostingLinkTarget",          handle_link,     CFG_OPT_CONFIG|CFG_OPT_USER,                NULL },
+  { "ShowSig",                    handle_sig,      CFG_OPT_CONFIG|CFG_OPT_USER,                NULL },
+  { "MaxSigLines",                handle_sig,      CFG_OPT_CONFIG|CFG_OPT_USER,                NULL },
+  { "TextBox",                    handle_box,      CFG_OPT_CONFIG|CFG_OPT_USER,                NULL },
+  { "GeneratePreview",            handle_prev,     CFG_OPT_CONFIG|CFG_OPT_USER,                NULL },
+  { "PreviewSwitchType",          handle_prevt,    CFG_OPT_CONFIG|CFG_OPT_USER,                NULL },
+  { "ActivePostingColor",         handle_actpcol,  CFG_OPT_CONFIG|CFG_OPT_USER,                NULL },
+  { "ShowIframeAsLink",           handle_iframe,   CFG_OPT_CONFIG|CFG_OPT_USER,                NULL },
+  { "ShowImageAsLink",            handle_image,    CFG_OPT_CONFIG|CFG_OPT_USER,                NULL },
+  { "ReferenceURI",               handle_ref,      CFG_OPT_CONFIG|CFG_OPT_USER,                NULL },
+  { NULL, NULL, 0, NULL }
 };
 /* }}} */
 

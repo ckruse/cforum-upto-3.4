@@ -343,13 +343,13 @@ time_t flt_deleted_lm(t_cf_hash *head,t_configuration *dc,t_configuration *vc,vo
 }
 
 t_conf_opt config[] = {
-  { "BlackList",               flt_del_handle_command, NULL },
-  { "ShowBlacklistFollowups",  flt_del_handle_command, NULL },
-  { "ShowFrom",                flt_del_handle_command, NULL },
-  { "ShowUntil",               flt_del_handle_command, NULL },
-  { "DeletedFile",             flt_del_handle_command, NULL },
-  { "DeletedUseCheckboxes",    flt_del_handle_command, NULL },
-  { NULL, NULL, NULL }
+  { "BlackList",               flt_del_handle_command, CFG_OPT_CONFIG|CFG_OPT_USER, NULL },
+  { "ShowBlacklistFollowups",  flt_del_handle_command, CFG_OPT_CONFIG|CFG_OPT_USER, NULL },
+  { "ShowFrom",                flt_del_handle_command, CFG_OPT_CONFIG|CFG_OPT_USER, NULL },
+  { "ShowUntil",               flt_del_handle_command, CFG_OPT_CONFIG|CFG_OPT_USER, NULL },
+  { "DeletedFile",             flt_del_handle_command, CFG_OPT_USER|CFG_OPT_NEEDED, NULL },
+  { "DeletedUseCheckboxes",    flt_del_handle_command, CFG_OPT_CONFIG|CFG_OPT_USER, NULL },
+  { NULL, NULL, 0, NULL }
 };
 
 t_handler_config handlers[] = {

@@ -86,8 +86,8 @@ void flt_cat_finish(void) {
 }
 
 t_conf_opt config[] = {
-  { "ShowCategories", flt_cat_handle_command, NULL },
-  { NULL,             NULL,                   NULL }
+  { "ShowCategories", flt_cat_handle_command, CFG_OPT_USER|CFG_OPT_CONFIG, NULL },
+  { NULL, NULL, 0, NULL }
 };
 
 t_handler_config handlers[] = {

@@ -65,8 +65,8 @@ int flt_threadreturnanchor_handle(t_configfile *cf,t_conf_opt *opt,u_char **args
 }
 
 t_conf_opt config[] = {
-  { "ThreadReturnAnchor", flt_threadreturnanchor_handle, NULL },
-  { NULL, NULL, NULL }
+  { "ThreadReturnAnchor", flt_threadreturnanchor_handle, CFG_OPT_CONFIG|CFG_OPT_USER, NULL },
+  { NULL, NULL, 0, NULL }
 };
 
 t_handler_config handlers[] = {

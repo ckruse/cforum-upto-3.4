@@ -121,7 +121,7 @@ int flt_tidx_module(t_thread *thr) {
 
 
 t_conf_opt flt_tid_index_config[] = {
-  { NULL, NULL, NULL }
+  { NULL, NULL, 0, NULL }
 };
 
 t_handler_config flt_tid_index_handlers[] = {

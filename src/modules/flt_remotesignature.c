@@ -141,7 +141,7 @@ int flt_remotesignature_execute(t_cf_hash *head,t_configuration *dc,t_configurat
 }
 
 t_conf_opt flt_remotesignature_config[] = {
-  { NULL, NULL, NULL }
+  { NULL, NULL, 0, NULL }
 };
 
 t_handler_config flt_remotesignature_handlers[] = {

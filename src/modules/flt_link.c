@@ -154,9 +154,9 @@ int flt_link_handle_conf(t_configfile *cfg,t_conf_opt *entry,u_char **args,int a
 }
 
 t_conf_opt flt_link_config[] = {
-  { "SetLinkTags",     flt_link_handle_conf,   NULL },
-  { "LinkNoVisited",   flt_link_handle_conf,   NULL },
-  { NULL, NULL, NULL }
+  { "SetLinkTags",     flt_link_handle_conf,  CFG_OPT_CONFIG|CFG_OPT_USER,  NULL },
+  { "LinkNoVisited",   flt_link_handle_conf,  CFG_OPT_CONFIG|CFG_OPT_USER,  NULL },
+  { NULL, NULL, 0, NULL }
 };
 
 t_handler_config flt_link_handlers[] = {

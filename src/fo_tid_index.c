@@ -230,7 +230,7 @@ int main(int argc,char *argv[],char *envp[]) {
   cfg_register_options(&dconf,default_options);
   free(file);
 
-  if(read_config(&dconf,NULL) != 0) {
+  if(read_config(&dconf,NULL,CFG_MODE_CONFIG) != 0) {
     fprintf(stderr,"config file error!\n");
 
     cfg_cleanup_file(&dconf);

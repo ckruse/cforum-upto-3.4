@@ -97,10 +97,10 @@ void flt_tipoftheday_cleanup(void) {
 }
 
 t_conf_opt flt_tipoftheday_config[] = {
-  { "TipOfTheDayFile",     flt_tipoftheday_confighandler, NULL },
-  { "TipOfTheDayActivate", flt_tipoftheday_confighandler, NULL },
-  { "TipOfTheDayIndex",    flt_tipoftheday_confighandler, NULL },
-  { NULL, NULL, NULL }
+  { "TipOfTheDayFile",     flt_tipoftheday_confighandler, CFG_OPT_CONFIG|CFG_OPT_NEEDED, NULL },
+  { "TipOfTheDayActivate", flt_tipoftheday_confighandler, CFG_OPT_CONFIG|CFG_OPT_USER, NULL },
+  { "TipOfTheDayIndex",    flt_tipoftheday_confighandler, CFG_OPT_CONFIG|CFG_OPT_NEEDED, NULL },
+  { NULL, NULL, 0, NULL }
 };
 
 t_handler_config flt_tipoftheday_handlers[] = {

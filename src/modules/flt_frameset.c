@@ -89,7 +89,7 @@ int execute_filter(t_cf_hash *head,t_configuration *dc,t_configuration *vc) {
     }
     else {
       printf("Content-Type: text/html; charset=%s\n\n",cs->values[0]);
-      str_error_message("E_TPL_NOT_FOUND",NULL,15);
+      str_error_message("E_TPL_NOT_FOUND",NULL);
       return FLT_EXIT;
     }
   }
@@ -185,9 +185,9 @@ void finish(void) {
 }
 
 t_conf_opt config[] = {
-  { "ShowForumAsFrameset", get_conf, NULL },
-  { "TemplatesFrameset",   get_tpls, NULL },
-  { NULL, NULL, NULL }
+  { "ShowForumAsFrameset", get_conf, CFG_OPT_CONFIG|CFG_OPT_USER,   NULL },
+  { "TemplatesFrameset",   get_tpls, CFG_OPT_CONFIG|CFG_OPT_NEEDED, NULL },
+  { NULL, NULL, 0, NULL }
 };
 
 t_handler_config handlers[] = {

@@ -58,7 +58,7 @@ int flt_httpauth_run(t_cf_hash *head,t_configuration *dc,t_configuration *vc) {
 
 
 t_conf_opt flt_httpauth_config[] = {
-  { NULL, NULL, NULL }
+  { NULL, NULL, 0, NULL }
 };
 
 t_handler_config flt_httpauth_handlers[] = {

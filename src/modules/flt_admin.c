@@ -137,7 +137,7 @@ int flt_admin_setvars(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc,t_c
 
     if(my_errno) {
       len = snprintf(buff,256,"E_FO_%d",my_errno);
-      msg = get_error_message(buff,len,&len1);
+      msg = get_error_message(buff,&len1);
       if(msg) {
         tpl_cf_setvar(top,"flt_admin_errmsg",msg+len+1,len1-len-1,1);
         free(msg);
@@ -244,7 +244,7 @@ time_t flt_admin_lm(t_cf_hash *head,t_configuration *dc,t_configuration *vc,void
 }
 
 t_conf_opt flt_admin_config[] = {
-  { NULL, NULL, NULL }
+  { NULL, NULL, 0, NULL }
 };
 
 t_handler_config flt_admin_handlers[] = {

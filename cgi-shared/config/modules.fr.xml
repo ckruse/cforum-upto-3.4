@@ -1,0 +1,570 @@
+<?xml version="1.0" encoding="ISO-8859-15"?>
+<!DOCTYPE config SYSTEM "modconf.dtd">
+
+<config>
+  <directive name="DeletedFile" invisible="yes"/>
+  <directive name="VisitedFile" invisible="yes"/>
+
+  <page title="Fonctions d'affichage" id="viewfuncs">
+    <section name="Fonctions d'affichage modifiant la présentation">
+      <directive name="TPLMode" arguments="1">
+        <argument paramname="tplmode" type="radio" encode="plain">
+          <validate>^\S+$</validate>
+          <question>Quel mode d'affichage choisissez vous pour le forum?</question>
+          <error>Veuillez mentionner le mode d'affichage qui doit être appliqué!</error>
+          <formvalues>
+            <value val="xhtml10">XHTML 1.0</value>
+            <value val="html4" default="yes">HTML 4</value>
+          </formvalues>
+        </argument>
+      </directive>
+
+      <directive name="OwnCSSFile" arguments="1">
+        <argument paramname="owncssfile" type="text" encode="plain">
+          <validate type="url"/>
+          <question>Désirez-vous utiliser votre propre fichier CSS? Dans l'affirmative, veuillez indiquer ici l'URL du fichier. Sinon, ne renseignez pas ce champ.</question>
+          <error>Veuillez indiquer ici l'URL valide de votre fichier CSS personnel!</error>
+        </argument>
+      </directive>
+
+      <directive name="OverwriteStandardCSS" arguments="1">
+        <argument paramname="overwritecss" type="radio" encode="plain">
+          <validate>^(?:yes|no)$</validate>
+          <question>Votre fichier CSS personnel doit-il agir en complément du fichier CSS standard?</question>
+          <error>À la question si  votre fichier CSS personnel doit agir en complément du fichier CSS standard, veuillez mentionner ici 'oui' ou bien 'non'!</error>
+          <formvalues>
+            <value val="yes">Oui</value>
+            <value val="no" default="yes">Non</value>
+          </formvalues>
+        </argument>
+      </directive>
+
+      <directive name="TextBox" arguments="2">
+        <argument paramname="tboxw" type="text" encode="plain">
+          <validate>^\d+$</validate>
+          <question>Quelle largeur doit avoir le champ de saisie à plusieurs lignes pour la rédaction de nouveaux messages? Mentionnez ici une valeur numérique le cas échéant - elle correspond au nombre de colonnes du champ de saisie à plusieurs lignes.</question>
+          <error>Veuillez mentionner un nombre entier positif pour les colonnes du champ de saisie!</error>
+        </argument>
+
+        <argument paramname="tboxh" type="text" encode="plain">
+          <validate>^\d+$</validate>
+          <question>Quelle hauteur doit avoir le champ de saisie à plusieurs lignes pour la rédaction de nouveaux messages? Mentionnez ici une valeur numérique le cas échéant - elle correspond au nombre de lignes. La valeur standard est 25.</question>
+          <error>Veuillez mentionner un nombre entier positif pour les lignes du champ de saisie!</error>
+        </argument>
+      </directive>
+
+      <directive name="ActivePostingColor" arguments="2">
+        <argument paramname="activepostingcolorf" type="text" encode="plain">
+          <validate>^#(?:[\da-fA-F]{3}|[\da-fA-F]{6})$</validate>
+          <question>Quand vous désirez l'affichage de l'arborescence complète dans les messages, le message actuel est mis en valeur. Quelle couleur de premier-plan choisissez-vous?</question>
+          <error>Veuillez mentionner ici une couleur de premier-plan valide pour le message actuel!</error>
+        </argument>
+        <argument paramname="activepostingcolorb" type="text" encode="plain">
+          <validate>^#(?:[\da-fA-F]{3}|[\da-fA-F]{6})$</validate>
+          <question>Quand vous désirez l'affichage de l'arborescence complète dans les messages, le message actuel est mis en valeur. Quelle couleur d'arrière-plan choisissez-vous?</question>
+          <error>Veuillez mentionner ici une couleur d'arrière-plan valide pour le message actuel!</error>
+        </argument>
+      </directive>
+
+      <directive name="FontSize" arguments="1">
+        <argument paramname="fontsize" type="text" encode="plain">
+          <validate>^\d+\.?\d*(px|pt|mm|cm|pc|in)$</validate>
+          <question>Vous pouvez définir individuellement la taille de police du forum. Le standard est de &apos;13.4px&apos;. Vous pouvez indiquer toute mention CSS pour &apos;font-size&apos; en valeurs absolues px, pt, mm, cm, pc ou bien in (les valeurs relatives ne sont pas permises). Exemple: &apos;15px&apos;. Cette mention a effet sur l'ensemble de la page représentée et non pas seulement sur le texte du message.</question>
+          <error>Veuillez mentionner ici une taille de police valide avec l'unité! Exemple: 10pt</error>
+         </argument>
+      </directive>
+
+      <directive name="FontFamily" arguments="1">
+        <argument paramname="fontfamily" type="select" encode="plain">
+          <validate>^(?:.*, *(?:(?:serif|sans-serif|cursive|fantasy|monospace)|default))$</validate>
+          <question>Quelle police désirez vous avoir? Cette mention a effet sur l'ensemble de la page représentée et non pas seulement sur le texte du message. Il est recommandé de laisser cette valeur sur 'default'.</question>
+          <error>Veuillez mentionner ici une police valide!</error>
+          <formvalues>
+            <value val="Arial, sans-serif">Arial</value>
+            <value val="Courier, monospace">Courier</value>
+            <value val="Geneva, sans-serif">Geneva</value>
+            <value val="Helvetica, sans-serif">Helvetica</value>
+            <value val="Times, serif">Times</value>
+            <value val="Verdana, sans-serif">Verdana</value>
+            <value val="Tahoma,sans-serif">Tahoma</value>
+            <value val="default" default="yes">Default</value>
+          </formvalues>
+        </argument>
+      </directive>
+
+      <directive name="FontColor" arguments="1">
+        <argument paramname="fontcol" type="text" encode="plain">
+          <validate>^#(?:[\da-fA-F]{3}|[\da-fA-F]{6})$</validate>
+          <question>Quelle couleur standard de police désirez vous? Cette indication correspond à la mention CSS &apos;color&apos;. Une mention hexadécimale correcte est exigée ici (#RGB ou bien #RRGGBB). Cette mention a effet sur l'ensemble de la page représentée et non pas seulement sur le texte du message. Il est recommandé de laisser cette valeur sur 'default'.</question>
+          <error>Veuillez mentionner ici une couleur standard de police valide!</error>
+        </argument>
+      </directive>
+
+      <directive name="QuoteColor" arguments="2">
+        <argument paramname="quoteforecol" type="text" encode="plain">
+          <validate>^#(?:[\da-fA-F]{3}|[\da-fA-F]{6})$</validate>
+          <question>Quelle couleur de police désirez vous pour les citations? Cette indication correspond à la mention CSS &apos;color&apos;. Une mention hexadécimale correcte est exigée ici (#RGB ou #RRGGBB).</question>
+          <error>Veuillez mentionner ici une couleur de police valide pour les citations!</error>
+        </argument>
+        <argument paramname="quotebackcol" type="text">
+          <validate>^#(?:[\da-fA-F]{3}|[\da-fA-F]{6})$</validate>
+          <question>Quelle couleur d'arrière-plan désirez vous pour les citations? Cette indication correspond à la mention CSS &apos;background-color&apos;. Une mention hexadécimale correcte est exigée ici (#RGB ou #RRGGBB).</question>
+          <error>Veuillez mentionner ici une couleur d'arrière-plan valide pour les citations!</error>
+        </argument>
+      </directive>
+
+      <directive name="HighlightOwnPostings" arguments="1">
+        <argument paramname="highlightownpost" type="radio" encode="plain">
+          <validate>^(yes|no)$</validate>
+          <question>Vos propres messages dans le fichier principal peuvent être mis en valeur au moyen d'une couleur. Désirez-vous activer cette fonction? Vous devrez ensuite encore définir les couleurs devant être utilisées.</question>
+          <error>Vos propres messages doivent-ils être mis en valeur au moyen d'une couleur? Veuillez mentionner &apos;oui&apos; ou bien &apos;non&apos;!</error>
+          <formvalues>
+            <value val="yes">Oui</value>
+            <value val="no" default="yes">Non</value>
+          </formvalues>
+        </argument>
+      </directive>
+
+      <directive name="OwnPostingsColors" arguments="2">
+        <argument paramname="ownforepostcol" type="text" encode="plain">
+          <validate>^#(?:[\da-fA-F]{3}|[\da-fA-F]{6})$</validate>
+          <question>Quelle couleur de police désirez vous pour la mise en valeur de vos propres messages? Cette indication correspond à la mention CSS &apos;color&apos;. Une mention hexadécimale correcte est exigée ici (#RGB ou #RRGGBB).</question>
+          <error>Veuillez mentionner ici une couleur de police valide pour vos propres messages!</error>
+        </argument>
+        <argument paramname="ownbackpostcol" type="text" encode="plain">
+          <validate>^#(?:[\da-fA-F]{3}|[\da-fA-F]{6})$</validate>
+          <question>Quelle couleur d'arrière-plan désirez vous pour la mise en valeur de vos propres messages? Cette indication correspond à la mention CSS &apos;background-color&apos;. Une mention hexadécimale correcte est exigée ici (#RGB ou #RRGGBB).</question>
+          <error>Veuillez mentionner ici une couleur d'arrière-plan valide pour vos propres messages!</error>
+        </argument>
+      </directive>
+    </section>
+
+    <section name="Fonctions d'affichage influant sur la fonctionnalité">
+      <directive name="ThreadsOpenByDefault" arguments="1">
+        <argument paramname="threadsopen" type="radio" encode="plain">
+          <validate>^(?:yes|no)$</validate>
+          <question>Par défaut, les discussions doivent-elles être affichées ouvertes ou fermées?</question>
+          <error>La représentation par défaut des discussions doit-elle être ouverte ou fermée? Veuillez mentionner &apos;ouverte&apos; ou bien &apos;fermée&apos;!</error>
+          <formvalues>
+            <value val="yes" default="yes">ouverte</value>
+            <value val="no">fermée</value>
+          </formvalues>
+        </argument>
+      </directive>
+
+      <directive name="OpenThreadIfNew" arguments="1">
+        <argument paramname="openifnew" type="radio" encode="plain">
+          <validate>^(?:yes|no)$</validate>
+          <question>Les discussions doivent-elles être ouvertes automatiquement quand elles contiennent des messages non lus? Le choix de cette option sera automatiquement remplacé par &quot;non&quot;, si vous choisissez l'ouverture des discussions par défaut!</question>
+          <error>Les discussions doivent-elles être ouvertes automatiquement quand elles contiennent des messages non lus? Veuillez mentionner &quot;oui&quot; ou bien &quot;non&quot;!</error>
+          <formvalues>
+            <value val="yes">Oui</value>
+            <value val="no" default="yes">Non</value>
+          </formvalues>
+        </argument>
+      </directive>
+
+      <directive name="UseJavaScript" arguments="1">
+        <argument paramname="usejs" type="radio" encode="plain">
+          <validate>^(?:yes|no)$</validate>
+          <question>Est-ce que JavaScript doit être utilisé pour l'ouverture et la fermeture de discussions? Le choix de cette option sera automatiquement remplacé par &quot;non&quot;, si vous choisissez la fermeture des discussions par défaut.</question>
+          <error>Est-ce que JavaScript doit être utilisé pour l'ouverture et la fermeture de discussions? Veuillez mentionner &quot;oui&quot; ou bien &quot;non&quot;!</error>
+          <formvalues>
+            <value val="yes" default="yes">Oui</value>
+            <value val="no">Non</value>
+          </formvalues>
+        </argument>
+      </directive>
+
+      <directive name="ShowForumAsFrameset" arguments="1">
+        <argument paramname="showforumframeset" type="radio" encode="plain">
+          <validate>^(yes|no)$</validate>
+          <question>Le forum doit-il être affiché dans un jeu de cadres?</question>
+          <error>Soll das Forum in einem Frameset angezeigt werden? Bitte geben Sie &apos;ja&apos; oder &apos;nein&apos; an!</error>
+          <formvalues>
+            <value val="yes">Oui</value>
+            <value val="no" default="yes">Non</value>
+          </formvalues>
+        </argument>
+      </directive>
+
+      <directive name="ShowThread" arguments="1">
+        <argument paramname="showthread" type="radio" encode="plain">
+          <validate>^(full|partitial|none)$</validate>
+          <question>Lors de la lecture d'un message distinct, l'arborescence de la discussion peut être affichée de différentes façons.</question>
+          <error>Veuillez mentionner ici &apos;arborescence complète&apos;, &apos;arborescence partielle&apos; oder &apos;pas d'arborescence&apos;!</error>
+          <formvalues>
+            <value val="none">pas d'arborescence</value>
+            <value val="partitial" default="yes">arborescence partielle (comme dans l'ancien forum: seules les réponses au message actuel sont affichées)</value>
+            <value val="full">arborescence complète (toujours afficher l'arborescence complète)</value>
+          </formvalues>
+        </argument>
+      </directive>
+
+      <directive name="PostingLinkTarget" arguments="1">
+        <argument paramname="plinktarget" type="text" encode="plain">
+          <validate>^\w+$</validate>
+          <question>Les liens dans un message peuvent être ouverts dans une nouvelle fenêtre. Veuillez au besoin mentionner la cible (par exemple: _blank). Cette valeur sera ajouté comme attribut target de chaque lien figurant dans un message.</question>
+          <error>Veuillez mentionner une cible target valide! (uniquement a-zA-Z0-9_)</error>
+        </argument>
+      </directive>
+
+      <directive name="ThreadReturnAnchor" arguments="1">
+        <argument paramname="threadreturnanchor" type="radio" encode="plain">
+           <validate>^(yes|no)$</validate>
+          <question>Est-ce que le lien &quot;Retour au forum&quot; dans les messages doit être une ancre pointant sur la discussion venant d'être visitée?</question>
+          <error>Est-ce que le lien &quot;Retour au forum&quot; dans les messages doit être une ancre pointant sur la discussion venant d'être visitée? Veuillez mentionner &quot;oui&quot; ou bien &quot;non&quot;!</error>
+          <formvalues>
+            <value val="yes">Oui</value>
+            <value val="nein" default="yes">Non</value>
+          </formvalues>
+        </argument>
+      </directive>
+
+      <directive name="ShowSig" arguments="1">
+        <argument paramname="showsig" type="radio" encode="plain">
+          <validate>^(?:yes|no)$</validate>
+          <question>Les signatures doivent-elles être affichées?</question>
+          <error>Veuillez mentionner ici &apos;oui&apos; ou bien &apos;non&apos;!</error>
+          <formvalues>
+            <value val="yes" default="yes">Oui</value>
+            <value val="no">Non</value>
+          </formvalues>
+        </argument>
+      </directive>
+
+      <directive name="DeletedUseCheckbox" arguments="1">
+        <argument paramname="deletedusecheckbox" type="radio" encode="plain">
+          <validate>^(?:yes|no)$</validate>
+          <question>Est-ce que des cases à cocher (checkbox) doivent être utilisées pour masquer l'affichage de discussions?</question>
+          <error>Est-ce que des cases à cocher (checkbox) doivent être utilisées pour masquer l'affichage de discussions? Veuillez mentionner &quot;oui&quot; ou bien &quot;non&quot;!</error>
+          <formvalues>
+            <value val="yes">Oui</value>
+            <value val="no" default="yes">Non</value>
+          </formvalues>
+        </argument>
+      </directive>
+
+      <directive name="HighlightVisitedPostings" arguments="1">
+        <argument paramname="highlightvisi" type="radio" encode="plain">
+          <validate>^(yes|no)$</validate>
+          <question>Les messages déjà lus doivent-ils être marqués côté serveur?</question>
+          <error>Les messages déjà lus doivent-ils être marqués côté serveur? Veuillez mentionner &apos;oui&apos; ou bien &apos;non&apos;!</error>
+          <formvalues>
+            <value val="yes">Oui</value>
+            <value val="no" default="yes">Non</value>
+          </formvalues>
+        </argument>
+      </directive>
+
+      <directive name="MarkOwnPostingsVisited" arguments="1">
+        <argument paramname="markownvisi" type="radio" encode="plain">
+          <validate>^(yes|no)$</validate>
+          <question>Vos propres messages doivent-ils être indiqués également comme ayant déjà été visités?</question>
+          <error>Vos propres messages doivent-ils être indiqués également comme ayant déjà été visités? Veuillez mentionner &quot;oui&quot; ou bien &quot;non&quot;!</error>
+          <formvalues>
+            <value val="yes">Oui</value>
+            <value val="no" default="yes">Non</value>
+          </formvalues>
+        </argument>
+      </directive>
+
+      <directive name="VisitedPostingsColors" arguments="2">
+        <argument paramname="highlightvisiforecol" type="text" encode="plain">
+          <validate>^#(?:[\da-fA-F]{3}|[\da-fA-F]{6})$</validate>
+          <question>Par quelle couleur de premier-plan les messages déjà lus doivent-ils être mis en valeur au cas où ils doivent l'être?</question>
+          <error>Veuillez mentionner ici une couleur de premier-plan valide pour la mise en valeur de message déjà lus!</error>
+        </argument>
+        <argument paramname="highlightvisibackcol" type="text">
+          <validate>^#(?:[\da-fA-F]{3}|[\da-fA-F]{6})$</validate>
+          <question>Par quelle couleur d'arrière-plan les messages déjà lus doivent-ils être mis en valeur au cas où ils doivent l'être?</question>
+          <error>Veuillez mentionner ici une couleur d'arrière-plan valide pour la mise en valeur de message déjà lus!</error>
+        </argument>
+      </directive>
+
+      <directive name="SetLinkTags" arguments="1">
+        <argument paramname="fltlinksettags" type="radio" encode="plain">
+          <validate>^(yes|no)$</validate>
+          <question>Les éléments &lt;link&gt; doivent-ils être créés?</question>
+          <error>Veuillez mentionner 'oui' ou bien 'non' à la question sur les éléments-liens!</error>
+          <formvalues>
+            <value val="yes" default="yes">Oui</value>
+            <value val="no">Non</value>
+          </formvalues>
+        </argument>
+      </directive>
+    </section>
+  </page>
+
+  <page title=" Envoi de messages" id="postmanage">
+    <section name="Mentions individuelles">
+      <directive name="Name" arguments="1">
+        <argument paramname="name" type="text" encode="plain">
+          <validate>.*</validate>
+          <question>Le forum propose de renseigner automatiquement par défaut certaines données lors de la rédaction d'un message ou de la réponse à l'un d'eux. Veuillez mentionner ici votre nom ou pseudonyme. Cette information sera utilisée comme  valeur par défaut pour le champ &apos;Name&apos;.</question>
+          <error />
+        </argument>
+      </directive>
+
+      <directive name="EMail" arguments="1">
+        <argument paramname="email" type="text" encode="plain">
+          <validate type="email"/>
+          <question>Désirez-vous mentionner une adresse électronique? Attention: cette mention est facultative.</question>
+          <error>Votre mention n'est pas une adresse électronique dont la syntaxe est correcte. Vous pouvez négliger de renseigner ce champ.</error>
+        </argument>
+      </directive>
+
+      <directive name="HomepageUrl" arguments="1">
+        <argument paramname="hp" type="text" encode="plain">
+          <validate type="http-url"/>
+          <question>Désirez-vous mentionner une URL de page d'accueil? Attention: cette mention est facultative.</question>
+          <error>Veuillez mentionner une URL de page d'accueil correcte! Vous pouvez négliger de renseigner ce champ.</error>
+        </argument>
+      </directive>
+
+      <directive name="ImageUrl" arguments="1">
+        <argument paramname="image" type="text" encode="plain">
+          <validate type="http-url"/>
+          <question>Désirez-vous mentionner une URL de graphique? Attention: cette mention est facultative.</question>
+          <error>Veuillez mentionner une URL de graphique correcte! Vous pouvez négliger de renseigner ce champ.</error>
+        </argument>
+      </directive>
+    </section>
+
+    <section name="Valeurs par défaut">
+      <directive name="Hi" arguments="1">
+        <argument paramname="hi" type="textarea" encode="plain">
+          <validate>.*</validate>
+          <question>Vous pouvez définir ici une formule de salutation standard. Tout comme la mention du nom ou pseudonyme, elle sera insérée automatiquement dans un message ou dans une réponse en vous évitant du travail de frappe. Pensez ici à insérer au besoin une ou plusieurs lignes vides pour séparer votre formule de salutation du reste du texte.</question>
+          <error>Votre formule de salutation semble être soit trop longue, soit trop courte.</error>
+        </argument>
+      </directive>
+
+      <directive name="Bye" arguments="1">
+        <argument paramname="bye" type="textarea" encode="plain">
+          <validate>.*</validate>
+          <question>Vous pouvez définir ici une formule de politesse standard qui sera insérée automatiquement à la fin de votre message ou de votre réponse. Insérez au besoin une ou plusieurs lignes vides avant la formule pour la séparer du texte qui précède.</question>
+          <error>Votre formule de politesse semble être soit trop longue, soit trop courte.</error>
+        </argument>
+      </directive>
+
+      <directive name="Signature" arguments="1">
+        <argument paramname="sig" type="textarea" encode="plain">
+          <validate>.*</validate>
+          <question>Vous pouvez définir ici une signature qui sera affichée sous votre formule de politesse standard.</question>
+          <error />
+        </argument>
+      </directive>
+    </section>
+
+    <section name="Envoi de messages">
+      <directive name="DoQuote" arguments="1">
+        <argument paramname="doquote" type="radio" encode="plain">
+          <validate>^(?:yes|no)$</validate>
+          <question>Lorsque vous écrivez une réponse, le message auquel vous vous référez peut être inséré dans le champ de réponse avec l'indication qu'il s'agit d'une citation. Les messages doivent-ils être cités dans le champ de réponse?</question>
+          <error>Les messages doivent-ils être cités dans le champ de réponse? Veuillez indiquer &apos;oui&apos; ou &apos;non&apos;!</error>
+          <formvalues>
+            <value val="yes" default="yes">Oui</value>
+            <value val="no">Non</value>
+          </formvalues>
+        </argument>
+      </directive>
+
+      <directive name="QuotingChars" arguments="1">
+        <argument paramname="qchars" type="radio">
+          <validate>^\S+.*$</validate>
+          <question>Quels caractères voulez-vous employer pour indiquer une citation?</question>
+          <error>Veuillez choisir les caractères pour une citation! Ne commencez pas par un espace.</error>
+          <formvalues>
+            <value val="»» " default="yes">»» </value>
+            <value val="» ">» </value>
+            <value val="&gt;&gt; ">&gt;&gt; </value>
+            <value val="&gt; ">&gt; </value>
+            <value val="| ">| </value>
+          </formvalues>
+        </argument>
+      </directive>
+
+      <directive name="RedirectOnPost" arguments="1">
+        <argument paramname="redrctonpost" type="radio" encode="plain">
+          <validate>^(?:yes|no)$</validate>
+          <question>Désirez-vous retourner à l'affichage de la discussion après réponse à un message?</question>
+          <error>Veuillez indiquer &apos;oui&apos; ou bien &apos;non&apos;!</error>
+          <formvalues>
+            <value val="yes">Oui</value>
+            <value val="no" default="yes">Non</value>
+          </formvalues>
+        </argument>
+      </directive>
+
+      <directive name="CheckForLinks" arguments="1">
+        <argument paramname="checkforlinks" type="radio" encode="plain">
+          <validate>^(yes|no)$</validate>
+          <question>Désirez vous être avertis lorsque des URI erronnées figurent dans les éléments [link:]-, [image:]- et [iframe:]? Attention, si vous ne désirez pas être avertis, ces éléments ne seront pas rectifiés!</question>
+          <error>Veuillez mentionner &quot;oui&quot; ou bien &quot;non&quot; en réponse à la question si vous désirez être avertis lorsque des URI erronnées figurent dans les éléments [link:]-, [image:]- et [iframe:]!</error>
+          <formvalues>
+            <value val="yes">Oui</value>
+            <value val="no" default="yes">Non</value>
+          </formvalues>
+        </argument>
+      </directive>
+
+      <directive name="GeneratePreview" arguments="1">
+        <argument paramname="prev" type="radio" encode="plain">
+          <validate>^(?:yes|no)$</validate>
+          <question>Désirez-vous qu'un aperçu soit généré par défaut?</question>
+          <error>Veuillez mentionner ici &apos;oui&apos; ou bien &apos;non&apos;!</error>
+          <formvalues>
+            <value val="yes">Oui</value>
+            <value val="no" default="yes">Non</value>
+          </formvalues>
+        </argument>
+      </directive>
+
+      <directive name="PreviewSwitchType" arguments="1">
+        <argument paramname="previewswitchtype" type="radio" encode="plain">
+          <validate>^(?:checkbox|button)$</validate>
+          <question>Désirez-vous que le choix de l'aperçu se fasse par une case à cocher (checkbox) ou par un bouton (Button)?</question>
+          <error>Veuillez choisir &apos;Checkbox&apos; ou bien &apos;Button&apos;!</error>
+          <formvalues>
+            <value val="checkbox">Checkbox</value>
+            <value val="button" default="yes">Button</value>
+          </formvalues>
+        </argument>
+      </directive>
+
+      <directive name="LineWidth" arguments="1">
+        <argument paramname="linewidth" type="text" encode="plain">
+          <validate>^\d*$</validate>
+          <question>Le passage à la ligne doit-il se faire automatiquement? Si oui, donnez ici la longueur maximale de la ligne.</question>
+          <error>Veuillez indiquer ici le nombre de caractères maximum par ligne!</error>
+        </argument>
+      </directive>
+    </section>
+  </page>
+
+  <page title="Fonctions de filtres" id="filterfuncs">
+    <section name="Filtrage personnalisé">
+      <directive name="ActivateLiveFilter" arguments="1">
+        <argument paramname="activatelivefilter" type="radio" encode="plain">
+          <validate>^(yes|no)$</validate>
+          <question>Désirez vous activer le filtrage personnalisé? Ce filtre vous permet de filtrer la liste de discussions selon des critères déterminés.</question>
+          <error>Veuillez mentionner ici &apos;oui&apos; ou bien &apos;non&apos;!</error>
+          <formvalues>
+            <value val="yes">Oui</value>
+            <value val="no" default="yes">Non</value>
+          </formvalues>
+        </argument>
+      </directive>
+    </section>
+
+    <section name="Filtrage d'après le nom">
+      <directive name="WhiteList" arguments="1">
+        <argument paramname="whitelst" type="text" encode="plain">
+          <validate>^(?:[^,]+,)*[^,]+$</validate>
+          <question>D'autres messages doivent-ils être mis en valeur au moyen d'une couleur (liste d'intervenants favoris)? Dans l'affirmative, lesquels? (si vous indiquez plusieurs noms, ceux-ci doivent-être séparés par des virgules. N'entrez aucun espace après la virgule. Exemple: Prénom Nom,Nom2,Pseudonyme)</question>
+          <error>Veuillez indiquer pour la liste d'intervenants favoris une liste de noms séparés par des virgules!</error>
+        </argument>
+      </directive>
+      <directive name="WhiteListColors" arguments="2">
+        <argument paramname="whitelistforecol" type="text" encode="plain">
+          <validate>^#(?:[\da-fA-F]{3}|[\da-fA-F]{6})$</validate>
+          <question>Par quelle couleur de premier-plan d'autres messages doivent-ils être mis en valeur au cas où ils doivent l'être?</question>
+          <error>Veuillez mentionner ici une couleur de premier-plan valide pour cette liste d'intervenants favoris!</error>
+        </argument>
+        <argument paramname="whitelistbackcol" type="text" encode="plain">
+          <validate>^#(?:[\da-fA-F]{3}|[\da-fA-F]{6})$</validate>
+          <question>Par quelle couleur d'arrière-plan d'autres messages doivent-ils être mis en valeur au cas où ils doivent l'être?</question>
+          <error>Veuillez mentionner ici une couleur d'arrière-plan valide pour cette liste d'intervenants favoris!</error>
+        </argument>
+      </directive>
+
+      <directive name="BlackList" arguments="1">
+        <argument paramname="blacklist" type="text" encode="plain">
+          <validate>^([^,]+,)*[^,]+$</validate>
+          <question>Désirez-vous ignorer les messages d'autres intervenants (ainsi que toutes les réponses à leurs messages) et en empêcher l'affichage? Si oui, quels noms d'utilisateurs voulez-vous ignorer (dans le cas contraire, ne renseignez pas ce champ)? (si vous indiquez plusieurs noms, ceux-ci doivent-être séparés par des virgules. N'entrez aucun espace après la virgule. Exemple: Prénom Nom,Nom2,Pseudonyme).</question>
+          <error>Veuillez mentionner pour la liste noire une liste de noms séparés par des virgules!</error>
+        </argument>
+      </directive>
+      <directive name="ShowBlacklistFollowups" arguments="1">
+        <argument paramname="blacklistfollowups" type="text" encode="plain">
+          <validate>^(?:yes|no)$</validate>
+          <question>Les réponses à des messages occultés grâce à la liste noire doivent-ils être affichés?</question>
+          <error>Veuillez mentionner &quot;oui&quot; ou bien &quot;non&quot; en réponse à la question si les réponses à des messages occultés grâce à la liste noire doivent être affichés.</error>
+          <formvalues>
+            <value val="yes">Oui</value>
+            <value val="no" default="yes">Non</value>
+          </formvalues>
+        </argument>
+      </directive>
+    </section>
+
+    <section name="Filtrage d'après le sujet">
+      <directive name="HighlightCategories" arguments="1">
+        <argument paramname="highlightcats" type="select" multiple="yes" encode="plain">
+          <validate>.</validate>
+          <question>Des catégories doivent-elles être mises en valeur? Si oui, lesquelles?</question>
+          <error>Veuillez indiquer une catégorie correcte devant être mise en valeur!</error>
+          <formvalues location="fo_default.conf" directive="Category" />
+        </argument>
+      </directive>
+
+      <directive name="CategoryHighlightColors" arguments="2">
+        <argument paramname="highlightcatforecol" type="text" encode="plain">
+          <validate>^#(?:[\da-fA-F]{3}|[\da-fA-F]{6})$</validate>
+          <question>Par quelle couleur de premier-plan des catégories doivent-elles être mises en valeur au cas où elles doivent l'être?</question>
+          <error>Veuillez mentionner ici une couleur de premier-plan valide pour la mise en valeur de catégories!</error>
+        </argument>
+        <argument paramname="highlightcatbackcol" type="text" encode="plain">
+          <validate>^#(?:[\da-fA-F]{3}|[\da-fA-F]{6})$</validate>
+          <question>Par quelle couleur d'arrière-plan des catégories doivent-elles être mises en valeur au cas où elles doivent l'être?</question>
+          <error>Veuillez mentionner ici une couleur d'arrière-plan valide pour la mise en valeur de catégories!</error>
+        </argument>
+      </directive>
+
+      <directive name="ShowCategories" arguments="1">
+        <argument paramname="showcat" type="select" multiple="yes" encode="plain">
+          <validate>.</validate>
+          <question>Voulez-vous n'afficher que certaines catégories? Si oui, lesquelles?</question>
+          <error>Veuillez mentionner une (des) catégorie(s) valide(s), à laquelle (auxquelles) vous voulez limiter l'affichage!</error>
+          <formvalues location="fo_default.conf" directive="Category" />
+        </argument>
+      </directive>
+    </section>
+
+    <section name="Filtrage d'après la date">
+      <directive name="ShowFrom" arguments="1">
+        <argument paramname="showfrom" type="text" parse="date" encode="plain">
+          <validate>^(?:today|yesterday|lastVisit)$</validate>
+          <question>À partir de quelle date désirez-vous l'affichage du fichier principal du forum? (ne pas renseigner si le filtre doit être désactivé)</question>
+          <error>À partir de quelle date désirez-vous l'affichage du fichier principal du forum? Veuillez entrer une date valide!</error>
+        </argument>
+      </directive>
+
+      <directive name="ShowUntil" arguments="1">
+        <argument paramname="showuntil" type="text" parse="date" encode="plain">
+          <validate>^(?:today|yesterday|lastVisit)$</validate>
+          <question>Jusqu'à quelle date désirez-vous l'affichage du fichier principal du forum?</question>
+          <error>Jusqu'à quelle date désirez-vous l'affichage du fichier principal du forum? Veuillez entrer une date valide!</error>
+        </argument>
+      </directive>
+    </section>
+  </page>
+
+  <page title="Divers" id="else">
+    <section name="Divers">
+      <directive name="AutoReload" arguments="1">
+        <argument paramname="autoreload" type="text" encode="plain">
+          <validate>^\d+$</validate>
+          <question>La page principale du forum peut être rechargée automatiquement à intervalles réguliers. Si vous le désirez, entrez un nombre compris entre 2 et 30 (mention en minutes). Pour désactiver cette fonction, ne renseignez pas ce champ.</question>
+          <error>Veuillez mentionner ici pour l'actualisation automatique un nombre compris entre 2 et 30!</error>
+        </argument>
+      </directive>
+    </section>
+  </page>
+
+</config>
+
+<!-- eof -->
+
+

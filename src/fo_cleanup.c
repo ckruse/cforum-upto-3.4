@@ -388,7 +388,7 @@ int main(int argc,char *argv[],char *envp[]) {
   cfg_register_options(&dconf,default_options);
   cfg_register_options(&conf,fo_view_options);
 
-  if(read_config(&dconf,NULL) != 0 || read_config(&conf,NULL) != 0) {
+  if(read_config(&dconf,NULL,CFG_MODE_CONFIG) != 0 || read_config(&conf,NULL,CFG_MODE_CONFIG) != 0) {
     fprintf(stderr,"config file error!\n");
 
     cfg_cleanup_file(&conf);

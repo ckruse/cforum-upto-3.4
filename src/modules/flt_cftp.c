@@ -427,7 +427,7 @@ int flt_cftp_register_handlers(int sock) {
 }
 
 t_conf_opt flt_cftp_config[] = {
-  { NULL, NULL, NULL }
+  { NULL, NULL, 0, NULL }
 };
 
 t_handler_config flt_cftp_handlers[] = {

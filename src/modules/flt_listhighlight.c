@@ -250,15 +250,15 @@ int flt_lh_handle_command(t_configfile *cf,t_conf_opt *opt,u_char **args,int arg
 }
 
 t_conf_opt config[] = {
-  { "HighlightOwnPostings",    flt_lh_handle_command, NULL },
-  { "OwnPostingsColors",       flt_lh_handle_command, NULL },
-  { "WhiteList",               flt_lh_handle_command, NULL },
-  { "WhiteListColors",         flt_lh_handle_command, NULL },
-  { "HighlightCategories",     flt_lh_handle_command, NULL },
-  { "CategoryHighlightColors", flt_lh_handle_command, NULL },
-  { "VIPList",                 flt_lh_handle_command, NULL },
-  { "VIPColors",               flt_lh_handle_command, NULL },
-  { NULL, NULL, NULL }
+  { "HighlightOwnPostings",    flt_lh_handle_command, CFG_OPT_USER,                NULL },
+  { "OwnPostingsColors",       flt_lh_handle_command, CFG_OPT_CONFIG|CFG_OPT_USER, NULL },
+  { "WhiteList",               flt_lh_handle_command, CFG_OPT_CONFIG|CFG_OPT_USER, NULL },
+  { "WhiteListColors",         flt_lh_handle_command, CFG_OPT_CONFIG|CFG_OPT_USER, NULL },
+  { "HighlightCategories",     flt_lh_handle_command, CFG_OPT_CONFIG|CFG_OPT_USER, NULL },
+  { "CategoryHighlightColors", flt_lh_handle_command, CFG_OPT_CONFIG|CFG_OPT_USER, NULL },
+  { "VIPList",                 flt_lh_handle_command, CFG_OPT_CONFIG,              NULL },
+  { "VIPColors",               flt_lh_handle_command, CFG_OPT_CONFIG,              NULL },
+  { NULL, NULL, 0, NULL }
 };
 
 t_handler_config handlers[] = {

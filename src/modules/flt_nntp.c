@@ -1047,12 +1047,11 @@ void flt_nntp_cleanup(void) {
  * The configuration options provided by this plugin
  */
 t_conf_opt flt_nntp_config[] = {
-  { "NNTPPort",      flt_nntp_handle_command, NULL },
-  { "NNTPInterface", flt_nntp_handle_command, NULL },
-  { "NNTPHost",      flt_nntp_handle_command, NULL },
-  { "NNTPMayPost",   flt_nntp_handle_command, NULL },
-  { "NNTPGroupName", flt_nntp_handle_command, NULL },
-  { NULL, NULL, NULL }
+  { "NNTPPort",      flt_nntp_handle_command, CFG_OPT_CONFIG|CFG_OPT_NEEDED, NULL },
+  { "NNTPInterface", flt_nntp_handle_command, CFG_OPT_CONFIG,                NULL },
+  { "NNTPHost",      flt_nntp_handle_command, CFG_OPT_CONFIG|CFG_OPT_NEEDED, NULL },
+  { "NNTPGroupName", flt_nntp_handle_command, CFG_OPT_CONFIG|CFG_OPT_NEEDED, NULL },
+  { NULL, NULL, 0, NULL }
 };
 
 /**

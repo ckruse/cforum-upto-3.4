@@ -50,12 +50,12 @@
 </ForumBehavior>
 
 <Templates>
- TemplatesFrameset      "@libdir@/cforum/%s_frameset.so" "@libdir@/cforum/%s_blank.so"
+ TemplatesFrameset      "@libdir@/cforum/%s_%s_frameset.so" "@libdir@/cforum/%s_%s_blank.so"
 
- TemplateForumBegin     "@libdir@/cforum/%s_forum_begin.so"
- TemplateForumEnd       "@libdir@/cforum/%s_forum_end.so"
- TemplateForumThread    "@libdir@/cforum/%s_forum_thread.so"
- TemplatePosting        "@libdir@/cforum/%s_forum_posting.so"
+ TemplateForumBegin     "@libdir@/cforum/%s_%s_forum_begin.so"
+ TemplateForumEnd       "@libdir@/cforum/%s_%s_forum_end.so"
+ TemplateForumThread    "@libdir@/cforum/%s_%s_forum_thread.so"
+ TemplatePosting        "@libdir@/cforum/%s_%s_forum_posting.so"
 </Templates>
 
 <DateConfig>

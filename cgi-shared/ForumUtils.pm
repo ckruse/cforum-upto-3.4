@@ -44,6 +44,9 @@ use Unicode::MapUTF8 qw(from_utf8 to_utf8);
 # needed because of this fucking Windows-1252
 use Text::Iconv;
 
+use Locale::gettext;
+use POSIX qw/setlocale/;
+
 use HTML::Entities;
 use CForum::Template;
 
@@ -130,12 +133,11 @@ sub get_template {
 
   if($user_config) {
     if(exists $user_config->{TPLMode}) {
-      return sprintf($tplname,$user_config->{TPLMode}->[0]->[0]) if $user_config->{TPLMode}->[0]->[0];
+      return sprintf($tplname,$fo_default_conf->{Language}->[0]->[0],$user_config->{TPLMode}->[0]->[0]) if $user_config->{TPLMode}->[0]->[0];
     }
   }
 
-  return sprintf($tplname,"") unless $fo_default_conf->{TemplateMode};
-  return sprintf($tplname,$fo_default_conf->{TemplateMode}->[0]->[0]);
+  return sprintf($tplname,$fo_default_conf->{Language}->[0]->[0],$fo_default_conf->{TemplateMode}->[0]->[0]);
 }
 # }}}
 
@@ -470,22 +472,14 @@ sub decode_params {
 sub get_error {
   my ($dcfg,$err) = (shift,shift);
   my $variant     = shift || '';
-  local *DAT;
 
-  return 'error not given' unless $err;
+	my $id = $variant ? $err.'_'.$variant : $err;
 
-  open(DAT,'<'.$dcfg->{ErrorMessages}->[0]->[0]) or die $!;
+  setlocale(LC_MESSAGES,$dcfg->{Language}->[0]->[0]);
+	bindtextdomain("messages",$dcfg->{LocaleDir}->[0]->[0]);
+	textdomain("messages");
 
-  while(<DAT>) {
-    if(m!^E_$err:!i or m!^E_${err}_$variant:!i) {
-      my $val = $_;
-      $val =~ s/^\S+: //;
-      close DAT and return $val;
-    }
-  }
-
-  close DAT and return 'error not found: '.$err.' (variant: '.$variant.')';
-  return 'Oops. This point should never be reached...';
+	return gettext($id);
 }
 # }}}
 

@@ -81,9 +81,9 @@ void flt_owncss_finish(void) {
 }
 
 t_conf_opt config[] = {
-  { "OwnCSSFile",           flt_owncss_handle, NULL },
-  { "OverwriteStandardCSS", flt_owncss_handle, NULL },
-  { NULL, NULL, NULL }
+  { "OwnCSSFile",           flt_owncss_handle, CFG_OPT_USER, NULL },
+  { "OverwriteStandardCSS", flt_owncss_handle, CFG_OPT_USER, NULL },
+  { NULL, NULL, 0, NULL }
 };
 
 t_handler_config handlers[] = {

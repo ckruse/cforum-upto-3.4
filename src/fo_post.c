@@ -112,14 +112,14 @@ void display_finishing_screen(t_message *p) {
   t_string *str = fo_alloc(NULL,1,sizeof(*str),FO_ALLOC_CALLOC);
 
   if(!tt) {
-    str_error_message("E_TPL_NOT_FOUND",NULL,15);
+    str_error_message("E_TPL_NOT_FOUND",NULL);
     return;
   }
 
   generate_tpl_name(tplname,256,tt);
 
   if(tpl_cf_init(&tpl,tplname) != 0) {
-    str_error_message("E_TPL_NOT_FOUND",NULL,15);
+    str_error_message("E_TPL_NOT_FOUND",NULL);
     return;
   }
 
@@ -164,14 +164,14 @@ void display_posting_form(t_cf_hash *head) {
   t_string catstr;
   
   if(!tt) {
-    str_error_message("E_TPL_NOT_FOUND",NULL,15);
+    str_error_message("E_TPL_NOT_FOUND",NULL);
     return;
   }
 
   generate_tpl_name(tplname,256,tt);
 
   if(tpl_cf_init(&tpl,tplname) != 0) {
-    str_error_message("E_TPL_NOT_FOUND",NULL,15);
+    str_error_message("E_TPL_NOT_FOUND",NULL);
     return;
   }
 
@@ -198,7 +198,7 @@ void display_posting_form(t_cf_hash *head) {
   str_cleanup(&catstr);
 
   if(*ErrorString) {
-    val = get_error_message(ErrorString,strlen(ErrorString),&len);
+    val = get_error_message(ErrorString,&len);
     cf_set_variable(&tpl,cs,"error",val,len,1);
     *ErrorString = '0';
     free(val);
@@ -209,7 +209,7 @@ void display_posting_form(t_cf_hash *head) {
     /* run filters... */
     if(handle_posting_filters(head,NULL,&tpl,&fo_post_conf) != FLT_EXIT) {
       if(*ErrorString) {
-        val = get_error_message(ErrorString,strlen(ErrorString),&len);
+        val = get_error_message(ErrorString,&len);
         cf_set_variable(&tpl,cs,"error",val,len,1);
         free(val);
       }
@@ -777,7 +777,7 @@ int main(int argc,char *argv[],char *env[]) {
   cfg_register_options(&dconf,default_options);
   cfg_register_options(&conf,fo_post_options);
 
-  if(read_config(&dconf,NULL) != 0 || read_config(&conf,NULL) != 0) {
+  if(read_config(&dconf,NULL,CFG_MODE_CONFIG) != 0 || read_config(&conf,NULL,CFG_MODE_CONFIG) != 0) {
     fprintf(stderr,"config file error!\n");
 
     cfg_cleanup_file(&conf);
@@ -813,7 +813,7 @@ int main(int argc,char *argv[],char *env[]) {
       free(conf.filename);
       conf.filename = ucfg;
 
-      if(read_config(&conf,handle_post_command) != 0) {
+      if(read_config(&conf,handle_post_command,CFG_MODE_USER) != 0) {
         fprintf(stderr,"config file error!\n");
 
         cfg_cleanup_file(&conf);
@@ -849,7 +849,7 @@ int main(int argc,char *argv[],char *env[]) {
     if(head) {
       /* ok, user gave us variables -- lets validate them */
       if(normalize_cgi_variables(head,"qchar") != 0) {
-        str_error_message("E_manipulated",NULL,13);
+        str_error_message("E_manipulated",NULL);
       }
       else {
         /* everything seems to be fine, so lets validate user input */
@@ -876,22 +876,22 @@ int main(int argc,char *argv[],char *env[]) {
           /* ok, everythings fine: all fields, all fields are long enough. Go and get parent posting */
           #ifdef CF_SHARED_MEM
           if((shm = get_shm_ptr()) == NULL) {
-            str_error_message(ErrorString,NULL,strlen(ErrorString));
+            str_error_message(ErrorString,NULL);
           }
           #else
           /* fatal error: could not connect */
           if((sock = set_us_up_the_socket()) == -1) {
-            str_error_message(ErrorString,NULL,strlen(ErrorString));
+            str_error_message(ErrorString,NULL,);
           }
           #endif
           else {
             #ifdef CF_SHARED_MEM
             if(new_thread == 0 && cf_get_message_through_shm(shm,&thr,NULL,tid,mid,CF_KILL_DELETED) == -1) {
-              str_error_message(ErrorString,NULL,strlen(ErrorString));
+              str_error_message(ErrorString,NULL);
             }
             #else
             if(new_thread == 0 && cf_get_message_through_sock(sock,&rl,&thr,NULL,tid,mid,CF_KILL_DELETED) == -1) {
-              str_error_message(ErrorString,NULL,strlen(ErrorString));
+              str_error_message(ErrorString,NULL);
             }
             #endif
             else {
@@ -940,7 +940,7 @@ int main(int argc,char *argv[],char *env[]) {
               if(run_post_filters(head,p,shm) != FLT_EXIT) {
                 /* filters finished... send posting */
                 if((sock = set_us_up_the_socket()) == -1) {
-                  str_error_message(ErrorString,NULL,strlen(ErrorString));
+                  str_error_message(ErrorString,NULL);
                 }
               #endif
 
@@ -998,14 +998,14 @@ int main(int argc,char *argv[],char *env[]) {
 
                 /* ok, everything has been submitted to the forum. Now lets wait for an answer... */
                 if((val = readline(sock,&rl)) == NULL) {
-                  str_error_message("E_IO_ERR",NULL,8);
+                  str_error_message("E_IO_ERR",NULL);
                 }
                 else {
                   if(cf_strncmp(val,"200",3)) {
                     ret = atoi(val);
                     free(val);
                     len = snprintf(buff,256,"E_FO_%d",ret);
-                    str_error_message(buff,NULL,len);
+                    str_error_message(buff,NULL);
                   }
                   else {
                     free(val);

@@ -92,7 +92,7 @@ int flt_handle404_execute(t_cf_hash *head,t_configuration *dc,t_configuration *v
 }
 
 t_conf_opt flt_handle404_config[] = {
-  { NULL, NULL, NULL }
+  { NULL, NULL, 0, NULL }
 };
 
 t_handler_config flt_handle404_handlers[] = {

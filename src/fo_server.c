@@ -400,7 +400,7 @@ int main(int argc,char *argv[]) {
   free(fnames);
 
   /* init configuration structures and parse config */
-  if(read_config(&default_conf,NULL) != 0) {
+  if(read_config(&default_conf,NULL,CFG_MODE_CONFIG) != 0) {
     cfg_cleanup_file(&default_conf);
     cfg_cleanup_file(&server_conf);
 
@@ -408,7 +408,7 @@ int main(int argc,char *argv[]) {
     return EXIT_FAILURE;
   }
 
-  if(read_config(&server_conf,NULL) != 0) {
+  if(read_config(&server_conf,NULL,CFG_MODE_CONFIG) != 0) {
     cfg_cleanup_file(&default_conf);
     cfg_cleanup_file(&server_conf);
 

@@ -1,12 +1,14 @@
 
-EXTRA_DIST=messages.po
+SUFFIXES=.mo
+
+EXTRA_DIST=messages.mo
 
 DIR=@CONFIGDIR@/locale/en/LC_MESSAGES/
 
-install-data-local:
-	for file in $(EXTRA_DIST); do \
-		msgfmt $${file}; \
-	done; \
+messages.mo:
+	msgfmt messages.po
+
+install-data-local: $(EXTRA_DIST)
 	if test ! -d $(DIR); then \
 		$(MKDIR) -p $(DIR); \
 	fi; \

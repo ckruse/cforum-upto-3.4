@@ -242,6 +242,7 @@ int flt_scoring_cols(t_configfile *cf,t_conf_opt *opt,u_char **args,int argnum) 
 
 int flt_scoring_hide(t_configfile *cf,t_conf_opt *opt,u_char **args,int argnum) {
   flt_scoring_hide_score = atoi(args[0]);
+  return 0;
 }
 
 void flt_scoring_finish(void) {
@@ -258,10 +259,10 @@ void flt_scoring_finish(void) {
 }
 
 t_conf_opt flt_scoring_config[] = {
-  { "ScoringFilter",     flt_scoring_parse, NULL },
-  { "ScoringStartColor", flt_scoring_cols,  NULL },
-  { "ScoringHideScore",  flt_scoring_hide,  NULL },
-  { NULL, NULL, NULL }
+  { "ScoringFilter",     flt_scoring_parse, CFG_OPT_CONFIG|CFG_OPT_USER, NULL },
+  { "ScoringStartColor", flt_scoring_cols,  CFG_OPT_CONFIG|CFG_OPT_USER, NULL },
+  { "ScoringHideScore",  flt_scoring_hide,  CFG_OPT_CONFIG|CFG_OPT_USER, NULL },
+  { NULL, NULL, 0, NULL }
 };
 
 t_handler_config flt_scoring_handlers[] = {

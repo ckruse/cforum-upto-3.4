@@ -325,9 +325,9 @@ int flt_extern_handle(t_configfile *cf,t_conf_opt *opt,u_char **args,int argnum)
 }
 
 t_conf_opt flt_extern_config[] = {
-  { "ExternPort",      flt_extern_handle, NULL },
-  { "ExternInterface", flt_extern_handle, NULL },
-  { NULL,         NULL,              NULL }
+  { "ExternPort",      flt_extern_handle, CFG_OPT_CONFIG|CFG_OPT_NEEDED, NULL },
+  { "ExternInterface", flt_extern_handle, CFG_OPT_CONFIG,                NULL },
+  { NULL, NULL, 0, NULL }
 };
 
 t_handler_config flt_extern_handlers[] = {

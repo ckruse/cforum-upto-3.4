@@ -591,8 +591,8 @@ void flt_lf_cleanup(void) {
 }
 
 t_conf_opt config[] = {
-  { "ActivateLiveFilter", flt_lf_handle_command, NULL },
-  { NULL, NULL, NULL }
+  { "ActivateLiveFilter", flt_lf_handle_command, CFG_OPT_CONFIG|CFG_OPT_USER, NULL },
+  { NULL, NULL, 0, NULL }
 };
 
 t_handler_config handlers[] = {
