@@ -69,8 +69,11 @@ static long n_foreach_vars           = 0;
 static long n_cur_foreach_vars       = 0;
 static long n_if_vars                = 0;
 static long n_cur_if_vars            = 0;
-static long n_if_iters                = 0;
-static long n_cur_if_iters            = 0;
+static long n_if_iters               = 0;
+static long n_cur_if_iters           = 0;
+static int  uses_include             = 0;
+static int  uses_print               = 0;
+static int  uses_iter_print          = 0;
 
 /*
 
@@ -601,6 +604,7 @@ int process_variable_print_tag (t_token *variable,t_array *data) {
   str_cstr_append(&output_mem,"if(vp && vp->temporary) {\ncf_tpl_var_destroy(vp); free(vp);\n");
   str_cstr_append(&output,"}\n");
   str_cstr_append(&output_mem,"}\n");
+  uses_print = 1;
   return 0;
 }
 
@@ -628,6 +632,7 @@ int process_iterator_print_tag (t_token *iterator,t_array *data) {
   str_cstr_append(&output,"printf(\"%ld\",iter_var);\n");
   str_cstr_append(&output_mem,"snprintf(iter_buf,19,\"%ld\",iter_var);\n");
   str_cstr_append(&output_mem,"str_chars_append(&tpl->parsed,iter_buf,strlen(iter_buf));\n");
+  uses_iter_print = 1;
   return 0;
 }
 
@@ -639,12 +644,6 @@ int process_include_tag(t_string *file) {
     file->len -= strlen(PARSETPL_INCLUDE_EXT);
   }
   str_init(&tmp);
-  str_chars_append(&tmp,"{\n",2);
-  str_chars_append(&tmp,"t_cf_template *inc_tpl;\n",24);
-  str_chars_append(&tmp,"t_string *inc_filename, *inc_filepart, *inc_fileext;\n",53);
-  str_chars_append(&tmp,"u_char *p;\n",11);
-  str_chars_append(&tmp,"t_cf_hash *ov;\n",15);
-  str_chars_append(&tmp,"int ret;\n",9);
   str_chars_append(&tmp,"inc_filename = fo_alloc(NULL,sizeof(t_string),1,FO_ALLOC_MALLOC);\n",66);
   str_chars_append(&tmp,"inc_filepart = fo_alloc(NULL,sizeof(t_string),1,FO_ALLOC_MALLOC);\n",66);
   str_chars_append(&tmp,"inc_fileext = fo_alloc(NULL,sizeof(t_string),1,FO_ALLOC_MALLOC);\n",65);
@@ -694,9 +693,9 @@ int process_include_tag(t_string *file) {
   str_chars_append(&tmp,"free(inc_filepart);\n",20);
   str_chars_append(&tmp,"free(inc_filename);\n",20);
   str_chars_append(&tmp,"free(inc_fileext);\n",19);
-  str_chars_append(&tmp,"}\n",2);
   str_str_append(&output,&tmp);
   str_str_append(&output_mem,&tmp);
+  uses_include = 1;
   return 0;
 }
 
@@ -1934,8 +1933,12 @@ int parse_file(const u_char *filename) {
   
   fprintf(ofp, "/*\n * this is a template file\n *\n */\n\n#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\n#include \"config.h\"\n#include \"defines.h\"\n\n#include \"utils.h\"\n#include \"hashlib.h\"\n#include \"charconvert.h\"\n#include \"template.h\"\n\nstatic void my_write(const u_char *s) {\n  register u_char *ptr;\n\n  for(ptr = (u_char *)s;*ptr;ptr++) {\n    fputc(*ptr,stdout);\n  }\n}\n");
   fprintf(ofp,"void parse(t_cf_template *tpl) {\nt_cf_tpl_variable *v = NULL;\n");
-  fprintf(ofp,"t_cf_tpl_variable *vp = NULL;\n");
-  fprintf(ofp,"long iter_var = 0;\n");
+  if(uses_print) {
+    fprintf(ofp,"t_cf_tpl_variable *vp = NULL;\n");
+  }
+  if(uses_iter_print) {
+    fprintf(ofp,"long iter_var = 0;\n");
+  }
   fprintf(ofp,"long cmp_res = 0;\n");
   for(i = 0;i < n_assign_vars;i++) {
     fprintf(ofp,"t_cf_tpl_variable *va%ld = NULL;\n",i);
@@ -1951,11 +1954,22 @@ int parse_file(const u_char *filename) {
     fprintf(ofp,"t_cf_tpl_variable *vf%ld = NULL;\n",i*2+1);
     fprintf(ofp,"int i%ld = 0;\n",i);
   }
-  fprintf(ofp,"u_char *tmp = NULL;\n\n");
-  fprintf(ofp,"%s\n}\n\n",output.content);
+  if(uses_include) {
+    fprintf(ofp,"t_cf_template *inc_tpl;\n");
+    fprintf(ofp,"t_string *inc_filename, *inc_filepart, *inc_fileext;\n");
+    fprintf(ofp,"u_char *p;\n");
+    fprintf(ofp,"t_cf_hash *ov;\n");
+    fprintf(ofp,"int ret;\n");
+  }
+  fprintf(ofp,"\n%s\n}\n\n",output.content);
   fprintf(ofp,"void parse_to_mem(t_cf_template *tpl) {\nt_cf_tpl_variable *v = NULL;\n");
-  fprintf(ofp,"t_cf_tpl_variable *vp = NULL;\n");
-  fprintf(ofp,"long iter_var = 0;\n");
+  if(uses_print) {
+    fprintf(ofp,"t_cf_tpl_variable *vp = NULL;\n");
+    fprintf(ofp,"u_char *tmp = NULL;\n");
+  }
+  if(uses_iter_print) {
+    fprintf(ofp,"long iter_var = 0;\n");
+  }
   fprintf(ofp,"long cmp_res = 0;\n");
   fprintf(ofp,"char iter_buf[20];\n");
   for(i = 0;i < n_assign_vars;i++) {
@@ -1972,8 +1986,14 @@ int parse_file(const u_char *filename) {
     fprintf(ofp,"t_cf_tpl_variable *vf%ld = NULL;\n",i*2+1);
     fprintf(ofp,"int i%ld = 0;\n",i);
   }
-  fprintf(ofp,"u_char *tmp = NULL;\n\n");
-  fprintf(ofp,"%s\n}\n\n",output_mem.content);
+  if(uses_include) {
+    fprintf(ofp,"t_cf_template *inc_tpl;\n");
+    fprintf(ofp,"t_string *inc_filename, *inc_filepart, *inc_fileext;\n");
+    fprintf(ofp,"u_char *p;\n");
+    fprintf(ofp,"t_cf_hash *ov;\n");
+    fprintf(ofp,"int ret;\n");
+  }
+  fprintf(ofp,"\n%s\n}\n\n",output_mem.content);
   fclose(ofp);
   str_cleanup(&content);
   str_cleanup(&output);
