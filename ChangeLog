@@ -9,7 +9,8 @@
 	* src/fo_threadlookup.c: Fixed the bug that caused /2004/8#@%10/t1/-URLs.
 	* cgi-shared/config/fo_usermanagement.conf.in, cgi-shared/config/fo_default.conf.in:
 		Corrected some values.
-	* cgi-bin/fo_usermanagement.in: Fixed bug that inhibited new registrations.
+	* cgi-bin/fo_usermanagement.in: Fixed bug that inhibited new registrations,
+		always assigned $userconfig when in /my.
 
 2004-08-05 Christian Kruse <ckruse@wwwtech.de>
 	* src/templates/de/tpl_*/Makefile.am: Fixed bug, source file is <tplname>.c,
