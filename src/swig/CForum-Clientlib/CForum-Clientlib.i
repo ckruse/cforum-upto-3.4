@@ -250,15 +250,15 @@ void cf_error_message(const char *msg,FILE *out, ...);
 char *cf_get_error_message(const char *msg,int *len, ...);
 
 %{
-char *cf_pl_get_link(const char *link,const char *forum_name,const char *ctid,const char *cmid) {
+char *cf_pl_get_link(const char *link,const char *ctid,const char *cmid) {
   u_int64_t tid,mid;
 
   tid = str_to_u_int64(ctid);
   mid = str_to_u_int64(cmid);
-  return cf_get_link(link,forum_name,tid,mid);
+  return cf_get_link(link,tid,mid);
 }
 %}
-char *cf_pl_get_link(const char *link,const char *forum_name,const char *ctid,const char *cmid);
+char *cf_pl_get_link(const char *link,const char *ctid,const char *cmid);
 
 %{
 char *cf_pl_advanced_get_link(const u_char *link,const char *ctid,const char *cmid,const char *parameters) {

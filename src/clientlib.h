@@ -97,6 +97,20 @@ typedef struct s_cl_thread {
 } t_cl_thread;
 
 
+typedef struct {
+  u_char *posting_uri[2];
+
+  u_char *pre_threadlist_tpl;
+  u_char *threadlist_thread_tpl;
+  u_char *post_threadlist_tpl;
+
+  u_char *thread_tpl;
+  u_char *thread_posting_tpl;
+} cf_readmode_t;
+
+
+typedef int (*cf_readmode_collector_t)(t_cf_hash *,t_configuration *,t_configuration *,cf_readmode_t *);
+
 #ifndef CF_SHARED_MEM
 typedef int (*t_sorting_handler)(t_cf_hash *head,t_configuration *dc,t_configuration *vc,int sock,rline_t *tsd,t_array *threads);
 #else
@@ -399,6 +413,14 @@ void cf_msg_linearize(t_cl_thread *thr,t_hierarchical_node *h);
 
 
 /**
+ * Run RM_COLLECTORS_HANDLER handlers.
+ * \param head The CGI hash
+ * \param rm_infos The readmode information struct
+ * \return FLT_OK, FLT_EXIT or FLT_DECLINE
+ */
+int cf_run_readmode_collectors(t_cf_hash *head,cf_readmode_t *rm_infos);
+
+/**
  * Run VIEW_LIST_HANDLER handlers.
  * \param p The message pointer
  * \param head The CGI hash
@@ -522,7 +544,7 @@ int cf_run_perpost_var_handlers(t_cf_hash *head,t_cl_thread *thread,t_message *m
  * \return Returns NULL on failure or the link string on success
  * \attention You have to free() the returned pointer!
  */
-u_char *cf_get_link(const u_char *link,const u_char *forum_name,u_int64_t tid,u_int64_t mid);
+u_char *cf_get_link(const u_char *link,u_int64_t tid,u_int64_t mid);
 
 /**
  * This function generates a link to a thread and appends some parameters (as query string)

@@ -769,6 +769,8 @@ int main(int argc,char *argv[],char *env[]) {
   int sock,new_thread = 0,ShowInvisible = 0;
   rline_t rl;
 
+  cf_readmode_t rm_infos;
+
   /* set signal handler for SIGSEGV (for error reporting) */
   signal(SIGSEGV,sighandler);
   signal(SIGILL,sighandler);
@@ -854,6 +856,16 @@ int main(int argc,char *argv[],char *env[]) {
 
   /* first state: let the begin-filters run! :-) */
   if(ret != FLT_EXIT) ret = cf_run_init_handlers(head);
+
+  /* {{{ get readmode information */
+  memset(&rm_infos,0,sizeof(rm_infos));
+  if(cf_run_readmode_collectors(head,&rm_infos) != FLT_OK) {
+    printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
+    cf_error_message("E_CONFIG_ERR",NULL);
+    ret = FLT_EXIT;
+  }
+  else cf_hash_set(GlobalValues,"RM",2,&rm_infos,sizeof(rm_infos));
+  /* }}} */
 
   cs = cfg_get_first_value(&fo_default_conf,forum_name,"ExternCharset");
   ShowInvisible = cf_hash_get(GlobalValues,"ShowInvisible",13) != NULL;
@@ -1135,8 +1147,7 @@ int main(int argc,char *argv[],char *env[]) {
           writen(sock,"QUIT\n",5);
 
           if(cfg_val && cf_strcmp(cfg_val->values[0],"yes") == 0) {
-            cfg_val = cfg_get_first_value(&fo_default_conf,forum_name,UserName ? "UPostingURL" : "PostingURL");
-            link = cf_get_link(cfg_val->values[0],NULL,tid,mid);
+            link = cf_get_link(rm_infos.posting_uri[UserName?1:0],tid,mid);
             printf("Status: 302 Moved Temporarily\015\012Location: %s\015\012\015\012",link);
             free(link);
           }

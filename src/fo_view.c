@@ -55,6 +55,7 @@ int ignre(t_configfile *cfile,const u_char *context,u_char *name,u_char **args,s
 }
 
 /* {{{ show_posting */
+
 #ifndef CF_SHARED_MEM
 void show_posting(t_cf_hash *head,int sock,u_int64_t tid,u_int64_t mid)
 #else
@@ -69,15 +70,11 @@ void show_posting(t_cf_hash *head,void *shm_ptr,u_int64_t tid,u_int64_t mid)
 
   u_char buff[256],
     *tmp,
-    fo_thread_tplname[256],
-    fo_posting_tplname[256],
     *UserName = cf_hash_get(GlobalValues,"UserName",8),
     *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
 
-  t_name_value *fo_thread_tpl  = cfg_get_first_value(&fo_view_conf,forum_name,"TemplateForumThread"),
+  t_name_value *tm  = cfg_get_first_value(&fo_view_conf,forum_name,"ThreadMode"),
     *rm             = cfg_get_first_value(&fo_view_conf,forum_name,"ReadMode"),
-    *tm             = cfg_get_first_value(&fo_view_conf,forum_name,"ThreadMode"),
-    *fo_posting_tpl = NULL,
     *cs             = cfg_get_first_value(&fo_default_conf,forum_name,"ExternCharset"),
     *fbase          = NULL,
     *name           = cfg_get_first_value(&fo_view_conf,NULL,"Name"),
@@ -89,27 +86,21 @@ void show_posting(t_cf_hash *head,void *shm_ptr,u_int64_t tid,u_int64_t mid)
 
   t_cf_template tpl;
 
+  cf_readmode_t *rmi = cf_hash_get(GlobalValues,"RM",2);
+
   size_t len;
   int del = cf_hash_get(GlobalValues,"ShowInvisible",13) == NULL ? CF_KILL_DELETED : CF_KEEP_DELETED;
 
   memset(&thread,0,sizeof(thread));
 
-  if(cf_strcmp(rm->values[0],"thread") == 0) {
-    if(mid == 0) {
-      free(rm->values[0]);
-      rm->values[0] = strdup(tm->values[0]);
-      if(cf_strcmp(tm->values[0],"list") == 0) fo_posting_tpl = cfg_get_first_value(&fo_view_conf,forum_name,"TemplateForumList");
-      else fo_posting_tpl = cfg_get_first_value(&fo_view_conf,forum_name,"TemplateForumNested");
+  if(mid == 0) {
+    free(rm->values[0]);
+    rm->values[0] = strdup(tm->values[0]);
+    if(cf_run_readmode_collectors(head,rmi) != FLT_OK) {
+      printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
+      cf_error_message("E_CONFIG_ERR",NULL);
+      return;
     }
-    else fo_posting_tpl = cfg_get_first_value(&fo_view_conf,forum_name,"TemplatePosting");
-  }
-  else if(cf_strcmp(rm->values[0],"list") == 0) fo_posting_tpl = cfg_get_first_value(&fo_view_conf,forum_name,"TemplateForumList");
-  else if(cf_strcmp(rm->values[0],"nested") == 0) fo_posting_tpl = cfg_get_first_value(&fo_view_conf,forum_name,"TemplateForumNested");
-  else {
-    printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
-    cf_error_message("E_CONFIG_ERR",NULL);
-    fprintf(stderr,"Invalid ReadMode %s! Must be thread, list or nested!\n",rm->values[0]);
-    return;
   }
 
   /* {{{ init and get message from server */
@@ -117,24 +108,15 @@ void show_posting(t_cf_hash *head,void *shm_ptr,u_int64_t tid,u_int64_t mid)
   memset(&tsd,0,sizeof(tsd));
   #endif
 
-  if(!fo_thread_tpl || !fo_posting_tpl) {
-    printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
-    cf_error_message("E_TPL_NOT_FOUND",NULL);
-    return;
-  }
-
-  cf_gen_tpl_name(fo_thread_tplname,256,fo_thread_tpl->values[0]);
-  cf_gen_tpl_name(fo_posting_tplname,256,fo_posting_tpl->values[0]);
-
-  if(cf_tpl_init(&tpl,fo_posting_tplname) != 0) {
+  if(cf_tpl_init(&tpl,rmi->thread_tpl) != 0) {
     cf_error_message("E_TPL_NOT_FOUND",NULL);
     return;
   }
 
   #ifndef CF_SHARED_MEM
-  if(cf_get_message_through_sock(sock,&tsd,&thread,fo_thread_tplname,tid,mid,del) == -1)
+  if(cf_get_message_through_sock(sock,&tsd,&thread,rmi->thread_posting_tpl,tid,mid,del) == -1)
   #else
-  if(cf_get_message_through_shm(shm_ptr,&thread,fo_thread_tplname,tid,mid,del) == -1)
+  if(cf_get_message_through_shm(shm_ptr,&thread,rmi->thread_posting_tpl,tid,mid,del) == -1)
   #endif
   {
     if(cf_strcmp(ErrorString,"E_FO_404") == 0) {
@@ -168,7 +150,7 @@ void show_posting(t_cf_hash *head,void *shm_ptr,u_int64_t tid,u_int64_t mid)
     reg = cfg_get_first_value(&fo_default_conf,forum_name,"UserRegister");
   }
 
-  tmp = cf_get_link(fbase->values[0],NULL,0,0);
+  tmp = cf_get_link(fbase->values[0],0,0);
   cf_set_variable(&tpl,cs,"forumbase",tmp,strlen(tmp),1);
   free(tmp);
 
@@ -208,6 +190,7 @@ void show_posting(t_cf_hash *head,void *shm_ptr,u_int64_t tid,u_int64_t mid)
 
   cf_cleanup_thread(&thread);
 }
+
 /* }}} */
 
 /* {{{ show_threadlist */
@@ -226,24 +209,16 @@ void show_threadlist(void *shm_ptr,t_cf_hash *head)
   void *ptr,*ptr1;
   #endif
 
-  u_char fo_begin_tplname[256],
-    fo_end_tplname[256],
-    fo_thread_tplname[256],
-    buff[128],
+  u_char buff[128],
     *ltime,
     *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10),
     *UserName = cf_hash_get(GlobalValues,"UserName",8);
 
-  t_name_value *fo_begin_tpl  = cfg_get_first_value(&fo_view_conf,forum_name,"TemplateForumBegin"),
-    *fo_end_tpl    = cfg_get_first_value(&fo_view_conf,forum_name,"TemplateForumEnd"),
-    *fo_thread_tpl = cfg_get_first_value(&fo_view_conf,forum_name,"TemplateForumThread"),
-    *cs            = cfg_get_first_value(&fo_default_conf,forum_name,"ExternCharset"),
+  t_name_value *cs = cfg_get_first_value(&fo_default_conf,forum_name,"ExternCharset"),
     *fbase         = NULL,
     *pbase         = NULL,
-    *purl          = NULL,
     *time_fmt      = cfg_get_first_value(&fo_view_conf,forum_name,"DateFormatLoadTime"),
-    *time_lc       = cfg_get_first_value(&fo_default_conf,forum_name,"DateLocale"),
-    *rm            = cfg_get_first_value(&fo_view_conf,forum_name,"ReadMode");
+    *time_lc       = cfg_get_first_value(&fo_default_conf,forum_name,"DateLocale");
 
   t_cf_template tpl_begin,tpl_end;
 
@@ -255,6 +230,8 @@ void show_threadlist(void *shm_ptr,t_cf_hash *head)
 
   t_string tlist;
 
+  cf_readmode_t *rm = cf_hash_get(GlobalValues,"RM",2);
+
   #ifndef CF_NO_SORTING
   t_array threads;
   #endif
@@ -264,16 +241,6 @@ void show_threadlist(void *shm_ptr,t_cf_hash *head)
   #ifndef CF_SHARED_MEM
   memset(&tsd,0,sizeof(tsd));
   #endif
-
-  if(!fo_begin_tpl || !fo_end_tpl || !fo_thread_tpl) {
-    printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
-    cf_error_message("E_TPL_NOT_FOUND",NULL);
-    return;
-  }
-
-  cf_gen_tpl_name(fo_begin_tplname,256,fo_begin_tpl->values[0]);
-  cf_gen_tpl_name(fo_end_tplname,256,fo_end_tpl->values[0]);
-  cf_gen_tpl_name(fo_thread_tplname,256,fo_thread_tpl->values[0]);
   /* }}} */
 
   /* {{{ if not in shm mode, request the threadlist from
@@ -327,11 +294,7 @@ void show_threadlist(void *shm_ptr,t_cf_hash *head)
     fbase    = cfg_get_first_value(&fo_default_conf,forum_name,UserName ? "UBaseURL" : "BaseURL");
     pbase    = cfg_get_first_value(&fo_default_conf,forum_name,UserName ? "UPostScript" : "PostScript");
 
-    if(cf_strcmp(rm->values[0],"thread") == 0) purl = cfg_get_first_value(&fo_default_conf,forum_name,UserName ? "UPostingURL" : "PostingURL");
-    else if(cf_strcmp(rm->values[0],"list") == 0) purl = cfg_get_first_value(&fo_default_conf,forum_name,UserName ? "UPostingURL_List" : "PostingURL_List");
-    else if(cf_strcmp(rm->values[0],"nested") == 0) purl = cfg_get_first_value(&fo_default_conf,forum_name,UserName ? "UPostingURL_Nested" : "PostingURL_Nested");
-
-    if(cf_tpl_init(&tpl_begin,fo_begin_tplname) != 0) {
+    if(cf_tpl_init(&tpl_begin,rm->pre_threadlist_tpl) != 0) {
       printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
 
       cf_error_message("E_TPL_NOT_FOUND",NULL);
@@ -340,7 +303,7 @@ void show_threadlist(void *shm_ptr,t_cf_hash *head)
     cf_set_variable(&tpl_begin,cs,"forumbase",fbase->values[0],strlen(fbase->values[0]),1);
     cf_set_variable(&tpl_begin,cs,"postscript",pbase->values[0],strlen(pbase->values[0]),1);
 
-    if(cf_tpl_init(&tpl_end,fo_end_tplname) != 0) {
+    if(cf_tpl_init(&tpl_end,rm->post_threadlist_tpl) != 0) {
       printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
 
       cf_error_message("E_TPL_NOT_FOUND",NULL);
@@ -381,15 +344,15 @@ void show_threadlist(void *shm_ptr,t_cf_hash *head)
     #ifdef CF_NO_SORTING
 
     #ifndef CF_SHARED_MEM
-    while(cf_get_next_thread_through_sock(sock,&tsd,&thread,fo_thread_tplname) == 0)
+    while(cf_get_next_thread_through_sock(sock,&tsd,&thread,rm->threadlist_thread_tpl) == 0)
     #else
-    while((ptr1 = cf_get_next_thread_through_shm(ptr1,&thread,fo_thread_tplname)) != NULL)
+    while((ptr1 = cf_get_next_thread_through_shm(ptr1,&thread,rm->threadlist_thread_tpl)) != NULL)
     #endif
     {
       if(thread.messages) {
         if((thread.messages->invisible == 0 && thread.messages->may_show) || del == CF_KEEP_DELETED) {
           str_init(&tlist);
-          if(cf_gen_threadlist(&thread,head,&tlist,"full",purl->values[0],CF_MODE_THREADLIST) != FLT_EXIT) fwrite(tlist.content,1,tlist.len,stdout);
+          if(cf_gen_threadlist(&thread,head,&tlist,"full",rm->posting_uri[UserName?1:0],CF_MODE_THREADLIST) != FLT_EXIT) fwrite(tlist.content,1,tlist.len,stdout);
           str_cleanup(&tlist);
           cf_cleanup_thread(&thread);
         }
@@ -400,9 +363,9 @@ void show_threadlist(void *shm_ptr,t_cf_hash *head)
     #else
 
     #ifdef CF_SHARED_MEM
-    if(cf_get_threadlist(&threads,ptr1,fo_thread_tplname) == -1)
+    if(cf_get_threadlist(&threads,ptr1,rm->threadlist_thread_tpl) == -1)
     #else
-    if(cf_get_threadlist(&threads,sock,&tsd,fo_thread_tplname) == -1)
+    if(cf_get_threadlist(&threads,sock,&tsd,rm->threadlist_thread_tpl) == -1)
     #endif
     {
       if(*ErrorString) cf_error_message(ErrorString,NULL);
@@ -422,7 +385,7 @@ void show_threadlist(void *shm_ptr,t_cf_hash *head)
 
         if((threadp->messages->invisible == 0 && threadp->messages->may_show) || del == CF_KEEP_DELETED) {
           str_init(&tlist);
-          if(cf_gen_threadlist(threadp,head,&tlist,"full",purl->values[0],CF_MODE_THREADLIST) != FLT_EXIT) fwrite(tlist.content,1,tlist.len,stdout);
+          if(cf_gen_threadlist(threadp,head,&tlist,"full",rm->posting_uri[UserName?1:0],CF_MODE_THREADLIST) != FLT_EXIT) fwrite(tlist.content,1,tlist.len,stdout);
           str_cleanup(&tlist);
         }
       }
@@ -511,6 +474,8 @@ int main(int argc,char *argv[],char *env[]) {
   t_name_value *cs = NULL;
   t_name_value *pt;
   u_char *forum_name = NULL;
+
+  cf_readmode_t rm_infos;
 
   u_int64_t tid = 0,mid = 0;
   /* }}} */
@@ -635,6 +600,16 @@ int main(int argc,char *argv[],char *env[]) {
   if(ret != FLT_EXIT) ret = cf_run_init_handlers(head);
 
   cs = cfg_get_first_value(&fo_default_conf,forum_name,"ExternCharset");
+
+  /* {{{ get readmode information */
+  memset(&rm_infos,0,sizeof(rm_infos));
+  if(cf_run_readmode_collectors(head,&rm_infos) != FLT_OK) {
+    printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
+    cf_error_message("E_CONFIG_ERR",NULL);
+    ret = FLT_EXIT;
+  }
+  else cf_hash_set(GlobalValues,"RM",2,&rm_infos,sizeof(rm_infos));
+  /* }}} */
 
   if(ret != FLT_EXIT) {
     /* {{{ now, we need a socket connection/shared mem pointer */

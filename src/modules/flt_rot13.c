@@ -52,11 +52,11 @@ int flt_rot13_execute(t_configuration *fdc,t_configuration *fvc,t_cl_thread *thr
   t_string cnt;
 
   int un = cf_hash_get(GlobalValues,"UserName",8) != NULL;
-  t_name_value *v = cfg_get_first_value(fdc,forum_name,un ? "UPostingURL" : "PostingURL");
+  cf_readmode_t *rm = cf_hash_get(GlobalValues,"RM",2);
 
   if(flt_rot13_decoded == 0 || !thread) {
     if(thread) {
-      link = cf_advanced_get_link(v->values[0],thread->tid,thread->threadmsg->mid,NULL,1,&l,"rot13","decoded");
+      link = cf_advanced_get_link(rm->posting_uri[un?1:0],thread->tid,thread->threadmsg->mid,NULL,1,&l,"rot13","decoded");
 
       str_chars_append(bco,"<a href=\"",9);
       str_chars_append(bco,link,l);

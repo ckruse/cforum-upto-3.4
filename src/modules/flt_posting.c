@@ -195,7 +195,7 @@ int flt_posting_execute_filter(t_cf_hash *head,t_configuration *dc,t_configurati
 
       free(tmp);
 
-      tmp = cf_get_link(NULL,forum_name,thread->tid,msg->mid);
+      tmp = cf_get_link(NULL,thread->tid,msg->mid);
       cf_set_variable_hash(&hash,cs,"b_link",tmp,strlen(tmp),1);
       free(tmp);
 
@@ -367,6 +367,43 @@ int flt_posting_pre_cnt(t_configuration *dc,t_configuration *vc,t_cl_thread *thr
 }
 /* }}} */
 
+/* {{{ flt_posting_rm_collector */
+int flt_posting_rm_collector(t_cf_hash *head,t_configuration *dc,t_configuration *vc,cf_readmode_t *rm_infos) {
+  t_name_value *rm = cfg_get_first_value(vc,flt_posting_fn,"ReadMode");
+  t_name_value *v;
+
+  u_char buff[256];
+
+  if(cf_strcmp(rm->values[0],"thread") == 0) {
+    v = cfg_get_first_value(dc,flt_posting_fn,"PostingURL");
+    rm_infos->posting_uri[0] = v->values[0];
+
+    v = cfg_get_first_value(dc,flt_posting_fn,"UPostingURL");
+    rm_infos->posting_uri[1] = v->values[0];
+
+    v = cfg_get_first_value(vc,flt_posting_fn,"TemplateForumBegin");
+    cf_gen_tpl_name(buff,256,v->values[0]);
+    rm_infos->pre_threadlist_tpl = strdup(buff);
+
+    v = cfg_get_first_value(vc,flt_posting_fn,"TemplateForumThread");
+    cf_gen_tpl_name(buff,256,v->values[0]);
+    rm_infos->thread_posting_tpl = rm_infos->threadlist_thread_tpl = strdup(buff);
+
+    v = cfg_get_first_value(vc,flt_posting_fn,"TemplateForumEnd");
+    cf_gen_tpl_name(buff,256,v->values[0]);
+    rm_infos->post_threadlist_tpl = strdup(buff);
+
+    v = cfg_get_first_value(vc,flt_posting_fn,"TemplatePosting");
+    cf_gen_tpl_name(buff,256,v->values[0]);
+    rm_infos->thread_tpl = strdup(buff);
+
+    return FLT_OK;
+  }
+
+  return FLT_DECLINE;
+}
+/* }}} */
+
 /* {{{ flt_posting_handle_greet */
 int flt_posting_handle_greet(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
   u_char *tmp;
@@ -443,10 +480,11 @@ t_conf_opt flt_posting_config[] = {
 };
 
 t_handler_config flt_posting_handlers[] = {
-  { POSTING_HANDLER,      flt_posting_execute_filter },
-  { PRE_CONTENT_FILTER,   flt_posting_pre_cnt },
-  { POST_CONTENT_FILTER,  flt_posting_post_cnt },
-  { POST_DISPLAY_HANDLER, flt_posting_post_display },
+  { RM_COLLECTORS_HANDLER, flt_posting_rm_collector },
+  { POSTING_HANDLER,       flt_posting_execute_filter },
+  { PRE_CONTENT_FILTER,    flt_posting_pre_cnt },
+  { POST_CONTENT_FILTER,   flt_posting_post_cnt },
+  { POST_DISPLAY_HANDLER,  flt_posting_post_display },
   { 0, NULL }
 };
 

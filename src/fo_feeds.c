@@ -124,17 +124,21 @@ void gen_description(t_string *str,const u_char *descr,t_cl_thread *thread) {
 /* {{{ atom_ and rss_head */
 void atom_head(t_string *str,t_cl_thread *thread) {
   u_char *fn = cf_hash_get(GlobalValues,"FORUM_NAME",10),*tmp = NULL,*tmp1 = NULL;
+  u_char *uname = cf_hash_get(GlobalValues,"UserName",8);
+
   t_name_value *atom_title  = cfg_get_first_value(&fo_feeds_conf,fn,"AtomTitle");
   t_name_value *atom_tgline = cfg_get_first_value(&fo_feeds_conf,fn,"AtomTagline");
   t_name_value *atom_lang   = cfg_get_first_value(&fo_feeds_conf,fn,"FeedLang");
 
-  t_name_value *burl = cfg_get_first_value(&fo_default_conf,fn,cf_hash_get(GlobalValues,"UserName",8) ? "UBaseURL":"BaseURL");
-  t_name_value *purl = cfg_get_first_value(&fo_default_conf,fn,cf_hash_get(GlobalValues,"UserName",8) ? "UPostingURL":"PostingURL");
+  t_name_value *burl = cfg_get_first_value(&fo_default_conf,fn,uname ? "UBaseURL":"BaseURL");
+  //t_name_value *purl = cfg_get_first_value(&fo_default_conf,fn,cf_hash_get(GlobalValues,"UserName",8) ? "UPostingURL":"PostingURL");
+
+  cf_readmode_t *rm = cf_hash_get(GlobalValues,"RM",2);
 
   time_t t = time(NULL);
 
   if(thread) {
-    tmp = cf_get_link(purl->values[0],NULL,thread->tid,thread->messages->mid);
+    tmp = cf_get_link(rm->posting_uri[uname?1:0],thread->tid,thread->messages->mid);
     tmp1 = htmlentities(tmp,0);
   }
 
@@ -233,7 +237,7 @@ void rss_head(t_string *str,t_cl_thread *thread) {
   str_chars_append(str,"<link>",6);
   if(thread) {
     purl = cfg_get_first_value(&fo_default_conf,fn,cf_hash_get(GlobalValues,"UserName",8) ? "UPostingURL":"PostingURL");
-    tmp = cf_get_link(purl->values[0],NULL,thread->tid,thread->messages->mid);
+    tmp = cf_get_link(purl->values[0],thread->tid,thread->messages->mid);
     str_chars_append(str,"<![CDATA[",9);
     str_chars_append(str,tmp,strlen(tmp));
     str_chars_append(str,"]]>",3);
@@ -286,14 +290,17 @@ void atom_thread(t_string *str,t_cl_thread *thread,t_cf_hash *head) {
   t_message *msg;
 
   u_char *tmp,*tmp1,*forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
+  u_char *uname = cf_hash_get(GlobalValues,"UserName",8);
   size_t len1;
 
   t_string tmpstr;
 
-  t_name_value *burl   = cfg_get_first_value(&fo_default_conf,forum_name,cf_hash_get(GlobalValues,"UserName",8) ? "UPostingURL":"PostingURL");
+  //t_name_value *burl   = cfg_get_first_value(&fo_default_conf,forum_name,uname ? "UPostingURL":"PostingURL");
   t_name_value *qchars = cfg_get_first_value(&fo_view_conf,forum_name,"QuotingChars");
   t_name_value *ms     = cfg_get_first_value(&fo_view_conf,forum_name,"MaxSigLines");
   t_name_value *ss     = cfg_get_first_value(&fo_view_conf,forum_name,"ShowSig");
+
+  cf_readmode_t *rm = cf_hash_get(GlobalValues,"RM",2);
 
   /* {{{ run handlers in pre and post mode */
   cf_run_view_handlers(thread,head,CF_MODE_THREADVIEW|CF_MODE_PRE|CF_MODE_XML);
@@ -303,7 +310,7 @@ void atom_thread(t_string *str,t_cl_thread *thread,t_cf_hash *head) {
 
   for(msg=thread->messages;msg;msg=msg->next) {
     if(msg->may_show && msg->invisible == 0) {
-      tmp = cf_get_link(burl->values[0],NULL,thread->tid,msg->mid);
+      tmp = cf_get_link(rm->posting_uri[uname?1:0],thread->tid,msg->mid);
       tmp1 = htmlentities(tmp,0);
       len1 = strlen(tmp1);
 
@@ -381,15 +388,18 @@ void atom_thread(t_string *str,t_cl_thread *thread,t_cf_hash *head) {
 void rss_thread(t_string *str,t_cl_thread *thread,t_cf_hash *head) {
   t_message *msg;
 
-  u_char *tmp,*forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
+  u_char *tmp,*tmp1,*forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
+  u_char *uname = cf_hash_get(GlobalValues,"UserName",8);
   size_t len;
 
   t_string tmpstr;
 
-  t_name_value *burl   = cfg_get_first_value(&fo_default_conf,forum_name,cf_hash_get(GlobalValues,"UserName",8) ? "UPostingURL":"PostingURL");
+  t_name_value *burl   = cfg_get_first_value(&fo_default_conf,forum_name,uname ? "UPostingURL":"PostingURL");
   t_name_value *qchars = cfg_get_first_value(&fo_view_conf,forum_name,"QuotingChars");
   t_name_value *ms     = cfg_get_first_value(&fo_view_conf,forum_name,"MaxSigLines");
   t_name_value *ss     = cfg_get_first_value(&fo_view_conf,forum_name,"ShowSig");
+
+  cf_readmode_t *rm = cf_hash_get(GlobalValues,"RM",2);
 
   /* {{{ run handlers in pre and post mode */
   cf_run_view_handlers(thread,head,CF_MODE_THREADVIEW|CF_MODE_PRE|CF_MODE_XML);
@@ -399,7 +409,9 @@ void rss_thread(t_string *str,t_cl_thread *thread,t_cf_hash *head) {
 
   for(msg=thread->messages;msg;msg=msg->next) {
     if(msg->may_show && msg->invisible == 0) {
-      tmp = cf_get_link(burl->values[0],NULL,thread->tid,msg->mid);
+      tmp  = cf_get_link(rm->posting_uri[uname?1:0],thread->tid,msg->mid);
+      tmp1 = cf_get_link(burl->values[0],thread->tid,msg->mid);
+      
       len = strlen(tmp);
 
       str_chars_append(str,"<item>",6);
@@ -432,7 +444,7 @@ void rss_thread(t_string *str,t_cl_thread *thread,t_cf_hash *head) {
       }
 
       str_chars_append(str,"<guid isPermaLink=\"true\"><![CDATA[",34);
-      str_chars_append(str,tmp,len);
+      str_chars_append(str,tmp1,len);
       str_chars_append(str,"]]></guid>",10);
 
       /* {{{ description */
@@ -459,6 +471,7 @@ void rss_thread(t_string *str,t_cl_thread *thread,t_cf_hash *head) {
       str_chars_append(str,"</item>\n",8);
 
       free(tmp);
+      free(tmp1);
     }
   }
 }
@@ -477,11 +490,11 @@ void show_thread(t_cf_hash *head,void *sock,u_int64_t tid)
   rline_t tsd;
   #endif
 
-  u_char fo_posting_tplname[256],*tmp,
-         *UserName = cf_hash_get(GlobalValues,"UserName",8),
+  cf_readmode_t *rm = cf_hash_get(GlobalValues,"RM",2);
+
+  u_char *tmp,
          *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
 
-  t_name_value *fo_posting_tpl = cfg_get_first_value(&fo_view_conf,forum_name,"TemplateForumThread");
   t_name_value *cs = cfg_get_first_value(&fo_default_conf,forum_name,"ExternCharset");
 
   t_string cnt;
@@ -504,18 +517,10 @@ void show_thread(t_cf_hash *head,void *sock,u_int64_t tid)
   memset(&tsd,0,sizeof(tsd));
   #endif
 
-  if(!fo_posting_tpl) {
-    printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
-    cf_error_message("E_TPL_NOT_FOUND",NULL);
-    return;
-  }
-
-  cf_gen_tpl_name(fo_posting_tplname,256,fo_posting_tpl->values[0]);
-
   #ifndef CF_SHARED_MEM
-  if(cf_get_message_through_sock(sock,&tsd,&thread,fo_posting_tplname,tid,0,del) == -1)
+  if(cf_get_message_through_sock(sock,&tsd,&thread,rm->threadlist_thread_tpl,tid,0,del) == -1)
   #else
-  if(cf_get_message_through_shm(shm_ptr,&thread,fo_posting_tplname,tid,0,del) == -1)
+  if(cf_get_message_through_shm(shm_ptr,&thread,rm->threadlist_thread_tpl,tid,0,del) == -1)
   #endif
   {
     if(cf_strcmp(ErrorString,"E_FO_404") == 0) {
@@ -567,19 +572,25 @@ void show_thread(t_cf_hash *head,void *sock,u_int64_t tid)
 /* {{{ threadlist atom */
 void gen_threadlist_atom(t_cl_thread *thread,t_string *str) {
   u_char *fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
-  u_char *tmp,*tmp1;
-  size_t len1;
+  u_char *tmp,*tmp1,*tmp2,*tmp3,*uname = cf_hash_get(GlobalValues,"UserName",8);
+  size_t len1,len2;
 
-  t_name_value *burl   = cfg_get_first_value(&fo_default_conf,fn,cf_hash_get(GlobalValues,"UserName",8) ? "UPostingURL":"PostingURL");
+  cf_readmode_t *rm = cf_hash_get(GlobalValues,"RM",2);
+
+  t_name_value *burl   = cfg_get_first_value(&fo_default_conf,fn,uname ? "UPostingURL":"PostingURL");
   t_name_value *qchars = cfg_get_first_value(&fo_view_conf,fn,"QuotingChars");
   t_name_value *ms     = cfg_get_first_value(&fo_view_conf,fn,"MaxSigLines");
   t_name_value *ss     = cfg_get_first_value(&fo_view_conf,fn,"ShowSig");
 
   t_string tmpstr;
 
-  tmp = cf_get_link(burl->values[0],NULL,thread->tid,thread->messages->mid);
+  tmp = cf_get_link(rm->posting_uri[uname?1:0],thread->tid,thread->messages->mid);
   tmp1 = htmlentities(tmp,0);
   len1 = strlen(tmp1);
+
+  tmp2 = cf_get_link(burl->values[0],thread->tid,thread->messages->mid);
+  tmp3 = htmlentities(tmp2,0);
+  len2 = strlen(tmp3);
 
   str_chars_append(str,"<entry>",7);
 
@@ -614,7 +625,7 @@ void gen_threadlist_atom(t_cl_thread *thread,t_string *str) {
   str_chars_append(str,"\"/>",3);
 
   str_chars_append(str,"<id>",4);
-  str_chars_append(str,tmp1,len1);
+  str_chars_append(str,tmp3,len2);
   str_chars_append(str,"</id>",5);
 
   str_chars_append(str,"<modified>",10);
@@ -646,24 +657,31 @@ void gen_threadlist_atom(t_cl_thread *thread,t_string *str) {
 
   free(tmp);
   free(tmp1);
+  free(tmp2);
+  free(tmp3);
 }
 /* }}} */
 
 /* {{{ threadlist rss */
 void gen_threadlist_rss(t_cl_thread *thread,t_string *str) {
   u_char *fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
-  u_char *tmp;
-  size_t len;
+  u_char *tmp,*tmp1,*uname = cf_hash_get(GlobalValues,"UserName",8);
+  size_t len,len1;
+
+  cf_readmode_t *rm = cf_hash_get(GlobalValues,"RM",2);
 
   t_string tmpstr;
 
-  t_name_value *burl   = cfg_get_first_value(&fo_default_conf,fn,cf_hash_get(GlobalValues,"UserName",8) ? "UPostingURL":"PostingURL");
+  t_name_value *burl   = cfg_get_first_value(&fo_default_conf,fn,uname ? "UPostingURL":"PostingURL");
   t_name_value *qchars = cfg_get_first_value(&fo_view_conf,fn,"QuotingChars");
   t_name_value *ms     = cfg_get_first_value(&fo_view_conf,fn,"MaxSigLines");
   t_name_value *ss     = cfg_get_first_value(&fo_view_conf,fn,"ShowSig");
 
-  tmp = cf_get_link(burl->values[0],NULL,thread->tid,thread->messages->mid);
+  tmp = cf_get_link(burl->values[0],thread->tid,thread->messages->mid);
   len = strlen(tmp);
+
+  tmp1 = cf_get_link(rm->posting_uri[uname?1:0],thread->tid,thread->messages->mid);
+  len1 = strlen(tmp1);
 
   str_chars_append(str,"<item>",6);
 
@@ -681,7 +699,7 @@ void gen_threadlist_rss(t_cl_thread *thread,t_string *str) {
   str_chars_append(str,"]]></title>",11);
 
   str_chars_append(str,"<link><![CDATA[",15);
-  str_chars_append(str,tmp,len);
+  str_chars_append(str,tmp1,len1);
   str_chars_append(str,"]]></link>",10);
 
   str_chars_append(str,"<pubDate>",9);
@@ -722,6 +740,7 @@ void gen_threadlist_rss(t_cl_thread *thread,t_string *str) {
   str_chars_append(str,"</item>\n",8);
 
   free(tmp);
+  free(tmp1);
 }
 /* }}} */
 
@@ -733,7 +752,7 @@ void show_threadlist(void *shm_ptr,t_cf_hash *head)
 #endif
 {
   /* {{{ variables */
-  int ret,len;
+  int ret;
   #ifndef CF_SHARED_MEM
   rline_t tsd;
   u_char *line;
@@ -741,17 +760,14 @@ void show_threadlist(void *shm_ptr,t_cf_hash *head)
   void *ptr,*ptr1;
   #endif
 
-  u_char buff[128],
-        *ltime,
-        *tmp = NULL,
-        fo_thread_tplname[256],
+  u_char *tmp = NULL,
         *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10),
         *UserName = cf_hash_get(GlobalValues,"UserName",8);
 
   t_name_value *fbase,*cs = cfg_get_first_value(&fo_default_conf,forum_name,"ExternCharset");
-  t_name_value *fo_thread_tpl = cfg_get_first_value(&fo_view_conf,forum_name,"TemplateForumThread");
 
-  time_t tm;
+  cf_readmode_t *rm = cf_hash_get(GlobalValues,"RM",2);
+
   t_cl_thread thread,*threadp;
   t_message *msg;
   size_t i;
@@ -763,8 +779,6 @@ void show_threadlist(void *shm_ptr,t_cf_hash *head)
   t_array threads;
   #endif
   /* }}} */
-
-  cf_gen_tpl_name(fo_thread_tplname,256,fo_thread_tpl->values[0]);
 
   str_init(&cnt);
 
@@ -854,9 +868,9 @@ void show_threadlist(void *shm_ptr,t_cf_hash *head)
     #ifdef CF_NO_SORTING
 
     #ifndef CF_SHARED_MEM
-    while(cf_get_next_thread_through_sock(sock,&tsd,&thread,fo_thread_tplname) == 0)
+    while(cf_get_next_thread_through_sock(sock,&tsd,&thread,rm->threadlist_thread_tpl) == 0)
     #else
-    while((ptr1 = cf_get_next_thread_through_shm(ptr1,&thread,fo_thread_tplname)) != NULL)
+    while((ptr1 = cf_get_next_thread_through_shm(ptr1,&thread,rm->threadlist_thread_tpl)) != NULL)
     #endif
     {
       if(thread.messages) {
@@ -892,9 +906,9 @@ void show_threadlist(void *shm_ptr,t_cf_hash *head)
     #else
 
     #ifdef CF_SHARED_MEM
-    if(cf_get_threadlist(&threads,ptr1,fo_thread_tplname) == -1)
+    if(cf_get_threadlist(&threads,ptr1,rm->threadlist_thread_tpl) == -1)
     #else
-    if(cf_get_threadlist(&threads,sock,&tsd,fo_thread_tplname) == -1)
+    if(cf_get_threadlist(&threads,sock,&tsd,rm->threadlist_thread_tpl) == -1)
     #endif
     {
       if(*ErrorString) cf_error_message(ErrorString,NULL);
@@ -1041,6 +1055,8 @@ int main(int argc,char *argv[],char *env[]) {
   u_char *forum_name = NULL;
 
   u_int64_t tid = 0;
+
+  cf_readmode_t rm_infos;
   /* }}} */
 
   /* {{{ set signal handler for SIGSEGV (for error reporting) */
@@ -1169,6 +1185,16 @@ int main(int argc,char *argv[],char *env[]) {
   if(ret != FLT_EXIT) ret = cf_run_init_handlers(head);
 
   cs = cfg_get_first_value(&fo_default_conf,forum_name,"ExternCharset");
+
+  /* {{{ get readmode information */
+  memset(&rm_infos,0,sizeof(rm_infos));
+  if(cf_run_readmode_collectors(head,&rm_infos) != FLT_OK) {
+    printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
+    cf_error_message("E_CONFIG_ERR",NULL);
+    ret = FLT_EXIT;
+  }
+  else cf_hash_set(GlobalValues,"RM",2,&rm_infos,sizeof(rm_infos));
+  /* }}} */
 
   if(ret != FLT_EXIT) {
     /* {{{ now, we need a socket connection/shared mem pointer */

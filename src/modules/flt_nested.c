@@ -112,7 +112,7 @@ int flt_nested_execute_filter(t_cf_hash *head,t_configuration *dc,t_configuratio
     reg = cfg_get_first_value(&fo_default_conf,forum_name,"UserRegister");
   }
 
-  tmp = cf_get_link(fbase->values[0],NULL,0,0);
+  tmp = cf_get_link(fbase->values[0],0,0);
   cf_set_variable(&pt_tpl,cs,"forumbase",tmp,strlen(tmp),1);
   free(tmp);
 
@@ -230,6 +230,45 @@ int flt_nested_execute_filter(t_cf_hash *head,t_configuration *dc,t_configuratio
 }
 /* }}} */
 
+/* {{{ flt_nested_rm_collector */
+int flt_nested_rm_collector(t_cf_hash *head,t_configuration *dc,t_configuration *vc,cf_readmode_t *rm_infos) {
+  u_char *fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
+
+  t_name_value *rm = cfg_get_first_value(vc,fn,"ReadMode");
+  t_name_value *v;
+
+  u_char buff[256];
+
+  if(cf_strcmp(rm->values[0],"nested") == 0) {
+    v = cfg_get_first_value(dc,fn,"PostingURL_Nested");
+    rm_infos->posting_uri[0] = v->values[0];
+
+    v = cfg_get_first_value(dc,fn,"UPostingURL_Nested");
+    rm_infos->posting_uri[1] = v->values[0];
+
+    v = cfg_get_first_value(vc,fn,"TemplateForumBegin");
+    cf_gen_tpl_name(buff,256,v->values[0]);
+    rm_infos->pre_threadlist_tpl = strdup(buff);
+
+    v = cfg_get_first_value(vc,fn,"TemplateForumThread");
+    cf_gen_tpl_name(buff,256,v->values[0]);
+    rm_infos->thread_posting_tpl = rm_infos->threadlist_thread_tpl = strdup(buff);
+
+    v = cfg_get_first_value(vc,fn,"TemplateForumEnd");
+    cf_gen_tpl_name(buff,256,v->values[0]);
+    rm_infos->post_threadlist_tpl = strdup(buff);
+
+    v = cfg_get_first_value(vc,fn,"TemplateNested");
+    cf_gen_tpl_name(buff,256,v->values[0]);
+    rm_infos->thread_tpl = strdup(buff);
+
+    return FLT_OK;
+  }
+
+  return FLT_DECLINE;
+}
+/* }}} */
+
 /* {{{ flt_nested_handle */
 int flt_nested_handle(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
   if(flt_nested_fn == NULL) flt_nested_fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
@@ -248,7 +287,8 @@ t_conf_opt flt_nested_config[] = {
 };
 
 t_handler_config flt_nested_handlers[] = {
-  { POSTING_HANDLER,      flt_nested_execute_filter },
+  { RM_COLLECTORS_HANDLER, flt_nested_rm_collector },
+  { POSTING_HANDLER,       flt_nested_execute_filter },
   { 0, NULL }
 };
 

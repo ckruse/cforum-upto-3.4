@@ -50,33 +50,33 @@ int flt_cgiconfig_post(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t
 
   size_t l;
 
-  t_name_value *v = cfg_get_first_value(dc,forum_name,UserName ? "UPostingURL" : "PostingURL"),
-    *cs = cfg_get_first_value(dc,forum_name,"ExternCharset");
+  t_name_value *cs = cfg_get_first_value(dc,forum_name,"ExternCharset");
+  cf_readmode_t *rm = cf_hash_get(GlobalValues,"RM",2);
 
   /* {{{ ShowThread links */
-  link = cf_advanced_get_link(v->values[0],thread->tid,thread->threadmsg->mid,NULL,1,&l,"showthread","part");
+  link = cf_advanced_get_link(rm->posting_uri[UserName?1:0],thread->tid,thread->threadmsg->mid,NULL,1,&l,"showthread","part");
   cf_set_variable(tpl,cs,"showthread_part",link,l,1);
   free(link);
 
-  link = cf_advanced_get_link(v->values[0],thread->tid,thread->threadmsg->mid,NULL,1,&l,"showthread","none");
+  link = cf_advanced_get_link(rm->posting_uri[UserName?1:0],thread->tid,thread->threadmsg->mid,NULL,1,&l,"showthread","none");
   cf_set_variable(tpl,cs,"showthread_none",link,l,1);
   free(link);
 
-  link = cf_advanced_get_link(v->values[0],thread->tid,thread->threadmsg->mid,NULL,1,&l,"showthread","full");
+  link = cf_advanced_get_link(rm->posting_uri[UserName?1:0],thread->tid,thread->threadmsg->mid,NULL,1,&l,"showthread","full");
   cf_set_variable(tpl,cs,"showthread_full",link,l,1);
   free(link);
   /* }}} */
 
   /* {{{ ReadMode links */
-  link = cf_advanced_get_link(v->values[0],thread->tid,thread->threadmsg->mid,NULL,1,&l,"readmode","list");
+  link = cf_advanced_get_link(rm->posting_uri[UserName?1:0],thread->tid,thread->threadmsg->mid,NULL,1,&l,"readmode","list");
   cf_set_variable(tpl,cs,"readmode_list",link,l,1);
   free(link);
 
-  link = cf_advanced_get_link(v->values[0],thread->tid,thread->threadmsg->mid,NULL,1,&l,"readmode","nested");
+  link = cf_advanced_get_link(rm->posting_uri[UserName?1:0],thread->tid,thread->threadmsg->mid,NULL,1,&l,"readmode","nested");
   cf_set_variable(tpl,cs,"readmode_nested",link,l,1);
   free(link);
 
-  link = cf_advanced_get_link(v->values[0],thread->tid,thread->threadmsg->mid,NULL,1,&l,"readmode","thread");
+  link = cf_advanced_get_link(rm->posting_uri[UserName?1:0],thread->tid,thread->threadmsg->mid,NULL,1,&l,"readmode","thread");
   cf_set_variable(tpl,cs,"readmode_thread",link,l,1);
   free(link);
   /* }}} */

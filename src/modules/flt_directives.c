@@ -260,8 +260,8 @@ int flt_directives_execute(t_configuration *fdc,t_configuration *fvc,t_cl_thread
   size_t len = 0,i,len1 = 0;
   t_name_value *xhtml = cfg_get_first_value(fdc,forum_name,"XHTMLMode");
   u_int64_t tid,mid;
-  u_char *ptr,*tmp,*tmp1 = NULL,**list = NULL,*title_alt = NULL,*tmp2 = NULL;
-  t_name_value *vs = cfg_get_first_value(fdc,forum_name,cf_hash_get(GlobalValues,"UserName",8) ? "UPostingURL" : "PostingURL");
+  u_char *ptr,*tmp,*tmp1 = NULL,**list = NULL,*title_alt = NULL,*tmp2 = NULL,*uname = cf_hash_get(GlobalValues,"UserName",8);
+  cf_readmode_t *rm = cf_hash_get(GlobalValues,"RM",2);
   t_flt_directives_ref_uri *uri;
   int go = 1;
   t_string tmpstr;
@@ -417,7 +417,7 @@ int flt_directives_execute(t_configuration *fdc,t_configuration *fvc,t_cl_thread
       if(flt_directives_is_valid_pref(parameter,&tmp1,&tmp2)) {
         tid = str_to_u_int64(parameter+2);
         mid = str_to_u_int64(tmp1);
-        tmp1 = cf_get_link(vs->values[0],forum_name,tid,mid);
+        tmp1 = cf_get_link(rm->posting_uri[uname?1:0],tid,mid);
         if(tmp2) tmp2 += 7;
 
         flt_directives_generate_uri(tmp1,tmp2,content,cite,sig,fdc,fvc,0);

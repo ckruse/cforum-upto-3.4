@@ -518,18 +518,19 @@ u_char *cf_get_error_message(const u_char *err,size_t *len, ...) {
 
 
 /* {{{ cf_get_link */
-u_char *cf_get_link(const u_char *link,const u_char *forum_name,u_int64_t tid,u_int64_t mid) {
-  t_name_value *vs;
+u_char *cf_get_link(const u_char *link,u_int64_t tid,u_int64_t mid) {
   register const u_char *ptr;
   u_char *si = cf_hash_get(GlobalValues,"ShowInvisible",13);
   t_string buff;
   int qm = 0;
+  cf_readmode_t *rm;
 
   str_init(&buff);
 
   if(link == NULL)  {
-    vs = cfg_get_first_value(&fo_default_conf,forum_name,cf_hash_get(GlobalValues,"UserName",8) ? "UPostingURL" : "PostingURL");
-    if(vs) link = vs->values[0];
+    rm = cf_hash_get(GlobalValues,"RM",2);
+    if(rm) link = rm->posting_uri[cf_hash_get(GlobalValues,"UserName",8) ? 1 : 0];
+    else return NULL;
   }
 
   if(link) {

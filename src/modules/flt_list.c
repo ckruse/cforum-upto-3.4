@@ -141,12 +141,52 @@ int flt_list_execute_filter(t_cf_hash *head,t_configuration *dc,t_configuration 
 }
 /* }}} */
 
+/* {{{ flt_list_rm_collector */
+int flt_list_rm_collector(t_cf_hash *head,t_configuration *dc,t_configuration *vc,cf_readmode_t *rm_infos) {
+  u_char *fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
+
+  t_name_value *rm = cfg_get_first_value(vc,fn,"ReadMode");
+  t_name_value *v;
+
+  u_char buff[256];
+
+  if(cf_strcmp(rm->values[0],"list") == 0) {
+    v = cfg_get_first_value(dc,fn,"PostingURL_List");
+    rm_infos->posting_uri[0] = v->values[0];
+
+    v = cfg_get_first_value(dc,fn,"UPostingURL_List");
+    rm_infos->posting_uri[1] = v->values[0];
+
+    v = cfg_get_first_value(vc,fn,"TemplateForumBegin");
+    cf_gen_tpl_name(buff,256,v->values[0]);
+    rm_infos->pre_threadlist_tpl = strdup(buff);
+
+    v = cfg_get_first_value(vc,fn,"TemplateForumThread");
+    cf_gen_tpl_name(buff,256,v->values[0]);
+    rm_infos->thread_posting_tpl = rm_infos->threadlist_thread_tpl = strdup(buff);
+
+    v = cfg_get_first_value(vc,fn,"TemplateForumEnd");
+    cf_gen_tpl_name(buff,256,v->values[0]);
+    rm_infos->post_threadlist_tpl = strdup(buff);
+
+    v = cfg_get_first_value(vc,fn,"TemplateList");
+    cf_gen_tpl_name(buff,256,v->values[0]);
+    rm_infos->thread_tpl = strdup(buff);
+
+    return FLT_OK;
+  }
+
+  return FLT_DECLINE;
+}
+/* }}} */
+
 t_conf_opt flt_list_config[] = {
   { NULL, NULL, 0, NULL }
 };
 
 t_handler_config flt_list_handlers[] = {
-  { POSTING_HANDLER,      flt_list_execute_filter },
+  { RM_COLLECTORS_HANDLER, flt_list_rm_collector },
+  { POSTING_HANDLER,       flt_list_execute_filter },
   { 0, NULL }
 };
 

@@ -96,7 +96,7 @@ t_message *flt_link_get_last(t_cl_thread *thread) {
 
 /* {{{ flt_link_getlink */
 void flt_link_getlink(t_string *str,u_int64_t tid,u_int64_t mid,u_char *forum_name) {
-  str->content  = cf_get_link(NULL,forum_name,tid,mid);
+  str->content  = cf_get_link(NULL,tid,mid);
   str->reserved = str->len = strlen(str->content);
   str->reserved += 1;
 }

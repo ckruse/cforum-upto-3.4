@@ -110,7 +110,7 @@ void send_ok_output(t_cf_hash *head,t_name_value *cs) {
 
   tid   = str_to_u_int64(ctid);
   mid   = str_to_u_int64(cmid);
-  link  = cf_get_link(NULL,forum_name,tid,mid);
+  link  = cf_get_link(NULL,tid,mid);
 
   if(cf_tpl_init(&tpl,tpl_name) != 0) {
     printf("500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);

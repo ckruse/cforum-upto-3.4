@@ -1,3 +1,14 @@
+2005-03-04 Christian Kruse <ckruse@wwwtech.de>
+	* : Invented readmode info struct
+	* src/clientlib.c, src/modules/flt_directives.c, src/modules/flt_rot13.c,
+		src/modules/flt_list.c, src/modules/flt_cgiconfig.c, src/modules/flt_link.c,
+		src/modules/flt_nested.c, src/modules/flt_posting.c,
+		src/modules/flt_mailonpost.c, src/modules/flt_admin.c, src/fo_vote.c,
+		src/swig/CForum-Clientlib/CForum-Clientlib.i, src/fo_post.c, src/fo_feeds.c,
+		src/defines.h, src/handlerrunners.c, src/htmllib.c, src/fo_view.c:
+		Introduced cf_readmode_t info structure for easy handling of different read
+		modes
+
 2005-04-03 Christian Kruse <ckruse@wwwtech.de>
 	* src/modules/flt_visited.c: Fixed bug #691, small bugfix in order
 	* src/modules/flt_deleted.c: Small bugfix in order

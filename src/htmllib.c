@@ -878,7 +878,7 @@ int cf_gen_threadlist(t_cl_thread *thread,t_cf_hash *head,t_string *threadlist,c
 
         /* {{{ set template variables */
         date = cf_general_get_time(dft->values[0],locale->values[0],&len,&msg->date);
-        link = cf_get_link(linktpl,forum_name,thread->tid,msg->mid);
+        link = cf_get_link(linktpl,thread->tid,msg->mid);
 
         cf_set_variable(&msg->tpl,cs,"author",msg->author.content,msg->author.len,1);
         cf_set_variable(&msg->tpl,cs,"title",msg->subject.content,msg->subject.len,1);

@@ -346,11 +346,13 @@ void flt_mailonpost_encode_header(t_string *str,const u_char *enc,size_t len) {
 /* }}} */
 
 /* {{{ flt_mailonpost_parsestr */
-void flt_mailonpost_parsestr(t_cl_thread *t,t_message *p,t_string *str,const u_char *pars,const u_char *link,const u_char *mlink,t_name_value *v,t_name_value *v1,int mode) {
+void flt_mailonpost_parsestr(t_cl_thread *t,t_message *p,t_string *str,const u_char *pars,const u_char *link,const u_char *mlink,int mode) {
   register u_char *ptr;
   u_char *l;
 
   t_string str1,*str2 = NULL;
+
+  cf_readmode_t *rm = cf_hash_get(GlobalValues,"RM",2);
 
   if(mode) {
     str_init(&str1);
@@ -397,14 +399,14 @@ void flt_mailonpost_parsestr(t_cl_thread *t,t_message *p,t_string *str,const u_c
                   continue;
 
                 case 'u':
-                  l = cf_get_link(v->values[0],NULL,t->tid,t->threadmsg->mid);
+                  l = cf_get_link(rm->posting_uri[0],t->tid,t->threadmsg->mid);
                   str_chars_append(str,l,strlen(l));
                   free(l);
                   ptr += 2;
                   continue;
 
                 case 'm':
-                  l = cf_get_link(v1->values[0],NULL,t->tid,t->threadmsg->mid);
+                  l = cf_get_link(rm->posting_uri[1],t->tid,t->threadmsg->mid);
                   str_chars_append(str,l,strlen(l));
                   free(l);
                   ptr += 2;
@@ -428,14 +430,14 @@ void flt_mailonpost_parsestr(t_cl_thread *t,t_message *p,t_string *str,const u_c
                 continue;
 
               case 'u':
-                l = cf_get_link(v->values[0],NULL,t->tid,t->messages->mid);
+                l = cf_get_link(rm->posting_uri[0],t->tid,t->messages->mid);
                 str_chars_append(str,l,strlen(l));
                 free(l);
                 ptr += 2;
                 continue;
 
               case 'm':
-                l = cf_get_link(v1->values[0],NULL,t->tid,t->messages->mid);
+                l = cf_get_link(rm->posting_uri[1],t->tid,t->messages->mid);
                 str_chars_append(str,l,strlen(l));
                 free(l);
                 ptr += 2;
@@ -475,14 +477,13 @@ void flt_mailonpost_mail(u_char **emails,u_int64_t len,t_message *p,t_cl_thread 
 
   struct s_smtp *inf;
 
-  t_name_value *v  = cfg_get_first_value(&fo_default_conf,flt_mailonpost_fn,"PostingURL");
-  t_name_value *v1 = cfg_get_first_value(&fo_default_conf,flt_mailonpost_fn,"UPostingURL");
+  cf_readmode_t *rm = cf_hash_get(GlobalValues,"RM",2);
 
   u_char *msg_subj = cf_get_error_message("Send_Answer_Subject",NULL),
          *msg_body = cf_get_error_message("Send_Answer_Body",NULL),
          *ptr,
-         *link = cf_get_link(v->values[0],NULL,t->tid,p->mid),
-         *mylink = cf_get_link(v1->values[0],NULL,t->tid,p->mid);
+         *link = cf_get_link(rm->posting_uri[0],t->tid,p->mid),
+         *mylink = cf_get_link(rm->posting_uri[1],t->tid,p->mid);
 
   t_string str;
 
@@ -490,9 +491,9 @@ void flt_mailonpost_mail(u_char **emails,u_int64_t len,t_message *p,t_cl_thread 
 
   /* {{{ parse subject and message body */
   str_chars_append(&str,"Content-Type: text/plain; charset=UTF-8\015\012Subject: ",50);
-  flt_mailonpost_parsestr(t,p,&str,msg_subj,link,mylink,v,v1,1);
+  flt_mailonpost_parsestr(t,p,&str,msg_subj,link,mylink,1);
   str_chars_append(&str,"\015\012\015\012",4);
-  flt_mailonpost_parsestr(t,p,&str,msg_body,link,mylink,v,v1,0);
+  flt_mailonpost_parsestr(t,p,&str,msg_body,link,mylink,0);
 
   free(mylink);
   free(link);
@@ -592,6 +593,8 @@ int flt_mailonpost_post_handler(t_cf_hash *head,t_configuration *dc,t_configurat
   DB *db = NULL;
   int ret;
 
+  cf_readmode_t *rm = cf_hash_get(GlobalValues,"RM",2);
+
   DBT key,data;
 
   if(flt_mailonpost_udb == NULL) return FLT_DECLINE;
@@ -616,14 +619,13 @@ int flt_mailonpost_post_handler(t_cf_hash *head,t_configuration *dc,t_configurat
   }
 
   cs = cfg_get_first_value(dc,flt_mailonpost_fn,"ExternCharset");
-  uri = cfg_get_first_value(dc,flt_mailonpost_fn,"UPostingURL");
 
   if(ret == DB_NOTFOUND) {
-    link = cf_advanced_get_link(uri->values[0],thread->tid,thread->messages->mid,NULL,1,&len,"mailonpost","yes");
+    link = cf_advanced_get_link(rm->posting_uri[1],thread->tid,thread->messages->mid,NULL,1,&len,"mailonpost","yes");
     cf_set_variable(tpl,cs,"abolink",link,len,1);
   }
   else {
-    link = cf_advanced_get_link(uri->values[0],thread->tid,thread->messages->mid,NULL,1,&len,"mailonpost","no");
+    link = cf_advanced_get_link(rm->posting_uri[1],thread->tid,thread->messages->mid,NULL,1,&len,"mailonpost","no");
     cf_set_variable(tpl,cs,"unabolink",link,len,1);
   }
 
