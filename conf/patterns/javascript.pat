@@ -14,7 +14,7 @@ block "default"
   onstring "&quot;" "string" "string"
   onstring "'" "sqstring" "string"
 
-  onregexp "^(\\*=|/=|%=|\\+=|-=|&lt;&lt;=|&gt;(&gt;){1,2}=|&amp;=|^=|\\|=|\\+(\\+)?|--?|~|!|\\*|/|%|&gt;(&gt;){0,2}|(&lt;){1,2}|&lt;=|&gt;=|==|!=|===|!==|(&amp;){1,2}|\\^|\\|{1,2}|\\?|=)" highlight "operator"
+  onregexp "^(\\.|\\*=|/=|%=|\\+=|-=|&lt;&lt;=|&gt;(&gt;){1,2}=|&amp;=|^=|\\|=|\\+(\\+)?|--?|~|!|\\*|/|%|&gt;(&gt;){0,2}|(&lt;){1,2}|&lt;=|&gt;=|==|!=|===|!==|(&amp;){1,2}|\\^|\\|{1,2}|\\?|=)" highlight "operator"
 
 end
 
