@@ -22,9 +22,9 @@
  ThreadIndexFile "@DATADIR@/tididx.dat"
 
  BaseURL "/"
- PostingURL "/t/%t/m/%m/"
+ PostingURL "?t=%t&m=%m"
  UBaseURL "/my/"
- UPostingURL "/my/t/%t/m/%m/"
+ UPostingURL "/my/?t=%t&m=%m"
 
  ArchivePostingURL "/archiv/t/%t/m/%m/"
  ArchiveURL "/archiv/"

@@ -484,7 +484,8 @@ sub get_error {
 
 	my $id = $dcfg->{Language}->[0]->[0].'_E_'.($variant ? $err.'_'.$variant : $err);
 
-	my $msg = $Msgs->db_get($id);
+  my $msg = '';
+	my $rc = $Msgs->db_get($id,$msg);
 	return $msg||'Error not found: '.$id;
 }
 # }}}

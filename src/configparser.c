@@ -77,6 +77,7 @@ t_conf_opt default_options[] = {
   { "PostScript",               handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG, &fo_default_conf },
   { "UPostScript",              handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG, &fo_default_conf },
   { "UserConfig",               handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG, &fo_default_conf },
+  { "UserManagement",           handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG, &fo_default_conf },
   { "UserRegister",             handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG, &fo_default_conf },
   { "SharedMemIds",             handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG, &fo_default_conf },
   { "Administrators",           handle_command,   CFG_OPT_CONFIG,                &fo_default_conf },

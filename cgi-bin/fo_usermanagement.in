@@ -29,7 +29,7 @@ BEGIN {
 	$Management = undef;
 }
 
-use lib "@PERLMODULES@";
+use lib ("@PERLMODULES@","@libdir@");
 
 sub VERSION {(q$Revision: 1.24 $ =~ /([\d.]+)\s*$/)[0] or '0.0'}
 
@@ -51,6 +51,7 @@ use CheckRFC;
 # {{{ fatal
 sub fatal {
   my $err = shift;
+  die "error: $err";
 
   print <<HTML;
 Content-Type: text/html
@@ -189,7 +190,7 @@ elsif($action eq 'register' || !$action) {
 
 # action is not activated (or registered), redirect user to forum
 if($action eq 'redirect') {
-  $cgi->redirect($UserName?$fo_default_conf->{BaseURL}->[0]->[0]:$fo_default_conf->{UBaseURL}->[0]->[0]);
+  print $cgi->redirect($UserName?$fo_default_conf->{BaseURL}->[0]->[0]:$fo_default_conf->{UBaseURL}->[0]->[0]);
   exit;
 }
 
@@ -197,7 +198,7 @@ if($UserName) {
 	# {{{ unregister account
 	if($action eq 'unreg') {
 		my $tpl = new CForum::Template(get_template($fo_default_conf,$user_config,$fo_usermanagement_conf->{Unregister}->[0]->[0]));
-		$tpl->setVar('script',recode($fo_default_conf,$fo_default_conf->{UserConfig}->[0]->[0]));
+		$tpl->setVar('script',recode($fo_default_conf,$fo_default_conf->{UserManagement}->[0]->[0]));
 		$tpl->setVar('forumbase',recode($fo_default_conf,$fo_default_conf->{UBaseURL}->[0]->[0]));
 		$tpl->setVar('charset',$fo_default_conf->{ExternCharset}->[0]->[0]);
 		$tpl->setVar('acceptcharset',$fo_default_conf->{ExternCharset}->[0]->[0].', UTF-8');
@@ -242,7 +243,7 @@ if($UserName) {
 
 			if($p eq $cgi->param('Password1')) {
 				$form = 0;
-        unless($err = validate_input($fo_default_conf,$fo_usermanagement_conf,$cgi)) {
+        if($err = validate_parameters($fo_default_conf,$fo_usermanagement_conf,$cgi)) {
           $err = $err.'_invalid';
           $form = 1;
         }
@@ -259,7 +260,7 @@ if($UserName) {
 		if($form) {
 			my $tpl = new CForum::Template(get_template($fo_default_conf,$user_config,$fo_usermanagement_conf->{ChangePass}->[0]->[0]));
 
-			$tpl->setVar('script',recode($fo_default_conf,$fo_default_conf->{UserConfig}->[0]->[0]));
+			$tpl->setVar('script',recode($fo_default_conf,$fo_default_conf->{UserManagement}->[0]->[0]));
 			$tpl->setVar('forumbase',recode($fo_default_conf,$fo_default_conf->{UBaseURL}->[0]->[0]));
 			$tpl->setVar('error',recode($fo_default_conf,$err)) if $err;
 			$tpl->setVar('charset',$fo_default_conf->{ExternCharset}->[0]->[0]);
@@ -269,7 +270,7 @@ if($UserName) {
 		}
 		else {
 			my $tpl = new CForum::Template(get_template($fo_default_conf,$user_config,$fo_usermanagement_conf->{ChangePassOk}->[0]->[0]));
-			$tpl->setVar('script',recode($fo_default_conf,$fo_default_conf->{UserConfig}->[0]->[0]));
+			$tpl->setVar('script',recode($fo_default_conf,$fo_default_conf->{UserManagement}->[0]->[0]));
 			$tpl->setVar('forumbase',recode($fo_default_conf,$fo_default_conf->{UBaseURL}->[0]->[0]));
 			$tpl->setVar('charset',$fo_default_conf->{ExternCharset}->[0]->[0]);
 			$tpl->setVar('acceptcharset',$fo_default_conf->{ExternCharset}->[0]->[0].', UTF-8');
@@ -397,7 +398,7 @@ else {
 		$tpl->setVar('ubase',recode($fo_default_conf,$fo_default_conf->{UBaseURL}->[0]->[0]));
 		$tpl->setVar('forumbase',recode($fo_default_conf,$fo_default_conf->{BaseURL}->[0]->[0]));
 		$tpl->setVar('script',recode($fo_default_conf,$fo_default_conf->{UserRegister}->[0]->[0]));
-		$tpl->setVar('uscript',recode($fo_default_conf,$fo_default_conf->{UserConfig}->[0]->[0]));
+		$tpl->setVar('uscript',recode($fo_default_conf,$fo_default_conf->{UserManagement}->[0]->[0]));
 		$tpl->setVar('charset',$fo_default_conf->{ExternCharset}->[0]->[0]);
 		$tpl->setVar('acceptcharset',$fo_default_conf->{ExternCharset}->[0]->[0].', UTF-8');
 

@@ -39,6 +39,9 @@
               <img src="http://src.selfhtml.org/down.gif" width="14" height="10" alt="nach unten" />&nbsp;<a href="#erreur"><b>Erreur</b></a><br />{endif}
               <img src="http://src.selfhtml.org/down.gif" width="14" height="10" alt="nach unten" />&nbsp;<a href="#inscrire"><b>Vous inscrire</b></a>
             </p>
+            <p>
+              <img src="http://src.selfhtml.org/down.gif" width="14" height="10" border="0" alt="nach unten">&nbsp;<a href="${script}?a=sendpw"><b>Passwort zuschicken</b></a>
+            </p>
           </td>
         </tr>
         <tr>
@@ -54,19 +57,23 @@
       <input type="hidden" name="a" value="register" />
       <table border="0">
         <tr>
-          <td><label for="username">Nom d'identifiant:</label></td>
-          <td><input type="text" name="username" id="username" value="{$username}" /> (ne doit contenir comme caract&eagrave;res que des lettres en minuscules et/ou chiffres '0-9a-z' -pas de caract&egrave;res sp&eacute;ciaux- et doit contenir au moins 3 caract&egrave;res! L'identifiant n'a rien &agrave; voir avec le nom ou pseudonyme que vous choisirez pour les messages du forum!)</td>
+          <td><label for="UserName">Nom d'identifiant:</label></td>
+          <td><input type="text" name="UserName" id="UserName" value="{$username}" /> (ne doit contenir comme caract&eagrave;res que des lettres en minuscules et/ou chiffres '0-9a-z' -pas de caract&egrave;res sp&eacute;ciaux- et doit contenir au moins 3 caract&egrave;res! L'identifiant n'a rien &agrave; voir avec le nom ou pseudonyme que vous choisirez pour les messages du forum!)</td>
+        </tr>
+        <tr>
+          <td><label for="email">E-Mail</label></td>
+          <td><input type="text" name="email" id="email" value="{$email}" /> (Muss eine gültige E-Mail-Adresse sein. Wird nur dazu verwendet, dem User eventuell ein Passwort zuzuschicken oder einen Warn-Hinweis, wenn der Account zu lange nicht benutzt wurde!)</td>
         </tr>
         <tr>
           <td colspan="2">&nbsp;</td>
         </tr>
         <tr>
-          <td><label for="passwd">Mot de passe:</label></td>
-          <td><input type="password" name="passwd" id="passwd" value="" /> (ne doit contenir comme caract&eagrave;res que <code>a-zA-Z0-9!&quot;§$_&lt;&gt;.%&amp;\/()=?-</code> et doit contenir au moins une lettre, au moins un chiffre et sa longueur doit &ecirc;tre d'au moins 5 caract&egrave;res!)</td>
+          <td><label for="Password">Mot de passe:</label></td>
+          <td><input type="password" name="Password" id="Password" value="" /> (ne doit contenir comme caract&eagrave;res que <code>a-zA-Z0-9!&quot;§$_&lt;&gt;.%&amp;\/()=?-</code> et doit contenir au moins une lettre, au moins un chiffre et sa longueur doit &ecirc;tre d'au moins 5 caract&egrave;res!)</td>
         </tr>
         <tr>
-          <td><label for="passwd1">Confirmation du mot de passe:</label></td>
-          <td><input type="password" name="passwd1" id="passwd1" value="" /></td>
+          <td><label for="Password1">Confirmation du mot de passe:</label></td>
+          <td><input type="password" name="Password1" id="Password1" value="" /></td>
         </tr>
         <tr>
           <td colspan="2">&nbsp;</td>

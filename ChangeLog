@@ -1,3 +1,20 @@
+2004-08-02 Christian Kruse <ckruse@wwwtech.de>
+	* cgi-shared/Plugins/Management/SQL.pm: Bugfix, directives are named 'SQL*'!
+		Changed behavior of get_password(), now it returns undef if user could not
+		be found
+	* cgi-bin/fo_usermanagement.in: Several bugfixes, e.g. setting script to
+		UserManagement directive instead of UserConfig
+	* cgi-bin/fo_userconf.in: Added template variable 'usermanagement'
+	* sr/templates/{de,fr}/tpl_*/*.html: Several changes for fo_usermanagement
+	* cgi-shared/ForumUtils.pm: Bugfix in db_get() call
+	* src/configparser.c: Added directive 'UserManagement' for fo_default.conf
+	* cgi-shared/config/fo_default.conf.in: Changed default value of URIs to query
+		string (PATH_INFO has not been tested very well, yet)
+
+2004-08-01 Christian Kruse <ckruse@wwwtech.de>
+	* cgi-bin/fo_userconf.in: Deleted fo_usermanagement code and redirecting user
+		to it if not authorized
+
 2004-07-31 Christian Kruse <ckruse@wwwtech.de>
 	* src/clientlib.c: Changed messages system to BerkeleyDB
 	* cgi-shared/config/locale/: Removed due to the crazyness of the gettext

@@ -34,10 +34,10 @@ sub sql_data {
   my $fuc = shift;
 
   return (
-    $fuc->{UserTable}->[0]->[0],
-    $fuc->{UserColumn}->[0]->[0],
-    $fuc->{PasswdColumn}->[0]->[0],
-    $fuc->{EmailColumn}->[0]->[0]
+    $fuc->{SQLUserTable}->[0]->[0],
+    $fuc->{SQLUserColumn}->[0]->[0],
+    $fuc->{SQLPasswdColumn}->[0]->[0],
+    $fuc->{SQLEmailColumn}->[0]->[0]
   );
 }
 # }}}
@@ -96,12 +96,17 @@ sub get_password {
 
   my $dbq = $dbh->prepare('SELECT '.$passwdcol.','.$emailcol.' FROM '.$table.' WHERE username = ?');
   $dbq->execute($uname);
-  my $result = $dbq->fetchrow_hashref;
 
-  return {
-    pass => $result->{$passwdcol},
-    email => $result->{$emailcol}
-  };
+  if($dbq->rows) {
+    my $result = $dbq->fetchrow_hashref;
+
+    return {
+      pass => $result->{$passwdcol},
+      email => $result->{$emailcol}
+    };
+  }
+
+  return;
 }
 # }}}
 
