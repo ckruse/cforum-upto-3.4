@@ -192,6 +192,10 @@ int flt_syntax_read_list(const u_char *pos,flt_syntax_list_t *list) {
         continue;
 
       case ',':
+        if(!str.content) {
+          fprintf(stderr,"Error reading list, str.content is NULL! ptr: %s\n",ptr);
+          return -1;
+        }
         array_push(&list->list,&str);
         str_init(&str);
         break;
@@ -201,6 +205,10 @@ int flt_syntax_read_list(const u_char *pos,flt_syntax_list_t *list) {
     }
   }
 
+  if(!str.content) {
+    fprintf(stderr,"Error reading list, str.content is NULL at end of list!\n");
+    return -1;
+  }
   array_push(&list->list,&str);
 
   return 0;
@@ -441,7 +449,7 @@ int flt_syntax_load(const u_char *path,const u_char *lang) {
           return 1;
         }
 
-        if((preg.re = pcre_compile((const char *)str.content,0,(const char **)&error,&offset,NULL)) == NULL) {
+        if((preg.re = pcre_compile((const char *)str.content,PCRE_CASELESS,(const char **)&error,&offset,NULL)) == NULL) {
           fprintf(stderr,"regex error in pattern '%s': %s (Offset %d) at line %d\n",str.content,error,offset,lineno);
           return 1;
         }
@@ -497,7 +505,7 @@ int flt_syntax_load(const u_char *path,const u_char *lang) {
           return 1;
         }
 
-        if((preg.re = pcre_compile((const char *)str.content,0,(const char **)&error,&offset,NULL)) == NULL) {
+        if((preg.re = pcre_compile((const char *)str.content,PCRE_CASELESS,(const char **)&error,&offset,NULL)) == NULL) {
           fprintf(stderr,"error in patter '%s': %s (Offset %d) at line %d\n",str.content,error,offset,lineno);
           return 1;
         }
@@ -550,7 +558,7 @@ int flt_syntax_load(const u_char *path,const u_char *lang) {
           fprintf(stderr,"after onregexpafter we got no regex at line %d!\n",lineno);
           return 1;
         }
-        if((preg.re = pcre_compile((const char *)str.content,0,(const char **)&error,&offset,NULL)) == NULL) {
+        if((preg.re = pcre_compile((const char *)str.content,PCRE_CASELESS,(const char **)&error,&offset,NULL)) == NULL) {
           fprintf(stderr,"error in pattern '%s': %s (offset %d) at line %d\n",str.content,error,offset,lineno);
           return 1;
         }
@@ -569,7 +577,7 @@ int flt_syntax_load(const u_char *path,const u_char *lang) {
           fprintf(stderr,"after onregexpafter we got no regex at line %d!\n",lineno);
           return 1;
         }
-        if((preg.re = pcre_compile((const char *)str.content,0,(const char **)&error,&offset,NULL)) == NULL) {
+        if((preg.re = pcre_compile((const char *)str.content,PCRE_CASELESS,(const char **)&error,&offset,NULL)) == NULL) {
           fprintf(stderr,"error in pattern '%s': %s (offset %d) at line %d\n",str.content,error,offset,lineno);
           return 1;
         }
@@ -622,7 +630,7 @@ int flt_syntax_load(const u_char *path,const u_char *lang) {
           fprintf(stderr,"after onregexpafter_backref we got no regex at line %d!\n",lineno);
           return 1;
         }
-        if((preg.re = pcre_compile((const char *)str.content,0,(const char **)&error,&offset,NULL)) == NULL) {
+        if((preg.re = pcre_compile((const char *)str.content,PCRE_CASELESS,(const char **)&error,&offset,NULL)) == NULL) {
           fprintf(stderr,"error in pattern '%s': %s (offset %d) at line %d\n",str.content,error,offset,lineno);
           return 1;
         }
@@ -641,7 +649,7 @@ int flt_syntax_load(const u_char *path,const u_char *lang) {
           fprintf(stderr,"after onregexpafter_backref we got no regex at line %d!\n",lineno);
           return 1;
         }
-        if((preg.re = pcre_compile((const char *)str.content,0,(const char **)&error,&offset,NULL)) == NULL) {
+        if((preg.re = pcre_compile((const char *)str.content,PCRE_CASELESS,(const char **)&error,&offset,NULL)) == NULL) {
           fprintf(stderr,"error in pattern '%s': %s (offset %d) at line %d\n",str.content,error,offset,lineno);
           return 1;
         }

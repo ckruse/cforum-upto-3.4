@@ -9,6 +9,7 @@ block "default"
   onstring "//" "onelinecomment" "comment"
   onstring "/*" "comment" "comment"
 
+  onstringlist "symbols" highlight "symbol"
   onstringlist "keywords" highlight "keyword"
 
   onstring "&quot;" "string" "string"
