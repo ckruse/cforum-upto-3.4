@@ -19,6 +19,8 @@ block "default"
   onstring "&quot;" "string" "string"
   onstring "'" "sqstring" "string"
 
+  onregexp "^utf-(7|8|16|32)|ISO-8859-\\d+|ISO-2022-\\w\\w|big5|windows-\\d+|cp866|koi8-ru?|ISO-10646-UCS-[24]|GB2312|EUC-\\w\\w|shift_jis" highlight "charset"
+
   onregexpafter "^[^a-zA-Z0-9]" "^0[0-7]+\\.?[0-7]*" highlight "octnumber"
   onregexpafter "^[^a-zA-Z0-9]" "^0[xX][0-9A-Fa-f]+\\.?[0-9A-Fa-f]*" highlight "hexnumber"
   onregexpafter "^[^a-zA-Z0-9]" "^[0-9]+\\.?[0-9]*" highlight "number"

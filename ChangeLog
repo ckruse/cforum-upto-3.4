@@ -1,217 +1,23 @@
-2005-03-16 Christian Kruse <ckruse@wwwtech.de>
-	* src/fo_view.c: Added support for different read modes
-	* src/clientlib.[ch]: Added cf_set_variable_hash()
-	* src/modules/flt_link.c: Now runs only in thread read mode
-	* src/modules/flt_votingvariables.c, src/modules/flt_admin.c,
-		src/modules/flt_posting.c: Changed to new API for setting per-thread
-		variables
-	* src/modules/flt_latex.c: Small API bugfix
-	* src/defines.h: Added PERPOST_VAR_HANDLER handler hook
-	* src/handlerrunners.c: Added cf_run_perpost_var_handlers()
-	* src/htmllib.c: Added cf_gen_threadlist()
-	* src/configparser.c: Added ReadMode directive, added template directives
-	* conf/fo_view.conf.in: Added ReadMode, added template directives
-	* src/modules/flt_list.c: Added plugin for list read mode
-	* src/modules/flt_nested.c: Added plugin for nested read mode
-	* src/modules/flt_cgiconfig.c: Renamed flt_threadlist to flt_cgiconfig (better
-		name)
-	* conf/modules.de.xml: Added ReadMode directive
-	* TODO: Actualized TODO list
+2005-03-23 Christian Kruse <ckruse@wwwtech.de>
+	* src/modules/flt_votingvariables.c: Fixed bug #620
+	* src/modules/flt_posting.c: Fixed bug #607
+	* conf/modules.de.xml: Added directive ShowUserImageAsLink
+	* conf/patterns/apache.pat: Added some charsets, #626
+	* src/charconvert.[ch]: Changed htmlentities_decode() function, not it really
+		decodes HTML entities
+	* src/modules/flt_directives.c: Added possibility to show user images as
+		links, bug #603
+	* src/modules/flt_votingvariables.c: Fixed bug #620
+	* src/modules/flt_gummizelle.c: Added gummizelle handler for new threads and
+		postings; if user is jailed postings will be marked as deleted
+	* src/modules/flt_xmlarc.c: Fixed bug #606
+	* src/entitytable.h: Added sorted table for named entities
+	* src/htmllib.c: Fixed call to htmlentities_decode()
+	* scripts/fo_userconf.in: Fixed warning for use of uninitialized value
 
-2005-03-15 Christian Kruse <ckruse@wwwtech.de>
-	* conf/patterns/Makefile.am: Added complete list of pattern files to install
-		them automaticly
-	* conf/fo_arcview.conf.in: Removed old config directives, added ArchivePath
-		and PatternsDirectory
-
-2005-03-14 Christian Kruse <ckruse@wwwtech.de>
-	* src/fo_view.c: Now setting the forum base is based on cf_get_link()
-	* src/clientlib.[ch]: Changed behavior and prototype of cf_general_get_link()
-	* src/modules/flt_syntax.c, src/modules/flt_link.c,
-		src/modules/flt_votingvariables.c, src/modules/flt_mailonpost.c: Changed
-		call of cf_general_get_link()
-	* src/modules/flt_admin.c: Changed calls to cf_general_get_link(), now
-		username and IP address will be set to template in admin mode
-	* src/serverlib.c: Fixed some protocol bugs
-	* src/swig/CForum-Clientlib/CForum-Clientlib.i: Changed calling of
-		cf_general_get_link()
-	* src/communication.c: Fixed some protocol bugs
-	* src/fo_post.c: Now the username will be given as flag if poster is a
-		registered user
-	* src/archiver.c: Fixed bug in archiving by bytes
-	* src/modules/flt_directives.c, src/modules/flt_syntax.c: Changed prototypes
-		for directive filters
-	* src/modules/flt_rot13.c: Added rot13 feature
-	* src/htmllib.[ch]: Changed directive filters prototypes, now t_cl_thread will
-		be given to directive filters
-
-2005-03-13 Christian Kruse <ckruse@wwwtech.de>
-	* src/modules/flt_syntax.c: Added - char to word characters
-	* conf/patterns/pascal.pat: Added pascal syntax highlighting
-	* src/fo_view.c: Added some standard variables
-
-2005-03-09 Christian Kruse <ckruse@wwwtech.de>
-	* conf/patterns/javascript.pat: Added all methods and objects described in
-		SELFHTML
-	* conf/patterns/java.pat: Added java syntax highlighting
-	* conf/patterns/perl.pat, conf/patterns/c.pat, conf/patterns/javascript.pat,
-		conf/patterns/php.pat: Fixed escape sequences patterns
-	* conf/patterns/ruby.pat: Added ruby highlighting pattern file
-	* conf/patterns/python.pat: Added python syntax highlighting pattern file
-	* src/modules/flt_syntax.c: Fixed a bug, now the user input will be appended
-		to content, not highlighting content
-	* src/perl/Plugins/ImportExport.pm: Bugfix, now backslashes are quoted
-		correctly
-
-2005-03-08 Christian Kruse <ckruse@wwwtech.de>
-	* conf/patterns/sql.pat: Added syntax highlighting for SQL, Daniela Koller
-		<dako@wwwtech.de> wrote it
-	* conf/patterns/javascript.pat: Small bugfix, added onstringlist "symbols"
-	* src/modules/flt_syntax.c: Now all regexes are case-insensitive
-	* conf/patterns/perl.pat, conf/patterns/c.pat, conf/patterns/javascript.pat,
-		conf/patterns/php.pat: Fixed bugs in highlighting escaped values
-	* scripts/fo_userconf.in: Bugfix, now backslashes are correctly quoted
-	* src/fo_view.c: Added postscript variable for forum_begin template
-	* conf/patterns/apache.pat: Added syntax highlighting for apache config
-
-2005-03-07 Christian Kruse <ckruse@wwwtech.de>
-	* src/utils.c: Fixed nasty bug in cf_make_path()
-	* src/modules/flt_xmlstorage.c: Fixed a bug in archiving routines
-	* src/fo_arcview.c: Fixed a bug in variable setting
-	* conf/patterns/html.pat: Changed entity list to regex since onstringlist only
-		allows words ([a-zA-Z][a-zA-z0-9]*)
-	* conf/patterns/css.pat: Added a debugged version of the CSS pattern file
-	* conf/patterns/xml.pat: Added XML syntax highlighting
-	* conf/patterns/javascript.pat: Added JS highlighting
-	* conf/patterns/php.pat: Small bugfixes
-	* src/modules/flt_syntax.c: Fixed bugs in syntax highlighting
-	* conf/patterns/c.pat: Added C highlighting
-
-2005-03-05 Christian Seiler <self@christian-seiler.de>
-	* conf/patterns/html.pat: Fixed small bug
-
-2005-02-04 Christian Kruse <ckruse@wwwtech.de>
-	* src/fo_post.c, src/fo_feeds.c: Fixed two small compile errors in
-		non-shm-mode
-	* src/cf_pthread.c: Added names in error messages
-	* src/fo_server.c: Fixed getopt() string, changed cf_cond_* calls to CF_CD_*
-	* src/cf_pthread.[ch]: Made error messages more informative
-	* src/modules/flt_cftp.c: Little bit code cleaning, fixed a fatal bug in
-		locking
-	* src/datautils.c: Fixed bug in u_int64_to_str()
-	* src/serverlib.c: Changed cf_cond_* calls to CF_CD_*, fixed several bugs in
-		protocol handling
-	* src/readline.c: Little bit code cleaning
-	* src/communication.c: Fixed several bugs in protocol handling
-	* src/perl/ForumUtils.pm: Made error message more informative
-
-2005-03-03 Christian Kruse <ckruse@wwwtech.de>
-	* src/modules/flt_latex.c: Enhanced behavior, now PNG will alwas be created
-		and HTML will never be created
-
-2005-03-02 Christian Seiler <self@christian-seiler.de>
-	* src/template.c, src/template.h: Added support for hash variables
-	* src/parsetpl/parsetpl.lex: Added support for hash dereferencing
-		({$foo["bar"]} and for hash assignment ({$foo = ["bar" =>
-		"buz"]}); added concatenation operator for strings and
-		variables (+)
-
-2005-03-01 Christian Seiler <self@christian-seiler.de>
-	* src/perl/Plugins/XMLRPCUserManagement.pm: Fixed small bug
-
-2005-03-01 Christian Kruse <ckruse@wwwtech.de>
-	* conf/errormessages.de.txt: Added two warnings, changed error message
-	* src/modules/flt_directives.c: Added validator function
-	* src/modules/flt_categorycheck.c, src/modules/flt_checkregisteredname.c,
-		src/modules/flt_postingassistant.c, src/modules/flt_spellcheck.c,
-		src/modules/flt_preview.c: Changed to new display_posting_form() prototype
-	* src/modules/flt_syntax.c: Added validator function
-	* src/fo_post.c, src/fo_post.h: Added body validation, changed prototype for
-		display_posting_form(), added possibility to validate every field by regex
-	* src/defines.h: Added FLT_ERROR return value
-	* src/htmllib.c, src/htmllib.h: Added body validation functions
-
-2005-02-27 Christian Kruse <ckruse@wwwtech.de>
-	* conf/fo_view.conf.in: Removed ReadMode parameter
-	* src/fo_view.c: Removed show_thread() and ReadMode behavior
-	* src/clientlib.h: Changed prototype of cf_run_post_display_handlers()
-	* src/modules/flt_deleted.c: Fixed a bug, now filter doesn't run in threadview
-	* src/modules/flt_link.c: Added link rel="up"
-	* src/modules/flt_posting.c: Changed behavior of posting display handler to
-		support fo_post?fupto=tid;mid
-	* src/fo_post.c: Changed behavior to support fo_post?fupto=tid;mid
-	* src/handlerrunners.c: Changed prototype of cf_run_post_display_handlers()
-	* src/configparser.c: Removed ReadMode configuration entry
-
-2005-02-26 Christian Kruse <ckruse@wwwtech.de>
-	* src/fo_feeds.c: Fixed wrong id and guid generation
-
-2005-02-26 Christian Seiler <self@christian-seiler.de>
-	* src/modules/flt_spellcheck.c: Fixed bug #555
-	* src/modules/flt_mailonpost.c: Added missing ; that caused parse
-		error
-	* src/perl/Plugins/XMLRPCUserManagement.pm: Fixed small bug
-
-2005-02-25 Christian Kruse <ckruse@wwwtech.de>
-	* src/fo_server.c: Fixed a _really_ nasty bug in logfile rolling...
-	* src/modules/flt_mailonpost.c: Fixed bug #564
-
-2005-02-24 Christian Kruse <ckruse@wwwtech.de>
-	* conf/errormessages.de.txt: Changed the Send_Answer_Body text a little bit
-	* src/modules/flt_mailonpost.c: Changed behavior a little bit, added lots of
-		place holders
-	* src/fo_post.c: Fixed a bug
-	* src/htmllib.c: Implemented #559
-	* conf/fo_view.conf.in: Added flt_threadlist in default config
-	* src/defines.h: Changed version number
-	* src/modules/flt_threadlist.c: Implements #307
-
-2005-02-23 Christian Kruse <ckruse@wwwtech.de>
-	* src/modules/flt_syntax.c: Fixed several bugs in syntax highlighting
-	* src/modules/flt_failsafe.c: Fixed bug, forgot to fclose() file handle
-
-2005-02-22 Christian Kruse <ckruse@wwwtech.de>
-	* src/modules/flt_mailonpost.c: Fixed bug in checkbox, now it should work
-	* conf/fo_feeds.conf.in: Added configuration file for forum feeds program
-	* conf/Makefile.am, configure.in: Added fo_feeds.conf.in
-	* src/fo_view.c: Fixed some bugs in http status
-	* src/clientlib.h: Added CF_MODE_XML
-	* src/communication.c: Small bugfix in str_char_set() calls
-	* src/fo_feeds.c: Added feed program, supports Atom 0.3 and RSS 2.0 for now
-	* src/configparser.c, src/configparser.h: Added fo_feed_conf configuration
-		variables
-	* src/Makefile.am: Added fo_feed program
-
-2005-02-21 Christian Kruse <ckruse@wwwtech.de>
-	* conf/fo_usermanagement.conf.in, conf/modules.de.xml, src/fo_view.c,
-		src/clientlib.h, src/modules/flt_livefilter.c, src/modules/flt_deleted.c,
-		src/modules/flt_xmlstorage.c, src/modules/flt_syntax.c,
-		src/modules/flt_frameset.c, src/modules/flt_visited.c,
-		src/modules/flt_latex.c, src/modules/flt_postingassistant.c,
-		src/modules/Makefile.am, src/modules/flt_include.c,
-		src/modules/flt_sorting.c, src/modules/flt_mailonpost.c,
-		src/modules/flt_xmlarc.c, src/modules/flt_admin.c, src/fo_vote.c,
-		src/perl/Plugins/Pathes.pm, src/perl/Plugins/ImportExport.pm,
-		src/perl/Plugins/Makefile.am, src/perl/Plugins/XMLRPCUserManagement.pm,
-		src/fo_arcview.c, src/fo_post.c, src/defines.h, src/handlerrunners.c,
-		src/htmllib.c, src/messageutils.c, src/Makefile.am,
-		scripts/fo_usermanagement.in, scripts/cf-compile_templates.pl,
-		scripts/cf-cleanup.pl.in, scripts/fo_userconf.in, scripts/fo_xmlrpc.in:
-		Merged back changes from 3.0 branch
-
-2005-02-21 Christian Kruse <ckruse@wwwtech.de>
-	* src/modules/flt_mailonpost.c: Fixed bug, flt_mailonpost_udb has to be equal
-		NULL if FLT_DECLINE should returned, not non-NULL
-	* src/modules/flt_syntax.c: Made parser more tollerant, now it also recognizes
-		"lang" and 'lang' and so on
-	* src/perl/Plugins/ImportExport.pm: Changed import behavior, unknown
-		directives will be ignored
-
-2005-02-19 Christian Seiler <self@christian-seiler.de>
-	* src/modules/flt_syntax.c: fixed a few bugs
-
-2005-02-18 Christian Seiler <self@christian-seiler.de>
-	* scripts/fo_userconf.in: Small bugfix + implemented feature request
-		#207 (http://bugs.selfhtml.org/bug.php?op=show&bugid=207)
-
+2005-03-17 Christian Kruse <ckruse@wwwtech.de>
+	* src/modules/flt_gummizelle.c: Implemented the gummizelle
+	* src/modules/flt_cftp.c: Changed behavior of answering to deleted posts
+	* src/serverlib.c: Added Invisible field in read_posting()
+	* src/fo_post.c: Added possibility to answer to deleted posts
 

@@ -216,7 +216,7 @@ static u_char *parse_message(t_cl_thread *thread,u_char *start,t_array *stack,t_
           if(*ptr1 == ']') {
             directive = strndup(ptr+1,tmp-ptr-1);
             buff      = strtmp.content;
-            parameter = htmlentities_decode(buff);
+            parameter = htmlentities_decode(buff,NULL);
             free(buff);
 
             rc = run_inline_directive_filters(thread,directive,(const u_char **)&parameter,content,cite,qchars,sig);
@@ -538,7 +538,7 @@ int validate_message(t_array *stack,t_cl_thread *thread,const u_char *msg,u_char
           if(*ptr1 == ']') {
             directive = strndup(ptr+1,tmp-ptr-1);
             buff      = strtmp.content;
-            parameter = htmlentities_decode(buff);
+            parameter = htmlentities_decode(buff,NULL);
             free(buff);
 
             rc = run_validate_inline(directive,(const u_char **)&parameter,var);
