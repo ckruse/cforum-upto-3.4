@@ -62,7 +62,7 @@ t_conf_opt default_options[] = {
   { "<General>", NULL, 0, NULL },
   { "ExternCharset",            handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG, &fo_default_conf },
   { "TemplateMode",             handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG, &fo_default_conf },
-  { "XHTMLMode",                handle_command,   CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_UNIQUE, &fo_default_conf },
+  { "XHTMLMode",                handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_UNIQUE, &fo_default_conf },
   { "MessagePath",              handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG, &fo_default_conf },
   { "ArchivePath",              handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG, &fo_default_conf },
   { "ThreadIndexFile",          handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG, &fo_default_conf },
