@@ -1,6 +1,8 @@
 2005-01-16 Christian Kruse <ckruse@wwwtech.de>
 	* cgi-shared/ForumUtils.pm: Small bugfix
 	* cgi-bin/fo_usermanagement.in: Moved to 3.0 API
+	* cgi-shared/Plugins/ImportExport.pm: Added plugin to import and export
+		configuration data
 
 2005-01-15 Christian Kruse <ckruse@wwwtech.de>
 	* src/modules/flt_directives.c: Bugfix for [ref:], now it supports @title=

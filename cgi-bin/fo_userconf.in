@@ -588,50 +588,55 @@ elsif($action eq 'save') {
 # }}}
 # {{{ show options
 else {
-  my $tpl = new CForum::Template(get_template($fo_default_conf,$user_config,$fo_userconf_conf->{ViewSettings}->[0]->[0])) or die $@;
+  if($Plugins->{$action}) {
+    &{$Plugins->{$action}}($fo_default_conf,$fo_view_conf,$fo_userconf_conf,$user_config);
+  }
+  else {
+    my $tpl = new CForum::Template(get_template($fo_default_conf,$user_config,$fo_userconf_conf->{ViewSettings}->[0]->[0])) or die $@;
 
-  $tpl->setVar('forumbase',recode($fo_default_conf,get_conf_val($fo_default_conf,$Forum,'UBaseURL')));
-  $tpl->setVar('userconfig',recode($fo_default_conf,get_conf_val($fo_default_conf,$Forum,'UserConfig')));
-  $tpl->setVar('script',recode($fo_default_conf,get_conf_val($fo_default_conf,$Forum,'UserConfig')));
+    $tpl->setVar('forumbase',recode($fo_default_conf,get_conf_val($fo_default_conf,$Forum,'UBaseURL')));
+    $tpl->setVar('userconfig',recode($fo_default_conf,get_conf_val($fo_default_conf,$Forum,'UserConfig')));
+    $tpl->setVar('script',recode($fo_default_conf,get_conf_val($fo_default_conf,$Forum,'UserConfig')));
 
-  foreach my $modconf (@{$fo_userconf_conf->{ModuleConfig}}) {
-    my $doc   = XML::GDOME->createDocFromURI(sprintf($modconf->[0],get_conf_val($fo_default_conf,$Forum,'Language'))) or die $!;
-    my @nodes = $doc->findnodes('/config/page/section/*');
+    foreach my $modconf (@{$fo_userconf_conf->{ModuleConfig}}) {
+      my $doc   = XML::GDOME->createDocFromURI(sprintf($modconf->[0],get_conf_val($fo_default_conf,$Forum,'Language'))) or die $!;
+      my @nodes = $doc->findnodes('/config/page/section/*');
 
-    foreach my $directive (@nodes) {
-      my $dname     = $directive->getAttribute('name');
-      my @arguments = $directive->getElementsByTagName('argument');
-      my $i         = 0;
+      foreach my $directive (@nodes) {
+        my $dname     = $directive->getAttribute('name');
+        my @arguments = $directive->getElementsByTagName('argument');
+        my $i         = 0;
 
-      foreach my $arg (@arguments) {
-        my $pname = $arg->getAttribute('paramname');
-        my $val   = $user_config->{$dname}->[0]->[$i++];
+        foreach my $arg (@arguments) {
+          my $pname = $arg->getAttribute('paramname');
+          my $val   = $user_config->{$dname}->[0]->[$i++];
 
-        next if !defined($val) || !length($val);
+          next if !defined($val) || !length($val);
 
-        if($arg->getAttribute('parse') eq 'date') {
-          my ($sec,$min,$hour,$day,$mon,$year) = localtime $val;
+          if($arg->getAttribute('parse') eq 'date') {
+            my ($sec,$min,$hour,$day,$mon,$year) = localtime $val;
 
-          $mon  += 1;
-          $year += 1900;
+            $mon  += 1;
+            $year += 1900;
 
-          $val = sprintf('%02d. %02d. %4d %02d:%02d:%02d',$day,$mon,$year,$hour,$min,$sec);
+            $val = sprintf('%02d. %02d. %4d %02d:%02d:%02d',$day,$mon,$year,$hour,$min,$sec);
+          }
+          else {
+            $val =~ s/\"/"/g; #";
+            $val =~ s/\\n/<br>\n/g;
+          }
+
+          $tpl->setVar($pname,recode($fo_default_conf,$val||''));
         }
-        else {
-          $val =~ s/\"/"/g; #";
-          $val =~ s/\\n/<br>\n/g;
-        }
-
-        $tpl->setVar($pname,recode($fo_default_conf,$val||''));
       }
     }
+
+    $tpl->setVar('usermanagement',get_conf_val($fo_default_conf,$Forum,'UserManagement'));
+    $tpl->setVar('charset',get_conf_val($fo_default_conf,$Forum,'ExternCharset'));
+    $tpl->setVar('acceptcharset',get_conf_val($fo_default_conf,$Forum,'ExternCharset')', UTF-8');
+
+    print $cgi->header(-type => 'text/html; charset='.get_conf_val($fo_default_conf,$Forum,'ExternCharset')),$tpl->parseToMem;
   }
-
-  $tpl->setVar('usermanagement',get_conf_val($fo_default_conf,$Forum,'UserManagement'));
-  $tpl->setVar('charset',get_conf_val($fo_default_conf,$Forum,'ExternCharset'));
-  $tpl->setVar('acceptcharset',get_conf_val($fo_default_conf,$Forum,'ExternCharset')', UTF-8');
-
-  print $cgi->header(-type => 'text/html; charset='.get_conf_val($fo_default_conf,$Forum,'ExternCharset')),$tpl->parseToMem;
 }
 # }}}
 
