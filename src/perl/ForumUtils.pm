@@ -44,12 +44,10 @@ use POSIX qw/setlocale strftime LC_ALL/;
 use HTML::Entities;
 
 use CForum::Template;
-use CForum::Clientlib;
+use CForum::Clientlib qw/htmlentities charset_convert_entities charset_convert htmlentities_charset_convert/;
 use CForum::Validator;
 
 my $Msgs = undef;
-my $Clientlib = new CForum::Clientlib;
-
 # }}}
 
 # {{{ recode
@@ -60,10 +58,11 @@ sub recode {
 
   return unless defined $str;
   if($cs eq 'UTF-8') {
-    $str = $str ? $Clientlib->htmlentities($str,0) : '';
+    $str = $str ? htmlentities($str,0) : '';
   }
   else {
-    $str = $Clientlib->htmlentities_charset_convert($str,"UTF-8",$cs,0) if $cs ne "UTF-8";
+    my $len = 0;
+    $str = htmlentities_charset_convert($str,"UTF-8",$cs,\$len,0) if $cs ne "UTF-8";
   }
 
   return $str;
@@ -218,7 +217,7 @@ sub uniquify_params {
       my @values = $cgi->param($_);
 
       foreach my $val (@values) {
-        return get_error($dcfg,'posting','charset') unless $Clientlib->is_valid_utf8_string($val,length($val));
+        return get_error($dcfg,'posting','charset') unless is_valid_utf8_string($val,length($val));
 
         # we want non-breaking space and unicode whitespaces as normal whitespaces
         $val =~ s/\xC2\xA0|\xE2\x80[\x80-\x8B\xA8-\xAF]/ /g;
@@ -245,16 +244,19 @@ sub uniquify_params {
           # Windows-1252 has been sent; THIS IS JUST A HACK!
           if($val =~ /[\x7F-\x9F]/) {
             $convert = 0;
-            $nval = $Clientlib->charset_convert($val,length($val),"Windows-1252","UTF-8");
+            my $len = 0;
+            $nval = charset_convert($val,length($val),"Windows-1252","UTF-8",\$len);
           }
         }
 
         if($convert) {
-          $nval = $Clientlib->charset_convert(
+          my $len = 0;
+          $nval = charset_convert(
             $val,
             length($val),
             $cs,
-            "UTF-8"
+            "UTF-8",
+            \$len
           );
 
         }

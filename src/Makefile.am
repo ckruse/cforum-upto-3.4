@@ -1,5 +1,5 @@
 
-SUBDIRS=. modules parsetpl
+SUBDIRS=. modules parsetpl swig
 
 bin_PROGRAMS= \
 	fo_server \

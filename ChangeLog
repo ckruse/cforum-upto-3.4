@@ -9,6 +9,19 @@
 		sets category and subject in the message template
 	* src/modules/flt_categorycheck.c, src/modules/flt_postingassistant.c,
 		src/modules/flt_preview.c: Changed display_posting_form() call
+	* configure.in: Added outputs for SWIG modules
+	* src/perl/ForumUtils.pm: Moved to new SWIG module API
+	* src/swig/CForum-Template/CForum-Template.i,
+		src/swig/CForum-Template/Makefile.PL.in: Added CForum::Template module,
+		binding to libcftemplate
+	* src/swig/CForum-Configparser/Makefile.PL.in: Added Makefile.PL.in for the
+		configparser
+	* src/swig/CForum-Validator/Makefile.PL.in: Added Makefile.PL.in for the
+		validator
+	* src/swig/CForum-Clientlib/CForum-Clientlib.i,
+		src/swig/CForum-Clientlib/Makefile.PL.in: Added CForum::Clientlib, interface
+		to libcfclientlib and the charset converting routines
+	* scripts/fo_usermanagement.in: Moved to new SWIG modules interface
 
 2005-02-06 Christian Seiler <self@christian-seiler.de>
 	* conf/patterns/php.pat: Some improvements

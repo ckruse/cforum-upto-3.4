@@ -1,9 +1,0 @@
-
-SWIG=@SWIG@
-CFLAGS=@CFLAGS@ @PERL_CFLAGS@
-LDFLAGS=-lcfhashlib -lcfconfigparser -lcfclientlib @LDFLAGS@
-CC=@CC@
-
-all:
-	${SWIG} -perl5 -shadow CForum-Validator.i
-	${CC} ${CFLAGS} -shared -o Validator.so CForum-Validator_wrap.c ${LDFLAGS}

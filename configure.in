@@ -84,6 +84,11 @@ if test ! -n "$PCRECFG" ; then
   AC_MSG_ERROR([cannot find pcre-config. Be sure that libpcre ist installed and pcre-config is in your PATH])
 fi
 
+AC_PATH_PROG(SWIG, swig)
+if test ! -n "$SWIG" ; then
+  AC_MSG_ERROR([cannot find swig. Be sure that SWIG is installed and it is in your PATH])
+fi
+
 GDOME_CFLAGS=`$GDOMECFG --cflags`
 GDOME_LIBS=`$GDOMECFG --libs`
 
@@ -98,6 +103,7 @@ CFLAGS="$LIBWWW_CFLAGS $GDOME_CFLAGS $CFLAGS"
 AC_SUBST(LIBWWW_LIBS)
 AC_SUBST(GDOME_LIBS)
 AC_SUBST(PCRE_LIBS)
+AC_SUBST(SWIG)
 AC_SUBST(ICONV)
 AC_SUBST(DL)
 
@@ -286,8 +292,14 @@ scripts/Makefile
 scripts/fo_userconf
 scripts/fo_usermanagement
 scripts/fo_xmlrpc
+src/perl/Makefile
 src/perl/Plugins/Makefile
 src/perl/Plugins/Management/Makefile
+src/swig/Makefile
+src/swig/CForum-Configparser/Makefile.PL
+src/swig/CForum-Validator/Makefile.PL
+src/swig/CForum-Template/Makefile.PL
+src/swig/CForum-Clientlib/Makefile.PL
 src/Makefile
 src/modules/Makefile
 src/parsetpl/Makefile

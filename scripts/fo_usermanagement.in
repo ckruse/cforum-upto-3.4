@@ -41,7 +41,7 @@ use CGI::Carp qw/fatalsToBrowser/;
 use DBI;
 
 use CForum::Template;
-use CForum::Validator;
+use CForum::Validator qw/is_valid_mailaddress/;
 
 use File::Path;
 
@@ -51,7 +51,6 @@ use Net::SMTP;
 # }}}
 
 # {{{ show_register_form
-
 sub show_register_form {
   my $cgi                    = shift;
   my $fo_default_conf        = shift;
@@ -66,18 +65,17 @@ sub show_register_form {
   my $tpl = new CForum::Template(get_template($fo_default_conf,$user_config,$reg_tpl));
   fatal($cgi,$fo_default_conf,$user_config,get_error($fo_default_conf,'TPL_NOT_FOUND'),$fatal_tpl) unless defined $tpl;
 
-  $tpl->setVar('forumbase',recode($fo_default_conf,get_conf_val($fo_default_conf,$Forum,'BaseURL')));
-  $tpl->setVar('script',recode($fo_default_conf,get_conf_val($fo_default_conf,$Forum,'UserRegister')));
-  $tpl->setVar('error',recode($fo_default_conf,$err)) if defined $err;
-  $tpl->setVar('charset',$cs);
-  $tpl->setVar('acceptcharset',$cs.', UTF-8');
+  $tpl->setvalue('forumbase',recode($fo_default_conf,get_conf_val($fo_default_conf,$Forum,'BaseURL')));
+  $tpl->setvalue('script',recode($fo_default_conf,get_conf_val($fo_default_conf,$Forum,'UserRegister')));
+  $tpl->setvalue('error',recode($fo_default_conf,$err)) if defined $err;
+  $tpl->setvalue('charset',$cs);
+  $tpl->setvalue('acceptcharset',$cs.', UTF-8');
 
-  $tpl->setVar($_,recode($fo_default_conf,$cgi->param($_))) foreach $cgi->param;
+  $tpl->setvalue($_,recode($fo_default_conf,$cgi->param($_))) foreach $cgi->param;
 
   print $cgi->header(-type => 'text/html; charset='.$cs),$tpl->parseToMem;
   exit;
 }
-
 # }}}
 
 # {{{ validate parameters
@@ -132,6 +130,7 @@ sub validate_parameters {
 my @fnames;
 die 'error!' unless @fnames = get_config_files("fo_default","fo_usermanagement");
 
+my $cgi = new CGI;
 my $fo_default_conf        = read_configuration($fnames[0]) or die "error: $!";
 my $fo_usermanagement_conf = read_configuration($fnames[1]) or die "error: $!";
 my $user_config            = {};
@@ -139,7 +138,7 @@ my $user_config            = {};
 # {{{ load plugins and authenticate
 foreach(@{$fo_usermanagement_conf->{global}->{AddModule}}) {
   eval "use $_->[0];";
-  fatal($cgi,$fo_default_conf,$user_config,sprintf(get_error($fo_default_conf,'PLUGIN_ERR'),"$@"),get_conf_val($fo_userconf_conf,$Forum,'FatalTemplate')) if $@;
+  fatal($cgi,$fo_default_conf,$user_config,sprintf(get_error($fo_default_conf,'PLUGIN_ERR'),"$@"),get_conf_val($fo_usermanagement_conf,$Forum,'FatalTemplate')) if $@;
 }
 
 foreach(@{$Plugins->{auth}}) {
@@ -158,7 +157,6 @@ my $cs = get_conf_val($fo_default_conf,$Forum,'ExternCharset');
 my $umask = get_conf_val($fo_usermanagement_conf,$Forum,'Umask');
 umask oct($umask) if $umask;
 
-my $cgi              = new CGI;
 my $action           = $cgi->param('a') || 'view';
 
 if($cgi->param('cs')) {
@@ -204,11 +202,11 @@ if($UserName) {
     fatal($cgi,$fo_default_conf,$user_config,get_error($fo_default_conf,'TPL_NOT_FOUND'),$fatal_template) unless defined get_conf_val($fo_usermanagement_conf,$Forum,'Unregister');
     my $tpl = new CForum::Template(get_template($fo_default_conf,$user_config,get_conf_val($fo_usermanagement_conf,$Forum,'Unregister')));
     fatal($cgi,$fo_default_conf,$user_config,get_error($fo_default_conf,'TPL_NOT_FOUND'),$fatal_template) unless defined($tpl);
-    $tpl->setVar('script',recode($fo_default_conf,get_conf_val($fo_default_conf,$Forum,'UserManagement')));
-    $tpl->setVar('forumbase',recode($fo_default_conf,get_conf_val($fo_default_conf,$Forum,'UBaseURL')));
-    $tpl->setVar('userconfig',recode($fo_default_conf,get_conf_val($fo_default_conf,$Forum,'UserConfig')));
-    $tpl->setVar('charset',$cs);
-    $tpl->setVar('acceptcharset',$cs.', UTF-8');
+    $tpl->setvalue('script',recode($fo_default_conf,get_conf_val($fo_default_conf,$Forum,'UserManagement')));
+    $tpl->setvalue('forumbase',recode($fo_default_conf,get_conf_val($fo_default_conf,$Forum,'UBaseURL')));
+    $tpl->setvalue('userconfig',recode($fo_default_conf,get_conf_val($fo_default_conf,$Forum,'UserConfig')));
+    $tpl->setvalue('charset',$cs);
+    $tpl->setvalue('acceptcharset',$cs.', UTF-8');
 
     print $cgi->header(-type => 'text/html; charset='.$cs),$tpl->parseToMem;
   }
@@ -237,10 +235,10 @@ if($UserName) {
     fatal($cgi,$fo_default_conf,$user_config,get_error($fo_default_conf,'TPL_NOT_FOUND'),$fatal_template) unless defined $val;
     my $tpl = new CForum::Template(get_template($fo_default_conf,$user_config,$val));
     fatal($cgi,$fo_default_conf,$user_config,get_error($fo_default_conf,'TPL_NOT_FOUND'),$fatal_template) unless defined $tpl;
-    $tpl->setVar('script',recode($fo_default_conf,get_conf_val($fo_default_conf,$Forum,'UserRegister')));
-    $tpl->setVar('forumbase',recode($fo_default_conf,get_conf_val($fo_default_conf,$Forum,'BaseURL')));
-    $tpl->setVar('charset',$cs);
-    $tpl->setVar('acceptcharset',$cs.', UTF-8');
+    $tpl->setvalue('script',recode($fo_default_conf,get_conf_val($fo_default_conf,$Forum,'UserRegister')));
+    $tpl->setvalue('forumbase',recode($fo_default_conf,get_conf_val($fo_default_conf,$Forum,'BaseURL')));
+    $tpl->setvalue('charset',$cs);
+    $tpl->setvalue('acceptcharset',$cs.', UTF-8');
 
     print $cgi->header(-type => 'text/html; charset='.$cs),$tpl->parseToMem;
   }
@@ -274,12 +272,12 @@ if($UserName) {
       my $tpl = new CForum::Template(get_template($fo_default_conf,$user_config,$chpass));
       fatal($cgi,$fo_default_conf,$user_config,get_error($fo_default_conf,'TPL_NOT_FOUND'),$fatal_template) unless defined $tpl;
 
-      $tpl->setVar('script',recode($fo_default_conf,get_conf_val($fo_default_conf,$Forum,'UserManagement')));
-      $tpl->setVar('forumbase',recode($fo_default_conf,get_conf_val($fo_default_conf,$Forum,'UBaseURL')));
-      $tpl->setVar('userconfig',recode($fo_default_conf,get_conf_val($fo_default_conf,$Forum,'UserConfig')));
-      $tpl->setVar('error',recode($fo_default_conf,$err)) if $err;
-      $tpl->setVar('charset',$cs);
-      $tpl->setVar('acceptcharset',$cs.', UTF-8');
+      $tpl->setvalue('script',recode($fo_default_conf,get_conf_val($fo_default_conf,$Forum,'UserManagement')));
+      $tpl->setvalue('forumbase',recode($fo_default_conf,get_conf_val($fo_default_conf,$Forum,'UBaseURL')));
+      $tpl->setvalue('userconfig',recode($fo_default_conf,get_conf_val($fo_default_conf,$Forum,'UserConfig')));
+      $tpl->setvalue('error',recode($fo_default_conf,$err)) if $err;
+      $tpl->setvalue('charset',$cs);
+      $tpl->setvalue('acceptcharset',$cs.', UTF-8');
 
       print $cgi->header(-type => 'text/html; charset='.$cs),$tpl->parseToMem;
     }
@@ -289,11 +287,11 @@ if($UserName) {
       my $tpl = new CForum::Template(get_template($fo_default_conf,$user_config,$chpassok));
       fatal($cgi,$fo_default_conf,$user_config,get_error($fo_default_conf,'TPL_NOT_FOUND'),$fatal_template) unless defined $tpl;
       
-      $tpl->setVar('script',recode($fo_default_conf,get_conf_val($fo_default_conf,$Forum,'UserManagement')));
-      $tpl->setVar('forumbase',recode($fo_default_conf,get_conf_val($fo_default_conf,$Forum,'UBaseURL')));
-      $tpl->setVar('userconfig',recode($fo_default_conf,get_conf_val($fo_default_conf,$Forum,'UserConfig')));
-      $tpl->setVar('charset',$cs);
-      $tpl->setVar('acceptcharset',$cs.', UTF-8');
+      $tpl->setvalue('script',recode($fo_default_conf,get_conf_val($fo_default_conf,$Forum,'UserManagement')));
+      $tpl->setvalue('forumbase',recode($fo_default_conf,get_conf_val($fo_default_conf,$Forum,'UBaseURL')));
+      $tpl->setvalue('userconfig',recode($fo_default_conf,get_conf_val($fo_default_conf,$Forum,'UserConfig')));
+      $tpl->setvalue('charset',$cs);
+      $tpl->setvalue('acceptcharset',$cs.', UTF-8');
 
       print $cgi->header(-type => 'text/html; charset='.$cs),$tpl->parseToMem;
     }
@@ -371,13 +369,13 @@ else {
     my $tpl = new CForum::Template(get_template($fo_default_conf,$user_config,$regok));
     fatal($cgi,$fo_default_conf,$user_config,get_error($fo_default_conf,'TPL_NOT_FOUND'),$fatal_template) unless defined $tpl;
 
-    $tpl->setVar('ubase',recode($fo_default_conf,get_conf_val($fo_default_conf,$Forum,'UBaseURL')));
-    $tpl->setVar('userconfig',recode($fo_default_conf,get_conf_val($fo_default_conf,$Forum,'UserConfig')));
-    $tpl->setVar('forumbase',recode($fo_default_conf,get_conf_val($fo_default_conf,$Forum,'BaseURL')));
-    $tpl->setVar('script',recode($fo_default_conf,get_conf_val($fo_default_conf,$Forum,'UserRegister')));
-    $tpl->setVar('uscript',recode($fo_default_conf,get_conf_val($fo_default_conf,$Forum,'UserManagement')));
-    $tpl->setVar('charset',$cs);
-    $tpl->setVar('acceptcharset',$cs.', UTF-8');
+    $tpl->setvalue('ubase',recode($fo_default_conf,get_conf_val($fo_default_conf,$Forum,'UBaseURL')));
+    $tpl->setvalue('userconfig',recode($fo_default_conf,get_conf_val($fo_default_conf,$Forum,'UserConfig')));
+    $tpl->setvalue('forumbase',recode($fo_default_conf,get_conf_val($fo_default_conf,$Forum,'BaseURL')));
+    $tpl->setvalue('script',recode($fo_default_conf,get_conf_val($fo_default_conf,$Forum,'UserRegister')));
+    $tpl->setvalue('uscript',recode($fo_default_conf,get_conf_val($fo_default_conf,$Forum,'UserManagement')));
+    $tpl->setvalue('charset',$cs);
+    $tpl->setvalue('acceptcharset',$cs.', UTF-8');
 
     print $cgi->header(-type => 'text/html; charset='.$cs),$tpl->parseToMem;
   }
@@ -423,10 +421,10 @@ else {
         fatal($cgi,$fo_default_conf,$user_config,get_error($fo_default_conf,'TPL_NOT_FOUND'),$fatal_template) unless defined $sendpassok;
         my $tpl = new CForum::Template(get_template($fo_default_conf,$user_config,$sendpassok));
         fatal($cgi,$fo_default_conf,$user_config,get_error($fo_default_conf,'TPL_NOT_FOUND'),$fatal_template) unless defined $tpl;
-        $tpl->setVar('script',recode($fo_default_conf,get_conf_val($fo_default_conf,$Forum,'UserRegister')));
-        $tpl->setVar('forumbase',recode($fo_default_conf,get_conf_val($fo_default_conf,$Forum,'BaseURL')));
-        $tpl->setVar('charset',$cs);
-        $tpl->setVar('acceptcharset',$cs.', UTF-8');
+        $tpl->setvalue('script',recode($fo_default_conf,get_conf_val($fo_default_conf,$Forum,'UserRegister')));
+        $tpl->setvalue('forumbase',recode($fo_default_conf,get_conf_val($fo_default_conf,$Forum,'BaseURL')));
+        $tpl->setvalue('charset',$cs);
+        $tpl->setvalue('acceptcharset',$cs.', UTF-8');
 
         print $cgi->header(-type => 'text/html; charset='.$cs),$tpl->parseToMem;
       }
@@ -436,10 +434,10 @@ else {
         my $tpl = new CForum::Template(get_template($fo_default_conf,$user_config,$errtpl));
         fatal($cgi,$fo_default_conf,$user_config,get_error($fo_default_conf,'TPL_NOT_FOUND'),$fatal_template) unless  defined $tpl;
 
-        $tpl->setVar('script',recode($fo_default_conf,get_conf_val($fo_default_conf,$Forum,'UserRegister')));
-        $tpl->setVar('forumbase',recode($fo_default_conf,get_conf_val($fo_default_conf,$Forum,'BaseURL')));
-        $tpl->setVar('charset',$cs);
-        $tpl->setVar('error',get_error($fo_default_conf,'sendpw','error'));
+        $tpl->setvalue('script',recode($fo_default_conf,get_conf_val($fo_default_conf,$Forum,'UserRegister')));
+        $tpl->setvalue('forumbase',recode($fo_default_conf,get_conf_val($fo_default_conf,$Forum,'BaseURL')));
+        $tpl->setvalue('charset',$cs);
+        $tpl->setvalue('error',get_error($fo_default_conf,'sendpw','error'));
 
         print $cgi->header(-type => 'text/html; charset='.$cs),$tpl->parseToMem;
       }
@@ -450,10 +448,10 @@ else {
       my $tpl = new CForum::Template(get_template($fo_default_conf,$user_config,$sendpass));
       fatal($cgi,$fo_default_conf,$user_config,get_error($fo_default_conf,'TPL_NOT_FOUND'),$fatal_template) unless defined $tpl;
 
-      $tpl->setVar('script',recode($fo_default_conf,get_conf_val($fo_default_conf,$Forum,'UserRegister')));
-      $tpl->setVar('forumbase',recode($fo_default_conf,get_conf_val($fo_default_conf,$Forum,'BaseURL')));
-      $tpl->setVar('charset',$cs);
-      $tpl->setVar('acceptcharset',$cs.', UTF-8');
+      $tpl->setvalue('script',recode($fo_default_conf,get_conf_val($fo_default_conf,$Forum,'UserRegister')));
+      $tpl->setvalue('forumbase',recode($fo_default_conf,get_conf_val($fo_default_conf,$Forum,'BaseURL')));
+      $tpl->setvalue('charset',$cs);
+      $tpl->setvalue('acceptcharset',$cs.', UTF-8');
 
       print $cgi->header(-type => 'text/html; charset='.$cs),$tpl->parseToMem;
     }

@@ -1,0 +1,54 @@
+#!/usr/bin/perl -w
+
+use strict;
+
+use ExtUtils::MakeMaker;
+use Config;
+
+my $PERL = '@PERL@';
+my $SWIG = '@SWIG@';
+
+system $SWIG,'-perl5','-shadow','CForum-Configparser.i';
+system $PERL,'-pi','-e','s!\@EXPORT = qw\( \);!\@EXPORT_OK = qw(
+  get_conf_file
+
+  CFG_OPT_NEEDED
+  CFG_OPT_CONFIG
+  CFG_OPT_USER
+  CFG_OPT_UNIQUE
+  CFG_OPT_GLOBAL
+  CFG_OPT_LOCAL
+  CFG_OPT_NOOVERRIDE
+
+  CFG_OPT_SEEN
+
+  CFG_MODE_CONFIG
+  CFG_MODE_USER
+  CFG_MODE_NOLOAD
+
+  fo_default_conf
+  fo_server_conf
+  fo_view_conf
+  fo_arcview_conf
+  fo_post_conf
+  fo_vote_conf
+
+  default_options
+  fo_view_options
+  fo_post_options
+  fo_server_options
+  fo_arcview_options
+  fo_vote_options
+);!','Configparser.pm';
+
+WriteMakefile(
+    NAME              => 'CForum::Configparser',
+    PREREQ_PM         => {},
+    AUTHOR            => 'Christian Kruse <ckruse@wwwtech.de>',
+    LIBS              => ['-L@libdir@/cforum/ -lcfconfigparser -lcfhashlib -lcfutils'],
+    DEFINE            => '',
+    INC               => '-I. -I../../',
+    C                 => ['CForum-Configparser_wrap.c'],
+	# Un-comment this if you add C files to link with later:
+     OBJECT            => 'CForum-Configparser_wrap.o',
+);
