@@ -1,0 +1,71 @@
+#!/usr/bin/perl -w
+
+# {{{ initial comments
+#
+# $LastChangedDate: 2004-12-13 20:11:06 +0100 (Mon, 13 Dec 2004) $
+# $LastChangedRevision: 367 $
+# $LastChangedBy: ckruse $
+#
+# }}}
+
+# {{{ program header
+
+#
+use strict;
+use vars qw($Bin $Config $Script $Plugins $UserName $prefix $fo_default_conf $methods);
+
+BEGIN {
+  my $null = $0; $null =~ tr!\\!/!; # for win :-(
+  $Bin     = ($null =~ /^(.*)\/.*$/)? $1 : '.';
+  $Script  = ($null =~ /^.*\/(.*)$/)? $1 : $null;
+
+  # get the path to the configuration
+  $Config = $ENV{CF_CONF_DIR} or die 'Could not get config path';
+
+  $Plugins = {};
+  $UserName = '';
+  $prefix  = '@prefix@';
+  
+  $fo_default_conf = undef;
+  
+  # methods are registered by plugins
+  $methods = {};
+}
+
+use lib ("@PERLMODULES@","@libdir@");
+
+sub VERSION {(q$Revision$ =~ /([\d.]+)\s*$/)[0] or '0.0'}
+
+use CGI::Carp qw/fatalsToBrowser/;
+
+use DBI;
+
+use Frontier::Responder;
+
+use ForumUtils qw/read_configuration get_template get_error recode uniquify_params get_config_file create_directory_structure fatal/;
+
+# }}}
+
+   $fo_default_conf        = read_configuration($Config.'fo_default.conf')  or die "error: $!";
+my $fo_xmlrpc_conf         = read_configuration($Config.'fo_xmlrpc.conf') or die "error: $!";
+my $user_config            = {};
+
+my $rpc;
+
+# {{{ load plugins and authenticate
+foreach(@{$fo_xmlrpc_conf->{AddModule}}) {
+  eval "use $_->[0];";
+  die $@ if $@;
+}
+
+foreach(@{$Plugins->{auth}}) {
+  last if &$_($fo_default_conf,$fo_xmlrpc_conf);
+}
+# }}}
+
+umask oct($fo_xmlrpc_conf->{Umask}->[0]->[0]) if $fo_xmlrpc_conf->{Umask}->[0]->[0];
+
+$rpc = new Frontier::Responder('methods' => $methods);
+print $rpc->answer;
+
+# eof

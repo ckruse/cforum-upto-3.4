@@ -5,6 +5,7 @@ EXTRA_DIST=fo_arcview.conf \
   fo_userconf.conf \
   fo_view.conf \
   fo_vote.conf \
+  fo_xmlrpc.conf \
   fo_usermanagement.conf \
   errormessages.de.txt \
   errormessages.fr.txt \

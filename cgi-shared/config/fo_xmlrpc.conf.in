@@ -1,0 +1,19 @@
+#
+# \file fo_xmlrpc.conf
+# \author Christian Seiler, <self@christian-seiler.de>
+#
+# The configuration for the user management program
+#
+# $LastChangedDate$
+# $LastChangedRevision$
+# $LastChangedBy$
+#
+
+<Modules>
+  AddModule "Plugins::HTTPAuth"
+  AddModule "Plugins::XMLRPCUserManagement"
+</Modules>
+
+<General>
+  Umask "0022"
+</General>

@@ -282,6 +282,8 @@ AC_OUTPUT(cgi-bin/Makefile
 cgi-bin/fo_post_old
 cgi-bin/fo_userconf
 cgi-bin/fo_usermanagement
+cgi-bin/admin/Makefile
+cgi-bin/admin/fo_xmlrpc
 htdocs/Makefile
 htdocs/archiv/Makefile
 htdocs/my/Makefile
@@ -310,6 +312,7 @@ cgi-shared/config/fo_view.conf
 cgi-shared/config/fo_server.conf
 cgi-shared/config/fo_vote.conf
 cgi-shared/config/fo_usermanagement.conf
+cgi-shared/config/fo_xmlrpc.conf
 Doxyfile
 scripts/msgs2db.pl
 src/perl/CForum-Clientlib/Makefile.PL
