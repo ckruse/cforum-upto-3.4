@@ -7,18 +7,16 @@
  *
  */
 
-typedef struct s_cf_rwlocked_list_head {
-  t_cf_rwlock lock;
-  t_cf_list_head head;
-} t_cf_rw_list_head;
-
-typedef void (*t_worker)(int); /**< This is a worker function */
-typedef int (*t_server_protocol_handler)(int,const u_char *,const u_char **,int,rline_t *); /**< Used for protocol plugins */
-
 typedef struct s_posting_flag {
   u_char *name;
   u_char *val;
 } t_posting_flag;
+
+struct s_forum;
+typedef struct s_forum t_forum;
+
+typedef void (*t_worker)(int); /**< This is a worker function */
+typedef int (*t_server_protocol_handler)(int,t_forum *,const u_char **,int,rline_t *); /**< Used for protocol plugins */
 
 /* {{{ t_posting */
 /**
@@ -93,18 +91,18 @@ typedef struct s_server {
 } t_server;
 /* }}} */
 
-/* {{{ t_forum */
-typedef struct s_forum {
+/* {{{ struct s_forum */
+struct s_forum {
   /** forum locker */
   t_cf_rwlock lock;
 
   /** The name of the forum */
   u_char *name;
 
-  /** Is the cache fresh? */
-  int fresh;
-
   struct {
+    /** Is the cache fresh? */
+    int fresh;
+
     /** The cache including invisible messages and threads */
     t_string visible;
 
@@ -158,21 +156,12 @@ typedef struct s_forum {
     t_cf_hash *ids;
     t_cf_mutex lock; /**< The mutex to synchronize access to unique_ids */
   } uniques;
-} t_forum;
+};
 /* }}} */
 
-
 typedef int (*t_data_loading_filter)(t_forum *);
-
-void cf_rw_list_init(const u_char *name,t_cf_rw_list_head *head);
-void cf_rw_list_append(t_cf_rw_list_head *head,void *data,size_t size);
-void cf_rw_list_append_static(t_cf_rw_list_head *head,void *data,size_t size);
-void cf_rw_list_prepend(t_cf_rw_list_head *head,void *data,size_t size);
-void cf_rw_list_prepend_static(t_cf_rw_list_head *head,void *data,size_t size);
-void cf_rw_list_insert(t_cf_rw_list_head *head,t_cf_list_element *prev,void *data,size_t size);
-void *cf_rw_list_search(t_cf_rw_list_head *head,void *data,int (*compare)(const void *data1,const void *data2));
-void cf_rw_list_delete(t_cf_rw_list_head *head,t_cf_list_element *elem);
-void cf_rw_list_destroy(t_cf_rw_list_head *head,void (*destroy)(void *data));
+typedef int (*t_srv_new_post_filter)(t_forum *,u_int64_t,t_posting *);
+typedef int (*t_srv_new_thread_filter)(t_forum *,t_thread *);
 
 t_forum *cf_register_forum(const u_char *name);
 int cf_load_data(t_forum *forum);
@@ -210,5 +199,8 @@ void cf_cleanup_thread(t_thread *t);
 void cf_cleanup_posting(t_posting *p);
 
 void *cf_io_worker(void *arg);
+
+void cf_send_posting(t_forum *forum,int sock,u_int64_t tid,u_int64_t mid,int invisible);
+int cf_read_posting(t_forum *forum,t_posting *p,int sock,rline_t *tsd);
 
 /* eof */

@@ -15,11 +15,11 @@ SUFFIXES=.lex
 #pkglib_LTLIBRARIES+=flt_category.la
 #flt_category_la_SOURCES=flt_category.c
 #flt_category_la_LDFLAGS=-module -export-dynamic -avoid-version
-#
-#pkglib_LTLIBRARIES+=flt_cftp.la
-#flt_cftp_la_SOURCES=flt_cftp.c
-#flt_cftp_la_LDFLAGS=-module -export-dynamic -avoid-version
-#
+
+pkglib_LTLIBRARIES=flt_cftp.la
+flt_cftp_la_SOURCES=flt_cftp.c
+flt_cftp_la_LDFLAGS=-module -export-dynamic -avoid-version
+
 #pkglib_LTLIBRARIES+=flt_deleted.la
 #flt_deleted_la_SOURCES=flt_deleted.c
 #flt_deleted_la_LIBADD=$(BDB_LIB)
@@ -141,7 +141,7 @@ SUFFIXES=.lex
 #flt_votingvariables_la_SOURCES=flt_votingvariables.c
 #flt_votingvariables_la_LDFLAGS=-module -export-dynamic -avoid-version
 
-pkglib_LTLIBRARIES=flt_xmlstorage.la
+pkglib_LTLIBRARIES+=flt_xmlstorage.la
 flt_xmlstorage_la_SOURCES=flt_xmlstorage.c ../xml_handling.c
 flt_xmlstorage_la_LIBADD=$(GDOME_LIBS)
 flt_xmlstorage_la_LDFLAGS=-module -export-dynamic -avoid-version

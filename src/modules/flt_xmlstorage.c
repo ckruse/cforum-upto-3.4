@@ -44,6 +44,7 @@ struct sockaddr_un;
 #include "configparser.h"
 #include "readline.h"
 
+#include "serverutils.h"
 #include "serverlib.h"
 #include "fo_server.h"
 

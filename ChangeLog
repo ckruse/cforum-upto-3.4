@@ -4,6 +4,13 @@
 	* src/archiver.[ch]: Debugging, bugfixing. Now the storage module gets a
 		complete list of threads to archive, this seems to make more sense
 	* src/configparser.h: Added prototype of cfg_destroy()
+	* src/cf_pthread.c, src/modules/flt_xmlstorage.c, src/archiver.c, fo_server.c:
+		Added include for serverutils.h
+	* src/modules/flt_cftp.c: Migrated from 2-branch to trunk
+	* src/serverlib.[ch]: removed rw-list functions, bugfixes, added
+		cf_read_posting() and cf_send_posting()
+	* src/serverutils.[ch]: Invented new library, contains only rw-list functions
+		yet.
 
 2005-01-04 Christian Kruse <ckruse@wwwtech.de>
 	* src/utils.[ch]: Added cf_make_path() in utilities

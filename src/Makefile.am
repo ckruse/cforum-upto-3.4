@@ -11,6 +11,7 @@ pkglib_LTLIBRARIES= \
   libcfhashlib.la \
   libcfutils.la \
   libconfigparser.la \
+	libcfserverutils.la \
   libserverlib.la
 
 libcfcharconvert_la_SOURCES=charconvert.c
@@ -31,12 +32,15 @@ libconfigparser_la_SOURCES=configparser.c
 libconfigparser_la_LIBADD=libcfutils.la $(DL)
 libconfigparser_la_LDFLAGS=-export-dynamic -avoid-version
 
+libcfserverutils_la_SOURCES=serverutils.c cf_pthread.c
+libcfserverutils_la_LDFLAGS=-export-dynamic -avoid-version
+
 libserverlib_la_SOURCES=serverlib.c shm_locking.c semaphores.c archiver.c cf_pthread.c
 libserverlib_la_LIBADD=libcfhashlib.la libcfutils.la libcfreadline.la $(PTHREAD_LIB)
 libserverlib_la_LDFLAGS=-export-dynamic -avoid-version
 
 fo_server_SOURCES=fo_server.c
-fo_server_LDADD=libcfcharconvert.la libcfreadline.la libcfutils.la libserverlib.la libconfigparser.la modules/flt_xmlstorage.la $(PTHREAD_LIB)
+fo_server_LDADD=libcfcharconvert.la libcfreadline.la libcfutils.la libserverlib.la libconfigparser.la libcfserverutils.la modules/flt_xmlstorage.la $(PTHREAD_LIB)
 fo_server_LDFLAGS=-export-dynamic
 
 # eof
