@@ -117,7 +117,7 @@ u_char *parse_message(u_char *start,t_array *stack,t_string *content,t_string *c
   size_t i;
   int rc,run = 1,sb = 0,fail,ending;
   u_char *directive,*parameter,*safe,*buff,*retval;
-  t_string d_content,d_cite;
+  t_string d_content,d_cite,strtmp;
   t_html_stack_elem stack_elem,*stack_tmp;
 
   for(ptr=start;*ptr && run;++ptr) {
@@ -172,12 +172,20 @@ u_char *parse_message(u_char *start,t_array *stack,t_string *content,t_string *c
         /* {{{ directive with argument, CForum syntax [name:argument], no ending tag */
         if(*ptr1 == ':') {
           tmp = ptr1;
+          str_init(&strtmp);
 
-          for(++ptr1;*ptr1 && *ptr1 != ']' && *ptr1 != '<';++ptr1);
+          /* get directive end, but accept \] as not-end */
+          for(++ptr1;*ptr1 && *ptr1 != ']' && *ptr1 != '<';++ptr1) {
+            if(*ptr1 == '\\' && *(ptr1+1) == ']') {
+              str_char_append(&strtmp,']');
+              ++ptr1;
+            }
+            else str_char_append(&strtmp,*ptr1);
+          }
 
           if(*ptr1 == ']') {
             directive = strndup(ptr+1,tmp-ptr-1);
-            buff      = strndup(tmp+1,ptr1-tmp-1);
+            buff      = strtmp.content;
             parameter = htmlentities_decode(buff);
             free(buff);
 
@@ -193,6 +201,7 @@ u_char *parse_message(u_char *start,t_array *stack,t_string *content,t_string *c
             else ptr = ptr1;
           }
           else {
+            str_cleanup(&strtmp);
             ptr = safe;
             goto default_action;
           }

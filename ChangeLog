@@ -3,6 +3,7 @@
 	* src/modules/flt_mailonpost.c: Changed behavior a little bit, added lots of
 		place holders
 	* src/fo_post.c: Fixed a bug
+	* src/htmllib.c: Implemented #559
 
 2005-02-23 Christian Kruse <ckruse@wwwtech.de>
 	* src/modules/flt_syntax.c: Fixed several bugs in syntax highlighting
