@@ -8,7 +8,7 @@
 %}
 
 int is_valid_link(const char *link);
-int is_valid_http_link(const char *link,int strict);
+int is_valid_http_link(const char *link,int strict = 0);
 int is_valid_mailaddress(const char *addr);
 int is_valid_mailto_link(const char *addr);
 int is_valid_hostname(const char *hostname);
