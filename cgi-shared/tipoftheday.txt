@@ -1,0 +1,6 @@
+Links mit [link:url] gemacht werden?
+Bilder mit [image:url] eingebunden werden?
+es vordefinierte Message-Grafiken gibt? Siehe auch <img src="http://src.selfhtml.org/dok.gif" width="15" height="10" alt="Seite" /> <a href="/faq/#Q-21"><b>/faq/#Q-21</b></a>.
+es eine SELFHTML-Suche gibt? Sie durchsucht das Forums-Archiv, die Dokumentation, die Feature-Artikel und die Tipps &amp; Tricks.
+es einen BugTracker für den SELFHTML-Raum gibt? Siehe auch <img src="http://src.selfhtml.org/dok.gif" width="15" height="10" alt="Seite" /> <a href="http://bugs.selfhtml.org/"><b>http://bugs.selfhtml.org/</b></a>.
+es eine Benutzer-Definierte Ansicht auf das Forum gibt? Sie brauchen sich nur zu <img src="http://src.selfhtml.org/dok.gif" width="15" height="10" alt="Seite" /> <a href="/cgi-bin/fo_userconf"><b>registrieren</b></a>.

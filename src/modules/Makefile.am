@@ -17,7 +17,7 @@ flt_cftp_la_LDFLAGS=-module -export-dynamic -avoid-version
 
 pkglib_LTLIBRARIES+=flt_deleted.la
 flt_deleted_la_SOURCES=flt_deleted.c
-flt_deleted_la_LIBADD=-l$(BDB_LIB)
+flt_deleted_la_LIBADD=$(BDB_LIB)
 flt_deleted_la_LDFLAGS=-module -export-dynamic -avoid-version
 
 pkglib_LTLIBRARIES+=flt_frameset.la
@@ -62,7 +62,7 @@ flt_posting_la_LDFLAGS=-module -export-dynamic -avoid-version
 
 pkglib_LTLIBRARIES+=flt_registerednames.la
 flt_registerednames_la_SOURCES=flt_registerednames.c
-flt_registerednames_la_LIBADD=-l$(BDB_LIB)
+flt_registerednames_la_LIBADD=$(BDB_LIB)
 flt_registerednames_la_LDFLAGS=-module -export-dynamic -avoid-version
 
 pkglib_LTLIBRARIES+=flt_tid_index.la
@@ -79,7 +79,7 @@ flt_urlrewrite_la_LDFLAGS=-module -export-dynamic -avoid-version
 
 pkglib_LTLIBRARIES+=flt_visited.la
 flt_visited_la_SOURCES=flt_visited.c
-flt_visited_la_LIBADD=-l$(BDB_LIB)
+flt_visited_la_LIBADD=$(BDB_LIB)
 flt_visited_la_LDFLAGS=-module -export-dynamic -avoid-version
 
 pkglib_LTLIBRARIES+=flt_extern.la
@@ -93,5 +93,9 @@ flt_threadreturnanchor_la_LDFLAGS=-module -export-dynamic -avoid-version
 pkglib_LTLIBRARIES+=flt_reference.la
 flt_reference_la_SOURCES=flt_reference.c
 flt_reference_la_LDFLAGS=-module -export-dynamic -avoid-version
+
+pkglib_LTLIBRARIES+=flt_tipoftheday.la
+flt_tipoftheday_la_SOURCES=flt_tipoftheday.c
+flt_tipoftheday_la_LDFLAGS=-module -export-dynamic -avoid-version
 
 # eof

@@ -10,22 +10,22 @@
 #
 
 <Filters>
- AddFilter "@pkglibdir@/flt_tplmode.so" "flt_tplmode"
- AddFilter "@pkglibdir@/flt_http.so" "flt_http"
- AddFilter "@pkglibdir@/flt_frameset.so" "flt_frameset"
- AddFilter "@pkglibdir@/flt_openclose.so" "flt_openclose"
- AddFilter "@pkglibdir@/flt_posting.so" "flt_posting"
- AddFilter "@pkglibdir@/flt_basic.so" "flt_basic"
- AddFilter "@pkglibdir@/flt_listhighlight.so" "flt_listhighlight"
- AddFilter "@pkglibdir@/flt_category.so" "flt_category"
- AddFilter "@pkglibdir@/flt_deleted.so" "flt_deleted"
- AddFilter "@pkglibdir@/flt_visited.so" "flt_visited"
- AddFilter "@pkglibdir@/flt_owncss.so" "flt_owncss"
- AddFilter "@pkglibdir@/flt_livefilter.so" "flt_livefilter"
- AddFilter "@pkglibdir@/flt_httpauth.so" "flt_httpauth"
- AddFilter "@pkglibdir@/flt_admin.so" "flt_admin"
- AddFilter "@pkglibdir@/flt_link.so" "flt_link"
- AddFilter "@pkglibdir@/flt_threadreturnanchor.so" "flt_threadreturnanchor"
+ AddFilter "@libdir@/cforum/flt_tplmode.so" "flt_tplmode"
+ AddFilter "@libdir@/cforum/flt_http.so" "flt_http"
+ AddFilter "@libdir@/cforum/flt_frameset.so" "flt_frameset"
+ AddFilter "@libdir@/cforum/flt_openclose.so" "flt_openclose"
+ AddFilter "@libdir@/cforum/flt_posting.so" "flt_posting"
+ AddFilter "@libdir@/cforum/flt_basic.so" "flt_basic"
+ AddFilter "@libdir@/cforum/flt_listhighlight.so" "flt_listhighlight"
+ AddFilter "@libdir@/cforum/flt_category.so" "flt_category"
+ AddFilter "@libdir@/cforum/flt_deleted.so" "flt_deleted"
+ AddFilter "@libdir@/cforum/flt_visited.so" "flt_visited"
+ AddFilter "@libdir@/cforum/flt_owncss.so" "flt_owncss"
+ AddFilter "@libdir@/cforum/flt_livefilter.so" "flt_livefilter"
+ AddFilter "@libdir@/cforum/flt_httpauth.so" "flt_httpauth"
+ AddFilter "@libdir@/cforum/flt_admin.so" "flt_admin"
+ AddFilter "@libdir@/cforum/flt_link.so" "flt_link"
+ AddFilter "@libdir@/cforum/flt_threadreturnanchor.so" "flt_threadreturnanchor"
 </Filters>
 
 <ForumBehavior>
@@ -47,12 +47,12 @@
 </ForumBehavior>
 
 <Templates>
- TemplatesFrameset      "@pkglibdir@/%s_frameset.so" "@pkglibdir@/%s_blank.so"
+ TemplatesFrameset      "@libdir@/cforum/%s_frameset.so" "@libdir@/cforum/%s_blank.so"
 
- TemplateForumBegin     "@pkglibdir@/%s_forum_begin.so"
- TemplateForumEnd       "@pkglibdir@/%s_forum_end.so"
- TemplateForumThread    "@pkglibdir@/%s_forum_thread.so"
- TemplatePosting        "@pkglibdir@/%s_forum_posting.so"
+ TemplateForumBegin     "@libdir@/cforum/%s_forum_begin.so"
+ TemplateForumEnd       "@libdir@/cforum/%s_forum_end.so"
+ TemplateForumThread    "@libdir@/cforum/%s_forum_thread.so"
+ TemplatePosting        "@libdir@/cforum/%s_forum_posting.so"
 </Templates>
 
 <DateConfig>

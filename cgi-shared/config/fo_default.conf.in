@@ -16,7 +16,7 @@
  ArchivePath "@with_archive_dir@"
  SocketName "@with_socket_path@"
 
- ErrorTemplate "@pkglibdir@/%s_errortpl.so"
+ ErrorTemplate "@libdir@/cforum/%s_errortpl.so"
  ErrorMessages "@with_config_dir@/errormessages.txt"
 
  BaseURL "/forum/"

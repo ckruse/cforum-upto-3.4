@@ -10,20 +10,20 @@
 #
 
 <Filters>
- AddFilter "@pkglibdir@/flt_tplmode.so" "flt_tplmode"
- AddFilter "@pkglibdir@/flt_http.so" "flt_http"
- AddFilter "@pkglibdir@/flt_frameset.so" "flt_frameset"
- AddFilter "@pkglibdir@/flt_openclose.so" "flt_openclose"
- AddFilter "@pkglibdir@/flt_posting.so" "flt_posting"
- AddFilter "@pkglibdir@/flt_basic.so" "flt_basic"
- AddFilter "@pkglibdir@/flt_listhighlight.so" "flt_listhighlight"
- AddFilter "@pkglibdir@/flt_category.so" "flt_category"
- AddFilter "@pkglibdir@/flt_deleted.so" "flt_deleted"
- AddFilter "@pkglibdir@/flt_visited.so" "flt_visited"
- AddFilter "@pkglibdir@/flt_owncss.so" "flt_owncss"
- AddFilter "@pkglibdir@/flt_livefilter.so" "flt_livefilter"
- AddFilter "@pkglibdir@/flt_httpauth.so" "flt_httpauth"
- AddFilter "@pkglibdir@/flt_admin.so" "flt_admin"
+ AddFilter "@libdir@/cforum/flt_tplmode.so" "flt_tplmode"
+ AddFilter "@libdir@/cforum/flt_http.so" "flt_http"
+ AddFilter "@libdir@/cforum/flt_frameset.so" "flt_frameset"
+ AddFilter "@libdir@/cforum/flt_openclose.so" "flt_openclose"
+ AddFilter "@libdir@/cforum/flt_posting.so" "flt_posting"
+ AddFilter "@libdir@/cforum/flt_basic.so" "flt_basic"
+ AddFilter "@libdir@/cforum/flt_listhighlight.so" "flt_listhighlight"
+ AddFilter "@libdir@/cforum/flt_category.so" "flt_category"
+ AddFilter "@libdir@/cforum/flt_deleted.so" "flt_deleted"
+ AddFilter "@libdir@/cforum/flt_visited.so" "flt_visited"
+ AddFilter "@libdir@/cforum/flt_owncss.so" "flt_owncss"
+ AddFilter "@libdir@/cforum/flt_livefilter.so" "flt_livefilter"
+ AddFilter "@libdir@/cforum/flt_httpauth.so" "flt_httpauth"
+ AddFilter "@libdir@/cforum/flt_admin.so" "flt_admin"
 </Filters>
 
 <General>
@@ -36,21 +36,21 @@
 </General>
 
 <Templates>
-  FatalTemplate "@pkglibdir@/%s_fatal.so"
+  FatalTemplate "@libdir@/cforum/%s_fatal.so"
 
-  YearsTemplate "@pkglibdir@/%s_arcyears.so"
-  YearListTemplate "@pkglibdir@/%s_arcyearlist.so"
+  YearsTemplate "@libdir@/cforum/%s_arcyears.so"
+  YearListTemplate "@libdir@/cforum/%s_arcyearlist.so"
 
-  MonthsTemplate "@pkglibdir@/%s_arcmonths.so"
-  MonthsListTemplate "@pkglibdir@/%s_arcmonthlist.so"
+  MonthsTemplate "@libdir@/cforum/%s_arcmonths.so"
+  MonthsListTemplate "@libdir@/cforum/%s_arcmonthlist.so"
 
-  ThreadListMonthTemplate "@pkglibdir@/%s_arcthreadlist_month.so"
+  ThreadListMonthTemplate "@libdir@/cforum/%s_arcthreadlist_month.so"
 
-  ThreadTemplate "@pkglibdir@/%s_arcthread.so"
-  ThreadListTemplate "@pkglibdir@/%s_arcthreadlist.so"
-  PerThreadTemplate "@pkglibdir@/%s_arcperthread.so"
+  ThreadTemplate "@libdir@/cforum/%s_arcthread.so"
+  ThreadListTemplate "@libdir@/cforum/%s_arcthreadlist.so"
+  PerThreadTemplate "@libdir@/cforum/%s_arcperthread.so"
 
-  UpDownTemplate "@pkglibdir@/%s_updown.so"
+  UpDownTemplate "@libdir@/cforum/%s_updown.so"
 </Templates>
 
 

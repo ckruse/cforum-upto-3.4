@@ -46,7 +46,7 @@ CONFIG_HEADER="src/config.h"
 LIBTOOLIZE="libtoolize --force --copy"
 LIBTOOLIZE_FILES="config.sub ltmain.sh config.guess"
 RM="rm --verbose"
-SUBDIRS="cgi-shared/config/fo_default.conf src src/modules src/templates src/templates/tpl_html4 src/templates/tpl_xhtml10 Doxyfile cgi-shared/config/fo_arcview.conf . cgi-shared/config/fo_post.conf cgi-shared/config/fo_server.conf cgi-shared/config/fo_userconf.conf cgi-shared/config/fo_view.conf"
+SUBDIRS="cgi-shared/config/fo_default.conf src src/modules src/templates src/templates/tpl_html4 src/templates/tpl_xhtml10 Doxyfile cgi-shared/config/fo_arcview.conf . cgi-shared/config/fo_post.conf cgi-shared/config/fo_server.conf cgi-shared/config/fo_userconf.conf cgi-shared/config/fo_view.conf cgi-shared/ cgi-shared/config cgi-shared/Plugins cgi-shared/docs cgi-shared/data cgi-shared/data/messages"
 
 
 # These are files created by configure, so we'll always clean them

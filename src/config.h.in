@@ -6,11 +6,35 @@
 /* Defined in debugging modus */
 #undef DEBUG
 
+/* Defined if we haven't got int16_t */
+#undef DONT_HAS_int16_t
+
+/* Defined if we haven't got int32_t */
+#undef DONT_HAS_int32_t
+
+/* Defined if we haven't got int64_t */
+#undef DONT_HAS_int64_t
+
+/* Defined if we haven't got u_char */
+#undef DONT_HAS_u_char
+
+/* Defined if we haven't got u_int16_t */
+#undef DONT_HAS_u_int16_t
+
+/* Defined if we haven't got u_int32_t */
+#undef DONT_HAS_u_int32_t
+
+/* Defined if we haven't got u_int64_t */
+#undef DONT_HAS_u_int64_t
+
 /* Defined if no getdelim is available */
 #undef HAS_NO_GETDELIM
 
 /* Defined if not getline() is available */
 #undef HAS_NO_GETLINE
+
+/* Define to 1 if you have the <db.h> header file. */
+#undef HAVE_DB_H
 
 /* Define to 1 if you have the <dirent.h> header file, and it defines `DIR'.
    */

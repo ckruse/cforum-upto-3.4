@@ -145,7 +145,7 @@ int main(int argc,char *argv[],char *envp[]) {
     return EXIT_FAILURE;
   }
   if(stat(v->values[0],&st) == -1) {
-    printf("Status: 404 Not Found\015\012\015\012");
+    printf("Status: 404 Not Found\015\012Content-Type: text/html\015\012\015\012");
     str_error_message("E_FO_404",NULL,8);
     return EXIT_FAILURE;
   }
@@ -160,7 +160,7 @@ int main(int argc,char *argv[],char *envp[]) {
   index.elements = st.st_size / sizeof(t_tid_index);
 
   if((fd = fopen(v->values[0],"r")) == NULL) {
-    printf("Status: 500 Internal Server Error\015\012\015\012");
+    printf("Status: 500 Internal Server Error\015\012Content-Type: text/html\015\012\015\012");
     str_error_message("E_ARCHIVE_ERROR",NULL,15);
     return EXIT_FAILURE;
   }
@@ -168,7 +168,7 @@ int main(int argc,char *argv[],char *envp[]) {
   fclose(fd);
 
   if((idx = array_bsearch(&index,(void *)&tid,cmp)) == NULL) {
-    printf("Status: 404 Not Found\015\012\015\012");
+    printf("Status: 404 Not Found\015\012Content-Type: text/html\015\012\015\012");
     str_error_message("E_FO_404",NULL,8);
     return EXIT_FAILURE;
   }

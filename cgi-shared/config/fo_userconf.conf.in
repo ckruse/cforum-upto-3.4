@@ -44,7 +44,7 @@
   SQLPort "3360"
   SQLDriver "Pg"
 
-  ModuleConfig "@with_config_dir@/modconf/modules.xml"
+  ModuleConfig "@with_config_dir@/modules.xml"
 </General>
 
 <DateConfig>
@@ -52,26 +52,26 @@
 </DateConfig>
 
 <Templates>
-  Edit "@pkglibdir@/%s_useredit.so"
-  EditEntry "@pkglibdir@/%s_setting.so"
-  SectEntry "@pkglibdir@/%s_section.so"
-  PageEntry "@pkglibdir@/%s_pageentry.so"
-  EditOk "@pkglibdir@/%s_usereditok.so"
-  UpDown "@pkglibdir@/%s_updown.so"
+  Edit "@libdir@/cforum/%s_useredit.so"
+  EditEntry "@libdir@/cforum/%s_setting.so"
+  SectEntry "@libdir@/cforum/%s_section.so"
+  PageEntry "@libdir@/cforum/%s_pageentry.so"
+  EditOk "@libdir@/cforum/%s_usereditok.so"
+  UpDown "@libdir@/cforum/%s_updown.so"
 
-  ViewSettings "@pkglibdir@/%s_usersettings.so"
+  ViewSettings "@libdir@/cforum/%s_usersettings.so"
 
-  Register "@pkglibdir@/%s_userregister.so"
-  RegisterOk "@pkglibdir@/%s_userregok.so"
+  Register "@libdir@/cforum/%s_userregister.so"
+  RegisterOk "@libdir@/cforum/%s_userregok.so"
 
-  ChangePass "@pkglibdir@/%s_chpass.so"
-  ChangePassOk "@pkglibdir@/%s_chpassok.so"
+  ChangePass "@libdir@/cforum/%s_chpass.so"
+  ChangePassOk "@libdir@/cforum/%s_chpassok.so"
 
-  Unregister "@pkglibdir@/%s_unreg.so"
-  UnregisterOk "@pkglibdir@/%s_unregok.so"
+  Unregister "@libdir@/cforum/%s_unreg.so"
+  UnregisterOk "@libdir@/cforum/%s_unregok.so"
 
-  SendPass "@pkglibdir@/%s_send_pass.so"
-  SendPassErr "@pkglibdir@/%s_send_pass_err.so"
-  SendPassOk "@pkglibdir@/%s_send_pass_ok.so"
+  SendPass "@libdir@/cforum/%s_send_pass.so"
+  SendPassErr "@libdir@/cforum/%s_send_pass_err.so"
+  SendPassOk "@libdir@/cforum/%s_send_pass_ok.so"
 </Templates>
 

@@ -395,7 +395,7 @@ void sighandler(int segnum) {
     }
 
     fprintf(fd,"fo_view: Got signal %s!Username: %s\nQuery-String: %s\n----\n",buff,uname?uname:"(null)",qs?qs:"(null)");
-    flcose(fd);
+    fclose(fd);
   }
 
 }

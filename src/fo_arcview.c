@@ -1005,7 +1005,7 @@ void sighandler(int segnum) {
     }
 
     fprintf(fd,"fo_arcview: Got signal %s!Username: %s\nQuery-String: %s\n----\n",buff,uname?uname:"(null)",qs?qs:"(null)");
-    flcose(fd);
+    fclose(fd);
   }
 
 }
@@ -1048,7 +1048,7 @@ int main(int argc,char *argv[],char *env[]) {
     return EXIT_FAILURE;
   }
 
-  head = cf_cgi_new()
+  head = cf_cgi_new();
 
   cf_init();
   init_modules();

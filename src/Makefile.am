@@ -1,5 +1,5 @@
 
-SUBDIRS=modules templates
+SUBDIRS=. modules templates
 
 bin_PROGRAMS= \
   fo_view \
@@ -71,7 +71,7 @@ fo_server_LDADD=libcfcharconvert.la libcfreadline.la libcfutils.la libserverlib.
 fo_server_LDFLAGS=-export-dynamic
 
 fo_cleanup_SOURCES=fo_cleanup.c
-fo_cleanup_LDADD=libcfutils.la libcfreadline.la libconfigparser.la libcfclientlib.la -l$(BDB_LIB)
+fo_cleanup_LDADD=libcfutils.la libcfreadline.la libconfigparser.la libcfclientlib.la $(BDB_LIB)
 fo_cleanup_LDFLAGS=-export-dynamic
 
 fo_threadlookup_SOURCES=fo_threadlookup.c

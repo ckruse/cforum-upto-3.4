@@ -17,8 +17,9 @@ dnl
 dnl
 dnl }}}
 
-include(m4/ax_path_bdb.m4)
-include(m4/cf_check_type.m4)
+sinclude(m4/ax_compare_version.m4)
+sinclude(m4/ax_path_bdb.m4)
+sinclude(m4/cf_check_type.m4)
 
 AC_INIT
 
@@ -157,11 +158,11 @@ AC_ARG_WITH(proto-file,
 )
 AC_DEFINE(PROTOCOL_FILE,"${with_protocol_file}",[needed to collect debugging infos])
 
-CF_PATH_BDB([3],[
+AX_PATH_BDB([3],[
     BDB_LIB="$BDB_LIBS";
     CFLAGS="$CFLAGS $BDB_CPPFLAGS"
   ],
-  [AC_MSG_ERROR([BerkeleyDB library could not be found])]
+  [AC_MSG_ERROR([no BerkeleyDB could be found])]
 )
 
 AC_CHECK_LIB(
@@ -171,12 +172,15 @@ AC_CHECK_LIB(
   AC_MSG_ERROR([idn library cannot be found])
 )
 
+dnl pkglibdir="$(libdir)/cforum"
+
 AC_SUBST(IDN)
 AC_SUBST(BDB_LIB)
 AC_SUBST(with_message_dir)
 AC_SUBST(with_archive_dir)
 AC_SUBST(with_socket_path)
 AC_SUBST(with_log_dir)
+dnl AC_SUBST(pkglibdir)
 
 dnl
 dnl check for programs
@@ -213,7 +217,25 @@ AC_TYPE_SIZE_T
 AC_TYPE_PID_T
 AC_TYPE_SIGNAL
 
-AC_OUTPUT(Makefile src/Makefile src/modules/Makefile cgi-shared/config/templates/tpl_html4/Makefile cgi-shared/config/templates/tpl_xhtml10/Makefile cgi-shared/config/fo_arcview.conf cgi-shared/config/fo_default.conf cgi-shared/config/fo_post.conf cgi-shared/config/fo_userconf.conf cgi-shared/config/fo_view.conf cgi-shared/config/fo_server.conf Doxyfile)
+AC_OUTPUT(Makefile
+cgi-shared/Makefile
+cgi-shared/config/Makefile
+cgi-shared/Plugins/Makefile
+cgi-shared/docs/Makefile
+cgi-shared/data/Makefile
+cgi-shared/data/messages/Makefile
+src/Makefile src/modules/Makefile
+src/templates/Makefile
+src/templates/tpl_html4/Makefile
+src/templates/tpl_xhtml10/Makefile
+cgi-shared/config/fo_arcview.conf
+cgi-shared/config/fo_default.conf
+cgi-shared/config/fo_post.conf
+cgi-shared/config/fo_userconf.conf
+cgi-shared/config/fo_view.conf
+cgi-shared/config/fo_server.conf
+Doxyfile
+)
 
 dnl eof
 

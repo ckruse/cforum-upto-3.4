@@ -1,3 +1,33 @@
+2004-06-19 Christian Kruse <ckruse@wwwtech.de>
+	* bootstrap: Added clean targets for several new directories
+	* cgi-shared/: Little restructuring, deleted unnecessary directories, added
+		Makefile.am files for every needed directory
+	* src/modules/flt_tipoftheday.c: some performance enhancements
+	* configure.in: Added new makefiles in output directive
+	* src/templates/tpl_*/forum_begin.html: Added tip of the day
+	* src/fo_threadlookup.c: Added content types for error messages
+
+2004-06-18 Christian Kruse <ckruse@wwwtech.de>
+	* src/modules/flt_tipoftheday.c: Changed handling for reading tips (now a
+		index is read first)
+	* cgi-shared/tipoftheday.txt: Added some tips
+	* indextips.pl: Added script do create an index for the Tip-Of-The-Day file
+	* cgi-shared/config/*.conf.in: Changed @pkglibdir@ to @libdir@/cforum
+	* configure.in: Added --with-protocol-file (for protocoling SIGSEGVs)
+	* src/fo_view.c: Fixed typo
+	* src/fo_arcview.c: Fixed typo
+	* THANKS: Added a thanks file
+	* AUTHORS: Formalized the AUTHORS file
+
+2004-06-17 Christian Kruse <ckruse@wwwtech.de>
+	* THANKS: Added file for thanking people
+	* src/modules/flt_livefilter.c: Now, the livefilter sets explicitely
+		may_show to 1
+	* configure.in: added better checks for berkeley database
+	* m4/: Added macros directory (e.g. berkeley database autodetection)
+	* src/fo_arcview.c: some bugfixes
+	* src/modules/flt_tipoftheday.c: Added a plugin for "Tip Of The Day"
+
 2004-06-19 Jan Rieger <jr@occuris.de>
 	* src/templates/tpl_*/forum_begin.html:
 	* src/templates/tpl_*/forum_end.html:
@@ -41,6 +71,8 @@
 	* src/Makefile.am: added libcfclientlib.la for fo_threadlookup
 	* src/modules/flt_openclose.c: Fixed bug, now invisible unvisited threads
 		are ignored
+	* cgi-shared/ForumUtils.pm: several changes for performance and
+		actualization
 
 2004-06-16 Jan Rieger <jr@occuris.de>
 	* cgi-shared/config/templates/tpl_*/arcmonths.html:
@@ -53,9 +85,9 @@
 
 2004-06-15 Jan Rieger <jr@occuris.de>
 	* cgi-shared/config/templates/tpl_*/forum_begin.html:
-    Changed meta refresh to only contain URL in frameset view
+		Changed meta refresh to only contain URL in frameset view
 	* cgi-shared/config/templates/tpl_*/forum_thread.html:
-    Fixed bug #194
+		Fixed bug #194
 
 2004-06-15 Christian Kruse <ckruse@wwwtech.de>
 	* src/fo_arcview.c: Bugfix for bug #180, #173
@@ -89,7 +121,7 @@
 2004-06-12 Jan Rieger <jr@occuris.de>
 	* cgi-shared/config/templates/tpl_html4/forum_thread.html:
 	* cgi-shared/config/templates/tpl_xhtml10/forum_thread.html:
-    Changed '#a1' to '#nachricht', added '#{$unanch}' to new links
+		Changed '#a1' to '#nachricht', added '#{$unanch}' to new links
 	* cgi-shared/config/templates/tpl_html4/usereditok.html:
 	* cgi-shared/config/templates/tpl_xhtml10/usereditok.html:
 		Added link to {$userconfig}?a=edit

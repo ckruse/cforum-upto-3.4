@@ -412,7 +412,7 @@ sub uniquify_params {
           # Ok, we got characters not present in Latin-1. Due to
           # our knowledge of the browser bugs we assume that
           # Windows-1252 has been sent
-          if($val =~ /[\0x80-\0x9F]/) {
+          if($val =~ /[\x80-\x9F]/) {
             $convert = 0;
             $converter = new Text::Iconv("Windows-1252","UTF-8") unless $converter;
 
@@ -431,17 +431,7 @@ sub uniquify_params {
         push @newvals,$nval;
       }
 
-      $cgi->param(-name => $_,-value => [@newvals]);
-    }
-  }
-  else {
-    foreach($cgi->param) {
-      my @values = $cgi->param($_);
-
-      foreach my $val (@values) {
-        next if !defined $val || $val eq '';
-        return get_error($dcfg,"posting","charset") unless from_utf8(-string => $val,-charset => $dcfg->{ExternCharset}->[0]->[0]);
-      }
+      $cgi->param(-name => $_,-value => \@newvals);
     }
   }
 

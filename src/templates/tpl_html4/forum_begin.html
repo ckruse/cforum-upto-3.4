@@ -195,7 +195,8 @@
             Zum Mitmachen im SELFHTML Forum gibt es einige grunds&auml;tzliche Verhaltensregeln. Diese Regeln sind in der <img src="http://src.selfhtml.org/dok.gif" width="15" height="10" border="0" alt="Seite">&nbsp;<a href="/faq/"{if $frame} target="_top"{endif}><b>Forums-FAQ</b></a> nachzulesen. Es wird erwartet, da&szlig; Forumsteilnehmer die Forums-FAQ kennen und die dort genannten Regeln einhalten.
           </p>{if $LOAD_TIME}
           <p>Ladezeitpunkt: {$LOAD_TIME}{if $autoreload}, automatischer Reload: {$autoreloadtime}{endif}</p>{endif}{if $flt_admin_errmsg}
-          <p><b>{$flt_admin_errmsg}</b></p>{endif}
+          <p><b>{$flt_admin_errmsg}</b></p>{endif}{if $tipoftheday}
+          <p>Wussten Sie, dass {$tipoftheday}</p>{endif}
         </td>
       </tr>
       <tr>

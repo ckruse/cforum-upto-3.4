@@ -75,6 +75,8 @@ static int flt_lf_active = 0;
 
 static t_string flt_lf_str = { 0, 0, NULL };
 
+static int flt_lf_success = 1;
+
 u_char *case_strstr(const u_char *haystack,const u_char *needle) {
   size_t len1 = strlen(haystack);
   size_t len2 = strlen(needle);
@@ -193,6 +195,7 @@ int flt_lf_scanner(u_char *str,u_char **pos) {
           return TOK_ID;
         }
         else {
+          flt_lf_success = 0;
           return TOK_EOS;
         }
     }
@@ -565,9 +568,12 @@ u_char *flt_lf_evaluate(t_flt_lf_node *n,t_message *msg,u_int64_t tid) {
 
 int flt_lf_filter(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_message *msg,u_int64_t tid,int mode) {
   if(flt_lf_active) {
-    if(flt_lf_first) {
+    if(flt_lf_first && flt_lf_success) {
       if(flt_lf_evaluate(flt_lf_first,msg,tid) == 0) {
         msg->may_show = 0;
+      }
+      else {
+        msg->may_show = -1;
       }
     }
 
