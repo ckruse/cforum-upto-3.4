@@ -14,7 +14,12 @@
     <meta name="DC.Rights" content="">
     <meta name="SELF.Pagetype" content="portal">{if $owncss}{if $cssoverwrite}
     <link rel="stylesheet" title="Feuille de style du forum SELFHTML" type="text/css" href="http://src.selfhtml.org/forum.css">
-    <style type="text/css"><!--{if $vipcol}
+    <style type="text/css"><!--{if $font}
+      p,h1,h2,h3,h4,ul,ol,li,div,td,th,address,nobr,b,i,dl,dd,dt,a,a:link,a:visited,a:active {{if $fontcolor}
+        color:{$fontcolor};{endif}{if $fontsize}
+        font-size:{$fontsize};{endif}{if $fontfamily}
+        font-family:{$fontfamily};{endif}
+      }{endif}{if $vipcol}
       span.vip {
         color:{if $vipcolfg}{$vipcolfg}{else}#FF0000{endif};{if $vipcolbg}
         background-color:{$vipcolbg};{endif}
@@ -23,7 +28,7 @@
         color:{if $wlcolfg}{$wlcolfg}{else}#0000FF{endif};{if $wlcolbg}
         background-color:{$wlcolbg};{endif}
       }{endif}{if $cathighcolor}
-      span.cathigh {{if $cathighcolorfg}
+      span.cathigh, span.cathigh b {{if $cathighcolorfg}
         color:{$cathighcolorfg};{endif}{if $cathighcolorbg}
         background-color:{$cathighcolorbg};{endif}
       }{endif}{if $visitedcol}
@@ -38,11 +43,6 @@
       span.own {{if $colorownfg}
         color:{$colorownfg};{endif}{if $colorownbg}
         background-color:{$colorownbg};{endif}
-      }{endif}{if $font}
-      p,h1,h2,h3,h4,ul,ol,li,div,td,th,address,nobr,b,i,dl,dd,dt,a,a:link,a:visited,a:active {{if $fontcolor}
-        color:{$fontcolor};{endif}{if $fontsize}
-        font-size:{$fontsize};{endif}{if $fontfamily}
-        font-family:{$fontfamily};{endif}
       }{endif}
     //--></style>{endif}
     <link rel="stylesheet" title="Feuille de style personnalis&eacute;e" type="text/css" href="{$owncss}">{else}

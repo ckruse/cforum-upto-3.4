@@ -1,3 +1,7 @@
+2004-08-03 Christian Kruse <ckruse@wwwtech.de>
+	* src/templates/{de,fr}/tpl_*/forum_begin.html: Changed CSS a little bit,
+		span.cathigh has been overwritten by other CSS
+
 2004-08-02 Christian Kruse <ckruse@wwwtech.de>
 	* cgi-shared/Plugins/Management/SQL.pm: Bugfix, directives are named 'SQL*'!
 		Changed behavior of get_password(), now it returns undef if user could not
