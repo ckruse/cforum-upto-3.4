@@ -248,7 +248,7 @@ int flt_latex_execute(t_configuration *fdc,t_configuration *fvc,const u_char *di
 
     case FLT_LATEX_OBJECT:
       obj = 1;
-      str_chars_append(bco,"<object data=\"",14);
+      str_chars_append(bco,"<object type=\"text/mathml\" data=\"",33);
       str_chars_append(bco,flt_latex_cfg.uri,strlen(flt_latex_cfg.uri));
       str_chars_append(bco,sum,32);
       str_chars_append(bco,".mml\">",6);
