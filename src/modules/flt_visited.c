@@ -284,7 +284,12 @@ int flt_visited_mark_visited(t_cf_hash *head,t_configuration *dc,t_configuration
 /* }}} */
 
 /* {{{ flt_visited_mark_own */
-int flt_visited_mark_own(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_message *msg,u_int64_t tid) {
+#ifdef CF_SHARED_MEM
+int flt_visited_mark_own(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_message *msg,u_int64_t tid,void *shm,int sock)
+#else
+int flt_visited_mark_own(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_message *msg,u_int64_t tid,int sock)
+#endif
+{
   if(Cfg.mark_visited) return flt_visited_mark_visited_api(&msg->mid) ? FLT_OK : FLT_DECLINE;
   return FLT_DECLINE;
 }

@@ -381,7 +381,7 @@ void flt_mailonpost_mail(u_char **emails,u_int64_t len,t_message *p,u_int64_t ti
 
 /* {{{ flt_mailonpost_execute */
 #ifndef CF_SHARED_MEM
-int flt_mailonpost_execute(t_cf_hash *head,t_configuration *dc,t_configuration *pc,t_message *p,u_int64_t tid,int sock,void *shm)
+int flt_mailonpost_execute(t_cf_hash *head,t_configuration *dc,t_configuration *pc,t_message *p,u_int64_t tid,void *shm,int sock)
 #else
 int flt_mailonpost_execute(t_cf_hash *head,t_configuration *dc,t_configuration *pc,t_message *p,u_int64_t tid,int sock)
 #endif

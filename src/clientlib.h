@@ -485,7 +485,7 @@ int cf_run_thread_sorting_handlers(t_cf_hash *head,int sock,rline_t *tsd,t_cl_th
 #endif
 
 #ifdef CF_SHARED_MEM
-void cf_run_after_post_handlers(t_cf_hash *head,t_message *p,u_int64_t tid,int sock,void *shm);
+void cf_run_after_post_handlers(t_cf_hash *head,t_message *p,u_int64_t tid,void *shm,int sock);
 #else
 void cf_run_after_post_handlers(t_cf_hash *head,t_message *p,u_int64_t tid,int sock);
 #endif

@@ -9,6 +9,9 @@
 	* src/modules/flt_xmlarc.c: Fixed a nasty bug
 	* src/modules/flt_postingassistant.c: Small bugfix because of ... handling
 	* src/fo_vote.c: Bugfix, forgot to SELECT the forum
+	* src/clientlib.h, src/modules/flt_visited.c, src/modules/flt_mailonpost.c,
+		src/handlerrunners.c: Bugfix for prototype of cf_run_after_post_handlers()
+	* src/fo_post.c: Bugfix for quoting char handling
 
 2005-02-19 Christian Seiler <self@christian-seiler.de>
 	* src/modules/flt_syntax.c: Small bugfixes

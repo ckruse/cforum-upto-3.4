@@ -511,10 +511,7 @@ t_string *body_plain2coded(const u_char *text) {
         str_char_append(str,'\012');
 
         if(cf_strncmp(ptr+1,qchars,len) == 0) {
-          for(++ptr;*ptr && cf_strncmp(ptr,qchars,len) == 0;ptr+=len) {
-            str_char_append(str,(u_char)127);
-          }
-
+          for(++ptr;*ptr && cf_strncmp(ptr,qchars,len) == 0;ptr+=len) str_char_append(str,(u_char)127);
           --ptr;
         }
 
@@ -542,6 +539,10 @@ t_string *body_plain2coded(const u_char *text) {
         }
 
       default:
+        if(ptr == body && cf_strncmp(ptr,qchars,len) == 0) {
+          for(;*ptr && cf_strncmp(ptr,qchars,len) == 0;ptr+=len) str_char_append(str,(u_char)127);
+        }
+
         str_char_append(str,*ptr);
     }
   }
