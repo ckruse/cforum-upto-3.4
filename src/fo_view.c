@@ -513,7 +513,7 @@ int main(int argc,char *argv[],char *env[]) {
     "fo_default", "fo_view"
   };
 
-  int ret;
+  int ret,ext = 0;
   u_char  *ucfg,*m  = NULL,*t = NULL;
   t_array *cfgfiles;
   t_cf_hash *head;
@@ -641,14 +641,16 @@ int main(int argc,char *argv[],char *env[]) {
       t_filter_connect exec;
       t_handler_config *handler;
 
-      for(i=0;i<Modules[CONNECT_INIT_HANDLER].elements && (ret == FLT_OK || ret == FLT_DECLINE);i++) {
+      for(i=0;i<Modules[CONNECT_INIT_HANDLER].elements;i++) {
         handler = array_element_at(&Modules[CONNECT_INIT_HANDLER],i);
         exec    = (t_filter_connect)handler->func;
         ret     = exec(head,&fo_default_conf,&fo_view_conf,sock);
+
+        if(ret == FLT_EXIT) ext = 1;
       }
     }
 
-    if(ret != FLT_EXIT) {
+    if(!ext) {
       /* after that, look for m= and t= */
       if(head) {
         t = cf_cgi_get(head,"t");

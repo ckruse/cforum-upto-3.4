@@ -182,6 +182,31 @@
     </section>
 
     <section name="Die Funktionalität beeinflussende Anzeige-Funktionen">
+      <directive name="MarkThreadResponse204" arguments="1">
+        <argument paramname="markthreadresponse204" type="radio" encode="plain">
+          <validate>^(yes|no)$</validate>
+          <question>Soll &quot;Markiere Thread als gelesen&quot; mit &quot;204 No Content&quot; beantwortet werden?</question>
+          <error>Soll &quot;Markiere Thread als gelesen&quot; mit &quot;204 No Content&quot; beantwortet werden? Bitte geben sie &quot;Ja&quot; oder &quot;Nein&quot; an!</error>
+          <formvalues>
+            <value val="yes">Ja</value>
+            <value val="no" default="yes">Nein</value>
+          </formvalues>
+        </argument>
+      </directive>
+
+      <directive name="DelThreadResponse204" arguments="1">
+        <argument paramname="delthreadresponse204" type="radio" encode="plain">
+          <validate>^(yes|no)$</validate>
+          <question>Soll &quot;Thread ausblenden&quot; mit &quot;204 No Content&quot; beantwortet werden?</question>
+          <error>Soll &quot;Thread ausblenden&quot; mit &quot;204 No Content&quot; beantwortet werden? Bitte geben sie &quot;Ja&quot; oder &quot;Nein&quot; an!</error>
+          <formvalues>
+            <value val="yes">Ja</value>
+            <value val="no" default="yes">Nein</value>
+          </formvalues>
+        </argument>
+      </directive>
+
+
       <directive name="ThreadsOpenByDefault" arguments="1">
         <argument paramname="threadsopen" type="radio" encode="plain">
           <validate>^(?:yes|no)$</validate>

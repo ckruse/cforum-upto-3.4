@@ -158,7 +158,7 @@ int flt_visited_execute_filter(t_cf_hash *head,t_configuration *dc,t_configurati
 
       /* we shall mark a whole thread visited */
       if(ctid) {
-        tid = strtoull(ctid,NULL,10);
+        tid = str_to_u_int64(ctid);
         memset(&tsd,0,sizeof(tsd));
         memset(&thread,0,sizeof(thread));
 
@@ -169,9 +169,7 @@ int flt_visited_execute_filter(t_cf_hash *head,t_configuration *dc,t_configurati
           ret = cf_get_message_through_sock(sock,&tsd,&thread,NULL,tid,0,CF_KILL_DELETED);
           #endif
 
-          if(ret == -1) {
-            return FLT_DECLINE;
-          }
+          if(ret == -1) return FLT_DECLINE;
 
           for(msg=thread.messages;msg;msg=msg->next) {
             len = snprintf(buff,256,"%llu",msg->mid);
@@ -187,6 +185,7 @@ int flt_visited_execute_filter(t_cf_hash *head,t_configuration *dc,t_configurati
           }
 
           cleanup_struct(&thread);
+          printf("marked thread visited\n");
 
           if(Cfg.resp_204) {
             printf("Status: 204 No Content\015\012\015\012");
@@ -304,7 +303,7 @@ int flt_visit_handle_command(t_configfile *cf,t_conf_opt *opt,u_char **args,int 
     Cfg.mark_visited = cf_strcmp(args[0],"yes") == 0;
   }
   else if(cf_strcmp(opt->name,"MarkThreadResponse204") == 0) {
-    Cfg.resp_204 = cf_strcmp(args[0],"yes");
+    Cfg.resp_204 = cf_strcmp(args[0],"yes") == 0;
   }
 
   return 0;

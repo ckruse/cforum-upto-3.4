@@ -1,4 +1,7 @@
 2004-12-30 Christian Kruse <ckruse@wwwtech.de>
 	* src/fo_vote.c: Added variable backlink in OK output
 	* src/templates/de/tpl_*/vote_ok.html: Added link back to posting
+	* src/fo_view.c: Fixed bug in filter handling
+	* src/modules/flt_visited.c: Fixed bug in 204 response
+	* cgi-shared/config/modules.de.xml: Added 204 response options
 
