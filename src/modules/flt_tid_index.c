@@ -76,6 +76,9 @@ int flt_tidx_module(t_thread *thr) {
   len  = snprintf(buff,256,"%d/%d",t.tm_year+1900,t.tm_mon+1);
   tlen = snprintf(tid,50,"%llu",thr->tid);
 
+  memset(&key,0,sizeof(key));
+  memset(&data,0,sizeof(data));
+
   key.data = tid;
   key.size = tlen;
 
@@ -85,6 +88,8 @@ int flt_tidx_module(t_thread *thr) {
       db->close(db,0);
       return FLT_DECLINE;
     }
+
+    memset(&data,0,sizeof(data));
 
     data.data = buff;
     data.size = len;
@@ -100,6 +105,8 @@ int flt_tidx_module(t_thread *thr) {
     str_chars_append(&str,data.data,data.size);
     str_char_append(&str,'\0');
     str_chars_append(&str,buff,len);
+
+    memset(&data,0,sizeof(data));
 
     data.data = str.content;
     data.size = str.len;
