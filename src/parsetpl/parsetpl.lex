@@ -928,8 +928,6 @@ int parse_file(const u_char *filename) {
   t_array data;
   int tag_started = 0;
   t_token token;
-  t_token *tok;
-  int i;
   
   basename = strdup((u_char *)filename);
   if(!strcmp(PARSETPL_INCLUDE_EXT,basename+strlen(basename)-strlen(PARSETPL_INCLUDE_EXT))) {
