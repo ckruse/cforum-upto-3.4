@@ -1,5 +1,6 @@
 2005-02-25 Christian Kruse <ckruse@wwwtech.de>
 	* src/fo_server.c: Fixed a _really_ nasty bug in logfile rolling...
+	* src/modules/flt_mailonpost.c: Fixed bug #564
 
 2005-02-24 Christian Kruse <ckruse@wwwtech.de>
 	* conf/errormessages.de.txt: Changed the Send_Answer_Body text a little bit

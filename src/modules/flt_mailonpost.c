@@ -40,6 +40,7 @@
 #include "cfcgi.h"
 #include "template.h"
 #include "clientlib.h"
+#include "charconvert.h"
 #include "htmllib.h"
 #include "fo_post.h"
 /* }}} */
@@ -296,10 +297,67 @@ const char *flt_mailonpost_msgcb(void **buf, int *len, void *arg) {
 }
 /* }}} */
 
+/* {{{ flt_mailonpost_encode_header */
+void flt_mailonpost_encode_header(t_string *str,const u_char *enc,size_t len) {
+  static const u_char hex[] = "0123456789ABCDEF";
+  int di = 0;
+  unsigned x;
+  u_char *ptr;
+  size_t llen,clen;
+  u_int32_t num;
+
+  for(ptr=(u_char *)enc;*ptr && di == 0;++ptr) {
+    if(((u_int8_t)*ptr) & 0x80) ++di;
+  }
+
+  if(di) {
+    str_chars_append(str,"=?UTF-8?Q?",10);
+
+    for(llen=0,ptr=(u_char *)enc;*ptr;++ptr,++llen) {
+      if(*ptr == ' ') str_char_append(str,'_');
+      else if(*ptr >= 0x7f || *ptr < 0x20 || *ptr == '_') {
+        clen = utf8_to_unicode(ptr,len-(ptr-enc),&clen);
+
+        if(llen == 73 - clen) {
+          str_chars_append(str,"?=\n =?UTF-8?Q?",14);
+          llen = 0;
+        }
+
+        for(x=0;x<clen;++x,++ptr) {
+          str_char_append(str,'=');
+          str_char_append(str,hex[(*ptr & 0xf0) >> 4]);
+          str_char_append(str,hex[*ptr & 0x0f]);
+        }
+
+        --ptr;
+      }
+      else str_char_append(str,*ptr);
+
+      if(llen == 75) {
+        str_chars_append(str,"?=\n =?UTF-8?Q?",14);
+        llen = 0;
+      }
+    }
+
+    str_chars_append(str,"?=",2);
+  }
+  else str_chars_append(str,enc,len)
+}
+/* }}} */
+
 /* {{{ flt_mailonpost_parsestr */
-void flt_mailonpost_parsestr(t_cl_thread *t,t_message *p,t_string *str,const u_char *pars,const u_char *link,const u_char *mlink,t_name_value *v,t_name_value *v1) {
+void flt_mailonpost_parsestr(t_cl_thread *t,t_message *p,t_string *str,const u_char *pars,const u_char *link,const u_char *mlink,t_name_value *v,t_name_value *v1,int mode) {
   register u_char *ptr;
   u_char *l;
+
+  t_string str1,*str2;
+
+  if(mode) {
+    str_init(&str1);
+    str2 = str;
+    str = &str1;
+  }
+
 
   for(ptr=(u_char *)pars;*ptr;++ptr) {
     switch(*ptr) {
@@ -398,6 +456,13 @@ void flt_mailonpost_parsestr(t_cl_thread *t,t_message *p,t_string *str,const u_c
         str_char_append(str,*ptr);
     }
   }
+
+  if(mode) {
+    str = str2;
+    flt_mailonpost_encode_header(str,str1.content,str1.len);
+    str_cleanup(&str1);
+  }
+
 }
 /* }}} */
 
@@ -425,9 +490,9 @@ void flt_mailonpost_mail(u_char **emails,u_int64_t len,t_message *p,t_cl_thread 
 
   /* {{{ parse subject and message body */
   str_chars_append(&str,"Content-Type: text/plain; charset=UTF-8\015\012Subject: ",50);
-  flt_mailonpost_parsestr(t,p,&str,msg_subj,link,mylink,v,v1);
+  flt_mailonpost_parsestr(t,p,&str,msg_subj,link,mylink,v,v1,1);
   str_chars_append(&str,"\015\012\015\012",4);
-  flt_mailonpost_parsestr(t,p,&str,msg_body,link,mylink,v,v1);
+  flt_mailonpost_parsestr(t,p,&str,msg_body,link,mylink,v,v1,0);
 
   free(mylink);
   free(link);
