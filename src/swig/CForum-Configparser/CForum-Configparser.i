@@ -119,7 +119,6 @@ int xs_callback_dflt(t_configfile *cfile,const u_char *context,u_char *name,u_ch
 %}
 
 %init %{
-  cf_init();
   cfg_init();
   init_modules();
 %}

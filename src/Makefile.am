@@ -4,7 +4,6 @@ SUBDIRS=. modules parsetpl swig
 bin_PROGRAMS= \
 	fo_server \
 	fo_view \
-	fo_cleanup \
 	fo_vote \
 	fo_tid_index \
 	fo_post \
@@ -76,10 +75,6 @@ fo_threadlookup_LDFLAGS=-export-dynamic
 fo_tid_index_SOURCES=fo_tid_index.c
 fo_tid_index_LDADD=libcfutils.la libcfconfigparser.la $(BDB_LIB)
 fo_tid_index_LDFLAGS=-export-dynamic
-
-fo_cleanup_SOURCES=fo_cleanup.c
-fo_cleanup_LDADD=libcfutils.la libcfhashlib.la libcfreadline.la libcfconfigparser.la libcfclientlib.la $(BDB_LIB)
-fo_cleanup_LDFLAGS=-export-dynamic
 
 fo_vote_SOURCES=fo_vote.c
 fo_vote_LDADD=libcfutils.la libcfhashlib.la libcfreadline.la libcfconfigparser.la libcfclientlib.la libcfcgi.la libcftemplate.la $(BDB_LIB)

@@ -292,6 +292,7 @@ scripts/Makefile
 scripts/fo_userconf
 scripts/fo_usermanagement
 scripts/fo_xmlrpc
+scripts/cf-cleanup.pl
 src/perl/Makefile
 src/perl/Plugins/Makefile
 src/perl/Plugins/Management/Makefile

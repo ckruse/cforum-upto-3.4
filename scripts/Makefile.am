@@ -5,6 +5,7 @@ bin_SCRIPTS=fo_userconf \
 	cf-indextips.pl \
 	cf-msgs2db.pl \
 	cf-xmlconv.pl \
-	cf-compile_templates.pl
+	cf-compile_templates.pl \
+	cf-cleanup.pl
 
 
