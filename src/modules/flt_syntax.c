@@ -661,7 +661,7 @@ u_char *flt_syntax_get_token(const u_char *txt) {
   u_char *ret = NULL;
   
   if(isalnum(*txt)) {
-    for(ptr=(u_char *)txt;*ptr && isalnum(*ptr);++ptr);
+    for(ptr=(u_char *)txt;*ptr && (isalnum(*ptr) || *ptr == '_');++ptr);
     ret = strndup(txt,ptr-txt);
   }
   else {

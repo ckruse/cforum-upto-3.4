@@ -38,6 +38,7 @@
 	* src/htmllib.c: Changed directive parser, now it is more strict but faster
 	* src/fo_post.c: Fixed bug in body_plain2coded(), quoting chars were not
 		entities encoded but body was
+	* src/modules/flt_syntax.c: Bugfix in tokenizer
 
 2005-02-08 Christian Kruse <ckruse@wwwtech.de>
 	* configure.in: Added cf-cleanup.pl
