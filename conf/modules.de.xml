@@ -292,6 +292,30 @@
         </argument>
       </directive>
 
+      <directive name="DeletedUseXMLHttp" arguments="1">
+        <argument paramname="deletedusexmlhttp" type="radio" encode="plain">
+          <validate>^(?:yes|no)$</validate>
+          <question>Soll JavaScript benutzt werden, um Threads auszublenden?</question>
+          <error>Soll JavaScript zum Ausblenden von Threads benutzt werden? Bitte geben Sie &quot;Ja&quot; oder &quot;Nein&quot; ein!</error>
+          <formvalues>
+            <value val="yes">Ja</value>
+            <value val="no" default="yes">Nein</value>
+          </formvalues>
+        </argument>
+      </directive>
+
+      <directive name="VisitedUseXMLHttp" arguments="1">
+        <argument paramname="visitedusexmlhttp" type="radio" encode="plain">
+          <validate>^(?:yes|no)$</validate>
+          <question>Soll JavaScript benutzt werden, um Threads als gelesen zu markieren?</question>
+          <error>Soll JavaScript benutzt werden, um Threads als gelesen zu markieren? Bitte geben Sie &quot;Ja&quot; oder &quot;Nein&quot; ein!</error>
+          <formvalues>
+            <value val="yes">Ja</value>
+            <value val="no" default="yes">Nein</value>
+          </formvalues>
+        </argument>
+      </directive>
+
       <directive name="DelThreadResponse204" arguments="1">
         <argument paramname="delthreadresponse204" type="radio" encode="plain">
           <validate>^(yes|no)$</validate>
@@ -403,18 +427,6 @@
           <validate>^(?:yes|no)$</validate>
           <question>Sollen Checkboxen zum Ausblenden von Threads benutzt werden?</question>
           <error>Sollen Checkboxen zum Ausblenden von Threads benutzt werden? Bitte geben Sie &quot;Ja&quot; oder &quot;Nein&quot; ein!</error>
-          <formvalues>
-            <value val="yes">Ja</value>
-            <value val="no" default="yes">Nein</value>
-          </formvalues>
-        </argument>
-      </directive>
-
-      <directive name="DeletedUseXMLHttp" arguments="1">
-        <argument paramname="deletedusexmlhttp" type="radio" encode="plain">
-          <validate>^(?:yes|no)$</validate>
-          <question>Soll JavaScript benutzt werden, um Threads auszublenden?</question>
-          <error>Soll JavaScript zum Ausblenden von Threads benutzt werden? Bitte geben Sie &quot;Ja&quot; oder &quot;Nein&quot; ein!</error>
           <formvalues>
             <value val="yes">Ja</value>
             <value val="no" default="yes">Nein</value>

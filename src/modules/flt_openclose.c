@@ -118,7 +118,7 @@ int flt_oc_exec_xmlhttp(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc,i
 int flt_oc_exec_xmlhttp(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc,void *shm)
 #endif
 {
-  u_char *val,*fn = cf_hash_get(GlobalValues,"FORUM_NAME",10),buff[512],*line,fo_thread_tplname[256];
+  u_char *val,*fn = cf_hash_get(GlobalValues,"FORUM_NAME",10),buff[512],fo_thread_tplname[256];
   u_int64_t tid;
   t_cl_thread thread;
   size_t len;

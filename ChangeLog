@@ -10,8 +10,9 @@
 	* src/modules/flt_directives.c: Fixed bug #687
 	* src/modules/flt_visited.c: Fixed bug #641
 	* src/modules/flt_rot13.c: Fixed bug #677
-	* conf/modules.de.xml: Added DeletedUseXMLHttp and MarkThreadVisitedInLN
-		directives
+	* conf/modules.de.xml: Added DeletedUseXMLHttp, MarkThreadVisitedInLN and
+		VisitedUseXMLHttp directives
+	* src/modules/flt_visited.c: Added XMLHttpRequest support
 
 2005-04-01 Christian Kruse <ckruse@wwwtech.de>
 	* src/fo_view.c: Now using cf_gen_threadlist()

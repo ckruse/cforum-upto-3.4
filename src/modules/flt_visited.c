@@ -43,6 +43,7 @@
 #include "cfcgi.h"
 #include "template.h"
 #include "clientlib.h"
+#include "htmllib.h"
 /* }}} */
 
 struct {
@@ -55,7 +56,8 @@ struct {
   int resp_204;
   int mark_all_visited;
   int mark_visited_in_ln;
-} Cfg = { 0, NULL, NULL, NULL, NULL, 0, 0, 0, 0 };
+  int xml_http;
+} Cfg = { 0, NULL, NULL, NULL, NULL, 0, 0, 0, 0, 0 };
 
 static u_char *flt_visited_fn = NULL;
 
@@ -133,10 +135,9 @@ int flt_visited_execute_filter(t_cf_hash *head,t_configuration *dc,t_configurati
 {
   u_char *uname = cf_hash_get(GlobalValues,"UserName",8);
   u_char *fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
-  u_char *cmid;
-  u_char *ctid;
+  u_char *cmid,fo_thread_tplname[256],*ctid,*mode;
   u_int64_t mid,tid;
-  int ret,fd;
+  int ret,fd,xmlhttp = 0;
   char one[] = "1";
   rline_t tsd;
   t_message *msg;
@@ -144,7 +145,10 @@ int flt_visited_execute_filter(t_cf_hash *head,t_configuration *dc,t_configurati
   DBT key,data;
   char buff[256],*mav;
   size_t len;
+  t_string str;
   t_name_value *rm = cfg_get_first_value(vc,fn,"ReadMode");
+
+  t_name_value *fo_thread_tpl,*cs,*ot,*ct;
 
   if(uname && Cfg.VisitedFile) {
     memset(&key,0,sizeof(key));
@@ -166,6 +170,9 @@ int flt_visited_execute_filter(t_cf_hash *head,t_configuration *dc,t_configurati
     if(head && Cfg.HighlightVisitedPostings) {
       cmid = cf_cgi_get(head,"m");
       ctid = cf_cgi_get(head,"mv");
+      mode = cf_cgi_get(head,"mode");
+
+      if(mode) xmlhttp = cf_strcmp(mode,"xmlhttp") == 0;
 
       if((cf_strcmp(rm->values[0],"list") == 0 || cf_strcmp(rm->values[0],"nested") == 0) && ctid == NULL) ctid = cf_cgi_get(head,"t");
 
@@ -176,10 +183,15 @@ int flt_visited_execute_filter(t_cf_hash *head,t_configuration *dc,t_configurati
         memset(&thread,0,sizeof(thread));
 
         if(tid) {
+          if(xmlhttp) {
+            fo_thread_tpl = cfg_get_first_value(vc,fn,"TemplateForumThread");
+            cf_gen_tpl_name(fo_thread_tplname,256,fo_thread_tpl->values[0]);
+          }
+
           #ifdef CF_SHARED_MEM
-          ret = cf_get_message_through_shm(sock,&thread,NULL,tid,0,CF_KILL_DELETED);
+          ret = cf_get_message_through_shm(sock,&thread,xmlhttp ? fo_thread_tplname : NULL,tid,0,CF_KILL_DELETED);
           #else
-          ret = cf_get_message_through_sock(sock,&tsd,&thread,NULL,tid,0,CF_KILL_DELETED);
+          ret = cf_get_message_through_sock(sock,&tsd,&thread,xmlhttp ? fo_thread_tplname : NULL,tid,0,CF_KILL_DELETED);
           #endif
 
           if(ret == -1) return FLT_DECLINE;
@@ -197,12 +209,42 @@ int flt_visited_execute_filter(t_cf_hash *head,t_configuration *dc,t_configurati
 
           }
 
-          cf_cleanup_thread(&thread);
-
           if(Cfg.resp_204) {
             printf("Status: 204 No Content\015\012\015\012");
+            cf_cleanup_thread(&thread);
             return FLT_EXIT;
           }
+          /* {{{ we're in XMLHttpRequest mode */
+          else if(xmlhttp) {
+            /* ok, all parameters are fine, go and generate content */
+            cs             = cfg_get_first_value(dc,fn,"ExternCharset");
+            ot             = cfg_get_first_value(vc,fn,"OpenThread");
+            ct             = cfg_get_first_value(vc,fn,"CloseThread");
+
+            thread.threadmsg = thread.messages;
+
+            #ifndef CF_NO_SORTING
+            #ifdef CF_SHARED_MEM
+            cf_run_thread_sorting_handlers(head,sock,&thread);
+            #else
+            cf_run_thread_sorting_handlers(head,sock,&tsd,&thread);
+            #endif
+            #endif
+
+            str_init(&str);
+            cf_gen_threadlist(&thread,head,&str,"full",NULL,CF_MODE_THREADLIST);
+
+            printf("Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
+            fwrite(str.content + strlen(ot->values[0]),1,str.len - strlen(ot->values[0]) - strlen(ct->values[0]),stdout);
+            str_cleanup(&str);
+
+            cf_cleanup_thread(&thread);
+
+            return FLT_EXIT;
+          }
+          /* }}} */
+
+          cf_cleanup_thread(&thread);
         }
       }
 
@@ -242,6 +284,7 @@ int flt_visited_set_col(t_cf_hash *head,t_configuration *dc,t_configuration *vc,
       cf_tpl_setvalue(begin,"visitedcolbg",TPL_VARIABLE_STRING,Cfg.VisitedPostingsColorB,strlen(Cfg.VisitedPostingsColorB));
     }
   }
+  if(Cfg.xml_http) cf_tpl_setvalue(begin,"VisitedUseXMLHttp",TPL_VARIABLE_INT,1);
 
   return FLT_OK;
 }
@@ -391,6 +434,8 @@ int flt_visited_set_link(t_cf_hash *head,t_configuration *dc,t_configuration *vc
   if(Cfg.VisitedFile && Cfg.HighlightVisitedPostings) {
     len = snprintf(buff,512,"%s?mv=%llu",x->values[0],thr->tid);
     cf_set_variable(&msg->tpl,cs,"mvlink",buff,len,1);
+
+    if(Cfg.xml_http) cf_tpl_setvalue(&msg->tpl,"VisitedUseXMLHttp",TPL_VARIABLE_INT,1);
   }
 
   return FLT_OK;
@@ -424,6 +469,9 @@ int flt_visit_handle_command(t_configfile *cf,t_conf_opt *opt,const u_char *cont
   else if(cf_strcmp(opt->name,"MarkThreadVisitedInLN") == 0) {
     Cfg.mark_visited_in_ln = cf_strcmp(args[0],"yes") == 0;
   }
+  else if(cf_strcmp(opt->name,"VisitedUseXMLHttp") == 0) {
+    Cfg.xml_http = cf_strcmp(args[0],"yes") == 0;
+  }
 
   return 0;
 }
@@ -453,6 +501,7 @@ t_conf_opt flt_visited_config[] = {
   { "MarkOwnPostsVisited",      flt_visit_handle_command, CFG_OPT_USER|CFG_OPT_LOCAL,                NULL },
   { "MarkThreadResponse204",    flt_visit_handle_command, CFG_OPT_USER|CFG_OPT_CONFIG|CFG_OPT_LOCAL, NULL },
   { "MarkThreadVisitedInLN",    flt_visit_handle_command, CFG_OPT_USER|CFG_OPT_LOCAL,                NULL },
+  { "VisitedUseXMLHttp",        flt_visit_handle_command, CFG_OPT_USER|CFG_OPT_LOCAL,                NULL },
   { NULL, NULL, 0, NULL }
 };
 
