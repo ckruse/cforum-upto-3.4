@@ -258,7 +258,7 @@ int flt_nested_rm_collector(t_cf_hash *head,t_configuration *dc,t_configuration 
     cf_gen_tpl_name(buff,256,v->values[0]);
     rm_infos->post_threadlist_tpl = strdup(buff);
 
-    v = cfg_get_first_value(vc,fn,"TemplateNested");
+    v = cfg_get_first_value(vc,fn,"TemplateForumNested");
     cf_gen_tpl_name(buff,256,v->values[0]);
     rm_infos->thread_tpl = strdup(buff);
 

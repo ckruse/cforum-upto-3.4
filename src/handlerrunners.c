@@ -352,7 +352,7 @@ int cf_run_perpost_var_handlers(t_cf_hash *head,t_cl_thread *thread,t_message *m
 
 /* {{{ cf_run_readmode_collectors */
 int cf_run_readmode_collectors(t_cf_hash *head,cf_readmode_t *rm_infos) {
-  int ret = FLT_OK,ext = FLT_EXIT;
+  int ret = FLT_DECLINE,ext = FLT_EXIT;
   t_handler_config *handler;
   size_t i;
   cf_readmode_collector_t fkt;

@@ -169,7 +169,7 @@ int flt_list_rm_collector(t_cf_hash *head,t_configuration *dc,t_configuration *v
     cf_gen_tpl_name(buff,256,v->values[0]);
     rm_infos->post_threadlist_tpl = strdup(buff);
 
-    v = cfg_get_first_value(vc,fn,"TemplateList");
+    v = cfg_get_first_value(vc,fn,"TemplateForumList");
     cf_gen_tpl_name(buff,256,v->values[0]);
     rm_infos->thread_tpl = strdup(buff);
 

@@ -369,10 +369,13 @@ int flt_posting_pre_cnt(t_configuration *dc,t_configuration *vc,t_cl_thread *thr
 
 /* {{{ flt_posting_rm_collector */
 int flt_posting_rm_collector(t_cf_hash *head,t_configuration *dc,t_configuration *vc,cf_readmode_t *rm_infos) {
-  t_name_value *rm = cfg_get_first_value(vc,flt_posting_fn,"ReadMode");
+  t_name_value *rm;
   t_name_value *v;
 
   u_char buff[256];
+
+  if(flt_posting_fn == NULL) flt_posting_fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
+  rm = cfg_get_first_value(vc,flt_posting_fn,"ReadMode");
 
   if(cf_strcmp(rm->values[0],"thread") == 0) {
     v = cfg_get_first_value(dc,flt_posting_fn,"PostingURL");
