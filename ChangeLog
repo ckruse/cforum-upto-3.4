@@ -1,3 +1,6 @@
+2004-08-03 Jan Rieger <jr@occuris.de>
+	* src/templates/de/tpl_*/sendpass*.html: Added templates for usermanagement
+
 2004-08-03 Christian Kruse <ckruse@wwwtech.de>
 	* src/templates/{de,fr}/tpl_*/forum_begin.html: Changed CSS a little bit,
 		span.cathigh has been overwritten by other CSS
