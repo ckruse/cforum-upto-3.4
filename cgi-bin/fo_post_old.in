@@ -384,21 +384,13 @@ if($cgi->param) {
   # }}}
 
   if($answer =~ /^200/) {
-    $j = 0;
-    while(!$j) {
-      $_ = <$sock>;
-      if($_ =~ /^Tid: ([0-9]+)/) {
-        $new_tid = $1;
-      } elsif($_ =~ /^Mid: ([0-9]+)/) {
-        $new_mid = $1;
-      } elsif($_ =~ /^\s*$/) {
-        $j = 1;
-      }
-      if($new_tid > -1 && $new_mid > -1) {
-        $j = 1;
-      }
+    for(1..2) {
+      $line = <$sock>;
+      $new_tid = $1 if $line =~ /Tid: (\d+)/;
+      $new_mid = $1 if $line =~ /Mid: (\d+)/;
     }
   }
+
 
   $cgi->param ('new_tid' => $new_tid) if $new_tid > -1;
   $cgi->param ('new_mid' => $new_mid) if $new_mid > -1;
