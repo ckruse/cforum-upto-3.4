@@ -7,7 +7,8 @@
 	* src/fo_server.c: Now setting RUN explicitely to 0 to ensure that (in error
 		case) the worker- and periodical threads end.
 	* src/fo_view.c: Small bugfix creating socket
-	* src/fo_cleanup.c: Moved to 3.0 API, added cleanup for voting
+	* src/fo_cleanup.c: Moved to 3.0 API, added cleanup for voting, invented
+		getopt usage
 	* src/fo_vote.c: Moved to 3.0 API, small bugfix
 	* src/configparser.[ch]: Added CF_MODE_NOLOAD for avoid loading modules,
 		corrected modes for directives
@@ -15,6 +16,7 @@
 		cgi-shared/config/fo_usermanagement.conf.in,
 		cgi-shared/config/fo_vote.conf.in, cgi-shared/config/fo_userconf.conf.in:
 		Corrected syntax of configuration files
+	* src/fo_tid_index.c: Moved to 3.0 API, invented getopt usage
 
 2005-01-14 Christian Kruse <ckruse@wwwtech.de>
 	* src/clientlib.h: Added t_hierarchical_node and some prototypes for handling

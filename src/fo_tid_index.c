@@ -39,6 +39,7 @@
 #include <sys/un.h>
 
 #include <db.h>
+#include <getopt.h>
 
 #include "hashlib.h"
 #include "utils.h"
@@ -52,6 +53,9 @@
 
 /** Database containig the index entries */
 DB *Tdb = NULL;
+
+/** contains forum name */
+static u_char *forum_name = NULL;
 
 /* {{{ is_digit */
 /**
@@ -81,9 +85,7 @@ int is_thread(const char *path) {
 
   if(*ptr++ != 't') return -1;
 
-  for(;*ptr && isdigit(*ptr);ptr++) {
-    dg = 1;
-  }
+  for(;*ptr && isdigit(*ptr);++ptr) dg = 1;
 
   if(cf_strcmp(ptr,".xml") != 0) return -1;
   if(dg == 0) return -1;
@@ -99,7 +101,7 @@ int is_thread(const char *path) {
  * \param month The month
  */
 void index_month(char *year,char *month) {
-  t_name_value *apath = cfg_get_first_value(&fo_default_conf,NULL,"ArchivePath");
+  t_name_value *apath = cfg_get_first_value(&fo_default_conf,forum_name,"ArchivePath");
   char path[256],path1[256],ym[256];
   t_tid_index midx;
   struct stat st;
@@ -197,6 +199,27 @@ void do_year(char *year) {
 }
 /* }}} */
 
+static struct option cmdline_options[] = {
+  { "config-directory", 1, NULL, 'c' },
+  { "forum-name",       1, NULL, 'f' },
+  { NULL,               0, NULL, 0   }
+};
+
+/* {{{ usage */
+void usage(void) {
+  fprintf(stderr,"Usage:\n" \
+    "[CF_CONF_DIR=\"/path/to/config\"] fo_tid_index [options]\n\n" \
+    "where options are:\n" \
+    "\t-c, --config-directory  Path to the configuration directory\n" \
+    "\t-f, --forum-name        Name of the forum to index\n" \
+    "\t-h, --help              Show this help screen\n\n" \
+    "One of both must be set: config-directory option or CF_CONF_DIR\n" \
+    "environment variable\n\n"
+  );
+  exit(-1);
+}
+/* }}} */
+
 /* {{{ main */
 /**
  * Main function
@@ -207,8 +230,9 @@ void do_year(char *year) {
 int main(int argc,char *argv[],char *envp[]) {
   t_array *cfgfiles;
   u_char *file;
-  t_configfile dconf;
+  t_configfile dconf,sconf;
   t_name_value *ent,*idxfile;
+  u_char c;
 
   DIR *years;
   struct dirent *year;
@@ -218,6 +242,25 @@ int main(int argc,char *argv[],char *envp[]) {
     "fo_default"
   };
 
+  /* {{{ read options from commandline */
+  while((c = getopt_long(argc,argv,"c:f",cmdline_options,NULL)) > 0) {
+    switch(c) {
+      case 'c':
+        if(!optarg) usage();
+        setenv("CF_CONF_DIR",optarg,1);
+        break;
+      case 'f':
+        if(!optarg) usage();
+        forum_name = strdup(optarg);
+        break;
+      default:
+        usage();
+    }
+  }
+  /* }}} */
+
+  if(!forum_name) usage();
+
   cfg_init();
 
   if((cfgfiles = get_conf_file(wanted,1)) == NULL) {
@@ -225,10 +268,11 @@ int main(int argc,char *argv[],char *envp[]) {
     return EXIT_FAILURE;
   }
 
-  file = *((u_char **)array_element_at(cfgfiles,0));
+  file = *((u_char **)array_element_at(cfgfiles,1));
   cfg_init_file(&dconf,file);
-  cfg_register_options(&dconf,default_options);
   free(file);
+
+  cfg_register_options(&sconf,fo_server_options);
 
   if(read_config(&dconf,NULL,CFG_MODE_CONFIG) != 0) {
     fprintf(stderr,"config file error!\n");
@@ -238,11 +282,11 @@ int main(int argc,char *argv[],char *envp[]) {
     return EXIT_FAILURE;
   }
 
-  if((ent = cfg_get_first_value(&fo_default_conf,NULL,"ArchivePath")) == NULL) {
+  if((ent = cfg_get_first_value(&fo_default_conf,forum_name,"ArchivePath")) == NULL) {
     fprintf(stderr,"error getting archive path\n");
     return EXIT_FAILURE;
   }
-  if((idxfile = cfg_get_first_value(&fo_default_conf,NULL,"ThreadIndexFile")) == NULL) {
+  if((idxfile = cfg_get_first_value(&fo_default_conf,forum_name,"ThreadIndexFile")) == NULL) {
     fprintf(stderr,"error getting index file\n");
     return EXIT_FAILURE;
   }
