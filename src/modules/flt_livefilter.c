@@ -94,7 +94,7 @@ u_char *flt_lf_case_strstr(const u_char *haystack,const u_char *needle) {
 }
 /* }}} */
 
-/* {{{ */
+/* {{{ flt_lf_read_string */
 int flt_lf_read_string(register u_char *ptr) {
   str_init(&flt_lf_str);
 
