@@ -1,3 +1,10 @@
+2004-08-08 Christian Kruse <ckruse@wwwtech.de>
+	* src/modules/flt_scoring.lex: Fixed bug in applying score and config parsing
+	* src/modules/flt_posting.c: Fixed bug causing question marks at the beginning
+		of every [pref:] URI
+	* cgi-shared/ForumUtils.pm: Fixed bug in link parsing
+	* cgi-shared/config/modules.de.xml: Fixed several bugs in <validate/> tags
+
 2004-08-07 Christian Seiler <self@christian-seiler.de>
 	* src/fo_view.c,
 		src/modules/flt_posting.c,
@@ -11,7 +18,7 @@
 		Corrected some values.
 	* cgi-bin/fo_usermanagement.in: Fixed bug that inhibited new registrations,
 		always assigned $userconfig when in /my.
-	* cgi-bin/fo_userconf.in Always assign $userconfig in /my.
+	* cgi-bin/fo_userconf.in: Always assign $userconfig in /my.
 
 2004-08-05 Christian Kruse <ckruse@wwwtech.de>
 	* src/templates/de/tpl_*/Makefile.am: Fixed bug, source file is <tplname>.c,

@@ -345,7 +345,7 @@ void msg_to_html(const u_char *msg,const u_char *link,t_string *content,t_string
           str_chars_append(content,Cfg.link,strlen(Cfg.link));
         }
 
-        str_chars_append(content,"\">?",3);
+        str_chars_append(content,"\">",2);
         str_chars_append(content,tmp1,strlen(tmp1));
         str_chars_append(content,"</a>",4);
 

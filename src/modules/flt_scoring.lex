@@ -113,7 +113,7 @@ static u_char flt_scoring_base_color[3] = { 127, 0, 0 };
 
 /* {{{ flt_scoring_execute */
 int flt_scoring_execute(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_message *msg,u_int64_t tid,int mode) {
-  int res;
+  int res = 0;
   size_t i;
   struct s_scoring_filter *flt;
   int score = 0;
@@ -143,14 +143,14 @@ int flt_scoring_execute(t_cf_hash *head,t_configuration *dc,t_configuration *vc,
       }
 
       /* calculate color from score */
-      if(score) {
-        if(flt_scoring_hide_score && score <= flt_scoring_hide_score) {
-          msg->may_show = 0;
-        }
-        else {
+      if(flt_scoring_hide_score && score <= flt_scoring_hide_score) {
+        msg->may_show = 0;
+      }
+      else {
+        if(score) {
           len = snprintf(buff,8,"#%02x%02x%02x",flt_scoring_base_color[0]+score,flt_scoring_base_color[1],flt_scoring_base_color[2]);
           tpl_cf_setvar(&msg->tpl,"flt_scoring_color",buff,len,0);
-        }
+	}
       }
 
       return FLT_OK;
@@ -184,7 +184,7 @@ int flt_scoring_parse(t_configfile *cf,t_conf_opt *opt,u_char **args,int argnum)
         else                                              filter.field = FLT_SCORING_CAT;
         break;
       case FLT_SCORING_REGEX:
-        if((filter.regex = pcre_compile(flt_scoring_str.content,PCRE_UTF8,(const char **)&error,&err_offset,NULL)) == NULL) {
+        if((filter.regex = pcre_compile(flt_scoring_str.content,PCRE_UTF8|PCRE_CASELESS,(const char **)&error,&err_offset,NULL)) == NULL) {
           fprintf(stderr,"regex error in regex '%s': %s\n",flt_scoring_str.content,error);
           return -10;
         }
@@ -208,6 +208,7 @@ int flt_scoring_parse(t_configfile *cf,t_conf_opt *opt,u_char **args,int argnum)
 
 /* {{{ flt_scoring_cols */
 int flt_scoring_cols(t_configfile *cf,t_conf_opt *opt,u_char **args,int argnum) {
+  u_char *arg = args[0];
   size_t len = strlen(args[0]);
   u_char *ptr, *col;
   u_char tmp[3];
@@ -217,16 +218,21 @@ int flt_scoring_cols(t_configfile *cf,t_conf_opt *opt,u_char **args,int argnum) 
 
   tmp[2] = '\0';
 
+  if(*arg == '#') {
+    arg++;
+    len--;
+  }
+
   switch(len) {
     case 3:
-      for(i=0,ptr=args[0];*ptr;ptr++,i++) {
+      for(i=0,ptr=arg;*ptr;ptr++,i++) {
         tmp[0] = *ptr;
         tmp[1] = *ptr;
         col[i] = strtol(tmp,NULL,16);
       }
       break;
     case 6:
-      for(i=0,ptr=args[0];*ptr;ptr+=2,i++) {
+      for(i=0,ptr=arg;*ptr;ptr+=2,i++) {
         tmp[0] = *ptr;
         tmp[1] = *(ptr+1);
         col[i] = strtol(tmp,NULL,16);

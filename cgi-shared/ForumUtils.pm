@@ -173,7 +173,7 @@ sub transform_body {
   my $qchars = recode($dcfg,shift);
   my $base   = $ENV{SCRIPT_NAME};
 
-  $base =~ s![^/]*$!!;
+  $base =~ s![^/]*$!!; #!;
 
   #
   # the following section contains lot of code from André Malo -- thanks to him
@@ -184,7 +184,7 @@ sub transform_body {
 
   # after that, we collect all links to postings...
   foreach(@{$pcfg->{PostingUrl}}) {
-    $txt =~ s~\[link:\s*$_->[0]([\dtm=&]+)(?:#\w+)?\]~\[pref:$1\]~g;
+    $txt =~ s{\[link:\s*$_->[0]([\dtm=&]+)(?:#\w+)?\]}{my $tidpid = $1; $tidpid =~ s!&!;!; '[pref:'.$tidpid.']'}eg;
   }
 
   # now transform all links...
