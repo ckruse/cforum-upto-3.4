@@ -1,5 +1,5 @@
 
-SUBDIRS=. modules
+SUBDIRS=. modules parsetpl
 
 # fo_post not in 2.1!
 bin_PROGRAMS= \
@@ -87,7 +87,7 @@ fo_vote_LDFLAGS=-export-dynamic
 
 fo_view_SOURCES=fo_view.c
 fo_view_LDADD=libcfconfigparser.la libcftemplate.la libcfcharconvert.la libcfreadline.la libcfutils.la libcfhashlib.la libcfclientlib.la libcfcgi.la libcfhtml.la
-fo_server_LDFLAGS=-export-dynamic
+fo_view_LDFLAGS=-export-dynamic
 
 fo_server_SOURCES=fo_server.c
 fo_server_LDADD=libcfcharconvert.la libcfreadline.la libcfutils.la libcfserverlib.la libcfconfigparser.la libcfserverutils.la libcfhashlib.la $(PTHREAD_LIB)
