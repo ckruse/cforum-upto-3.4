@@ -1,5 +1,8 @@
 2005-01-17 Christian Kruse <ckruse@wwwtech.de>
 	* swig/CForum-Configparser.i: Began to rewrite perl interfaces with SWIG
+	* cgi-shared/: Removed for 3.0
+	* src/perl/Plugins/, src/perl/ForumUtils.pm, conf/, docs/: Moved there
+		for 3.0 release
 
 2005-01-16 Christian Seiler <self@christian-seiler.de>
 	* src/template.c, src/template.h: Lot's of changes to support loops
