@@ -85,11 +85,11 @@ flt_registerednames_la_LDFLAGS=-module -export-dynamic -avoid-version
 #flt_visited_la_SOURCES=flt_visited.c
 #flt_visited_la_LIBADD=$(BDB_LIB)
 #flt_visited_la_LDFLAGS=-module -export-dynamic -avoid-version
-#
-#pkglib_LTLIBRARIES+=flt_extern.la
-#flt_extern_la_SOURCES=flt_extern.c
-#flt_extern_la_LDFLAGS=-module -export-dynamic -avoid-version
-#
+
+pkglib_LTLIBRARIES+=flt_extern.la
+flt_extern_la_SOURCES=flt_extern.c
+flt_extern_la_LDFLAGS=-module -export-dynamic -avoid-version
+
 #pkglib_LTLIBRARIES+=flt_threadreturnanchor.la
 #flt_threadreturnanchor_la_SOURCES=flt_threadreturnanchor.c
 #flt_threadreturnanchor_la_LDFLAGS=-module -export-dynamic -avoid-version

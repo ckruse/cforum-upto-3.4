@@ -290,12 +290,12 @@ int flt_cftp_handler(int sockfd,t_forum *forum,const u_char **tokens,int tnum,rl
               else {
                 CF_RW_UN(&t->lock);
 
-		cf_cleanup_posting(p);
+                cf_cleanup_posting(p);
                 free(p);
               }
             }
             else {
-	      cf_cleanup_posting(p);
+              cf_cleanup_posting(p);
               free(p);
             }
           }
@@ -338,9 +338,9 @@ int flt_cftp_handler(int sockfd,t_forum *forum,const u_char **tokens,int tnum,rl
           t->tid       = ++forum->threads.last_tid;
           t->posts     = 1;
 
-	  CF_RW_WR(&forum->lock);
+          CF_RW_WR(&forum->lock);
           forum->cache.fresh = 0;
-	  CF_RW_UN(&forum->lock);
+          CF_RW_UN(&forum->lock);
 
           CF_LM(&forum->uniques.lock);
           cf_hash_set(forum->uniques.ids,p->unid.content,p->unid.len,&one,sizeof(one));
@@ -384,13 +384,13 @@ int flt_cftp_handler(int sockfd,t_forum *forum,const u_char **tokens,int tnum,rl
           cf_generate_cache(forum);
         }
         else {
-	  cf_cleanup_posting(p);
+          cf_cleanup_posting(p);
           free(p);
           free(t);
         }
       }
       else {
-	cf_cleanup_posting(p);
+        cf_cleanup_posting(p);
         free(p);
         free(t);
       }

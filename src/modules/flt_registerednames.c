@@ -157,7 +157,7 @@ int flt_registerednames_handler(int connfd,t_forum *forum,const u_char **tokens,
 
     if(ln) {
       if(tnum == 2 || tnum == 3) {
-	/* {{{ AUTH CHECK */
+        /* {{{ AUTH CHECK */
         if(cf_strncmp(tokens[1],"CHECK",5) == 0) {
           names[0] = flt_registerednames_transform(cf_hash_get(infos,"Name",4));
           pass     = cf_hash_get(infos,"Pass",4);
@@ -194,8 +194,8 @@ int flt_registerednames_handler(int connfd,t_forum *forum,const u_char **tokens,
             }
           }
         }
-	/* }}} */
-	/* {{{ AUTH SET */
+        /* }}} */
+        /* {{{ AUTH SET */
         else if(cf_strncmp(tokens[1],"SET",3) == 0) {
           names[0] = flt_registerednames_transform(cf_hash_get(infos,"Name",4));
           names[1] = flt_registerednames_transform(cf_hash_get(infos,"New-Name",8));
@@ -272,8 +272,8 @@ int flt_registerednames_handler(int connfd,t_forum *forum,const u_char **tokens,
           }
 
         }
-	/* }}} */
-	/* {{{ AUTH GET */
+        /* }}} */
+        /* {{{ AUTH GET */
         else if(cf_strncmp(tokens[1],"GET",3) == 0) {
           names[0] = flt_registerednames_transform(cf_hash_get(infos,"Name",4));
           key.data = names[0];
@@ -284,7 +284,7 @@ int flt_registerednames_handler(int connfd,t_forum *forum,const u_char **tokens,
           }
 
         }
-	/* }}} */
+        /* }}} */
         else {
           writen(connfd,"503 Sorry, I do not understand\n",31);
         }

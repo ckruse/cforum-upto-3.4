@@ -1005,8 +1005,8 @@ int flt_xmlstorage_archive_threads(t_forum *forum,t_thread **threads,size_t len)
 
     if(stat(buff,&st) == -1) {
       if(!cf_make_path(buff,0755)) {
-	cf_log(CF_ERR|CF_FLSH,__FILE__,__LINE__,"Error creating path %s!\n",buff);
-	exit(-1);
+        cf_log(CF_ERR|CF_FLSH,__FILE__,__LINE__,"Error creating path %s!\n",buff);
+        exit(-1);
       }
 
       doc = xml_create_doc(impl,"Forum",FORUM_DTD);
@@ -1014,8 +1014,8 @@ int flt_xmlstorage_archive_threads(t_forum *forum,t_thread **threads,size_t len)
     else {
       snprintf(buff,512,"%s/%d/%d/index.xml",path->values[0],t.tm_year+1900,t.tm_mon+1);
       if((doc = gdome_di_createDocFromURI(impl,buff,0,&e)) == NULL) {
-	cf_log(CF_ERR|CF_FLSH,__FILE__,__LINE__,"ERROR PARSING INDEX DOCUMENT! (%s)\n",buff);
-	exit(-1);
+        cf_log(CF_ERR|CF_FLSH,__FILE__,__LINE__,"ERROR PARSING INDEX DOCUMENT! (%s)\n",buff);
+        exit(-1);
       }
     }
 
