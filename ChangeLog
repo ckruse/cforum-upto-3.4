@@ -10,6 +10,8 @@
 	* src/configparser.c: Added directive 'UserManagement' for fo_default.conf
 	* cgi-shared/config/fo_default.conf.in: Changed default value of URIs to query
 		string (PATH_INFO has not been tested very well, yet)
+	* src/templates/{de,fr}/tpl_*/userregister.html: Bugfix, {$script} instead of
+		${script}
 
 2004-08-01 Christian Kruse <ckruse@wwwtech.de>
 	* cgi-bin/fo_userconf.in: Deleted fo_usermanagement code and redirecting user
