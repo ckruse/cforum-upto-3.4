@@ -16,7 +16,7 @@ package Plugins::ImportExport;
 # {{{ program headers
 #
 use strict;
-use constant CF_DTD => 'http://wwwtech.de/cforum/download/cfconfig.dtd';
+use constant CF_DTD => 'http://wwwtech.de/cforum/download/cfconfig-0.1.dtd';
 use constant CF_VER => '0.1';
 
 sub VERSION {(q$Revision$ =~ /([\d.]+)\s*$/)[0] or '0.0'}
