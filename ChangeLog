@@ -2,6 +2,27 @@
 	* src/templates/tpl_*/forum_begin.html:
 	* src/templates/tpl_*/forum_end.html:
 	  Changed/added anchor
+	* src/templates/tpl_xhtml10/arcmonths.html
+	* src/templates/tpl_xhtml10/arcthread.html
+	* src/templates/tpl_xhtml10/arcyears.html
+	* src/templates/tpl_xhtml10/blank.html
+	* src/templates/tpl_xhtml10/chpass.html
+	* src/templates/tpl_xhtml10/chpassok.html
+	* src/templates/tpl_xhtml10/errortpl.html
+	* src/templates/tpl_xhtml10/fatal.html
+	* src/templates/tpl_xhtml10/forum_end.html
+	* src/templates/tpl_xhtml10/forum_posting.html
+	* src/templates/tpl_xhtml10/frameset.html
+	* src/templates/tpl_xhtml10/post_ok.html
+	* src/templates/tpl_xhtml10/thread.html
+	* src/templates/tpl_xhtml10/unreg.html
+	* src/templates/tpl_xhtml10/unregok.html
+	* src/templates/tpl_xhtml10/useredit.html
+	* src/templates/tpl_xhtml10/usereditok.html
+	* src/templates/tpl_xhtml10/userregister.html
+	* src/templates/tpl_xhtml10/userregok.html
+	* src/templates/tpl_xhtml10/usersettings.html
+	  Fixed bug #228
 
 2004-06-16 Christian Kruse <ckruse@wwwtech.de>
 	* configure.in: Stripped some uneccessary WITH arguments
