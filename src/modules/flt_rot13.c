@@ -94,8 +94,10 @@ int flt_rot13_init(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc) {
 
   cf_html_register_directive("rot13",flt_rot13_execute,CF_HTML_DIR_TYPE_ARG|CF_HTML_DIR_TYPE_BLOCK);
 
-  if((ptr = cf_cgi_get(cgi,"rot13")) != NULL) {
-    flt_rot13_decoded = cf_strcmp(ptr,"decoded") == 0;
+  if(cgi) {
+    if((ptr = cf_cgi_get(cgi,"rot13")) != NULL) {
+      flt_rot13_decoded = cf_strcmp(ptr,"decoded") == 0;
+    }
   }
 
   return FLT_OK;
