@@ -1049,7 +1049,7 @@ void cf_send_posting(t_forum *forum,int sock,u_int64_t tid,u_int64_t mid,int inv
 
   CF_RW_UN(&t->lock);
 
-  str_char_append(&bff,'\n');
+  str_chars_append(&bff,"END\n\n",5);
 
   writen(sock,bff.content,bff.len);
   free(bff.content);

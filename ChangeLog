@@ -1,4 +1,7 @@
-2005-03-07 CHristian Kruse <ckruse@wwwtech.de>
+2005-03-14 Christian Kruse <ckruse@wwwtech.de>
+	* src/serverlib.c: Fixed a bug in protocol handling
+
+2005-03-07 Christian Kruse <ckruse@wwwtech.de>
 	* src/utils.c: Fixed nasty bug in cf_make_path()
 	* src/modules/flt_xmlstorage.c: Fixed a bug in archiving routines
 	* src/fo_arcview.c: Fixed a bug in variable setting
