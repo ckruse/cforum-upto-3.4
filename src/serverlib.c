@@ -251,7 +251,7 @@ void cf_log(int mode,const u_char *file,unsigned int line,const u_char *format, 
 
 /* {{{ cf_load_data */
 int cf_load_data(t_forum *forum) {
-  int ret;
+  int ret = FLT_DECLINE;
   size_t i;
   t_data_loading_filter fkt;
   t_handler_config *handler;

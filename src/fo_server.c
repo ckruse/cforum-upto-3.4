@@ -215,7 +215,7 @@ int main(int argc,char *argv[]) {
 
   int c,
       j,
-      ret,
+      ret = 0,
       sock,
       connfd,
       status,
