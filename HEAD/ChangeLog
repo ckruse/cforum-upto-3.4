@@ -1,3 +1,9 @@
+2004-06-15 Christian Kruse <ckruse@wwwtech.de>
+	* src/fo_arcview.c: Bugfix for bug #180, #173
+	* src/configparser.c: Added directive DateFormatViewList
+	* cgi-shared/config/fo_arcview.conf.in: Added directive (and value)
+		DateFormatViewList
+
 2004-06-14 Jan Rieger <jr@occuris.de>
 	* cgi-shared/config/templates/tpl_html4/thread.html:
 	  Removed 'nowrap'

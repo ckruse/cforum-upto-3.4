@@ -199,11 +199,19 @@ void generate_thread_output(t_arc_message *msg,t_string *threads,t_string *threa
   t_mod_api msg_to_html = cf_get_mod_api_ent("msg_to_html");
   void *ptr = fo_alloc(NULL,1,sizeof(const u_char *) + 2 * sizeof(t_string *),FO_ALLOC_MALLOC);
   int printed = 0;
+  u_char *date;
 
   /* first: set threadlist variables */
-  len = snprintf(buff,256,"#%llu",msg->mid);
+  len = snprintf(buff,256,"m%llu",msg->mid);
   cf_set_variable(tl_tpl,cs,"mid",buff,len,1);
   cf_set_variable(tl_tpl,cs,"subject",msg->subject.content,msg->subject.len,1);
+  cf_set_variable(tl_tpl,cs,"author",msg->author.content,msg->author.len,1);
+
+  if((date = get_time(&fo_arcview_conf,"DateFormatViewList",&len,&msg->date)) != NULL) {
+    tpl_cf_setvar(tl_tpl,"date",date,len,1);
+    free(date);
+  }
+
   if(msg->category.len) cf_set_variable(tl_tpl,cs,"category",msg->category.content,msg->category.len,1);
   else tpl_cf_freevar(tl_tpl,"category");
 
@@ -981,7 +989,7 @@ int main(int argc,char *argv[],char *env[]) {
     "fo_default", "fo_arcview"
   };
 
-  u_int32_t pieces;
+  u_int32_t pieces = 0;
   int ret;
   size_t i;
   u_char  *ucfg;

@@ -192,6 +192,7 @@ t_conf_opt fo_arcview_options[] = {
   { "SortYearList",         handle_command,   &fo_arcview_conf },
   { "SortMonthList",        handle_command,   &fo_arcview_conf },
   { "DateFormatList",       handle_command,   &fo_arcview_conf },
+  { "DateFormatViewList",   handle_command,   &fo_arcview_conf },
   { "</General>",           NULL,             NULL },
 
   { "<Templates>",             NULL,             NULL },

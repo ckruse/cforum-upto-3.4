@@ -32,6 +32,7 @@
  QuotingChars  "»» "
 
  DateFormatList "%d. %m. %Y"
+ DateFormatViewList "%d. %m. %Y, %H:%M"
 </General>
 
 <Templates>
