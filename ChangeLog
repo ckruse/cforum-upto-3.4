@@ -1,4 +1,6 @@
 2004-06-16 Jan Rieger <jr@occuris.de>
+	* cgi-shared/config/templates/tpl_*/arcmonths.html:
+	  Removed author row, see Bug #173
 	* cgi-shared/config/templates/tpl_*/arcthreadlist.html:
 	  Added template variables, see Bug #173
 
