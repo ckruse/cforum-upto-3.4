@@ -172,6 +172,7 @@ void display_posting_form(t_cf_hash *head) {
 
   if(*ErrorString) {
     val = cf_get_error_message(ErrorString,&len);
+
     if(!val) {
       val = strdup(ErrorString);
       len = strlen(val);

@@ -69,7 +69,7 @@ t_cf_hash *APIEntries = NULL;
 /* error string */
 u_char ErrorString[50];
 
-DB *Msgs = NULL;
+static DB *Msgs = NULL;
 
 #ifdef CF_SHARED_MEM
 /* {{{ Shared memory functions */
@@ -403,73 +403,68 @@ u_char *cf_get_error_message(const u_char *err,size_t *len, ...) {
 
   DBT key,value;
 
-  if(db && lang) {
-    str_init(&msg);
+  str_init(&msg);
 
-    if(Msgs == NULL) {
-      if((ret = db_create(&Msgs,NULL,0)) == 0) {
-        if((ret = Msgs->open(Msgs,NULL,db->values[0],NULL,DB_BTREE,DB_RDONLY,0)) != 0) {
-          fprintf(stderr,"DB->open(%s) error: %s\n",db->values[0],db_strerror(ret));
-        }
-      }
-      else fprintf(stderr,"db_create() error: %s\n",db_strerror(ret));
-    }
-
-    if(Msgs) {
-      memset(&key,0,sizeof(key));
-      memset(&value,0,sizeof(value));
-
-      size = snprintf(errname,256,"%s_%s",lang->values[0],err);
-
-      key.data = errname;
-      key.size = size;
-
-      if(Msgs->get(Msgs,NULL,&key,&value,0) == 0) {
-        buff = strndup(value.data,value.size);
+  if(Msgs == NULL) {
+    if((ret = db_create(&Msgs,NULL,0)) == 0) {
+      if((ret = Msgs->open(Msgs,NULL,db->values[0],NULL,DB_BTREE,DB_RDONLY,0)) != 0) {
+        fprintf(stderr,"DB->open(%s) error: %s\n",db->values[0],db_strerror(ret));
+        return NULL;
       }
     }
-
-    if(buff) {
-      va_start(ap,len);
-
-      for(ptr=buff;*ptr;ptr++) {
-        if(*ptr == '%') {
-          ptr++;
-
-          switch(*ptr) {
-            case '%':
-              str_char_append(&msg,*ptr);
-              break;
-
-            case 's':
-              svar = va_arg(ap,u_char *);
-              str_chars_append(&msg,svar,strlen(svar));
-              break;
-
-            case 'd':
-              ivar = va_arg(ap,int);
-              size = snprintf(ibuff,50,"%d",ivar);
-              str_chars_append(&msg,ibuff,50);
-              break;
-
-            default:
-              str_char_append(&msg,*ptr);
-              break;
-          }
-        }
-        else str_char_append(&msg,*ptr);
-      }
-
-
-      free(buff);
-      va_end(ap);
-      free(buff);
-      if(len) *len = msg.len;
-      return msg.content;
+    else {
+      fprintf(stderr,"db_create() error: %s\n",db_strerror(ret));
+      return NULL;
     }
   }
 
-  return NULL;
+  memset(&key,0,sizeof(key));
+  memset(&value,0,sizeof(value));
+
+  size = snprintf(errname,256,"%s_%s",lang->values[0],err);
+
+  key.data = errname;
+  key.size = size;
+
+  if(Msgs->get(Msgs,NULL,&key,&value,0) == 0) buff = strndup(value.data,value.size);
+  else return NULL;
+
+  va_start(ap,len);
+
+  for(ptr=buff;*ptr;ptr++) {
+    if(*ptr == '%') {
+      ptr++;
+
+      switch(*ptr) {
+        case '%':
+          str_char_append(&msg,*ptr);
+          break;
+
+        case 's':
+          svar = va_arg(ap,u_char *);
+          str_chars_append(&msg,svar,strlen(svar));
+          break;
+
+        case 'd':
+          ivar = va_arg(ap,int);
+          size = snprintf(ibuff,50,"%d",ivar);
+          str_chars_append(&msg,ibuff,50);
+          break;
+
+        default:
+          str_char_append(&msg,*ptr);
+          break;
+      }
+    }
+    else str_char_append(&msg,*ptr);
+  }
+
+
+  va_end(ap);
+  free(buff);
+  if(len) *len = msg.len;
+
+  return msg.content;
 }
 /* }}} */
 

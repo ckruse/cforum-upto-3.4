@@ -76,8 +76,8 @@ void str_cleanup(t_string *str) {
  */
 size_t str_char_append(t_string *str,const u_char content) {
   if(str->len + 1 >= str->reserved) {
-    str->content   = fo_alloc(str->content,(size_t)(str->reserved + BUFSIZ),1,FO_ALLOC_REALLOC);
-    str->reserved += BUFSIZ;
+    str->content   = fo_alloc(str->content,(size_t)(str->reserved + CF_BUFSIZ),1,FO_ALLOC_REALLOC);
+    str->reserved += CF_BUFSIZ;
   }
 
   str->content[str->len] = content;
@@ -99,7 +99,7 @@ size_t str_char_append(t_string *str,const u_char content) {
  *
  */
 size_t str_chars_append(t_string *str,const u_char *content,size_t length) {
-  size_t len = BUFSIZ;
+  size_t len = CF_BUFSIZ;
 
   if(str->len + length >= str->reserved) {
     if(length >= len) {
@@ -210,7 +210,7 @@ size_t str_cstr_append(t_string *str,const u_char *content) {
  *
  */
 size_t str_char_set(t_string *str,const u_char *content,size_t length) {
-  size_t len = BUFSIZ;
+  size_t len = CF_BUFSIZ;
 
   if(str->len + length >= str->reserved) {
     if(length >= len) {
@@ -218,7 +218,7 @@ size_t str_char_set(t_string *str,const u_char *content,size_t length) {
     }
 
     str->content   = fo_alloc(str->content,len,1,FO_ALLOC_REALLOC);
-    str->reserved += BUFSIZ;
+    str->reserved += CF_BUFSIZ;
   }
 
   memcpy(str->content,content,length);
