@@ -17,7 +17,7 @@ package Plugins::PostingAssistant;
 
 use strict;
 
-our $VERSION = (q$Revision: 1.9 $ =~ /([\d.]+)\s*$/)[0] or '0.0';
+our $VERSION = (q$Revision$ =~ /([\d.]+)\s*$/)[0] or '0.0';
 
 use CGI;
 use CGI::Carp qw/fatalsToBrowser/;
@@ -38,8 +38,7 @@ sub execute {
   if(substr($answer,0,3) eq '200') {
     if($user_config->{VisitedFile} && $user_config->{VisitedFile}->[0]->[0]) {
       if($user_config->{MarkOwnPostingsVisited} && $user_config->{MarkOwnPostingsVisited}->[0]->[0] eq 'yes') {
-        my $tidline = <$sock>;
-        my $midline = <$sock>;
+        my $mid = $cgi->param('new_mid');
 
         chomp $midline;
         $midline =~ s/Mid: //;
@@ -50,8 +49,7 @@ sub execute {
         ) or return;
 
 
-        $dbfile->db_put($midline,"1");
-
+        $dbfile->db_put($mid,"1");
         $dbfile->db_close;
       }
     }
