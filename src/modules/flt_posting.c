@@ -58,7 +58,7 @@ void replace_placeholders(const u_char *str,t_string *appender,t_cl_thread *thre
   register u_char *ptr1 = NULL;
   u_char *name,*tmp;
   size_t len;
-  t_name_value *cs = cfg_get_first_value(&fo_default_conf,NULL,"ExternCharset");
+  t_name_value *cs = cfg_get_first_value(&fo_default_conf,"ExternCharset");
 
   if(thread) {
     for(ptr1 = thread->threadmsg->author;*ptr1;ptr1++) {
@@ -108,13 +108,13 @@ void replace_placeholders(const u_char *str,t_string *appender,t_cl_thread *thre
 int flt_posting_execute_filter(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cl_thread *thread,t_cf_template *tpl) {
   /* {{{ variables */
   t_name_value *ps,
-               *cs = cfg_get_first_value(dc,NULL,"ExternCharset"),
-               *rm = cfg_get_first_value(vc,NULL,"ReadMode"),
-               *dq = cfg_get_first_value(vc,NULL,"DoQuote"),
-               *st = cfg_get_first_value(vc,NULL,"ShowThread"),
-               *qc = cfg_get_first_value(vc,NULL,"QuotingChars"),
-               *ms = cfg_get_first_value(vc,NULL,"MaxSigLines"),
-               *ss = cfg_get_first_value(vc,NULL,"ShowSig");
+               *cs = cfg_get_first_value(dc,"ExternCharset"),
+               *rm = cfg_get_first_value(vc,"ReadMode"),
+               *dq = cfg_get_first_value(vc,"DoQuote"),
+               *st = cfg_get_first_value(vc,"ShowThread"),
+               *qc = cfg_get_first_value(vc,"QuotingChars"),
+               *ms = cfg_get_first_value(vc,"MaxSigLines"),
+               *ss = cfg_get_first_value(vc,"ShowSig");
 
   u_char buff[256],
         *tmp,
@@ -149,8 +149,8 @@ int flt_posting_execute_filter(t_cf_hash *head,t_configuration *dc,t_configurati
     qclen  = strlen(qchars);
   }
 
-  if(UserName) ps = cfg_get_first_value(dc,NULL,"UPostScript");
-  else         ps = cfg_get_first_value(dc,NULL,"PostScript");
+  if(UserName) ps = cfg_get_first_value(dc,"UPostScript");
+  else         ps = cfg_get_first_value(dc,"PostScript");
 
   /* {{{ set some standard variables in thread mode */
   if(flt_posting_cfg.TWidth) tpl_cf_setvar(tpl,"twidth",flt_posting_cfg.TWidth,strlen(flt_posting_cfg.TWidth),1);
@@ -160,8 +160,12 @@ int flt_posting_execute_filter(t_cf_hash *head,t_configuration *dc,t_configurati
   if(flt_posting_cfg.PreviewSwitchType == 0) tpl_cf_setvar(tpl,"previewswitchtype","checkbox",8,0);
   else if(flt_posting_cfg.PreviewSwitchType == 1) tpl_cf_setvar(tpl,"previewswitchtype","button",6,0);
 
-  if(flt_posting_cfg.ActiveColorF && *flt_posting_cfg.ActiveColorF) cf_set_variable(tpl,cs,"activecolorf",flt_posting_cfg.ActiveColorF,strlen(flt_posting_cfg.ActiveColorF),1);
-  if(flt_posting_cfg.ActiveColorB && *flt_posting_cfg.ActiveColorB) cf_set_variable(tpl,cs,"activecolorb",flt_posting_cfg.ActiveColorB,strlen(flt_posting_cfg.ActiveColorB),1);
+  if(flt_posting_cfg.ActiveColorF || flt_posting_cfg.ActiveColorB) {
+    tpl_cf_setvar(tpl,"activecolor","1",1,0);
+
+    if(flt_posting_cfg.ActiveColorF && *flt_posting_cfg.ActiveColorF) cf_set_variable(tpl,cs,"activecolorf",flt_posting_cfg.ActiveColorF,strlen(flt_posting_cfg.ActiveColorF),1);
+    if(flt_posting_cfg.ActiveColorB && *flt_posting_cfg.ActiveColorB) cf_set_variable(tpl,cs,"activecolorb",flt_posting_cfg.ActiveColorB,strlen(flt_posting_cfg.ActiveColorB),1);
+  }
 
   cf_set_variable(tpl,cs,"action",ps->values[0],strlen(ps->values[0]),1);
 
@@ -289,8 +293,6 @@ int flt_posting_execute_filter(t_cf_hash *head,t_configuration *dc,t_configurati
           for(;level>msg->level;level--) tpl_cf_appendvar(tpl,"threadlist","</ul></li>",10);
         }
 
-        level = msg->level;
-
         if(msg->next && has_answers(msg)) { /* this message has at least one answer */
           tpl_cf_appendvar(tpl,"threadlist","<li>",4);
 
@@ -326,7 +328,7 @@ int flt_posting_post_cnt(t_configuration *dc,t_configuration *vc,t_cl_thread *th
   u_char *tmp;
 
   if(cite) {
-    cs = cfg_get_first_value(dc,NULL,"ExternCharset");
+    cs = cfg_get_first_value(dc,"ExternCharset");
 
     if(flt_posting_cfg.Bye) {
       if(cf_strcasecmp(cs->values[0],"utf-8") == 0 || (tmp = htmlentities_charset_convert(flt_posting_cfg.Bye,"UTF-8",cs->values[0],NULL,0)) == NULL) tmp = strdup(flt_posting_cfg.Bye);
@@ -355,7 +357,7 @@ int flt_posting_pre_cnt(t_configuration *dc,t_configuration *vc,t_cl_thread *thr
 
   if(cite) {
     if(flt_posting_cfg.Hi) {
-      cs = cfg_get_first_value(dc,NULL,"ExternCharset");
+      cs = cfg_get_first_value(dc,"ExternCharset");
 
       if(cf_strcasecmp(cs->values[0],"utf-8") == 0 || (tmp = htmlentities_charset_convert(flt_posting_cfg.Hi,"UTF-8",cs->values[0],NULL,0)) == NULL) tmp = strdup(flt_posting_cfg.Hi);
       replace_placeholders(tmp,cite,thr);
@@ -371,7 +373,7 @@ int flt_posting_pre_cnt(t_configuration *dc,t_configuration *vc,t_cl_thread *thr
 
 /* {{{ module configuration */
 /* {{{ handle_greet */
-int handle_greet(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
+int handle_greet(t_configfile *cfile,t_conf_opt *opt,u_char **args,int argnum) {
   u_char *tmp = strdup(args[0]);
 
   if(cf_strcmp(opt->name,"Hi") == 0) {
@@ -392,7 +394,7 @@ int handle_greet(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_cha
 /* }}} */
 
 /* {{{ handle_box */
-int handle_box(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
+int handle_box(t_configfile *cfile,t_conf_opt *opt,u_char **args,int argnum) {
   if(flt_posting_cfg.TWidth) free(flt_posting_cfg.TWidth);
   if(flt_posting_cfg.THeight) free(flt_posting_cfg.THeight);
 
@@ -404,7 +406,7 @@ int handle_box(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_char 
 /* }}} */
 
 /* {{{ handle_prev */
-int handle_prev(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
+int handle_prev(t_configfile *cfile,t_conf_opt *opt,u_char **args,int argnum) {
   flt_posting_cfg.Preview = cf_strcmp(args[0],"yes") == 0;
 
   return 0;
@@ -412,7 +414,7 @@ int handle_prev(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_char
 /* }}} */
 
 /* {{{ handle_prevt */
-int handle_prevt(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
+int handle_prevt(t_configfile *cfile,t_conf_opt *opt,u_char **args,int argnum) {
   if(cf_strcmp(args[0],"button") == 0) {
     flt_posting_cfg.PreviewSwitchType = 1;
   }
@@ -429,7 +431,7 @@ int handle_prevt(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_cha
 /* }}} */
 
 /* {{{ handle_actpcol */
-int handle_actpcol(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
+int handle_actpcol(t_configfile *cfile,t_conf_opt *opt,u_char **args,int argnum) {
   if(flt_posting_cfg.ActiveColorF) free(flt_posting_cfg.ActiveColorF);
   if(flt_posting_cfg.ActiveColorB) free(flt_posting_cfg.ActiveColorB);
 
