@@ -1,4 +1,7 @@
 2004-07-29 Christian Kruse <ckruse@wwwtech.de>
+	* CREATED 2.0 RC 2 BRANCH
+
+2004-07-29 Christian Kruse <ckruse@wwwtech.de>
 	* configure.in: Added some variables, changed default values of some
 		variables, added cgi-bin/fo_post_old.in and cgi-bin/fo_userconf.in
 	* src/modules/flt_posting.c: Added functionality of flt_reference
