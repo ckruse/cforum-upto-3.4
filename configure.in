@@ -17,6 +17,9 @@ dnl
 dnl
 dnl }}}
 
+include(m4/ax_path_bdb.m4)
+include(m4/cf_check_type.m4)
+
 AC_INIT
 
 AM_CONFIG_HEADER(src/config.h)
@@ -154,7 +157,7 @@ AC_ARG_WITH(proto-file,
 )
 AC_DEFINE(PROTOCOL_FILE,"${with_protocol_file}",[needed to collect debugging infos])
 
-AX_PATH_BDB([3],[
+CF_PATH_BDB([3],[
     BDB_LIB="$BDB_LIBS";
     CFLAGS="$CFLAGS $BDB_CPPFLAGS"
   ],
@@ -197,31 +200,6 @@ AC_CHECK_SIZEOF(short,"")
 AC_CHECK_SIZEOF(int,"")
 AC_CHECK_SIZEOF(long,"")
 AC_CHECK_SIZEOF(long long,"")
-
-dnl
-dnl AC_CHECK_TYPE sucks
-dnl
-AC_DEFUN(CF_CHECK_TYPE,
-  [
-    AC_MSG_CHECKING(for $1)
-    AC_CACHE_VAL(ac_cv_cf_have_$1,
-      AC_TRY_COMPILE(
-        [
-#include <sys/types.h>
-#include <stdlib.h>
-#include <stddef.h>
-        ],
-        [$1 vr],
-        ac_cv_cf_have_$1=yes,
-        ac_cv_cf_have_$1=no
-      )
-    )
-    AC_MSG_RESULT($ac_cv_cf_have_$1)
-    if test "$ac_cv_cf_have_$1" = "no"; then
-      AC_DEFINE(DONT_HAS_$1,$2,[Defined if we haven't got $1])
-    fi
-  ]
-)
 
 CF_CHECK_TYPE(u_char,1)
 CF_CHECK_TYPE(int16_t,1)

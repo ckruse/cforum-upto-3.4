@@ -181,7 +181,7 @@ int execute_filter(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cl_
         if((is_visited = cf_get_mod_api_ent("is_visited")) != NULL) {
           for(msg=thread->messages;msg;msg=msg->next) {
             /* Thread has at least one not yet visited messages -- leave it open */
-            if(is_visited(&(msg->mid)) == NULL) {
+            if(is_visited(&(msg->mid)) == NULL && msg->invisible == 0 && msg->may_show == 1) {
               tpl_cf_setvar(&thread->messages->tpl,"open","1",1,0);
               i = sprintf(buff,"%s?t=%lld&a=close",vs->values[0],thread->tid);
               tpl_cf_setvar(&thread->messages->tpl,"link_oc",buff,i,1);

@@ -8,6 +8,8 @@
 		instead of path in snprintf())
 	* src/cfcgi.c: Fixed bug in PATH_INFO parsing
 	* src/Makefile.am: added libcfclientlib.la for fo_threadlookup
+	* src/modules/flt_openclose.c: Fixed bug, now invisible unvisited threads
+		are ignored
 
 2004-06-16 Jan Rieger <jr@occuris.de>
 	* cgi-shared/config/templates/tpl_*/arcmonths.html:

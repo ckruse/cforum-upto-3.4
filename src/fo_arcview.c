@@ -27,6 +27,8 @@
 #include <sys/types.h>
 #include <dirent.h>
 
+#include <signal.h>
+
 #include <locale.h>
 
 #include <sys/stat.h>
@@ -975,6 +977,39 @@ void show_year_list(void) {
 }
 /* }}} */
 
+/* {{{ signal handler for bad signals */
+void sighandler(int segnum) {
+  FILE *fd = fopen(PROTOCOL_FILE,"a");
+  u_char buff[10],*uname = NULL,*qs = NULL;
+
+  if(fd) {
+    qs    = getenv("QUERY_STRING");
+    if(GlobalValues) uname = cf_hash_get(GlobalValues,"UserName",8);
+    
+    switch(segnum) {
+      case SIGSEGV:
+        snprintf(buff,10,"SIGSEGV");
+        break;
+      case SIGILL:
+        snprintf(buff,10,"SIGILL");
+        break;
+      case SIGFPE:
+        snprintf(buff,10,"SIGFPE");
+        break;
+      case SIGBUS:
+        snprintf(buff,10,"SIGBUS");
+        break;
+      default:
+        snprintf(buff,10,"UKNOWN");
+        break;
+    }
+
+    fprintf(fd,"fo_arcview: Got signal %s!Username: %s\nQuery-String: %s\n----\n",buff,uname?uname:"(null)",qs?qs:"(null)");
+    flcose(fd);
+  }
+
+}
+/* }}} */
 
 /* {{{ main */
 /**
@@ -993,18 +1028,27 @@ int main(int argc,char *argv[],char *env[]) {
   int ret;
   size_t i;
   u_char  *ucfg;
-  t_array *cfgfiles = get_conf_file(wanted,2);
+  t_array *cfgfiles;
   t_configfile conf,dconf;
   t_name_value *cs = NULL;
   u_char *UserName;
   u_char *fname;
   u_char **path_infos;
-  t_cf_hash *head = cf_cgi_new();
+  t_cf_hash *head;
   size_t len;
 
-  if(!cfgfiles) {
+  /* set signal handler for SIGSEGV (for error reporting) */
+  signal(SIGSEGV,sighandler);
+  signal(SIGILL,sighandler);
+  signal(SIGFPE,sighandler);
+  signal(SIGBUS,sighandler);
+
+
+  if(!(cfgfiles  = get_conf_file(wanted,2)) == NULL) {
     return EXIT_FAILURE;
   }
+
+  head = cf_cgi_new()
 
   cf_init();
   init_modules();
