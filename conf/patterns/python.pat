@@ -16,17 +16,14 @@ block "default"
   onregexp "^(ru?|ur?)?'" "shortstring" "string"
   onregexp "^(ru?|ur?)?&quot;" "shortstring-dq" "string"
 
-  # syntax: onstringlist <listen-name> <neuer-block> <span-klasse>
   onstringlist "keywords" highlight "keyword"
   onstringlist "symbols" highlight "symbol"
 
   onregexp "^(\\.|=|\\+|-|\\*\\*?|//?|%|&lt;&lt;|&gt;&gt;|&amp;|\\||\\^|~|&lt;|&gt;|&lt;=|&gt;=|==|!=|&lt;&gt;)" highlight "operator"
 
-  # syntax onregexpafter <vorher-regexp> <regexp-zu-matchen> <neuer-block> <span-klasse>
-  # vorher-regexp wird auf das zeichen davor angewandt
-  onregexpafter "^[^a-zA-Z0-9]" "^0[0-7]\\.?[0-7]*" highlight "octnumber"
-  onregexpafter "^[^a-zA-Z0-9]" "^0[xX][0-9A-Fa-f]\\.?[0-9A-Fa-f]*" highlight "hexnumber"
-  onregexpafter "^[^a-zA-Z0-9]" "^[0-9]\\.?[0-9]*" highlight "number"
+  onregexpafter "^[^a-zA-Z0-9]" "^0[0-7]+\\.?[0-7]*" highlight "octnumber"
+  onregexpafter "^[^a-zA-Z0-9]" "^0[xX][0-9A-Fa-f]+\\.?[0-9A-Fa-f]*" highlight "hexnumber"
+  onregexpafter "^[^a-zA-Z0-9]" "^[0-9]+\\.?[0-9]*" highlight "number"
 end
 
 block "onelinecomment"
