@@ -135,8 +135,8 @@
         <td bgcolor="#FFFFFF" valign="top">
           <p>
             <img src="http://src.selfhtml.org/down.gif" width="14" height="10" border="0" alt="nach unten">&nbsp;<a href="#nachricht"><b>Nachricht lesen</b></a><br>
-{if $votelink}           <img src="http://src.selfhtml.org/down.gif" width="14" height="10" border="0" alt="nach unten">&nbsp;<a href="#bewerten"><b>Nachricht bewerten</b></a><br>{endif}
             <img src="http://src.selfhtml.org/down.gif" width="14" height="10" border="0" alt="nach unten">&nbsp;<a href="#antworten"><b>Nachricht beantworten</b></a>
+{if $votelink}           <img src="http://src.selfhtml.org/down.gif" width="14" height="10" border="0" alt="nach unten">&nbsp;<a href="#bewerten"><b>Nachricht bewerten</b></a><br>{endif}
           </p>
         </td>
       </tr>
@@ -149,33 +149,6 @@
     <p><tt>{$message}</tt></p>{if $image}
     <p><img src="{$image}" alt=""></p>{endif}
 
-{if $votes}
-    <table bgcolor="#EEEEEE" class="doc" width="100%">
-      <tr>
-        <td><a href="#top"><img src="http://src.selfhtml.org/up.gif" width="14" height="10" border="0" alt="nach oben"></a><a href="#bottom"><img src="http://src.selfhtml.org/down.gif" width="14" height="10" border="0" alt="nach unten"></a>&nbsp;</td>
-      </tr>
-    </table>
-
-    <h2 class="sh2"><a class="an" name="bewerten">Nachricht bewerten</a></h2>
-    <p>
-      Diese Bewertung beeinflusst ausschliesslich das Ranking der neuen SELFHTML-Suche. Je mehr &quot;gute&quot; Bewertungen,
-      desto h&ouml;her das Rating. Deshalb bewerten Sie bitte ausschliesslich danach, ob eine Nachricht hilfreich oder weniger hilfreich
-      war.
-    </p>
-    {if $votes_link}
-    <ul>
-      <li><a href="{$vote_link_good}"><b>Das Posting war hilfreich</b></a></li>
-      <li><a href="{$vote_link_bad}"><b>Das Posting war nicht hilfreich</b></a></li>
-    </ul>
-    {endif}
-
-    {if $show_votes}
-    <p>
-      Bisher wurde dieses Posting {$votes_good} mal als hilfreich empfunden und {$votes_bad} mal als nicht hilfreich befunden.
-    </p>
-    {endif}
-
-{endif}
 
     <table bgcolor="#EEEEEE" class="doc" width="100%">
       <tr>
@@ -227,6 +200,35 @@
       </table>
     </form>
     <p>Bitte nur <b>einmal</b> auf <i>Nachricht absenden</i> klicken, dann abwarten!</p>
+
+{if $votes}
+    <table bgcolor="#EEEEEE" class="doc" width="100%">
+      <tr>
+        <td><a href="#top"><img src="http://src.selfhtml.org/up.gif" width="14" height="10" border="0" alt="nach oben"></a><a href="#bottom"><img src="http://src.selfhtml.org/down.gif" width="14" height="10" border="0" alt="nach unten"></a>&nbsp;</td>
+      </tr>
+    </table>
+
+    <h2 class="sh2"><a class="an" name="bewerten">Nachricht bewerten</a></h2>
+    <p>
+      Diese Bewertung beeinflusst ausschliesslich das Ranking der neuen SELFHTML-Suche. Je mehr &quot;gute&quot; Bewertungen,
+      desto h&ouml;her das Rating. Deshalb bewerten Sie bitte ausschliesslich danach, ob eine Nachricht hilfreich oder weniger hilfreich
+      war.
+    </p>
+    {if $votes_link}
+    <ul>
+      <li><a href="{$vote_link_good}"><b>Das Posting war hilfreich</b></a></li>
+      <li><a href="{$vote_link_bad}"><b>Das Posting war nicht hilfreich</b></a></li>
+    </ul>
+    {endif}
+
+    {if $show_votes}
+    <p>
+      Bisher wurde dieses Posting {$votes_good} mal als hilfreich empfunden und {$votes_bad} mal als nicht hilfreich befunden.
+    </p>
+    {endif}
+{endif}
+
+
     <table cellpadding="4" cellspacing="0" border="0" width="100%" id="selfforumbottom">
       <tr>
         <td bgcolor="#EEEEEE" class="doc"><a href="#top"><img src="http://src.selfhtml.org/up.gif" width="14" height="10" border="0" alt="nach oben"></a></td>

@@ -82,8 +82,8 @@ background-color:{$qcolorback};
 
 <ul>
 <li id="nachrichtlesen-link"><img src="http://src.selfhtml.org/down.gif" width="14" height="10" alt="nach unten" />&nbsp;<a href="#nachricht-lesen">Nachricht lesen</a></li>
-{if $votelink}<li id="nachrichtbewerten-link"><img src="http://src.selfhtml.org/down.gif" width="14" height="10" alt="nach unten">&nbsp;<a href="#bewerten">Nachricht bewerten</a></li>{endif}
 <li id="nachrichtantworten-link"><img src="http://src.selfhtml.org/down.gif" width="14" height="10" alt="nach unten" />&nbsp;<a href="#nachricht-antworten">Nachricht beantworten</a></li>
+{if $votelink}<li id="nachrichtbewerten-link"><img src="http://src.selfhtml.org/down.gif" width="14" height="10" alt="nach unten">&nbsp;<a href="#bewerten">Nachricht bewerten</a></li>{endif}
 </ul>
 
 </td>
@@ -105,28 +105,6 @@ background-color:{$qcolorback};
 
 {endif}<div class="updown"><a href="#top"><img src="http://src.selfhtml.org/up.gif" width="14" height="10" alt="nach oben" /></a> <a href="#bottom"><img src="http://src.selfhtml.org/down.gif" width="14" height="10" alt="nach unten" /></a></div>
 
-{if $votes}
-<h2 id="nachricht-bewerten">Nachricht bewerten</h2>
-<p>
- Diese Bewertung beeinflusst ausschliesslich das Ranking der neuen SELFHTML-Suche. Je mehr &quot;gute&quot; Bewertungen,
- desto h&ouml;her das Rating. Deshalb bewerten Sie bitte ausschliesslich danach, ob eine Nachricht hilfreich oder weniger hilfreich
- war.
-</p>
-{if $votes_link}
-<ul>
- <li><a href="{$vote_link_good}">Das Posting war hilfreich</a></li>
- <li><a href="{$vote_link_bad}">Das Posting war nicht hilfreich</a></li>
-</ul>
-{endif}
-
- {if $show_votes}
- <p>
-  Bisher wurde dieses Posting {$votes_good} mal als hilfreich empfunden und {$votes_bad} mal als nicht hilfreich empfunden.
- </p>
- {endif}
-
-<div class="updown"><a href="#top"><img src="http://src.selfhtml.org/up.gif" width="14" height="10" alt="nach oben" /></a> <a href="#bottom"><img src="http://src.selfhtml.org/down.gif" width="14" height="10" alt="nach unten" /></a></div>
-{endif}
 <h2 id="nachricht-antworten">Nachricht beantworten</h2>{if $threadlist}
 
 <ol id="root">{$threadlist}</ol>{endif}
@@ -184,6 +162,32 @@ background-color:{$qcolorback};
 <p id="doppelpostinghinweis">Bitte nur <strong>einmal</strong> auf <em>Nachricht absenden</em> klicken, dann abwarten!</p>
 
 <div class="updown"><a href="#top"><img src="http://src.selfhtml.org/up.gif" width="14" height="10" alt="nach oben" /></a></div>
+
+{if $votes}
+<div id="nachricht-bewerten-div">
+<h2 id="nachricht-bewerten">Nachricht bewerten</h2>
+<p id="nachricht-bewerten-anleitung">
+ Diese Bewertung beeinflusst ausschliesslich das Ranking der neuen SELFHTML-Suche. Je mehr &quot;gute&quot; Bewertungen,
+ desto h&ouml;her das Rating. Deshalb bewerten Sie bitte ausschliesslich danach, ob eine Nachricht hilfreich oder weniger hilfreich
+ war.
+</p>
+{if $votes_link}
+<ul id="nachricht-bewerten-links">
+ <li id="nachricht-bewerten-link-hilfreich"><a href="{$vote_link_good}">Das Posting war hilfreich</a></li>
+ <li id="nachricht-bewerten-link-nicht-hilfreich"><a href="{$vote_link_bad}">Das Posting war nicht hilfreich</a></li>
+</ul>
+{endif}
+
+{if $show_votes}
+<p id="nachricht-bewerten-ergebnisse">
+ Bisher wurde dieses Posting {$votes_good} mal als hilfreich empfunden und {$votes_bad} mal als nicht hilfreich empfunden.
+</p>
+{endif}
+</div>
+
+<div class="updown"><a href="#top"><img src="http://src.selfhtml.org/up.gif" width="14" height="10" alt="nach oben" /></a> <a href="#bottom"><img src="http://src.selfhtml.org/down.gif" width="14" height="10" alt="nach unten" /></a></div>
+{endif}
+
 
 <div id="pfadunten"><img src="http://src.selfhtml.org/refkap.gif" width="16" height="13" alt="Teil von" />&nbsp;<a href="{if $forumreturn}{$forumreturn}{else}{$forumbase}{endif}"{if $frame} target="_top"{endif}>SELFHTML Forum</a></div>
 

@@ -5,4 +5,8 @@
 	* src/fo_vote.c: Added charset and forumbase variables
 	* src/templates/de/tpl_*/vote_ok.html: Add them to the repository, needed by
 		fo_vote.c
+	* src/templates/de/tpl_*/forum_posting.html: Moved voting down under the
+		textbox
+	* src/templates/de/tpl_xhtml10/forum_posting.html: Added several IDs to make
+		it easier for user stylesheets
 
