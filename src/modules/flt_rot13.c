@@ -82,7 +82,11 @@ int flt_rot13_execute(t_configuration *fdc,t_configuration *fvc,t_cl_thread *thr
   }
   else str_str_append(bco,content);
 
-  if(cite) str_str_append(bci,cite);
+  if(cite) {
+    str_chars_append(bci,"[rot13]",7);
+    str_str_append(bci,cite);
+    str_chars_append(bci,"[/rot13]",8);
+  }
 
   return FLT_OK;
 }
