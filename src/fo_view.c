@@ -174,7 +174,9 @@ void show_posting(t_cf_hash *head,void *shm_ptr,u_int64_t tid,u_int64_t mid)
                *name           = cfg_get_first_value(&fo_view_conf,NULL,"Name"),
                *email          = cfg_get_first_value(&fo_view_conf,NULL,"EMail"),
                *hpurl          = cfg_get_first_value(&fo_view_conf,NULL,"HomepageUrl"),
-               *imgurl         = cfg_get_first_value(&fo_view_conf,NULL,"ImageUrl");
+               *imgurl         = cfg_get_first_value(&fo_view_conf,NULL,"ImageUrl"),
+               *ps = NULL,
+               *reg = NULL;
 
   t_cf_template tpl;
 
@@ -228,10 +230,20 @@ void show_posting(t_cf_hash *head,void *shm_ptr,u_int64_t tid,u_int64_t mid)
   cf_tpl_setvalue(&tpl,"charset",TPL_VARIABLE_STRING,cs->values[0],strlen(cs->values[0]));
 
   UserName = cf_hash_get(GlobalValues,"UserName",8);
-  if(UserName) fbase = cfg_get_first_value(&fo_default_conf,forum_name,"UBaseURL");
-  else         fbase = cfg_get_first_value(&fo_default_conf,forum_name,"BaseURL");
+  if(UserName) {
+    fbase = cfg_get_first_value(&fo_default_conf,forum_name,"UBaseURL");
+    ps = cfg_get_first_value(&fo_default_conf,forum_name,"UPostScript");
+    reg = cfg_get_first_value(&fo_default_conf,forum_name,"UserConfig");
+  }
+  else {
+    fbase = cfg_get_first_value(&fo_default_conf,forum_name,"BaseURL");
+    ps = cfg_get_first_value(&fo_default_conf,forum_name,"PostScript");
+    reg = cfg_get_first_value(&fo_default_conf,forum_name,"UserRegister");
+  }
 
   cf_set_variable(&tpl,cs,"forumbase",fbase->values[0],strlen(fbase->values[0]),1);
+  cf_set_variable(&tpl,cs,"postscript",ps->values[0],strlen(ps->values[0]),1);
+  cf_set_variable(&tpl,cs,"regscript",reg->values[0],strlen(reg->values[0]),1);
 
   len = snprintf(buff,256,"%llu",thread.tid);
   cf_set_variable(&tpl,cs,"tid",buff,len,0);

@@ -151,7 +151,7 @@ int flt_posting_execute_filter(t_cf_hash *head,t_configuration *dc,t_configurati
   /* }}} */
 
   /* are we in the right read mode? */
-  if(cf_strcmp(rm->values[0],"thread")) return FLT_DECLINE;
+  //if(cf_strcmp(rm->values[0],"thread")) return FLT_DECLINE;
 
   utf8 = cf_strcmp(cs->values[0],"UTF-8") == 0;
 
