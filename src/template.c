@@ -262,6 +262,9 @@ void cf_tpl_var_setvalue(t_cf_tpl_variable *var,...) {
 t_cf_tpl_variable *cf_tpl_var_convert(t_cf_tpl_variable *dest,t_cf_tpl_variable *src,unsigned short new_type) {
   t_cf_tpl_variable *var;
   u_char intbuf[20]; /* this will not be longer than 20 digits */
+
+  if(!dest || !src) return NULL;
+  
   // other conversions are NOT possible
   if(new_type != TPL_VARIABLE_STRING && new_type != TPL_VARIABLE_INT) {
     return NULL;
@@ -274,9 +277,6 @@ t_cf_tpl_variable *cf_tpl_var_convert(t_cf_tpl_variable *dest,t_cf_tpl_variable 
   }
   if(!dest) {
     var = fo_alloc(NULL,sizeof(t_cf_tpl_variable),1,FO_ALLOC_MALLOC);
-    if(!var) {
-      return NULL;
-    }
   } else {
     var = dest;
   }
