@@ -1,5 +1,6 @@
 2005-01-26 Christian Seiler <self@christian-seiler.de>
-	* src/parsetpl/parsetpl.lex: Do not create a new stack on {include}
+	* src/parsetpl/parsetpl.lex: Do not create a new stack on {include},
+		added support to assign variables to other variables
 
 2005-01-25 Christian Seiler <self@christian-seiler.de>
 	* src/utils.h, src/stringutils.c: Added str_cstr_append function to
