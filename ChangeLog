@@ -1,3 +1,6 @@
+2005-02-01 Christian Kruse <ckruse@wwwtech.de>
+	* src/modules/flt_directives.c: Bugfix in [ref:] handling, used wrong variable
+
 2005-01-27 Christian Kruse <ckruse@wwwtech.de>
 	* templates/de/tpl_xhtml10/usersettings.html: Bugfix in template, recoded it
 		to UTF-8

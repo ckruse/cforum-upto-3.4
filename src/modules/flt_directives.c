@@ -394,7 +394,7 @@ int flt_directives_execute(t_configuration *fdc,t_configuration *fvc,const u_cha
             ptr = htmlentities(tmp2,0);
 
             str_init(&tmpstr);
-            str_chars_append(&tmpstr,uri->uri,strlen(tmp1));
+            str_chars_append(&tmpstr,uri->uri,strlen(uri->uri));
             str_chars_append(&tmpstr,tmp2,strlen(tmp2));
 
             flt_directives_generate_uri(tmpstr.content,title_alt,content,NULL,0);
