@@ -150,6 +150,8 @@ void logfile_worker(void) {
   t_string str;
   size_t len;
 
+  if(RUN == 0) return;
+
   time(&t);
   localtime_r(&t,&tm);
 

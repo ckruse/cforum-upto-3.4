@@ -2,10 +2,10 @@
 #
 start = "default"
 
-list "symbols" = ";,(,),{,},:,[,],\,"
+list "symbols" = "(,),{,},:,[,]"
 list "operators" = "->,++,--,**,!,~,and,+,-,=~,!~,*,/,%,x,+,-,.,<<,>>,<,>,<=,>=,lt,gt,le,ge,==,!=,<=>,eq,ne,cmp,&,|,^,&&,||,..,...,=,+=,-=,*=,/=,**=,^=,\,,=>,not,and,or,xor"
-list "keywords" = "cmp,continue,do,else,elsif,for,foreach,goto,if,last,my,next,package,return,sub,switch,unless,until,use,while,print,split,require,pack,hex,open,close,opendir,closedir,readdir,chomp,chop,exit,use"
-list "makros" = "__PACKAGE__,SUPER,BEGIN,CHECK,INIT,END"
+list "keywords" = "continue,do,else,elsif,for,foreach,goto,if,last,my,next,package,return,sub,switch,unless,until,use,while,print,split,require,pack,hex,open,close,opendir,closedir,readdir,chomp,chop,exit,vars"
+list "makros" = "__PACKAGE__,SUPER,BEGIN,CHECK,INIT,END,DESTROY"
 
 block "default"
   # syntax: lineend <neuer-block>
@@ -15,9 +15,10 @@ block "default"
   # syntax: onstring <zeichenkette> <neuer-block> <span-klasse>
   # spezielle bloecke: stay (hier bleiben), pop (verlassen, 3. param nicht notwendig),
   #                    highlight (nur string einzeln highlighten)
+  onstring "#!" "onelinecomment" "shebang"
   onstring "#" "onelinecomment" "comment"
 
-  onstring "\"" "string" "string"
+  onstring "&quot;" "string" "string"
   onstring "'" "sqstring" "string"
 
   onregexp_backref "<<(\\w+)" "heredoc" 1 "heredoc"
@@ -56,15 +57,16 @@ block "string"
   lineend stay
 
   onstring "\\\\\\\\" highlight "escaped"
-  onstring "\\\\\"" highlight "escaped"
+  onstring "\\\\\&quot;" highlight "escaped"
 
-  onregexp "\\\\[0-7]{1,3}" highlight "escaped"
-  onregexp "\\\\x[0-9A-Fa-f]{1,2}" highlight "escaped"
-  onregexp "\\\\[nrt$]" highlight "escaped"
-  onregexp "\\$+[a-zA-Z_][a-zA-Z0-9_]*(\\[[a-zA-Z0-9_]*\\])*" highlight "variable"
-  onregexp "\\$\\{+[a-zA-Z_][a-zA-Z0-9_]*(\\[[a-zA-Z0-9_]*\\])*\}" highlight "variable"
+  onregexp "abc" highlight "escaped"
+#  onregexp "\\\\[0-7]{1,3}" highlight "escaped"
+#  onregexp "\\\\x[0-9A-Fa-f]{1,2}" highlight "escaped"
+#  onregexp "\\\\[nrt$]" highlight "escaped"
+#  onregexp "\\$+[a-zA-Z_][a-zA-Z0-9_]*(\\[[a-zA-Z0-9_]*\\])*" highlight "variable"
+#  onregexp "\\$\\{+[a-zA-Z_][a-zA-Z0-9_]*(\\[[a-zA-Z0-9_]*\\])*\}" highlight "variable"
 
-  onstring "\"" pop
+  onstring "&quot;" pop
 end
 
 block "sqstring"

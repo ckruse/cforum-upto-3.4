@@ -336,6 +336,11 @@ void *cf_periodical_worker(void *arg) {
     if(rs >= 86400) rs = 0;
   }
 
+  for(elem=head.periodicals.elements;elem;elem=elem->next) {
+    per = (t_periodical *)elem->data;
+    per->worker();
+  }
+
   return NULL;
 }
 /* }}} */

@@ -284,7 +284,6 @@ u_char *parse_message(u_char *start,t_array *stack,t_string *content,t_string *c
             for(tmp = ptr1;*ptr1 != '=' && *ptr1 != ']' && *ptr1 != '<' && !isspace(*ptr1);++ptr1);
 
             if(*ptr1 == '<') {
-              fail = 1;
               free(directive);
               if(stack_elem.args) free(stack_elem.args);
               ptr = safe;
@@ -476,7 +475,7 @@ void msg_to_html(t_cl_thread *thread,const u_char *msg,t_string *content,t_strin
 
   if(registered_directives == NULL) registered_directives = cf_hash_new(NULL);
 
-  xml = cf_strcmp(xmlm->values[0],"yes");
+  xml = cf_strcmp(xmlm->values[0],"yes") == 0;
 
   if(utf8 || (qchars = htmlentities_charset_convert(quote_chars,"UTF-8",cs->values[0],&qclen,0)) == NULL) {
     qchars = strdup(quote_chars);

@@ -307,6 +307,7 @@ int flt_xmlstorage_make_forumtree(t_forum *forum) {
   GdomeDOMString *thread_str;
   GdomeNode *n,*n1,*n2,*root;
   GdomeNodeList *nl;
+  GdomeElement *root_element;
 
   di = gdome_di_mkref();
   thread_str = gdome_str_mkref("Thread");
@@ -328,6 +329,20 @@ int flt_xmlstorage_make_forumtree(t_forum *forum) {
   }
 
   path.len -= 9;
+
+  root_element = gdome_doc_documentElement(doc_index,&e);
+
+  if((ctid = xml_get_attribute(root_element,"lastThread")) != NULL) {
+    forum->threads.last_tid = str_to_u_int64(ctid+1);
+    free(ctid);
+  }
+
+  if((ctid = xml_get_attribute(root_element,"lastMessage")) != NULL) {
+    forum->threads.last_mid = str_to_u_int64(ctid+1);
+    free(ctid);
+  }
+
+  gdome_el_unref(root_element,&e);
 
   nl = gdome_doc_getElementsByTagName(doc_index,thread_str,&e);
   if(nl) length = gdome_nl_length(nl,&e);
@@ -923,6 +938,8 @@ int flt_xmlstorage_threadlist_writer(t_forum *forum) {
   doc = xml_create_doc(impl,"Forum",FORUM_DTD);
   elm = gdome_doc_documentElement(doc,&e);
 
+  cf_log(CF_DBG,__FILE__,__LINE__,"tid %llu, mid: %llu\n",ltid,lmid);
+
   if(ltid) {
     snprintf(buff,256,"t%llu",ltid);
     xml_set_attribute(elm,"lastThread",buff);
@@ -938,6 +955,7 @@ int flt_xmlstorage_threadlist_writer(t_forum *forum) {
 
     /* save doc to file... */
     snprintf(buff,256,"%s/t%llu.xml",mpath->values[0],t->tid);
+    cf_log(CF_DBG,__FILE__,__LINE__,"save file: %s\n",buff);
     if(!gdome_di_saveDocToFile(impl,doc_thread,buff,0,&e)) {
       cf_log(CF_ERR|CF_FLSH,__FILE__,__LINE__,"ERROR! COULD NOT WRITE XML FILE! Trying to write it to /tmp/%s/t%llu.xml\n",forum->name,t->tid);
 
