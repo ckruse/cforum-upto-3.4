@@ -47,7 +47,6 @@ Forum FORUM1 {
 # VIPList                 "Cheatah,Stefan Einspender,Stefan Muenz"
 # VIPColors               "#FF00FF" "#0000FF"
  ShowForumAsFrameset     "no"
- ReadMode                "thread" # thread, threadlist, list
 # BaseTarget              "view"
 
  ParamType               "Q" # Q (query string) or P (path info)
@@ -67,6 +66,9 @@ Forum FORUM1 {
  TemplateForumEnd       "@sysconfdir@/cforum/templates/forum1/%s_%s_forum_end.so"
  TemplateForumThread    "@sysconfdir@/cforum/templates/forum1/%s_%s_forum_thread.so"
  TemplatePosting        "@sysconfdir@/cforum/templates/forum1/%s_%s_forum_posting.so"
+
+ TemplateForumList      "@sysconfdir@/cforum/templates/forum1/%s_%s_forum_posting_list.so"
+ TemplateForumThreadlist "@sysconfdir@/cforum/templates/forum1/%s_%s_forum_posting_threadlist.so"
 
  # Date format
  #

@@ -142,6 +142,14 @@ int flt_link_set_links_post(t_cf_hash *head,t_configuration *dc,t_configuration 
   cf_set_variable(tpl,cs,"first",str.content,str.len,1);
   str_cleanup(&str);
 
+  /* link rel="up" */
+  for(msg=thread->threadmsg;msg && msg->level >= thread->threadmsg->level;msg=msg->prev);
+  if(msg) {
+    flt_link_getlink(&str,thread->tid,msg->mid,aaf,aafval,forum_name);
+    cf_set_variable(tpl,cs,"up",str.content,str.len,1);
+    str_cleanup(&str);
+  }
+
   /* last message... */
   if((msg = flt_link_get_last(thread)) != NULL) {
     flt_link_getlink(&str,thread->tid,msg->mid,aaf,aafval,forum_name);

@@ -1,3 +1,15 @@
+2005-02-27 Christian Kruse <ckruse@wwwtech.de>
+	* conf/fo_view.conf.in: Removed ReadMode parameter
+	* src/fo_view.c: Removed show_thread() and ReadMode behavior
+	* src/clientlib.h: Changed prototype of cf_run_post_display_handlers()
+	* src/modules/flt_deleted.c: Fixed a bug, now filter doesn't run in threadview
+	* src/modules/flt_link.c: Added link rel="up"
+	* src/modules/flt_posting.c: Changed behavior of posting display handler to
+		support fo_post?fupto=tid;mid
+	* src/fo_post.c: Changed behavior to support fo_post?fupto=tid;mid
+	* src/handlerrunners.c: Changed prototype of cf_run_post_display_handlers()
+	* src/configparser.c: Removed ReadMode configuration entry
+
 2005-02-26 Christian Kruse <ckruse@wwwtech.de>
 	* src/fo_feeds.c: Fixed wrong id and guid generation
 

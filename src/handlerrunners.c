@@ -313,7 +313,7 @@ int cf_run_post_filters(t_cf_hash *head,t_message *p,int sock)
 /* }}} */
 
 /* {{{ cf_run_post_display_handlers */
-int cf_run_post_display_handlers(t_cf_hash *head,t_cf_template *tpl) {
+int cf_run_post_display_handlers(t_cf_hash *head,t_cf_template *tpl,t_message *p) {
   int ret = FLT_OK;
   t_handler_config *handler;
   size_t i;
@@ -323,7 +323,7 @@ int cf_run_post_display_handlers(t_cf_hash *head,t_cf_template *tpl) {
     for(i=0;i<Modules[POST_DISPLAY_HANDLER].elements;++i) {
       handler = array_element_at(&Modules[POST_DISPLAY_HANDLER],i);
       fkt     = (t_post_display_filter)handler->func;
-      ret     = fkt(head,&fo_default_conf,&fo_post_conf,tpl);
+      ret     = fkt(head,&fo_default_conf,&fo_post_conf,tpl,p);
     }
   }
 

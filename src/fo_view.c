@@ -170,7 +170,6 @@ void show_posting(t_cf_hash *head,void *shm_ptr,u_int64_t tid,u_int64_t mid)
   t_name_value *fo_thread_tpl  = NULL,
                *fo_posting_tpl = cfg_get_first_value(&fo_view_conf,forum_name,"TemplatePosting"),
                *cs             = cfg_get_first_value(&fo_default_conf,forum_name,"ExternCharset"),
-               *rm             = cfg_get_first_value(&fo_view_conf,forum_name,"ReadMode"),
                *fbase          = NULL,
                *name           = cfg_get_first_value(&fo_view_conf,NULL,"Name"),
                *email          = cfg_get_first_value(&fo_view_conf,NULL,"EMail"),
@@ -184,11 +183,7 @@ void show_posting(t_cf_hash *head,void *shm_ptr,u_int64_t tid,u_int64_t mid)
 
   memset(&thread,0,sizeof(thread));
 
-
-  if(cf_strcmp(rm->values[0],"thread") == 0)          fo_thread_tpl = cfg_get_first_value(&fo_view_conf,forum_name,"TemplateForumThread");
-  else if(cf_strcmp(rm->values[0],"threadlist") == 0) fo_thread_tpl = cfg_get_first_value(&fo_view_conf,forum_name,"TemplateForumThreadList");
-  else if(cf_strcmp(rm->values[0],"list") == 0)       fo_thread_tpl = cfg_get_first_value(&fo_view_conf,forum_name,"TemplateForumList");
-
+  fo_thread_tpl = cfg_get_first_value(&fo_view_conf,forum_name,"TemplateForumThread");
 
   /* {{{ init and get message from server */
   #ifndef CF_SHARED_MEM
@@ -240,6 +235,8 @@ void show_posting(t_cf_hash *head,void *shm_ptr,u_int64_t tid,u_int64_t mid)
 
   len = snprintf(buff,256,"%llu",thread.tid);
   cf_set_variable(&tpl,cs,"tid",buff,len,0);
+  len = snprintf(buff,256,"%llu",thread.threadmsg->mid);
+  cf_set_variable(&tpl,cs,"mid",buff,len,0);
 
   /* user values */
   if(name && *name->values[0]) cf_set_variable(&tpl,cs,"aname",name->values[0],strlen(name->values[0]),1);
@@ -269,17 +266,6 @@ void show_posting(t_cf_hash *head,void *shm_ptr,u_int64_t tid,u_int64_t mid)
   cf_tpl_finish(&tpl);
 
   cf_cleanup_thread(&thread);
-}
-/* }}} */
-
-/* {{{ show_thread */
-#ifndef CF_SHARED_MEM
-void show_thread(t_cf_hash *head,int sock,u_int64_t tid)
-#else
-void show_thread(t_cf_hash *head,void *sock,u_int64_t tid)
-#endif
-{
-  /** \todo implement it */
 }
 /* }}} */
 
@@ -758,9 +744,6 @@ int main(int argc,char *argv[],char *env[]) {
       if(m) mid = str_to_u_int64(m);
 
       if(tid && mid) show_posting(head,sock,tid,mid);
-      #ifdef FUTURE_USE
-      else if(tid)   show_thread(head,sock,tid);
-      #endif
       else           show_threadlist(sock,head);
     }
 

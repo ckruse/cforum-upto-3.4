@@ -188,6 +188,7 @@ void display_posting_form(t_cf_hash *head,t_message *p) {
   cf_tpl_setvar(&tpl,"cats",&array);
   /* }}} */
 
+  /* {{{ set error string */
   if(*ErrorString) {
     val = cf_get_error_message(ErrorString,&len);
 
@@ -202,7 +203,9 @@ void display_posting_form(t_cf_hash *head,t_message *p) {
     printf("Status: 500 Internal Server Error\015\012\015\012");
   }
   else printf("\015\012");
+  /* }}} */
 
+  /* {{{ set cgi variables */
   if(head) {
     for(i=0;i<hashsize(head->tablesize);i++) {
       if(head->table[i]) {
@@ -223,6 +226,7 @@ void display_posting_form(t_cf_hash *head,t_message *p) {
       }
     }
   }
+  /* }}} */
 
   len = gen_unid(buff,50);
 
@@ -232,7 +236,7 @@ void display_posting_form(t_cf_hash *head,t_message *p) {
   cf_tpl_setvalue(&tpl,"qchar",TPL_VARIABLE_STRING,"&#255;",6);
   cf_tpl_appendvalue(&tpl,"qchar",qchars,qclen);
 
-  cf_run_post_display_handlers(head,&tpl);
+  cf_run_post_display_handlers(head,&tpl,p);
 
   cf_tpl_parse(&tpl);
 
@@ -626,6 +630,46 @@ int handle_post_command(t_configfile *cfile,const u_char *context,u_char *name,u
 }
 /* }}} */
 
+/* {{{ get_thread */
+int get_thread(t_cl_thread *thr,t_cf_hash *head) {
+  u_char *tidmid,*val;
+  u_int64_t tid,mid;
+  #ifndef CF_SHARED_MEM
+  rline_t rl;
+  #else
+  void *shm;
+  #endif
+
+  if((tidmid = cf_cgi_get(head,"fupto")) != NULL) {
+    #ifndef CF_SHARED_MEM
+    memset(&rl,0,sizeof(rl));
+    #endif
+
+    val = strstr(tidmid,",");
+    tid = str_to_u_int64(tidmid);
+    mid = str_to_u_int64(val+1);
+
+    if(tid && mid) {
+     #ifdef CF_SHARED_MEM
+      if((shm = cf_get_shm_ptr()) == NULL) return -1;
+      #else
+      if((sock = cf_socket_setup()) == -1) return -1;
+      #endif
+      else {
+        #ifdef CF_SHARED_MEM
+        if(cf_get_message_through_shm(shm,thr,NULL,tid,mid,CF_KILL_DELETED) == -1) return -1;
+        #else
+        if(cf_get_message_through_sock(sock,&rl,thr,NULL,tid,mid,CF_KILL_DELETED) == -1) return -1;
+        #endif
+        else return 0;
+      }
+    }
+  }
+
+  return -1;
+}
+/* }}} */
+
 /* {{{ signal handler for bad signals */
 void sighandler(int segnum) {
   FILE *fd = fopen(PROTOCOL_FILE,"a");
@@ -722,6 +766,7 @@ int main(int argc,char *argv[],char *env[]) {
   }
 
   memset(&rl,0,sizeof(rl));
+  memset(&thr,0,sizeof(thr));
   str_init(&str1);
 
   sock = 0;
@@ -795,15 +840,29 @@ int main(int argc,char *argv[],char *env[]) {
     if(head) {
       /* {{{ ok, user gave us variables -- lets normalize them */
       if(normalize_cgi_variables(head,"qchar") != 0) {
-        strcpy(ErrorString,"E_manipulated");
-        display_posting_form(head,NULL);
+        if(get_thread(&thr,head) == -1) {
+          strcpy(ErrorString,"E_manipulated");
+          display_posting_form(head,NULL);
+        }
+        else {
+          *ErrorString = '\0';
+          display_posting_form(head,thr.threadmsg);
+          cf_cleanup_thread(&thr);
+        }
+
         return EXIT_SUCCESS;
       }
       /* }}} */
 
       /* {{{ everything seems to be fine, so lets validate user input */
       if(validate_cgi_variables(head) != 0) {
-        display_posting_form(head,NULL);
+        if(get_thread(&thr,head) == -1) display_posting_form(head,NULL);
+        else {
+          *ErrorString = '\0';
+          display_posting_form(head,thr.threadmsg);
+          cf_cleanup_thread(&thr);
+        }
+
         return EXIT_SUCCESS;
       }
       /* }}} */

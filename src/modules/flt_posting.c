@@ -348,11 +348,14 @@ int flt_posting_execute_filter(t_cf_hash *head,t_configuration *dc,t_configurati
 /* }}} */
 
 /* {{{ flt_posting_post_display */
-int flt_posting_post_display(t_cf_hash *head,t_configuration *dc,t_configuration *pc,t_cf_template *tpl) {
+int flt_posting_post_display(t_cf_hash *head,t_configuration *dc,t_configuration *pc,t_cf_template *tpl,t_message *p) {
   u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   t_name_value *v;
   t_name_value *cs = cfg_get_first_value(dc,forum_name,"ExternCharset");
-  t_string body;
+  t_name_value *qc = cfg_get_first_value(pc,forum_name,"QuotingChars");
+  t_string body,tmp;
+
+  t_cl_thread thr;
 
   if(head) {
     /* set if none of the values have been given */
@@ -363,11 +366,21 @@ int flt_posting_post_display(t_cf_hash *head,t_configuration *dc,t_configuration
       if((v = cfg_get_first_value(pc,forum_name,"ImageUrl")) != NULL) cf_set_variable(tpl,cs,"ImageUrl",v->values[0],strlen(v->values[0]),1);
 
       str_init(&body);
-      if(flt_posting_cfg.Hi) flt_posting_replace_placeholders(flt_posting_cfg.Hi,&body,NULL,cs);
-      if(flt_posting_cfg.Bye) flt_posting_replace_placeholders(flt_posting_cfg.Bye,&body,NULL,cs);
-      if(flt_posting_cfg.Signature) {
-        str_chars_append(&body,"\n-- \n",5);
-        flt_posting_replace_placeholders(flt_posting_cfg.Signature,&body,NULL,cs);
+      if(p) {
+        memset(&thr,0,sizeof(thr));
+        thr.messages = thr.last = thr.threadmsg = thr.newest = p;
+
+        str_init(&tmp);
+        msg_to_html(&thr,p->content.content,&tmp,&body,qc->values[0],-1,1);
+        str_cleanup(&tmp);
+      }
+      else {
+        if(flt_posting_cfg.Hi) flt_posting_replace_placeholders(flt_posting_cfg.Hi,&body,NULL,cs);
+        if(flt_posting_cfg.Bye) flt_posting_replace_placeholders(flt_posting_cfg.Bye,&body,NULL,cs);
+        if(flt_posting_cfg.Signature) {
+          str_chars_append(&body,"\n-- \n",5);
+          flt_posting_replace_placeholders(flt_posting_cfg.Signature,&body,NULL,cs);
+        }
       }
 
       if(body.len) {

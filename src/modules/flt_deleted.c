@@ -73,7 +73,7 @@ int flt_deleted_execute(t_cf_hash *head,t_configuration *dc,t_configuration *vc,
     msg = cf_msg_get_first_visible(thread->messages);
 
     /* run only in threadlist mode and only in pre mode */
-    if(mode & (CF_MODE_THREADLIST|CF_MODE_PRE)) {
+    if((mode & CF_MODE_THREADLIST) && (mode & CF_MODE_PRE)) {
       if(Cfg.DeletedFile) {
         memset(&key,0,sizeof(key));
         memset(&data,0,sizeof(data));

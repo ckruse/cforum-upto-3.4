@@ -224,7 +224,7 @@ typedef int (*t_after_post_filter)(t_cf_hash *,t_configuration *,t_configuration
 typedef int (*t_after_post_filter)(t_cf_hash *,t_configuration *,t_configuration *,t_message *,u_int64_t,int);
 #endif
 
-typedef int (*t_post_display_filter)(t_cf_hash *,t_configuration *,t_configuration *,t_cf_template *);
+typedef int (*t_post_display_filter)(t_cf_hash *,t_configuration *,t_configuration *,t_cf_template *,t_message *);
 
 typedef int (*t_filter_urlrewrite)(t_configuration *,t_configuration *,const u_char *,u_char **);
 
@@ -501,8 +501,9 @@ int cf_run_post_filters(t_cf_hash *head,t_message *p,int sock);
  * Runs the posting display plugins
  * \param head The CGI hash
  * \param tpl The template
+ * \param p NULL or the posting
  */
-int cf_run_post_display_handlers(t_cf_hash *head,t_cf_template *tpl);
+int cf_run_post_display_handlers(t_cf_hash *head,t_cf_template *tpl,t_message *p);
 
 
 
