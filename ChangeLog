@@ -1,3 +1,4 @@
-2004-01-08 Christian Kruse <ckruse@wwwtech.de>
-	* src/validate.c: Fixed bug in is_valid_link(), now it is view-source aware.
+2004-01-09 Christian Kruse <ckruse@wwwtech.de>
+	* src/modules/flt_cftp.c: Bugfix in POST ANSWER and POST THREAD, now a
+		finishing newline will be send
 
