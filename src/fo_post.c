@@ -205,6 +205,8 @@ void display_posting_form(t_cf_hash *head) {
   cf_tpl_setvalue(&tpl,"qchar",TPL_VARIABLE_STRING,"&#255;",6);
   cf_tpl_appendvalue(&tpl,"qchar",qchars,qclen);
 
+  cf_run_post_display_handlers(head,&tpl);
+
   cf_tpl_parse(&tpl);
 
   cf_tpl_finish(&tpl);
@@ -573,12 +575,13 @@ int handle_post_command(t_configfile *cfile,const u_char *context,u_char *name,u
   t_conf_opt opt;
   int ret;
 
-  opt.name = strdup(name);
-  opt.data = &fo_post_conf;
+  opt.name  = strdup(name);
+  opt.data  = &fo_post_conf;
+  opt.flags = CFG_OPT_LOCAL|CFG_OPT_USER|CFG_OPT_CONFIG;
 
   ret = handle_command(NULL,&opt,context,args,argnum);
 
-  free(opt.name);
+  if(ret != -1) free(opt.name);
 
   return ret;
 }

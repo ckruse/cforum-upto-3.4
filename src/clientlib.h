@@ -214,6 +214,9 @@ typedef int (*t_new_post_filter)(t_cf_hash *,t_configuration *,t_configuration *
  */
 typedef int (*t_after_post_filter)(t_cf_hash *,t_configuration *,t_configuration *,t_message *,u_int64_t);
 
+typedef int (*t_post_display_filter)(t_cf_hash *,t_configuration *,t_configuration *,t_cf_template *);
+
+
 /**
  * In this hash global values can be saved,
  * e.g. the username of logged in users
@@ -468,6 +471,14 @@ int cf_run_post_filters(t_cf_hash *head,t_message *p,void *sock);
 #else
 int cf_run_post_filters(t_cf_hash *head,t_message *p,int sock);
 #endif
+
+/**
+ * Runs the posting display plugins
+ * \param head The CGI hash
+ * \param tpl The template
+ */
+int cf_run_post_display_handlers(t_cf_hash *head,t_cf_template *tpl);
+
 
 
 /**

@@ -31,6 +31,7 @@
 #include "readline.h"
 #include "charconvert.h"
 #include "clientlib.h"
+#include "cfcgi.h"
 /* }}} */
 
 /* {{{ cf_run_view_list_handlers */
@@ -252,13 +253,34 @@ int cf_run_post_filters(t_cf_hash *head,t_message *p,int sock)
   t_handler_config *handler;
   size_t i;
   t_new_post_filter fkt;
-  int fupto = cf_cgi_get(head,"fupto") != NULL;
+  int fupto = 0;
+
+  if(head) fupto = cf_cgi_get(head,"fupto") != NULL;
 
   if(Modules[NEW_POST_HANDLER].elements) {
     for(i=0;i<Modules[NEW_POST_HANDLER].elements && (ret == FLT_OK || ret == FLT_DECLINE);i++) {
       handler = array_element_at(&Modules[NEW_POST_HANDLER],i);
       fkt     = (t_new_post_filter)handler->func;
-      ret     = fkt(head,&fo_default_conf,&fo_view_conf,p,sock,fupto);
+      ret     = fkt(head,&fo_default_conf,&fo_post_conf,p,sock,fupto);
+    }
+  }
+
+  return ret;
+}
+/* }}} */
+
+/* {{{ cf_run_post_display_handlers */
+int cf_run_post_display_handlers(t_cf_hash *head,t_cf_template *tpl) {
+  int ret = FLT_OK;
+  t_handler_config *handler;
+  size_t i;
+  t_post_display_filter fkt;
+
+  if(Modules[POST_DISPLAY_HANDLER].elements) {
+    for(i=0;i<Modules[POST_DISPLAY_HANDLER].elements;++i) {
+      handler = array_element_at(&Modules[POST_DISPLAY_HANDLER],i);
+      fkt     = (t_post_display_filter)handler->func;
+      ret     = fkt(head,&fo_default_conf,&fo_post_conf,tpl);
     }
   }
 

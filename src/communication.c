@@ -93,10 +93,7 @@ int cf_get_next_thread_through_sock(int sock,rline_t *tsd,t_cl_thread *thr,const
         thr->msg_len            = 1;
         thr->tid                = str_to_u_int64(line+8);
 
-        if(tplname) {
-          cf_tpl_init(&thr->last->tpl,tplname);
-          cf_tpl_setvalue(&thr->last->tpl,"start",TPL_VARIABLE_STRING,"1",1);
-        }
+        if(tplname) cf_tpl_init(&thr->last->tpl,tplname);
       }
       else if(cf_strncmp(line,"MSG m",5) == 0) {
         x = thr->last;
@@ -141,7 +138,7 @@ int cf_get_next_thread_through_sock(int sock,rline_t *tsd,t_cl_thread *thr,const
       else if(cf_strncmp(line,"Votes-Good:",11) == 0) thr->last->votes_good = strtoul(line+11,NULL,10);
       else if(cf_strncmp(line,"Votes-Bad:",10) == 0)  thr->last->votes_bad = strtoul(line+10,NULL,10);
       else if(cf_strncmp(line,"Visible:",8) == 0) {
-        thr->last->invisible = line[8] == '0';
+        thr->last->invisible = line[8] == '1';
         if(thr->last->invisible) thr->msg_len--;
       }
       else if(cf_strncmp(line,"END",3) == 0) {
@@ -348,18 +345,6 @@ void *cf_get_next_thread_through_shm(void *shm_ptr,t_cl_thread *thr,const u_char
       ptr += val;
     }
     /* }}} */
-  }
-
-  if(tplname) {
-    if(thr->messages) {
-      cf_tpl_setvalue(&thr->messages->tpl,"start",TPL_VARIABLE_STRING,"1",1);
-
-      len = snprintf(buff,128,"%d",thr->msg_len);
-      cf_tpl_setvalue(&thr->messages->tpl,"msgnum",TPL_VARIABLE_STRING,buff,len);
-
-      len = snprintf(buff,128,"%d",thr->msg_len-1);
-      cf_tpl_setvalue(&thr->messages->tpl,"answers",TPL_VARIABLE_STRING,buff,len);
-    }
   }
 
   /* {{{ build hierarchical structure */

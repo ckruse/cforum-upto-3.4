@@ -213,11 +213,9 @@ void show_posting(t_cf_hash *head,void *shm_ptr,u_int64_t tid,u_int64_t mid)
   if(hpurl && *hpurl->values[0]) cf_set_variable(&tpl,cs,"aurl",hpurl->values[0],strlen(hpurl->values[0]),1);
   if(imgurl && *imgurl->values[0]) cf_set_variable(&tpl,cs,"aimg",imgurl->values[0],strlen(imgurl->values[0]),1);
 
-  len = snprintf(buff,128,"%d",thread.msg_len);
-  cf_tpl_setvalue(&thread.messages->tpl,"msgnum",TPL_VARIABLE_STRING,buff,len);
-
-  len = snprintf(buff,128,"%d",thread.msg_len-1);
-  cf_tpl_setvalue(&thread.messages->tpl,"answers",TPL_VARIABLE_STRING,buff,len);
+  cf_tpl_setvalue(&thread.messages->tpl,"start",TPL_VARIABLE_INT,1);
+  cf_tpl_setvalue(&thread.messages->tpl,"msgnum",TPL_VARIABLE_INT,thread.msg_len);
+  cf_tpl_setvalue(&thread.messages->tpl,"answers",TPL_VARIABLE_INT,thread.msg_len-1);
   /* }}} */
 
   printf("Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
@@ -405,13 +403,9 @@ void show_threadlist(void *shm_ptr,t_cf_hash *head)
     {
       if(thread.messages) {
         if((thread.messages->invisible == 0 && thread.messages->may_show) || del == CF_KEEP_DELETED) {
-          cf_tpl_setvalue(&thread.messages->tpl,"start",TPL_VARIABLE_STRING,"1",2);
-
-          len = snprintf(buff,128,"%d",thread.msg_len);
-          cf_tpl_setvalue(&thread.messages->tpl,"msgnum",TPL_VARIABLE_STRING,buff,len);
-
-          len = snprintf(buff,128,"%d",thread.msg_len-1);
-          cf_tpl_setvalue(&thread.messages->tpl,"answers",TPL_VARIABLE_STRING,buff,len);
+          cf_tpl_setvalue(&thread.messages->tpl,"start",TPL_VARIABLE_INT,1);
+          cf_tpl_setvalue(&thread.messages->tpl,"msgnum",TPL_VARIABLE_INT,thread.msg_len);
+          cf_tpl_setvalue(&thread.messages->tpl,"answers",TPL_VARIABLE_INT,thread.msg_len-1);
 
           /* first: run VIEW_HANDLER handlers in pre-mode */
           ret = cf_run_view_handlers(&thread,head,CF_MODE_THREADLIST|CF_MODE_PRE);
@@ -457,13 +451,9 @@ void show_threadlist(void *shm_ptr,t_cf_hash *head)
         threadp = array_element_at(&threads,i);
 
         if((threadp->messages->invisible == 0 && threadp->messages->may_show) || del == CF_KEEP_DELETED) {
-          cf_tpl_setvalue(&threadp->messages->tpl,"start",TPL_VARIABLE_STRING,"1",1);
-
-          len = snprintf(buff,128,"%d",threadp->msg_len);
-          cf_tpl_setvalue(&threadp->messages->tpl,"msgnum",TPL_VARIABLE_STRING,buff,len);
-
-          len = snprintf(buff,128,"%d",thread.msg_len-1);
-          cf_tpl_setvalue(&threadp->messages->tpl,"answers",TPL_VARIABLE_STRING,buff,len);
+          cf_tpl_setvalue(&threadp->messages->tpl,"start",TPL_VARIABLE_INT,1);
+          cf_tpl_setvalue(&threadp->messages->tpl,"msgnum",TPL_VARIABLE_INT,threadp->msg_len);
+          cf_tpl_setvalue(&threadp->messages->tpl,"answers",TPL_VARIABLE_INT,threadp->msg_len-1);
 
           /* first: run VIEW_HANDLER handlers in pre-mode */
           ret = cf_run_view_handlers(threadp,head,CF_MODE_THREADLIST|CF_MODE_PRE);

@@ -6,6 +6,16 @@
 	* src/fo_post.c: Lots of bugfixes, lot of developement; should work now.
 	* src/configparser.c: Added FieldValidate directive
 	* src/memoryutils.c: Code cleaning
+	* src/fo_view.c: several bugfixes, all variables are set in the fo_view now
+	* src/clientlib.h: Added prototypes and datatypes
+	* src/modules/flt_posting.c: Added routine to set some default variables in
+		posting display
+	* src/communication.c: Removed variable settings
+	* src/fo_post.c: Bugfixes, added handler for displaying the form
+	* src/defines.h: Added handler hook
+	* src/handlerrunners.c: Added handler runner function for the
+		POSTING_DISPLAY_HANDLER hook
+	* src/configparser.c: Fixed small bug
 
 2005-01-19 Christian Seiler <self@christian-seiler.de>
 	* src/parsetpl/parsetpl.lex: lot's of feature improvements, it is

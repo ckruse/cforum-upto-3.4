@@ -324,6 +324,65 @@ int flt_posting_execute_filter(t_cf_hash *head,t_configuration *dc,t_configurati
 }
 /* }}} */
 
+int flt_posting_post_display(t_cf_hash *head,t_configuration *dc,t_configuration *pc,t_cf_template *tpl) {
+  u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
+  t_name_value *v;
+  t_name_value *cs = cfg_get_first_value(dc,forum_name,"ExternCharset");
+  t_string body;
+
+  if(head) {
+    printf("if\n");
+
+    /* set if none of the values have been given */
+    if(!cf_cgi_get(head,"Name") && !cf_cgi_get(head,"EMail") && !cf_cgi_get(head,"HomepageUrl") && !cf_cgi_get(head,"ImageUrl") && !cf_cgi_get(head,"body")) {
+      printf("if2\n");
+
+      if((v = cfg_get_first_value(pc,forum_name,"Name")) != NULL) cf_set_variable(tpl,cs,"Name",v->values[0],strlen(v->values[0]),1);
+      if((v = cfg_get_first_value(pc,forum_name,"EMail")) != NULL) cf_set_variable(tpl,cs,"EMail",v->values[0],strlen(v->values[0]),1);
+      if((v = cfg_get_first_value(pc,forum_name,"HomepageUrl")) != NULL) cf_set_variable(tpl,cs,"HomageUrl",v->values[0],strlen(v->values[0]),1);
+      if((v = cfg_get_first_value(pc,forum_name,"ImageUrl")) != NULL) cf_set_variable(tpl,cs,"ImageUrl",v->values[0],strlen(v->values[0]),1);
+
+      str_init(&body);
+      if(flt_posting_cfg.Hi) flt_posting_replace_placeholders(flt_posting_cfg.Hi,&body,NULL,cs);
+      if(flt_posting_cfg.Bye) flt_posting_replace_placeholders(flt_posting_cfg.Bye,&body,NULL,cs);
+      if(flt_posting_cfg.Signature) {
+        str_chars_append(&body,"\n-- \n",5);
+        flt_posting_replace_placeholders(flt_posting_cfg.Signature,&body,NULL,cs);
+      }
+
+      if(body.len) {
+        cf_set_variable(tpl,cs,"body",body.content,body.len,0);
+        str_cleanup(&body);
+      }
+
+      return FLT_OK;
+    }
+  }
+  else {
+    if((v = cfg_get_first_value(pc,forum_name,"Name")) != NULL) cf_set_variable(tpl,cs,"Name",v->values[0],strlen(v->values[0]),1);
+    if((v = cfg_get_first_value(pc,forum_name,"EMail")) != NULL) cf_set_variable(tpl,cs,"EMail",v->values[0],strlen(v->values[0]),1);
+    if((v = cfg_get_first_value(pc,forum_name,"HomepageUrl")) != NULL) cf_set_variable(tpl,cs,"HomageUrl",v->values[0],strlen(v->values[0]),1);
+    if((v = cfg_get_first_value(pc,forum_name,"ImageUrl")) != NULL) cf_set_variable(tpl,cs,"ImageUrl",v->values[0],strlen(v->values[0]),1);
+
+    str_init(&body);
+    if(flt_posting_cfg.Hi) flt_posting_replace_placeholders(flt_posting_cfg.Hi,&body,NULL,cs);
+    if(flt_posting_cfg.Bye) flt_posting_replace_placeholders(flt_posting_cfg.Bye,&body,NULL,cs);
+    if(flt_posting_cfg.Signature) {
+      str_chars_append(&body,"\n-- \n",5);
+      flt_posting_replace_placeholders(flt_posting_cfg.Signature,&body,NULL,cs);
+    }
+
+    if(body.len) {
+      cf_set_variable(tpl,cs,"body",body.content,body.len,0);
+      str_cleanup(&body);
+    }
+
+    return FLT_OK;
+  }
+
+  return FLT_DECLINE;
+}
+
 /* {{{ pre and post content filters */
 int flt_posting_post_cnt(t_configuration *dc,t_configuration *vc,t_cl_thread *thr,t_string *content,t_string *cite,const u_char *qchars) {
   u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
@@ -467,9 +526,10 @@ t_conf_opt flt_posting_config[] = {
 };
 
 t_handler_config flt_posting_handlers[] = {
-  { POSTING_HANDLER,     flt_posting_execute_filter },
-  { PRE_CONTENT_FILTER,  flt_posting_pre_cnt        },
-  { POST_CONTENT_FILTER, flt_posting_post_cnt       },
+  { POSTING_HANDLER,      flt_posting_execute_filter },
+  { PRE_CONTENT_FILTER,   flt_posting_pre_cnt },
+  { POST_CONTENT_FILTER,  flt_posting_post_cnt },
+  { POST_DISPLAY_HANDLER, flt_posting_post_display },
   { 0, NULL }
 };
 

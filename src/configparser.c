@@ -624,7 +624,7 @@ int read_config(t_configfile *conf,t_take_default deflt,int mode) {
       }
     }
     else {
-      if(deflt) found = deflt(conf,directive_name,context,args,argnum);
+      if(deflt) found = deflt(conf,context,directive_name,args,argnum);
       else {
         fprintf(stderr,"[%s:%d] Configuration entry for directive %s not found!\n",conf->filename,linenum,directive_name);
         return 1;
