@@ -788,7 +788,7 @@ void msg_to_html(t_cl_thread *thread,const u_char *msg,t_string *content,t_strin
 /* }}} */
 
 /* {{{ cf_gen_threadlist */
-void cf_gen_threadlist(t_cl_thread *thread,t_cf_hash *head,t_string *threadlist,const u_char *type) {
+void cf_gen_threadlist(t_cl_thread *thread,t_cf_hash *head,t_string *threadlist,const u_char *type,const u_char *linktpl) {
   t_message *msg;
   int ShowInvisible = cf_hash_get(GlobalValues,"ShowInvisible",13) == NULL ? 0 : 1;
 
@@ -840,7 +840,7 @@ void cf_gen_threadlist(t_cl_thread *thread,t_cf_hash *head,t_string *threadlist,
         if(slvl == -1) slvl = msg->level;
 
         date = cf_general_get_time(dft->values[0],locale->values[0],&len,&msg->date);
-        link = cf_get_link(NULL,forum_name,thread->tid,msg->mid);
+        link = cf_get_link(linktpl,forum_name,thread->tid,msg->mid);
 
         cf_set_variable(&msg->tpl,cs,"author",msg->author.content,msg->author.len,1);
         cf_set_variable(&msg->tpl,cs,"title",msg->subject.content,msg->subject.len,1);

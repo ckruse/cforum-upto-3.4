@@ -32,7 +32,7 @@ int cf_html_register_validator(u_char *name,t_directive_validator filter,int typ
 void msg_to_html(t_cl_thread *thread,const u_char *msg,t_string *content,t_string *cite,u_char *quote_chars,int max_sig_lines,int show_sig);
 int cf_validate_msg(t_cl_thread *thread,const u_char *msg,t_cf_tpl_variable *var);
 
-void cf_gen_threadlist(t_cl_thread *thread,t_cf_hash *head,t_string *threadlist,const u_char *type);
+void cf_gen_threadlist(t_cl_thread *thread,t_cf_hash *head,t_string *threadlist,const u_char *type,const u_char *linktpl);
 
 #endif
 

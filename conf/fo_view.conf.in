@@ -44,6 +44,7 @@ Forum FORUM1 {
  DoQuote                 "yes"
  QuotingChars            "»» "
  ReadMode                "thread" # thread, list, nested
+ ThreadMode              "list" # list, nested
  ShowThread              "partitial" # full, partitial, none
 # VIPList                 "Cheatah,Stefan Einspender,Stefan Muenz"
 # VIPColors               "#FF00FF" "#0000FF"

@@ -162,23 +162,24 @@ void show_posting(t_cf_hash *head,void *shm_ptr,u_int64_t tid,u_int64_t mid)
   #endif
 
   u_char buff[256],
-         *tmp,
-         fo_thread_tplname[256],
-         fo_posting_tplname[256],
-         *UserName = cf_hash_get(GlobalValues,"UserName",8),
-         *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
+    *tmp,
+    fo_thread_tplname[256],
+    fo_posting_tplname[256],
+    *UserName = cf_hash_get(GlobalValues,"UserName",8),
+    *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
 
   t_name_value *fo_thread_tpl  = cfg_get_first_value(&fo_view_conf,forum_name,"TemplateForumThread"),
-               *rm             = cfg_get_first_value(&fo_view_conf,forum_name,"ReadMode"),
-               *fo_posting_tpl = NULL,
-               *cs             = cfg_get_first_value(&fo_default_conf,forum_name,"ExternCharset"),
-               *fbase          = NULL,
-               *name           = cfg_get_first_value(&fo_view_conf,NULL,"Name"),
-               *email          = cfg_get_first_value(&fo_view_conf,NULL,"EMail"),
-               *hpurl          = cfg_get_first_value(&fo_view_conf,NULL,"HomepageUrl"),
-               *imgurl         = cfg_get_first_value(&fo_view_conf,NULL,"ImageUrl"),
-               *ps = NULL,
-               *reg = NULL;
+    *rm             = cfg_get_first_value(&fo_view_conf,forum_name,"ReadMode"),
+    *tm             = cfg_get_first_value(&fo_view_conf,forum_name,"ThreadMode"),
+    *fo_posting_tpl = NULL,
+    *cs             = cfg_get_first_value(&fo_default_conf,forum_name,"ExternCharset"),
+    *fbase          = NULL,
+    *name           = cfg_get_first_value(&fo_view_conf,NULL,"Name"),
+    *email          = cfg_get_first_value(&fo_view_conf,NULL,"EMail"),
+    *hpurl          = cfg_get_first_value(&fo_view_conf,NULL,"HomepageUrl"),
+    *imgurl         = cfg_get_first_value(&fo_view_conf,NULL,"ImageUrl"),
+    *ps = NULL,
+    *reg = NULL;
 
   t_cf_template tpl;
 
@@ -187,7 +188,15 @@ void show_posting(t_cf_hash *head,void *shm_ptr,u_int64_t tid,u_int64_t mid)
 
   memset(&thread,0,sizeof(thread));
 
-  if(cf_strcmp(rm->values[0],"thread") == 0) fo_posting_tpl = cfg_get_first_value(&fo_view_conf,forum_name,"TemplatePosting");
+  if(cf_strcmp(rm->values[0],"thread") == 0) {
+    if(mid == 0) {
+      free(rm->values[0]);
+      rm->values[0] = strdup(tm->values[0]);
+      if(cf_strcmp(tm->values[0],"list") == 0) fo_posting_tpl = cfg_get_first_value(&fo_view_conf,forum_name,"TemplateForumList");
+      else fo_posting_tpl = cfg_get_first_value(&fo_view_conf,forum_name,"TemplateForumNested");
+    }
+    else fo_posting_tpl = cfg_get_first_value(&fo_view_conf,forum_name,"TemplatePosting");
+  }
   else if(cf_strcmp(rm->values[0],"list") == 0) fo_posting_tpl = cfg_get_first_value(&fo_view_conf,forum_name,"TemplateForumList");
   else if(cf_strcmp(rm->values[0],"nested") == 0) fo_posting_tpl = cfg_get_first_value(&fo_view_conf,forum_name,"TemplateForumNested");
   else {
@@ -235,6 +244,8 @@ void show_posting(t_cf_hash *head,void *shm_ptr,u_int64_t tid,u_int64_t mid)
     return;
   }
   /* }}} */
+
+  if(mid == 0) thread.threadmsg = thread.messages;
 
   /* {{{ set standard variables */
   cf_tpl_setvalue(&tpl,"charset",TPL_VARIABLE_STRING,cs->values[0],strlen(cs->values[0]));
@@ -770,8 +781,8 @@ int main(int argc,char *argv[],char *env[]) {
       if(t) tid = str_to_u_int64(t);
       if(m) mid = str_to_u_int64(m);
 
-      if(tid && mid) show_posting(head,sock,tid,mid);
-      else           show_threadlist(sock,head);
+      if(tid) show_posting(head,sock,tid,mid);
+      else    show_threadlist(sock,head);
     }
 
     #ifndef CF_SHARED_MEM
