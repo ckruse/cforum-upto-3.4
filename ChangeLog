@@ -1,3 +1,7 @@
+2004-09-15 Christian Kruse <ckruse@wwwtech.de>
+	* cgi-shared/config/modules.de.xml: Added RegisteredName (where has it gone?!)
+	* src/modules/flt_registerednames.c: Fixed bug in name transformation
+
 2004-09-13 Christian Kruse <ckruse@wwwtech.de>
 	* configure.in: Added src/perl/CForum-Validator/Makefile.PL in AC_OUTPUT()
 	* src/cf_pthread.c: Added configparser.h and readline.h for inclusion

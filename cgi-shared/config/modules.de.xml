@@ -376,6 +376,18 @@
         </argument>
       </directive>
 
+      <directive name="RegisteredName" arguments="1">
+        <argument paramname="registeredname" type="radio" encode="plain">
+          <validate>^(?:yes|no)$</validate>
+          <question>Möchten Sie Ihren Namen schützen? Wenn Sie hier &quot;Ja&quot; angeben, kann kein anderer unter dem von Ihnen unter &quot;Name&quot; angegebenen Namen posten.</question>
+          <error>Bitte geben Sie &quot;ja&quot; oder &quot;nein&quot; an!</error>
+          <formvalues>
+            <value val="yes">Ja</value>
+            <value val="no" default="yes">Nein</value>
+          </formvalues>
+        </argument>
+      </directive>
+
       <directive name="EMail" arguments="1">
         <argument paramname="email" type="text" encode="plain">
           <validate type="email"/>

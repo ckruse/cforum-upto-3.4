@@ -54,7 +54,10 @@ u_char *transform(const u_char *val) {
 
   str_init(&str);
 
-  for(;*ptr;ptr++) {
+  /* jump over leading whitespaces */
+  for(;*ptr && isspace(*ptr);++ptr);
+
+  for(;*ptr;++ptr) {
     if(isspace(*ptr)) {
       if(ws == 0) str_char_append(&str,*ptr);
       ws = 1;
@@ -68,9 +71,6 @@ u_char *transform(const u_char *val) {
   /* delete trailing whitespaces */
   while(isspace(str.content[str.len-1])) str.len--;
   str.content[str.len] = '\0';
-
-  ptr = str.content;
-  while(isspace(*ptr)) ptr++;
 
   return ptr;
 }
