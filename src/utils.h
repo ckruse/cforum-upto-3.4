@@ -508,23 +508,23 @@ typedef struct s_list_element {
 
   struct s_list_element *prev; /**< pointer to the previous element */
   struct s_list_element *next; /**< pointer to the next element */
-} t_list_element;
+} t_cf_list_element;
 
 /**
  * This structure defines the header for a doubly linked list
  * \ingroup list_funcs
  */
 typedef struct s_list_head {
-  t_list_element *elements; /**< list elements pointer */
-  t_list_element *last; /**< pointer to the last element */
-} t_list_head;
+  t_cf_list_element *elements; /**< list elements pointer */
+  t_cf_list_element *last; /**< pointer to the last element */
+} t_cf_list_head;
 
 
 /**
  * This function initializes a list head
  * \param head The list header variable
  */
-void cf_list_init(t_list_head *head);
+void cf_list_init(t_cf_list_head *head);
 
 /**
  * This function appends an element to a list
@@ -532,7 +532,7 @@ void cf_list_init(t_list_head *head);
  * \param data The data to append
  * \param size The size of the data
  */
-void cf_list_append(t_list_head *head,void *data,size_t size);
+void cf_list_append(t_cf_list_head *head,void *data,size_t size);
 
 /**
  * This function prepends an element to a list
@@ -540,7 +540,7 @@ void cf_list_append(t_list_head *head,void *data,size_t size);
  * \param data The data to prepend
  * \param size The size of the data
  */
-void cf_list_prepend(t_list_head *head,void *data,size_t size);
+void cf_list_prepend(t_cf_list_head *head,void *data,size_t size);
 
 /**
  * This function inserts an element in a list after the given element
@@ -549,7 +549,7 @@ void cf_list_prepend(t_list_head *head,void *data,size_t size);
  * \param data The data to insert
  * \param size The size of the data
  */
-void cf_list_insert(t_list_head *head,t_list_element *prev,void *data,size_t size);
+void cf_list_insert(t_cf_list_head *head,t_cf_list_element *prev,void *data,size_t size);
 
 /**
  * This function searches an element in a list
@@ -558,21 +558,21 @@ void cf_list_insert(t_list_head *head,t_list_element *prev,void *data,size_t siz
  * \param compare The comparing function
  * \return Returns the data of the element if found or NULL if not found
  */
-void *cf_list_search(t_list_head *head,void *data,int (*compare)(const void *data1,const void *data2));
+void *cf_list_search(t_cf_list_head *head,void *data,int (*compare)(const void *data1,const void *data2));
 
 /**
  * This function deletes an element from a list
  * \param head The list header variable for this list
  * \param elem The list element to delete
  */
-void cf_list_delete(t_list_head *head,t_list_element *elem);
+void cf_list_delete(t_cf_list_head *head,t_cf_list_element *elem);
 
 /**
  * This function destroys a list
  * \param head The list header variable for this list
  * \param destroy A destroying function for the list elements (NULL if not needed)
  */
-void cf_list_destroy(t_list_head *head,void (*destroy)(void *data));
+void cf_list_destroy(t_cf_list_head *head,void (*destroy)(void *data));
 
 /*\@}*/
 

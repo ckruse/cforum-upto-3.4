@@ -394,7 +394,7 @@ void sighandler(int segnum) {
         break;
     }
 
-    fprintf(fd,"fo_view: Got signal %s!Username: %s\nQuery-String: %s\n----\n",buff,uname?uname:"(null)",qs?qs:"(null)");
+    fprintf(fd,"fo_view: Got signal %s!\nUsername: %s\nQuery-String: %s\n----\n",buff,uname?uname:(u_char *)"(null)",qs?qs:(u_char *)"(null)");
     fclose(fd);
   }
 

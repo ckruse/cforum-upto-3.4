@@ -217,9 +217,9 @@ void cfg_cleanup(t_configuration *cfg);
  * This function returns a configuration entry list
  * \param cfg The configuration file structure
  * \param name The configuration entry name
- * \return NULL if not found, the t_list_head structure on success
+ * \return NULL if not found, the t_cf_list_head structure on success
  */
-t_list_head *cfg_get_value(t_configuration *cfg,const u_char *name);
+t_cf_list_head *cfg_get_value(t_configuration *cfg,const u_char *name);
 
 /**
  * This function returns the first configuration entry of a configuration

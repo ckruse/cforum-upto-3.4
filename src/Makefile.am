@@ -3,6 +3,7 @@ SUBDIRS=. modules templates
 
 bin_PROGRAMS= \
   fo_view \
+  fo_post \
   fo_server \
   fo_cleanup \
   fo_threadlookup \
@@ -62,6 +63,10 @@ libserverlib_la_LDFLAGS=-export-dynamic -avoid-version
 fo_view_SOURCES=fo_view.c
 fo_view_LDADD=libcfcharconvert.la libcfutils.la libcfcgi.la libcftemplate.la libconfigparser.la libcfclientlib.la
 fo_view_LDFLAGS=-export-dynamic
+
+fo_post_SOURCES=fo_post.c
+fo_post_LDADD=libcfcharconvert.la libcfutils.la libcfcgi.la libcftemplate.la libconfigparser.la libcfclientlib.la libcfvalidate.la
+fo_post_LDFLAGS=-export-dynamic
 
 fo_arcview_SOURCES=fo_arcview.c
 fo_arcview_LDADD=libcfcharconvert.la libcfutils.la libcfcgi.la libconfigparser.la libcfclientlib.la $(GDOME_LIBS)

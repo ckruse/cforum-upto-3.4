@@ -1108,12 +1108,12 @@ void cf_tree_destroy(t_cf_tree *tree) {
 /* }}} */
 
 /* {{{ list functions */
-void cf_list_init(t_list_head *head) {
+void cf_list_init(t_cf_list_head *head) {
   memset(head,0,sizeof(*head));
 }
 
-void cf_list_append(t_list_head *head,void *data,size_t size) {
-  t_list_element *elem = fo_alloc(NULL,1,sizeof(*elem),FO_ALLOC_CALLOC);
+void cf_list_append(t_cf_list_head *head,void *data,size_t size) {
+  t_cf_list_element *elem = fo_alloc(NULL,1,sizeof(*elem),FO_ALLOC_CALLOC);
 
   elem->data = memdup(data,size);
   elem->size = size;
@@ -1128,8 +1128,8 @@ void cf_list_append(t_list_head *head,void *data,size_t size) {
   }
 }
 
-void cf_list_prepend(t_list_head *head,void *data,size_t size) {
-  t_list_element *elem = fo_alloc(NULL,1,sizeof(*elem),FO_ALLOC_CALLOC);
+void cf_list_prepend(t_cf_list_head *head,void *data,size_t size) {
+  t_cf_list_element *elem = fo_alloc(NULL,1,sizeof(*elem),FO_ALLOC_CALLOC);
 
   elem->data = memdup(data,size);
   elem->size = size;
@@ -1144,8 +1144,8 @@ void cf_list_prepend(t_list_head *head,void *data,size_t size) {
   }
 }
 
-void cf_list_insert(t_list_head *head,t_list_element *prev,void *data,size_t size) {
-  t_list_element *elem = fo_alloc(NULL,1,sizeof(*elem),FO_ALLOC_CALLOC);
+void cf_list_insert(t_cf_list_head *head,t_cf_list_element *prev,void *data,size_t size) {
+  t_cf_list_element *elem = fo_alloc(NULL,1,sizeof(*elem),FO_ALLOC_CALLOC);
 
   elem->data = memdup(data,size);
   elem->size = size;
@@ -1156,8 +1156,8 @@ void cf_list_insert(t_list_head *head,t_list_element *prev,void *data,size_t siz
   prev->next = elem;
 }
 
-void *cf_list_search(t_list_head *head,void *data,int (*compare)(const void *data1,const void *data2)) {
-  t_list_element *elem;
+void *cf_list_search(t_cf_list_head *head,void *data,int (*compare)(const void *data1,const void *data2)) {
+  t_cf_list_element *elem;
 
   for(elem=head->elements;elem;elem=elem->next) {
     if(compare(elem->data,data) == 0) return elem->data;
@@ -1166,7 +1166,7 @@ void *cf_list_search(t_list_head *head,void *data,int (*compare)(const void *dat
   return NULL;
 }
 
-void cf_list_delete(t_list_head *head,t_list_element *elem) {
+void cf_list_delete(t_cf_list_head *head,t_cf_list_element *elem) {
   if(elem->prev) elem->prev->next = elem->next;
   if(elem->next) elem->next->prev = elem->prev;
   
@@ -1174,8 +1174,8 @@ void cf_list_delete(t_list_head *head,t_list_element *elem) {
   if(head->last == elem) head->elements = elem->next;
 }
 
-void cf_list_destroy(t_list_head *head,void (*destroy)(void *data)) {
-  t_list_element *elem,*elem1;
+void cf_list_destroy(t_cf_list_head *head,void (*destroy)(void *data)) {
+  t_cf_list_element *elem,*elem1;
 
   for(elem=head->elements;elem;elem=elem1) {
     elem1 = elem->next;

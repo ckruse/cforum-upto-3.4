@@ -110,8 +110,8 @@ int run_post_filters(t_cf_hash *head,t_message *p,int sock)
 void display_finishing_screen(t_message *p) {
   t_cf_template tpl;
   u_char tplname[256];
-  t_name_value *tt = cfg_get_value(&fo_post_conf,"OkTemplate");
-  t_name_value *cs = cfg_get_value(&fo_default_conf,"ExternCharset");;
+  t_name_value *tt = cfg_get_first_value(&fo_post_conf,"OkTemplate");
+  t_name_value *cs = cfg_get_first_value(&fo_default_conf,"ExternCharset");;
   size_t len;
   u_char *val;
   t_mod_api msg_to_html = cf_get_mod_api_ent("msg_to_html");
@@ -160,8 +160,8 @@ void display_posting_form(t_cf_hash *head) {
   /* display him the fucking formular */
   t_cf_template tpl;
   u_char tplname[256];
-  t_name_value *tt = cfg_get_value(&fo_post_conf,"ThreadTemplate");
-  t_name_value *cs = cfg_get_value(&fo_default_conf,"ExternCharset");
+  t_name_value *tt = cfg_get_first_value(&fo_post_conf,"ThreadTemplate");
+  t_name_value *cs = cfg_get_first_value(&fo_default_conf,"ExternCharset");
   size_t len;
   u_char *val;
 
@@ -217,7 +217,7 @@ int normalize_cgi_variables(t_cf_hash *head,const u_char *field_name) {
   u_int32_t i;
   t_cf_hash_entry *ent;
   u_char *converted;
-  t_name_value *cs = cfg_get_value(&fo_default_conf,"ExternCharset");
+  t_name_value *cs = cfg_get_first_value(&fo_default_conf,"ExternCharset");
   t_cf_cgi_param *param;
   char buff[50];
 
@@ -275,11 +275,16 @@ int normalize_cgi_variables(t_cf_hash *head,const u_char *field_name) {
 int validate_cgi_variables(t_cf_hash *head) {
   u_char *value;
   t_name_value *cfg;
+  t_cf_list_head *list;
+  t_cf_list_element *elem;
+
   size_t maxlen,minlen,len;
   int fupto = cf_cgi_get(head,"fupto") != NULL;
 
-  if((cfg = cfg_get_value(&fo_post_conf,"FieldNeeded")) != NULL) {
-    for(;cfg && cf_strcmp(cfg->name,"FieldNeeded") == 0;cfg=cfg->next) {
+  if((list = cfg_get_value(&fo_post_conf,"FieldNeeded")) != NULL) {
+    for(elem = list->elements;elem;elem=elem->next) {
+      cfg = (t_name_value *)elem->data;
+
       if((value = cf_cgi_get(head,cfg->values[0])) == NULL || *value == '\0') {
         /*
          * ok, value doesn't exist. But it may be that it does not need
@@ -293,8 +298,10 @@ int validate_cgi_variables(t_cf_hash *head) {
     }
   }
 
-  if((cfg = cfg_get_value(&fo_post_conf,"FieldConfig")) != NULL) {
-    for(;cfg && cf_strcmp(cfg->name,"FieldConfig") == 0;cfg=cfg->next) {
+  if((list = cfg_get_value(&fo_post_conf,"FieldConfig")) != NULL) {
+    for(elem=list->elements;elem;elem=elem->next) {
+      cfg = (t_name_value *)elem->data;
+
       if((value = cf_cgi_get(head,cfg->values[0])) != NULL) {
         maxlen = minlen = 0;
         if(cfg->values[1]) maxlen = atoi(cfg->values[1]);
@@ -322,9 +329,13 @@ int validate_cgi_variables(t_cf_hash *head) {
 
 /* {{{ get_message_url */
 int get_message_url(const u_char *msgstr,t_name_value **v) {
-  t_name_value *ent = cfg_get_value(&fo_post_conf,"Image");
+  t_name_value *ent;
+  t_cf_list_element *elem;
+  t_cf_list_head *list = cfg_get_value(&fo_post_conf,"Image");
 
-  for(;ent && cf_strcmp(ent->name,"Image") == 0;ent=ent->next) {
+  for(elem=list->elements;elem;elem=elem->next) {
+    ent = (t_name_value *)elem->data;
+
     if(cf_strcasecmp(ent->values[0],msgstr) == 0) {
       *v = ent;
       return 0;
@@ -732,7 +743,7 @@ int main(int argc,char *argv[],char *env[]) {
     }
   }
 
-  cs = cfg_get_value(&fo_default_conf,"ExternCharset");
+  cs = cfg_get_first_value(&fo_default_conf,"ExternCharset");
 
   if(ret != FLT_EXIT) {
     /* fine -- lets spit out http headers */
@@ -909,13 +920,13 @@ int main(int argc,char *argv[],char *env[]) {
                         mid = strtoull(val+5,NULL,10);
                       }
 
-                      cfg_val = cfg_get_value(&fo_post_conf,"RedirectOnPost");
+                      cfg_val = cfg_get_first_value(&fo_post_conf,"RedirectOnPost");
 
                       p->mid = mid;
                       run_after_post_filters(head,p,tid);
 
                       if(cfg_val && cf_strcmp(cfg_val->values[0],"yes") == 0) {
-                        cfg_val = cfg_get_value(&fo_default_conf,UserName ? "BaseURL" : "UBaseURL");
+                        cfg_val = cfg_get_first_value(&fo_default_conf,UserName ? "BaseURL" : "UBaseURL");
                         printf("Status: 302 Moved Temporarily\015\012Location: %s\015\012\015\012",cfg_val->values[0]);
                       }
                       else {

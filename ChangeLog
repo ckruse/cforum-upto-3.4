@@ -1,3 +1,11 @@
+2004-06-20 Christian Kruse <ckruseqwwwtech.de>
+	* src/Makefile.am: Added fo_post
+	* src/utils.[ch], src/fo_view.c, src/configparser.c, src/configparser.h:
+		Rename from t_list to t_cf_list
+	* src/modules/flt_tipoftheday.c: Bugfix
+	* src/fo_arcview.c: Bugfix (avoid warnings)
+	* cgi-bin/fo_post: Renamed fo_post to fo_post_old
+
 2004-06-19 Christian Kruse <ckruse@wwwtech.de>
 	* bootstrap: Added clean targets for several new directories
 	* cgi-shared/: Little restructuring, deleted unnecessary directories, added

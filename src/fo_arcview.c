@@ -1004,7 +1004,7 @@ void sighandler(int segnum) {
         break;
     }
 
-    fprintf(fd,"fo_arcview: Got signal %s!Username: %s\nQuery-String: %s\n----\n",buff,uname?uname:"(null)",qs?qs:"(null)");
+    fprintf(fd,"fo_arcview: Got signal %s!\nUsername: %s\nQuery-String: %s\n----\n",buff,uname?uname:(u_char *)"(null)",qs?qs:(u_char *)"(null)");
     fclose(fd);
   }
 
@@ -1044,7 +1044,7 @@ int main(int argc,char *argv[],char *env[]) {
   signal(SIGBUS,sighandler);
 
 
-  if(!(cfgfiles  = get_conf_file(wanted,2)) == NULL) {
+  if((cfgfiles  = get_conf_file(wanted,2)) == NULL) {
     return EXIT_FAILURE;
   }
 

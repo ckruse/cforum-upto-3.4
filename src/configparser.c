@@ -485,7 +485,7 @@ int handle_command(t_configfile *cfile,t_conf_opt *opt,u_char **args,int argnum)
   t_name_value tmp;
   t_cf_tree_dataset dt;
   const t_cf_tree_dataset *dt1;
-  t_list_head *head;
+  t_cf_list_head *head;
 
   tmp.values = args;
   tmp.valnum = argnum;
@@ -632,7 +632,7 @@ t_name_value *cfg_get_first_value(t_configuration *cfg,const u_char *name) {
   t_name_value *ent;
   const t_cf_tree_dataset *dt;
   t_cf_tree_dataset dt1;
-  t_list_head *head;
+  t_cf_list_head *head;
 
   dt1.key = (void *)name;
 
@@ -646,7 +646,7 @@ t_name_value *cfg_get_first_value(t_configuration *cfg,const u_char *name) {
 /* }}} */
 
 /* {{{ cfg_get_value */
-t_list_head *cfg_get_value(t_configuration *cfg,const u_char *name) {
+t_cf_list_head *cfg_get_value(t_configuration *cfg,const u_char *name) {
   t_name_value *ent;
   const t_cf_tree_dataset *dt;
   t_cf_tree_dataset dt1;
