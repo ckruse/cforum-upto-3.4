@@ -11,7 +11,7 @@
 # {{{ program header
 #
 use strict;
-use vars qw($Bin $Config $Script $Plugins $UserName);
+use vars qw($Bin $Config $Script $Plugins $UserName $prefix);
 
 BEGIN {
   my $null = $0; $null =~ tr!\\!/!; # for win :-(
@@ -23,9 +23,10 @@ BEGIN {
 
   $Plugins  = {};
   $UserName = '';
+  $prefix = '@prefix@';
 }
 
-use lib ($Config.'../', $Config.'../lib');
+use lib "@PERLMODULES@";
 
 sub VERSION {(q$Revision: 1.48 $ =~ /([\d.]+)\s*$/)[0] or '0.0'}
 

@@ -49,7 +49,7 @@
   SMTPSubject "Passwort fuer den SELFHTML Forumsaccount"
   SMTPBody "Ihr Passwort lautet fuer den Usernamen {$user} lautet:\n  {$pass}\n\nEs wird empfohlen, dass Passwort zu wechseln.\n"
 
-  ModuleConfig "@with_config_dir@/modules.xml"
+  ModuleConfig "@CONFIGDIR@/modules.xml"
 </General>
 
 <DateConfig>

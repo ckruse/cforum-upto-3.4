@@ -37,7 +37,7 @@
  MainFileMaxThreads "150"
 </Archiving>
 
-AuthNames "@with_cgi_shared@/data/registered_names.db"
+AuthNames "@DATADIR@/registered_names.db"
 
 # external interface
 ExternPort "6666"

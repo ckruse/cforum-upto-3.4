@@ -57,6 +57,13 @@ struct {
 } Cfg = { 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 0 };
 /* }}} */
 
+typedef struct {
+  u_char *id;
+  u_char *uri;
+} t_ref_uri;
+
+static t_array ref_uris = { 0, 0, 0, NULL, NULL };
+
 /* {{{ convert */
 u_char *convert(const u_char *in,size_t len,size_t *olen,const t_name_value *cs) {
   u_char *str = strndup(in,len);
@@ -152,11 +159,15 @@ int next_line_is_no_quote_line(const u_char *ptr) {
 /* {{{ msg_to_html */
 void msg_to_html(const u_char *msg,const u_char *link,t_string *content,t_string *cite) {
   t_name_value *cs = cfg_get_first_value(&fo_default_conf,"ExternCharset"),*vs;
-  const u_char *ptr,*tmp,*tmp1;
+  const u_char *ptr,*tmp;
         u_char *qchars;
         size_t qclen;
   int linebrk = 0,quotemode = 0,sig = 0,utf8 = cf_strcmp(cs->values[0],"UTF-8") == 0;
   u_int64_t tid,mid;
+  u_char *id,*uri,*start,*save,*tmp1;
+  int found = 0;
+  size_t i;
+  t_ref_uri *suri;
 
   if(link == NULL) {
     vs = cfg_get_first_value(&fo_default_conf,cf_hash_get(GlobalValues,"UserName",8) ? "UPostingURL" : "PostingURL");
@@ -188,6 +199,56 @@ void msg_to_html(const u_char *msg,const u_char *link,t_string *content,t_string
       }
 
       ptr += 5;
+    }
+    else if(cf_strncmp(ptr,"[ref:",5) == 0) {
+      save = (u_char *)ptr;
+      ptr += 5;
+      found = 0;
+
+      for(start = (u_char *)(ptr += 1);*ptr && (isalnum(*ptr) || *ptr == '.');ptr++);
+      if(*ptr == ']') {
+        uri = strndup(start,ptr-start);
+
+        for(i=0;i<ref_uris.elements;i++) {
+          suri = array_element_at(&ref_uris,i);
+
+          if(cf_strcmp(suri->id,id) == 0) {
+            found = 1;
+            str_chars_append(content,"<a href=\"",9);
+            str_chars_append(content,suri->uri,strlen(suri->uri));
+            str_chars_append(content,uri,strlen(uri));
+            str_chars_append(content,"\">",2);
+            str_chars_append(content,suri->uri,strlen(suri->uri));
+            str_chars_append(content,uri,strlen(uri));
+            str_chars_append(content,"</a>",4);
+
+            if(sig == 0 && cite) {
+              str_chars_append(cite,"[ref:",5);
+              str_chars_append(cite,id,strlen(id));
+              str_char_append(cite,';');
+              str_chars_append(cite,uri,strlen(uri));
+              str_char_append(cite,']');
+            }
+
+            break;
+          }
+        }
+
+        free(uri);
+        free(id);
+
+        if(found == 0) {
+          ptr = save;
+          str_char_append(content,*ptr);
+          if(sig == 0 && cite) str_char_append(cite,*ptr);
+        }
+      }
+      else {
+        ptr = save;
+        free(id);
+        str_char_append(content,*ptr);
+        if(sig == 0 && cite) str_char_append(cite,*ptr);
+      }
     }
     else if(cf_strncmp(ptr,"<a href=\"",9) == 0) {
       ptr    += 9;
@@ -259,7 +320,7 @@ void msg_to_html(const u_char *msg,const u_char *link,t_string *content,t_string
       tid = mid = 0;
 
       for(tmp=ptr;*ptr && (*ptr == 't' || *ptr == 'm' || *ptr == '=' || *ptr == ';' || isdigit(*ptr));++ptr) {
-        if(*ptr == ';') tmp1 = ptr;
+        if(*ptr == ';') tmp1 = (u_char *)ptr;
       }
 
       if(*ptr == ']') {
@@ -837,6 +898,28 @@ int handle_image(t_configfile *cfile,t_conf_opt *opt,u_char **args,int argnum) {
 }
 /* }}} */
 
+void flt_posting_cleanup_entry(void *e) {
+  t_ref_uri *uri = (t_ref_uri *)e;
+  free(uri->uri);
+  free(uri->id);
+}
+
+/* {{{ handle_ref */
+int handle_ref(t_configfile *cfile,t_conf_opt *opt,u_char **args,int argnum) {
+  t_ref_uri uri;
+
+  uri.id  = strdup(args[0]);
+  uri.uri = strdup(args[1]);
+
+  if(ref_uris.element_size == 0) array_init(&ref_uris,sizeof(uri),flt_posting_cleanup_entry);
+
+  array_push(&ref_uris,&uri);
+
+  return 0;
+}
+/* }}} */
+
+
 /* {{{ cleanup */
 void cleanup(void) {
   if(Cfg.Hi)           free(Cfg.Hi);
@@ -847,6 +930,7 @@ void cleanup(void) {
   if(Cfg.link)         free(Cfg.link);
   if(Cfg.ActiveColorF) free(Cfg.ActiveColorF);
   if(Cfg.ActiveColorB) free(Cfg.ActiveColorB);
+  if(ref_uris.element_size > 0) array_destroy(&ref_uris);
 }
 /* }}} */
 
@@ -875,6 +959,7 @@ t_conf_opt config[] = {
   { "ActivePostingColor",         handle_actpcol,  NULL },
   { "ShowIframeAsLink",           handle_iframe,   NULL },
   { "ShowImageAsLink",            handle_image,    NULL },
+  { "ReferenceURI",               handle_ref,      NULL },
   { NULL, NULL, NULL }
 };
 /* }}} */

@@ -152,7 +152,15 @@ AC_ARG_WITH(message-dir,
     [--with-message-dir=DIR],
     [the directory where the message files are located])],
   [fake=1],
-  [ with_message_dir="`pwd`/cgi-shared/data/messages" ]
+  [ with_message_dir="${localstatedir}/cforum/messages" ]
+)
+
+AC_ARG_WITH(data-dir,
+  [AC_HELP_STRING(
+	  [--with-data-dir=DIR],
+		[the directory where data files are located])],
+	[ DATADIR="${with_data_dir}" ],
+	[ DATADIR="${localstatedir}/cforum/data" ]
 )
 
 AC_ARG_WITH(archive-dir,
@@ -160,8 +168,25 @@ AC_ARG_WITH(archive-dir,
     [--with-archive-dir=DIR],
     [the directory where the archived files are located])],
   [fake=1],
-  [ with_archive_dir="`pwd`/cgi-shared/data/archive" ]
+  [ with_archive_dir="${localstatedir}/cforum/archive" ]
 )
+
+AC_ARG_WITH(config-dir,
+  [AC_HELP_STRING(
+	  [--with-config-dir=DIR],
+		[the directory where the configuration files are located])],
+	[ CONFIGDIR="${with_config_dir}" ],
+	[ CONFIGDIR="${sysconfdir}/cforum/config" ]
+)
+
+AC_ARG_WITH(perl-mods,
+  [AC_HELP_STRING(
+	  [--with-perl-mods=DIR],
+		[the directory where the configuration files are located])],
+	[ PERLMODULES="${with_perl_mods}" ],
+	[ PERLMODULES="${sysconfdir}/cforum/" ]
+)
+
 AC_ARG_WITH(socket-path,
   [AC_HELP_STRING(
      [--with-socket-path=DIR],
@@ -174,14 +199,14 @@ AC_ARG_WITH(log-dir,
     [--with-log-dir=DIR],
     [the path where the forum log files should be located])],
   [fake=1],
-  [ with_log_dir="`pwd`/logs" ]
+  [ with_log_dir="${localstatedir}/cforum/logs" ]
 )
 AC_ARG_WITH(proto-file,
   [AC_HELP_STRING(
     [--with-proto-file=PATH],
     [the path where the protocol file for bad signals is located (used for debugging)])],
   [fake=1],
-  [ with_proto_file="`pwd`/cgi-shared/data/sigprotocol.txt" ]
+  [ with_proto_file="${localstatedir}/cforum/sigprotocol.txt" ]
 )
 AC_DEFINE_UNQUOTED(PROTOCOL_FILE,"${with_proto_file}",[needed to collect debugging infos])
 
@@ -199,15 +224,15 @@ AC_CHECK_LIB(
   AC_MSG_ERROR([idn library cannot be found])
 )
 
-dnl pkglibdir="$(libdir)/cforum"
-
+AC_SUBST(DATADIR)
+AC_SUBST(PERLMODULES)
+AC_SUBST(CONFIGDIR)
 AC_SUBST(IDN)
 AC_SUBST(BDB_LIB)
 AC_SUBST(with_message_dir)
 AC_SUBST(with_archive_dir)
 AC_SUBST(with_socket_path)
 AC_SUBST(with_log_dir)
-dnl AC_SUBST(pkglibdir)
 
 dnl
 dnl check for programs
@@ -244,7 +269,12 @@ AC_TYPE_SIZE_T
 AC_TYPE_PID_T
 AC_TYPE_SIGNAL
 
-AC_OUTPUT(Makefile
+echo ${prefix}
+
+AC_OUTPUT(cgi-bin/Makefile
+cgi-bin/fo_post_old
+cgi-bin/fo_userconf
+Makefile
 cgi-shared/Makefile
 cgi-shared/config/Makefile
 cgi-shared/Plugins/Makefile

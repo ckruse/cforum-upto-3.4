@@ -17,9 +17,9 @@
  SocketName "@with_socket_path@"
 
  ErrorTemplate "@libdir@/cforum/%s_errortpl.so"
- ErrorMessages "@with_config_dir@/errormessages.txt"
+ ErrorMessages "@CONFIGDIR@/errormessages.txt"
 
- ThreadIndexFile "@with_cgi_shared@/data/tididx.dat"
+ ThreadIndexFile "@DATADIR@/tididx.dat"
 
  BaseURL "/forum/"
  PostingURL "/forum/t/%t/m/%m/"
@@ -82,7 +82,7 @@
 </Categories>
 
 <Users>
- ConfigDirectory "@with_userconfig_dir@"
+ ConfigDirectory "@CONFIGDIR@/users/"
  InactivityDelete "50"
  SendMailBeforeDelete "yes"
 </Users>
