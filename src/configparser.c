@@ -53,6 +53,7 @@ t_configuration fo_server_conf;
 t_configuration fo_view_conf;
 t_configuration fo_arcview_conf;
 t_configuration fo_post_conf;
+t_configuration fo_vote_conf;
 
 t_array Modules[MOD_MAX+1];
 
@@ -218,6 +219,16 @@ t_conf_opt fo_arcview_options[] = {
   { NULL,                      NULL,             NULL            }
 };
 
+t_conf_opt fo_vote_options[] = {
+  { "<Filters>",                NULL,             NULL },
+  { "AddFilter",                add_module,       &Modules        },
+  { "</Filters>",               NULL,             NULL },
+
+  { "<General>",                NULL,             NULL             },
+  { "VotingDatabase",           handle_command,   &fo_vote_conf    },
+  { "</General>",               NULL,             NULL             },
+  { NULL,                       NULL,             NULL             }
+};
 
 /* }}} */
 

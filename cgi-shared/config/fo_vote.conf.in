@@ -1,0 +1,20 @@
+#
+# \file fo_vote.conf.in
+# \author Christian Kruse, <ckruse@wwwtech.de>
+#
+# The fo_vote config file
+#
+# $LastChangedDate$
+# $LastChangedRevision$
+# $LastChangedBy$
+#
+
+<Filters>
+ AddFilter "@libdir@/cforum/flt_httpauth.so" "flt_httpauth"
+</Filters>
+
+
+<General>
+ VotingDatabase "@with_cgi_shared/data/voting.dat"
+</General>
+

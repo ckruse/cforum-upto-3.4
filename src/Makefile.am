@@ -9,7 +9,8 @@ bin_PROGRAMS= \
   fo_cleanup \
   fo_threadlookup \
   fo_tid_index \
-  fo_arcview
+  fo_arcview \
+  fo_vote
 
 pkglib_LTLIBRARIES= \
   libcfcharconvert.la \
@@ -88,5 +89,7 @@ fo_tid_index_SOURCES=fo_tid_index.c
 fo_tid_index_LDADD=libcfutils.la libconfigparser.la $(BDB_LIB)
 fo_tid_index_LDFLAGS=-export-dynamic
 
+fo_vote_SOURCES=fo_vote.c
+fo_vote_LDADD=libcfutils.la libcfcgi.la libconfigparser.la libcfclientlib.la $(BDB_LIB)
 
 # eof

@@ -252,6 +252,7 @@ cgi-shared/config/fo_post.conf
 cgi-shared/config/fo_userconf.conf
 cgi-shared/config/fo_view.conf
 cgi-shared/config/fo_server.conf
+cgi-shared/config/fo_vote.conf
 Doxyfile
 )
 

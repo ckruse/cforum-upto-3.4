@@ -634,9 +634,7 @@ int main(int argc,char *argv[],char *env[]) {
   cleanup_modules(Modules);
   cf_fini();
 
-  if(head) {
-    cf_hash_destroy(head);
-  }
+  if(head) cf_hash_destroy(head);
 
   #ifdef CF_SHARED_MEM
   if(sock) shmdt((void *)sock);

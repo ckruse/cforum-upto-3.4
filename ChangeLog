@@ -3,6 +3,11 @@
 		attributes
 	* src/modules/flt_voting.c: Added voting functionallity for the protocol stack
 	* src/modules/Makefile.am: Added flt_voting.c
+	* src/fo_vote.c: Added voting functionality. It still has a bug!
+	* src/Makefile.am: Added fo_vote.c
+	* src/configparser.[ch]: Added configuration variables for fo_vote
+	* cgi-shared/config/fo_vote.conf.in: Added voting config file
+	* configure.in: Added fo_vote.conf in output directive
 
 2004-07-17 Christian Kruse <ckruse@wwwtech.de>
 	* cgi-shared/ForumUtils.pm: Now _really_ fixed bug for [pref:]
