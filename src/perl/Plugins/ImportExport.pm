@@ -147,6 +147,7 @@ sub imprt {
       foreach(@{$entry}) {
         my $val = $_ || '';
 
+        $val =~ s!\\!\\\\!g;
         $val =~ s/\015\012|\015|\012/\\n/sg;
         $val =~ s/"/\\"/g;
 
