@@ -42,15 +42,13 @@ sub VERSION {(q$Revision$ =~ /([\d.]+)\s*$/)[0] or '0.0'}
 use Text::Iconv;
 
 use BerkeleyDB;
-use POSIX qw/setlocale/;
+use POSIX qw/setlocale strftime LC_ALL/;
 
 use HTML::Entities;
 
 use CForum::Template;
 use CForum::Clientlib;
 use CForum::Validator;
-
-use POSIX qw/setlocale strftime LC_ALL/;
 
 my $Msgs = undef;
 my $Clientlib = new CForum::Clientlib;
@@ -212,7 +210,7 @@ sub uniquify_params {
 
   my $val = $cgi->param($fname) or return get_error($dcfg,'manipulated');
 
-  # thanks to André Malo for the following peace of code (great idea):
+  # thanks to André Malo for the following piece of code (great idea):
   # is the given charset UTF-8?
   if($val =~ /^\303\277/) {
     # seems so, we have to check if all input is valid UTF-8; there
