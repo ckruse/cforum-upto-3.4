@@ -1,3 +1,7 @@
+2005-01-18 Christian Seiler <self@christian-seiler.de>
+	* src/parsetpl/parsetpl.lex: fixed segfault in generated variable
+		display code
+
 2005-01-17 Christian Seiler <self@christian-seiler.de>
 	* src/arrayutils.c: fixed really nasty bug in array_pop
 	* src/parsetpl/parsetpl.lex: fixed bug in foreach that could have

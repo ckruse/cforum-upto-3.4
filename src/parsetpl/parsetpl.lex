@@ -455,8 +455,8 @@ int process_variable_print_tag (t_token *variable,t_array *data) {
     str_chars_append(&output,"my_write(v->data.d_string.content);\n}\n}\n",40);
     str_chars_append(&output_mem,"str_chars_append(&tpl->parsed,v->data.d_string.content,strlen(v->data.d_string.content));\n}\n}\n",94);
   }
-  str_chars_append(&output,"if(v->temporary) {\ncf_tpl_var_destroy(v); free(v);\n}\n",53);
-  str_chars_append(&output_mem,"if(v->temporary) {\ncf_tpl_var_destroy(v); free(v);\n}\n",53);
+  str_chars_append(&output,"if(v && v->temporary) {\ncf_tpl_var_destroy(v); free(v);\n}\n",58);
+  str_chars_append(&output_mem,"if(v && v->temporary) {\ncf_tpl_var_destroy(v); free(v);\n}\n",58);
   while(level > 0) {
     str_chars_append(&output,"}\n",2);
     str_chars_append(&output_mem,"}\n",2);
