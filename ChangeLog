@@ -21,6 +21,7 @@
 	* cgi-bin/fo_usermanagement.in: Fixed spelling misstake, fixed validation
 		handling
 	* cgi-shared/config/errormessages.de.txt: Fixed spelling misstake
+	* cgi-shared/ForumUtils.pm: Bugfix in [pref:] handling
 
 2004-08-08 Christian Kruse <ckruse@wwwtech.de>
 	* src/modules/flt_scoring.lex: Fixed bug in applying score and config parsing

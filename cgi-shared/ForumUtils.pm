@@ -350,7 +350,7 @@ sub message_field {
       my ($tid,$mid) = ($1,$2);
       $txt =~ s!\%t!$tid!g;
       $txt =~ s!\%m!$mid!g;
-      $txt;
+      '<a href="'.$txt.'"><b>'.$txt.'</b></a>';
     }eg;
   }
 
