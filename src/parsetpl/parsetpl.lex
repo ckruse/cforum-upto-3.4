@@ -75,6 +75,10 @@ static t_array   foreach_var_stack;
   str_char_append(&content,'\n');
 }
 
+\x0D {
+  str_chars_append(&content,"\\015",4);
+}
+
 \{      {
   yy_push_state(TAG);
   if(content_backup.content) free(content_backup.content);
@@ -88,6 +92,9 @@ static t_array   foreach_var_stack;
     str_chars_append(&content_backup,yytext,yyleng);
     ++lineno;
     return PARSETPL_ERR_UNRECOGNIZEDCHARACTER;
+  }
+  \x0D {
+    ;
   }
   [\r\t ]             {
     str_chars_append(&content_backup,yytext,yyleng);
@@ -197,6 +204,10 @@ static t_array   foreach_var_stack;
     str_chars_append(&content_backup,yytext,yyleng);
     ++lineno; 
     return PARSETPL_ERR_UNTERMINATEDSTRING;
+  }
+  \x0D {
+    str_char_append(&content_backup,'\r');
+    str_chars_append(&string,"\\015",4);
   }
   \\n                 {
     str_chars_append(&content_backup,yytext,yyleng);

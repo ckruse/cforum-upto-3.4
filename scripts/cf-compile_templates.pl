@@ -41,6 +41,7 @@ while(my $ent = readdir DIR) {
 
   my $so_name = "${template_lang}_${template_theme}_$ent";
 
+  $? = 0;
   if(-f "$template_dir/$wo_end.c") {
     my $mtime_c = (stat("$template_dir/$wo_end.c"))[9];
     my $mtime_html = (stat("$template_dir/$ent"))[9];
@@ -51,6 +52,12 @@ while(my $ent = readdir DIR) {
     system "cf-parsetpl $template_dir/$ent";
   }
 
+  if($? != 0) {
+    print STDERR "Could not parse $template_dir/$ent!\n";
+    exit -1;
+  }
+
+  $? = 0;
   if(-f "$libdir/$so_name") {
     my $mtime_c = (stat("$template_dir/$wo_end.c"))[9];
     my $mtime_so = (stat("$libdir/$so_name"))[9];
@@ -59,6 +66,11 @@ while(my $ent = readdir DIR) {
   }
   else {
     system "gcc -shared ".($ENV{CFLAGS}||'')." ".($ENV{LDFLAGS}||'')." -o $libdir/$so_name $template_dir/$wo_end.c -lcfutils -lcftemplate";
+  }
+
+  if($? != 0) {
+    print STDERR "Could not compile $template_dir/$wo_end.c!\n";
+    exit -1;
   }
 }
 

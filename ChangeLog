@@ -33,6 +33,8 @@
 	* src/parsetpl/Makefile.am: renamed parsetpl to cf-parsetpl
 	* src/configparser.c: Adopted configuration options for fo_post
 	* scripts/cf-compile_templates.pl: Added script to compile templates
+	* src/parsetpl/parsetpl.lex: Added ignore-rules for \x0D (they confuse the
+		compiler)
 
 2005-01-16 Christian Seiler <self@christian-seiler.de>
 	* src/template.c, src/template.h: Lot's of changes to support loops
