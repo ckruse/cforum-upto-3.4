@@ -45,7 +45,7 @@ int flt_nested_execute_filter(t_cf_hash *head,t_configuration *dc,t_configuratio
   t_cf_tpl_variable hash;
 
   u_char *qchars,*UserName,*tmp,*msgcnt,buff[256],tplname[256],*forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
-  t_name_value *cs,*st,*qc,*ms,*ss,*locale,*df,*dft,*ot,*op,*ost,*cst,*cp,*ct,*rm = cfg_get_first_value(vc,forum_name,"ReadMode"),*lt;
+  t_name_value *cs,*st,*qc,*ms,*ss,*locale,*df,*dft,*ot,*op,*ost,*cst,*cp,*ct,*rm = cfg_get_first_value(vc,forum_name,"ReadMode"),*lt,*fbase,*ps,*reg;
   size_t len,qclen,msgcntlen,ot_l,op_l,ost_l,cst_l,cp_l,ct_l;
   t_string content,threadlist,allcnt;
   int utf8,ShowInvisible,slvl = -1,level = 0;
@@ -100,6 +100,24 @@ int flt_nested_execute_filter(t_cf_hash *head,t_configuration *dc,t_configuratio
   if(cf_tpl_init(&pt_tpl,tplname) != 0) return FLT_DECLINE;
 
   str_init(&allcnt);
+
+  if(UserName) {
+    fbase = cfg_get_first_value(&fo_default_conf,forum_name,"UBaseURL");
+    ps = cfg_get_first_value(&fo_default_conf,forum_name,"UPostScript");
+    reg = cfg_get_first_value(&fo_default_conf,forum_name,"UserConfig");
+  }
+  else {
+    fbase = cfg_get_first_value(&fo_default_conf,forum_name,"BaseURL");
+    ps = cfg_get_first_value(&fo_default_conf,forum_name,"PostScript");
+    reg = cfg_get_first_value(&fo_default_conf,forum_name,"UserRegister");
+  }
+
+  tmp = cf_get_link(fbase->values[0],NULL,0,0);
+  cf_set_variable(&pt_tpl,cs,"forumbase",tmp,strlen(tmp),1);
+  free(tmp);
+
+  cf_set_variable(&pt_tpl,cs,"postscript",ps->values[0],strlen(ps->values[0]),1);
+  cf_set_variable(&pt_tpl,cs,"regscript",reg->values[0],strlen(reg->values[0]),1);
 
   for(msg=thread->messages;msg;msg=msg->next) {
     if((msg->may_show && msg->invisible == 0) || ShowInvisible == 1) {
