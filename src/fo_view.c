@@ -749,7 +749,9 @@ int main(int argc,char *argv[],char *env[]) {
       if(m) mid = str_to_u_int64(m);
 
       if(tid && mid) show_posting(head,sock,tid,mid);
+      #ifdef FUTURE_USE
       else if(tid)   show_thread(head,sock,tid);
+      #endif
       else           show_threadlist(sock,head);
     }
 

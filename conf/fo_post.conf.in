@@ -25,6 +25,8 @@ Load "flt_syntax"
 Load "flt_checkregisteredname"
 Load "flt_mailonpost"
 
+PatternsDirectory "@sysconfdir@/cforum/patterns/"
+
 Forum FORUM1 {
  PostingUrl "^http://wwwtech.de/cforum/forum/\\?"
  PostingUrl "^http://wwwtech.de/cforum/forum/my/\\?"
