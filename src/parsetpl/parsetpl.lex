@@ -96,7 +96,7 @@ static t_array   foreach_var_stack;
   \x0D {
     ;
   }
-  [\r\t ]             {
+  [\t ]             {
     str_chars_append(&content_backup,yytext,yyleng);
     return PARSETPL_TOK_WHITESPACE;
   }
@@ -121,7 +121,7 @@ static t_array   foreach_var_stack;
     str_init(&content);
     return PARSETPL_TOK_TAGEND;
   }
-  ->escape            {
+  ->html            {
     str_chars_append(&content_backup,yytext,yyleng);
     return PARSETPL_TOK_MODIFIER_ESCAPE;
   }
@@ -153,17 +153,13 @@ static t_array   foreach_var_stack;
     str_chars_append(&content_backup,yytext,yyleng);
     return PARSETPL_TOK_NOT;
   }
-  else[ ]if           {
+  else? ?if           {
     str_chars_append(&content_backup,yytext,yyleng);
     return PARSETPL_TOK_ELSIF;
   }
   if                  {
     str_chars_append(&content_backup,yytext,yyleng);
     return PARSETPL_TOK_IF;
-  }
-  elsif               {
-    str_chars_append(&content_backup,yytext,yyleng);
-    return PARSETPL_TOK_ELSIF;
   }
   else                {
     str_chars_append(&content_backup,yytext,yyleng);
