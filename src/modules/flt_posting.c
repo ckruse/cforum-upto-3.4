@@ -146,7 +146,7 @@ int flt_posting_execute_filter(t_cf_hash *head,t_configuration *dc,t_configurati
   utf8 = cf_strcmp(cs->values[0],"UTF-8") == 0;
 
   if(utf8 || (qchars = htmlentities_charset_convert(qc->values[0],"UTF-8",cs->values[0],&qclen,0)) == NULL) {
-    qchars = htmlentities(qc->values[0]);
+    qchars = htmlentities(qc->values[0],0);
     qclen  = strlen(qchars);
   }
 
