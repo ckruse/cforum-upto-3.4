@@ -1,8 +1,8 @@
 2005-01-16 Christian Seiler <self@christian-seiler.de>
 	* src/template.c, src/template.h: Lot's of changes to support loops
 	 	and includes
-	* Added src/parsetpl, src/parsetpl/Makefile.am,
-		src/parsetpl/parsetpl.lex
+	* src/parsetpl, src/parsetpl/Makefile.am, src/parsetpl/parsetpl.lex: added
+		them to repository, replaces template_gen.pl
 	* src/Makefile.am: added parsetpl to SUBDIRS
 
 2005-01-16 Christian Kruse <ckruse@wwwtech.de>
