@@ -34,6 +34,8 @@
  DateFormatList "%d. %m. %Y"
  DateFormatViewList "%d. %m. %Y, %H:%M"
 
+ EnableCache "yes"
+ CacheLevel "6"
  CacheDir "/home/ckruse/dev/c/cforum/cgi-shared/data/cache/"
 </General>
 

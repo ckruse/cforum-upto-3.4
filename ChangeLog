@@ -1,3 +1,11 @@
+2004-07-02 Christian Kruse <ckruse@wwwtech.de>
+	* src/fo_arcview.c: Bugfix: equivalent URIs (but not equal!) have been
+		cached multiple times, made caching configurable, made compression level
+		configurable (compression level 0 means no compression, compression level
+		9 means maximum compression)
+	* cgi-shared/config/fo_arcview.conf.in, src/configparser.c: Added caching
+		directives
+
 2004-07-01 Christian Kruse <ckruse@wwwtech.de>
 	* src/fo_arcview.c: Bugfix with invisible postings handling
 	* src/datautils.c: Bugfix for converting u_int64_t to strings (numbers have

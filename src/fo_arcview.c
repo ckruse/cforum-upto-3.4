@@ -314,8 +314,9 @@ void print_thread_structure(t_arc_thread *thr,const u_char *year,const u_char *m
   t_name_value *threadlist_tpl_cfg = cfg_get_first_value(&fo_arcview_conf,"ThreadListTemplate");
   t_name_value *per_thread_tpl_cfg = cfg_get_first_value(&fo_arcview_conf,"PerThreadTemplate");
   t_name_value *up_down_tpl_cfg    = cfg_get_first_value(&fo_arcview_conf,"UpDownTemplate");
-  t_name_value *cache  = cfg_get_first_value(&fo_arcview_conf,"CacheDir");
-  u_char *pi = getenv("PATH_INFO");
+  t_name_value *ecache = cfg_get_first_value(&fo_arcview_conf,"EnableCache");
+  t_name_value *cache  = NULL,*clevel = NULL;
+  u_char pi[256];
   u_char *username = cf_hash_get(GlobalValues,"UserName",8);
   t_name_value *forumpath = cfg_get_first_value(&fo_default_conf,username?"UBaseURL":"BaseURL");
 
@@ -325,9 +326,19 @@ void print_thread_structure(t_arc_thread *thr,const u_char *year,const u_char *m
   t_cf_template main_tpl,threadlist_tpl,per_thread_tpl,up_down_tpl;
 
   u_char *tmp;
-  int len;
+  int len,cache_level = 0;
 
   t_string threadlist,threads;
+
+  if(ecache && *ecache->values[0] == 'y') {
+    cache  = cfg_get_first_value(&fo_arcview_conf,"CacheDir");
+    ecache = cfg_get_first_value(&fo_arcview_conf,"CacheLevel");
+
+    if(clevel) cache_level = atoi(clevel->values[0]);
+    else       cache_level = 6;
+  }
+
+  snprintf(pi,256,"%s/%s/t%llu",year,month,thr->tid);
 
   /* Buarghs. Four templates. This is fucking bad. */
   generate_tpl_name(main_tpl_name,256,main_tpl_cfg);
@@ -363,7 +374,7 @@ void print_thread_structure(t_arc_thread *thr,const u_char *year,const u_char *m
 
   tpl_cf_parse_to_mem(&main_tpl);
   
-  if(show_invisible == 0) cf_cache(cache->values[0],pi,main_tpl.parsed.content,main_tpl.parsed.len,6);
+  if(show_invisible == 0 && cache) cf_cache(cache->values[0],pi,main_tpl.parsed.content,main_tpl.parsed.len,cache_level);
 
   fwrite(main_tpl.parsed.content,1,main_tpl.parsed.len,stdout);
 
@@ -691,12 +702,13 @@ void show_thread(const u_char *year,const u_char *month,const u_char *tid) {
   int show_invisible = cf_hash_get(GlobalValues,"ShowInvisible",13) != NULL;
   t_name_value *cache  = cfg_get_first_value(&fo_arcview_conf,"CacheDir");
   t_cache_entry *ent;
-  u_char *pi = getenv("PATH_INFO");
+  u_char pi[256];
 
   GdomeException e;
   GdomeDocument *doc;
   GdomeDOMImplementation *impl;
 
+  snprintf(pi,256,"%s/%s/t%s",year,month,*tid == 't' ? tid+1 : tid);
 
   memset(&thr,0,sizeof(thr));
 
@@ -802,7 +814,9 @@ void show_month_content(const u_char *year,const u_char *month) {
   t_name_value *cs     = cfg_get_first_value(&fo_default_conf,"ExternCharset");
   t_name_value *m_tp   = cfg_get_first_value(&fo_arcview_conf,"MonthsTemplate");
   t_name_value *tl_tp  = cfg_get_first_value(&fo_arcview_conf,"ThreadListMonthTemplate");
-  t_name_value *cache  = cfg_get_first_value(&fo_arcview_conf,"CacheDir");
+  t_name_value *cache  = NULL;
+  t_name_value *clevel = NULL;
+  t_name_value *ecache = cfg_get_first_value(&fo_arcview_conf,"EnableCache");
   int show_invisible = cf_hash_get(GlobalValues,"ShowInvisible",13) != NULL;
   u_char *username = cf_hash_get(GlobalValues,"UserName",8);
   t_name_value *forumpath = cfg_get_first_value(&fo_default_conf,username?"UBaseURL":"BaseURL");
@@ -810,7 +824,7 @@ void show_month_content(const u_char *year,const u_char *month) {
   t_cache_entry *ent;
   t_string path,mstr;
   struct stat st;
-  u_char *ptr,*file,*tmp1,*tmp2,*pi = getenv("PATH_INFO");
+  u_char *ptr,*file,*tmp1,*tmp2,pi[256];
   int fd;
   u_int64_t tid;
   time_t date;
@@ -819,13 +833,23 @@ void show_month_content(const u_char *year,const u_char *month) {
   struct s_arc_content cnt_str,*cnt_str1;
   size_t i;
   t_string strbuff;
-  int is_invisible;
+  int is_invisible,cache_level = 0;
 
   t_cf_template m_tpl,tl_tpl;
   u_char mt_name[256],tl_name[256],buff[256];
 
+  if(ecache && *ecache->values[0] == 'y') {
+    cache  = cfg_get_first_value(&fo_arcview_conf,"CacheDir");
+    ecache = cfg_get_first_value(&fo_arcview_conf,"CacheLevel");
+
+    if(ecache) cache_level = atoi(ecache->values[0]);
+    else       cache_level = 6;
+  }
+
   str_init(&path);
   str_init(&strbuff);
+
+  snprintf(pi,256,"%s/%s.idx",year,month);
 
   /* generate path to index file */
   str_chars_append(&path,v->values[0],strlen(v->values[0]));
@@ -845,7 +869,7 @@ void show_month_content(const u_char *year,const u_char *month) {
   /* no additional headers */
   fwrite("\015\012",1,2,stdout);
 
-  if(show_invisible || cf_cache_outdated(cache->values[0],pi,path.content) == -1 || (ent = cf_get_cache(cache->values[0],pi,2)) == NULL) {
+  if(show_invisible || cache == NULL || cf_cache_outdated(cache->values[0],pi,path.content) == -1 || (ent = cf_get_cache(cache->values[0],pi,cache_level)) == NULL) {
     array_init(&ary,sizeof(cnt_str),destroy_sort_array);
 
     /* get templates */
@@ -965,7 +989,7 @@ void show_month_content(const u_char *year,const u_char *month) {
     array_destroy(&ary);
 
     tpl_cf_parse_to_mem(&m_tpl);
-    if(show_invisible == 0) cf_cache(cache->values[0],pi,m_tpl.parsed.content,m_tpl.parsed.len,6);
+    if(show_invisible == 0 && cache) cf_cache(cache->values[0],pi,m_tpl.parsed.content,m_tpl.parsed.len,cache_level);
     fwrite(m_tpl.parsed.content,1,m_tpl.parsed.len,stdout);
 
     tpl_cf_finish(&tl_tpl);
