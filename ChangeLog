@@ -1,8 +1,4 @@
-2005-01-08 Christian Kruse <ckruse@wwwtech.de>
-	* src/validate.c: Fixed bug in is_valid_link(), now it is view-source aware
-
-2005-01-07 Christian Seiler <self@christian-seiler.de>
-	* cgi-bin/admin/fo_xmlrpc.in: export $fo_xmlrpc_conf variable
-	* cgi-shared/Pluginx/XMLRPCUserManagement.pm: added
-	* cgi-shared/config/fo_xmlrpc.conf.in: load RegisterName plugin
+2004-01-09 Christian Kruse <ckruse@wwwtech.de>
+	* src/modules/flt_cftp.c: Bugfix in POST THREAD and POST ANSWER, now a
+		finishing newline will be send
 

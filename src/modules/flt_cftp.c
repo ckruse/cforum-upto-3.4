@@ -262,7 +262,7 @@ int flt_cftp_handler(int sockfd,const u_char **tokens,int tnum,rline_t *tsd) {
                 cf_hash_set(head.unique_ids,p->unid,p->unid_len,&one,sizeof(one));
                 CF_UM(&head.unique_ids_mutex);
 
-                len = snprintf(buff,512,"200 Ok\nTid: %llu\nMid: %llu\n",t->tid,p->mid);
+                len = snprintf(buff,512,"200 Ok\nTid: %llu\nMid: %llu\n\n",t->tid,p->mid);
                 writen(sockfd,buff,len);
 
                 if(Modules[NEW_POST_HANDLER].elements) {
@@ -392,7 +392,7 @@ int flt_cftp_handler(int sockfd,const u_char **tokens,int tnum,rline_t *tsd) {
           cf_register_thread(t);
           CF_RW_UN(&t->lock);
 
-          len = snprintf(buff,512,"200 Ok\nTid: %llu\nMid: %llu\n",t->tid,p->mid);
+          len = snprintf(buff,512,"200 Ok\nTid: %llu\nMid: %llu\n\n",t->tid,p->mid);
           writen(sockfd,buff,len);
 
           cf_generate_cache(NULL);
