@@ -1,3 +1,10 @@
+2004-12-31 Christian Kruse <ckruse@wwwtech.de>
+	* src/defines.h: Removed FORUM_DTD constant, its only important for
+		flt_xmlstorage.c
+	* src/archiver.c: Added folding markers
+	* src/modules/flt_xmlstorage.c: Implementet threadlist writer (not testet
+		yet!)
+
 2004-12-31 Christian Seiler <self@christian-seiler.de>
 	*: Merged back XMLRPC changes from 2.1
 

@@ -47,6 +47,9 @@ struct sockaddr_un;
 #define CF_SORT_ASCENDING 1
 #define CF_SORT_DESCENDING 2
 
+/** The URL of the selfforum DTD */
+#define FORUM_DTD "http://wwwtech.de/cforum/download/cforum-3.dtd"
+
 static int sort_threads  = 0;
 static int sort_messages = 0;
 
@@ -625,8 +628,296 @@ void flt_xmlstorage_handle_header(t_posting *p,GdomeNode *n) {
 }
 /* }}} */
 
+/* {{{ flt_xmlstorage_stringify_posting */
+t_posting *flt_xmlstorage_stringify_posting(GdomeDocument *doc1,GdomeElement *t1,GdomeDocument *doc2,GdomeElement *t2,t_posting *p) {
+  int lvl = p->level;
+  u_char buff[50];
+  GdomeException e;
+
+  GdomeDOMString *str;
+  GdomeCDATASection *cd;
+
+  GdomeElement *elem1,*elem2;
+  GdomeElement *m1 = xml_create_element(doc1,"Message");
+  GdomeElement *m2 = xml_create_element(doc2,"Message");
+
+  GdomeElement *header1 = xml_create_element(doc1,"Header");
+  GdomeElement *header2 = xml_create_element(doc2,"Header");
+
+  GdomeElement *author1 = xml_create_element(doc1,"Author");
+  GdomeElement *author2 = xml_create_element(doc2,"Author");
+
+  GdomeElement *cnt = xml_create_element(doc2,"MessageContent");
+  
+  gdome_el_appendChild(m1,(GdomeNode *)header1,&e);
+  gdome_el_appendChild(m2,(GdomeNode *)header2,&e);
+
+  gdome_el_appendChild(header1,(GdomeNode *)author1,&e);
+  gdome_el_appendChild(header2,(GdomeNode *)author2,&e);
+
+  gdome_el_appendChild(m2,(GdomeNode *)cnt,&e);
+
+  /* the invisible flag */
+  xml_set_attribute(m1,"invisible",p->invisible ? "1" : "0");
+  xml_set_attribute(m2,"invisible",p->invisible ? "1" : "0");
+
+  /* voting attributes */
+  (void)snprintf(buff,50,"%d",p->votes_good);
+  xml_set_attribute(m1,"votingGood",buff);
+  xml_set_attribute(m2,"votingGood",buff);
+
+  (void)snprintf(buff,50,"%d",p->votes_bad);
+  xml_set_attribute(m1,"votingBad",buff);
+  xml_set_attribute(m2,"votingBad",buff);
+
+  /* the name */
+  elem1 = xml_create_element(doc1,"Name");
+  elem2 = xml_create_element(doc2,"Name");
+
+  xml_set_value(doc1,elem1,p->user.name);
+  xml_set_value(doc2,elem2,p->user.name);
+
+  gdome_el_appendChild(author1,(GdomeNode *)elem1,&e);
+  gdome_el_appendChild(author2,(GdomeNode *)elem2,&e);
+
+  gdome_el_unref(elem1,&e);
+  gdome_el_unref(elem2,&e);
+
+  /* the email address */
+  elem1 = xml_create_element(doc1,"Email");
+  elem2 = xml_create_element(doc2,"Email");
+
+  if(p->user.email) {
+    xml_set_value(doc1,elem1,p->user.email);
+    xml_set_value(doc2,elem2,p->user.email);
+  }
+
+  gdome_el_appendChild(author1,(GdomeNode *)elem1,&e);
+  gdome_el_appendChild(author2,(GdomeNode *)elem2,&e);
+
+  gdome_el_unref(elem1,&e);
+  gdome_el_unref(elem2,&e);
+
+  /* the homepage url */
+  elem1 = xml_create_element(doc1,"HomepageUrl");
+  elem2 = xml_create_element(doc2,"HomepageUrl");
+
+  if(p->user.hp) {
+    xml_set_value(doc1,elem1,p->user.hp);
+    xml_set_value(doc2,elem2,p->user.hp);
+  }
+
+  gdome_el_appendChild(author1,(GdomeNode *)elem1,&e);
+  gdome_el_appendChild(author2,(GdomeNode *)elem2,&e);
+
+  gdome_el_unref(elem1,&e);
+  gdome_el_unref(elem2,&e);
+
+  /* the image url */
+  elem1 = xml_create_element(doc1,"ImageUrl");
+  elem2 = xml_create_element(doc2,"ImageUrl");
+
+  if(p->user.img) {
+    xml_set_value(doc1,elem1,p->user.img);
+    xml_set_value(doc2,elem2,p->user.img);
+  }
+
+  gdome_el_appendChild(author1,(GdomeNode *)elem1,&e);
+  gdome_el_appendChild(author2,(GdomeNode *)elem2,&e);
+
+  gdome_el_unref(elem1,&e);
+  gdome_el_unref(elem2,&e);
+
+  /* category */
+  elem1 = xml_create_element(doc1,"Category");
+  elem2 = xml_create_element(doc2,"Category");
+
+  if(p->category) {
+    xml_set_value(doc1,elem1,p->category);
+    xml_set_value(doc2,elem2,p->category);
+  }
+
+  gdome_el_appendChild(header1,(GdomeNode *)elem1,&e);
+  gdome_el_appendChild(header2,(GdomeNode *)elem2,&e);
+
+  gdome_el_unref(elem1,&e);
+  gdome_el_unref(elem2,&e);
+
+  /* subject */
+  elem1 = xml_create_element(doc1,"Subject");
+  elem2 = xml_create_element(doc2,"Subject");
+
+  xml_set_value(doc1,elem1,p->subject);
+  xml_set_value(doc2,elem2,p->subject);
+
+  gdome_el_appendChild(header1,(GdomeNode *)elem1,&e);
+  gdome_el_appendChild(header2,(GdomeNode *)elem2,&e);
+
+  gdome_el_unref(elem1,&e);
+  gdome_el_unref(elem2,&e);
+
+  /* date */
+  elem1 = xml_create_element(doc1,"Date");
+  elem2 = xml_create_element(doc2,"Date");
+
+  sprintf(buff,"%ld",p->date);
+
+  xml_set_attribute(elem1,"longSec",buff);
+  xml_set_attribute(elem2,"longSec",buff);
+
+  gdome_el_appendChild(header1,(GdomeNode *)elem1,&e);
+  gdome_el_appendChild(header2,(GdomeNode *)elem2,&e);
+
+  gdome_el_unref(elem1,&e);
+  gdome_el_unref(elem2,&e);
+
+  /* set the id and the ip... */
+  snprintf(buff,50,"m%lld",p->mid);
+  xml_set_attribute(m1,"id",buff);
+
+  if(p->unid) xml_set_attribute(m1,"unid",p->unid);
+
+  xml_set_attribute(m2,"id",buff);
+  xml_set_attribute(m2,"ip",p->user.ip);
+
+  gdome_el_appendChild(t1,(GdomeNode *)m1,&e);
+  gdome_el_appendChild(t2,(GdomeNode *)m2,&e);
+
+  str = gdome_str_mkref_dup(p->content);
+
+  cd = gdome_doc_createCDATASection(doc2,str,&e);
+  gdome_el_appendChild(cnt,(GdomeNode *)cd,&e);
+
+  gdome_cds_unref(cd,&e);
+  gdome_str_unref(str);
+  gdome_el_unref(cnt,&e);
+
+  for(p=p->next;p;) {
+    if(p->level > lvl) {
+      p = flt_xmlstorage_stringify_posting(doc1,m1,doc2,m2,p);
+    }
+    else { /* smaller or equal */
+      gdome_el_unref(m1,&e);
+      gdome_el_unref(m2,&e);
+
+      gdome_el_unref(header1,&e);
+      gdome_el_unref(header2,&e);
+
+      gdome_el_unref(author1,&e);
+      gdome_el_unref(author2,&e);
+
+      return p;
+    }
+  }
+
+  gdome_el_unref(m1,&e);
+  gdome_el_unref(m2,&e);
+
+  gdome_el_unref(header1,&e);
+  gdome_el_unref(header2,&e);
+
+  gdome_el_unref(author1,&e);
+  gdome_el_unref(author2,&e);
+
+  return NULL;
+}
+/* }}} */
+
+/* {{{ flt_xmlstorage_thread2xml */
+void flt_xmlstorage_thread2xml(t_forum *forum,GdomeImplementation *impl,GdomeDocument *doc1,t_thread *t,t_name_value *mpath) {
+  GdomeException e;
+  u_char buff[256];
+  GdomeDocument *doc2   = xml_create_doc(impl,"Forum",FORUM_DTD);
+  GdomeElement *thread1 = xml_create_element(doc1,"Thread");
+  GdomeElement *thread2 = xml_create_element(doc2,"Thread");
+
+  snprintf(buff,256,"t%llu",t->tid);
+
+  xml_set_attribute(thread1,"id",buff);
+  xml_set_attribute(thread2,"id",buff);
+
+  flt_xmlstorage_stringify_posting(doc1,thread1,doc2,thread2,t->postings);
+
+  root = gdome_doc_documentElement(doc1,&e);
+  gdome_el_appendChild(root,(GdomeNode *)thread1,&e);
+  gdome_el_unref(root,&e);
+
+  root = gdome_doc_documentElement(doc2,&e);
+  gdome_el_appendChild(root,(GdomeNode *)thread2,&e);
+  gdome_el_appendChild(root,(GdomeNode *)msgcnt,&e);
+
+  /* save doc to file... */
+  snprintf(buff,256,"%s/t%llu.xml",mpath->values[0],t->tid);
+  if(!gdome_di_saveDocToFile(impl,doc2,buff,0,&e)) {
+    cf_log(LOG_ERR,__FILE__,__LINE__,"ERROR! COULD NOT WRITE XML FILE! Trying to write it to /tmp/%s/t%llu.xml\n",forum->name,t->tid);
+
+    snprintf(buff,256,"/tmp/%s",forum->name);
+    mkdir(buff,0755);
+
+    snprintf(buff,256,"/tmp/%s/t%llu.xml",forum->name,t->tid);
+    gdome_di_saveDocToFile(impl,doc,buff);
+  }
+
+  gdome_el_unref(thread1,&e);
+  gdome_el_unref(thread2,&e);
+
+  gdome_doc_unref(doc2,&e);
+}
+/* }}} */
+
 /* {{{ flt_xmlstorage_threadlist_writer */
 int flt_xmlstorage_threadlist_writer(t_forum *forum) {
+  t_thread *t,*t1;
+  u_int64_t ltid,lmid;
+  u_char buff[256];
+
+  t_name_value *mpath = cfg_get_first_value(&fo_default_conf,forum->name,"MessagePath");
+
+  /* {{{ xml declarations */
+  GdomeException e;
+  GdomeDOMImplementation *impl = gdome_di_mkref();
+  GdomeDocument *doc = xml_create_doc(impl,"Forum",FORUM_DTD);
+  GdomeElement *elm = xml_create_element(doc,"Forum");
+  /* }}} */
+
+  CF_RW_RD(&forum->threads.lock);
+  t    = forum->threads.list;
+  ltid = forum->threads.last_tid;
+  lmid = forum->threads.last_mid;
+  CF_RW_UN(&forum->threads.lock);
+
+  snprintf(buff,256,"t%llu",ltid);
+  xml_set_attribute(elm,"lastThread",buff);
+
+  snprintf(buff,256,"m%llu",lmid);
+  xml_set_attribute(elm,"lastMessage",lmid);
+
+  do {
+    CF_RW_RD(&t->lock);
+
+    flt_xmlstorage_thread2xml(impl,doc,t,mpath);
+
+    t1 = t->next;
+    CF_RW_UN(&t->lock);
+    t = t1;
+  } while(t);
+
+  snprintf(buff,256,"%s/forum.xml",mpath->values[0]);
+  if(!gdome_di_saveDocToFile(impl,doc,buff,0,&e)) {
+    cf_log(LOG_ERR,__FILE__,__LINE__,"ERROR! COULD NOT WRITE XML FILE! Trying to write it to /tmp/%s/forum.xml\n",forum->name);
+
+    snprintf(buff,256,"/tmp/%s",forum->name);
+    mkdir(buff,0755);
+    snprintf(buff,256,"/tmp/%s/forum.xml",forum->name);
+    gdome_di_saveDocToFile(impl,doc,buff);
+  }
+
+  /* {{{ xml cleanup */
+  gdome_el_unref(elm,&e);
+  gdome_doc_unref(doc,&e);
+  gdome_di_unref(impl,&e);
+  /* }}} */
+
   return FLT_OK;
 }
 /* }}} */

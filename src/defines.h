@@ -25,9 +25,6 @@
 
 #define TIMER 5L /**< Timer value. Check every 5 seconds. */
 
-/* the dtd uri */
-#define FORUM_DTD "http://wwwtech.de/cforum/download/cforum.dtd" /**< The URL of the selfforum DTD */
-
 /* some limits */
 #define PRERESERVE 5 /**< Limit in lists or for bigger arrays to reserve before used (to avoid malloc() calls) */
 #define MAXLINE    BUFSIZ /**< The size of a buffer for lines */

@@ -52,7 +52,7 @@ struct sockaddr_un;
 #include "archiver.h"
 /* }}} */
 
-
+/* {{{ cf_run_archiver */
 void cf_run_archiver(void) {
   t_thread *t,*oldest_t,*prev = NULL,**to_archive = NULL;
   long size,threadnum,pnum,max_bytes,max_threads,max_posts;
@@ -220,7 +220,9 @@ void cf_run_archiver(void) {
   }
 
 }
+/* }}} */
 
+/* {{{ cf_archive_threads */
 void cf_archive_threads(t_forum *forum,t_thread **to_archive,size_t len) {
   int ret;
   size_t i,j;
@@ -239,7 +241,9 @@ void cf_archive_threads(t_forum *forum,t_thread **to_archive,size_t len) {
     }
   }
 }
+/* }}} */
 
+/* {{{ cf_write_threadlist */
 void cf_write_threadlist(t_forum *forum) {
   int ret;
   size_t i;
@@ -257,7 +261,9 @@ void cf_write_threadlist(t_forum *forum) {
     }
   }
 }
+/* }}} */
 
+/* {{{ cf_archive_thread */
 int cf_archive_thread(t_forum *forum,u_int64_t tid) {
   t_thread *t = cf_get_thread(forum,tid);
   t_thread **list;
@@ -274,5 +280,6 @@ int cf_archive_thread(t_forum *forum,u_int64_t tid) {
 
   return 0;
 }
+/* }}} */
 
 /* eof */
