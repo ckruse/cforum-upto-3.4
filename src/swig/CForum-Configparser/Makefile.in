@@ -1,0 +1,9 @@
+
+SWIG=@SWIG@
+CFLAGS=@CFLAGS@ @PERL_CFLAGS@
+LDFLAGS=-lcfhashlib -lcfconfigparser -lcfclientlib @LDFLAGS@
+CC=@CC@
+
+all:
+	${SWIG} -perl5 -shadow CForum-Configparser.i
+	${CC} ${CFLAGS} -shared -o Configparser.so CForum-Configparser_wrap.c ${LDFLAGS}

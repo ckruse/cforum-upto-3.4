@@ -1,5 +1,6 @@
 %module "CForum::Configparser"
 %{
+
 #include "config.h"
 #include "defines.h"
 
@@ -26,6 +27,10 @@
 
 static SV *callback = NULL;
 
+#ifndef ENTER
+#define ENTER push_scope()
+#endif
+
 typedef struct s_xs_conf {
   SV *data;
   SV *callback;
@@ -39,14 +44,15 @@ int xs_callback(t_configfile *file,t_conf_opt *entry,const u_char *context,u_cha
 
   dSP;
 
-  //ENTER;
+  ENTER;
   SAVETMPS;
 
   PUSHMARK(SP);
 
   /* put the name (a copy), the context and the userdata (what the user gave us) on the stack */
   XPUSHs(sv_2mortal(newSVpv(entry->name,strlen(entry->name))));
-  XPUSHs(sv_2mortal(newSVpv(context,strlen(context))));
+  if(context) XPUSHs(sv_2mortal(newSVpv(context,strlen(context))));
+  else XPUSHs(sv_2mortal(newSVpv("_global",7)));
   XPUSHs(data->data);
 
   /* put arguments on the stack */
@@ -78,14 +84,15 @@ int xs_callback_dflt(t_configfile *cfile,const u_char *context,u_char *name,u_ch
 
   dSP;
 
-  //ENTER;
+  ENTER;
   SAVETMPS;
 
   PUSHMARK(SP);
 
   /* put the name (a copy), the context and the userdata (what the user gave us) on the stack */
   XPUSHs(sv_2mortal(newSVpv(name,strlen(name))));
-  XPUSHs(sv_2mortal(newSVpv(context,strlen(context))));
+  if(context) XPUSHs(sv_2mortal(newSVpv(context,strlen(context))));
+  else XPUSHs(sv_2mortal(newSVpv("_global",7)));
 
   /* put arguments on the stack */
   for(i=0;i<len;++i) XPUSHs(sv_2mortal(newSVpv(args[i], strlen(args[i]))));
@@ -112,7 +119,9 @@ int xs_callback_dflt(t_configfile *cfile,const u_char *context,u_char *name,u_ch
 %}
 
 %init %{
+  cf_init();
   cfg_init();
+  init_modules();
 %}
 
 /* include general typemaps */

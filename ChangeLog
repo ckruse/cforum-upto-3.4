@@ -1,3 +1,11 @@
+2005-01-25 Christian Kruse <ckruse@wwwtech.de>
+	* src/swig/CForum-Configparser/CForum-Configparser.i: Several bugfixes, added
+		ENTER macro since it is not declared
+	* src/swig/CForum-Configparser/Makefile.in: Added Makefile.in for
+		configuration parser
+	* src/swig/CForum-Validator/Makefile.in: Added Makefile for validator
+	* src/swig/CForum-Validator/CForum-Validator.i: Added validator functions
+
 2005-01-23 Christian Kruse <ckruse@wwwtech.de>
 	* src/modules/flt_postingassistant.c: Implemented several format checks for
 		the	signature
