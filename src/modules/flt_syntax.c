@@ -902,6 +902,7 @@ int flt_syntax_doit(flt_syntax_pattern_file_t *file,flt_syntax_block_t *block,u_
           /* }}} */
           break;
         case FLT_SYNTAX_ONREGEXP_AFTER:
+          /* {{{ onregexpafter */
           tmppreg = array_element_at(&statement->pregs,0);
           if(pcre_exec(tmppreg->re,tmppreg->extra,ptr,len-(text-ptr),0,0,stdvec,42) >= 0) {
             x = stdvec[1] - stdvec[0];
@@ -956,6 +957,7 @@ int flt_syntax_doit(flt_syntax_pattern_file_t *file,flt_syntax_block_t *block,u_
               }
             }
           }
+          /* }}} */
           break;
       }
     }
@@ -1019,6 +1021,7 @@ int flt_syntax_highlight(t_string *content,t_string *bco,const u_char *lang,cons
 int flt_syntax_execute(t_configuration *fdc,t_configuration *fvc,const u_char *directive,const u_char **parameters,size_t plen,t_string *bco,t_string *bci,t_string *content,t_string *cite,const u_char *qchars,int sig) {
   t_string str;
   struct stat st;
+  u_char *lang,*ptr;
 
   /* {{{ we don't know what language we got, so just put a <code> around it */
   if(flt_syntax_active == 0 || plen != 2 || cf_strcmp(parameters[0],"lang") != 0) {
@@ -1036,11 +1039,15 @@ int flt_syntax_execute(t_configuration *fdc,t_configuration *fvc,const u_char *d
   }
   /* }}} */
 
+  str_init(&str);
+  for(ptr=parameters[1];*ptr;++ptr) str_char_append(&str,tolower(*ptr));
+  lang = str.content;
+
   /* we got a language, check if it exists */
   str_init(&str);
   str_char_set(&str,flt_syntax_patterns_dir,strlen(flt_syntax_patterns_dir));
   str_char_append(&str,'/');
-  str_chars_append(&str,parameters[1],strlen(parameters[1]));
+  str_chars_append(&str,lang,strlen(lang));
   str_chars_append(&str,".pat",4);
 
   /* {{{ language doesnt exist, put a <code> around it */
@@ -1064,7 +1071,7 @@ int flt_syntax_execute(t_configuration *fdc,t_configuration *fvc,const u_char *d
   /* }}} */
 
   /* {{{ highlight content */
-  if(flt_syntax_highlight(content,bco,parameters[1],str.content) != 0) {
+  if(flt_syntax_highlight(content,bco,lang,str.content) != 0) {
     str_chars_append(bco,"<code title=\"",13);
     str_chars_append(bco,parameters[1],strlen(parameters[1]));
     str_chars_append(bco,"\">",2);
