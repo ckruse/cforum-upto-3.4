@@ -1,6 +1,7 @@
 2004-11-02 Christian Kruse <ckruse@wwwtech.de>
 	* src/modules/flt_directives.c: Bugfix in @title handling for [pref:]
 	* src/modules/flt_deleted.c: Bugfix, used uninitialized variable
+	* cgi-shared/ForumUtils.pm: Bugfix in @title handling for [pref:]
 
 2004-10-29 Christian Kruse <ckruse@wwwtech.de>
 	* src/templates/fr/tpl_html4/forum_posting.html,
