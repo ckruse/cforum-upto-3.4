@@ -43,9 +43,7 @@
 #include <sys/ipc.h>
 #include <sys/shm.h>
 #include <sys/sem.h>
-#endif
 
-#ifdef CF_SHARED_MEM
 #include "semaphores.h"
 #endif
 

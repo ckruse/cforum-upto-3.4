@@ -1,3 +1,13 @@
+2004-09-29 Christian Kruse <ckruse@wwwtech.de>
+	* src/modules/flt_failsafe.c: Fixed several bugs, removed redundant code (now
+		the writer is a function)
+	* src/modules/flt_posting.c: Fixed a warning (several typcasts)
+	* src/archiver.c: Removed a semicolon (older gccs are really allergic against
+		it)
+	* src/Makefile.am: Added fo_recovery
+	* src/fo_recovery.c: Added recovery program
+	* src/fo_server.c: Removed a unneccessarry #endif #ifdef
+
 2004-09-28 Christian Kruse <ckruse@wwwtech.de>
 	* src/modules/flt_posting.c, cgi-shared/Plugins/PostingAssistant.pm,
 		cgi-shared/ForumUtils.pm: Changed to new directive syntax ([link:...@title=],

@@ -349,7 +349,7 @@ int flt_posting_directives(t_configuration *fdc,t_configuration *fvc,const u_cha
         len1      = strlen(title_alt);
       }
       else {
-        tmp1 = parameter;
+        tmp1 = (u_char *)parameter;
         len  = strlen(parameter);
       }
 
@@ -388,7 +388,7 @@ int flt_posting_directives(t_configuration *fdc,t_configuration *fvc,const u_cha
         len1      = strlen(title_alt);
       }
       else {
-        tmp1 = parameter;
+        tmp1 = (u_char *)parameter;
         len  = strlen(parameter);
       }
 
