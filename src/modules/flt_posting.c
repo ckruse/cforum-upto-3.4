@@ -293,8 +293,6 @@ int flt_posting_execute_filter(t_cf_hash *head,t_configuration *dc,t_configurati
           for(;level>msg->level;level--) tpl_cf_appendvar(tpl,"threadlist","</ul></li>",10);
         }
 
-        level = msg->level;
-
         if(msg->next && has_answers(msg)) { /* this message has at least one answer */
           tpl_cf_appendvar(tpl,"threadlist","<li>",4);
 

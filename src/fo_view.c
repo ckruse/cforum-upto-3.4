@@ -121,8 +121,6 @@ void print_thread_structure(t_cl_thread *thread,t_cf_hash *head) {
         }
       }
 
-      level = msg->level;
-
       if(msg->next && has_answers(msg)) { /* this message has at least one answer */
         printf("<li>");
         tpl_cf_parse(&msg->tpl);

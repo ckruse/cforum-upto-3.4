@@ -1,3 +1,7 @@
+2004-11-17 Christian Kruse <ckruse@wwwtech.de>
+	* src/fo_view.c, src/modules/flt_posting.c: Fixed bug in HTML generation of
+		the thread trees
+
 2004-11-09 Christian Kruse <ckruse@wwwtech.de>
 	* cgi-shared/Plugins/PostingAssistant.pm: Fixed a bug in link check behavior
 		(used old patterns, updated them now)
