@@ -5,6 +5,13 @@
 	* src/defines.h: Added THRDLST_WRITTEN_HANDLER
 	* src/cf-tid_index.c: Small bugfix in description
 	* src/archiver.c: Added THRDLST_WRITTEN_HANDLER
+	* conf/fo_view.conf.in: Added configuration directives for generating HTML
+		code (OpenThread, OpenPosting, OpenSubtree, CloseSubtree, ClosePosting,
+		CloseThread)
+	* src/fo_view.c, src/modules/flt_posting.c: Now the threadlist output is
+		configurable
+	* src/configparser.c: Added directives OpenThread, OpenPosting, OpenSubtree,
+		CloseSubtree, ClosePosting, CloseThread
 
 2005-02-14 Christian Kruse <ckruse@wwwtech.de>
 	* conf/patterns/php.pat: Added => operator

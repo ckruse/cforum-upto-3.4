@@ -68,9 +68,22 @@ void print_thread_structure(t_cl_thread *thread,t_cf_hash *head) {
 
   t_name_value *cs  = cfg_get_first_value(&fo_default_conf,forum_name,"ExternCharset"),
                *dnv = cfg_get_first_value(&fo_view_conf,forum_name,"DateFormatThreadList"),
-               *loc = cfg_get_first_value(&fo_default_conf,forum_name,"DateLocale");
+               *loc = cfg_get_first_value(&fo_default_conf,forum_name,"DateLocale"),
+               *ot  = cfg_get_first_value(&fo_view_conf,forum_name,"OpenThread"),
+               *op  = cfg_get_first_value(&fo_view_conf,forum_name,"OpenPosting"),
+               *ost = cfg_get_first_value(&fo_view_conf,forum_name,"OpenSubtree"),
+               *cst = cfg_get_first_value(&fo_view_conf,forum_name,"CloseSubtree"),
+               *cp  = cfg_get_first_value(&fo_view_conf,forum_name,"ClosePosting"),
+               *ct  = cfg_get_first_value(&fo_view_conf,forum_name,"CloseThread");
 
   int ShowInvisible = cf_hash_get(GlobalValues,"ShowInvisible",13) == NULL ? 0 : 1;
+
+  size_t ot_l  = strlen(ot->values[0]),
+         op_l  = strlen(op->values[0]),
+         ost_l = strlen(ost->values[0]),
+         cst_l = strlen(cst->values[0]),
+         cp_l  = strlen(cp->values[0]),
+         ct_l  = strlen(ct->values[0]);
 
   for(msg=thread->messages;msg;msg=msg->next) {
     if((msg->may_show && msg->invisible == 0) || ShowInvisible == 1) {
@@ -95,28 +108,43 @@ void print_thread_structure(t_cl_thread *thread,t_cf_hash *head) {
 
       if(msg->level < level) {
         for(;level>msg->level;level--) {
-          printf("</ul></li>");
+          fwrite(cst->values[0],1,cst_l,stdout);
+          fwrite(cp->values[0],1,cp_l,stdout);
         }
       }
 
       level = msg->level;
 
       if(msg->next && cf_msg_has_answers(msg)) { /* this message has at least one answer */
-        printf("<li>");
+        /* if first messages, write OpenThread (ot), else write OpenPosting (op) */
+        if(msg == thread->messages) fwrite(ot->values[0],1,ot_l,stdout);
+        else fwrite(op->values[0],1,op_l,stdout);
+
         cf_tpl_parse(&msg->tpl);
-        printf("<ul>");
+        fwrite(ost->values[0],1,ost_l,stdout);
 
         ++level;
       }
       else {
-        printf("<li>");
+        if(msg == thread->messages) fwrite(ot->values[0],1,ot_l,stdout);
+        else fwrite(op->values[0],1,op_l,stdout);
         cf_tpl_parse(&msg->tpl);
-        printf("</li>");
+        if(msg == thread->messages) fwrite(ct->values[0],1,ct_l,stdout);
+        else fwrite(cp->values[0],1,cp_l,stdout);
       }
     }
   }
 
-  for(;level>0;level--) printf("</ul></li>");
+  for(;level>1;level--) {
+    fwrite(cst->values[0],1,cst_l,stdout);
+    fwrite(cp->values[0],1,cp_l,stdout);
+  }
+
+  /* last closing is for closing the thread */
+  if(level == 1) {
+    fwrite(cst->values[0],1,cst_l,stdout);
+    fwrite(ct->values[0],1,ct_l,stdout);
+  }
 }
 /* }}} */
 

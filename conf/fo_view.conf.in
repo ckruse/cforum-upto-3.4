@@ -73,6 +73,12 @@ Forum FORUM1 {
  DateFormatThreadList   "%d. %m. %Y, %H:%M"
  DateFormatThreadView   "%d. %B %Y, %H:%M"
 
+ OpenThread "<li>"
+ OpenPosting "<li>"
+ OpenSubtree "<ul>"
+ CloseSubtree "</ul>"
+ ClosePosting "</li>"
+ CloseThread "</li>"
 }
 
 # eof

@@ -123,11 +123,23 @@ int flt_posting_execute_filter(t_cf_hash *head,t_configuration *dc,t_configurati
                *locale = cfg_get_first_value(dc,forum_name,"DateLocale"),
                *df = cfg_get_first_value(vc,forum_name,"DateFormatThreadView"),
                *dft = cfg_get_first_value(vc,forum_name,"DateFormatThreadList"),
+               *ot  = cfg_get_first_value(&fo_view_conf,forum_name,"OpenThread"),
+               *op  = cfg_get_first_value(&fo_view_conf,forum_name,"OpenPosting"),
+               *ost = cfg_get_first_value(&fo_view_conf,forum_name,"OpenSubtree"),
+               *cst = cfg_get_first_value(&fo_view_conf,forum_name,"CloseSubtree"),
+               *cp  = cfg_get_first_value(&fo_view_conf,forum_name,"ClosePosting"),
+               *ct  = cfg_get_first_value(&fo_view_conf,forum_name,"CloseThread"),
                *v;
 
   size_t len,
          qclen,
-         msgcntlen;
+         msgcntlen,
+         ot_l  = strlen(ot->values[0]),
+         op_l  = strlen(op->values[0]),
+         ost_l = strlen(ost->values[0]),
+         cst_l = strlen(cst->values[0]),
+         cp_l  = strlen(cp->values[0]),
+         ct_l  = strlen(ct->values[0]);
 
   t_string cite,content,threadlist;
 
@@ -296,26 +308,37 @@ int flt_posting_execute_filter(t_cf_hash *head,t_configuration *dc,t_configurati
         level = msg->level;
 
         if(msg->next && cf_msg_has_answers(msg)) { /* this message has at least one answer */
-          str_chars_append(&threadlist,"<li>",4);
+          if(msg == thread->messages) str_chars_append(&threadlist,ot->values[0],ot_l);
+          else str_chars_append(&threadlist,op->values[0],op_l);
 
           cf_tpl_parse_to_mem(&msg->tpl);
           str_str_append(&threadlist,&msg->tpl.parsed);
 
-          str_chars_append(&threadlist,"<ul>",4);
+          str_chars_append(&threadlist,ost->values[0],ost_l);
 
           level++;
         }
         else {
-          str_chars_append(&threadlist,"<li>",4);
+          if(msg == thread->messages) str_chars_append(&threadlist,ot->values[0],ot_l);
+          else str_chars_append(&threadlist,op->values[0],op_l);
 
           cf_tpl_parse_to_mem(&msg->tpl);
           str_str_append(&threadlist,&msg->tpl.parsed);
-          str_chars_append(&threadlist,"</li>",5);
+
+          if(msg == thread->messages) str_chars_append(&threadlist,ct->values[0],ct_l);
+          else str_chars_append(&threadlist,cp->values[0],cp_l);
         }
       }
     }
 
-    for(;level > 0 && level>slvl;level--) str_chars_append(&threadlist,"</ul></li>",10);
+    for(;level > 1 && level>slvl+1;level--) {
+      str_chars_append(&threadlist,cst->values[0],cst_l);
+      str_chars_append(&threadlist,cp->values[0],cp_l);
+    }
+    if(level == 1 || level == slvl+1) {
+      str_chars_append(&threadlist,cst->values[0],cst_l);
+      str_chars_append(&threadlist,ct->values[0],ct_l);
+    }
 
     cf_tpl_setvalue(tpl,"threadlist",TPL_VARIABLE_STRING,threadlist.content,threadlist.len);
     str_cleanup(&threadlist);

@@ -97,7 +97,6 @@ t_conf_opt default_options[] = {
 
 /* {{{ fo_view config options */
 t_conf_opt fo_view_options[] = {
-  { "<ForumBehavior>", NULL, 0, NULL },
   { "DoQuote",                    handle_command,   CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_UNIQUE|CFG_OPT_LOCAL, &fo_view_conf },
   { "QuotingChars",               handle_command,   CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_NEEDED|CFG_OPT_UNIQUE|CFG_OPT_LOCAL, &fo_view_conf },
   { "ShowThread",                 handle_command,   CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_UNIQUE|CFG_OPT_LOCAL, &fo_view_conf },
@@ -106,27 +105,26 @@ t_conf_opt fo_view_options[] = {
   { "ParamType",                  handle_command,   CFG_OPT_CONFIG|CFG_OPT_NEEDED|CFG_OPT_LOCAL,              &fo_view_conf },
   { "ShowSig",                    handle_command,   CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_UNIQUE|CFG_OPT_LOCAL, &fo_view_conf },
   { "MaxSigLines",                handle_command,   CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_UNIQUE|CFG_OPT_LOCAL, &fo_view_conf },
-  { "</ForumBehavior>", NULL, 0, NULL },
+  { "OpenThread",                 handle_command,   CFG_OPT_CONFIG|CFG_OPT_LOCAL|CFG_OPT_NEEDED,              &fo_view_conf },
+  { "OpenPosting",                handle_command,   CFG_OPT_CONFIG|CFG_OPT_LOCAL|CFG_OPT_NEEDED,              &fo_view_conf },
+  { "OpenSubtree",                handle_command,   CFG_OPT_CONFIG|CFG_OPT_LOCAL|CFG_OPT_NEEDED,              &fo_view_conf },
+  { "CloseSubtree",               handle_command,   CFG_OPT_CONFIG|CFG_OPT_LOCAL|CFG_OPT_NEEDED,              &fo_view_conf },
+  { "ClosePosting",               handle_command,   CFG_OPT_CONFIG|CFG_OPT_LOCAL|CFG_OPT_NEEDED,              &fo_view_conf },
+  { "CloseThread",                handle_command,   CFG_OPT_CONFIG|CFG_OPT_LOCAL|CFG_OPT_NEEDED,              &fo_view_conf },
 
-  { "<Templates>", NULL, 0, NULL },
   { "TemplateForumBegin",         handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_view_conf },
   { "TemplateForumEnd",           handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_view_conf },
   { "TemplateForumThread",        handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_view_conf },
   { "TemplatePosting",            handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_view_conf },
-  { "</Templates>", NULL, 0, NULL },
 
-  { "<DateConfig>", NULL, 0, NULL },
   { "DateFormatThreadList",       handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_view_conf },
   { "DateFormatThreadView",       handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_view_conf },
   { "DateFormatLoadTime",         handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_view_conf },
-  { "</DateConfig>", NULL, 0, NULL},
 
-  { "<Form>", NULL, 0, NULL },
   { "Name",                       handle_command,   CFG_OPT_USER|CFG_OPT_UNIQUE|CFG_OPT_GLOBAL, &fo_view_conf },
   { "EMail",                      handle_command,   CFG_OPT_USER|CFG_OPT_UNIQUE|CFG_OPT_GLOBAL, &fo_view_conf },
   { "HomepageUrl",                handle_command,   CFG_OPT_USER|CFG_OPT_UNIQUE|CFG_OPT_GLOBAL, &fo_view_conf },
   { "ImageUrl",                   handle_command,   CFG_OPT_USER|CFG_OPT_UNIQUE|CFG_OPT_GLOBAL, &fo_view_conf },
-  { "</Form>", NULL, 0, NULL },
 
   { NULL, NULL, 0, NULL }
 };
