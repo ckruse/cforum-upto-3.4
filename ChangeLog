@@ -1,4 +1,7 @@
 2004-08-13 Christian Kruse <ckruse@wwwtech.de>
+	* CREATED 2.1 BRANCH
+
+2004-08-13 Christian Kruse <ckruse@wwwtech.de>
 	* src/fo_view.c: Changed behavior of the fo_view program: now it sets the
 		standard variables itself. It provides »ReadMode« now.
 	* src/clientlib.[ch]: Added parent_message() function
@@ -24,7 +27,7 @@
 		src/perl/CForum-Configparser/Makefile.PL.in,
 		src/perl/CForum-Clientlib/Makefile.PL.in: Changed to new placeholders
 	* cgi-shared/ForumUtils.pm, cgi-bin/fo_post_old.in: Changed to
-		CForum::Clientlib (much better for I18N)
+		CForum::Clientlib (much better for I18N), fixed a bug (called wrong routine)
 
 2004-08-12 Christian Kruse <ckruse@wwwtech.de>
 	* src/modules/flt_tipoftheday.c: Useless changes, thought I had to fix a bug
