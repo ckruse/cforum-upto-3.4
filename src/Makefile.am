@@ -9,7 +9,8 @@ bin_PROGRAMS= \
 	cf-recovery \
 	fo_post \
 	fo_arcview \
-	fo_threadlookup
+	fo_threadlookup \
+	fo_feeds
 
 pkglib_LTLIBRARIES= \
 	libcfcharconvert.la \
@@ -93,6 +94,10 @@ fo_vote_LDFLAGS=-export-dynamic
 fo_post_SOURCES=fo_post.c
 fo_post_LDADD=libcfconfigparser.la libcftemplate.la libcfcharconvert.la libcfreadline.la libcfutils.la libcfhashlib.la libcfclientlib.la libcfcgi.la libcfhtml.la libcfvalidate.la
 fo_post_LDFLAGS=-export-dynamic
+
+fo_feeds_SOURCES=fo_feeds.c
+fo_feeds_LDADD=libcfconfigparser.la libcftemplate.la libcfcharconvert.la libcfreadline.la libcfutils.la libcfhashlib.la libcfclientlib.la libcfcgi.la libcfhtml.la
+fo_feeds_LDFLAGS=-export-dynamic
 
 fo_view_SOURCES=fo_view.c
 fo_view_LDADD=libcfconfigparser.la libcftemplate.la libcfcharconvert.la libcfreadline.la libcfutils.la libcfhashlib.la libcfclientlib.la libcfcgi.la libcfhtml.la

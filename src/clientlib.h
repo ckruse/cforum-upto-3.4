@@ -23,7 +23,7 @@
 #define CF_MODE_THREADVIEW (1<<1)
 #define CF_MODE_PRE        (1<<2)
 #define CF_MODE_POST       (1<<3)
-
+#define CF_MODE_XML        (1<<4)
 
 /**
  * module api function.

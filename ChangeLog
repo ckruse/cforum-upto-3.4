@@ -1,5 +1,14 @@
 2005-02-22 Christian Kruse <ckruse@wwwtech.de>
 	* src/modules/flt_mailonpost.c: Fixed bug in checkbox, now it should work
+	* conf/fo_feeds.conf.in: Added configuration file for forum feeds program
+	* conf/Makefile.am, configure.in: Added fo_feeds.conf.in
+	* src/fo_view.c: Fixed some bugs in http status
+	* src/clientlib.h: Added CF_MODE_XML
+	* src/communication.c: Small bugfix in str_char_set() calls
+	* src/fo_feeds.c: Added feed program, supports Atom 0.3 and RSS 2.0 for now
+	* src/configparser.c, src/configparser.h: Added fo_feed_conf configuration
+		variables
+	* src/Makefile.am: Added fo_feed program
 
 2005-02-21 Christian Kruse <ckruse@wwwtech.de>
 	* conf/fo_usermanagement.conf.in, conf/modules.de.xml, src/fo_view.c,

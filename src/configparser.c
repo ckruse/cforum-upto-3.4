@@ -54,6 +54,7 @@ t_configuration fo_view_conf;
 t_configuration fo_arcview_conf;
 t_configuration fo_post_conf;
 t_configuration fo_vote_conf;
+t_configuration fo_feeds_conf;
 
 t_array Modules[MOD_MAX+1];
 
@@ -200,6 +201,23 @@ t_conf_opt fo_vote_options[] = {
   { "VotingDatabase",  handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL,               &fo_vote_conf },
   { "Send204",         handle_command,   CFG_OPT_UNIQUE|CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL,  &fo_vote_conf },
   { "OkTemplate",      handle_command,   CFG_OPT_CONFIG|CFG_OPT_NEEDED|CFG_OPT_LOCAL,               &fo_vote_conf },
+
+  { NULL, NULL, 0, NULL }
+};
+/* }}} */
+
+/* {{{ fo_feeds_options */
+t_conf_opt fo_feeds_options[] = {
+  { "DateLocaleEn",         handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_feeds_conf },
+  { "AtomTitle",            handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_feeds_conf },
+  { "AtomTagline",          handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_feeds_conf },
+  { "RSSTitle",             handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_feeds_conf },
+  { "RSSDescription",       handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_feeds_conf },
+  { "RSSDescriptionThread", handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_feeds_conf },
+  { "RSSCopyright",         handle_command,   CFG_OPT_CONFIG|CFG_OPT_LOCAL,                &fo_feeds_conf },
+  { "FeedLang",             handle_command,   CFG_OPT_CONFIG|CFG_OPT_LOCAL,                &fo_feeds_conf },
+  { "RSSWebMaster",         handle_command,   CFG_OPT_CONFIG|CFG_OPT_LOCAL,                &fo_feeds_conf },
+  { "RSSCategory",          handle_command,   CFG_OPT_CONFIG|CFG_OPT_LOCAL,                &fo_feeds_conf },
 
   { NULL, NULL, 0, NULL }
 };
@@ -986,6 +1004,7 @@ void cfg_init(void) {
   cf_tree_init(&fo_arcview_conf.global_directives,cfg_compare,destroy_directive_list);
   cf_tree_init(&fo_post_conf.global_directives,cfg_compare,destroy_directive_list);
   cf_tree_init(&fo_vote_conf.global_directives,cfg_compare,destroy_directive_list);
+  cf_tree_init(&fo_feeds_conf.global_directives,cfg_compare,destroy_directive_list);
 
   cf_list_init(&fo_default_conf.forums);
   cf_list_init(&fo_server_conf.forums);
@@ -993,6 +1012,7 @@ void cfg_init(void) {
   cf_list_init(&fo_arcview_conf.forums);
   cf_list_init(&fo_post_conf.forums);
   cf_list_init(&fo_vote_conf.forums);
+  cf_list_init(&fo_feeds_conf.forums);
 }
 /* }}} */
 
@@ -1004,6 +1024,7 @@ void cfg_destroy(void) {
   cfg_cleanup(&fo_arcview_conf);
   cfg_cleanup(&fo_post_conf);
   cfg_cleanup(&fo_vote_conf);
+  cfg_cleanup(&fo_feeds_conf);
 }
 /* }}} */
 

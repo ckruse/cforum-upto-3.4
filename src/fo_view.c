@@ -196,6 +196,7 @@ void show_posting(t_cf_hash *head,void *shm_ptr,u_int64_t tid,u_int64_t mid)
   #endif
 
   if(!fo_thread_tpl || !fo_posting_tpl) {
+    printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
     cf_error_message("E_TPL_NOT_FOUND",NULL);
     return;
   }
@@ -726,13 +727,13 @@ int main(int argc,char *argv[],char *env[]) {
     /* {{{ now, we need a socket connection/shared mem pointer */
     #ifndef CF_SHARED_MEM
     if((sock = cf_socket_setup()) < 0) {
-      printf("Content-Type: text/html; charset=%s\015\012\015\012",cs?cs->values[0]?cs->values[0]:(u_char *)"UTF-8":(u_char *)"UTF-8");
+      printf("Content-Type: text/html; charset=%s\015\012Status: 500 Internal Server Error\015\012\015\012",cs?cs->values[0]?cs->values[0]:(u_char *)"UTF-8":(u_char *)"UTF-8");
       cf_error_message("E_NO_SOCK",NULL,strerror(errno));
       exit(0);
     }
     #else
     if((sock = cf_get_shm_ptr()) == NULL) {
-      printf("Content-Type: text/html; charset=%s\015\012\015\012",cs?cs->values[0]?cs->values[0]:(u_char *)"UTF-8":(u_char *)"UTF-8");
+      printf("Content-Type: text/html; charset=%s\015\012Status: 500 Internal Server Error\015\012\015\012",cs?cs->values[0]?cs->values[0]:(u_char *)"UTF-8":(u_char *)"UTF-8");
       cf_error_message("E_NO_CONN",NULL,strerror(errno));
       exit(0);
     }

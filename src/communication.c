@@ -317,7 +317,7 @@ void *cf_get_next_thread_through_shm(void *shm_ptr,t_cl_thread *thr,const u_char
 
     /* email */
     if(val) {
-      str_char_set(&thr->last->email,ptr,val);
+      str_char_set(&thr->last->email,ptr,val-1);
       ptr += val;
     }
     /* }}} */
@@ -329,7 +329,7 @@ void *cf_get_next_thread_through_shm(void *shm_ptr,t_cl_thread *thr,const u_char
 
     /* homepage */
     if(val) {
-      str_char_set(&thr->last->hp,ptr,val);
+      str_char_set(&thr->last->hp,ptr,val-1);
       ptr += val;
     }
     /* }}} */
@@ -341,7 +341,7 @@ void *cf_get_next_thread_through_shm(void *shm_ptr,t_cl_thread *thr,const u_char
 
     /* image */
     if(val) {
-      str_char_set(&thr->last->img,ptr,val);
+      str_char_set(&thr->last->img,ptr,val-1);
       ptr += val;
     }
     /* }}} */

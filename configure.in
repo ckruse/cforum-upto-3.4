@@ -276,6 +276,7 @@ conf/fo_server.conf
 conf/fo_vote.conf
 conf/fo_usermanagement.conf
 conf/fo_xmlrpc.conf
+conf/fo_feeds.conf
 Doxyfile
 )
 
