@@ -23,6 +23,7 @@
 	* cgi-shared/config/fo_userconf.conf.in: Added templates
 	* cgi-bin/fo_usermanagement.in: Bugfixes
 	* cgi-bin/fo_userconf.in: Bugfixes
+	* cgi-shared/Plugins/Management/SQL.pm: Moved to 3.0 API
 
 2005-01-15 Christian Kruse <ckruse@wwwtech.de>
 	* src/modules/flt_directives.c: Bugfix for [ref:], now it supports @title=

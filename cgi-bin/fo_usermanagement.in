@@ -64,7 +64,7 @@ sub show_register_form {
 
   fatal($cgi,$fo_default_conf,$user_config,get_error($fo_default_conf,'TPL_NOT_FOUND'),$fatal_tpl) unless defined $reg_tpl;
   my $tpl = new CForum::Template(get_template($fo_default_conf,$user_config,$reg_tpl));
-  fatal($cgi,$fo_default_conf,$user_config,get_error($fo_default_conf,'TPL_NOT_FOUND'),$fatal_tpl) unless define $tpl;
+  fatal($cgi,$fo_default_conf,$user_config,get_error($fo_default_conf,'TPL_NOT_FOUND'),$fatal_tpl) unless defined $tpl;
 
   $tpl->setVar('forumbase',recode($fo_default_conf,get_conf_val($fo_default_conf,$Forum,'BaseURL')));
   $tpl->setVar('script',recode($fo_default_conf,get_conf_val($fo_default_conf,$Forum,'UserRegister')));
@@ -137,9 +137,9 @@ my $fo_usermanagement_conf = read_configuration($fnames[1]) or die "error: $!";
 my $user_config            = {};
 
 # {{{ load plugins and authenticate
-foreach(@{$fo_usermanagement_conf->{AddModule}}) {
+foreach(@{$fo_usermanagement_conf->{global}->{AddModule}}) {
   eval "use $_->[0];";
-  die $@ if $@;
+  fatal($cgi,$fo_default_conf,$user_config,sprintf(get_error($fo_default_conf,'PLUGIN_ERR'),"$@"),get_conf_val($fo_userconf_conf,$Forum,'FatalTemplate')) if $@;
 }
 
 foreach(@{$Plugins->{auth}}) {
