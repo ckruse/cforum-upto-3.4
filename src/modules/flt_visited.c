@@ -269,9 +269,7 @@ int flt_visited_mark_visited(t_cf_hash *head,t_configuration *dc,t_configuration
       memset(&data,0,sizeof(data));
     }
 
-    if(Cfg.db->get(Cfg.db,NULL,&key,&data,0) == 0) {
-      cf_tpl_setvalue(&msg->tpl,"visited",TPL_VARIABLE_STRING,"1",1);
-    }
+    if(Cfg.db->get(Cfg.db,NULL,&key,&data,0) == 0) cf_tpl_setvalue(&msg->tpl,"visited",TPL_VARIABLE_STRING,"1",1);
 
     return FLT_OK;
   }
@@ -282,7 +280,7 @@ int flt_visited_mark_visited(t_cf_hash *head,t_configuration *dc,t_configuration
 
 /* {{{ flt_visited_mark_own */
 int flt_visited_mark_own(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_message *msg,u_int64_t tid) {
-  return flt_visited_mark_visited(head,dc,vc,msg,tid,0);
+  return flt_visited_mark_visited_api(&msg->mid) != NULL ? FLT_OK : FLT_DECLINE;
 }
 /* }}} */
 

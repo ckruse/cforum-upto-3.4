@@ -17,6 +17,8 @@
 		absolute URI if necessary and removes double slashes
 	* src/modules/flt_xmlarc.c, src/fo_arcview.c: Changed redirection to
 		redirect_nice_uri()
+	* src/modules/flt_visited.c: Fixed really nasty bug in
+		flt_visited_mark_own()
 
 2005-02-08 Christian Kruse <ckruse@wwwtech.de>
 	* configure.in: Added cf-cleanup.pl

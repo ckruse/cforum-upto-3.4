@@ -21,4 +21,10 @@ install:
 	cd CForum-Template && make install
 	cd CForum-Validator && make install
 
+clean:
+
+distclean:
+
+maintainer-clean:
+
 # eof
