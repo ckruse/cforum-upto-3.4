@@ -199,10 +199,11 @@ void generate_thread_output(t_arc_message *msg,t_string *threads,t_string *threa
   u_char *cnt = NULL;
   size_t cntlen;
   t_mod_api msg_to_html = cf_get_mod_api_ent("msg_to_html");
-  void *ptr = fo_alloc(NULL,1,sizeof(const u_char *) + 2 * sizeof(t_string *),FO_ALLOC_MALLOC);
+  void *ptr = fo_alloc(NULL,1,2 * sizeof(const u_char *) + 2 * sizeof(t_string *),FO_ALLOC_MALLOC);
   int printed = 0;
   u_char *date;
   t_string strbuffer;
+  t_name_value *vs = cfg_get_first_value(&fo_default_conf,"ArchivePostingURL");
 
   str_init(&strbuffer);
 
@@ -260,6 +261,7 @@ void generate_thread_output(t_arc_message *msg,t_string *threads,t_string *threa
   memcpy(ptr,&cnt,sizeof(const u_char *));
   memcpy(ptr+sizeof(const u_char *),&str,sizeof(str));
   memset(ptr+sizeof(const u_char *)+sizeof(str),0,sizeof(str));
+  memcpy(ptr+sizeof(const u_char *)+sizeof(str)+sizeof(str),&vs->values[0],sizeof(const u_char *));
 
   msg_to_html(ptr);
 

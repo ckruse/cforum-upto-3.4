@@ -69,7 +69,10 @@ t_conf_opt default_options[] = {
   { "SocketName",               handle_command,   &fo_default_conf },
   { "BaseURL",                  handle_command,   &fo_default_conf },
   { "UBaseURL",                 handle_command,   &fo_default_conf },
+  { "PostingURL",               handle_command,   &fo_default_conf },
+  { "UPostingURL",              handle_command,   &fo_default_conf },
   { "ArchiveURL",               handle_command,   &fo_default_conf },
+  { "ArchivePostingURL",        handle_command,   &fo_default_conf },
   { "ErrorTemplate",            handle_command,   &fo_default_conf },
   { "ErrorMessages",            handle_command,   &fo_default_conf },
   { "PostScript",               handle_command,   &fo_default_conf },
@@ -105,6 +108,7 @@ t_conf_opt fo_view_options[] = {
   { "<ForumBehavior>",            NULL,             NULL          },
   { "ShowFlags",                  handle_command,   &fo_view_conf },
   { "ReadMode",                   handle_command,   &fo_view_conf },
+  { "ParamType",                  handle_command,   &fo_view_conf },
   { "</ForumBehavior>",           NULL,             NULL          },
 
   { "<Templates>",                NULL,             NULL          },

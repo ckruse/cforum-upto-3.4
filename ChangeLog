@@ -1,3 +1,20 @@
+2004-07-15 Christian Kruse <ckruse@wwwtech.de>
+	* src/clientlib.c: Changed behavior of get_link() (now it's much more flexible)
+	* src/fo_view.c, src/flt_posting.c: adjusted get_link() calls to new behavior,
+		added link parameter in msg_to_html API entry, added handling for ParamType,
+		added 404 handler hook
+	* src/fo_arcview.c: Fixed bug for [pref:] links
+	* src/configparser.c: Added PostingURL, UPostingURL, ArchivePostingURL and
+		ParamType
+	* src/Makefile.am: Fixed link (libcfhashlib.la has to be defined before
+		libcfutils.la)
+	* src/datautils.c: Bugfix in str_to_u_int64()
+	* src/cfcgi.[ch]: Added a function to parse a PATH_INFO string as name-value
+		pairs
+	* src/modules/Makefile.am: Added flt_handel404
+	* src/modules/flt_handle404.c: Added handler for 404 cases (thread or message
+		could not be found)
+
 2004-07-13 Christian Kruse <ckruse@wwwtech.de>
 	* src/validate.c: Added (optional) main program
 

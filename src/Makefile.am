@@ -1,5 +1,6 @@
 
-SUBDIRS=. modules templates
+SUBDIRS=. modules
+#templates
 
 bin_PROGRAMS= \
   fo_view \
@@ -12,10 +13,10 @@ bin_PROGRAMS= \
 
 pkglib_LTLIBRARIES= \
   libcfcharconvert.la \
+  libcfhashlib.la \
   libcfutils.la \
   libconfigparser.la \
   libcftemplate.la \
-  libcfhashlib.la \
   libcfcgi.la \
   libserverlib.la \
   libcfclientlib.la \

@@ -36,7 +36,7 @@
 u_int64_t str_to_u_int64(register const u_char *ptr) {
   u_int64_t retval = 0;
 
-  for(;*ptr;++ptr) {
+  for(;*ptr && isdigit(*ptr);++ptr) {
     retval = retval * 10 + *ptr - '0';
   }
 

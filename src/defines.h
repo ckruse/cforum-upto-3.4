@@ -43,8 +43,9 @@
 #define ARCHIVE_HANDLER         8 /**< Handler hook number. Look in the programmers manual section for more information. */
 #define NEW_POST_HANDLER        9 /**< Handler hook number. Look in the programmers man... argh, fuck off, you know what I mean */
 #define AFTER_POST_HANDLER     10 /**< Handler hook number. .... */
+#define HANDLE_404_HANDLER     11 /**< Handler hook .... */
 
-#define MOD_MAX                10 /**< The maximum hook value. */
+#define MOD_MAX                11 /**< The maximum hook value. */
 
 #define FLT_OK       0 /**< Returned by a plugin function if everything as ok. */
 #define FLT_DECLINE -1 /**< Returned by a plugin function if this request is not for the plugin. */

@@ -557,19 +557,37 @@ void cleanup_struct(t_cl_thread *thr) {
  * this function creates the URL string
  *
  */
-u_char *get_link(u_int64_t tid,u_int64_t mid) {
-  t_name_value *vs = cfg_get_first_value(&fo_default_conf,cf_hash_get(GlobalValues,"UserName",8) ? "UBaseURL" : "BaseURL");
+u_char *get_link(const u_char *link,u_int64_t tid,u_int64_t mid) {
+  t_name_value *vs;
+  register const u_char *ptr;
   t_string buff;
 
   str_init(&buff);
 
-  if(vs) {
-    str_chars_append(&buff,vs->values[0],strlen(vs->values[0]));
-    str_chars_append(&buff,"/t",2);
-    u_int64_to_str(&buff,tid);
-    str_chars_append(&buff,"/m",2);
-    u_int64_to_str(&buff,mid);
-    str_char_append(&buff,'/');
+  if(link == NULL)  {
+    vs = cfg_get_first_value(&fo_default_conf,cf_hash_get(GlobalValues,"UserName",8) ? "UPostingURL" : "PostingURL");
+    if(vs) link = vs->values[0];
+  }
+
+  if(link) {
+    for(ptr=link;*ptr;++ptr) {
+      switch(*ptr) {
+        case '%':
+          if(*(ptr+1) == 't') {
+            u_int64_to_str(&buff,tid);
+            ptr += 1;
+          }
+          else if(*(ptr+1) == 'm') {
+            u_int64_to_str(&buff,mid);
+            ptr += 1;
+          }
+          else                     str_char_append(&buff,*ptr);
+
+          break;
+        default:
+          str_char_append(&buff,*ptr);
+      }
+    }
   }
 
   return buff.content;
@@ -790,17 +808,20 @@ int cf_get_next_thread_through_sock(int sock,rline_t *tsd,t_cl_thread *thr,const
         }
       }
       else if(cf_strncmp(line,"Author:",7) == 0) {
-        thr->last->author = strdup(&line[7]);
+        thr->last->author     = strdup(&line[7]);
+        thr->last->author_len = tsd->rl_len - 8;
       }
       else if(cf_strncmp(line,"Visible:",8) == 0) {
         thr->last->invisible = line[8] == '0';
         if(thr->last->invisible) thr->msg_len--;
       }
       else if(cf_strncmp(line,"Subject:",8) == 0) {
-        thr->last->subject = strdup(&line[8]);
+        thr->last->subject     = strdup(&line[8]);
+        thr->last->subject_len = tsd->rl_len - 9;
       }
       else if(cf_strncmp(line,"Category:",9) == 0) {
-        thr->last->category = strdup(&line[9]);
+        thr->last->category     = strdup(&line[9]);
+        thr->last->category_len = tsd->rl_len - 10;
       }
       else if(cf_strncmp(line,"Date:",5) == 0) {
         thr->last->date = strtoul(&line[5],NULL,10);
@@ -809,16 +830,20 @@ int cf_get_next_thread_through_sock(int sock,rline_t *tsd,t_cl_thread *thr,const
         thr->last->level = atoi(&line[6]);
       }
       else if(cf_strncmp(line,"Content:",8) == 0) {
-        thr->last->content = strdup(&line[8]);
+        thr->last->content     = strdup(&line[8]);
+        thr->last->content_len = tsd->rl_len - 9;
       }
       else if(cf_strncmp(line,"Homepage:",9) == 0) {
-        thr->last->hp = strdup(&line[9]);
+        thr->last->hp     = strdup(&line[9]);
+        thr->last->hp_len = tsd->rl_len - 10;
       }
       else if(cf_strncmp(line,"Image:",6) == 0) {
-        thr->last->img = strdup(&line[6]);
+        thr->last->img     = strdup(&line[6]);
+        thr->last->img_len = tsd->rl_len - 7;
       }
       else if(cf_strncmp(line,"EMail:",6) == 0) {
-        thr->last->email = strdup(&line[6]);
+        thr->last->email     = strdup(&line[6]);
+        thr->last->email_len = tsd->rl_len - 7;
       }
       else if(cf_strncmp(line,"END",3) == 0) {
         shallRun = 0;

@@ -26,6 +26,7 @@
  AddFilter "@libdir@/cforum/flt_admin.so" "flt_admin"
  AddFilter "@libdir@/cforum/flt_link.so" "flt_link"
  AddFilter "@libdir@/cforum/flt_threadreturnanchor.so" "flt_threadreturnanchor"
+ AddFilter "@libdir@/cforum/flt_handle404.so" "flt_handle404"
 </Filters>
 
 <ForumBehavior>
@@ -38,6 +39,8 @@
  ShowForumAsFrameset     "no"
  ReadMode                "normal" # normal, table
 # BaseTarget              "view"
+
+ ParamType               "Q" # Q (query string) or P (path info)
 
  SendLastModified        "yes"
  SendExpires             "1M"

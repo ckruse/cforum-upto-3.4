@@ -53,6 +53,25 @@ int ignre(t_configfile *cf,u_char *name,u_char **args,int argnum) {
   return 0;
 }
 
+/* {{{ run_404_filters */
+int run_404_filters(t_cf_hash *head,u_int64_t tid,u_int64_t mid) {
+  int ret = FLT_OK;
+  t_handler_config *handler;
+  size_t i;
+  t_filter_404_handler fkt;
+
+  if(Modules[HANDLE_404_HANDLER].elements) {
+    for(i=0;i<Modules[HANDLE_404_HANDLER].elements && (ret == FLT_OK || ret == FLT_DECLINE);i++) {
+      handler = array_element_at(&Modules[HANDLE_404_HANDLER],i);
+      fkt     = (t_filter_404_handler)handler->func;
+      ret     = fkt(head,&fo_default_conf,&fo_view_conf,tid,mid);
+    }
+  }
+
+  return ret;
+}
+/* }}} */
+
 /* {{{ print_thread_structure
  * Returns: nothing
  * Parameters:
@@ -77,7 +96,7 @@ void print_thread_structure(t_cl_thread *thread,t_cf_hash *head) {
       printed = 1;
 
       date = get_time(&fo_view_conf,"DateFormatThreadList",&len,&msg->date);
-      link = get_link(thread->tid,msg->mid);
+      link = get_link(NULL,thread->tid,msg->mid);
 
       cf_set_variable(&msg->tpl,cs,"author",msg->author,strlen(msg->author),1);
       cf_set_variable(&msg->tpl,cs,"title",msg->subject,strlen(msg->subject),1);
@@ -155,6 +174,7 @@ void send_posting(t_cf_hash *head,void *shm_ptr,u_int64_t tid,u_int64_t mid) {
   size_t len;
   char buff[128];
   int del = cf_hash_get(GlobalValues,"ShowInvisible",13) == NULL ? CF_KILL_DELETED : CF_KEEP_DELETED;
+  t_name_value *cs = cfg_get_first_value(&fo_default_conf,"ExternCharset");
 
   #ifndef CF_SHARED_MEM
   memset(&tsd,0,sizeof(tsd));
@@ -178,7 +198,16 @@ void send_posting(t_cf_hash *head,void *shm_ptr,u_int64_t tid,u_int64_t mid) {
   #else
   if(cf_get_message_through_shm(shm_ptr,&thread,fo_thread_tplname,tid,mid,del) == -1) {
   #endif
-    str_error_message(ErrorString,NULL,strlen(ErrorString));
+    if(cf_strcmp(ErrorString,"E_FO_404") == 0) {
+      if(run_404_filters(head,tid,mid) != FLT_EXIT) {
+        printf("Status: 404 Not Found\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs?cs->values[0]?cs->values[0]:(u_char *)"UTF-8":(u_char *)"UTF-8");
+        str_error_message(ErrorString,NULL,strlen(ErrorString));
+      }
+    }
+    else {
+      printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs?cs->values[0]?cs->values[0]:(u_char *)"UTF-8":(u_char *)"UTF-8");
+      str_error_message(ErrorString,NULL,strlen(ErrorString));
+    }
     return;
   }
 
@@ -187,6 +216,8 @@ void send_posting(t_cf_hash *head,void *shm_ptr,u_int64_t tid,u_int64_t mid) {
 
   len = snprintf(buff,128,"%d",thread.msg_len-1);
   tpl_cf_setvar(&thread.messages->tpl,"answers",buff,len,0);
+
+  printf("Content-Type: text/html; charset=%s\015\012\015\012",cs?cs->values[0]?cs->values[0]:(u_char *)"UTF-8":(u_char *)"UTF-8");
 
   if(handle_posting_filters(head,&thread,&tpl,&fo_view_conf) != FLT_EXIT) {
     tpl_cf_parse(&tpl);
@@ -240,6 +271,7 @@ void send_threadlist(void *shm_ptr,t_cf_hash *head) {
   #endif
 
   if(!fo_begin_tpl || !fo_end_tpl || !fo_thread_tpl) {
+    printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs?cs->values[0]?cs->values[0]:(u_char *)"UTF-8":(u_char *)"UTF-8");
     str_error_message("E_TPL_NOT_FOUND",NULL,15);
     return;
   }
@@ -268,6 +300,8 @@ void send_threadlist(void *shm_ptr,t_cf_hash *head) {
    */
   #ifndef CF_SHARED_MEM
   if(!line || cf_strcmp(line,"200 Ok\n")) {
+    printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs?cs->values[0]?cs->values[0]:(u_char *)"UTF-8":(u_char *)"UTF-8");
+
     if(line) {
       ret = snprintf(buff,128,"E_FO_%d",atoi(line));
       str_error_message(buff,NULL,ret);
@@ -279,6 +313,7 @@ void send_threadlist(void *shm_ptr,t_cf_hash *head) {
   }
   #else
   if(!ptr) {
+    printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs?cs->values[0]?cs->values[0]:(u_char *)"UTF-8":(u_char *)"UTF-8");
     str_error_message("E_NO_CONN",NULL,9,strerror(errno));
   }
   #endif
@@ -292,10 +327,14 @@ void send_threadlist(void *shm_ptr,t_cf_hash *head) {
     ltime = get_time(&fo_view_conf,"DateFormatLoadTime",&len,&tm);
 
     if(tpl_cf_init(&tpl_begin,fo_begin_tplname) != 0) {
+      printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs?cs->values[0]?cs->values[0]:(u_char *)"UTF-8":(u_char *)"UTF-8");
+
       str_error_message("E_TPL_NOT_FOUND",NULL,15);
       return;
     }
     if(tpl_cf_init(&tpl_end,fo_end_tplname) != 0) {
+      printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs?cs->values[0]?cs->values[0]:(u_char *)"UTF-8":(u_char *)"UTF-8");
+
       str_error_message("E_TPL_NOT_FOUND",NULL,15);
       return;
     }
@@ -324,6 +363,9 @@ void send_threadlist(void *shm_ptr,t_cf_hash *head) {
       cf_set_variable(&tpl_begin,cs,"LOAD_TIME",ltime,len,1);
       free(ltime);
     }
+
+    /* ok, seems to be all right, send headers */
+    printf("Content-Type: text/html; charset=%s\015\012\015\012",cs?cs->values[0]?cs->values[0]:(u_char *)"UTF-8":(u_char *)"UTF-8");
 
     tpl_cf_parse(&tpl_begin);
     tpl_cf_finish(&tpl_begin);
@@ -430,6 +472,7 @@ int main(int argc,char *argv[],char *env[]) {
   t_name_value *cs = NULL;
   u_char *UserName;
   u_char *fname;
+  t_name_value *pt;
 
   /* set signal handler for SIGSEGV (for error reporting) */
   signal(SIGSEGV,sighandler);
@@ -440,8 +483,6 @@ int main(int argc,char *argv[],char *env[]) {
   if((cfgfiles = get_conf_file(wanted,2)) == NULL) {
     return EXIT_FAILURE;
   }
-
-  head = cf_cgi_new();
 
   cf_init();
   init_modules();
@@ -474,6 +515,11 @@ int main(int argc,char *argv[],char *env[]) {
 
     return EXIT_FAILURE;
   }
+
+  pt = cfg_get_first_value(&fo_view_conf,"ParamType");
+  if(*pt->values[0] == 'Q') head = cf_cgi_new();
+  else                      head = cf_cgi_parse_path_info_nv();
+
 
   /* first action: authorization modules */
   if(Modules[AUTH_HANDLER].elements) {
@@ -556,7 +602,6 @@ int main(int argc,char *argv[],char *env[]) {
     }
 
     if(ret != FLT_EXIT) {
-      printf("Content-Type: text/html; charset=%s\015\012\015\012",cs?cs->values[0]?cs->values[0]:(u_char *)"UTF-8":(u_char *)"UTF-8");
       /* after that, look for m= and t= */
       if(head) {
         t = cf_cgi_get(head,"t");

@@ -128,6 +128,18 @@ typedef int (*t_filter_list)(t_cf_hash *,t_configuration *,t_configuration *,t_c
 typedef int (*t_filter_list_posting)(t_cf_hash *,t_configuration *,t_configuration *,t_message *,u_int64_t,int);
 
 /**
+ * This function prototype pointer is used for the 404_HANDLER plugins. It will be called if a thread or
+ * a message could not be found
+ * \param hash The CGI object hash
+ * \param dc The default configuration object
+ * \param vc The fo_view configuration object
+ * \param tid The thread id
+ * \param mid The message id
+ * \return FLT_OK, FLT_DECLINE or FLT_EXIT. FLT_EXIT means, do not print an error message
+ */
+typedef int (*t_filter_404_handler)(t_cf_hash *,t_configuration *,t_configuration *,u_int64_t,u_int64_t);
+
+/**
  * This function prototype pointer is used for the POSTING_HANDLER plugins. It will be called when a user requests
  * a message of a thread.
  * \param hash The CGI object hash
@@ -250,11 +262,12 @@ u_char *get_time(t_configuration *cfg,const u_char *symbol,int *len,time_t *date
 
 /**
  * This function generates a link to a thread
+ * \param link The link string (if NULL, PostingURL or UPostingURL will be used)
  * \param tid The thread id
  * \param mid The message id
  * \return Returns NULL on failure or the link string on success
  */
-u_char *get_link(u_int64_t tid,u_int64_t mid);
+u_char *get_link(const u_char *link,u_int64_t tid,u_int64_t mid);
 
 /**
  * This function checks if a message has answers

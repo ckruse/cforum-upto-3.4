@@ -19,8 +19,14 @@
  ErrorTemplate "@libdir@/cforum/%s_errortpl.so"
  ErrorMessages "@with_config_dir@/errormessages.txt"
 
+ ThreadIndexFile "@with_cgi_shared@/data/tididx.dat"
+
  BaseURL "/forum/"
+ PostingURL "/forum/t/%t/m/%m/"
  UBaseURL "/forum/my/"
+ UPostingURL "/forum/my/t/%t/m/%m/"
+
+ ArchivePostingURL "/forum/archive/t/%t/m/%m/"
  ArchiveURL "/forum/archive/"
 
  PostScript "/cgi-bin/fo_post"

@@ -150,12 +150,18 @@ int next_line_is_no_quote_line(const u_char *ptr) {
 /* }}} */
 
 /* {{{ msg_to_html */
-void msg_to_html(const u_char *msg,t_string *content,t_string *cite) {
-  t_name_value *cs = cfg_get_first_value(&fo_default_conf,"ExternCharset");
-  const u_char *ptr,*tmp;
+void msg_to_html(const u_char *msg,const u_char *link,t_string *content,t_string *cite) {
+  t_name_value *cs = cfg_get_first_value(&fo_default_conf,"ExternCharset"),*vs;
+  const u_char *ptr,*tmp,*tmp1;
         u_char *qchars;
         size_t qclen;
   int linebrk = 0,quotemode = 0,sig = 0,utf8 = cf_strcmp(cs->values[0],"UTF-8") == 0;
+  u_int64_t tid,mid;
+
+  if(link == NULL) {
+    vs = cfg_get_first_value(&fo_default_conf,cf_hash_get(GlobalValues,"UserName",8) ? "UPostingURL" : "PostingURL");
+    link = vs->values[0];
+  }
 
   if(utf8 || (qchars = htmlentities_charset_convert(Cfg.QuotingChars,"UTF-8",cs->values[0],&qclen,0)) == NULL) {
     qchars = strdup(Cfg.QuotingChars);
@@ -215,8 +221,6 @@ void msg_to_html(const u_char *msg,t_string *content,t_string *cite) {
       }
     }
     else if(cf_strncmp(ptr,"<img src=\"",10) == 0) {
-      u_char *tmp;
-
       ptr    += 10;
       linebrk = 0;
 
@@ -252,31 +256,42 @@ void msg_to_html(const u_char *msg,t_string *content,t_string *cite) {
     }
     else if(cf_strncmp(ptr,"[pref:",6) == 0) {
       ptr += 6;
-      for(tmp=ptr;*tmp && (*tmp == 't' || *tmp == 'm' || *tmp == '=' || *tmp == '&' || isdigit(*tmp));tmp++) {
-        if(cf_strncmp(tmp,"&amp;",5) == 0) {
-          tmp += 5;
+      tid = mid = 0;
+
+      for(tmp=ptr;*ptr && (*ptr == 't' || *ptr == 'm' || *ptr == '=' || *ptr == ';' || isdigit(*ptr));++ptr) {
+        if(*ptr == ';') tmp1 = ptr;
+      }
+
+      if(*ptr == ']') {
+        tid = str_to_u_int64(tmp+2);
+        mid = str_to_u_int64(tmp1+3);
+        tmp1 = get_link(link,tid,mid);
+
+        if(sig == 0 && cite) {
+          str_chars_append(cite,"[link:",6);
+          str_chars_append(cite,tmp1,strlen(tmp1));
+          str_chars_append(cite,"]",1);
         }
+
+        str_chars_append(content,"<a href=\"",9);
+        str_chars_append(content,tmp1,strlen(tmp1));
+
+        if(Cfg.link) {
+          str_chars_append(content,"\" target=\"",10);
+          str_chars_append(content,Cfg.link,strlen(Cfg.link));
+        }
+
+        str_chars_append(content,"\">?",3);
+        str_chars_append(content,tmp1,strlen(tmp1));
+        str_chars_append(content,"</a>",4);
+
+        free(tmp1);
       }
-
-      if(sig == 0 && cite) {
-        str_chars_append(cite,"[link:?",7);
-        str_chars_append(cite,ptr,tmp-ptr);
-        str_chars_append(cite,"]",1);
+      else {
+        ptr = tmp - 6;
+        str_char_append(content,*ptr);
+        if(sig == 0 && cite) str_char_append(cite,*ptr);
       }
-
-      str_chars_append(content,"<a href=\"?",10);
-      str_chars_append(content,ptr,tmp-ptr);
-
-      if(Cfg.link) {
-        str_chars_append(content,"\" target=\"",10);
-        str_chars_append(content,Cfg.link,strlen(Cfg.link));
-      }
-
-      str_chars_append(content,"\">?",3);
-      str_chars_append(content,ptr,tmp-ptr);
-      str_chars_append(content,"</a>",4);
-
-      ptr = tmp;
     }
     else if(cf_strncmp(ptr,"<iframe",7) == 0) {
       ptr += 13;
@@ -482,7 +497,7 @@ int execute_filter(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cl_
 
         free(tmp);
 
-        tmp = get_link(thread->tid,msg->mid);
+        tmp = get_link(NULL,thread->tid,msg->mid);
         cf_set_variable(tpl,cs,"b_link",tmp,strlen(tmp),1);
 
         free(tmp);
@@ -527,6 +542,7 @@ int execute_filter(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cl_
     if(utf8 || (msgcnt = charset_convert_entities(thread->threadmsg->content,thread->threadmsg->content_len,"UTF-8",cs->values[0],&msgcntlen)) == NULL) {
       msgcnt    = strdup(thread->threadmsg->content);
       msgcntlen = thread->threadmsg->content_len;
+      printf("here i go<br>\n");
     }
   }
 
@@ -538,9 +554,7 @@ int execute_filter(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cl_
   }
 
   /* transform message to html */
-  if(thread) {
-    msg_to_html(msgcnt,&content,&cite);
-  }
+  if(thread) msg_to_html(msgcnt,NULL,&content,&cite);
 
   /* adoption */
   if(Cfg.Bye && *Cfg.Bye) {
@@ -562,7 +576,9 @@ int execute_filter(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cl_
    * we already convertet the message to our native charset some
    * lines above, so we use tpl_cf_setvar() instead of cf_set_variable()
    */
-  if(thread) tpl_cf_setvar(tpl,"message",content.content,content.len,0);
+  if(thread) {
+    tpl_cf_setvar(tpl,"message",content.content,content.len,0);
+  }
   if(Cfg.DoQuote || !thread) tpl_cf_setvar(tpl,"cite",cite.content,cite.len,0);
 
   cf_set_variable(tpl,cs,"action",ps->values[0],strlen(ps->values[0]),1);
@@ -613,7 +629,7 @@ int execute_filter(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cl_
         else if(slvl == -1) slvl = msg->level;
 
         date = get_time(vc,"DateFormatThreadList",&len,&msg->date);
-        link = get_link(thread->tid,msg->mid);
+        link = get_link(NULL,thread->tid,msg->mid);
         cf_set_variable(&msg->tpl,cs,"author",msg->author,strlen(msg->author),1);
         cf_set_variable(&msg->tpl,cs,"title",msg->subject,strlen(msg->subject),1);
 
@@ -679,17 +695,19 @@ void *flt_posting_api_get_qchars(void *arg) {
 /* {{{ flt_posting_api_msg_to_html */
 void *flt_posting_api_msg_to_html(void *arg) {
   t_string *content,*cite;
-  const u_char *msg;
+  const u_char *msg,*link;
 
-        msg      = *((const u_char **)arg);
-        arg     += sizeof(const u_char *);
-        content  = *((t_string **)arg);
-        arg     += sizeof(t_string *);
-        cite     = *((t_string **)arg);
+  msg      = *((const u_char **)arg);
+  arg     += sizeof(const u_char **);
+  content  = *((t_string **)arg);
+  arg     += sizeof(t_string *);
+  cite     = *((t_string **)arg);
+  arg     += sizeof(t_string *);
+  link     = *((const u_char **)arg);
 
-        msg_to_html(msg,content,cite);
+  msg_to_html(msg,link,content,cite);
 
-        return NULL;
+  return NULL;
 }
 /* }}} */
 /* }}} */

@@ -30,6 +30,7 @@
 #include "cfcgi.h"
 /* }}} */
 
+/* {{{ internal function declarations */
 /**
  * \defgroup cgi_privfuncs "private" CGI lib functions
  */
@@ -61,8 +62,9 @@ int _cf_cgi_save_param(t_cf_hash *hash,u_char *name,int namlen,u_char *value);
  */
 void cf_cgi_destroy_entry(void *data);
 /*\@}*/
+/* }}} */
 
-/*
+/* {{{ cf_cgi_new()
  * Returns: t_cf_hash *    a hash with the cgi values in it
  * Parameters:
  *
@@ -70,7 +72,7 @@ void cf_cgi_destroy_entry(void *data);
  * hash with the entries in it.
  *
  */
-t_cf_hash *cf_cgi_new() {
+t_cf_hash *cf_cgi_new(void) {
   u_char *clen = getenv("CONTENT_LENGTH"),*rqmeth = getenv("REQUEST_METHOD"),*data;
   t_cf_hash *hash;
   long len  = 0;
@@ -112,7 +114,9 @@ t_cf_hash *cf_cgi_new() {
 
   return NULL;
 }
+/* }}} */
 
+/* {{{ cf_cgi_parse_path_info */
 void cf_cgi_parse_path_info(t_array *ary) {
   u_char *data = getenv("PATH_INFO");
   register u_char *ptr = (u_char *)data+1;
@@ -140,8 +144,54 @@ void cf_cgi_parse_path_info(t_array *ary) {
     array_push(ary,&name);
   }
 }
+/* }}} */
 
-/*
+/* {{{ cf_cgi_parse_path_info_nv */
+t_cf_hash *cf_cgi_parse_path_info_nv(void) {
+  u_char *pi = getenv("PATH_INFO"),*start,*name,*value;
+  register u_char *ptr;
+  t_cf_hash *hash = NULL;
+
+  start = name = value = NULL;
+
+  if(pi) {
+    hash = cf_hash_new(cf_cgi_destroy_entry);
+
+    for(ptr=pi;*ptr;ptr++) {
+      if(*ptr == '/') {
+        if(start == NULL) start = ptr;
+        else {
+          if(name == NULL) {
+            *ptr = '\0';
+            name = cf_cgi_url_decode(start+1,ptr-start);
+            *ptr = '/';
+          }
+          else {
+            *ptr  = '\0';
+            value = cf_cgi_url_decode(start+1,ptr-start);
+            *ptr  = '/';
+
+            _cf_cgi_save_param(hash,name,strlen(name),value);
+
+            name = value = NULL;
+          }
+
+          start = ptr;
+        }
+      }
+    }
+
+    if(*(ptr-1) != '/') {
+      value = cf_cgi_url_decode(start+1,ptr-start-1);
+      _cf_cgi_save_param(hash,name,strlen(name),value);
+    }
+  }
+
+  return hash;
+}
+/* }}} */
+
+/* {{{ cf_cgi_url_decode
  * Returns: u_char *         the url decoded string
  * Parameters:
  *   - const u_char *str     the string to decode
@@ -175,8 +225,9 @@ u_char *cf_cgi_url_decode(const u_char *str,size_t len) {
   *ptr1 = '\0';
   return ret;
 }
+/* }}} */
 
-/*
+/* {{{ cf_cgi_url_encode
  * Returns: u_char *         the url-encoded string
  * Parameters:
  *   - const u_char *str     the string to encode
@@ -210,8 +261,9 @@ u_char *cf_cgi_url_encode(const u_char *str,size_t len) {
 
   return nstr;
 }
+/* }}} */
 
-/*
+/* {{{ _cf_cgi_save_param
  * Returns: int            0 on failure, 1 on success
  * Parameters:
  *   - t_cf_hash *hash     the cgi-hash
@@ -253,8 +305,9 @@ int _cf_cgi_save_param(t_cf_hash *hash,u_char *name,int namlen,u_char *value) {
 
   return 1;
 }
+/* }}} */
 
-/*
+/* {{{ _cf_cgi_parse_params
  * Returns: int            0 on failure, 1 on success
  * Parameters:
  *   - t_cf_hash *hash     the cgi-hash
@@ -306,8 +359,9 @@ int _cf_cgi_parse_params(t_cf_hash *hash,u_char *data) {
 
   return 1;
 }
+/* }}} */
 
-/*
+/* {{{ cf_cgi_destroy
  * Returns:                nothing
  * Parameters:
  *   - void *data          the hash-entry
@@ -327,8 +381,9 @@ void cf_cgi_destroy_entry(void *data) {
     if(ent != data) free(ent);
   }
 }
+/* }}} */
 
-/*
+/* {{{ cf_cgi_get
  * Returns:                the value of the field
  * Parameters:
  *   - t_cf_hash *hash     the cgi-hash
@@ -346,7 +401,9 @@ u_char *cf_cgi_get(t_cf_hash *hash,u_char *name) {
 
   return NULL;
 }
+/* }}} */
 
+/* {{{ cf_cgi_set */
 void cf_cgi_set(t_cf_hash *hash,const u_char *name,const u_char *value) {
   size_t nlen = strlen(name);
   t_cf_cgi_param *p = cf_hash_get(hash,(u_char *)name,nlen),*p1,*p2;
@@ -374,8 +431,9 @@ void cf_cgi_set(t_cf_hash *hash,const u_char *name,const u_char *value) {
     cf_hash_set(hash,(u_char *)name,nlen,&par,sizeof(par));
   }
 }
+/* }}} */
 
-/*
+/* {{{ cf_cgi_get_multiple
  * Returns:                 the value of the field
  * Parameters:
  *   - t_cf_hash *hash      the CGI hash
@@ -386,8 +444,9 @@ void cf_cgi_set(t_cf_hash *hash,const u_char *name,const u_char *value) {
 t_cf_cgi_param *cf_cgi_get_multiple(t_cf_hash *hash,u_char *param) {
   return (t_cf_cgi_param *)cf_hash_get(hash,param,strlen(param));
 }
+/* }}} */
 
-/*
+/* {{{ cf_cgi_destroy
  * Returns:                 nothing
  * Parameters:
  *   - t_cf_hash *hash      the CGI hash
@@ -397,7 +456,9 @@ t_cf_cgi_param *cf_cgi_get_multiple(t_cf_hash *hash,u_char *param) {
 void cf_cgi_destroy(t_cf_hash *hash) {
   cf_hash_destroy(hash);
 }
+/* }}} */
 
+/* {{{ path_info_parsed */
 /**
  * This function parses a PATH_INFO string
  */
@@ -421,5 +482,6 @@ u_int32_t path_info_parsed(u_char ***infos) {
   *infos = list;
   return len;
 }
+/* }}} */
 
 /* eof */
