@@ -141,9 +141,9 @@ int flt_admin_setvars(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc,t_c
   int ShowInvisible = cf_hash_get(GlobalValues,"ShowInvisible",13) != NULL;
 
   if(flt_admin_is_admin(UserName)) {
-    cf_tpl_setvalue(top,"admin",TPL_VARIABLE_STRING,"1",1);
+    cf_tpl_setvalue(top,"admin",TPL_VARIABLE_INT,1);
 
-    if(ShowInvisible) cf_tpl_setvalue(top,"aaf",TPL_VARIABLE_STRING,"1",1);
+    if(ShowInvisible) cf_tpl_setvalue(top,"aaf",TPL_VARIABLE_INT,1);
 
     if(my_errno) {
       len = snprintf(buff,256,"E_FO_%d",my_errno);
@@ -186,9 +186,9 @@ int flt_admin_setvars_thread(t_cf_hash *head,t_configuration *dc,t_configuration
   t_cf_post_flag *flag;
 
   if(flt_admin_is_admin(UserName) && si) {
-    cf_tpl_hashvar_setvalue(hash,"ip",TPL_VARIABLE_STRING,thread->threadmsg->remote_addr.content,thread->threadmsg->remote_addr.len);
+    cf_tpl_hashvar_setvalue(hash,"ip",TPL_VARIABLE_STRING,msg->remote_addr.content,msg->remote_addr.len);
 
-    for(elem=thread->threadmsg->flags.elements;elem;elem=elem->next) {
+    for(elem=msg->flags.elements;elem;elem=elem->next) {
       flag = (t_cf_post_flag *)elem->data;
       if(cf_strcmp(flag->name,"UserName") == 0) {
         cf_tpl_hashvar_setvalue(hash,"uname",TPL_VARIABLE_STRING,flag->val,strlen(flag->val));

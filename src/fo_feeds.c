@@ -128,8 +128,8 @@ void atom_head(t_string *str,t_cl_thread *thread) {
   t_name_value *atom_tgline = cfg_get_first_value(&fo_feeds_conf,fn,"AtomTagline");
   t_name_value *atom_lang   = cfg_get_first_value(&fo_feeds_conf,fn,"FeedLang");
 
-  t_name_value *burl = cfg_get_first_value(&fo_default_conf,fn,cf_hash_get(GlobalValues,"UserName",8) ? "BaseURL":"UBaseURL");
-  t_name_value *purl = cfg_get_first_value(&fo_default_conf,fn,cf_hash_get(GlobalValues,"UserName",8) ? "PostingURL":"UPostingURL");
+  t_name_value *burl = cfg_get_first_value(&fo_default_conf,fn,cf_hash_get(GlobalValues,"UserName",8) ? "UBaseURL":"BaseURL");
+  t_name_value *purl = cfg_get_first_value(&fo_default_conf,fn,cf_hash_get(GlobalValues,"UserName",8) ? "UPostingURL":"PostingURL");
 
   time_t t = time(NULL);
 
@@ -232,7 +232,7 @@ void rss_head(t_string *str,t_cl_thread *thread) {
 
   str_chars_append(str,"<link>",6);
   if(thread) {
-    purl = cfg_get_first_value(&fo_default_conf,fn,cf_hash_get(GlobalValues,"UserName",8) ? "PostingURL":"UPostingURL");
+    purl = cfg_get_first_value(&fo_default_conf,fn,cf_hash_get(GlobalValues,"UserName",8) ? "UPostingURL":"PostingURL");
     tmp = cf_get_link(purl->values[0],NULL,thread->tid,thread->messages->mid);
     str_chars_append(str,"<![CDATA[",9);
     str_chars_append(str,tmp,strlen(tmp));
@@ -290,7 +290,7 @@ void atom_thread(t_string *str,t_cl_thread *thread,t_cf_hash *head) {
 
   t_string tmpstr;
 
-  t_name_value *burl   = cfg_get_first_value(&fo_default_conf,forum_name,cf_hash_get(GlobalValues,"UserName",8) ? "PostingURL":"UPostingURL");
+  t_name_value *burl   = cfg_get_first_value(&fo_default_conf,forum_name,cf_hash_get(GlobalValues,"UserName",8) ? "UPostingURL":"PostingURL");
   t_name_value *qchars = cfg_get_first_value(&fo_view_conf,forum_name,"QuotingChars");
   t_name_value *ms     = cfg_get_first_value(&fo_view_conf,forum_name,"MaxSigLines");
   t_name_value *ss     = cfg_get_first_value(&fo_view_conf,forum_name,"ShowSig");
@@ -386,7 +386,7 @@ void rss_thread(t_string *str,t_cl_thread *thread,t_cf_hash *head) {
 
   t_string tmpstr;
 
-  t_name_value *burl   = cfg_get_first_value(&fo_default_conf,forum_name,cf_hash_get(GlobalValues,"UserName",8) ? "PostingURL":"UPostingURL");
+  t_name_value *burl   = cfg_get_first_value(&fo_default_conf,forum_name,cf_hash_get(GlobalValues,"UserName",8) ? "UPostingURL":"PostingURL");
   t_name_value *qchars = cfg_get_first_value(&fo_view_conf,forum_name,"QuotingChars");
   t_name_value *ms     = cfg_get_first_value(&fo_view_conf,forum_name,"MaxSigLines");
   t_name_value *ss     = cfg_get_first_value(&fo_view_conf,forum_name,"ShowSig");
@@ -570,7 +570,7 @@ void gen_threadlist_atom(t_cl_thread *thread,t_string *str) {
   u_char *tmp,*tmp1;
   size_t len1;
 
-  t_name_value *burl   = cfg_get_first_value(&fo_default_conf,fn,cf_hash_get(GlobalValues,"UserName",8) ? "PostingURL":"UPostingURL");
+  t_name_value *burl   = cfg_get_first_value(&fo_default_conf,fn,cf_hash_get(GlobalValues,"UserName",8) ? "UPostingURL":"PostingURL");
   t_name_value *qchars = cfg_get_first_value(&fo_view_conf,fn,"QuotingChars");
   t_name_value *ms     = cfg_get_first_value(&fo_view_conf,fn,"MaxSigLines");
   t_name_value *ss     = cfg_get_first_value(&fo_view_conf,fn,"ShowSig");
@@ -657,7 +657,7 @@ void gen_threadlist_rss(t_cl_thread *thread,t_string *str) {
 
   t_string tmpstr;
 
-  t_name_value *burl   = cfg_get_first_value(&fo_default_conf,fn,cf_hash_get(GlobalValues,"UserName",8) ? "PostingURL":"UPostingURL");
+  t_name_value *burl   = cfg_get_first_value(&fo_default_conf,fn,cf_hash_get(GlobalValues,"UserName",8) ? "UPostingURL":"PostingURL");
   t_name_value *qchars = cfg_get_first_value(&fo_view_conf,fn,"QuotingChars");
   t_name_value *ms     = cfg_get_first_value(&fo_view_conf,fn,"MaxSigLines");
   t_name_value *ss     = cfg_get_first_value(&fo_view_conf,fn,"ShowSig");

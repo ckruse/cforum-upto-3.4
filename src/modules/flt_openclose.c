@@ -111,6 +111,7 @@ void flt_oc_parse(t_cf_hash *head) {
 }
 /* }}} */
 
+/* {{{ flt_oc_exec_xmlhttp */
 #ifndef CF_SHARED_MEM
 int flt_oc_exec_xmlhttp(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc,int sock)
 #else
@@ -173,6 +174,7 @@ int flt_oc_exec_xmlhttp(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc,v
 
   return FLT_DECLINE;
 }
+/* }}} */
 
 /* {{{ flt_oc_execute_filter */
 int flt_oc_execute_filter(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cl_thread *thread,int mode) {

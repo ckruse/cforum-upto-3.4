@@ -53,7 +53,8 @@ struct {
   int DoDelete;
   int resp_204;
   int bl_in_thrv;
-} Cfg = { NULL, 0, 0, 0, 0, NULL, 0, NULL, 1, 0, 0 };
+  int xml_http;
+} Cfg = { NULL, 0, 0, 0, 0, NULL, 0, NULL, 1, 0, 0, 0 };
 
 static u_char *flt_deleted_fname = NULL;
 
@@ -91,24 +92,28 @@ int flt_deleted_execute(t_cf_hash *head,t_configuration *dc,t_configuration *vc,
             cf_msg_delete_subtree(thread->messages);
           }
           else {
-            len = snprintf(buff,256,"?a=u&t=%llu",thread->tid);
+            len = snprintf(buff,256,"?a=u&dt=%llu",thread->tid);
             cf_tpl_setvalue(&thread->messages->tpl,"undel",TPL_VARIABLE_STRING,buff,len);
           }
         }
         else {
           if(Cfg.CheckBoxes) {
-            cf_tpl_setvalue(&msg->tpl,"delcheckbox",TPL_VARIABLE_STRING,"1",1);
+            cf_tpl_setvalue(&msg->tpl,"delcheckbox",TPL_VARIABLE_INT,1);
             cf_tpl_setvalue(&msg->tpl,"deltid",TPL_VARIABLE_STRING,buff,len);
           }
 
-          len = snprintf(buff,150,"%s?a=d&t=%lld",url->values[0],thread->tid);
+          if(Cfg.xml_http) cf_tpl_setvalue(&msg->tpl,"DeletedUseXMLHttp",TPL_VARIABLE_INT,1);
+
+          len = snprintf(buff,150,"%s?a=d&dt=%lld",url->values[0],thread->tid);
           cf_tpl_setvalue(&msg->tpl,"dellink",TPL_VARIABLE_STRING,buff,len);
         }
       }
     }
     else {
-      len = snprintf(buff,150,"%s?a=d&t=%lld",url->values[0],thread->tid);
+      len = snprintf(buff,150,"%s?a=d&dt=%lld",url->values[0],thread->tid);
       cf_tpl_setvalue(&msg->tpl,"dellink",TPL_VARIABLE_STRING,buff,len);
+
+      if(Cfg.xml_http) cf_tpl_setvalue(&msg->tpl,"DeletedUseXMLHttp",TPL_VARIABLE_INT,1);
     }
 
     return FLT_OK;
@@ -177,16 +182,16 @@ int flt_deleted_del_thread(t_cf_hash *head,t_configuration *dc,t_configuration *
 
     if(a) {
       if(cf_strcmp(a,"d") == 0) {
-        if((parm = cf_cgi_get_multiple(head,"t")) != NULL) {
-          memset(&data,0,sizeof(data));
-          data.data = one;
-          data.size = sizeof(one);
-
+        if((parm = cf_cgi_get_multiple(head,"dt")) != NULL) {
           for(;parm;parm=parm->next) {
             tid = strtoull(parm->value,NULL,10);
 
             if(tid) {
               memset(&key,0,sizeof(key));
+
+              memset(&data,0,sizeof(data));
+              data.data = one;
+              data.size = sizeof(one);
 
               /* we transform the value again to a string because there could be trash in it... */
               len = snprintf(buff,256,"%llu",tid);
@@ -194,7 +199,7 @@ int flt_deleted_del_thread(t_cf_hash *head,t_configuration *dc,t_configuration *
               key.data = buff;
               key.size = len;
 
-              Cfg.db->put(Cfg.db,NULL,&key,&data,DB_NODUPDATA|DB_NOOVERWRITE);
+              if((ret = Cfg.db->put(Cfg.db,NULL,&key,&data,0)) != 0) fprintf(stderr,"db->put(): %s\n",db_strerror(ret));
             }
           }
 
@@ -203,11 +208,16 @@ int flt_deleted_del_thread(t_cf_hash *head,t_configuration *dc,t_configuration *
           remove(buff);
           if((fd = open(buff,O_CREAT|O_TRUNC|O_WRONLY)) != -1) close(fd);
 
-          cf_hash_entry_delete(head,"t",1);
+          cf_hash_entry_delete(head,"dt",1);
           cf_hash_entry_delete(head,"a",1);
 
           if(Cfg.resp_204) {
             printf("Status: 204 No Content\015\012\015\012");
+            return FLT_EXIT;
+          }
+          else if((tmp = cf_cgi_get(head,"mode")) != NULL && cf_strcmp(tmp,"xmlhttp") == 0) {
+            printf("Content-Type: text/html\015\012\015\012");
+            printf("Ok\015\012");
             return FLT_EXIT;
           }
         }
@@ -216,7 +226,7 @@ int flt_deleted_del_thread(t_cf_hash *head,t_configuration *dc,t_configuration *
         Cfg.DoDelete = 0;
       }
       else if(cf_strcmp(a,"u") == 0) {
-        if((tmp = cf_cgi_get(head,"t")) != NULL) {
+        if((tmp = cf_cgi_get(head,"dt")) != NULL) {
           if((tid = strtoull(tmp,NULL,10)) > 0) {
             memset(&key,0,sizeof(key));
 
@@ -228,7 +238,7 @@ int flt_deleted_del_thread(t_cf_hash *head,t_configuration *dc,t_configuration *
 
             Cfg.db->del(Cfg.db,NULL,&key,0);
 
-            cf_hash_entry_delete(head,"t",1);
+            cf_hash_entry_delete(head,"dt",1);
             cf_hash_entry_delete(head,"a",1);
           }
         }
@@ -279,9 +289,10 @@ int flt_del_view_init_handler(t_cf_hash *head,t_configuration *dc,t_configuratio
   if(end && Cfg.CheckBoxes && Cfg.DeletedFile) {
     if(head && cf_cgi_get(head,"nd") != NULL) cf_tpl_setvalue(begin,"delnodelete",TPL_VARIABLE_STRING,"1",1);
 
-    cf_tpl_setvalue(begin,"delcheckbox",TPL_VARIABLE_STRING,"1",1);
-    cf_tpl_setvalue(end,"delcheckbox",TPL_VARIABLE_STRING,"1",1);
+    cf_tpl_setvalue(begin,"delcheckbox",TPL_VARIABLE_INT,1);
+    cf_tpl_setvalue(end,"delcheckbox",TPL_VARIABLE_INT,1);
   }
+  if(Cfg.xml_http) cf_tpl_setvalue(begin,"DeletedUseXMLHttp",TPL_VARIABLE_INT,1);
 
   return FLT_DECLINE;
 }
@@ -322,6 +333,9 @@ int flt_del_handle_command(t_configfile *cf,t_conf_opt *opt,const u_char *contex
   }
   else if(cf_strcmp(opt->name,"BlacklistInThreadview") == 0) {
     Cfg.bl_in_thrv = cf_strcmp(args[0],"yes") == 0;
+  }
+  else if(cf_strcmp(opt->name,"DeletedUseXMLHttp") == 0) {
+    Cfg.xml_http = cf_strcmp(args[0],"yes") == 0;
   }
 
   return 0;
@@ -405,6 +419,7 @@ t_conf_opt flt_deleted_config[] = {
   { "DeletedFile",             flt_del_handle_command, CFG_OPT_USER|CFG_OPT_NEEDED|CFG_OPT_LOCAL, NULL },
   { "DeletedUseCheckboxes",    flt_del_handle_command, CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
   { "DelThreadResponse204",    flt_del_handle_command, CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
+  { "DeletedUseXMLHttp",       flt_del_handle_command, CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
   { NULL, NULL, 0, NULL }
 };
 

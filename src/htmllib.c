@@ -794,7 +794,7 @@ int cf_gen_threadlist(t_cl_thread *thread,t_cf_hash *head,t_string *threadlist,c
 
   u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10), *date, *link;
 
-  int slvl = -1,level = 0,ret;
+  int slvl = -1,level = 0,ret,printed = 0;
 
   t_name_value *dft = cfg_get_first_value(&fo_view_conf,forum_name,"DateFormatThreadList"),
     *ot  = cfg_get_first_value(&fo_view_conf,forum_name,"OpenThread"),
@@ -818,6 +818,7 @@ int cf_gen_threadlist(t_cl_thread *thread,t_cf_hash *head,t_string *threadlist,c
   str_init(threadlist);
 
   if(cf_strcmp(type,"none") != 0) {
+    /* {{{ hide thread path if in partitial mode */
     if(cf_strcmp(type,"partitial") == 0 && mode == CF_MODE_THREADVIEW) {
       for(msg=thread->messages;msg && msg->mid != thread->threadmsg->mid;msg=msg->next) msg->may_show = 0;
 
@@ -827,12 +828,15 @@ int cf_gen_threadlist(t_cl_thread *thread,t_cf_hash *head,t_string *threadlist,c
       for(msg=msg->next;msg && msg->level > level;msg=msg->next);
       for(;msg;msg=msg->next) msg->may_show = 0;
     }
+    /* }}} */
+    /* {{{ set some standard variables */
     else if(mode == CF_MODE_THREADVIEW) cf_tpl_setvalue(&thread->threadmsg->tpl,"active",TPL_VARIABLE_INT,1);
     else if(mode == CF_MODE_THREADLIST) {
       cf_tpl_setvalue(&thread->messages->tpl,"start",TPL_VARIABLE_INT,1);
       cf_tpl_setvalue(&thread->messages->tpl,"msgnum",TPL_VARIABLE_INT,thread->msg_len);
       cf_tpl_setvalue(&thread->messages->tpl,"answers",TPL_VARIABLE_INT,thread->msg_len-1);
     }
+    /* }}} */
 
     /* {{{ run handlers in pre and post mode */
     if(mode == CF_MODE_THREADLIST) {
@@ -855,7 +859,9 @@ int cf_gen_threadlist(t_cl_thread *thread,t_cf_hash *head,t_string *threadlist,c
     for(msg=thread->messages;msg;msg=msg->next) {
       if((msg->may_show && msg->invisible == 0) || ShowInvisible == 1) {
         if(slvl == -1) slvl = msg->level;
+        printed = 1;
 
+        /* {{{ set template variables */
         date = cf_general_get_time(dft->values[0],locale->values[0],&len,&msg->date);
         link = cf_get_link(linktpl,forum_name,thread->tid,msg->mid);
 
@@ -873,13 +879,16 @@ int cf_gen_threadlist(t_cl_thread *thread,t_cf_hash *head,t_string *threadlist,c
           cf_set_variable(&msg->tpl,cs,"link",link,strlen(link),1);
           free(link);
         }
+        /* }}} */
 
+        /* {{{ close open threads */
         if(msg->level < level) {
           for(;level>msg->level;level--) {
             str_chars_append(threadlist,cst->values[0],cst_l);
             str_chars_append(threadlist,cp->values[0],cp_l);
           }
         }
+        /* }}} */
 
         level = msg->level;
 
@@ -909,15 +918,19 @@ int cf_gen_threadlist(t_cl_thread *thread,t_cf_hash *head,t_string *threadlist,c
       }
     }
 
-    for(;level > 1 && level>slvl+1;level--) {
-      str_chars_append(threadlist,cst->values[0],cst_l);
-      str_chars_append(threadlist,cp->values[0],cp_l);
-    }
-    if(level == 1 || level == slvl+1) {
-      str_chars_append(threadlist,cst->values[0],cst_l);
-      str_chars_append(threadlist,ct->values[0],ct_l);
+    if(printed) {
+      for(;level > 1 && level>slvl+1;level--) {
+        str_chars_append(threadlist,cst->values[0],cst_l);
+        str_chars_append(threadlist,cp->values[0],cp_l);
+      }
+      if(level == 1 || level == slvl+1) {
+        str_chars_append(threadlist,cst->values[0],cst_l);
+        str_chars_append(threadlist,ct->values[0],ct_l);
+      }
     }
   }
+
+  return FLT_OK;
 }
 /* }}} */
 
