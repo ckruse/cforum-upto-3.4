@@ -56,8 +56,7 @@ E_ARCHIVE_THREADNOTPRESENT: La discussion que vous avez choisie n'existe malheur
 E_posting_links: Certaines URIs d'éléments [link:]-, [image:]- ou [iframe:] ne peuvent pas être rectifiées. êtes-vous certains que toutes les URIs sont correctes?
 E_user_create: L'utilisateur n'a pas pu être créé suite à des problèmes techniques du serveur.
 E_posting_category: Le sujet que vous avez choisi n'est pas valide.
-E_posting_category: Sie haben eine ungültige Kategorie ausgewählt.
-E_posting_charset: Vous avez entré un caractère qui ne peut pas être représenté par le jeu de caractères ISO-8859-1. Peut-être avez-vous entré du code binaire ou un signe euro.
+E_posting_charset: Sie haben ein Zeichen eingegeben, dass weder gültiges UTF-8 noch gültiges Latin-1 ist. Vielleicht haben Sie ja Binär-Zeichen eingegeben?
 E_POST_NOT_ALLOWED: La rédaction de nouveaux messages n'est provisoirement pas permise.
-
-
+E_new_post_mail_subject: Neue Antwort auf http://forum.de.selfhtml.org/my/?t={tid}&m={mid}
+E_new_post_mail_body: Hallo {name},\n\nes gibt eine neue Antwort auf:\n\n  http://forum.de.selfhtml.org/my/?t={tid}&m={mid}\n\nGrüsse,\n das Forum\n

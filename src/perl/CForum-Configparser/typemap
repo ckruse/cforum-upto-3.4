@@ -1,6 +1,6 @@
 u_char *                        T_PV
 t_configuration *               CF_OBJECT
-const t_name_value *            CF_OBJECT
+const t_cf_list_element *       CF_OBJECT
 const u_char *                  T_PV
 
 INPUT

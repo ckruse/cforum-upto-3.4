@@ -5,7 +5,8 @@ EXTRA_DIST=fo_arcview.conf \
   fo_userconf.conf \
   fo_view.conf \
   fo_usermanagement.conf \
-  errormessages.txt \
+  errormessages.de.txt \
+  errormessages.fr.txt \
 	tipoftheday.txt \
   modules.de.xml \
   modules.en.xml \

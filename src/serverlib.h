@@ -25,6 +25,9 @@
 struct sockaddr_un;
 #endif
 
+typedef int (*t_srv_new_post_filter)(t_configuration *,t_configuration *,u_int64_t,t_posting *);
+typedef int (*t_srv_new_thread_filter)(t_configuration *,t_configuration *,t_thread *);
+
 /**
  * Function to create socket and bind it to the specified
  * port

@@ -77,7 +77,8 @@ static t_string flt_lf_str = { 0, 0, NULL };
 
 static int flt_lf_success = 1;
 
-u_char *case_strstr(const u_char *haystack,const u_char *needle) {
+/* {{{ case_strstr */
+u_char *flt_lf_case_strstr(const u_char *haystack,const u_char *needle) {
   size_t len1 = strlen(haystack);
   size_t len2 = strlen(needle);
   size_t i;
@@ -91,8 +92,10 @@ u_char *case_strstr(const u_char *haystack,const u_char *needle) {
 
   return NULL;
 }
+/* }}} */
 
-int read_string(register u_char *ptr) {
+/* {{{ flt_lf_read_string */
+int flt_lf_read_string(register u_char *ptr) {
   str_init(&flt_lf_str);
 
   for(;*ptr;ptr++) {
@@ -121,7 +124,9 @@ int read_string(register u_char *ptr) {
 
   return -1;
 }
+/* }}} */
 
+/* {{{ flt_lf_scanner */
 int flt_lf_scanner(u_char *str,u_char **pos) {
   register u_char *ptr = *pos;
   int ret;
@@ -173,7 +178,7 @@ int flt_lf_scanner(u_char *str,u_char **pos) {
         return TOK_AND;
       case '"':
         /* read string */
-        if((ret = read_string(ptr+1)) != 0) return ret;
+        if((ret = flt_lf_read_string(ptr+1)) != 0) return ret;
 
         /* safe new position */
         *pos = ptr + flt_lf_str.len + 2;
@@ -181,7 +186,13 @@ int flt_lf_scanner(u_char *str,u_char **pos) {
         /* return token */
         return TOK_STR;
       default:
-        if(*ptr) {
+        /*
+         * a simple *ptr check is not enough at this point,
+         * we can get ~= instead of =~ or ~! or something
+         * like that; maybe an additional isalpha() check
+         * is enough
+         */
+        if(*ptr && isalpha(*ptr)) {
           /* find end */
           for(;*ptr && isalnum(*ptr);ptr++);
 
@@ -203,7 +214,9 @@ int flt_lf_scanner(u_char *str,u_char **pos) {
 
   return TOK_EOS;
 }
+/* }}} */
 
+/* {{{ flt_lf_insert_node */
 t_flt_lf_node *flt_lf_insert_node(t_flt_lf_node *cur,t_flt_lf_node *tok,t_flt_lf_node *root) {
   t_flt_lf_node *n = cur;
 
@@ -254,7 +267,9 @@ t_flt_lf_node *flt_lf_insert_node(t_flt_lf_node *cur,t_flt_lf_node *tok,t_flt_lf
 
   return tok;
 }
+/* }}} */
 
+/* {{{ flt_lf_parse_string */
 int flt_lf_parse_string(u_char *str,u_char **pos,t_cf_template *tpl,t_flt_lf_node *node,t_flt_lf_node *root_node,t_configuration *dc) {
   int ret = 0;
   t_flt_lf_node *current = NULL;
@@ -301,6 +316,12 @@ int flt_lf_parse_string(u_char *str,u_char **pos,t_cf_template *tpl,t_flt_lf_nod
         break;
       case TOK_RPAREN:
         free(current);
+
+        if(root_node->prec != PREC_PAREN) {
+          flt_lf_success = 0;
+          return 1;
+        }
+
         return 0;
         break;
       case TOK_CONTAINS_NOT:
@@ -322,7 +343,9 @@ int flt_lf_parse_string(u_char *str,u_char **pos,t_cf_template *tpl,t_flt_lf_nod
 
   return 0;
 }
+/* }}} */
 
+/* {{{ flt_lf_form */
 int flt_lf_form(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cf_template *begin,t_cf_template *end) {
   u_char *filter_str,*pos;
 
@@ -343,7 +366,9 @@ int flt_lf_form(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cf_tem
 
   return FLT_DECLINE;
 }
+/* }}} */
 
+/* {{{ flt_lf_evaluate */
 u_char *flt_lf_evaluate(t_flt_lf_node *n,t_message *msg,u_int64_t tid) {
   u_char *l = NULL,*r = NULL;
   u_char buff[50];
@@ -369,7 +394,7 @@ u_char *flt_lf_evaluate(t_flt_lf_node *n,t_message *msg,u_int64_t tid) {
             ret = NULL;
           }
           else {
-            if(case_strstr(l,r)) {
+            if(flt_lf_case_strstr(l,r)) {
               ret = (u_char *)1;
             }
             else {
@@ -397,7 +422,7 @@ u_char *flt_lf_evaluate(t_flt_lf_node *n,t_message *msg,u_int64_t tid) {
             ret = (u_char *)1;
           }
           else {
-            if(case_strstr(l,r)) {
+            if(flt_lf_case_strstr(l,r)) {
               ret = NULL;
             }
             else {
@@ -566,7 +591,9 @@ u_char *flt_lf_evaluate(t_flt_lf_node *n,t_message *msg,u_int64_t tid) {
 
   return NULL;
 }
+/* }}} */
 
+/* {{{ flt_lf_filter */
 int flt_lf_filter(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_message *msg,u_int64_t tid,int mode) {
   if(flt_lf_active) {
     if(flt_lf_first && flt_lf_success) {
@@ -580,16 +607,22 @@ int flt_lf_filter(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_mess
 
   return FLT_DECLINE;
 }
+/* }}} */
 
+/* {{{ flt_lf_handle_command */
 int flt_lf_handle_command(t_configfile *cf,t_conf_opt *opt,u_char **args,int argnum) {
   flt_lf_active = cf_strcmp(args[0],"yes") == 0;
   return 0;
 }
+/* }}} */
 
+/* {{{ flt_lf_cleanup */
 void flt_lf_cleanup(void) {
   /* \todo Implement cleanup code (I'm a bad guy) */
 }
+/* }}} */
 
+/* {{{ module config */
 t_conf_opt config[] = {
   { "ActivateLiveFilter", flt_lf_handle_command, CFG_OPT_CONFIG|CFG_OPT_USER, NULL },
   { NULL, NULL, 0, NULL }
@@ -609,5 +642,6 @@ t_module_config flt_livefilter = {
   NULL,
   flt_lf_cleanup
 };
+/* }}} */
 
 /* eof */

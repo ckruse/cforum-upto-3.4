@@ -22,7 +22,7 @@ sub VERSION {(q$Revision: 1.9 $ =~ /([\d.]+)\s*$/)[0] or '0.0'}
 use CGI;
 use CGI::Carp qw/fatalsToBrowser/;
 
-use CheckRFC;
+use CForum::Validator;
 use ForumUtils qw(
   get_error
   rel_uri
@@ -78,37 +78,29 @@ sub links_check {
   my $body = $cgi->param('body');
   my $base = $ENV{SCRIPT_NAME};
 
-  $base =~ s![^/]*$!!;
+  $base =~ s![^/]*$!!; #!
 
-  my @links = ();
-  push @links,[$1, $2] while $body =~ /\[([Ll][Ii][Nn][Kk]):\s*([^\]\s]+)\s*\]/g;
-  @links = grep {
-    !(is_URL($_->[1] => qw(http ftp news nntp telnet gopher mailto))
-      or is_URL(($_->[1] =~ /^[Vv][Ii][Ee][Ww]-[Ss][Oo][Uu][Rr][Cc][Ee]:(.+)/)[0] || '' => 'http')
-      or ($_->[1] =~ m<^(?:\.?\.?/(?!/)|\?)> and is_URL(rel_uri($_ -> [1],$base) => 'http')))
-  } @links;
+  while($body =~ /\[[Ll][Ii][Nn][Kk]:\s*([^\]\s]+)\s*(?:\@title=([^\]]+)\s*)?\]/g) {
+    my ($uri,$title) = ($1,$2,$3);
+    return -1 if
+      !is_valid_url($uri) &&
+      !is_valid_http_url(($uri =~ /^[Vv][Ii][Ee][Ww]-[Ss][Oo][Uu][Rr][Cc][Ee]:(.+)/)[0],CForum::Validator::VALIDATE_STRICT) &&
+      !($uri =~ m{^(?:\.?\.?/(?!/)|\?)} and is_valid_http_url(rel_uri($uri,$base)));
+  }
 
-  return -1 if @links;
+  while($body =~ /\[[Ii][Mm][Aa][Gg][Ee]:\s*([^\]\s]+)\s*(?:\@alt=([^\]]+)\s*)?\]/g) {
+    my ($uri,$alt) = ($1,$2);
+    return -1 if
+      !is_valid_http_url($uri,CForum::Validator::VALIDATE_STRICT) &&
+      !($uri =~ m{^(?:\.?\.?/(?!/)|\?)} and is_valid_http_url(rel_uri($uri, $base),CForum::Validator::VALIDATE_STRICT));
+  }
 
-  # lets collect all images
-  my @images = ();
-  push @images, [$1, $2] while $body =~ /\[([Ii][Mm][Aa][Gg][Ee]):\s*([^\]\s]+)\s*\]/g;
-  @images = grep {
-    !(is_URL($_->[1] => 'strict_http')
-      or ($_->[1] =~ m<^(?:\.?\.?/(?!/)|\?)> and is_URL(rel_uri($_->[1], $base) => 'http')))
-  } @images;
-
-  return -1 if @images;
-
-  # lets collect all iframes
-  my @iframes;
-  push @iframes,[$1, $2] while $body =~ /\[([Ii][Ff][Rr][Aa][Mm][Ee]):\s*([^\]\s]+)\s*\]/g;
-  @iframes = grep {
-    !(is_URL($_ -> [1] => 'http')
-    or ($_ -> [1] =~ m<^(?:\.?\.?/(?!/)|\?)> and is_URL (rel_uri($_ -> [1], $base) => 'http')))
-  } @iframes;
-
-  return -1 if @iframes;
+  while($body =~ /\[[Ii][Ff][Rr][Aa][Mm][Ee]:\s*([^\]\s]+)\s*\]/g) {
+    my $uri = $1;
+    return -1 if
+      !is_valid_http_url($uri,CForum::Validator::VALIDATE_STRICT) &&
+      !($uri =~ m{^(?:\.?\.?/(?!/)|\?)} and is_valid_http_url(rel_uri($uri, $base),CForum::Validator::VALIDATE_STRICT));
+  }
 
   return 0;
 }
@@ -131,12 +123,7 @@ sub quoting_check {
     return 1;
   }
 
-  if($qlines) {
-    return -1;
-  }
-  else {
-    return 1;
-  }
+  return $qlines ? -1 : 1;
 }
 
 sub badwords_check {

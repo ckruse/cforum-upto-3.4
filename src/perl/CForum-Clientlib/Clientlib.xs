@@ -32,6 +32,28 @@ typedef struct s_cfxs_param {
   void *val;
 } t_cfxs_param;
 
+bool xs_has_shm(void) {
+  #ifdef CF_SHARED_MEM
+  return TRUE;
+  #else
+  return FALSE;
+  #endif
+}
+
+void *xs_shm_ptr(void) {
+  void *ptr;
+
+  #ifndef CF_SHARED_MEM
+  return NULL;
+  #else
+  if((ptr = get_shm_ptr()) == NULL) {
+    return NULL;
+  }
+
+  return ptr;
+  #endif
+}
+
 MODULE = CForum::Clientlib		PACKAGE = CForum::Clientlib		
 
 INCLUDE: const-xs.inc
@@ -45,6 +67,7 @@ new(class)
     SV *var;
   CODE:
     var = newSV(0);
+    cf_init();
     RETVAL=sv_setref_iv(var,CLASS,0);
   OUTPUT:
     RETVAL
@@ -116,32 +139,32 @@ void destroy(class)
 bool has_shm(class)
     SV *class
   CODE:
-    #ifdef CF_SHARED_MEM
-    XSRETURN_YES;
-    #else
-    XSRETURN_NO;
-    #endif
+    if(xs_has_shm()) XSRETURN_YES;
+    else             XSRETURN_NO;
 
 SV *
 get_shm_segment(class)
     SV *class
   PREINIT:
-    #ifdef CF_SHARED_MEM
     void *ptr;
-    SV *var;
+    HV *var,*stash;
+    SV *val,**hvg;
     const u_char *CLASS = "CForum::Clientlib::SharedMem";
-    #endif
   CODE:
-    #ifndef CF_SHARED_MEM
-    XSRETURN_UNDEF;
-    #else
-    if((ptr = get_shm_ptr()) == NULL) {
+    if((ptr = xs_shm_ptr()) == NULL) {
       XSRETURN_UNDEF;
     }
 
-    var = newSV(0);
-    RETVAL=sv_setref_pv(var,CLASS,ptr);
-    #endif
+    var = newHV();
+    val = newSV(0);
+    sv_setref_pv(val,"CForum::Clientlib::Pointer",ptr);
+    hvg = hv_store(var,"ptr",3,val,0);
+
+    stash = gv_stashpv(CLASS,1);
+    val   = newRV_inc((SV *)var);
+    sv_bless(val,stash);
+
+    RETVAL=val;
   OUTPUT:
     RETVAL
 
@@ -221,7 +244,80 @@ is_valid_utf8_string(class,str,len)
 
     XSRETURN_NO;
 
+
 MODULE = CForum::Clientlib      PACKAGE = CForum::Clientlib::SharedMem
+
+t_cl_thread *
+get_message(class,ctid,cmid,tplname,del)
+    SV *class
+    const u_char *ctid
+    const u_char *cmid
+    const u_char *tplname
+    bool del
+    const u_char *CLASS = "CForum::Clientlib::Thread";
+  PREINIT:
+    void *ptr;
+    t_cl_thread *thr;
+    u_int64_t tid;
+    u_int64_t mid;
+    HV *hash;
+    SV **val;
+  CODE:
+    hash = (HV *)SvRV(class);
+    val  = hv_fetch(hash,"ptr",3,0);
+
+    if(!val)  XSRETURN_UNDEF;
+
+    ptr  = (void *)SvIV((SV *)SvRV(*val));
+    thr  = fo_alloc(NULL,1,sizeof(*thr),FO_ALLOC_CALLOC);
+
+    tid = strtoull(ctid,NULL,10);
+    mid = strtoull(cmid,NULL,10);
+
+    if(cf_get_message_through_shm(ptr+sizeof(time_t),thr,tplname,tid,mid,del) == -1) {
+      XSRETURN_UNDEF;
+    }
+
+    RETVAL=thr;
+  OUTPUT:
+    RETVAL
+
+
+t_cl_thread *
+get_next_thread(class,tplname=NULL)
+    SV *class
+    const u_char *tplname
+  PREINIT:
+    t_cl_thread *thr;
+    const u_char *CLASS = "CForum::Clientlib::Thread";
+    void *ptr,*ptr1;
+    SV **hvg,*val,**val1;
+    HV *hash;
+  CODE:
+    hash = (HV *)SvRV(class);
+    val1 = hv_fetch(hash,"ptr",3,0);
+    hvg  = hv_fetch(hash,"nextptr",7,0);
+
+    /* no ptr entry in class hash? could not be... */
+    if(!val1) XSRETURN_UNDEF;
+
+    if(hvg) ptr = (void *)SvIV((SV *)SvRV(*hvg));
+    else    ptr = (void *)SvIV((SV *)SvRV(*val1)) + sizeof(time_t);
+
+    thr = fo_alloc(NULL,1,sizeof(*thr),FO_ALLOC_CALLOC);
+
+    if((ptr1 = cf_get_next_thread_through_shm(ptr,thr,tplname)) == NULL) {
+      XSRETURN_UNDEF;
+    }
+
+    val = newSV(0);
+    sv_setref_pv(val,"CForum::Clientlib::SharedMem::Pointer",ptr1);
+    hvg = hv_store(hash,"nextptr",7,val,0);
+
+    RETVAL=thr;
+  OUTPUT:
+    RETVAL
+
 
 MODULE = CForum::Clientlib      PACKAGE = CForum::Clientlib::Connection
 
@@ -267,9 +363,7 @@ get_next_thread(class,tplname=NULL)
     thr = fo_alloc(NULL,1,sizeof(*thr),FO_ALLOC_CALLOC);
 
     if(cf_get_next_thread_through_sock(class->sock,&class->tsd,thr,tplname) == -1) {
-      if(!*ErrorString) {
-        XSRETURN_UNDEF;
-      }
+      XSRETURN_UNDEF;
     }
 
     RETVAL=thr;
@@ -295,9 +389,7 @@ get_message(class,ctid,cmid,tplname,del)
     mid = strtoull(cmid,NULL,10);
 
     if(cf_get_message_through_sock(class->sock,&class->tsd,thr,tplname,(u_int64_t)tid,(u_int64_t)mid,del) == -1) {
-      if(!*ErrorString) {
-        XSRETURN_UNDEF;
-      }
+      XSRETURN_UNDEF;
     }
 
     RETVAL=thr;
@@ -415,8 +507,11 @@ author(class,author=NULL)
     u_char *ret;
   CODE:
     ret = class->author;
-    class->author = strdup(author);
-    class->author_len = strlen(author);
+
+    if(author) {
+      class->author = strdup(author);
+      class->author_len = strlen(author);
+    }
 
     if(ret == NULL) {
       XSRETURN_UNDEF;
@@ -434,8 +529,11 @@ subject(class,subj=NULL)
     u_char *ret;
   CODE:
     ret = class->subject;
-    class->subject = strdup(subj);
-    class->subject_len = strlen(subj);
+
+    if(subj) {
+      class->subject = strdup(subj);
+      class->subject_len = strlen(subj);
+    }
 
     if(ret == NULL) {
       XSRETURN_UNDEF;
@@ -444,6 +542,25 @@ subject(class,subj=NULL)
   OUTPUT:
     RETVAL
 
+
+const u_char *
+category(class,cat=NULL)
+    t_message *class;
+    const u_char *cat;
+  PREINIT:
+    u_char *ret;
+  CODE:
+    ret = class->category;
+
+    if(cat) {
+      class->category = strdup(cat);
+      class->category_len = strlen(cat);
+    }
+
+    if(ret == NULL) XSRETURN_UNDEF;
+    RETVAL=ret;
+  OUTPUT:
+    RETVAL
 
 const u_char *
 content(class,cnt=NULL,len=0)
@@ -587,6 +704,17 @@ template(class)
     const u_char *CLASS = "CForum::Template";
   CODE:
     RETVAL=&class->tpl;
+  OUTPUT:
+    RETVAL
+
+t_message *
+next(class)
+    t_message *class
+  PREINIT:
+    const u_char *CLASS = "CForum::Clientlib::Thread::Posting";
+  CODE:
+    if(class->next == NULL) XSRETURN_UNDEF;
+    RETVAL=class->next;
   OUTPUT:
     RETVAL
 

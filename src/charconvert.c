@@ -29,6 +29,7 @@
 #include "utils.h"
 /* }}} */
 
+/* {{{ utf8_to_unicode */
 int utf8_to_unicode(const u_char *s,size_t n,u_int32_t *num) {
   u_char c = s[0];
 
@@ -75,7 +76,9 @@ int utf8_to_unicode(const u_char *s,size_t n,u_int32_t *num) {
   else return EILSEQ;
 
 }
+/* }}} */
 
+/* {{{ is_valid_utf8_string */
 int is_valid_utf8_string(const u_char *str,size_t len) {
   register u_char *ptr = (u_char *)str;
   int x;
@@ -92,8 +95,9 @@ int is_valid_utf8_string(const u_char *str,size_t len) {
 
   return 0;
 }
+/* }}} */
 
-/*
+/* {{{ charset_convert
  * Returns: u_char * (NULL on failure, a string-array on success)
  * Parameters:
  *   - const u_char *toencode     the string which has to be encoded
@@ -156,8 +160,9 @@ u_char *charset_convert(const u_char *toencode,size_t in_len,const u_char *from_
   if(out_len_p) *out_len_p = (size_t)(out_p - out_buf);
   return out_buf;
 }
+/* }}} */
 
-/*
+/* {{{ htmlentities
  * Returns: u_char * (NULL on failure, a string-array on success)
  * Parameters:
  *   - const u_char *string  the string which has to be encoded
@@ -205,7 +210,9 @@ u_char *htmlentities(const u_char *string,int sq) {
 
   return fo_alloc(new_str.content,new_str.len+1,1,FO_ALLOC_REALLOC);
 }
+/* }}} */
 
+/* {{{ print_htmlentities_encoded */
 size_t print_htmlentities_encoded(const u_char *string,int sq,FILE *handle) {
   register u_char *ptr;
   register size_t written = 0,s = 0;
@@ -249,8 +256,9 @@ size_t print_htmlentities_encoded(const u_char *string,int sq,FILE *handle) {
 
   return written;
 }
+/* }}} */
 
-/*
+/* {{{ htmlentities_charset_convert
  * This function converts a string between to charsets and encodes it
  * as html (this means, " to &quot;, < to &lt;, > to &gt; and & to &amp;). If a
  * sequence cannot be converted to the target charset, it will be converted to
@@ -392,8 +400,9 @@ u_char *htmlentities_charset_convert(const u_char *toencode, const u_char *from,
   if(outlen) *outlen = (size_t)(out_p - out_buf);
   return out_buf;
 }
+/* }}} */
 
-/*
+/* {{{ charset_convert_entities
  * This function converts a string between to charsets; every entity which cannot be shown
  * in the corresponding charset will be converted to HTML entities (named or UTF8-reference)
  */
@@ -497,5 +506,6 @@ u_char *charset_convert_entities(const u_char *toencode, size_t in_len,const u_c
   if(outlen) *outlen = (size_t)(out_p - out_buf);
   return out_buf;
 }
+/* }}} */
 
 /* eof */

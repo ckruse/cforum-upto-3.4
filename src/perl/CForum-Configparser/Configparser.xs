@@ -33,6 +33,8 @@ new(class)
     SV *obj;
   CODE:
     obj = newSV(0);
+    init_modules();
+    cfg_init();
     RETVAL=sv_setref_iv(obj,CLASS,0);
   OUTPUT:
     RETVAL
@@ -103,7 +105,7 @@ read(class,what)
       if(cf_strcmp(wanted[i],"fo_default") == 0) {
         cfg_register_options(&cfg,default_options);
 
-        if(read_config(&cfg,NULL) != 0) {
+        if(read_config(&cfg,NULL,CFG_MODE_CONFIG) != 0) {
           cforum_cfgparser_error("Error parsing fo_default.conf");
           XSRETURN_UNDEF;
         }
@@ -114,7 +116,7 @@ read(class,what)
       else if(cf_strcmp(wanted[i],"fo_view") == 0) {
         cfg_register_options(&cfg,fo_view_options);
 
-        if(read_config(&cfg,NULL) != 0) {
+        if(read_config(&cfg,NULL,CFG_MODE_CONFIG) != 0) {
           cforum_cfgparser_error("Error parsing fo_view.conf");
           XSRETURN_UNDEF;
         }
@@ -125,7 +127,7 @@ read(class,what)
       else if(cf_strcmp(wanted[i],"fo_post") == 0) {
         cfg_register_options(&cfg,fo_post_options);
 
-        if(read_config(&cfg,NULL) != 0) {
+        if(read_config(&cfg,NULL,CFG_OPT_CONFIG) != 0) {
           cforum_cfgparser_error("Error parsing fo_post.conf");
           XSRETURN_UNDEF;
         }
@@ -136,7 +138,7 @@ read(class,what)
       else if(cf_strcmp(wanted[i],"fo_server") == 0) {
         cfg_register_options(&cfg,fo_server_options);
 
-        if(read_config(&cfg,NULL) != 0) {
+        if(read_config(&cfg,NULL,CFG_OPT_CONFIG) != 0) {
           cforum_cfgparser_error("Error parsing fo_server.conf");
           XSRETURN_UNDEF;
         }
@@ -169,7 +171,7 @@ get_entry(class,name)
     const u_char *name
   PREINIT:
     SV *var;
-    t_name_value *v;
+    t_cf_list_head *v;
     const char *CLASS = "CForum::Configparser::Configuration::Option";
   CODE:
     if((v = cfg_get_value(class,name)) == NULL) {
@@ -178,7 +180,7 @@ get_entry(class,name)
     }
 
     var = newSV(0);
-    RETVAL=sv_setref_pv(var,CLASS,v);
+    RETVAL=sv_setref_pv(var,CLASS,v->elements);
   OUTPUT:
     RETVAL
 
@@ -194,39 +196,45 @@ MODULE = CForum::Configparser    PACKAGE = CForum::Configparser::Configuration::
 
 const u_char *
 get_value(class,idx)
-    const t_name_value *class;
+    const t_cf_list_element *class;
     I32 idx;
+  PREINIT:
+    t_name_value *val;
   CODE:
     if(idx > 2 || idx < 0) {
       cforum_cfgparser_error("index out of bound\n");
       XSRETURN_UNDEF;
     }
 
-    if(class->values[idx] == NULL) {
+    val = (t_name_value *)class->data;
+
+    if(val->values[idx] == NULL) {
       XSRETURN_UNDEF;
     }
 
-    RETVAL=class->values[idx];
+    RETVAL=val->values[idx];
   OUTPUT:
     RETVAL
 
 
 const u_char *
 get_name(class)
-    const t_name_value *class;
+    const t_cf_list_element *class;
+  PREINIT:
+    t_name_value *val;
   CODE:
-    RETVAL=class->name;
+    val = (t_name_value *)class->data;
+    RETVAL=val->name;
   OUTPUT:
     RETVAL
 
 SV *
 next(class)
-    const t_name_value *class
+    const t_cf_list_element *class
   PREINIT:
     SV *var;
     char *CLASS = "CForum::Configparser::Configuration::Option";
   CODE:
-
     if(class->next == NULL) {
       XSRETURN_UNDEF;
     }

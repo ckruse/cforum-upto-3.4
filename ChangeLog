@@ -1,5 +1,117 @@
+2004-10-01 Christian Kruse <ckruse@wwwtech.de>
+	* src/modules/flt_category.c: Renamed some functions and variables (module
+		functions and variables have to be prefixed by the module name!)
+
+2004-09-29 Christian Kruse <ckruse@wwwtech.de>
+	* src/modules/flt_failsafe.c: Fixed several bugs, removed redundant code (now
+		the writer is a function)
+	* src/modules/flt_posting.c: Fixed a warning (several typcasts)
+	* src/archiver.c: Removed a semicolon (older gccs are really allergic against
+		it)
+	* src/Makefile.am: Added fo_recovery
+	* src/fo_recovery.c: Added recovery program
+	* src/fo_server.c: Removed a unneccessarry #endif #ifdef
+
+2004-09-28 Christian Kruse <ckruse@wwwtech.de>
+	* src/modules/flt_posting.c, cgi-shared/Plugins/PostingAssistant.pm,
+		cgi-shared/ForumUtils.pm: Changed to new directive syntax ([link:...@title=],
+		[image:...@alt=]
+	* src/modules/flt_failsafe.c: Renamed flt_safe.c to flt_failsafe.c
+	* src/modules/Makefile.am: Renamed flt_safe to flt_failsafe
+	* src/configparser.c: Moved XHTMLMode from fo_view options to fo_default
+		options
+	* cgi-bin/fo_post_old.in: Fixed bug in entities handling
+	* src/modules/flt_cftp.c: Fixed a initilization bug
+	* src/modules/flt_tplmode.c, src/htmllib.c: Fetching XHTMLMode now from
+		fo_default_conf
+	* cgi-shared/ForumUtils.pm: Fixed bug in new link/image handling
+
+2004-09-27 Christian Kruse <ckruse@wwwtech.de>
+	* src/modules/flt_tipoftheday.c: Deleted CFG_OPT_NEEDED flag and added
+		additional check for TipOfTheDayIndex configuration entry
+	* src/modules/flt_livefilter.c: Fixed typo bug (wrote root, ment
+		root_node)
+	* src/configparser.[ch]: Added list for check directives with the
+		CFG_OPT_NEEDED flag, uniquified handling of error messages
+	* src/listutils.c: Added function for statically add a list member
+	* src/utils.h: Added cf_list_append_static() prototype
+	* cgi-shared/config/modules.de.xml: Edited description for LinkNoVisited
+	* cgi-shared/config/modules.fr.xml: Added several configuration directives.
+		Have to be translated to france!
+
+2004-09-26 Christian Kruse <ckrsue@wwwtech.de>
+	* src/configparser.c: Added QuotingChars directive for fo_arcview
+	* src/charconvert.c: Added folding hooks ({{{ and }}})
+	* src/clientlib.c: Added perror() when shm*() fails
+	* src/modules/flt_livefilter.c: Added folding hooks, renamed some functions,
+		fixed some error handling bugs
+	* src/modules/flt_tplmode.c: Fixed a bug (removed a free() call)
+	* src/perl/CForum-Configparser/*: Fixed several bugs, changed to new
+		configparser API
+	* src/perl/CForum-Clientlib/*: Fixed several bugs, implemented shm handling
+	* Doxyfile.in: Removed CFML, changed to srcripts/
+	* cgi-shared/Plugins/MarkOwnVisited.pm: Changed sub VERSION to our $VERSION
+	* cgi-shared/Plugins/Preview.pm: Changed to clientlib API
+	* cgi-shared/ForumUtils.pm: Added UTF-8 validation, removed tab characters
+	* cgi-shared/config/errormessages.{de,fr}.txt: Added several messages
+	* cgi-shared/config/fo_post.conf.in: Added SMTP directives for mailing a
+		notice on answer
+	* cgi-shared/Plugins/SendMailOnAnswer.pm: Plugin for sending mail on activity
+		in thread
+
+2004-09-19 Christian Kruse <ckruse@wwwtech.de>
+	* src/modules/flt_posting.c: Bugfix, forgot to set some variables
+
+2004-09-15 Christian Kruse <ckruse@wwwtech.de>
+	* cgi-shared/config/modules.de.xml: Added RegisteredName (where has it gone?!)
+	* src/modules/flt_registerednames.c: Fixed bug in name transformation
+
+2004-09-13 Christian Kruse <ckruse@wwwtech.de>
+	* configure.in: Added src/perl/CForum-Validator/Makefile.PL in AC_OUTPUT()
+	* src/cf_pthread.c: Added configparser.h and readline.h for inclusion
+	* src/fo_server.h: Added some defines for heavy load handling
+	* src/fo_post.c: Deleted comma in str_error_message() call
+	* src/defines.h: Added new thread handler
+	* src/modules/flt_cftp.c: Added two handlers (NEW_THREAD_HANDLER and
+		NEW_POST_HANDLER), improved the filter (locking bug, all variables are now
+		defined in function header. So there is no need to create a new stack in
+		if() statement)
+	* src/modules/flt_deleted.c: Renamed some function names, added 204 response
+	* src/modules/flt_visited.c: Renamed some function names, added 204 response
+	* src/modules/flt_posting.c: Corrected some bugs in cite handling
+	* src/modules/Makefile.am: Added flt_safe.c
+	* src/modules/flt_safe.c: Added fo_server plugin for fail safe. It writes all
+		new threads and postings to a file on disk in a binary format
+	* src/validate.c: corrected some bugs in validation
+	* src/htmllib.c: corrected some bugs in HTML creation
+	* src/serverlib.c: Changed heavy load behavior
+	* src/validate.h: Changed ¶ to r (spelling misstake)
+	* src/serverlib.h: Added two new function pointer types
+	* src/perl/CForum-Validator/Validator.xs: Changed second parameter of
+		is_valid_http_link() to the default value of false
+	* src/fo_arcview.c: Fixed bug, now setting {$year}
+	* src/fo_server.c: Some format corrections
+	* cgi-shared/Plugins/PostingAssistant.pm, cgi-shared/ForumUtils.pm: Changed to
+		new behavior of HTML creation, changed to CForum::Validator
+	* cgi-shared/config/fo_usermanagement.conf.in: Fixed masquerading bugs
+	* cgi-shared/config/modules.de.xml: Added OwnJSFile directive, fixed spelling
+		misstake
+	* cgi-shared/config/Makefile.am: Added errormessages.{de,fr}.txt
+	* cgi-shared/config/modules.fr.xml: Fixed spelling misstake
+	* cgi-bin/fo_usermanagement.in: Changed to CForum::Validate
+	* cgi-bin/fo_post_old.in: Changed to CForum::Validate, fixed bug in entity
+		masquerading
+	* cgi-bin/fo_userconf.in: Changed to CForum::Validate
+
 2004-08-24 Jan Rieger <jr@occuris.de>
 	* src/templates/de/tpl_*/forum_end.html: changed "Threads löschen" to "Markierte Threads ausblenden"
+
+2004-08-15 Christian Kruse <ckruse@wwwtech.de>
+	* src/perl/CForum-Validator/: Added a perl interface to the URL validation
+		functions of the Classic Forum
+
+2004-08-13 Christian Kruse <ckruse@wwwtech.de>
+	* CREATED 2.1 BRANCH
 
 2004-08-13 Christian Kruse <ckruse@wwwtech.de>
 	* src/fo_view.c: Changed behavior of the fo_view program: now it sets the

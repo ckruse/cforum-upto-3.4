@@ -47,8 +47,9 @@
 #define DIRECTIVE_FILTER       12 /**< Handler hook */
 #define PRE_CONTENT_FILTER     13 /**< Handler hook */
 #define POST_CONTENT_FILTER    14 /**< Handler hook */
+#define NEW_THREAD_HANDLER     15 /**< Handler h... */
 
-#define MOD_MAX                14 /**< The maximum hook value. */
+#define MOD_MAX                15 /**< The maximum hook value. */
 
 #define FLT_OK       0 /**< Returned by a plugin function if everything as ok. */
 #define FLT_DECLINE -1 /**< Returned by a plugin function if this request is not for the plugin. */

@@ -9,6 +9,7 @@ bin_PROGRAMS= \
   fo_threadlookup \
   fo_tid_index \
   fo_arcview \
+  fo_recovery \
   fo_vote
 
 pkglib_LTLIBRARIES= \
@@ -80,6 +81,10 @@ fo_arcview_LDADD=libcfcharconvert.la libcfutils.la libcfcgi.la libconfigparser.l
 fo_server_SOURCES=fo_server.c initfinish.c
 fo_server_LDADD=libcfcharconvert.la libcfreadline.la libcfutils.la libserverlib.la libconfigparser.la $(PTHREAD_LIB)
 fo_server_LDFLAGS=-export-dynamic
+
+fo_recovery_SOURCES=fo_recovery.c initfinish.c
+fo_recovery_LDADD=libcfcharconvert.la libserverlib.la libconfigparser.la $(PTHREAD_LIB)
+fo_recovery_LDFLAGS=-export-dynamic
 
 fo_cleanup_SOURCES=fo_cleanup.c
 fo_cleanup_LDADD=libcfutils.la libcfreadline.la libconfigparser.la libcfclientlib.la $(BDB_LIB)

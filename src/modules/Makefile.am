@@ -57,9 +57,9 @@ pkglib_LTLIBRARIES+=flt_openclose.la
 flt_openclose_la_SOURCES=flt_openclose.c
 flt_openclose_la_LDFLAGS=-module -export-dynamic -avoid-version
 
-pkglib_LTLIBRARIES+=flt_owncss.la
-flt_owncss_la_SOURCES=flt_owncss.c
-flt_owncss_la_LDFLAGS=-module -export-dynamic -avoid-version
+pkglib_LTLIBRARIES+=flt_include.la
+flt_include_la_SOURCES=flt_include.c
+flt_include_la_LDFLAGS=-module -export-dynamic -avoid-version
 
 pkglib_LTLIBRARIES+=flt_posting.la
 flt_posting_la_SOURCES=flt_posting.c
@@ -132,5 +132,8 @@ pkglib_LTLIBRARIES+=flt_motd.la
 flt_motd_la_SOURCES=flt_motd.c
 flt_motd_la_LDFLAGS=-module -export-dynamic -avoid-version
 
+pkglib_LTLIBRARIES+=flt_failsafe.la
+flt_failsafe_la_SOURCES=flt_failsafe.c
+flt_failsafe_la_LDFLAGS=-module -export-dynamic -avoid-version
 
 # eof

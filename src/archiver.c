@@ -471,7 +471,7 @@ void cf_run_archiver_and_write_to_disk(void) {
       /* we need no locking in the child process */
       stringify_thread_and_write_to_disk(doc,t);
       t = t->next;
-    };
+    }
 
     snprintf(buff,256,"%s/forum.xml",mpath->values[0]);
 

@@ -49,8 +49,7 @@ use HTML::Entities;
 
 use CForum::Template;
 use CForum::Clientlib;
-
-use CheckRFC;
+use CForum::Validator;
 
 use POSIX qw/setlocale strftime LC_ALL/;
 
@@ -183,63 +182,19 @@ sub transform_body {
   # first we transform all newlines to \n
   $txt =~ s/\015\012|\015|\012/\n/g;
 
-  # after that, we collect all links to postings...
-  foreach(@{$pcfg->{PostingUrl}}) {
-    $txt =~ s{\[link:\s*$_->[0]([\dtm=&]+)(?:#\w+)?\]}{my $tidpid = $1; $tidpid =~ s!&!;!; '[pref:'.$tidpid.']'}eg;
-  }
-
-  # now transform all links...
-  my @links = ();
-  push @links,[$1, $2] while $txt =~ /\[([Ll][Ii][Nn][Kk]):\s*([^\]\s]+)\s*\]/g;
-  @links = grep {
-    is_URL($_->[1] => qw(http ftp news nntp telnet gopher mailto))
-      or is_URL(($_->[1] =~ /^[Vv][Ii][Ee][Ww]-[Ss][Oo][Uu][Rr][Cc][Ee]:(.+)/)[0] || '' => 'http')
-      or ($_->[1] =~ m<^(?:\.?\.?/(?!/)|\?)> and is_URL(rel_uri($_ -> [1],$base) => 'http'))
-    } @links;
-
-  # lets collect all images
-  my @images = ();
-  push @images, [$1, $2] while $txt =~ /\[([Ii][Mm][Aa][Gg][Ee]):\s*([^\]\s]+)\s*\]/g;
-  @images = grep {
-    is_URL($_->[1] => 'strict_http')
-      or ($_->[1] =~ m<^(?:\.?\.?/(?!/)|\?)> and is_URL(rel_uri($_->[1], $base) => 'http'))
-  } @images;
-
-  # lets collect all iframes
-  my @iframes;
-  push @iframes,[$1, $2] while $txt =~ /\[([Ii][Ff][Rr][Aa][Mm][Ee]):\s*([^\]\s]+)\s*\]/g;
-  @iframes = grep {
-    is_URL($_ -> [1] => 'http')
-    or ($_ -> [1] =~ m<^(?:\.?\.?/(?!/)|\?)> and is_URL (rel_uri($_ -> [1], $base) => 'http'))
-  } @iframes;
-
-  # encode to html
+  # encode to html (entities, and so on -- if we do it once,
+  # we don't need to do it every time a message will be viewed)
   $txt = recode($dcfg,$txt);
 
   # now transform...
 
-  # ... links
-  $txt =~ s!$_!<a href="$1">$1</a>!g for map {
-    '\[[Ll][Ii][Nn][Kk]:\s*('.quotemeta(recode($dcfg,$_->[1])).')\]'
-  } @links;
-
-  # ... images
-  $txt =~ s!$_!<img src="$1" border="0" alt="">!g for map {
-    '\[[Ii][Mm][Aa][Gg][Ee]:\s*('.quotemeta(recode($dcfg,$_->[1])).')\]'
-  } @images;
-
-  # ... iframes
-  $txt =~ s!$_!<iframe src="$1" width="90%" height="90%"><a href="$1">$1</a></iframe>! for map {
-    '\[[Ii][Ff][Rr][Aa][Mm][Ee]:\s*('.quotemeta(recode($dcfg,$_->[1])).')\]'
-  } @iframes;
-
   # ... messages
   foreach(@{$pcfg->{Image}}) {
     my ($name,$url,$alt) = (quotemeta $_->[0],recode($dcfg,$_->[1]),recode($dcfg,$_->[2]));
-    $txt =~ s!\[[mM][sS][gG]:\s*$name\]!<img src="$url" alt="$alt">!g;
+    $txt =~ s!\[[mM][sS][gG]:\s*$name\]![image:$url]!g;
   }
 
-  # now transform all quoting characters to \177
+  # ... all quoting characters to \177
   my $len = length $qchars;
   $txt =~ s!^((?:\Q$qchars\E)+)!"\177" x (length($1)/$len)!gem if $len;
 
@@ -256,7 +211,7 @@ sub transform_body {
   $txt =~ s!\n!<br />!g;
 
   # transform more than one space to &nbsp; (ascii art, etc)
-  $txt =~ s/(\s\s+)/('&nbsp;' x (length($1)-1)) . ' '/eg;
+  $txt =~ s/(\s\s+)/'&nbsp;' x length($1)/eg;
 
   # spaces after a <br /> have to be &nbsp;
   $txt =~ s!(?:^|(<br(?:\s*/)?>))\s!($1?$1:'').'&nbsp;'!eg;
@@ -276,31 +231,11 @@ sub message_field {
   my $archive = shift;
 
   my $break   = '<br />';
+  my $xhtml   = $fdcfg->{XHTMLMode} && $fdcfg->{XHTMLMode}->[0]->[0] eq 'yes';
 
-  my @array = [0 => []];
+  my $base   = $ENV{SCRIPT_NAME};
 
-# {{{
-#  for (split /<br(?:\s*\/)?>/ => $posting) {
-#    my $l = length ((/^(\177*)/)[0]);
-#    if ($array[-1][0] == $l) {
-#      push @{$array[-1][-1]} => $_;
-#    }
-#    else {
-#      push @array => [$l => [$_]];
-#    }
-#  }
-#  shift @array unless @{$array[0][-1]};
-#
-#  my $ll=0;
-#  $posting = join $break => map {
-#    my $string = $_->[0]
-#      ? (($ll and $ll != $_->[0]) ? $break : '') .
-#        join join ($break => @{$_->[-1]})
-#          => ('<span class="q">', '</span>')
-#            : (join $break => @{$_->[-1]});
-#    $ll = $_->[0]; $string;
-#  } @array;
-# }}}
+  $base =~ s![^/]*$!!; #!;
 
   #
   # maybe not as fast as the previous code, but even
@@ -310,15 +245,13 @@ sub message_field {
   my $qmode = 0;
   for(my $i=0;$i<length($posting);$i++) {
     if(substr($posting,$i,1) eq "\177") {
-      if(!$qmode) {
-        $txt .= '<span class="q">';
-      }
-
+      $txt .= '<span class="q">' unless $qmode;
       $txt  .= recode($fdcfg,$qchar);
       $qmode = 1;
     }
     elsif(substr($posting,$i,6) eq '<br />') {
-      $txt .= '<br />';
+      $txt .= $xhtml ? '<br />' : '<br>';
+
       if($qmode && substr($posting,$i+6,1) ne "\177") {
         $txt .= '</span>';
         $qmode = 0;
@@ -337,23 +270,82 @@ sub message_field {
   $posting =~ s!_/_SIG_/_(.*)!$break<span class="sig">-- $break$1</span>!s;
 
   # we want all posting refs to be transformed to links
-  unless(defined $archive) {
-    my $posturl;
-    if($main::UserName) {
-      $posturl = $fdcfg->{UPostingURL}->[0]->[0];
-    }
-    else {
-      $posturl = $fdcfg->{PostingURL}->[0]->[0];
-    }
-
-    $posting =~ s{\[pref:t=(\d+);m=(\d+)\]}{
-      my $txt = $posturl;
-      my ($tid,$mid) = ($1,$2);
-      $txt =~ s!\%t!$tid!g;
-      $txt =~ s!\%m!$mid!g;
-      '<a href="'.$txt.'">'.$txt.'</a>';
-    }eg;
+  my $posturl;
+  if($main::UserName) {
+    $posturl = $fdcfg->{UPostingURL}->[0]->[0];
   }
+  else {
+    $posturl = $fdcfg->{PostingURL}->[0]->[0];
+  }
+
+  $posting =~ s{\[pref:t=(\d+);m=(\d+)\]}{
+    my $txt = $posturl;
+    my ($tid,$mid) = ($1,$2);
+    $txt =~ s!\%t!$tid!g;
+    $txt =~ s!\%m!$mid!g;
+    '<a href="'.$txt.'">'.$txt.'</a>';
+  }eg;
+
+
+  # Phase 1: collect links, images, etc, pp
+
+  # this is much faster than the code used before
+  # (efficience analysis is relly nice :-)
+
+  my @links = ();
+  while($posting =~ /\[[Ll][Ii][Nn][Kk]:\s*([^\]\s]+?)\s*(?:\@title=([^\]]+)\s*)?\]/g) {
+    my ($uri,$title) = ($1,$2,$3);
+    next if
+      !is_valid_link($uri) &&
+      !is_valid_http_url(($uri =~ /^[Vv][Ii][Ee][Ww]-[Ss][Oo][Uu][Rr][Cc][Ee]:(.+)/)[0],CForum::Validator::VALIDATE_STRICT) &&
+      !($uri =~ m{^(?:\.?\.?/(?!/)|\?)} and is_valid_http_url(rel_uri($uri,$base)));
+
+    push @links,[$uri,$title];
+  }
+
+  my @images = ();
+  while($posting =~ /\[[Ii][Mm][Aa][Gg][Ee]:\s*([^\]\s]+?)\s*(?:\@alt=([^\]]+)\s*)?\]/g) {
+    my ($uri,$alt) = ($1,$2);
+    next if
+      !is_valid_http_url($uri,CForum::Validator::VALIDATE_STRICT) &&
+      !($uri =~ m{^(?:\.?\.?/(?!/)|\?)} and is_valid_http_url(rel_uri($uri, $base),CForum::Validator::VALIDATE_STRICT));
+
+    push @images,[$uri,$alt];
+  }
+
+  my @iframes = ();
+  while($posting =~ /\[[Ii][Ff][Rr][Aa][Mm][Ee]:\s*([^\]\s]+)\s*\]/g) {
+    my $uri = $1;
+    next if
+      !is_valid_http_url($uri,CForum::Validator::VALIDATE_STRICT) &&
+      !($uri =~ m{^(?:\.?\.?/(?!/)|\?)} and is_valid_http_url(rel_uri($uri, $base),CForum::Validator::VALIDATE_STRICT));
+
+    push @iframes,$uri;
+  }
+
+  # Phase 2: Ok, we collected the links, lets transform them
+  # ... links
+  $posting =~ s!$_!'<a href="'.$1.'">'.($2||$1).'</a>'!eg for map {
+    '\[[Ll][Ii][Nn][Kk]:\s*('.
+    quotemeta(recode($fdcfg,$_->[0])).
+    ')'.
+    ($_->[1] ? '\s*\@title=('.quotemeta(recode($fdcfg,$_->[1])).')' : '').
+    '\s*\]'
+  } @links;
+
+  # ... images
+  $posting =~ s!$_!'<img src="'.$1.'" border="0" alt="'.($2?$2:'').'">'!eg for map {
+    '\[[Ii][Mm][Aa][Gg][Ee]:\s*('.
+    quotemeta(recode($fdcfg,$_->[1])).
+    ')'.
+    ($_->[1] ? '\s*\@alt=('.quotemeta(recode($fdcfg,$_->[1])).')' : '').
+    '\s*\]'
+  } @images;
+
+  # ... iframes
+  $posting =~ s!$_!<iframe src="$1" width="90%" height="90%"><a href="$1">$1</a></iframe>! for map {
+    '\[[Ii][Ff][Rr][Aa][Mm][Ee]:\s*('.quotemeta(recode($fdcfg,$_->[1])).')\]'
+  } @iframes;
 
   # return
   #
@@ -410,7 +402,19 @@ sub uniquify_params {
 
   # thanks to André Malo for the following peace of code (great idea):
   # is the given charset UTF-8?
-  unless($val =~ /^\303\277/) {
+  if($val =~ /^\303\277/) {
+    # seems so, we have to check if all input is valid UTF-8; there
+    # are many broken browsers which send e.g. binary input not
+    # well-encoded as UTF-8
+    foreach($cgi->param) {
+      my @values = $cgi->param($_);
+
+      foreach my $val (@values) {
+        return get_error($dcfg,'posting','charset') unless $Clientlib->is_valid_utf8_string($val,length($val));
+      }
+    }
+  }
+  else {
     foreach($cgi->param) {
       my @values  = $cgi->param($_);
       my @newvals = ();
@@ -475,18 +479,18 @@ sub get_error {
   my ($dcfg,$err) = (shift,shift);
   my $variant     = shift || '';
 
-	unless($Msgs) {
-	  $Msgs = new BerkeleyDB::Btree(
+  unless($Msgs) {
+    $Msgs = new BerkeleyDB::Btree(
       -Filename => $dcfg->{MessagesDatabase}->[0]->[0],
       -Flags => DB_RDONLY
     ) or return 'Bad database error, go away';
-	}
+  }
 
-	my $id = $dcfg->{Language}->[0]->[0].'_E_'.($variant ? $err.'_'.$variant : $err);
+  my $id = $dcfg->{Language}->[0]->[0].'_E_'.($variant ? $err.'_'.$variant : $err);
 
   my $msg = '';
-	my $rc = $Msgs->db_get($id,$msg);
-	return $msg||'Error not found: '.$id;
+  my $rc = $Msgs->db_get($id,$msg);
+  return $msg||'Error not found: '.$id;
 }
 # }}}
 

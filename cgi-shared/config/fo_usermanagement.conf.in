@@ -11,6 +11,7 @@
 
 <Modules>
   AddModule "Plugins::HTTPAuth"
+  AddModule "Plugins::RegisterName"
 </Modules>
 
 <Form>
@@ -20,11 +21,11 @@
   MaxLength "UserName" "15"
   MaxLength "Password" "15"
 
-  Validate "Password" "^[a-zA-Z0-9!\"§$_<>.%&\\\/()=?-]+$"
-  Validate "Password" "\d"
+  Validate "Password" "^[a-zA-Z0-9!\"§$_<>.%&\\\\/()=?-]+$"
+  Validate "Password" "\\d"
   Validate "Password" "[a-zA-Z]"
 
-  Validate "UserName" "^[\da-z]+$"
+  Validate "UserName" "^[\\da-z]+$"
   Validate "email" "email"
 </Form>
 

@@ -882,7 +882,7 @@ int main(int argc,char *argv[],char *env[]) {
           #else
           /* fatal error: could not connect */
           if((sock = set_us_up_the_socket()) == -1) {
-            str_error_message(ErrorString,NULL,);
+            str_error_message(ErrorString,NULL);
           }
           #endif
           else {

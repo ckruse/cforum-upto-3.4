@@ -56,7 +56,7 @@ E_ARCHIVE_THREADNOTPRESENT: Leider gibt es den von Ihnen ausgewählten Thread ni
 E_posting_links: Einige [link:]-, [image:]- oder [iframe:]-URIs können nicht umgewandelt werden. Sicher, dass alle URIs korrekt sind?
 E_user_create: Leider konnte der User aus servertechnischen Gründen nicht angelegt werden.
 E_posting_category: Sie haben eine ungültige Kategorie ausgewählt.
-E_posting_charset: Sie haben ein Zeichen eingegeben, dass in ISO-8859-1 nicht darstellbar ist. Vielleicht haben Sie ja Binär-Code oder ein Euro-Zeichen ein
+E_posting_charset: Sie haben ein Zeichen eingegeben, dass weder gültiges UTF-8 noch gültiges Latin-1 ist. Vielleicht haben Sie ja Binär-Zeichen eingegeben?
 E_POST_NOT_ALLOWED: Das Schreiben neuer Nachrichten ist Momentan nicht erlaubt.
 E_VOTE_INTERNAL: Interner Fehler aufgetreten. Vielleicht haben sie keine Thread- oder Nachrichten-ID übermittelt?
 E_VOTE_MULTIPLE: Sie dürfen nur einmal abstimmen!
@@ -64,3 +64,5 @@ E_VOTE_AUTH: Sie müssen angemeldet sein, um abzustimmen!
 E_sendpw_error: Leider ist ein interner Fehler aufgetreten.
 E_sendpw_subject: SELFHTML-Forum-Passwort
 E_sendpw_body: Ihr SELFHTML-Forum-Passwort lautet: {$pass}
+E_new_post_mail_subject: Neue Antwort auf http://forum.de.selfhtml.org/my/?t={tid}&m={mid}
+E_new_post_mail_body: Hallo {name},\n\nes gibt eine neue Antwort auf:\n\n  http://forum.de.selfhtml.org/my/?t={tid}&m={mid}\n\nGrüsse,\n das Forum\n

@@ -33,6 +33,8 @@
 #include "hashlib.h"
 #include "readline.h"
 #include "utils.h"
+#include "configparser.h"
+#include "readline.h"
 #include "fo_server.h"
 #include "serverlib.h"
 /* }}} */

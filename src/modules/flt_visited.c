@@ -51,9 +51,10 @@ struct {
   u_char *VisitedFile;
   DB *db;
   int mark_visited;
-} Cfg = { 0, NULL, NULL, NULL, NULL, 0 };
+  int resp_204;
+} Cfg = { 0, NULL, NULL, NULL, NULL, 0, 0 };
 
-/* module api function, checks if message has been visited */
+/* {{{ module api function, checks if message has been visited */
 void *flt_visited_is_visited(void *vmid) {
   DBT key,data;
   u_int64_t *mid = (u_int64_t *)vmid;
@@ -75,8 +76,9 @@ void *flt_visited_is_visited(void *vmid) {
 
   return NULL;
 }
+/* }}} */
 
-/* module api function, mark a posting visited */
+/* {{{ module api function, mark a posting visited */
 void *flt_visited_mark_visited(void *vmid) {
   u_int64_t *mid = (u_int64_t *)vmid;
   DBT key,data;
@@ -110,23 +112,13 @@ void *flt_visited_mark_visited(void *vmid) {
 
   return NULL;
 }
+/* }}} */
 
-/*
- * Returns: int   one of the FLT_* values
- * Parameters:
- *   - t_cf_hash *head          a pointer to the cgi paramter list
- *   - t_configuration *dc      a pointer to the default configuration
- *   - t_configuration *vc      a pointer to the fo_view configuration
- *   - t_configuration *uc      a pointer to the user config
- *
- * This function is the api function for the "mark visited messages" plugin. It is a
- * t_filter_begin function
- *
- */
+/* {{{ flt_visited_execute_filter */
 #ifndef CF_SHARED_MEM
-int execute_filter(t_cf_hash *head,t_configuration *dc,t_configuration *vc,int sock) {
+int flt_visited_execute_filter(t_cf_hash *head,t_configuration *dc,t_configuration *vc,int sock) {
 #else
-int execute_filter(t_cf_hash *head,t_configuration *dc,t_configuration *vc,void *sock) {
+int flt_visited_execute_filter(t_cf_hash *head,t_configuration *dc,t_configuration *vc,void *sock) {
 #endif
   u_char *uname = cf_hash_get(GlobalValues,"UserName",8);
   u_char *cmid;
@@ -187,6 +179,11 @@ int execute_filter(t_cf_hash *head,t_configuration *dc,t_configuration *vc,void 
           }
 
           cleanup_struct(&thread);
+
+          if(Cfg.resp_204) {
+            printf("Status: 204 No Content\015\012\015\012");
+            return FLT_EXIT;
+          }
         }
       }
 
@@ -212,7 +209,9 @@ int execute_filter(t_cf_hash *head,t_configuration *dc,t_configuration *vc,void 
 
   return FLT_DECLINE;
 }
+/* }}} */
 
+/* {{{ set_col */
 int set_col(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cf_template *begin,t_cf_template *end) {
   if(Cfg.VisitedPostingsColorF || Cfg.VisitedPostingsColorB) {
     tpl_cf_setvar(begin,"visitedcol","1",1,0);
@@ -227,11 +226,15 @@ int set_col(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cf_templat
 
   return FLT_OK;
 }
+/* }}} */
 
+/* {{{ posting_handler */
 int posting_handler(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cl_thread *thread,t_cf_template *tpl) {
   return set_col(head,dc,vc,tpl,NULL);
 }
+/* }}} */
 
+/* {{{ mark_visited */
 int mark_visited(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_message *msg,u_int64_t tid,int mode) {
   u_char *uname = cf_hash_get(GlobalValues,"UserName",8);
   DBT key,data;
@@ -256,11 +259,15 @@ int mark_visited(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_messa
 
   return FLT_DECLINE;
 }
+/* }}} */
 
+/* {{{ mark_own_visited */
 int mark_own_visited(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_message *msg,u_int64_t tid) {
   return mark_visited(head,dc,vc,msg,tid,0);
 }
+/* }}} */
 
+/* {{{ flt_visit_handle_command */
 int flt_visit_handle_command(t_configfile *cf,t_conf_opt *opt,u_char **args,int argnum) {
   if(cf_strcmp(opt->name,"HighlightVisitedPostings") == 0) {
     Cfg.HighlightVisitedPostings = !cf_strcmp(args[0],"yes");
@@ -278,10 +285,15 @@ int flt_visit_handle_command(t_configfile *cf,t_conf_opt *opt,u_char **args,int 
   else if(cf_strcmp(opt->name,"MarkOwnPostsVisited") == 0) {
     Cfg.mark_visited = cf_strcmp(args[0],"yes") == 0;
   }
+  else if(cf_strcmp(opt->name,"MarkThreadResponse204") == 0) {
+    Cfg.resp_204 = cf_strcmp(args[0],"yes");
+  }
 
   return 0;
 }
+/* }}} */
 
+/* {{{ flt_visited_validate */
 #ifndef CF_SHARED_MEM
 int flt_visited_validate(t_cf_hash *head,t_configuration *dc,t_configuration *vc,time_t last_modified,int sock) {
 #else
@@ -298,7 +310,9 @@ int flt_visited_validate(t_cf_hash *head,t_configuration *dc,t_configuration *vc
 
   return FLT_OK;
 }
+/* }}} */
 
+/* {{{ flt_visited_lm */
 #ifndef CF_SHARED_MEM
 time_t flt_visited_lm(t_cf_hash *head,t_configuration *dc,t_configuration *vc,int sock) {
 #else
@@ -316,7 +330,9 @@ time_t flt_visited_lm(t_cf_hash *head,t_configuration *dc,t_configuration *vc,vo
 
   return -1;
 }
+/* }}} */
 
+/* {{{ flt_visited_init_handler */
 int flt_visited_init_handler(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc) {
   int ret;
 
@@ -336,7 +352,9 @@ int flt_visited_init_handler(t_cf_hash *cgi,t_configuration *dc,t_configuration 
 
   return FLT_DECLINE;
 }
+/* }}} */
 
+/* {{{ set_link */
 #ifndef CF_SHARED_MEM
 int set_link(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cl_thread *thr,int sock) {
 #else
@@ -354,7 +372,9 @@ int set_link(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cl_thread
 
   return FLT_OK;
 }
+/* }}} */
 
+/* {{{ flt_visited_cleanup */
 void flt_visited_cleanup(void) {
   if(Cfg.VisitedPostingsColorF) free(Cfg.VisitedPostingsColorF);
   if(Cfg.VisitedPostingsColorB) free(Cfg.VisitedPostingsColorB);
@@ -362,23 +382,26 @@ void flt_visited_cleanup(void) {
 
   if(Cfg.db) Cfg.db->close(Cfg.db,0);
 }
+/* }}} */
 
+/* {{{ module config */
 t_conf_opt flt_visited_config[] = {
   { "HighlightVisitedPostings", flt_visit_handle_command, CFG_OPT_USER,                NULL },
   { "VisitedPostingsColors",    flt_visit_handle_command, CFG_OPT_USER,                NULL },
   { "VisitedFile",              flt_visit_handle_command, CFG_OPT_USER|CFG_OPT_NEEDED, NULL },
   { "MarkOwnPostsVisited",      flt_visit_handle_command, CFG_OPT_USER,                NULL },
+  { "MarkThreadResponse204",    flt_visit_handle_command, CFG_OPT_USER|CFG_OPT_CONFIG, NULL },
   { NULL, NULL, 0, NULL }
 };
 
 t_handler_config flt_visited_handlers[] = {
-  { INIT_HANDLER,         flt_visited_init_handler },
-  { CONNECT_INIT_HANDLER, execute_filter           },
-  { VIEW_INIT_HANDLER,    set_col                  },
-  { VIEW_HANDLER,         set_link                 },
-  { POSTING_HANDLER,      posting_handler          },
-  { VIEW_LIST_HANDLER,    mark_visited             },
-  { AFTER_POST_HANDLER,   mark_own_visited         },
+  { INIT_HANDLER,         flt_visited_init_handler   },
+  { CONNECT_INIT_HANDLER, flt_visited_execute_filter },
+  { VIEW_INIT_HANDLER,    set_col                    },
+  { VIEW_HANDLER,         set_link                   },
+  { POSTING_HANDLER,      posting_handler            },
+  { VIEW_LIST_HANDLER,    mark_visited               },
+  { AFTER_POST_HANDLER,   mark_own_visited           },
   { 0, NULL }
 };
 
@@ -390,6 +413,6 @@ t_module_config flt_visited = {
   NULL,
   flt_visited_cleanup
 };
-
+/* }}} */
 
 /* eof */

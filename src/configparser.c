@@ -62,6 +62,7 @@ t_conf_opt default_options[] = {
   { "<General>", NULL, 0, NULL },
   { "ExternCharset",            handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG, &fo_default_conf },
   { "TemplateMode",             handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG, &fo_default_conf },
+  { "XHTMLMode",                handle_command,   CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_UNIQUE, &fo_default_conf },
   { "MessagePath",              handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG, &fo_default_conf },
   { "ArchivePath",              handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG, &fo_default_conf },
   { "ThreadIndexFile",          handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG, &fo_default_conf },
@@ -107,7 +108,6 @@ t_conf_opt default_options[] = {
 /* {{{ forum client config options */
 t_conf_opt fo_view_options[] = {
   { "<ForumBehavior>", NULL, 0, NULL },
-  { "XHTMLMode",                  handle_command,   CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_UNIQUE,                &fo_view_conf },
   { "DoQuote",                    handle_command,   CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_UNIQUE,                &fo_view_conf },
   { "QuotingChars",               handle_command,   CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_NEEDED|CFG_OPT_UNIQUE, &fo_view_conf },
   { "ShowThread",                 handle_command,   CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_UNIQUE,                &fo_view_conf },
@@ -210,6 +210,7 @@ t_conf_opt fo_arcview_options[] = {
   { "EnableCache",             handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG,   &fo_arcview_conf },
   { "CacheLevel",              handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG,   &fo_arcview_conf },
   { "CacheDir",                handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG,   &fo_arcview_conf },
+  { "QuotingChars",            handle_command,   CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_NEEDED|CFG_OPT_UNIQUE, &fo_arcview_conf },
   { "</General>", NULL, 0, NULL },
 
   { "<Templates>", NULL, 0, NULL },
@@ -322,7 +323,7 @@ int parse_args(u_char *fname,u_char *line,u_char ***args,int lnum) {
     if(*ptr == (u_char)012 || *ptr == (u_char)0 || *ptr == '#') break; /* end of line or end of file or comment */
 
     if(*ptr != '"') {
-      fprintf(stderr,"%s: unexpected character %d at line %d!\n",fname,*ptr,lnum);
+      fprintf(stderr,"[%s:%d] unexpected character %x!\n",fname,lnum,*ptr);
       return -1;
     }
 
@@ -385,10 +386,11 @@ int read_config(t_configfile *conf,t_take_default deflt,int mode) {
   struct stat st;
   u_char *directive_name;
   u_char **args;
-  int i,found;
+  int i,found,fatal = 0;
   t_conf_opt *opt;
   unsigned int linenum = 0;
   int argnum;
+  t_cf_list_element *lelem;
 
   /*
    * open() could fail :)
@@ -460,15 +462,21 @@ int read_config(t_configfile *conf,t_take_default deflt,int mode) {
 
     found = 0;
     if((opt = cf_hash_get(conf->options,directive_name,ptr-ptr1)) != NULL) {
+      /* mark option as seen */
+      opt->flags |= CFG_OPT_SEEN;
+
       if(opt->flags & mode) {
         if(opt->callback) found = opt->callback(conf,opt,args,argnum);
       }
       else {
         if(opt->flags) {
-          fprintf(stderr,"Configuration directive %s not allowed in this mode!\n",directive_name);
-          munmap(buff,st.st_size);
-          close(fd);
-          return 1;
+          if((opt->flags & CFG_OPT_SEEN) == 0) {
+            fprintf(stderr,"[%s:%d] Configuration directive %s not allowed in this mode!\n",conf->filename,linenum,directive_name);
+            printf("%d\n",opt->flags);
+            munmap(buff,st.st_size);
+            close(fd);
+            return 1;
+          }
         }
       }
     }
@@ -477,7 +485,7 @@ int read_config(t_configfile *conf,t_take_default deflt,int mode) {
         found = deflt(conf,directive_name,args,argnum);
       }
       else {
-        fprintf(stderr,"%s: Configuration entry for directive %s not found!\n",conf->filename,directive_name);
+        fprintf(stderr,"[%s:%d] Configuration entry for directive %s not found!\n",conf->filename,linenum,directive_name);
         return 1;
       }
     }
@@ -490,7 +498,7 @@ int read_config(t_configfile *conf,t_take_default deflt,int mode) {
       }
     }
     else if(found != -1) {
-      fprintf(stderr,"%s: %s: Callback function returned not 0 or -1!\n",conf->filename,directive_name);
+      fprintf(stderr,"[%s:%d] %s: Callback function returned not 0 or -1!\n",conf->filename,linenum,directive_name);
       return 1;
     }
 
@@ -508,7 +516,19 @@ int read_config(t_configfile *conf,t_take_default deflt,int mode) {
   close(fd);
   munmap(buff,st.st_size);
 
-  return 0;
+  for(lelem=conf->options_list.elements;lelem;lelem = lelem->next) {
+    opt = (t_conf_opt *)lelem->data;
+    if(opt->flags & CFG_OPT_NEEDED) {
+      if(opt->flags & mode) {
+        if((opt->flags & CFG_OPT_SEEN) == 0) {
+          fatal = 1;
+          fprintf(stderr,"missing configuration entry %s in %s\n",opt->name,conf->filename);
+        }
+      }
+    }
+  }
+
+  return fatal;
 }
 /* }}} */
 
@@ -716,6 +736,7 @@ t_cf_list_head *cfg_get_value(t_configuration *cfg,const u_char *name) {
 void cfg_init_file(t_configfile *conf,u_char *filename) {
   conf->filename = strdup(filename);
   conf->options  = cf_hash_new(NULL);
+  cf_list_init(&conf->options_list);
 }
 /* }}} */
 
@@ -729,7 +750,14 @@ int cfg_register_options(t_configfile *conf,t_conf_opt *opts) {
       return -1;
     }
 
-    cf_hash_set(conf->options,(u_char *)opts[i].name,strlen(opts[i].name),&opts[i],sizeof(opts[i]));
+    /*
+     * be sure that seen has not been set, yet -- programmers have really
+     * silly ideas, sometimes
+     */
+    opts[i].flags &= ~CFG_OPT_SEEN;
+
+    cf_hash_set_static(conf->options,(u_char *)opts[i].name,strlen(opts[i].name),&opts[i]);
+    cf_list_append_static(&conf->options_list,&opts[i],sizeof(opts[i]));
   }
 
   return 0;

@@ -49,7 +49,7 @@ int flt_tipoftheday_execute(t_cf_hash *cgi,t_configuration *dc,t_configuration *
 
   srand(getpid() ^ time(NULL));
 
-  if(TOTD_Activate && TOTD_File) {
+  if(TOTD_Activate && TOTD_File && TOTD_Idx) {
     if((fd = fopen(TOTD_Idx,"r")) != NULL) {
       fread(&num,sizeof(num),1,fd);
 
@@ -97,9 +97,9 @@ void flt_tipoftheday_cleanup(void) {
 }
 
 t_conf_opt flt_tipoftheday_config[] = {
-  { "TipOfTheDayFile",     flt_tipoftheday_confighandler, CFG_OPT_CONFIG|CFG_OPT_NEEDED, NULL },
+  { "TipOfTheDayFile",     flt_tipoftheday_confighandler, CFG_OPT_CONFIG, NULL },
   { "TipOfTheDayActivate", flt_tipoftheday_confighandler, CFG_OPT_CONFIG|CFG_OPT_USER, NULL },
-  { "TipOfTheDayIndex",    flt_tipoftheday_confighandler, CFG_OPT_CONFIG|CFG_OPT_NEEDED, NULL },
+  { "TipOfTheDayIndex",    flt_tipoftheday_confighandler, CFG_OPT_CONFIG, NULL },
   { NULL, NULL, 0, NULL }
 };
 

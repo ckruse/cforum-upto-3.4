@@ -38,13 +38,12 @@ use CGI::Carp qw/fatalsToBrowser/;
 
 use DBI;
 
-use HTML::Entities;
 use CForum::Template;
+use CForum::Validator;
 
 use File::Path;
 
 use ForumUtils qw/read_configuration get_template get_error recode uniquify_params get_config_file create_directory_structure/;
-use CheckRFC;
 
 use Net::SMTP;
 # }}}
@@ -124,7 +123,7 @@ sub validate_parameters {
       foreach my $validate (@validate) {
         if($validate) {
           if($validate->[1] eq 'email') {
-            return get_error($fdc,$name,'invalid') unless is_email($val);
+            return get_error($fdc,$name,'invalid') unless is_valid_mailaddress($val);
           }
           else {
             return get_error($fdc,$name,'invalid') unless $val =~ m!$validate->[1]!;

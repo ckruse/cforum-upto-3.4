@@ -45,6 +45,7 @@ static const t_scheme_list scheme_list[] = {
   { "nntp",     is_valid_nntp_link },
   { "news",     is_valid_news_link },
   { "gopher",   is_valid_gopher_link },
+  { "ftp",      is_valid_ftp_link },
   { "\0", NULL }
 };
 /* }}} */
@@ -563,22 +564,28 @@ int is_valid_prospero_link(const u_char *link) {
 int is_valid_telnet_link(const u_char *link) {
   register const u_char *ptr;
   const u_char *anchor,*doubledot;
-  u_char *hostname;
+  u_char *hostname,*mylink;
+  size_t len = strlen(link);
 
-  if(cf_strncmp(link,"telnet://",8)) return -1;
+  if(cf_strncmp(link,"telnet://",9)) return -1;
 
-  if((anchor = strstr(link,"@")) == NULL) {
-    if((doubledot = strstr(link+8,":")) == NULL) {
-      hostname = strdup(link+8);
+  if(link[len-1] == '/') mylink = strndup(link,len-1);
+  else mylink = (u_char *)link;
+
+  if((anchor = strstr(mylink,"@")) == NULL) {
+    if((doubledot = strstr(mylink+9,":")) == NULL) {
+      hostname = strdup(mylink+9);
       if(is_valid_hostname(hostname)) {
+        if(mylink != link) free(mylink);
         free(hostname);
         return -1;
       }
       free(hostname);
     }
     else {
-      hostname = strndup(link+8,link+8-doubledot);
+      hostname = strndup(mylink+9,doubledot-mylink-9);
       if(is_valid_hostname(hostname)) {
+        if(mylink != link) free(mylink);
         free(hostname);
         return -1;
       }
@@ -587,18 +594,25 @@ int is_valid_telnet_link(const u_char *link) {
       for(ptr=doubledot+1;*ptr;ptr++) {
         if(!isdigit(*ptr)) {
           /* we do not allow anything else after the slash */
-          if(*ptr == '/' && *(ptr+1)) return -1;
+          if(*ptr == '/' && *(ptr+1)) {
+            if(mylink != link) free(mylink);
+            return -1;
+          }
         }
       }
     }
   }
   else {
     if((doubledot = strstr(anchor+1,":")) == NULL) {
-      if(is_valid_hostname(anchor+1)) return -1;
+      if(is_valid_hostname(anchor+1)) {
+        if(mylink != link) free(mylink);
+        return -1;
+      }
     }
     else {
-      hostname = strndup(anchor+1,anchor+1-doubledot);
+      hostname = strndup(anchor+1,doubledot-anchor-1);
       if(is_valid_hostname(hostname)) {
+        if(mylink != link) free(mylink);
         free(hostname);
         return -1;
       }
@@ -607,7 +621,10 @@ int is_valid_telnet_link(const u_char *link) {
       for(ptr=doubledot+1;*ptr;ptr++) {
         if(!isdigit(*ptr)) {
           /* we do not allow anything else after the slash */
-          if(*ptr == '/' && *(ptr+1)) return -1;
+          if(*ptr == '/' && *(ptr+1)) {
+            if(mylink != link) free(mylink);
+            return -1;
+          }
         }
       }
     }
@@ -617,14 +634,17 @@ int is_valid_telnet_link(const u_char *link) {
    * and password, if exist
    */
   if(anchor) {
-    for(ptr=link+8;*ptr;ptr++) {
+    for(ptr=mylink+9;*ptr;ptr++) {
       if(isuchar_wo_escape(*ptr) == 0) {
         /* end of username */
         if(*ptr == ':' || *ptr == '@') break;
 
         /* escaped char */
         if(*ptr == '%') {
-          if(isxdigit(*(ptr+1)) == 0 || isxdigit(*(ptr+2)) == 0) return -1;
+          if(isxdigit(*(ptr+1)) == 0 || isxdigit(*(ptr+2)) == 0) {
+            if(mylink != link) free(mylink);
+            return -1;
+          }
         }
 
         /* there are some special characters allowed */
@@ -635,18 +655,24 @@ int is_valid_telnet_link(const u_char *link) {
           case '=':
             break;
           default:
+            if(mylink != link) free(mylink);
             return -1;
         }
       }
-
     }
 
     /* password       = *[ uchar | ";" | "?" | "&" | "=" ] */
     if(*ptr == ':') {
-      for(ptr++;*ptr;ptr++) {
+      for(++ptr;*ptr;++ptr) {
         if(isuchar_wo_escape(*ptr) == 0) {
+          /* end of password */
+          if(*ptr == '@') break;
+
           if(*ptr == '%') {
-            if(isxdigit(*(ptr+1)) == 0 || isxdigit(*(ptr+2)) == 0) return -1;
+            if(isxdigit(*(ptr+1)) == 0 || isxdigit(*(ptr+2)) == 0) {
+              if(mylink != link) free(mylink);
+              return -1;
+            }
           }
 
           switch(*ptr) {
@@ -656,17 +682,21 @@ int is_valid_telnet_link(const u_char *link) {
             case '=':
               break;
             default:
+              if(mylink != link) free(mylink);
               return -1;
           }
         }
       }
     }
 
-    /* we have to be at the end of the string now */
-    if(*ptr) return -1;
+    /* we have to be at the end of the username-password section now */
+    if(*ptr != '@') {
+      if(mylink != link) free(mylink);
+      return -1;
+    }
   }
 
-
+  if(mylink != link) free(mylink);
   return 0;
 }
 /* }}} */
@@ -720,6 +750,78 @@ int is_valid_nntp_link(const u_char *link) {
 
 /* {{{ is_valid_news_link */
 int is_valid_news_link(const u_char *link) {
+  register const u_char *ptr;
+  u_char *at,*doublept,*hostname;
+
+  if(cf_strncmp(link,"news:",5) != 0) return -1;
+
+  ptr = link + 5;
+
+  /* at least one character has to follow */
+  if(*ptr == '\0') return -1;
+
+  /* we accept news:* */
+  if(cf_strcmp(ptr,"*") == 0) return 0;
+
+
+  /* we're in group mode */
+  if((at = strstr(ptr,"@")) == NULL) {
+    for(;*ptr;++ptr) {
+      if(!isalnum(*ptr)) {
+        switch(*ptr) {
+          case '-':
+          case '.':
+          case '+':
+          case '_':
+            break;
+          default:
+            return -1;
+        }
+      }
+    }
+  }
+  else {
+    for(;*ptr;++ptr) {
+      if(!isuchar_wo_escape(*ptr)) {
+        if(*ptr == '@') break;
+
+        if(*ptr == '%') {
+          if(!isxdigit(*(ptr+1)) || !isxdigit(*(ptr+2))) return -1;
+          ptr += 2;
+          continue;
+        }
+        
+        switch(*ptr) {
+          case ';':
+          case '/':
+          case '?':
+          case ':':
+          case '&':
+          case '=':
+            break;
+          default:
+            return -1;
+        }
+      }
+    }
+
+    ++ptr;
+    if((doublept = strstr(ptr,":")) == NULL) {
+      if(is_valid_hostname(ptr)) return -1;
+    }
+    else {
+      hostname = strndup(ptr,doublept-ptr);
+      if(is_valid_hostname(hostname)) {
+        free(hostname);
+        return -1;
+      }
+      free(hostname);
+
+      for(ptr=doublept+1;*ptr && isdigit(*ptr);++ptr);
+      if(*ptr != '\0' && !isdigit(*ptr)) return -1;
+    }
+  }
+
   return 0;
 }
 /* }}} */
@@ -917,11 +1019,11 @@ int is_valid_ftp_link(const u_char *link) {
 
   if(!slash) {
     if(!doublepoint) {
-      if(!is_valid_hostname(start)) return -1;
+      if(is_valid_hostname(start)) return -1;
     }
     else {
       hostname = strndup(start,doublepoint-start);
-      if(!is_valid_hostname(hostname)) {
+      if(is_valid_hostname(hostname)) {
         free(hostname);
         return -1;
       }
@@ -936,7 +1038,7 @@ int is_valid_ftp_link(const u_char *link) {
   else {
     if(doublepoint) {
       hostname = strndup(start,doublepoint-start);
-      if(!is_valid_hostname(hostname)) {
+      if(is_valid_hostname(hostname)) {
         free(hostname);
         return -1;
       }
@@ -948,7 +1050,7 @@ int is_valid_ftp_link(const u_char *link) {
     }
     else {
       hostname = strndup(start,slash-start);
-      if(!is_valid_hostname(hostname)) {
+      if(is_valid_hostname(hostname)) {
         free(hostname);
         return -1;
       }
@@ -1049,7 +1151,7 @@ int main(int argc,char *argv[]) {
   int i;
   
   if(argc == 1) {
-    fprintf(stderr,"Usage:\n\t%s uris\n");
+    fprintf(stderr,"Usage:\n\t%s uris\n",argv[0]);
     return EXIT_FAILURE;
   }
 
@@ -1063,7 +1165,8 @@ int main(int argc,char *argv[]) {
 
     return EXIT_SUCCESS;
   }
-  
+
+  return EXIT_SUCCESS;
 }
 #endif
 

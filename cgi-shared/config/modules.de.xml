@@ -39,6 +39,15 @@
         </argument>
       </directive>
 
+      <directive name="OwnJSFile" arguments="1">
+        <argument paramname="ownjsfile" type="text" encode="plain">
+          <validate type="url"/>
+          <question>Möchten Sie eine eigene JS-Datei benutzen? Wenn ja, geben Sie hier die URL zu der Datei an. Wenn nein, lassen Sie das Feld einfach frei.</question>
+          <error>Bitte geben Sie eine gültige URL für die eigene CSS-Datei an!</error>
+        </argument>
+      </directive>
+
+
       <directive name="TextBox" arguments="2">
         <argument paramname="tboxw" type="text" encode="plain">
           <validate>^\d+$</validate>
@@ -233,7 +242,7 @@
         </argument>
       </directive>
 
-      <directive name="DeletedUseCheckbox" arguments="1">
+      <directive name="DeletedUseCheckboxes" arguments="1">
         <argument paramname="deletedusecheckbox" type="radio" encode="plain">
           <validate>^(?:yes|no)$</validate>
           <question>Sollen Checkboxen zum Ausblenden von Threads benutzt werden?</question>
@@ -296,11 +305,11 @@
       <directive name="LinkNoVisited" arguments="1">
         <argument paramname="fltlinknovisited" type="radio" encode="plain">
           <validate>^(yes|no)$</validate>
-          <question>Sollen die &lt;link&gt;-Elemente zuerst auf nicht besuchte Nachrichten zeigen, auch wenn dabei unbesuchte Nachrichten übersprungen werden? Wenn keine unbesuchten Nachrichten vorhanden sind, zeigen die &lt;link&gt;-Elemente ganz auf die ganz normalen Ziele.</question>
-          <error>Bitte geben Sie &quot;ja&quot; oder &quot;nein&quot; bei der Frage nach den Link-Elementen an!</error>
+          <question>Der Postingbaum wird zeilenweise von oben nach unten abgearbeitet. Sollen dabei die -Elemente nur auf ungelesene Postings zeigen, oder sollen auch bereits gelesene Postings angesprungen werden? Sollten keine ungelesenen Postings mehr vorhanden sein, so wird das Default-Verhalten aktiviert.</question>
+          <error>Bitte geben Sie &quot;nur auf ungelesene Postings&quot; oder &quot;auf alle Postings&quot; bei der Frage nach den Link-Elementen an!</error>
           <formvalues>
-            <value val="yes">Ja</value>
-            <value val="no" default="yes">Nein</value>
+            <value val="yes">Nur auf ungelesene Postings</value>
+            <value val="no" default="yes">Auf alle Postings</value>
           </formvalues>
         </argument>
       </directive>
@@ -364,6 +373,18 @@
           <validate>.*</validate>
           <question>Das Forum bietet an, diverse Daten beim Erstellen oder Beantworten von Nachrichten automatisch vorauszufüllen. Geben Sie hier Ihren (Nick-)Namen an. Diese Information wird als Standard-Wert für das Feld &quot;Name&quot; benutzt.</question>
           <error />
+        </argument>
+      </directive>
+
+      <directive name="RegisteredName" arguments="1">
+        <argument paramname="registeredname" type="radio" encode="plain">
+          <validate>^(?:yes|no)$</validate>
+          <question>Möchten Sie Ihren Namen schützen? Wenn Sie hier &quot;Ja&quot; angeben, kann kein anderer unter dem von Ihnen unter &quot;Name&quot; angegebenen Namen posten.</question>
+          <error>Bitte geben Sie &quot;ja&quot; oder &quot;nein&quot; an!</error>
+          <formvalues>
+            <value val="yes">Ja</value>
+            <value val="no" default="yes">Nein</value>
+          </formvalues>
         </argument>
       </directive>
 
@@ -692,6 +713,7 @@
           <error>Bitte geben Sie für den automatischen Reload eine Zahl zwischen 2 und 30 ein!</error>
         </argument>
       </directive>
+
     </section>
   </page>
 
