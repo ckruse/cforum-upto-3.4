@@ -1,3 +1,7 @@
+2004-10-01 Christian Kruse <ckruse@wwwtech.de>
+	* src/modules/flt_category.c: Renamed some functions and variables (module
+		functions and variables have to be prefixed by the module name!)
+
 2004-09-29 Christian Kruse <ckruse@wwwtech.de>
 	* src/modules/flt_failsafe.c: Fixed several bugs, removed redundant code (now
 		the writer is a function)
