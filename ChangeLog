@@ -11,6 +11,8 @@
 	* cgi-shared/tipoftheday.txt: Moved to cgi-shared/data/
 	* cgi-bin/fo_post_old, cgi-bin/fo_userconf: Moved to .in, added @PERLMODULES@
 	* cgi-bin/.htaccess: Added deny rule for non-cgi forum programs
+	* src/modules/flt_link.c: Repaired flt_link.c, now you can choose if new
+		messages should be displayed first
 
 2004-07-27 Christian Kruse <ckruse@wwwtech.de>
 	* cgi-bin/fo_userconf: Added 'mail me my password' functionality

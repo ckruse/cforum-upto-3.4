@@ -39,7 +39,6 @@
 
 static int SetLinks    = 0;
 static int NoVisited   = 0;
-static int LinkOrder   = LINK_OLDEST_FIRST;
 
 t_message *flt_link_get_previous(t_message *msg) {
   t_mod_api is_visited;
@@ -63,61 +62,18 @@ t_message *flt_link_get_previous(t_message *msg) {
 }
 
 
-t_message *flt_link_get_next(t_cl_thread *thr,t_message *msg) {
-  t_message *tmp,*tmp1;
+t_message *flt_link_get_next(t_message *msg) {
+  t_message *tmp;
   t_mod_api is_visited = cf_get_mod_api_ent("is_visited");
-  int lvl,first;
 
-  if(LinkOrder == LINK_NEWEST_FIRST) {
-    if(msg->next) {
-      if(is_visited && NoVisited) {
-        for(;msg && (msg->invisible == 1 || msg->may_show == 0 || is_visited(&(msg->mid)) != NULL);msg=msg->next);
-
-        /* there could be no unvisited message be found */
-        if(msg == NULL) return msg->next;
-
-        /* ok, unvisited message could be found */
-        return msg;
-      }
-      else {
-        return msg->next;
-      }
+  if(msg->next) {
+    if(NoVisited) {
+      for(tmp=msg->next;tmp && (is_visited(&tmp->mid) || tmp->invisible == 1 || tmp->may_show == 0);tmp=tmp->next);
+      if(tmp) return tmp;
     }
-  }
-  else {
-    if(is_visited && NoVisited) {
-      /* go to the last subtree */
-      if(msg == thr->messages) msg = thr->messages->next;
-      if(msg == NULL) return NULL;
 
-      for(tmp=msg;(tmp1 = next_subtree(tmp)) != NULL;tmp=tmp1);
-      printf("we went to the last subtree (%llu)\n",tmp->mid);
-
-      /* there wa are. now, check for each subtree if there is an unread message */
-      for(tmp1=tmp;(tmp1 = prev_subtree(tmp)) != NULL;tmp=tmp1) {
-        for(lvl = tmp->level,first=1;tmp && (tmp->level > lvl || first);tmp=tmp->next) {
-          first = 0;
-          if(is_visited(&(tmp->mid)) == NULL) return tmp;
-        }
-      }
-
-      /* out of the loop: no unvisited message could be found */
-      printf("we are out of it\n");
-      /** \todo check for last message in the thread (we have to jump to the previous subtree) */
-      //for(tmp=msg;(tmp1 = next_subtree(tmp)) != NULL;tmp=tmp1);
-      tmp = prev_subtree(msg);
-
-      /* ok, we are at the next subtree -- are we? */
-      if(tmp == msg) return msg->next;
-      return tmp;
-    }
-    else {
-      for(tmp=msg;(tmp1 = next_subtree(tmp)) != NULL;tmp=tmp1);
-
-      /* ok, we are at the next subtree -- are we? */
-      if(tmp == msg) return msg->next;
-      return msg;
-    }
+    for(tmp=msg->next;tmp && (tmp->invisible == 1 || tmp->may_show == 0);tmp=tmp->next);
+    return tmp;
   }
 
   return NULL;
@@ -130,41 +86,54 @@ t_message *flt_link_get_last(t_cl_thread *thread) {
   return msg;
 }
 
+void my_getlink(t_string *str,u_int64_t mid,u_int64_t tid) {
+  str->content  = get_link(NULL,tid,mid);
+  str->reserved = str->len = strlen(str->content);
+  str->reserved += 1;
+
+  if(aaf) {
+    str_chars_append(str,aafval,5);
+    str_char_append(str,*aaf);
+  }
+}
+
 int flt_link_set_links_post(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cl_thread *thread,t_cf_template *tpl) {
   u_char *aaf = cf_cgi_get(head,"aaf");
   t_message *msg;
   size_t n;
-  u_char buff[256];
+  u_char *buff;
+  t_string str;
+  t_name_value *qtype = cfg_get_first_value(&fo_view_conf,"ParamType");
+  u_char aafval[] = *qtype->values[0] == 'Q' ? "&aaf=" : "?aaf=";
 
-  /* use doesn't want <link> tags */
+  /* user doesn't want <link> tags */
   if(SetLinks == 0) return FLT_DECLINE;
+
+  str_init(&str);
 
   /* ok, we have to find the previous message */
   if((msg = flt_link_get_previous(thread->threadmsg)) != NULL) {
-    if(aaf) n = snprintf(buff,256,"?t=%llu&m=%llu&aaf=%s",thread->tid,msg->mid,aaf);
-    else    n = snprintf(buff,256,"?t=%llu&m=%llu",thread->tid,msg->mid);
-
-    tpl_cf_setvar(tpl,"prev",buff,n,1);
+    my_getlink(&str,thread->tid,msg->mid);
+    tpl_cf_setvar(tpl,"prev",str.content,str.len,1);
+    str_cleanup(&str);
   }
 
   /* next message... */
-  if((msg = flt_link_get_next(thread,thread->threadmsg)) != NULL) {
-    if(aaf) n = snprintf(buff,256,"?t=%lld&m=%lld&aaf=%s",thread->tid,msg->mid,aaf);
-    else    n = snprintf(buff,256,"?t=%lld&m=%lld",thread->tid,msg->mid);
-
-    tpl_cf_setvar(tpl,"next",buff,n,1);
+  if((msg = flt_link_get_next(thread->threadmsg)) != NULL) {
+    my_getlink(&str,thread->tid,msg->mid);
+    tpl_cf_setvar(tpl,"next",str.content,str.len,1);
+    str_cleanup(&str);
   }
 
-  if(aaf) n = snprintf(buff,256,"?t=%lld&m=%lld&aaf=%s",thread->tid,thread->messages->mid,aaf);
-  else    n = snprintf(buff,256,"?t=%lld&m=%lld",thread->tid,thread->messages->mid);
-  tpl_cf_setvar(tpl,"first",buff,n,1);
+  my_getlink(&str,thread->tid,thread->messages->mid);
+  tpl_cf_setvar(tpl,"first",str.content,str.len,1);
+  str_cleanup(&str);
 
   /* last message... */
   if((msg = flt_link_get_last(thread)) != NULL) {
-    if(aaf) n = snprintf(buff,256,"?t=%lld&m=%lld&aaf=%s",thread->tid,msg->mid,aaf);
-    else    n = snprintf(buff,256,"?t=%lld&m=%lld",thread->tid,msg->mid);
-
+    my_getlink(&str,thread->tid,msg->mid);
     tpl_cf_setvar(tpl,"last",buff,n,1);
+    str_cleanup(&str);
   }
   
   return FLT_OK;
@@ -174,10 +143,6 @@ int flt_link_handle_conf(t_configfile *cfg,t_conf_opt *entry,u_char **args,int a
   if(argnum == 1) {
     if(*entry->name == 'S')                              SetLinks    = cf_strcmp(args[0],"yes") == 0;
     else if(cf_strcmp(entry->name,"LinkNoVisited") == 0) NoVisited   = cf_strcmp(args[0],"yes") == 0;
-    else {
-      if(cf_strcmp(args[0],"OldestFirst") == 0) LinkOrder  = LINK_OLDEST_FIRST;
-      else                                      LinkOrder  = LINK_NEWEST_FIRST;
-    }
   }
   else {
     fprintf(stderr,"Error: expecting 1 argument for directive SetLinkTags!\n");
@@ -190,7 +155,6 @@ int flt_link_handle_conf(t_configfile *cfg,t_conf_opt *entry,u_char **args,int a
 t_conf_opt flt_link_config[] = {
   { "SetLinkTags",     flt_link_handle_conf,   NULL },
   { "LinkNoVisited",   flt_link_handle_conf,   NULL },
-  { "LinkOrder",       flt_link_handle_conf,   NULL },
   { NULL, NULL, NULL }
 };
 
