@@ -1,4 +1,3 @@
-2005-02-09 Christian Kruse
-	* src/modules/flt_cftp.c: Fixed bug in STAT * command
-	* cgi-bin/fo_cleanup.in: Fixed bug in cleanup_deleted()
+2005-02-10 Christian Kruse
+	* cgi-shared/docs/admin.tex: Wrote a lot of documentation
 
