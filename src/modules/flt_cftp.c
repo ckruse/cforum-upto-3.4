@@ -367,7 +367,7 @@ int flt_cftp_handler(int sockfd,t_forum *forum,const u_char **tokens,int tnum,rl
             CF_RW_UN(&t1->lock);
           }
           else {
-            forum->threads.list = t;
+            forum->threads.list = forum->threads.last = t;
           }
 
           CF_RW_UN(&forum->threads.lock);
