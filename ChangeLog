@@ -1,3 +1,13 @@
+2005-02-08 Christian Kruse <ckruse@wwwtech.de>
+	* configure.in: Added fo_cleanup for output
+	* src/Makefile.am: Removed fo_cleanup
+	* cgi-bin/fo_cleanup.in: Added fo_cleanup script
+	* cgi-bin/Makefile.am: Added fo_cleanup
+	* src/fo_cleanup.c: Removed because of the perl script
+
+2005-02-05 Christian Kruse <ckruse@wwwtech.de>
+	* cgi-shared/config/errormessages.de.txt: Patrick Canterino fixed some typos
+
 2005-02-01 Christian Kruse <ckruse@wwwtech.de>
 	* src/modules/flt_directives.c: Bugfix in [ref:] handling, used wrong variable
 

@@ -1,0 +1,213 @@
+#!/usr/bin/perl -w
+
+# {{{ initial comments
+#
+# $LastChangedDate$
+# $LastChangedRevision$
+# $LastChangedBy$
+#
+# }}}
+
+# {{{ program header
+
+#
+use strict;
+use vars qw($prefix $Config);
+
+BEGIN {
+  # get the path to the configuration
+  $Config = $ENV{CF_CONF_DIR} or die 'Could not get config path';
+
+  $prefix   = '@prefix@';
+}
+
+use lib ("@PERLMODULES@","@libdir@");
+
+sub VERSION {(q$Revision$ =~ /([\d.]+)\s*$/)[0] or '0.0'}
+
+use IO::Socket;
+use BerkeleyDB;
+
+use ForumUtils qw/read_configuration get_config_file/;
+# }}}
+
+my $config  = read_configuration($Config.'fo_default.conf') or die "Could not read ${Config}fo_default.conf: $!";
+my $config1 = read_configuration($Config.'fo_vote.conf') or die "Could not read ${Config}fo_vote.conf: $!";
+
+my $sock = new IO::Socket::UNIX(
+  Type => SOCK_STREAM,
+  Peer => $config->{SocketName}->[0]->[0]
+) or die 'Could not connect to forum on '.$config->{SocketName}->[0]->[0].": $!\n";
+
+my %mids = ();
+
+print $sock "GET MIDLIST\n";
+<$sock>;
+
+while(<$sock>) {
+  last if m/^\s*$/;
+  chop;
+  $mids{$_}++;
+}
+
+# {{{ walk through user configurations
+my $userconfigdir = $config->{ConfigDirectory}->[0]->[0];
+
+opendir DIR,$userconfigdir or die "could not open $userconfigdir: $!\n";
+
+while(my $ent = readdir DIR) {
+  next if substr($ent,0,1) eq '.' || !-d "$userconfigdir/$ent";
+
+  my $dir1 = "$userconfigdir/$ent";
+  opendir DIR1, $dir1 or die "could not open $dir1: $!\n";
+
+  while(my $ent1 = readdir DIR1) {
+    next if substr($ent1,0,1) eq '.' || !-d "$dir1/$ent1";
+
+    my $dir2 = "$dir1/$ent1";
+    opendir DIR2, $dir2 or die "could not open $dir2: $!\n";
+
+    while(my $ent2 = readdir DIR2) {
+      next if substr($ent2,0,1) eq '.' || !-d "$dir2/$ent2";
+
+      my $dir3 = "$dir2/$ent2";
+      opendir DIR3, $dir3 or die "could not open $dir3: $!\n";
+
+      while(my $ent3 = readdir DIR3) {
+        next unless $ent3 =~ /\.conf$/;
+
+        my $dir = "$dir3/$ent3";
+        $dir =~ s!\.conf$!!; #!
+
+        cleanup_deleted("$dir/dt.dat",$sock);
+        cleanup_visited("$dir/vt.dat",\%mids);
+      }
+
+      closedir DIR3;
+    }
+
+    closedir DIR2;
+  }
+
+  closedir DIR1;
+}
+
+closedir DIR;
+# }}}
+
+my $db = $config1->{VotingDatabase}->[0]->[0];
+
+cleanup_votes($db,\%mids);
+
+# {{{ cleanup deleted files
+sub cleanup_deleted {
+  my $file = shift;
+  my $sock = shift;
+  my @deleted = ();
+
+  my $key = '';
+  my $value = '';
+
+  unless(-f $file) {
+    #print STDERR "Could not find $file!\n";
+    return;
+  }
+
+  my $dbfile = new BerkeleyDB::Btree(
+    Filename => $file,
+    Flags => DB_CREATE
+  ) or return;
+
+  my $cursor = $dbfile->db_cursor();
+
+  while($cursor->c_get($key,$value,DB_NEXT) == 0) {
+    print $sock "STAT t$key\n";
+    my $line = <$sock>;
+
+    push @deleted,$key unless $line =~ /^200/;
+  }
+
+  $cursor->c_close;
+
+  foreach my $del (@deleted) {
+    $dbfile->db_del($del);
+  }
+
+  $dbfile->db_close();
+}
+# }}}
+
+# {{{ cleanup visited files
+sub cleanup_visited {
+  my $file = shift;
+  my $mids = shift;
+  my @deleted = ();
+
+  my $key = '';
+  my $value = '';
+
+  unless(-f $file) {
+    #print STDERR "Could not find $file!\n";
+    return;
+  }
+
+  my $dbfile = new BerkeleyDB::Btree(
+    Filename => $file,
+    Flags => DB_CREATE
+  ) or return;
+
+  my $cursor = $dbfile->db_cursor();
+
+  while($cursor->c_get($key,$value,DB_NEXT) == 0) {
+    push @deleted,$key unless $mids->{"m$key"};
+  }
+
+  $cursor->c_close;
+
+  foreach my $del (@deleted) {
+    $dbfile->db_del($del);
+  }
+
+  $dbfile->db_close();
+}
+# }}}
+
+sub cleanup_votes {
+  my $file = shift;
+  my $mids = shift;
+
+  my @deleted = ();
+
+  my $key = '';
+  my $value = '';
+
+  unless(-f $file) {
+    #print STDERR "Could not find $file!\n";
+    return;
+  }
+
+  my $dbfile = new BerkeleyDB::Btree(
+    Filename => $file,
+    Flags => DB_CREATE
+  ) or return;
+
+  my $cursor = $dbfile->db_cursor();
+
+  while($cursor->c_get($key,$value,DB_NEXT) == 0) {
+    next unless $key =~ /^[a-z0-9]+_(\d+)$/;
+    my $id = $1;
+
+    push @deleted,$key unless $mids->{"m$id"};
+  }
+
+  $cursor->c_close;
+
+  foreach my $del (@deleted) {
+    $dbfile->db_del($del);
+  }
+
+  $dbfile->db_close();
+
+}
+
+# eof

@@ -5,7 +5,6 @@ SUBDIRS=. modules templates
 bin_PROGRAMS= \
   fo_view \
   fo_server \
-  fo_cleanup \
   fo_threadlookup \
   fo_tid_index \
   fo_arcview \
@@ -86,10 +85,6 @@ fo_server_LDFLAGS=-export-dynamic
 fo_recovery_SOURCES=fo_recovery.c initfinish.c
 fo_recovery_LDADD=libcfcharconvert.la libserverlib.la libconfigparser.la $(PTHREAD_LIB)
 fo_recovery_LDFLAGS=-export-dynamic
-
-fo_cleanup_SOURCES=fo_cleanup.c
-fo_cleanup_LDADD=libcfutils.la libcfreadline.la libconfigparser.la libcfclientlib.la $(BDB_LIB)
-fo_cleanup_LDFLAGS=-export-dynamic
 
 fo_threadlookup_SOURCES=fo_threadlookup.c
 fo_threadlookup_LDADD=libcfclientlib.la libcfutils.la libconfigparser.la libcfcgi.la $(BDB_LIB)

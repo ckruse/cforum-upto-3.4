@@ -3,6 +3,7 @@ SUBDIRS=admin
 EXTRA_DIST=fo_post_old \
   fo_userconf \
   fo_usermanagement \
+	fo_cleanup \
   .htaccess
 
 
