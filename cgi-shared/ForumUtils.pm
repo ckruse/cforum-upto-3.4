@@ -388,7 +388,7 @@ sub plaintext {
 
 # {{{ generate_unid
 sub generate_unid {
-  my $rmid  =  $ENV{HTTP_X_FORWARED_FOR} || $ENV{REMOTE_ADDR} || '654.546.654.546';
+  my $rmid  =  $ENV{HTTP_X_FORWARDED_FOR} || $ENV{REMOTE_ADDR} || '654.546.654.546';
   my @chars = split // => 'aAbBcCdDeEfFgGhHiIjJkKlLmMnNoOpPqQrRsStTuUvVwWxXyYzZ0123456789-_';
   my $id    = '';
 
