@@ -165,8 +165,8 @@ t_conf_opt fo_server_options[] = {
   { "PIDFile",              handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_GLOBAL, &fo_server_conf },
   { "MaxThreads",           handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_GLOBAL, &fo_server_conf },
   { "MinThreads",           handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_GLOBAL, &fo_server_conf },
-  { "MinSpareThreads",      handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_GLOBAL, &fo_server_conf },
-  { "MaxSpareThreads",      handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_GLOBAL, &fo_server_conf },
+  { "SpareThreads",         handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_GLOBAL, &fo_server_conf },
+  { "Forums",               handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_GLOBAL, &fo_server_conf },
 
   { "SortThreads",          handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_server_conf },
   { "SortMessages",         handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_server_conf },

@@ -1,3 +1,9 @@
+2004-10-20 Christian Kruse <ckruse@wwwtech.de>
+	* src/fo_server.h, src/utils.h, src/serverlib.c, src/serverlib.h,
+		src/listutils.c, src/configparser.c, src/fo_server.c: Began rewrite of
+		fo_server
+	* cgi-shared/config/fo_server.conf.in: Added Forums directive
+
 2004-10-18 Christian Kruse <ckruse@wwwtech.de>
 	* *: Merged changes from 2.1 branch back to trunk (manually, *grml*)
 

@@ -31,6 +31,8 @@ ExternPort "6666"
 #NNTPPort "2048"
 #NNTPHost "teamone.de"
 
+Forums "FORUM1"
+
 Forum FORUM1 {
  SortThreads "ascending"
  SortMessages "ascending"
