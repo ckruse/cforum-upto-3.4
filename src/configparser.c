@@ -210,6 +210,7 @@ t_conf_opt fo_arcview_options[] = {
   { "EnableCache",             handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG,   &fo_arcview_conf },
   { "CacheLevel",              handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG,   &fo_arcview_conf },
   { "CacheDir",                handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG,   &fo_arcview_conf },
+  { "QuotingChars",            handle_command,   CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_NEEDED|CFG_OPT_UNIQUE, &fo_arcview_conf },
   { "</General>", NULL, 0, NULL },
 
   { "<Templates>", NULL, 0, NULL },
