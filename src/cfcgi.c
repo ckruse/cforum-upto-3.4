@@ -204,7 +204,7 @@ t_cf_hash *cf_cgi_parse_path_info_nv(t_cf_hash *hash) {
 u_char *cf_cgi_url_decode(const u_char *str,size_t len) {
   u_char *ret = fo_alloc(NULL,len + 1,1,FO_ALLOC_MALLOC); /* the new string can be as long as the old (but not longer) */
   register u_char *ptr1,*ptr2;
-  u_char ptr3[2];
+  u_char ptr3[3] = { '\0','\0','\0' };
 
   if(!ret) return NULL;
 
