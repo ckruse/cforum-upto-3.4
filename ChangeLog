@@ -1,3 +1,9 @@
+2004-07-20 Christian Kruse <ckruse@wwwtech.de>
+	* src/hashlib.c: Fixed bug in calloc() call, thanks to Mark ter Brugge
+		<m.h.terbrugge@dacolian.nl> for mail
+	* src/Makefile.am: Fixed bug (I commented out templates, this was wrong and
+		never should have been commited)
+
 2004-07-19 Christian Kruse <ckruse@wwwtech.de>
 	* src/initfinish.c, src/xml_handling.c: Added votingGood and votingBad
 		attributes

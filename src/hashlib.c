@@ -194,7 +194,7 @@ t_cf_hash *cf_hash_new(t_cf_hash_cleanup cl) {
    * this *sucks*. It costs a lot of time, but we need it because
    * we have to know if an element is set or not
    */
-  hsh->table     = calloc(elems,sizeof(t_cf_hash));
+  hsh->table     = calloc(elems,sizeof(t_cf_hash_entry *));
 
   hsh->destroy   = cl;
 

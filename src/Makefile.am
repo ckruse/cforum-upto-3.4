@@ -1,6 +1,5 @@
 
-SUBDIRS=. modules
-#templates
+SUBDIRS=. modules templates
 
 bin_PROGRAMS= \
   fo_view \
