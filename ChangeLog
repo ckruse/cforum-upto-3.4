@@ -6,6 +6,9 @@
 		if there is no email-address in user config
 	* scripts/fo_usermanagement.in, scripts/cf-cleanup.pl.in,
 		scripts/fo_userconf.in, scripts/fo_xmlrpc.in: Added exec_prefix variable
+	* scripts/cf-compile_templates.pl: Fixed bug, install directory is not always
+		library directory
+	* docs/admin.tex: Wrote installation tutorial for Classic Forum V3
 
 2005-02-16 Christian Kruse <ckruse@wwwtech.de>
 	* src/modules/flt_mailonpost.c: Fixed several bugs, now it seems to work

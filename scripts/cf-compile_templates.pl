@@ -9,24 +9,27 @@ my $template_lang = '';
 my $template_theme = '';
 my $cforum_source = '';
 my $libdir = '';
+my $install = '';
 my $help = 0;
 
 GetOptions(
   "dir=s" => \$template_dir,
   "lang=s" => \$template_lang,
   "name=s" => \$template_theme,
-  "install=s" => \$libdir,
+  "install=s" => \$install,
+  "libdir=s" => \$libdir,
   "cforum-source=s" => \$cforum_source,
   "help" => \$help
 );
 
 usage() if $help;
 
-if(!$template_dir || !$template_lang || !$template_theme || !$libdir) {
+if(!$template_dir || !$template_lang || !$template_theme || !$libdir || !$install) {
   print STDERR "You must define --dir!\n" unless $template_dir;
   print STDERR "You must define --lang!\n" unless $template_lang;
   print STDERR "You must define --name!\n" unless $template_theme;
-  print STDERR "You must define --install!\n" unless $libdir;
+  print STDERR "You must define --install!\n" unless $install;
+  print STDERR "You must define --libdir!\n" unless $libdir;
 
   usage();
 }
@@ -66,10 +69,10 @@ while(my $ent = readdir DIR) {
     my $mtime_c = (stat("$template_dir/$wo_end.c"))[9];
     my $mtime_so = (stat("$libdir/$so_name"))[9];
 
-    system "gcc -shared ".($ENV{CFLAGS}||'')." $cforum_source ".($ENV{LDFLAGS}||'')." -L$libdir -o $libdir/$so_name $template_dir/$wo_end.c -lcfutils -lcftemplate" if $mtime_c > $mtime_so;
+    system "gcc -shared ".($ENV{CFLAGS}||'')." $cforum_source ".($ENV{LDFLAGS}||'')." -L$libdir -o $install/$so_name $template_dir/$wo_end.c -lcfutils -lcftemplate" if $mtime_c > $mtime_so;
   }
   else {
-    system "gcc -shared ".($ENV{CFLAGS}||'')." $cforum_source ".($ENV{LDFLAGS}||'')." -L$libdir -o $libdir/$so_name $template_dir/$wo_end.c -lcfutils -lcftemplate";
+    system "gcc -shared ".($ENV{CFLAGS}||'')." $cforum_source ".($ENV{LDFLAGS}||'')." -L$libdir -o $install/$so_name $template_dir/$wo_end.c -lcfutils -lcftemplate";
   }
 
   if($? != 0) {
