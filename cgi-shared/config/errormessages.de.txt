@@ -31,10 +31,10 @@ E_field_missing: Die Daten scheinen unvollständig zu sein.
 E_posting_format: Das Format Ihres Postings scheint unsauber zu sein (z. B. keine Zeilenumbrüche, keine Satzzeichen, alles Kleingeschrieben oder ähnliches). Solche Postings sind ungern gesehen, da sie oft schwer zu lesen sind. Sind Sie sicher, dass Sie so posten möchten?
 E_posting_badwords: Ihr Posting scheint mehr als die erlaubte Zahl von Schimpfwörtern zu enthalten.
 E_posting_quoting: Sie haben mehr als 25% zitierte Zeilen in Ihrem Posting. Sind Sie sicher, dass Sie das Posting so abschicken wollen?
-E_Username_short: Der Username muss mindestens %d Zeichen lang sein.
+E_UserName_short: Der Username muss mindestens %d Zeichen lang sein.
 E_pass_short: Das Passwort muss mindestens %d Zeichen lang sein.
 E_pass_match: Die Passwörter stimmen nicht überein!
-E_Username_invalid: Der Username ist ungültig!
+E_UserName_invalid: Der Username ist ungültig!
 E_Password_invalid: Das Passwort ist ungültig!
 E_uname_exists: Der Username existiert bereits!
 E_auth_required: Um unter diesem Namen posten zu können, müssen Sie sich authentifizieren!

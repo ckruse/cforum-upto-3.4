@@ -49,13 +49,18 @@ struct s_scoring_filter {
   pcre_extra *regex_extra;
 };
 
-static t_array flt_scoring_ary         = { 0, 0, 0, NULL, NULL };
 static t_string flt_scoring_str        = { 0, 0, NULL };
 static int      flt_scoring_number     = 0;
-static int      flt_scoring_hide_score = 0;
 
-static u_char flt_scoring_base_color[3] = { 127, 0, 0 };
-
+static t_array flt_scoring_ary         = { 0, 0, 0, NULL, NULL };
+static int     flt_scoring_hide_score  = 0;
+static int     flt_scoring_hide_score_set = 0;
+static int     flt_scoring_min_val     = 0;
+static int     flt_scoring_max_val     = 255;
+static u_char  flt_scoring_min_col[3]  = { 0, 0, 0 };
+static u_char  flt_scoring_max_col[3]  = { 255, 0, 0 };
+static u_char  flt_scoring_norm_col[3] = { 127, 0, 0 };
+static int     flt_scoring_ign         = 0;
 
 #define FLT_SCORING_SUBJECT 1
 #define FLT_SCORING_AUTHOR  2
@@ -78,28 +83,38 @@ static u_char flt_scoring_base_color[3] = { 127, 0, 0 };
 %%
 \n           /* newlines are ok */
 
-^[[:space:]]*Score:[[:space:]]*[-0-9]+\n  {
+^[[:space:]]*Score:[[:space:]]*[+-]?[0-9]+\n?  {
   u_char *ptr;
   for(ptr=yytext;!isdigit(*ptr) && *ptr != '-';ptr++);
   flt_scoring_number = atoi(ptr);
   return FLT_SCORING_SCORE;
 }
 
-^[[:space:]]*Field:[[:space:]]*[a-zA-Z]+\n {
+^[[:space:]]*Field:[[:space:]]*[a-zA-Z]+\n? {
   u_char *ptr;
+  size_t len;
   for(ptr=yytext;isspace(*ptr);ptr++);
   ptr += 6;
   for(;isspace(*ptr);ptr++);
-  str_char_set(&flt_scoring_str,ptr,strlen(ptr)-1);
+
+  len = strlen(ptr);
+  if(ptr[len-1] == '\n') len -= 1;
+
+  str_char_set(&flt_scoring_str,ptr,len);
   return FLT_SCORING_FIELD;
 }
 
-^[[:space:]]*Regex:[[:space:]]*[^\n]+\n {
+^[[:space:]]*Regex:[[:space:]]*[^\n]+\n? {
   u_char *ptr;
+  size_t len;
   for(ptr=yytext;isspace(*ptr);ptr++);
   ptr += 6;
   for(;isspace(*ptr);ptr++);
-  str_char_set(&flt_scoring_str,ptr,strlen(ptr)-1);
+
+  len = strlen(ptr);
+  if(ptr[len-1] == '\n') len -= 1;
+
+  str_char_set(&flt_scoring_str,ptr,len);
   return FLT_SCORING_REGEX;
 }
 
@@ -111,9 +126,42 @@ static u_char flt_scoring_base_color[3] = { 127, 0, 0 };
 
 /* }}} */
 
+/* {{{ flt_scoring_calc_col */
+size_t flt_scoring_calc_col(u_char buff[],int score) {
+  float percentage = 0,tmp;
+  int finish = (flt_scoring_max_val + flt_scoring_min_val) / 2;
+  u_char scol[3];
+  u_char *col = scol;
+  int i;
+
+  /* we got a positive scoring */
+  if(score > finish) {
+    /* calculate the matching percentage */
+    if(score >= flt_scoring_max_val) percentage = 1.0;
+    else percentage = (float)score / (float)flt_scoring_max_val;
+
+    /* calculate the color (percentage * difference) */
+    for(i=0;i<3;i++) scol[i] = (u_char)(flt_scoring_norm_col[i] + (float)(flt_scoring_max_col[i] - flt_scoring_norm_col[i]) * percentage);
+  }
+  /* we got a negative scoring */
+  else if(score < finish) {
+    /* calculate the matching percentage */
+    if(score <= flt_scoring_min_val) percentage = 1.0;
+    else percentage = (float)score / (float)flt_scoring_min_val;
+
+    /* calculate the color (percentage * difference) */
+    for(i=0;i<3;i++) scol[i] = (u_char)(flt_scoring_norm_col[i] - (float)(flt_scoring_norm_col[i] - flt_scoring_min_col[i]) * percentage);
+  }
+  /* we got a neutral scoring */
+  else col = flt_scoring_norm_col;
+
+  return snprintf(buff,8,"#%02x%02x%02x",col[0],col[1],col[2]);
+}
+/* }}} */
+
 /* {{{ flt_scoring_execute */
 int flt_scoring_execute(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_message *msg,u_int64_t tid,int mode) {
-  int res;
+  int res = 0;
   size_t i;
   struct s_scoring_filter *flt;
   int score = 0;
@@ -142,15 +190,17 @@ int flt_scoring_execute(t_cf_hash *head,t_configuration *dc,t_configuration *vc,
         if(res >= 0) score += flt->score;
       }
 
-      /* calculate color from score */
-      if(score) {
-        if(flt_scoring_hide_score && score <= flt_scoring_hide_score) {
-          msg->may_show = 0;
-        }
-        else {
-          len = snprintf(buff,8,"#%02x%02x%02x",flt_scoring_base_color[0]+score,flt_scoring_base_color[1],flt_scoring_base_color[2]);
-          tpl_cf_setvar(&msg->tpl,"flt_scoring_color",buff,len,0);
-        }
+      /* Does the user want to ignore non-matched postings? */
+      if(score == 0 && flt_scoring_ign) return FLT_OK;
+
+      /* has the posting to be deleted? */
+      if(flt_scoring_hide_score_set && score <= flt_scoring_hide_score) {
+        msg->may_show = 0;
+      }
+      else {
+        /* no, so go and calculate the color */
+        len = flt_scoring_calc_col(buff,score);
+        tpl_cf_setvar(&msg->tpl,"flt_scoring_color",buff,len,0);
       }
 
       return FLT_OK;
@@ -184,7 +234,7 @@ int flt_scoring_parse(t_configfile *cf,t_conf_opt *opt,u_char **args,int argnum)
         else                                              filter.field = FLT_SCORING_CAT;
         break;
       case FLT_SCORING_REGEX:
-        if((filter.regex = pcre_compile(flt_scoring_str.content,PCRE_UTF8,(const char **)&error,&err_offset,NULL)) == NULL) {
+        if((filter.regex = pcre_compile(flt_scoring_str.content,PCRE_UTF8|PCRE_CASELESS,(const char **)&error,&err_offset,NULL)) == NULL) {
           fprintf(stderr,"regex error in regex '%s': %s\n",flt_scoring_str.content,error);
           return -10;
         }
@@ -208,28 +258,36 @@ int flt_scoring_parse(t_configfile *cf,t_conf_opt *opt,u_char **args,int argnum)
 
 /* {{{ flt_scoring_cols */
 int flt_scoring_cols(t_configfile *cf,t_conf_opt *opt,u_char **args,int argnum) {
+  u_char *arg = args[0];
   size_t len = strlen(args[0]);
   u_char *ptr, *col;
   u_char tmp[3];
   int i;
 
-  col = flt_scoring_base_color;
+  if(cf_strcmp(opt->name,"ScoringMinColor") == 0) col = flt_scoring_min_col;
+  else if(cf_strcmp(opt->name,"ScoringNormalColor") == 0) col = flt_scoring_norm_col;
+  else col = flt_scoring_max_col;
 
   tmp[2] = '\0';
 
+  if(*arg == '#') {
+    arg++;
+    len--;
+  }
+
   switch(len) {
     case 3:
-      for(i=0,ptr=args[0];*ptr;ptr++,i++) {
+      for(i=0,ptr=arg;*ptr;ptr++,i++) {
         tmp[0] = *ptr;
-        tmp[1] = *ptr;
-        col[i] = strtol(tmp,NULL,16);
+        tmp[1] = *(ptr+1);
+        col[i] = (u_char)strtol(tmp,NULL,16);
       }
       break;
     case 6:
-      for(i=0,ptr=args[0];*ptr;ptr+=2,i++) {
+      for(i=0,ptr=arg;*ptr;ptr+=2,i++) {
         tmp[0] = *ptr;
         tmp[1] = *(ptr+1);
-        col[i] = strtol(tmp,NULL,16);
+        col[i] = (u_char)strtol(tmp,NULL,16);
       }
       break;
     default:
@@ -240,11 +298,31 @@ int flt_scoring_cols(t_configfile *cf,t_conf_opt *opt,u_char **args,int argnum) 
 }
 /* }}} */
 
+/* {{{ flt_scoring_hide */
 int flt_scoring_hide(t_configfile *cf,t_conf_opt *opt,u_char **args,int argnum) {
   flt_scoring_hide_score = atoi(args[0]);
+  flt_scoring_hide_score_set = 1;
   return 0;
 }
+/* }}} */
 
+/* {{{ flt_scoring_vals */
+int flt_scoring_vals(t_configfile *cf,t_conf_opt *opt,u_char **args,int argnum) {
+  if(cf_strcmp(opt->name,"ScoringMaxValue") == 0) flt_scoring_max_val = strtol(args[0],NULL,10);
+  else flt_scoring_min_val = strtol(args[0],NULL,10);
+
+  return 0;
+}
+/* }}} */
+
+/* {{{ flt_scoring_ignore */
+int flt_scoring_ignore(t_configfile *cf,t_conf_opt *opt,u_char **args,int argnum) {
+  flt_scoring_ign = cf_strcmp(args[0],"yes") == 0;
+  return 0;
+}
+/* }}} */
+
+/* {{{ flt_scoring_finish */
 void flt_scoring_finish(void) {
   size_t i = 0;
   struct s_scoring_filter *f;
@@ -257,11 +335,17 @@ void flt_scoring_finish(void) {
 
   array_destroy(&flt_scoring_ary);
 }
+/* }}} */
 
 t_conf_opt flt_scoring_config[] = {
-  { "ScoringFilter",     flt_scoring_parse, CFG_OPT_CONFIG|CFG_OPT_USER, NULL },
-  { "ScoringStartColor", flt_scoring_cols,  CFG_OPT_CONFIG|CFG_OPT_USER, NULL },
-  { "ScoringHideScore",  flt_scoring_hide,  CFG_OPT_CONFIG|CFG_OPT_USER, NULL },
+  { "ScoringFilter",          flt_scoring_parse,  CFG_OPT_CONFIG|CFG_OPT_USER, NULL },
+  { "ScoringHideScore",       flt_scoring_hide,   CFG_OPT_CONFIG|CFG_OPT_USER, NULL },
+  { "ScoringMaxValue",        flt_scoring_vals,   CFG_OPT_CONFIG|CFG_OPT_USER, NULL },
+  { "ScoringMinValue",        flt_scoring_vals,   CFG_OPT_CONFIG|CFG_OPT_USER, NULL },
+  { "ScoringMaxColor",        flt_scoring_cols,   CFG_OPT_CONFIG|CFG_OPT_USER, NULL },
+  { "ScoringNormalColor",     flt_scoring_cols,   CFG_OPT_CONFIG|CFG_OPT_USER, NULL },
+  { "ScoringMinColor",        flt_scoring_cols,   CFG_OPT_CONFIG|CFG_OPT_USER, NULL },
+  { "ScoringIgnoreNoneMatch", flt_scoring_ignore, CFG_OPT_CONFIG|CFG_OPT_USER, NULL },
   { NULL, NULL, 0, NULL }
 };
 

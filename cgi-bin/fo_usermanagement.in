@@ -26,7 +26,7 @@ BEGIN {
   $UserName = '';
   $prefix  = '@prefix@';
 
-	$Management = undef;
+  $Management = undef;
 }
 
 use lib ("@PERLMODULES@","@libdir@");
@@ -91,11 +91,11 @@ sub show_register_form {
 # {{{ validate parameters
 sub validate_parameters {
   my $fdc = shift;
-	my $cfg = shift;
-	my $cgi = shift;
+  my $cfg = shift;
+  my $cgi = shift;
 
   foreach my $name ($cgi->param) {
-	  my $val = $cgi->param($name);
+    my $val = $cgi->param($name);
 
     if(exists $cfg->{MinVal}) {
       my ($minval) = grep { $_->[0] eq $name } @{$cfg->{MinVal}};
@@ -117,19 +117,21 @@ sub validate_parameters {
       return get_error($fdc,$name,'long') if defined $maxlen && $maxlen->[1] < length($val);
     }
 
-		if(exists $cgi->{Validate}) {
-		  my ($validate) = grep { $_[0] eq $name } @{$cfg->{Validate}};
+    if(exists $cfg->{Validate}) {
+      my @validate = grep { $_->[0] eq $name } @{$cfg->{Validate}};
 
-      if($validate) {
-  			if($validate->[1] eq 'email') {
-          return get_error($fdc,$name,'invalid') unless is_email($val);
-		  	}
-			  else {
-          return get_error($fdc,$name,'invalid') unless $val =~ m!$validate->[1]!;
-			  }
+      foreach my $validate (@validate) {
+        if($validate) {
+          if($validate->[1] eq 'email') {
+            return get_error($fdc,$name,'invalid') unless is_email($val);
+          }
+          else {
+            return get_error($fdc,$name,'invalid') unless $val =~ m!$validate->[1]!;
+          }
+        }
       }
-		}
-	}
+    }
+  }
 
   return;
 }
@@ -198,92 +200,95 @@ if($action eq 'redirect') {
 }
 
 if($UserName) {
-	# {{{ unregister account
-	if($action eq 'unreg') {
-		my $tpl = new CForum::Template(get_template($fo_default_conf,$user_config,$fo_usermanagement_conf->{Unregister}->[0]->[0]));
-		$tpl->setVar('script',recode($fo_default_conf,$fo_default_conf->{UserManagement}->[0]->[0]));
-		$tpl->setVar('forumbase',recode($fo_default_conf,$fo_default_conf->{UBaseURL}->[0]->[0]));
-		$tpl->setVar('charset',$fo_default_conf->{ExternCharset}->[0]->[0]);
-		$tpl->setVar('acceptcharset',$fo_default_conf->{ExternCharset}->[0]->[0].', UTF-8');
+  # {{{ unregister account
+  if($action eq 'unreg') {
+    my $tpl = new CForum::Template(get_template($fo_default_conf,$user_config,$fo_usermanagement_conf->{Unregister}->[0]->[0]));
+    $tpl->setVar('script',recode($fo_default_conf,$fo_default_conf->{UserManagement}->[0]->[0]));
+    $tpl->setVar('forumbase',recode($fo_default_conf,$fo_default_conf->{UBaseURL}->[0]->[0]));
+    $tpl->setVar('userconfig',recode($fo_default_conf,$fo_default_conf->{UserConfig}->[0]->[0]));
+    $tpl->setVar('charset',$fo_default_conf->{ExternCharset}->[0]->[0]);
+    $tpl->setVar('acceptcharset',$fo_default_conf->{ExternCharset}->[0]->[0].', UTF-8');
 
-		print $cgi->header(-type => 'text/html; charset='.$fo_default_conf->{ExternCharset}->[0]->[0]),$tpl->parseToMem;
-	}
-	# }}}
-	# {{{ unregister is ok
-	elsif($action eq 'unregok') {
-		#
-		# run config plugins
-		#
-		foreach(@{$Plugins->{unregister}}) {
-			&$_($fo_default_conf,$fo_usermanagement_conf,$user_config);
-		}
+    print $cgi->header(-type => 'text/html; charset='.$fo_default_conf->{ExternCharset}->[0]->[0]),$tpl->parseToMem;
+  }
+  # }}}
+  # {{{ unregister is ok
+  elsif($action eq 'unregok') {
+    #
+    # run config plugins
+    #
+    foreach(@{$Plugins->{unregister}}) {
+      &$_($fo_default_conf,$fo_usermanagement_conf,$user_config);
+    }
 
-		my $cfile = get_config_file($fo_default_conf,$UserName);
-		my $dir   = $cfile;
-		$dir =~ s!\.conf$!!; #!;
+    my $cfile = get_config_file($fo_default_conf,$UserName);
+    my $dir   = $cfile;
+    $dir =~ s!\.conf$!!; #!;
 
-		rmtree($dir) or die $!;
-		unlink($cfile) or die $!;
+    rmtree($dir) or die $!;
+    unlink($cfile) or die $!;
 
     $Management->remove_user($fo_default_conf,$fo_usermanagement_conf,$UserName) if $Management;
 
-		my $tpl = new CForum::Template(get_template($fo_default_conf,$user_config,$fo_usermanagement_conf->{UnregisterOk}->[0]->[0]));
-		$tpl->setVar('script',recode($fo_default_conf,$fo_default_conf->{UserRegister}->[0]->[0]));
-		$tpl->setVar('forumbase',recode($fo_default_conf,$fo_default_conf->{BaseURL}->[0]->[0]));
-		$tpl->setVar('charset',$fo_default_conf->{ExternCharset}->[0]->[0]);
-		$tpl->setVar('acceptcharset',$fo_default_conf->{ExternCharset}->[0]->[0].', UTF-8');
+    my $tpl = new CForum::Template(get_template($fo_default_conf,$user_config,$fo_usermanagement_conf->{UnregisterOk}->[0]->[0]));
+    $tpl->setVar('script',recode($fo_default_conf,$fo_default_conf->{UserRegister}->[0]->[0]));
+    $tpl->setVar('forumbase',recode($fo_default_conf,$fo_default_conf->{BaseURL}->[0]->[0]));
+    $tpl->setVar('charset',$fo_default_conf->{ExternCharset}->[0]->[0]);
+    $tpl->setVar('acceptcharset',$fo_default_conf->{ExternCharset}->[0]->[0].', UTF-8');
 
-		print $cgi->header(-type => 'text/html; charset='.$fo_default_conf->{ExternCharset}->[0]->[0]),$tpl->parseToMem;
-	}
-	# }}}
-	# {{{ change password
-	elsif($action eq 'changepw') {
-		my $form = 1;
-		my $err  = undef;
+    print $cgi->header(-type => 'text/html; charset='.$fo_default_conf->{ExternCharset}->[0]->[0]),$tpl->parseToMem;
+  }
+  # }}}
+  # {{{ change password
+  elsif($action eq 'changepw') {
+    my $form = 1;
+    my $err  = undef;
 
-		if($cgi->param('Password') && $cgi->param('Password1')) {
-			my $p = $cgi->param('Password');
+    if($cgi->param('Password') && $cgi->param('Password1')) {
+      my $p = $cgi->param('Password');
 
-			if($p eq $cgi->param('Password1')) {
-				$form = 0;
+      if($p eq $cgi->param('Password1')) {
+        $form = 0;
         $form = 1 if $err = validate_parameters($fo_default_conf,$fo_usermanagement_conf,$cgi);
 
         unless($form) {
           $Management->change_pass($fo_default_conf,$fo_usermanagement_conf,$UserName,$p) if $Management;
         }
-			}
-			else {
-				$err = get_error($fo_default_conf,'pass','match');
-			}
-		}
+      }
+      else {
+        $err = get_error($fo_default_conf,'pass','match');
+      }
+    }
 
-		if($form) {
-			my $tpl = new CForum::Template(get_template($fo_default_conf,$user_config,$fo_usermanagement_conf->{ChangePass}->[0]->[0]));
+    if($form) {
+      my $tpl = new CForum::Template(get_template($fo_default_conf,$user_config,$fo_usermanagement_conf->{ChangePass}->[0]->[0]));
 
-			$tpl->setVar('script',recode($fo_default_conf,$fo_default_conf->{UserManagement}->[0]->[0]));
-			$tpl->setVar('forumbase',recode($fo_default_conf,$fo_default_conf->{UBaseURL}->[0]->[0]));
-			$tpl->setVar('error',recode($fo_default_conf,$err)) if $err;
-			$tpl->setVar('charset',$fo_default_conf->{ExternCharset}->[0]->[0]);
-			$tpl->setVar('acceptcharset',$fo_default_conf->{ExternCharset}->[0]->[0].', UTF-8');
+      $tpl->setVar('script',recode($fo_default_conf,$fo_default_conf->{UserManagement}->[0]->[0]));
+      $tpl->setVar('forumbase',recode($fo_default_conf,$fo_default_conf->{UBaseURL}->[0]->[0]));
+      $tpl->setVar('userconfig',recode($fo_default_conf,$fo_default_conf->{UserConfig}->[0]->[0]));
+      $tpl->setVar('error',recode($fo_default_conf,$err)) if $err;
+      $tpl->setVar('charset',$fo_default_conf->{ExternCharset}->[0]->[0]);
+      $tpl->setVar('acceptcharset',$fo_default_conf->{ExternCharset}->[0]->[0].', UTF-8');
 
-			print $cgi->header(-type => 'text/html; charset='.$fo_default_conf->{ExternCharset}->[0]->[0]),$tpl->parseToMem;
-		}
-		else {
-			my $tpl = new CForum::Template(get_template($fo_default_conf,$user_config,$fo_usermanagement_conf->{ChangePassOk}->[0]->[0]));
-			$tpl->setVar('script',recode($fo_default_conf,$fo_default_conf->{UserManagement}->[0]->[0]));
-			$tpl->setVar('forumbase',recode($fo_default_conf,$fo_default_conf->{UBaseURL}->[0]->[0]));
-			$tpl->setVar('charset',$fo_default_conf->{ExternCharset}->[0]->[0]);
-			$tpl->setVar('acceptcharset',$fo_default_conf->{ExternCharset}->[0]->[0].', UTF-8');
+      print $cgi->header(-type => 'text/html; charset='.$fo_default_conf->{ExternCharset}->[0]->[0]),$tpl->parseToMem;
+    }
+    else {
+      my $tpl = new CForum::Template(get_template($fo_default_conf,$user_config,$fo_usermanagement_conf->{ChangePassOk}->[0]->[0]));
+      $tpl->setVar('script',recode($fo_default_conf,$fo_default_conf->{UserManagement}->[0]->[0]));
+      $tpl->setVar('forumbase',recode($fo_default_conf,$fo_default_conf->{UBaseURL}->[0]->[0]));
+      $tpl->setVar('userconfig',recode($fo_default_conf,$fo_default_conf->{UserConfig}->[0]->[0]));
+      $tpl->setVar('charset',$fo_default_conf->{ExternCharset}->[0]->[0]);
+      $tpl->setVar('acceptcharset',$fo_default_conf->{ExternCharset}->[0]->[0].', UTF-8');
 
-			print $cgi->header(-type => 'text/html; charset='.$fo_default_conf->{ExternCharset}->[0]->[0]),$tpl->parseToMem;
-		}
-	}
-	# }}}
+      print $cgi->header(-type => 'text/html; charset='.$fo_default_conf->{ExternCharset}->[0]->[0]),$tpl->parseToMem;
+    }
+  }
+  # }}}
 }
 else {
-	# {{{ register user
-	if($action eq 'register') {
-		my ($user,$passwd,$passwd1,$email) = ($cgi->param('UserName'),$cgi->param('Password'),$cgi->param('Password1'),$cgi->param('email'));
+  # {{{ register user
+  if($action eq 'register') {
+    my ($user,$passwd,$passwd1,$email) = ($cgi->param('UserName'),$cgi->param('Password'),$cgi->param('Password1'),$cgi->param('email'));
 
     if(my $err = validate_parameters($fo_default_conf,$fo_usermanagement_conf,$cgi)) {
       show_register_form(
@@ -305,115 +310,115 @@ else {
       );
     }
 
-		my $ufile = get_config_file($fo_default_conf,$user);
-		if(-f $ufile) {
-			show_register_form(
-				$cgi,
-				$fo_default_conf,
-				$fo_usermanagement_conf,
-				$user_config,
-				get_error($fo_default_conf,'uname','exists')
-			);
-			exit;
-		}
+    my $ufile = get_config_file($fo_default_conf,$user);
+    if(-f $ufile) {
+      show_register_form(
+        $cgi,
+        $fo_default_conf,
+        $fo_usermanagement_conf,
+        $user_config,
+        get_error($fo_default_conf,'uname','exists')
+      );
+      exit;
+    }
 
-		if(!create_directory_structure($fo_default_conf,$user)) {
-			show_register_form(
-				$cgi,
-				$fo_default_conf,
-				$fo_usermanagement_conf,
-				$user_config,
-				get_error($fo_default_conf,'user','create')
-			);
-			exit;
-		}
+    if(!create_directory_structure($fo_default_conf,$user)) {
+      show_register_form(
+        $cgi,
+        $fo_default_conf,
+        $fo_usermanagement_conf,
+        $user_config,
+        get_error($fo_default_conf,'user','create')
+      );
+      exit;
+    }
 
-		my $dir = $ufile;
-		$dir =~ s!\.conf$!!; #!;
+    my $dir = $ufile;
+    $dir =~ s!\.conf$!!; #!;
 
-		mkdir $dir,0771 or die $!;
+    mkdir $dir,0771 or die $!;
 
-		open DAT,'>'.$ufile or die $!;
-		print DAT 'DeletedFile "',$dir,"/dt.dat\"\n";
-		print DAT 'VisitedFile "',$dir,"/vt.dat\"\n";
-		close DAT;
+    open DAT,'>'.$ufile or die $!;
+    print DAT 'DeletedFile "',$dir,"/dt.dat\"\n";
+    print DAT 'VisitedFile "',$dir,"/vt.dat\"\n";
+    close DAT;
 
     $Management->add_user($fo_default_conf,$fo_usermanagement_conf,$user,$passwd,$email) if $Management;
 
-		my $tpl = new CForum::Template(get_template($fo_default_conf,$user_config,$fo_usermanagement_conf->{RegisterOk}->[0]->[0]));
+    my $tpl = new CForum::Template(get_template($fo_default_conf,$user_config,$fo_usermanagement_conf->{RegisterOk}->[0]->[0]));
 
-		$tpl->setVar('ubase',recode($fo_default_conf,$fo_default_conf->{UBaseURL}->[0]->[0]));
-		$tpl->setVar('userconfig',recode($fo_default_conf,$fo_default_conf->{UserConfig}->[0]->[0]));
-		$tpl->setVar('forumbase',recode($fo_default_conf,$fo_default_conf->{BaseURL}->[0]->[0]));
-		$tpl->setVar('script',recode($fo_default_conf,$fo_default_conf->{UserRegister}->[0]->[0]));
-		$tpl->setVar('uscript',recode($fo_default_conf,$fo_default_conf->{UserManagement}->[0]->[0]));
-		$tpl->setVar('charset',$fo_default_conf->{ExternCharset}->[0]->[0]);
-		$tpl->setVar('acceptcharset',$fo_default_conf->{ExternCharset}->[0]->[0].', UTF-8');
+    $tpl->setVar('ubase',recode($fo_default_conf,$fo_default_conf->{UBaseURL}->[0]->[0]));
+    $tpl->setVar('userconfig',recode($fo_default_conf,$fo_default_conf->{UserConfig}->[0]->[0]));
+    $tpl->setVar('forumbase',recode($fo_default_conf,$fo_default_conf->{BaseURL}->[0]->[0]));
+    $tpl->setVar('script',recode($fo_default_conf,$fo_default_conf->{UserRegister}->[0]->[0]));
+    $tpl->setVar('uscript',recode($fo_default_conf,$fo_default_conf->{UserManagement}->[0]->[0]));
+    $tpl->setVar('charset',$fo_default_conf->{ExternCharset}->[0]->[0]);
+    $tpl->setVar('acceptcharset',$fo_default_conf->{ExternCharset}->[0]->[0].', UTF-8');
 
-		print $cgi->header(-type => 'text/html; charset='.$fo_default_conf->{ExternCharset}->[0]->[0]),$tpl->parseToMem;
-	}
-	# }}}
+    print $cgi->header(-type => 'text/html; charset='.$fo_default_conf->{ExternCharset}->[0]->[0]),$tpl->parseToMem;
+  }
+  # }}}
   # {{{ send password
-	elsif($action eq 'sendpw') {
-		if($cgi->param('uname')) {
-			my $username = $cgi->param('uname');
+  elsif($action eq 'sendpw') {
+    if($cgi->param('uname')) {
+      my $username = $cgi->param('uname');
       my $result = undef;
       $result = $Management->get_password($fo_default_conf,$fo_usermanagement_conf,$username) if $Management;
 
-			if($result) {
-				# send mail
-				my $body = get_error($fo_default_conf,'sendpw','body');
-				$body =~ s!\{\$pass\}!$result->{pass}!g;
-				$body =~ s!\{\$email\}!$result->{email}!g;
-				$body =~ s!\{\$user\}!$username!g;
-				
-				my $smtp = new Net::SMTP($fo_usermanagement_conf->{SMTPHost}->[0]->[0]);
-				$smtp->mail($fo_usermanagement_conf->{SMTPFrom}->[0]->[0]);
-				$smtp->to($result->{email});
-				$smtp->data();
-				$smtp->datasend('From: '.$fo_usermanagement_conf->{SMTPFrom}->[0]->[0]."\n");
-				$smtp->datasend('To: '.$result->{email}."\n");
-				$smtp->datasend('Subject: '.get_error($fo_default_conf,'sendpw','subject')."\n\n");
-				$smtp->datasend($body);
-				$smtp->dataend();
-				$smtp->quit();
+      if($result) {
+        # send mail
+        my $body = get_error($fo_default_conf,'sendpw','body');
+        $body =~ s!\{\$pass\}!$result->{pass}!g;
+        $body =~ s!\{\$email\}!$result->{email}!g;
+        $body =~ s!\{\$user\}!$username!g;
+        
+        my $smtp = new Net::SMTP($fo_usermanagement_conf->{SMTPHost}->[0]->[0]);
+        $smtp->mail($fo_usermanagement_conf->{SMTPFrom}->[0]->[0]);
+        $smtp->to($result->{email});
+        $smtp->data();
+        $smtp->datasend('From: '.$fo_usermanagement_conf->{SMTPFrom}->[0]->[0]."\n");
+        $smtp->datasend('To: '.$result->{email}."\n");
+        $smtp->datasend('Subject: '.get_error($fo_default_conf,'sendpw','subject')."\n\n");
+        $smtp->datasend($body);
+        $smtp->dataend();
+        $smtp->quit();
 
-				# send user output
-				my $tpl = new CForum::Template(get_template($fo_default_conf,$user_config,$fo_usermanagement_conf->{SendPassOk}->[0]->[0]));
-				$tpl->setVar('script',recode($fo_default_conf,$fo_default_conf->{UserRegister}->[0]->[0]));
-				$tpl->setVar('forumbase',recode($fo_default_conf,$fo_default_conf->{BaseURL}->[0]->[0]));
-				$tpl->setVar('charset',$fo_default_conf->{ExternCharset}->[0]->[0]);
-				$tpl->setVar('acceptcharset',$fo_default_conf->{ExternCharset}->[0]->[0].', UTF-8');
+        # send user output
+        my $tpl = new CForum::Template(get_template($fo_default_conf,$user_config,$fo_usermanagement_conf->{SendPassOk}->[0]->[0]));
+        $tpl->setVar('script',recode($fo_default_conf,$fo_default_conf->{UserRegister}->[0]->[0]));
+        $tpl->setVar('forumbase',recode($fo_default_conf,$fo_default_conf->{BaseURL}->[0]->[0]));
+        $tpl->setVar('charset',$fo_default_conf->{ExternCharset}->[0]->[0]);
+        $tpl->setVar('acceptcharset',$fo_default_conf->{ExternCharset}->[0]->[0].', UTF-8');
 
         print $cgi->header(-type => 'text/html; charset='.$fo_default_conf->{ExternCharset}->[0]->[0]),$tpl->parseToMem;
-			}
-			else {
-				my $tpl = new CForum::Template(get_template($fo_default_conf,$user_config,$fo_default_conf->{ErrorTemplate}->[0]->[0]));
-				$tpl->setVar('script',recode($fo_default_conf,$fo_default_conf->{UserRegister}->[0]->[0]));
-				$tpl->setVar('forumbase',recode($fo_default_conf,$fo_default_conf->{BaseURL}->[0]->[0]));
-				$tpl->setVar('charset',$fo_default_conf->{ExternCharset}->[0]->[0]);
+      }
+      else {
+        my $tpl = new CForum::Template(get_template($fo_default_conf,$user_config,$fo_default_conf->{ErrorTemplate}->[0]->[0]));
+        $tpl->setVar('script',recode($fo_default_conf,$fo_default_conf->{UserRegister}->[0]->[0]));
+        $tpl->setVar('forumbase',recode($fo_default_conf,$fo_default_conf->{BaseURL}->[0]->[0]));
+        $tpl->setVar('charset',$fo_default_conf->{ExternCharset}->[0]->[0]);
         $tpl->setVar('error',get_error($fo_default_conf,'sendpw','error'));
 
         print $cgi->header(-type => 'text/html; charset='.$fo_default_conf->{ExternCharset}->[0]->[0]),$tpl->parseToMem;
-			}
-		}
-		else {
-			my $tpl = new CForum::Template(get_template($fo_default_conf,$user_config,$fo_usermanagement_conf->{SendPass}->[0]->[0]));
+      }
+    }
+    else {
+      my $tpl = new CForum::Template(get_template($fo_default_conf,$user_config,$fo_usermanagement_conf->{SendPass}->[0]->[0]));
 
-			$tpl->setVar('script',recode($fo_default_conf,$fo_default_conf->{UserRegister}->[0]->[0]));
-			$tpl->setVar('forumbase',recode($fo_default_conf,$fo_default_conf->{BaseURL}->[0]->[0]));
-			$tpl->setVar('charset',$fo_default_conf->{ExternCharset}->[0]->[0]);
-			$tpl->setVar('acceptcharset',$fo_default_conf->{ExternCharset}->[0]->[0].', UTF-8');
+      $tpl->setVar('script',recode($fo_default_conf,$fo_default_conf->{UserRegister}->[0]->[0]));
+      $tpl->setVar('forumbase',recode($fo_default_conf,$fo_default_conf->{BaseURL}->[0]->[0]));
+      $tpl->setVar('charset',$fo_default_conf->{ExternCharset}->[0]->[0]);
+      $tpl->setVar('acceptcharset',$fo_default_conf->{ExternCharset}->[0]->[0].', UTF-8');
 
-			print $cgi->header(-type => 'text/html; charset='.$fo_default_conf->{ExternCharset}->[0]->[0]),$tpl->parseToMem;
-		}
-	}
-	# }}}
+      print $cgi->header(-type => 'text/html; charset='.$fo_default_conf->{ExternCharset}->[0]->[0]),$tpl->parseToMem;
+    }
+  }
+  # }}}
   # {{{ show register form
-	else {
-		show_register_form($cgi,$fo_default_conf,$fo_usermanagement_conf,$user_config);
-	}
-	# }}}
+  else {
+    show_register_form($cgi,$fo_default_conf,$fo_usermanagement_conf,$user_config);
+  }
+  # }}}
 }
 
 # eof
