@@ -38,12 +38,25 @@
 static u_char *TPLMode = NULL;
 
 int flt_tplmode_execute(t_cf_hash *head,t_configuration *dc,t_configuration *vc) {
-  t_name_value *v;
+  t_name_value *v,*v1;
 
   if(TPLMode) {
-    v = cfg_get_first_value(dc,"TemplateMode");
+    v1 = cfg_get_first_value(vc,"XHTMLMode");
+    v  = cfg_get_first_value(dc,"TemplateMode");
+
     free(v->values[0]);
+    free(v->values[1]);
+
     v->values[0] = strdup(TPLMode);
+
+    if(strstr(TPLMode,"xhtml")) {
+      free(v1->values[0]);
+      v1->values[0] = strdup("xhtml");
+    }
+    else {
+      free(v1->values[0]);
+      v1->values[0] = strdup("html");
+    }
 
     return FLT_OK;
   }

@@ -15,6 +15,16 @@
 		directives and content filters
 	* src/modules/Makefile.am: Added libcfvalidate.la for flt_posting
 	* src/Makefile.am: Added libcfhtml.la for fo_view
+	* configure.in: Now also generating Makefile.PL in the perl modules
+		directories
+	* src/modules/flt_tplmode.c: Now flt_tplmode automaticly determines the XHTML
+		mode
+	* src/perl/CForum-Template/Makefile.PL.in,
+		src/perl/CForum-Plugins/Makefile.PL.in,
+		src/perl/CForum-Configparser/Makefile.PL.in,
+		src/perl/CForum-Clientlib/Makefile.PL.in: Changed to new placeholders
+	* cgi-shared/ForumUtils.pm, cgi-bin/fo_post_old.in: Changed to
+		CForum::Clientlib (much better for I18N)
 
 2004-08-12 Christian Kruse <ckruse@wwwtech.de>
 	* src/modules/flt_tipoftheday.c: Useless changes, thought I had to fix a bug

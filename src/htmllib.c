@@ -84,12 +84,15 @@ int next_line_is_no_quote_line(const u_char *ptr) {
 
 /* {{{ msg_to_html */
 void msg_to_html(t_cl_thread *thread,const u_char *msg,t_string *content,t_string *cite,u_char *quote_chars,int max_sig_lines,int show_sig) {
-  t_name_value *cs = cfg_get_first_value(&fo_default_conf,"ExternCharset");
+  t_name_value *cs   = cfg_get_first_value(&fo_default_conf,"ExternCharset");
+  t_name_value *xmlm = cfg_get_first_value(&fo_view_conf,"XHTMLMode");
   const u_char *ptr,*tmp,*ptr1;
   u_char *qchars;
   size_t qclen;
-  int linebrk = 0,quotemode = 0,sig = 0,utf8 = cf_strcmp(cs->values[0],"UTF-8") == 0,line = 0,rc;
+  int linebrk = 0,quotemode = 0,sig = 0,utf8 = cf_strcmp(cs->values[0],"UTF-8") == 0,line = 0,rc,xml;
   u_char *directive,*parameter,*safe;
+
+  xml = cf_strcmp(xmlm->values[0],"yes");
 
   if(utf8 || (qchars = htmlentities_charset_convert(quote_chars,"UTF-8",cs->values[0],&qclen,0)) == NULL) {
     qchars = strdup(quote_chars);
@@ -142,7 +145,8 @@ void msg_to_html(t_cl_thread *thread,const u_char *msg,t_string *content,t_strin
           linebrk = 1;
           line++;
 
-          str_chars_append(content,"<br />",6);
+          if(xml) str_chars_append(content,"<br />",6);
+          else    str_chars_append(content,"<br>",4);
 
           if(sig && max_sig_lines > 0 && line >= max_sig_lines) break;
           if(sig == 0 && cite) {
@@ -257,8 +261,14 @@ void msg_to_html(t_cl_thread *thread,const u_char *msg,t_string *content,t_strin
           sig  = 1;
           line = 0;
 
-          str_chars_append(content,"<br /><span class=\"sig\">",24);
-          str_chars_append(content,"-- <br />",9);
+          if(xml) {
+            str_chars_append(content,"<br /><span class=\"sig\">",24);
+            str_chars_append(content,"-- <br />",9);
+          }
+          else {
+            str_chars_append(content,"<br><span class=\"sig\">",22);
+            str_chars_append(content,"-- <br>",7);
+          }
 
           ptr += 8;
         }

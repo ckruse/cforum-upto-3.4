@@ -132,10 +132,10 @@ t_conf_opt fo_view_options[] = {
   { "</DateConfig>", NULL, 0, NULL},
 
   { "<Form>", NULL, 0, NULL },
-  { "Name",                       handle_command,   CFG_OPT_USER, &fo_view_conf },
-  { "EMail",                      handle_command,   CFG_OPT_USER, &fo_view_conf },
-  { "HomepageUrl",                handle_command,   CFG_OPT_USER, &fo_view_conf },
-  { "ImageUrl",                   handle_command,   CFG_OPT_USER, &fo_view_conf },
+  { "Name",                       handle_command,   CFG_OPT_USER|CFG_OPT_UNIQUE, &fo_view_conf },
+  { "EMail",                      handle_command,   CFG_OPT_USER|CFG_OPT_UNIQUE, &fo_view_conf },
+  { "HomepageUrl",                handle_command,   CFG_OPT_USER|CFG_OPT_UNIQUE, &fo_view_conf },
+  { "ImageUrl",                   handle_command,   CFG_OPT_USER|CFG_OPT_UNIQUE, &fo_view_conf },
   { "</Form>", NULL, 0, NULL },
 
   { "<Filters>", NULL, 0, NULL },

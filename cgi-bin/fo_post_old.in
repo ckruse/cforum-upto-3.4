@@ -34,6 +34,7 @@ use CGI;
 use CGI::Carp qw/fatalsToBrowser/;
 
 use CForum::Template;
+use CForum::Clientlib;
 
 use CheckRFC;
 use ForumUtils qw(
@@ -51,8 +52,6 @@ use ForumUtils qw(
   fatal
   get_config_file
 );
-
-use Unicode::MapUTF8 qw(from_utf8);
 
 use IO::Socket;
 
@@ -208,6 +207,8 @@ sub get_rem_addr {
   return $ENV{HTTP_X_FORWARED_FOR} || $ENV{REMOTE_ADDR} || '666.666.666.666';
 }
 # }}}
+
+my $clientlib        = new CForum::Clientlib;
 
 my $fo_default_conf  = read_configuration($Config.'fo_default.conf')  or die $!;
 my $fo_view_conf     = read_configuration($Config.'fo_view.conf')     or die $!;
@@ -391,7 +392,15 @@ if($cgi->param) {
     }
     else {
       my $tpl = new CForum::Template(get_template($fo_default_conf,$user_config,$fo_post_conf->{OkTemplate}->[0]->[0]));
-      my $txt = $fo_default_conf->{ExternCharset}->[0]->[0] eq "UTF-8" ? $cgi->param('newbody') : from_utf8(-string => $cgi->param('newbody'), -charset => $fo_default_conf->{ExternCharset}->[0]->[0]);
+      my $txt = '';
+      
+      if($fo_default_conf->{ExternCharset}->[0]->[0] eq "UTF-8") {
+        $txt = $cgi->param('newbody');
+      }
+      else {
+        $txt = $clientlib->htmlentities_charset_convert($cgi->param('newbody'),"UTF-8", $fo_default_conf->{ExternCharset}->[0]->[0]);
+      }
+
       $tpl->setVar(body => message_field($txt,$cgi->param('qchar'),$fo_default_conf));
 
       $cgi->delete('body');

@@ -39,8 +39,6 @@ BEGIN {
 
 sub VERSION {(q$Revision: 1.22 $ =~ /([\d.]+)\s*$/)[0] or '0.0'}
 
-use Unicode::MapUTF8 qw(from_utf8 to_utf8);
-
 # needed because of this fucking Windows-1252
 use Text::Iconv;
 
@@ -48,13 +46,16 @@ use BerkeleyDB;
 use POSIX qw/setlocale/;
 
 use HTML::Entities;
+
 use CForum::Template;
+use CForum::Clientlib;
 
 use CheckRFC;
 
 use POSIX qw/setlocale strftime LC_ALL/;
 
 my $Msgs = undef;
+my $Clientlib = new CForum::Clientlib;
 
 # }}}
 
@@ -64,9 +65,9 @@ sub recode {
   my $str = shift;
 
   return unless defined $str;
-  $str = from_utf8(-string => $str,-charset => $fdc->{ExternCharset}->[0]->[0]) if $fdc->{ExternCharset}->[0]->[0] ne "UTF-8";
+  $str = $Clientlib->htmlentities_charset_convert($str,"UTF-8",$fdc->{ExternCharset}->[0]->[0],0) if $fdc->{ExternCharset}->[0]->[0] ne "UTF-8";
 
-  return encode($str);
+  return $str;
 }
 # }}}
 
@@ -261,7 +262,7 @@ sub transform_body {
   $txt =~ s!(?:^|(<br(?:\s*/)?>))\s!($1?$1:'').'&nbsp;'!eg;
 
   # after that - transform it to UTF-8
-  $txt = to_utf8(-string => $txt,-charset => $dcfg->{ExternCharset}->[0]->[0]) if $dcfg->{ExternCharset}->[0]->[0] ne "UTF-8";
+  $txt = $Clientlib->charset_convert($txt,length($txt),$dcfg->{ExternCharset}->[0]->[0],"UTF-8") if $dcfg->{ExternCharset}->[0]->[0] ne "UTF-8";
 
   return $txt;
 }
@@ -404,7 +405,6 @@ sub uniquify_params {
   my $dcfg  = shift;
   my $cgi   = shift;
   my $fname = shift;
-  my $converter;
 
   my $val = $cgi->param($fname) or return get_error($dcfg,'manipulated');
 
@@ -425,19 +425,19 @@ sub uniquify_params {
           # Ok, we got characters not present in Latin-1. Due to
           # our knowledge of the browser bugs we assume that
           # Windows-1252 has been sent
-          if($val =~ /[\x80-\x9F]/) {
+          if($val =~ /[\x0-\x1F\x7F-\x9F]/) {
             $convert = 0;
-            $converter = new Text::Iconv("Windows-1252","UTF-8") unless $converter;
-
-            $nval = $converter->convert($val);
+            $nval = $Clientlib->charset_convert($val,length($val),"Windows-1252","UTF-8");
           }
         }
 
         if($convert) {
-          $nval = to_utf8({
-            -string => $val,
-            -charset => $dcfg->{ExternCharset}->[0]->[0]
-          });
+          $nval = $Clientlib->charset_convert(
+            $val,
+            length($val),
+            $dcfg->{ExternCharset}->[0]->[0],
+            "UTF-8"
+          );
         }
 
         return get_error($dcfg,'posting','charset') if !defined $nval;

@@ -312,6 +312,10 @@ cgi-shared/config/fo_vote.conf
 cgi-shared/config/fo_usermanagement.conf
 Doxyfile
 scripts/msgs2db.pl
+src/perl/CForum-Clientlib/Makefile.PL
+src/perl/CForum-Configparser/Makefile.PL
+src/perl/CForum-Plugins/Makefile.PL
+src/perl/CForum-Template/Makefile.PL
 )
 
 dnl eof
