@@ -2,7 +2,7 @@ start = "default"
 
 list "symbols" = "(,),{,},:,[,],;,\,"
 list "keywords" = "break,else,new,var,case,finally,return,void,catch,for,switch,while,continue,function,this,with,default,if,throw,delete,in,try,do,instanceof,typeof,true,false"
-list "object" = "plugins,Boolean,embeds,options,window,String,document,frames,forms,applets,all,node,Function,Number,Math,Screen,mimeTypes,RegExp,links,layers,navigator,Array,history,images,location,elements,style,Date,event,anchors"
+list "objects" = "plugins,Boolean,embeds,options,window,String,document,frames,forms,applets,all,Function,Number,Math,Screen,mimeTypes,RegExp,links,layers,navigator,Array,history,images,location,elements,style,Date,event,anchors"
 
 list "attributes" = "visibility,keyCode,which,y,appVersion,target,defaultStatus,SQRT1_2,caller,pageXOffset,name,charset,hash,className,availWidth,nodeValue,nextSibling,vlinkColor,recordNumber,title,pageY,parentTextEdit,defaultCharset,layerY,outerHTML,userAgent,offsetHeight,dataSrc,selectedIndex,clip,ctrlKey,pixelDepth,platform,vspace,arity,background,availHeight,height,length,filename,suffixes,sourceIndex,protocol,left,cookieEnabled,href,id,URL,LOG2E,value,cookie,data,outerHeight,dataPageSize,type,SQRT2,defaultValue,POSITIVE_INFINITY,offsetParent,NEGATIVE_INFINITY,locationbar,previousSibling,appName,status,offsetY,zIndex,referrer,pathname,alinkColor,lastChild,innerText,lowsrc,closed,host,border,enabledPlugin,parentElement,screenY,parentLayer,nodeName,clientX,complete,pageX,personalbar,dataFld,hostname,E,bgColor,childNodes,offsetTop,innerHTML,screenX,linkColor,lang,toolbar,description,innerHeight,arguments,attributes,width,isTextEdit,siblingAbove,MAX_VALUE,text,method,NaN,below,outerWidth,language,shiftKey,innerWidth,tagName,MIN_VALUE,statusbar,LN2,firstChild,search,LOG10E,parentNode,pageYOffset,dataFormatAs,modifiers,prototype,offsetX,menubar,src,port,checked,lastModified,nodeType,siblingBelow,outerText,appCodeName,x,LN10,altKey,fgColor,above,offsetWidth,defaultChecked,clientY,scrollbars,layerX,colorDepth,hspace,action,PI"
 
@@ -16,6 +16,10 @@ block "default"
 
   onstringlist "symbols" highlight "symbol"
   onstringlist "keywords" highlight "keyword"
+
+  onstringlist "objects" highlight "known-object"
+  onstringlist "attributes" highlight "known-attribute"
+  onstringlist "methods" highlight "known-methods"
 
   onstring "&quot;" "string" "string"
   onstring "'" "sqstring" "string"
