@@ -1,4 +1,6 @@
 2005-02-21 Christian Kruse <ckruse@wwwtech.de>
 	* src/modules/flt_mailonpost.c: Fixed bug, flt_mailonpost_udb has to be equal
 		NULL if FLT_DECLINE should returned, not non-NULL
+	* src/modules/flt_syntax.c: Made parser more tollerant, now it also recognizes
+		"lang" and 'lang' and so on
 

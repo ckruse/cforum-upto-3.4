@@ -1294,7 +1294,9 @@ int flt_syntax_execute(t_configuration *fdc,t_configuration *fvc,const u_char *d
   /* }}} */
 
   str_init(&str);
-  for(ptr=(u_char *)parameters[1];*ptr;++ptr) str_char_append(&str,tolower(*ptr));
+  for(ptr=(u_char *)parameters[1];*ptr;++ptr) {
+    if(isalnum(*ptr)) str_char_append(&str,tolower(*ptr));
+  }
   lang = str.content;
 
   /* we got a language, check if it exists */
