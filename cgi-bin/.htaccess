@@ -1,0 +1,6 @@
+
+<Files ~ "fo_(cleanup|server|tid_index)">
+  Order Deny,Allow
+  Deny from all
+</Files>
+

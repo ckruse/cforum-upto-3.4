@@ -6,6 +6,6 @@ install-exec-hook:
 	  $(MKDIR) -p $(bindir)/user; \
 	fi; \
 	for file in $(bindir)/fo_*; do \
-	  $(LN) -s $${file} $(bindir)/user/`echo -n $${file}|sed 's!$(bindir)!!'`; \
+	  $(LN) -sf $${file} $(bindir)/user/`echo -n $${file}|sed 's!$(bindir)!!'`; \
 	done
 
