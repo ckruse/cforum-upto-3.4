@@ -118,8 +118,8 @@ void msg_to_html(t_cl_thread *thread,const u_char *msg,t_string *content,t_strin
           if(*ptr1 == ']') {
             directive = strndup(ptr+1,tmp-ptr-1);
             buff      = strndup(tmp+1,ptr1-tmp-1);
-						parameter = htmlentities_decode(buff);
-						free(buff);
+            parameter = htmlentities_decode(buff);
+            free(buff);
 
             rc = run_directive_filters(directive,parameter,content,cite,qchars,sig);
 
@@ -175,14 +175,13 @@ void msg_to_html(t_cl_thread *thread,const u_char *msg,t_string *content,t_strin
           if(tmp) {
             directive = strdup("link");
             buff      = strndup(ptr,tmp-ptr);
-						parameter = htmlentities_decode(buff);
-						free(buff);
+            parameter = htmlentities_decode(buff);
+            free(buff);
 
             rc = run_directive_filters(directive,parameter,content,cite,qchars,sig);
 
             free(directive);
             free(parameter);
-
 
             if(rc == FLT_DECLINE) {
               ptr = safe;
@@ -205,9 +204,9 @@ void msg_to_html(t_cl_thread *thread,const u_char *msg,t_string *content,t_strin
           if(tmp) {
             directive = strdup("image");
             buff      = strndup(ptr,tmp-ptr);
-						parameter = htmlentities_decode(buff);
-						free(buff);
-            
+            parameter = htmlentities_decode(buff);
+            free(buff);
+
             run_directive_filters(directive,parameter,content,cite,qchars,sig);
 
             free(directive);
@@ -232,8 +231,8 @@ void msg_to_html(t_cl_thread *thread,const u_char *msg,t_string *content,t_strin
 
           directive = strdup("iframe");
           buff      = strndup(tmp,ptr-tmp);
-					parameter = htmlentities_decode(buff);
-					free(buff);
+          parameter = htmlentities_decode(buff);
+          free(buff);
 
           rc = run_directive_filters(directive,parameter,content,cite,qchars,sig);
 

@@ -77,7 +77,7 @@ int flt_directives_is_valid_pref(const u_char *parameter,u_char **tmp) {
 /* }}} */
 
 /* {{{ flt_directives_is_relative_uri */
-int flt_directives_is_relative_uri(u_char *tmp,size_t len) {
+int flt_directives_is_relative_uri(const u_char *tmp,size_t len) {
   t_string str;
   int ret = 0;
 
@@ -103,11 +103,11 @@ int flt_directives_execute(t_configuration *fdc,t_configuration *fvc,const u_cha
   t_ref_uri *uri;
   int go = 1;
 
+  while(isspace(*parameter)) ++parameter;
+
   if(*directive == 'l') {
     /* {{{ [link:] */
     if(cf_strcmp(directive,"link") == 0) {
-      while(isspace(*parameter)) ++parameter;
-
       if((ptr = strstr(parameter,"@title=")) != NULL) {
         tmp1      = strndup(parameter,ptr-parameter);
         len       = ptr - parameter;
@@ -179,7 +179,18 @@ int flt_directives_execute(t_configuration *fdc,t_configuration *fvc,const u_cha
         len  = strlen(parameter);
       }
 
-      if(is_valid_http_link(tmp1,1) == 0) {
+      if(is_valid_link(tmp1) != 0) {
+        if(cf_strncmp(tmp1,"..",2) == 0 || *tmp1 == '/' || *tmp1 == '?') {
+          if(!flt_directives_is_relative_uri(tmp1,len)) {
+            go = 0;
+          }
+        }
+        else {
+          go = 0;
+        }
+      }
+
+      if(go) {
         tmp2 = htmlentities(tmp1,1);
         len = strlen(tmp2);
 
@@ -232,6 +243,17 @@ int flt_directives_execute(t_configuration *fdc,t_configuration *fvc,const u_cha
     /* }}} */
     /* {{{ [iframe:] */ 
     else if(cf_strcmp(directive,"iframe") == 0) {
+      if(is_valid_link(parameter) != 0) {
+        if(cf_strncmp(parameter,"..",2) == 0 || *parameter == '/' || *parameter == '?') {
+          if(!flt_directives_is_relative_uri(parameter,len)) {
+            go = 0;
+          }
+        }
+        else {
+          go = 0;
+        }
+      }
+
       if(is_valid_http_link(parameter,1) == 0) {
         tmp2 = htmlentities(parameter,1);
         len = strlen(tmp2);
