@@ -349,7 +349,7 @@ sub message_field {
 
   # ... iframes
   $posting =~ s!$_!'<iframe src="'.$1.'" width="90%" height="90%"><a href="'.$1.'">'.$1.'</a></iframe>'!eg for map {
-    '\[[Ii][Ff][Rr][Aa][Mm][Ee]:\s*('.quotemeta($_->[0]).')\]'
+    '\[[Ii][Ff][Rr][Aa][Mm][Ee]:\s*('.quotemeta($_).')\]'
   } @iframes;
 
   # return
