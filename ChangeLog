@@ -8,6 +8,8 @@
 	* src/modules/flt_posting.c: Deleted directives code and moved it up to
 		src/modules/flt_directives.c
 	* cgi-shared/config/modules.{fr,de}.xml: Added LinkTemplate directive
+	* src/modules/flt_registerednames.c: Added 0xA0 (non-breaking space) to
+		whitespace handling
 
 2004-10-10 Christian Seiler <self@christian-seiler.de>
 	* src/modules/flt_handle404.c: fixed bug #408
