@@ -658,17 +658,19 @@ int cf_cache_outdated_date(const u_char *base,const u_char *uri,time_t date);
  * \param uri The URI of the entry
  * \param content The content of the entry
  * \param len The length of the content segment
+ * \param gzip Should the cache be compressed with gzip? If > 0, it'll be compressed with this compression level
  * \return 0 on success, -1 on error
  */
-int cf_cache(const u_char *base,const u_char *uri,const u_char *content,size_t len);
+int cf_cache(const u_char *base,const u_char *uri,const u_char *content,size_t len,int gzip);
 
 /**
  * Function used to get a cache entry
  * \param base The base directory
  * \param uri The URI of the entry
+ * \param gzip If > 0, it expects the content to be encoded with gzip
  * \return NULL on error, a cache entry on success
  */
-t_cache_entry *cf_get_cache(u_char *base,u_char *uri);
+t_cache_entry *cf_get_cache(u_char *base,u_char *uri,int gzip);
 
 /**
  * Function cleaning up a t_cache_entry struct

@@ -363,7 +363,7 @@ void print_thread_structure(t_arc_thread *thr,const u_char *year,const u_char *m
 
   tpl_cf_parse_to_mem(&main_tpl);
   
-  if(show_invisible == 0) cf_cache(cache->values[0],pi,main_tpl.parsed.content,main_tpl.parsed.len);
+  if(show_invisible == 0) cf_cache(cache->values[0],pi,main_tpl.parsed.content,main_tpl.parsed.len,6);
 
   fwrite(main_tpl.parsed.content,1,main_tpl.parsed.len,stdout);
 
@@ -718,7 +718,7 @@ void show_thread(const u_char *year,const u_char *month,const u_char *tid) {
     return;
   }
 
-  if(show_invisible || cf_cache_outdated(cache->values[0],pi,path.content) == -1 || (ent = cf_get_cache(cache->values[0],pi)) == NULL) {
+  if(show_invisible || cf_cache_outdated(cache->values[0],pi,path.content) == -1 || (ent = cf_get_cache(cache->values[0],pi,2)) == NULL) {
     impl = gdome_di_mkref();
     if((doc = gdome_di_createDocFromURI(impl,path.content,GDOME_LOAD_PARSING,&e)) == NULL) {
       printf("Status: 404 Not Found\015\012\015\012");
@@ -845,7 +845,7 @@ void show_month_content(const u_char *year,const u_char *month) {
   /* no additional headers */
   fwrite("\015\012",1,2,stdout);
 
-  if(show_invisible || cf_cache_outdated(cache->values[0],pi,path.content) == -1 || (ent = cf_get_cache(cache->values[0],pi)) == NULL) {
+  if(show_invisible || cf_cache_outdated(cache->values[0],pi,path.content) == -1 || (ent = cf_get_cache(cache->values[0],pi,2)) == NULL) {
     array_init(&ary,sizeof(cnt_str),destroy_sort_array);
 
     /* get templates */
@@ -965,7 +965,7 @@ void show_month_content(const u_char *year,const u_char *month) {
     array_destroy(&ary);
 
     tpl_cf_parse_to_mem(&m_tpl);
-    if(show_invisible == 0) cf_cache(cache->values[0],pi,m_tpl.parsed.content,m_tpl.parsed.len);
+    if(show_invisible == 0) cf_cache(cache->values[0],pi,m_tpl.parsed.content,m_tpl.parsed.len,6);
     fwrite(m_tpl.parsed.content,1,m_tpl.parsed.len,stdout);
 
     tpl_cf_finish(&tl_tpl);
@@ -1115,10 +1115,12 @@ void show_year_list(void) {
 /* {{{ signal handler for bad signals */
 void sighandler(int segnum) {
   FILE *fd = fopen(PROTOCOL_FILE,"a");
-  u_char buff[10],*uname = NULL,*qs = NULL;
+  u_char buff[10],*uname = NULL,*qs = NULL,*pi;
 
   if(fd) {
     qs    = getenv("QUERY_STRING");
+		pi    = getenv("PATH_INFO");
+
     if(GlobalValues) uname = cf_hash_get(GlobalValues,"UserName",8);
     
     switch(segnum) {
@@ -1139,7 +1141,7 @@ void sighandler(int segnum) {
         break;
     }
 
-    fprintf(fd,"fo_arcview: Got signal %s!\nUsername: %s\nQuery-String: %s\n----\n",buff,uname?uname:(u_char *)"(null)",qs?qs:(u_char *)"(null)");
+    fprintf(fd,"fo_arcview: Got signal %s!\nUsername: %s\nQuery-String: %s\nPATH_INFO: %s\n----\n",buff,uname?uname:(u_char *)"(null)",qs?qs:(u_char *)"(null)",pi?pi:(u_char *)"(null)");
     fclose(fd);
   }
 

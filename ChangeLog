@@ -3,7 +3,10 @@
 	* src/datautils.c: Bugfix for converting u_int64_t to strings (numbers have
 		been reversed, now the order is correct)
 	* src/modules/flt_reference.c: Now tested and bugfixed module, seems to work
-	* src/fo_arcview.c: Bugfix for bug #174
+	* src/fo_arcview.c: Bugfix for bug #174, changed the cache (now it uses
+		gzip), added PATH_INFO to debug output of the signal hander
+	* src/cacheutils.c, src/utils.h: Added gzip support for the cache
+	* sr/Makefile.am: Added zlib to the libcfutils
 
 2004-06-30 Christian Kruse <ckruse@wwwtech.de>
 	* configure.in: Bugfix in protocol file handling, AC_DEFINE() quotes so

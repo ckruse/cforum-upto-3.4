@@ -35,6 +35,8 @@
 #include <sys/mman.h>
 #include <fcntl.h>
 
+#include <zlib.h>
+
 #include "charconvert.h"
 #include "utils.h"
 /* }}} */
@@ -128,18 +130,32 @@ int cf_cache_create_path(u_char *path) {
 /* }}} */
 
 /* {{{ cf_cache */
-int cf_cache(const u_char *base,const u_char *uri,const u_char *content,size_t len) {
+int cf_cache(const u_char *base,const u_char *uri,const u_char *content,size_t len,int gzip) {
   FILE *fd;
+  gzFile gzfd;
   t_string fname;
+  char buff[5];
 
   cf_cache_genname(base,uri,&fname);
 
   if(cf_cache_create_path(fname.content) == 0) {
-    if((fd = fopen(fname.content,"w")) != NULL) {
-      fwrite(content,1,len,fd);
-      fclose(fd);
-      str_cleanup(&fname);
-      return 0;
+    if(gzip) {
+      snprintf(buff,5,"wb%d",gzip);
+
+      if((gzfd = gzopen(fname.content,buff)) != NULL) {
+        gzwrite(gzfd,(void *)content,len);
+        gzclose(gzfd);
+        str_cleanup(&fname);
+        return 0;
+      }
+    }
+    else {
+      if((fd = fopen(fname.content,"w")) != NULL) {
+        fwrite(content,1,len,fd);
+        fclose(fd);
+        str_cleanup(&fname);
+        return 0;
+      }
     }
   }
 
@@ -149,12 +165,16 @@ int cf_cache(const u_char *base,const u_char *uri,const u_char *content,size_t l
 /* }}} */
 
 /* {{{ cf_get_cache */
-t_cache_entry *cf_get_cache(u_char *base,u_char *uri) {
+t_cache_entry *cf_get_cache(u_char *base,u_char *uri,int gzip) {
   int fd;
   t_string fname;
   void *ptr;
-  t_cache_entry *ent;
+  t_cache_entry *ent = NULL;
   struct stat st;
+  gzFile gzfd;
+  char buff[BUFSIZ];
+  int status;
+  t_string tmp;
 
   cf_cache_genname(base,uri,&fname);
 
@@ -163,21 +183,42 @@ t_cache_entry *cf_get_cache(u_char *base,u_char *uri) {
     return NULL;
   }
 
-  if((fd = open(fname.content,O_RDONLY)) == -1) {
-    str_cleanup(&fname);
-    return NULL;
-  }
+  if(gzip) {
+    if((gzfd = gzopen(fname.content,"rb")) != NULL) {
+      str_init(&tmp);
 
-  if((caddr_t)(ptr = mmap(0,st.st_size,PROT_READ,MAP_FILE|MAP_SHARED,fd,0)) == (caddr_t)-1) {
-    close(fd);
-    str_cleanup(&fname);
-    return NULL;
-  }
+      while((status = gzread(gzfd,buff,BUFSIZ)) > 0) {
+        str_chars_append(&tmp,buff,status);
+      }
 
-  ent = fo_alloc(NULL,1,sizeof(*ent),FO_ALLOC_MALLOC);
-  ent->fd   = fd;
-  ent->ptr  = ptr;
-  ent->size = st.st_size;
+      gzclose(gzfd);
+
+      if(status != -1) {
+        ent = fo_alloc(NULL,1,sizeof(*ent),FO_ALLOC_MALLOC);
+        ent->fd   = -1;
+        ent->ptr  = tmp.content;
+        ent->size = tmp.len;
+      }
+      else str_cleanup(&tmp);
+    }
+  }
+  else {
+    if((fd = open(fname.content,O_RDONLY)) == -1) {
+      str_cleanup(&fname);
+      return NULL;
+    }
+
+    if((caddr_t)(ptr = mmap(0,st.st_size,PROT_READ,MAP_FILE|MAP_SHARED,fd,0)) == (caddr_t)-1) {
+      close(fd);
+      str_cleanup(&fname);
+      return NULL;
+    }
+
+    ent = fo_alloc(NULL,1,sizeof(*ent),FO_ALLOC_MALLOC);
+    ent->fd   = fd;
+    ent->ptr  = ptr;
+    ent->size = st.st_size;
+  }
 
   return ent;
 }
@@ -185,8 +226,14 @@ t_cache_entry *cf_get_cache(u_char *base,u_char *uri) {
 
 /* {{{ cf_cache_destroy */
 void cf_cache_destroy(t_cache_entry *ent) {
-  munmap(ent->ptr,ent->size);
-  close(ent->fd);
+  if(ent->fd != -1) {
+    munmap(ent->ptr,ent->size);
+    close(ent->fd);
+  }
+  else {
+    free(ent->ptr);
+  }
+
   free(ent);
 }
 /* }}} */
