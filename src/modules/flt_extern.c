@@ -334,7 +334,7 @@ void flt_extern_handle_request(int sock) {
 
 /* {{{ flt_extern_register_server */
 int flt_extern_register_server(int sock) {
-  Extern_addr = calloc(1,sizeof(*Extern_addr));
+  Extern_addr = fo_alloc(NULL,1,sizeof(*Extern_addr),FO_ALLOC_CALLOC);
   sock        = flt_extern_set_us_up_the_socket(Extern_addr);
 
   if(sock < 0) return FLT_EXIT;
@@ -343,6 +343,11 @@ int flt_extern_register_server(int sock) {
   return FLT_OK;
 }
 /* }}} */
+
+void flt_extern_cleanup(void) {
+  if(Extern_addr) free(Extern_addr);
+  if(Extern_interface) free(Extern_interface);
+}
 
 /* {{{ flt_extern_handle */
 int flt_extern_handle(t_configfile *cf,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
@@ -370,7 +375,7 @@ t_module_config flt_extern = {
   NULL,
   NULL,
   NULL,
-  NULL
+  flt_extern_cleanup
 };
 
 /* eof */

@@ -367,6 +367,7 @@ int flt_xmlstorage_make_forumtree(t_forum *forum) {
     snprintf(buff,50,"t%llu",thread->tid);
     cf_rwlock_init(buff,&thread->lock);
 
+    free(ctid);
     gdome_n_unref(n1,&e);
     gdome_n_unref(n2,&e);
     gdome_n_unref(n,&e);
@@ -400,6 +401,8 @@ int flt_xmlstorage_make_forumtree(t_forum *forum) {
     /* sort messages */
     flt_xmlstorage_sort_messages(thread);
   }
+
+  array_destroy(&ary);
 
   return FLT_OK;
 }
@@ -550,6 +553,7 @@ void flt_xmlstorage_handle_header(t_posting *p,GdomeNode *n) {
 
   ls = xml_get_attribute(date,"longSec");
   p->date          = strtol(ls,NULL,10);
+  free(ls);
 
   tmp = xml_get_node_value(a_name);
   str_char_set(&p->user.name,tmp,strlen(tmp));
