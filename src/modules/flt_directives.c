@@ -26,6 +26,8 @@
 #include <ctype.h>
 #include <sys/types.h>
 
+#include <pcre.h>
+
 #include "readline.h"
 #include "hashlib.h"
 #include "utils.h"
@@ -57,8 +59,14 @@ typedef struct {
   u_char *tok;
 } t_flt_directives_lt_tok;
 
+typedef struct {
+  pcre *re;
+  pcre_extra *extra;
+} flt_directives_re;
+
 static t_array flt_directives_ref_uris = { 0, 0, 0, NULL, NULL };
 static t_array flt_directives_lt_toks  = { 0, 0, 0, NULL, NULL };
+static t_array flt_directives_puris = { 0, 0, 0, NULL, NULL };
 
 /* {{{ flt_directives_is_valid_pref */
 int flt_directives_is_valid_pref(const u_char *parameter,u_char **tmp,u_char **tmp1) {
@@ -116,22 +124,25 @@ void flt_directives_generate_uri(const u_char *uri,const u_char *title,t_string 
   size_t len = 0,len1,i;
   t_flt_directives_lt_tok *tok;
 
+  /* {{{ generate <a href */
+  tmp2 = htmlentities(uri,1);
+  len = strlen(tmp2);
+
+  str_chars_append(content,"<a href=\"",9);
+  str_chars_append(content,tmp2,len);
+
+  if(flt_directives_rel_no_follow) str_chars_append(content,"\" rel=\"nofollow",15);
+
+  if(flt_directives_link) {
+    str_chars_append(content,"\" target=\"",10);
+    str_chars_append(content,flt_directives_link,strlen(flt_directives_link));
+  }
+
+  str_chars_append(content,"\">",2);
+  /* }}} */
+
   if(title) {
     len1 = strlen(title);
-    tmp2 = htmlentities(uri,1);
-    len = strlen(tmp2);
-
-    str_chars_append(content,"<a href=\"",9);
-    str_chars_append(content,tmp2,len);
-
-    if(flt_directives_rel_no_follow) str_chars_append(content,"\" rel=\"nofollow",15);
-
-    if(flt_directives_link) {
-      str_chars_append(content,"\" target=\"",10);
-      str_chars_append(content,flt_directives_link,strlen(flt_directives_link));
-    }
-
-    str_chars_append(content,"\">",2);
 
     /*
      * OK, we got the border around the link, now lets generate the link text
@@ -155,48 +166,24 @@ void flt_directives_generate_uri(const u_char *uri,const u_char *title,t_string 
       }
     }
     else str_chars_append(content,title,len1);
+  }
+  else str_chars_append(content,tmp2,len);
 
-    /*
-     * generate rest of the link
-     */
-
-    if(cite && sig == 0) {
-      str_chars_append(cite,"[link:",6);
-      str_chars_append(cite,tmp2,len);
+  /*
+   * generate rest of the link and the cite
+   */
+  if(cite && sig == 0) {
+    str_chars_append(cite,"[link:",6);
+    str_chars_append(cite,tmp2,len);
+    if(title) {
       str_chars_append(cite,"@title=",7);
       str_chars_append(cite,title,len1);
-      str_char_append(cite,']');
     }
-
-    str_chars_append(content,"</a>",4);
-    free(tmp2);
+    str_char_append(cite,']');
   }
-  else {
-    tmp2 = htmlentities(uri,1);
-    len = strlen(tmp2);
 
-    str_chars_append(content,"<a href=\"",9);
-    str_chars_append(content,tmp2,len);
-
-    if(flt_directives_rel_no_follow) str_chars_append(content,"\" rel=\"nofollow",15);
-
-    if(flt_directives_link) {
-      str_chars_append(content,"\" target=\"",10);
-      str_chars_append(content,flt_directives_link,strlen(flt_directives_link));
-    }
-
-    str_chars_append(content,"\">",2);
-    str_chars_append(content,tmp2,len);
-    str_chars_append(content,"</a>",4);
-
-    if(cite && sig == 0) {
-      str_chars_append(cite,"[link:",6);
-      str_chars_append(cite,tmp2,len);
-      str_char_append(cite,']');
-    }
-
-    free(tmp2);
-  }
+  str_chars_append(content,"</a>",4);
+  free(tmp2);
 }
 /* }}} */
 
@@ -211,7 +198,7 @@ int flt_directives_execute(t_configuration *fdc,t_configuration *fvc,const u_cha
   t_flt_directives_ref_uri *uri;
   int go = 1;
   t_string tmpstr;
-  u_char *parameter = parameters[0];
+  u_char *parameter = (u_char *)parameters[0];
 
   while(isspace(*parameter)) ++parameter;
 
@@ -437,6 +424,96 @@ int flt_directives_execute(t_configuration *fdc,t_configuration *fvc,const u_cha
 }
 /* }}} */
 
+/* {{{ flt_directives_check_for_pref */
+int flt_directives_check_for_pref(const u_char *link,size_t len) {
+  size_t i;
+  flt_directives_re *re;
+
+  for(i=0;i<flt_directives_puris.elements;++i) {
+    re = array_element_at(&flt_directives_puris,i);
+
+    if(pcre_exec(re->re,re->extra,link,len,0,0,NULL,0) >= 0) return 1;
+  }
+
+  return 0;
+}
+/* }}} */
+
+/* {{{ flt_directives_parse_link_for_pref */
+int flt_directives_parse_link_for_pref(const u_char *link,u_int64_t *tid,u_int64_t *mid) {
+  register u_char *ptr;
+  int found = 0;
+
+  for(ptr=(u_char *)link;*ptr;++ptr) {
+    switch(*ptr) {
+      case 't':
+        if(*(ptr+1) == '=' || *(ptr+1) == '/') *tid = str_to_u_int64(ptr+2);
+        found |= 1;
+        break;
+      case 'm':
+        if(*(ptr+1) == '=' || *(ptr+1) == '/') *mid = str_to_u_int64(ptr+2);
+        found |= 2;
+        break;
+    }
+  }
+
+  return (found & 1) && (found & 2);
+}
+/* }}} */
+
+/* {{{ flt_directives_rewrite */
+int flt_directives_rewrite(t_cf_hash *head,t_configuration *dc,t_configuration *pc,t_message *p,int sock,int mode) {
+  t_string new_content;
+  register u_char *ptr;
+  u_char *safe,*link,*title;
+  u_int64_t tid,mid;
+  size_t len;
+
+  str_init(&new_content);
+
+  for(ptr=p->content.content;*ptr;++ptr) {
+    switch(*ptr) {
+      case '[':
+        if(cf_strncmp(ptr,"[link:",6)  == 0) {
+          safe = ptr;
+
+          for(ptr+=6,title=NULL;*ptr && *ptr != ']' && *ptr != '<';++ptr) {
+            if(*ptr == '@' && cf_strncmp(ptr,"@title=",7) == 0 && title == NULL) title = ptr;
+          }
+
+          if(title) len = title - safe - 6;
+          else len = ptr - safe - 6;
+
+          link = strndup(safe+6,len);
+
+          if(flt_directives_check_for_pref(link,len)) {
+            if(flt_directives_parse_link_for_pref(link,&tid,&mid)) {
+              str_chars_append(&new_content,"[pref:t=",8);
+              u_int64_to_str(&new_content,tid);
+              str_chars_append(&new_content,";m=",3);
+              u_int64_to_str(&new_content,mid);
+              if(title) str_chars_append(&new_content,title,ptr-title);
+              str_char_append(&new_content,']');
+              continue;
+            }
+          }
+
+          ptr = safe;
+        }
+      default:
+        str_char_append(&new_content,*ptr);
+    }
+  }
+
+  str_cleanup(&p->content);
+  p->content.content = new_content.content;
+  p->content.len = new_content.len;
+  p->content.reserved = new_content.reserved;
+
+  return FLT_DECLINE;
+}
+/* }}} */
+
 int flt_directives_init(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc) {
   cf_html_register_directive("link",flt_directives_execute,CF_HTML_DIR_TYPE_ARG|CF_HTML_DIR_TYPE_INLINE);
   cf_html_register_directive("pref",flt_directives_execute,CF_HTML_DIR_TYPE_ARG|CF_HTML_DIR_TYPE_INLINE);
@@ -448,6 +525,35 @@ int flt_directives_init(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc) 
 }
 
 /* {{{ directive handlers */
+int flt_directives_handle_purl(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
+  pcre *re;
+  pcre_extra *extra;
+  u_char *error = NULL;
+  int offset;
+  flt_directives_re ar_re;
+
+  if(flt_directives_puris.element_size == 0) array_init(&flt_directives_puris,sizeof(ar_re),NULL);
+
+  if((re = pcre_compile((const char *)args[0],PCRE_CASELESS,(const char **)&error,&offset,NULL)) == NULL) {
+    fprintf(stderr,"error in pattern '%s': %s (Offset %d)\n",args[0],error,offset);
+    return 1;
+  }
+
+  if((extra = pcre_study(re,0,(const char **)&error)) == NULL) {
+    if(error) {
+      fprintf(stderr,"error in pattern '%s': %s\n",args[0],error);
+      return 1;
+    }
+  }
+
+  ar_re.re = re;
+  ar_re.extra = extra;
+
+  array_push(&flt_directives_puris,&ar_re);
+
+  return 0;
+}
+
 int flt_directives_handle_iframe(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
   flt_directives_iframesaslink = cf_strcmp(args[0],"yes") == 0;
   return 0;
@@ -568,6 +674,7 @@ void flt_directives_cleanup(void) {
 /* }}} */
 
 t_conf_opt flt_directives_config[] = {
+  { "PostingUrl",           flt_directives_handle_purl,     CFG_OPT_CONFIG|CFG_OPT_LOCAL,               NULL },
   { "ShowIframeAsLink",     flt_directives_handle_iframe,   CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL,  NULL },
   { "ShowImageAsLink",      flt_directives_handle_image,    CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL,  NULL },
   { "PostingLinkTarget",    flt_directives_handle_link,     CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL,  NULL },
@@ -578,7 +685,8 @@ t_conf_opt flt_directives_config[] = {
 };
 
 t_handler_config flt_directives_handlers[] = {
-  { INIT_HANDLER, flt_directives_init },
+  { INIT_HANDLER,     flt_directives_init },
+  { NEW_POST_HANDLER, flt_directives_rewrite },
   { 0, NULL }
 };
 

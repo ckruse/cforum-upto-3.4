@@ -62,10 +62,12 @@
  */
 void display_finishing_screen(t_message *p) {
   t_cf_template tpl;
-  u_char tplname[256],*forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
+  u_char tplname[256],*forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10),*uname = cf_hash_get(GlobalValues,"UserName",8);
   t_name_value *tt = cfg_get_first_value(&fo_post_conf,forum_name,"OkTemplate");
   t_name_value *cs = cfg_get_first_value(&fo_default_conf,forum_name,"ExternCharset");;
   t_name_value *qc = cfg_get_first_value(&fo_post_conf,forum_name,"QuotingChars");
+  t_name_value *ps = cfg_get_first_value(&fo_default_conf,forum_name,uname ? "UPostScript" : "PostScript");
+  t_name_value *fb = cfg_get_first_value(&fo_default_conf,forum_name,uname ? "UBaseURL" : "BaseURL");
   size_t len;
   u_char *val;
   t_cl_thread thr;
@@ -91,6 +93,9 @@ void display_finishing_screen(t_message *p) {
   thr.messages = thr.threadmsg = p;
   str_init(&content);
 
+  cf_set_variable(&tpl,cs,"script",ps->values[0],strlen(ps->values[0]),1);
+  cf_set_variable(&tpl,cs,"forumbase",fb->values[0],strlen(fb->values[0]),1);
+
   cf_set_variable(&tpl,cs,"Name",p->author.content,p->author.len,1);
   cf_set_variable(&tpl,cs,"subject",p->subject.content,p->subject.len,1);
 
@@ -114,11 +119,13 @@ void display_finishing_screen(t_message *p) {
 void display_posting_form(t_cf_hash *head) {
   /* display him the fucking formular */
   t_cf_template tpl;
-  u_char tplname[256],*forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
+  u_char tplname[256],*forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10),*uname = cf_hash_get(GlobalValues,"UserName",8);
   t_name_value *tt  = cfg_get_first_value(&fo_post_conf,forum_name,"ThreadTemplate");
   t_name_value *cs  = cfg_get_first_value(&fo_default_conf,forum_name,"ExternCharset");
   t_name_value *cats = cfg_get_first_value(&fo_default_conf,forum_name,"Categories");;
   t_name_value *qc = cfg_get_first_value(&fo_post_conf,forum_name,"QuotingChars");
+  t_name_value *ps = cfg_get_first_value(&fo_default_conf,forum_name,uname ? "UPostScript" : "PostScript");
+  t_name_value *fb = cfg_get_first_value(&fo_default_conf,forum_name,uname ? "UBaseURL" : "BaseURL");
   size_t len,i;
   u_char *val;
   u_char *cat = NULL,*tmp;
@@ -208,6 +215,8 @@ void display_posting_form(t_cf_hash *head) {
 
   len = gen_unid(buff,50);
 
+  cf_set_variable(&tpl,cs,"script",ps->values[0],strlen(ps->values[0]),1);
+  cf_set_variable(&tpl,cs,"forumbase",fb->values[0],strlen(fb->values[0]),1);
   cf_set_variable(&tpl,cs,"unid",buff,len,1);
   cf_tpl_setvalue(&tpl,"qchar",TPL_VARIABLE_STRING,"&#255;",6);
   cf_tpl_appendvalue(&tpl,"qchar",qchars,qclen);

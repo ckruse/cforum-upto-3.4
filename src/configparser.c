@@ -135,7 +135,6 @@ t_conf_opt fo_view_options[] = {
 
 /* {{{ fo_post configuration options */
 t_conf_opt fo_post_options[] = {
-  { "PostingUrl",                handle_command,   CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_post_conf },
   { "FieldConfig",               handle_command,   CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_post_conf },
   { "FieldNeeded",               handle_command,   CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_post_conf },
   { "RedirectOnPost",            handle_command,   CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_post_conf },

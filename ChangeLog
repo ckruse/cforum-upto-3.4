@@ -1,3 +1,10 @@
+2005-02-02 Christian Kruse <ckruse@wwwtech.de>
+	* src/modules/flt_directives.c: Added hook for rewriting [link:] URLs to
+		posting references
+	* src/modules/flt_postingassistant.c: Small bugfix, used email without a check
+	* src/fo_post.c: Added two variables in posting templates
+	* src/configparser.c: Removed PostingURI
+
 2005-02-01 Christian Kruse <ckruse@wwwtech.de>
 	* src/clientlib.c: Fixed a _really_ nasty bug in cf_get_error_message()
 		(doubly free()d a dynamically allocated buffer)

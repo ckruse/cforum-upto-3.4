@@ -283,7 +283,7 @@ int flt_poas_badwords_check(t_message *p) {
   for(i=0,score=flt_poas_conf.bws_allowed;i<flt_poas_conf.bws_len && score > 0;++i) {
     if(flt_poas_case_strstr(p->content.content,flt_poas_conf.bws[i]) != NULL) score -= 1;
     if(flt_poas_case_strstr(p->subject.content,flt_poas_conf.bws[i]) != NULL) score -= 3;
-    if(flt_poas_case_strstr(p->email.content,flt_poas_conf.bws[i]) != NULL) score -= 1;
+    if(p->email.len && flt_poas_case_strstr(p->email.content,flt_poas_conf.bws[i]) != NULL) score -= 1;
   }
 
   return score <= 0 ? -1 : 0;
