@@ -205,14 +205,12 @@ int flt_syntax_read_list(const u_char *pos,flt_syntax_list_t *list) {
 }
 /* }}} */
 
-int flt_syntax_my_cmp(t_string *a,t_string *b) {
-  //printf("cmp: '%s', '%s'\n",a->content,b->content);
+int flt_syntax_my_cmp(const t_string *a,const t_string *b) {
   return strcmp(a->content,b->content);
 }
 
-int flt_syntax_my_cmpn(u_char *a,t_string *b) {
-  //printf("%s cmpn %s\n",a,b->content);
-  return strncmp(a,b->content,b->len);
+int flt_syntax_my_scmp(const u_char *a,const t_string *b) {
+  return strcmp(a,b->content);
 }
 
 /* {{{ flt_syntax_load */
@@ -658,12 +656,27 @@ t_string *flt_syntax_extra_arg(t_string *str,const u_char *extra_arg) {
 }
 /* }}} */
 
+u_char *flt_syntax_get_token(const u_char *txt) {
+  register u_char *ptr = NULL;
+  u_char *ret = NULL;
+  
+  if(isalnum(*txt)) {
+    for(ptr=(u_char *)txt;*ptr && isalnum(*ptr);++ptr);
+    ret = strndup(txt,ptr-txt);
+  }
+  else {
+    if(!isspace(*txt)) ret = strndup(txt,1);
+  }
+
+  return ret;
+}
+
 int flt_syntax_doit(flt_syntax_pattern_file_t *file,flt_syntax_block_t *block,u_char *text,size_t len,t_string *cnt,u_char **pos,const u_char *extra_arg,int xhtml) {
   u_char *ptr,*tmpchar,*priv_extra;
   size_t i,x;
   flt_syntax_statement_t *statement;
   t_string *str,*tmpstr;
-  int rc,matched;
+  int matched;
   flt_syntax_block_t *tmpblock;
   flt_syntax_list_t *tmplist;
   flt_syntax_preg_t *tmppreg;
@@ -766,7 +779,11 @@ int flt_syntax_doit(flt_syntax_pattern_file_t *file,flt_syntax_block_t *block,u_
             return 1;
           }
 
-          if((tmpstr = array_bsearch(&tmplist->list,ptr,flt_syntax_my_cmpn)) != NULL) {
+
+          tmpchar = flt_syntax_get_token(ptr);
+
+          if(tmpchar && (tmpstr = array_bsearch(&tmplist->list,tmpchar,flt_syntax_my_scmp)) != NULL) {
+            free(tmpchar);
             matched = 1;
 
             str = array_element_at(&statement->args,1);
@@ -812,6 +829,9 @@ int flt_syntax_doit(flt_syntax_pattern_file_t *file,flt_syntax_block_t *block,u_
               ptr = tmpchar - 1;
               str_chars_append(cnt,"</span>",7);
             }
+          }
+          else {
+            if(tmpchar) free(tmpchar);
           }
           /* }}} */
           break;
@@ -1040,7 +1060,7 @@ int flt_syntax_execute(t_configuration *fdc,t_configuration *fvc,const u_char *d
   /* }}} */
 
   str_init(&str);
-  for(ptr=parameters[1];*ptr;++ptr) str_char_append(&str,tolower(*ptr));
+  for(ptr=(u_char *)parameters[1];*ptr;++ptr) str_char_append(&str,tolower(*ptr));
   lang = str.content;
 
   /* we got a language, check if it exists */
