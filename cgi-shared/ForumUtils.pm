@@ -330,7 +330,7 @@ sub message_field {
 
   # Phase 2: Ok, we collected the links, lets transform them
   # ... links
-  $posting =~ s!$_!'<a href="'.$Clientlib->htmlentities($1,1).'">'.$Clientlib->htmlentities($2||$1,1).'</a>'!eg for map {
+  $posting =~ s!$_!'<a href="'.$1.'">'.($2||$1).'</a>'!eg for map {
     '\[[Ll][Ii][Nn][Kk]:\s*('.
     quotemeta($_->[0]).
     ')'.
@@ -339,7 +339,7 @@ sub message_field {
   } @links;
 
   # ... images
-  $posting =~ s!$_!'<img src="'.$Clientlib->htmlentities($1,1).'" border="0" alt="'.$Clientlib->htmlentities($2?$2:'',1).'">'!eg for map {
+  $posting =~ s!$_!'<img src="'.$1.'" border="0" alt="'.($2||'').'">'!eg for map {
     '\[[Ii][Mm][Aa][Gg][Ee]:\s*('.
     quotemeta($_->[0]).
     ')'.
@@ -348,7 +348,7 @@ sub message_field {
   } @images;
 
   # ... iframes
-  $posting =~ s!$_!'<iframe src="'.$Clientlib->htmlentities($1,1).'" width="90%" height="90%"><a href="'.$Clientlib->htmlentities($1,1).'">'.$Clientlib->htmlentities($1,1).'</a></iframe>'!eg for map {
+  $posting =~ s!$_!'<iframe src="'.$1.'" width="90%" height="90%"><a href="'.$1.'">'.$1.'</a></iframe>'!eg for map {
     '\[[Ii][Ff][Rr][Aa][Mm][Ee]:\s*('.quotemeta($_->[0]).')\]'
   } @iframes;
 
