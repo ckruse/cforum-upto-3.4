@@ -1341,7 +1341,7 @@ void *cf_shmat(int shmid,void *addr,int shmflag) {
 /* {{{ cf_shm_flags ------DEEP MAGIC!-------- */
 void cf_shm_flags(t_posting *p,t_mem_pool *pool) {
   t_cf_list_element *elem;
-  u_int32_t val;
+  u_int32_t val = 0;
 
   for(elem=p->flags.elements;elem;elem=elem->next,++val);
   mem_append(pool,&val,sizeof(val));
@@ -1413,6 +1413,8 @@ void cf_generate_shared_memory(t_forum *forum) {
       mem_append(&pool,&(p->date),sizeof(p->date));
       mem_append(&pool,&(p->level),sizeof(p->level));
       mem_append(&pool,&(p->invisible),sizeof(p->invisible));
+      mem_append(&pool,&(p->votes_good),sizeof(p->votes_good));
+      mem_append(&pool,&(p->votes_bad),sizeof(p->votes_bad));
 
       val = p->user.name.len + 1;
       mem_append(&pool,&val,sizeof(val));

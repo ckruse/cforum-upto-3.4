@@ -32,7 +32,7 @@ Load "flt_motd"
 Load "flt_tipoftheday"
 
 
-Forum "FORUM1" {
+Forum FORUM1 {
  ThreadsOpenByDefault    "yes"
  DoQuote                 "yes"
  QuotingChars            "»» "

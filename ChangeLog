@@ -11,6 +11,11 @@
 	* src/Makefile.am: Made entries for several libraries and the fo_view program
 	* cgi-shared/Plugins/MarkOwnVisited.pm, cgi-bin/fo_post_old.in:	Bugfix for
 		this f** endless read() call
+	* src/modules/flt_xmlstorage.c: Bugfix, now p->posts will be set correctly
+	* src/serverlib.c: Bugfix in shared memory handling
+	* src/communication.c: Bugfixes in SHM handling
+	* src/configparser.c: Hack for user configuration
+	* cgi-shared/config/fo_view.conf.in: removed quotes from context identifier
 
 2005-01-09 Christian Kruse <ckruse@wwwtech.de>
 	* src/modules/flt_registerednames.c: Migrated to 3.0 API

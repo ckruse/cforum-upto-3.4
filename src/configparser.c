@@ -376,6 +376,9 @@ int read_config(t_configfile *conf,t_take_default deflt,int mode) {
   hsh = cf_hash_new(NULL);
   array_init(&ary,sizeof(u_char **),destroy_str_ptr);
 
+  if(mode == CFG_MODE_USER) context = getenv("CF_FORUM_NAME");
+
+
   /* {{{ initializing */
   /*
    * open() could fail :)

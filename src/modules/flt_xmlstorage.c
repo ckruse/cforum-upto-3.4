@@ -459,6 +459,8 @@ void flt_xmlstorage_create_threadtree(t_forum *forum,t_thread *thread,t_posting 
 
   t_posting *p;
 
+  ++thread->posts;
+
   post->unid.content = unid;
   post->unid.len   = post->unid.reserved = strlen(unid);
   post->mid        = str_to_u_int64(cmid+1);

@@ -168,8 +168,8 @@ void *cf_get_next_thread_through_shm(void *shm_ptr,t_cl_thread *thr,const u_char
   ptr += sizeof(u_int64_t);
 
   /* message id */
-  thr->msg_len = msglen = *((int32_t *)ptr);
-  ptr += sizeof(int32_t);
+  thr->msg_len = msglen = *((u_int32_t *)ptr);
+  ptr += sizeof(u_int32_t);
 
   for(post = 0;post < msglen;++post) {
     if(thr->last == NULL) thr->messages = thr->last = fo_alloc(NULL,1,sizeof(t_message),FO_ALLOC_CALLOC);
@@ -181,13 +181,15 @@ void *cf_get_next_thread_through_shm(void *shm_ptr,t_cl_thread *thr,const u_char
 
     if(tplname) tpl_cf_init(&thr->last->tpl,tplname);
 
-    /* message id */
+    /* {{{ message id */
     thr->last->mid = *((u_int64_t *)ptr);
     ptr += sizeof(u_int64_t);
+    /* }}} */
 
-    /* {{{ read flags */
+    /* {{{ flags */
     val = *((u_int32_t *)ptr);
     ptr += sizeof(u_int32_t);
+
     for(i=0;i<val;++i) {
       val1 = *((u_int32_t *)ptr);
       ptr += sizeof(u_int32_t);
@@ -203,6 +205,7 @@ void *cf_get_next_thread_through_shm(void *shm_ptr,t_cl_thread *thr,const u_char
     }
     /* }}} */
 
+    /* {{{ subject */
     /* length of subject */
     val = *((u_int32_t *)ptr) - 1;
     ptr += sizeof(u_int32_t);
@@ -210,7 +213,9 @@ void *cf_get_next_thread_through_shm(void *shm_ptr,t_cl_thread *thr,const u_char
     /* subject */
     str_char_set(&thr->last->subject,ptr,val);
     ptr += val + 1;
+    /* }}} */
 
+    /* {{{ category */
     /* length of category */
     val = *((u_int32_t *)ptr) - 1;
     ptr += sizeof(u_int32_t);
@@ -220,7 +225,9 @@ void *cf_get_next_thread_through_shm(void *shm_ptr,t_cl_thread *thr,const u_char
       str_char_set(&thr->last->category,ptr,val);
       ptr += val + 1;
     }
+    /* }}} */
 
+    /* {{{ content */
     /* content length */
     val = *((u_int32_t *)ptr) - 1;
     ptr += sizeof(u_int32_t);
@@ -228,29 +235,35 @@ void *cf_get_next_thread_through_shm(void *shm_ptr,t_cl_thread *thr,const u_char
     /* content */
     str_char_set(&thr->last->content,ptr,val);
     ptr += val + 1;
+    /* }}} */
 
-    /* date */
+    /* {{{ date */
     thr->last->date = *((time_t *)ptr);
     ptr += sizeof(time_t);
+    /* }}} */
 
-    /* level */
+    /* {{{ level */
     thr->last->level = *((u_int16_t *)ptr);
     ptr += sizeof(u_int16_t);
+    /* }}} */
 
-    /* invisible */
+    /* {{{ invisible */
     thr->last->invisible = *((u_int16_t *)ptr);
     thr->last->may_show  = 1;
     ptr += sizeof(u_int16_t);
+    /* }}} */
+
     if(thr->last->invisible) thr->msg_len--;
 
-    /* votings */
+    /* {{{ votings */
     thr->last->votes_good = *((u_int32_t *)ptr);
     ptr += sizeof(u_int32_t);
 
     thr->last->votes_bad = *((u_int32_t *)ptr);
     ptr += sizeof(u_int32_t);
+    /* }}} */
 
-
+    /* {{{ author */
     /* author length */
     val = *((u_int32_t *)ptr) - 1;
     ptr += sizeof(u_int32_t);
@@ -258,7 +271,9 @@ void *cf_get_next_thread_through_shm(void *shm_ptr,t_cl_thread *thr,const u_char
     /* author */
     str_char_set(&thr->last->author,ptr,val);
     ptr += val + 1;
+    /* }}} */
 
+    /* {{{ email */
     /* email length */
     val = *((u_int32_t *)ptr);
     ptr += sizeof(u_int32_t);
@@ -268,7 +283,9 @@ void *cf_get_next_thread_through_shm(void *shm_ptr,t_cl_thread *thr,const u_char
       str_char_set(&thr->last->email,ptr,val);
       ptr += val;
     }
+    /* }}} */
 
+    /* {{{ homepage */
     /* homepage length */
     val = *((u_int32_t *)ptr);
     ptr += sizeof(u_int32_t);
@@ -278,7 +295,9 @@ void *cf_get_next_thread_through_shm(void *shm_ptr,t_cl_thread *thr,const u_char
       str_char_set(&thr->last->hp,ptr,val);
       ptr += val;
     }
+    /* }}} */
 
+    /* {{{ image */
     /* image length */
     val = *((u_int32_t *)ptr);
     ptr += sizeof(u_int32_t);
@@ -288,6 +307,7 @@ void *cf_get_next_thread_through_shm(void *shm_ptr,t_cl_thread *thr,const u_char
       str_char_set(&thr->last->img,ptr,val);
       ptr += val;
     }
+    /* }}} */
   }
 
   if(tplname) {
