@@ -29,7 +29,7 @@ auftauchen, sind bisher wirkunglos und noch nicht implementiert.
 \item Genügend freier Festplattenspeicher für die Forums-Daten
 \item Die GDOME-Bibliothek (erhältlich unter http://gdome2.cs.unibo.it/)
 \item Die \texttt{iconv}-Bibliothek, unter Linux in der Regel schon installiert, bei FreeBSD muss sie nachinstalliert werden
-\item Die \texttt{libwwww} (erhältlich unter http://www.w3.org/Library/)
+\item Die \texttt{libwww} (erhältlich unter http://www.w3.org/Library/)
 \item Die \texttt{libpcre} (erhältlich unter http://www.pcre.org/)
 \item POSIX Threads-Unterstützung (bei Linux seit Kernel 2.4 implementiert)
 \item Die BerkeleyDB, mindestens Version 3 (erhältlich unter http://www.sleepycat.com/products/db.shtml)
@@ -69,7 +69,8 @@ erklärt:
 \item[--with-proto-file]{Mit dieser Option wird eine Protokoll-Datei angegeben, die protokolliert, wann welches Foren-Programm warum abgestürzt ist.}
 \end{description}
 
-Sie sollten für jede dieser Optionen einen Wert angeben. Ein Beispiel eines Aufrufs des \texttt{configure}-Scripts:
+Sie sollten für jede dieser Optionen einen Wert angeben, sonst kann es zu Compile-Problemen führen. Ein Beispiel eines Aufrufs des
+\texttt{configure}-Scripts:
 
 \begin{verbatim}
 CFLAGS='-O3 -fexpensive-optimizations -fomit-frame-pointer -pipe' \
@@ -135,13 +136,14 @@ AuthMySQLPasswordField password
 \end{verbatim}
 
 Das Classic Forum unterstützt SQL-Datenbanken als Userbackend von Haus aus, so dass sich eine SQL-Datenbank zur Authentifizierung
-anbieten würde.
-
+anbieten würde.\\
+\\
 \fbox{\parbox{10cm}{\textbf{Vorsicht!} Einige Authentifizierungsmodule haben einen Fehler, so dass es bei Verwendung von
 Keep-Alive-Verbindungen zu Problemen führen kann. Das äussert sich, dass z. B. sämtliche Browser der Gecko-Engine
 Probleme mit dem CSS haben oder die HTTP-Header anzeigen. Sollten diese Probleme auftreten, können Sie das Problem umgehen
 indem Sie folgende Direktive mit aufnehmen: \texttt{BrowserMatch .? nokeepalive}. Diese Direktive sorgt dafür, dass Keep-Alive
-für \textbf{alle} Requests abgeschaltet wird. Das kann allerdings auch zu einem Performance-Problem führen!}}
+für \textbf{alle} Requests abgeschaltet wird. Das kann allerdings auch zu einem Performance-Problem führen!}}\\
+\\
 
 Jetzt fehlt eigentlich nur noch die Konfiguration des Forums selber. Dazu ist es ratsam (in der Regel allerdings nicht zwingend
 notwendig) sich jede einzelne Konfigurationsdatei anzusehen und jede Option auf Ihre Richtigkeit zu überprüfen. In den folgenden
@@ -179,22 +181,21 @@ export CF_CONF_DIR="/home/ckruse/www/cforum/cgi-shared/config/"
 \end{verbatim}
 
 Sollten die Probleme immer noch nicht lösbar sein, können Sie in das Entwickler-Forum posten. Sie finden es unter
-der URL \texttt{http://wwwtech.de/cforum/forum/my/}.
+der URL \texttt{http://wwwtech.de/cforum/forum/}.
 
 \section{Shared Memory}
 \label{shm}
 
 Die Shared-Memory-Unterstützung des Forums ist etwas wie ein Nachbrenner. Sämtliche Thread-Daten werden in einem
 Shared-Memory-Segment gespeichert, so dass bei einem einfachen lesenden Zugriff auf die Foren-Daten nicht mehr mit
-dem Server kommuniziert werden muss, sondern direkt alles in den Speicher des Programms gemappt werden kann. Dadurch
-wird ein enormer Performance-Vorteil erreicht. Jedoch hat dieses Verfahren auch Nachteile: wird ein neues Posting
-eingereicht werden die Foren-Daten vollständig in ein zweites Speichersegment geschrieben. Danach wird eine
-Semaphore (eine Art Integer-Variable im System) umgesetzt, so dass von nun an die Viewer-Programme auf das neue
-Speichersegment zugreifen. Das kann bei vielen schreibenden Zugriffen (also vielen neuen Postings) dazu führen, dass
-sich die Darstellung einer Nachricht unter Umständen um einige Sekunden verzögern kann, was beim Benutzer für Irritation
-sorgen kann. Weiterhin muss unter Umständen etwas an der System-Konfiguration geändert werden, da die Größe der
-Shared-Memory-Segmente stark von der Anzahl der Postings abhängt. Stellen Sie den Archiver so ein, dass sehr viele
-Postings in der Hauptdatei enthalten werden können, werden die Speichersegmente unter Umständen auch sehr gross.
+dem Server kommuniziert werden muss. Dadurch wird ein enormer Performance-Vorteil erreicht. Jedoch hat dieses Verfahren
+auch Nachteile: wird ein neues Posting eingereicht werden die Foren-Daten vollständig in ein zweites Speichersegment
+geschrieben. Danach wird eine Semaphore (eine Art Integer-Variable im System) umgesetzt, so dass von nun an die
+Viewer-Programme auf das neue Speichersegment zugreifen. Das kann bei vielen schreibenden Zugriffen (also vielen neuen
+Postings) dazu führen, dass sich die Darstellung einer Nachricht unter Umständen um einige Sekunden verzögert, was beim
+Benutzer für Irritation sorgen kann. Weiterhin muss eventuell etwas an der System-Konfiguration geändert werden, da die
+Größe der Shared-Memory-Segmente stark von der Anzahl der Postings abhängt. Stellen Sie den Archiver so ein, dass sehr
+viele Postings in der Hauptdatei enthalten werden können, werden die Speichersegmente unter Umständen auch sehr gross.
 Viele Unix-artige Systeme beschränken die Größe der Segmente jedoch, so dass diese Grenze erhöht werden muss.
 Unter Linux ist dies mit einem einfachen \texttt{sysctl}-Befehl möglich:
 
