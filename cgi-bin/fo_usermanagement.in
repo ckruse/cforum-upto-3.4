@@ -117,7 +117,7 @@ sub validate_parameters {
       return get_error($fdc,$name,'long') if defined $maxlen && $maxlen->[1] < length($val);
     }
 
-		if(exists $cgi->{Validate}) {
+		if(exists $cfg->{Validate}) {
 		  my ($validate) = grep { $_[0] eq $name } @{$cfg->{Validate}};
 
       if($validate) {
