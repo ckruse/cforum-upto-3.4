@@ -4,6 +4,11 @@
 		src/templates/de/tpl_html4/forum_posting.html,
 		src/templates/de/tpl_xhtml10/forum_posting.html: Fixed bug in stylesheet
 		including
+	* src/templates/fr/tpl_html4/Makefile.am,
+		src/templates/fr/tpl_xhtml10/Makefile.am,
+		src/templates/de/tpl_html4/Makefile.am,
+		src/templates/de/tpl_xhtml10/Makefile.am: First assignment to
+		pkglib_LTLIBRARIES now is a =, not a +=
 
 2004-10-27 Christian Kruse <ckruse@wwwtech.de>
 	* src/htmllib.c: Fixed a bug in directive parsing
