@@ -166,6 +166,7 @@ int flt_posting_execute_filter(t_cf_hash *head,t_configuration *dc,t_configurati
   cf_set_variable(tpl,cs,"name",thread->threadmsg->author.content,thread->threadmsg->author.len,1);
   cf_set_variable(tpl,cs,"title",thread->threadmsg->subject.content,thread->threadmsg->subject.len,1);
   if(thread->threadmsg->email.len) cf_set_variable(tpl,cs,"email",thread->threadmsg->email.content,thread->threadmsg->email.len,1);
+  if(thread->threadmsg->category.len) cf_set_variable(tpl,cs,"category",thread->threadmsg->category.content,thread->threadmsg->category.len,1);
 
   cf_set_variable_hash(&hash,cs,"title",thread->threadmsg->subject.content,thread->threadmsg->subject.len,1);
   if(thread->threadmsg->email.len) cf_set_variable_hash(&hash,cs,"email",thread->threadmsg->email.content,thread->threadmsg->email.len,1);

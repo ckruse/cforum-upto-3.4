@@ -104,9 +104,12 @@ int is_valid_utf8_string(const u_char *str,size_t len);
 /**
  * This function decodes the entities in a string
  * \param string The string to decode
+ * \param len A pointer to store the new length in; may be NULL
  * \return NULL on failure, the new string on success
  */
-u_char *htmlentities_decode(const u_char *string);
+u_char *htmlentities_decode(const u_char *string,size_t *len);
+
+
 #endif
 
 /* eof */

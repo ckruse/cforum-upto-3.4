@@ -311,6 +311,39 @@ int flt_gummizelle_execute(t_cf_hash *head,t_configuration *dc,t_configuration *
 }
 /* }}} */
 
+/* {{{ flt_gummizelle_newpost */
+#ifdef CF_SHARED_MEM
+int flt_gummizelle_newpost(t_cf_hash *head,t_configuration *dc,t_configuration *pc,t_message *p,void *ptr,int sock,int mode)
+#else
+int flt_gummizelle_newpost(t_cf_hash *head,t_configuration *dc,t_configuration *pc,t_message *p,int sock,int mode)
+#endif
+{
+  int restore = 0;
+  time_t now = time(NULL);
+  u_char *uname = cf_hash_get(GlobalValues,"UserName",8);
+
+  if(flt_gummizelle_is_caged == 0 || flt_gummizelle_entry == NULL) return FLT_DECLINE;
+  if(flt_gummizelle_entry->start && now < flt_gummizelle_entry->start) return FLT_DECLINE;
+  if(flt_gummizelle_entry->end && now > flt_gummizelle_entry->end) return FLT_DECLINE;
+
+  /* filter works only for a specific thread */
+  if(flt_gummizelle_entry->tid) return FLT_DECLINE;
+
+  if(flt_gummizelle_entry->name && flt_gummizelle_name) {
+    if(cf_strcasecmp(p->author.content,flt_gummizelle_name) == 0) {
+      restore = 1;
+      p->invisible = 1;
+    }
+  }
+
+  if(restore == 0 && flt_gummizelle_uname) {
+    if(cf_strcmp(flt_gummizelle_entry->uname,uname) == 0) p->invisible = 1;
+  }
+
+  return FLT_OK;
+}
+/* }}} */
+
 /* {{{ flt_gummizelle_handle */
 int flt_gummizelle_handle(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
   if(flt_gummizelle_fn == NULL) flt_gummizelle_fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
@@ -333,6 +366,7 @@ t_handler_config flt_gummizelle_handlers[] = {
   { VIEW_INIT_HANDLER,    flt_gummizelle_view_init },
   { VIEW_LIST_HANDLER,    flt_gummizelle_execute },
   { POSTING_HANDLER,      flt_gummizelle_posting_filter },
+  { NEW_POST_HANDLER,     flt_gummizelle_newpost },
   { 0, NULL }
 };
 

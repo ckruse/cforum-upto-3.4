@@ -507,6 +507,18 @@
         </argument>
       </directive>
 
+      <directive name="ShowUserImageAsLink" arguments="1">
+        <argument paramname="showuserimageaslink" type="radio" encode="plain">
+          <validate>^(?:yes|no)$</validate>
+          <question>Sollen die Benutzer-Bilder als Links angezeigt werden?</question>
+          <error>Sollen die Benutzer-Bilder als Links angezeigt werden? Bitte geben Sie &quot;Ja&quot; oder &quot;Nein&quot; an!</error>
+          <formvalues>
+            <value val="yes">Ja</value>
+            <value val="no" default="yes">Nein</value>
+          </formvalues>
+        </argument>
+      </directive>
+
     </section>
   </page>
 

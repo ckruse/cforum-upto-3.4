@@ -205,46 +205,90 @@ u_char *charset_convert(const u_char *toencode,size_t in_len,const u_char *from_
 }
 /* }}} */
 
-/* {{{ htmlentities_decode */
-u_char *htmlentities_decode(const u_char *string) {
-  register u_char *ptr;
-  t_string new_str;
+/* {{{ get_named_entity */
+u_int32_t get_named_entity(const u_char *entity) {
+  u_int32_t low = 0;
+  u_int32_t high = entity_table_length - 1;
+  u_int32_t m;
+  int c;
 
-  str_init(&new_str);
+  while(low <= high) {
+    m = (low + high) / 2;
+    c = strcmp(entity,entity_table_entities[m]);
 
-  if(!string) return NULL;
-
-  for(ptr=(u_char *)string;*ptr;ptr++) {
-    if(*ptr == '&') {
-      if(cf_strncmp(ptr,"&gt;",4) == 0) {
-        str_char_append(&new_str,'>');
-        ptr += 3;
-      }
-      else if(cf_strncmp(ptr,"&lt;",4) == 0) {
-        str_char_append(&new_str,'<');
-        ptr += 3;
-      }
-      else if(cf_strncmp(ptr,"&amp;",5) == 0) {
-        str_char_append(&new_str,'&');
-        ptr += 4;
-      }
-      else if(cf_strncmp(ptr,"&quot;",6) == 0) {
-        str_char_append(&new_str,'"');
-        ptr += 5;
-      }
-      else if(cf_strncmp(ptr,"&#39;",5) == 0) {
-        str_char_append(&new_str,'\'');
-        ptr += 4;
-      }
-      else {
-        str_char_append(&new_str,*ptr);
-      }
-    }
+    if(c < 0) high = m - 1;
+    else if(c > 0) low = m + 1;
     else {
-      str_char_append(&new_str,*ptr);
+      return entity_table_codes[m];
     }
   }
 
+  return 0;
+}
+/* }}} */
+
+/* {{{ htmlentities_decode */
+u_char *htmlentities_decode(const u_char *string,size_t *slen) {
+  u_char *ptr;
+  t_string new_str;
+  u_int32_t num;
+
+  u_char buff[8],*val,*safe;
+  int len;
+
+  str_init(&new_str);
+  memset(buff,0,sizeof(buff));
+
+  if(!string) return NULL;
+
+  for(ptr=(u_char *)string;*ptr;++ptr) {
+    if(*ptr == '&') {
+      /* decimal entitiy reference */
+      if(*(ptr+1) == '#') {
+        safe = ptr;
+
+        if(*(ptr+2) == 'x' || *(ptr+2) == 'X') num = strtol(ptr+3,(char **)&ptr,16);
+        else num = strtol(ptr+2,(char **)&ptr,10);
+
+        if(num == 0) {
+          str_char_append(&new_str,*safe);
+          ptr = safe;
+          continue;
+        }
+
+        if((len = unicode_to_utf8(num,buff,7)) == EINVAL) {
+          str_char_append(&new_str,*safe);
+          ptr = safe;
+          continue;
+        }
+
+        str_chars_append(&new_str,buff,len);
+      }
+      else {
+        for(safe=ptr,val=ptr+1;*ptr && *ptr != ';';++ptr);
+        val = strndup(val,ptr-val);
+        num = get_named_entity(val);
+        free(val);
+
+        if(num == 0) {
+          str_char_append(&new_str,*safe);
+          ptr = safe;
+          continue;
+        }
+
+        if((len = unicode_to_utf8(num,buff,7)) == EINVAL) {
+          str_char_append(&new_str,*safe);
+          ptr = safe;
+          continue;
+        }
+
+        str_chars_append(&new_str,buff,len);
+      }
+    }
+    else str_char_append(&new_str,*ptr);
+  }
+
+  if(slen) *slen = new_str.len;
   return fo_alloc(new_str.content,new_str.len+1,1,FO_ALLOC_REALLOC);
 }
 /* }}} */

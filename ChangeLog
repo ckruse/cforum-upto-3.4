@@ -1,3 +1,19 @@
+2005-03-23 Christian Kruse <ckruse@wwwtech.de>
+	* src/modules/flt_votingvariables.c: Fixed bug #620
+	* src/modules/flt_posting.c: Fixed bug #607
+	* conf/modules.de.xml: Added directive ShowUserImageAsLink
+	* conf/patterns/apache.pat: Added some charsets, #626
+	* src/charconvert.[ch]: Changed htmlentities_decode() function, not it really
+		decodes HTML entities
+	* src/modules/flt_directives.c: Added possibility to show user images as
+		links, bug #603
+	* src/modules/flt_votingvariables.c: Fixed bug #620
+	* src/modules/flt_gummizelle.c: Added gummizelle handler for new threads and
+		postings; if user is jailed postings will be marked as deleted
+	* src/modules/flt_xmlarc.c: Fixed bug #606
+	* src/entitytable.h: Added sorted table for named entities
+	* src/htmllib.c: Fixed call to htmlentities_decode()
+
 2005-03-17 Christian Kruse <ckruse@wwwtech.de>
 	* src/modules/flt_gummizelle.c: Implemented the gummizelle
 	* src/modules/flt_cftp.c: Changed behavior of answering to deleted posts

@@ -41,6 +41,7 @@
 #include "cfcgi.h"
 #include "template.h"
 #include "clientlib.h"
+#include "charconvert.h"
 #include "fo_arcview.h"
 #include "xml_handling.h"
 /* }}} */
@@ -494,7 +495,7 @@ t_array *flt_xmlarc_getthreadlist(const u_char *year,const u_char *month) {
   u_int64_t tid;
 
   register u_char *ptr;
-  u_char *file,*tmp2;
+  u_char *file,*tmp2,*val;
 
   struct stat st;
 
@@ -549,20 +550,23 @@ t_array *flt_xmlarc_getthreadlist(const u_char *year,const u_char *month) {
       if(*ptr == '<') {
         if(cf_strncmp(ptr,"<Name>",6) == 0) {
           tmp2 = flt_xmlarc_gnt(ptr,file,st.st_size,"</Name>",7);
-          ent.author = strndup(ptr+6,tmp2-ptr-6);
-          ent.alen = tmp2-ptr-6;
+          val = strndup(ptr+6,tmp2-ptr-6);
+          ent.author = htmlentities_decode(val,&ent.alen);
+          free(val);
         }
         else if(cf_strncmp(ptr,"<Category",9) == 0) {
           if(cf_strncmp(ptr,"<Category/>",11) != 0 && cf_strncmp(ptr,"<Category />",11) != 0) {
             tmp2 = flt_xmlarc_gnt(ptr,file,st.st_size,"</Category>",11);
-            ent.cat = strndup(ptr+10,tmp2-ptr-10);
-            ent.clen = tmp2-ptr-10;
+            val = strndup(ptr+10,tmp2-ptr-10);
+            ent.cat = htmlentities_decode(val,&ent.clen);
+            free(val);
           }
         }
         else if(cf_strncmp(ptr,"<Subject>",9) == 0) {
           tmp2 = flt_xmlarc_gnt(ptr,file,st.st_size,"</Subject>",10);
-          ent.subject = strndup(ptr+9,tmp2-ptr-9);
-          ent.slen = tmp2-ptr-9;
+          val = strndup(ptr+9,tmp2-ptr-9);
+          ent.subject = htmlentities_decode(val,&ent.slen);
+          free(val);
         }
         else if(cf_strncmp(ptr,"<Date",5) == 0) {
           ptr += 15;
