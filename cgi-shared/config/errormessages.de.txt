@@ -2,16 +2,16 @@ E_NO_SOCK: Leider konnte kein Socket erstellt werden. (Grund: %s)
 E_NO_CONN: Leider konnte keine Verbindung zum Server hergestellt werden. (Grund: %s)
 E_TPL_NOT_FOUND: Leider konnte das Template nicht gefunden werden. Bitte wenden Sie sich an den System-Administrator.
 E_NO_THREADLIST: Leider konnte die Threadliste nicht angefordert werden. Bitte wenden Sie sich an den System-Administrator.
-E_COMMUNICATION: Es ist ein Fehler in der Kommunikation mit dem Server aufgetreten. Bitte wenden Sie sich an den Systemadministrator.
+E_COMMUNICATION: Es ist ein Fehler in der Kommunikation mit dem Server aufgetreten. Bitte wenden Sie sich an den System-Administrator.
 E_DATA_FAILURE: Die Daten, die der Server geliefert hat, sind in irgendeiner Weise fehlerhaft.
 E_DATA_FAILURE: Fehlende oder fehlerhafte Daten.
-E_UNAME_INVALID: Der User-Name ist invalide.
+E_UNAME_INVALID: Der Username ist ungültig.
 E_PW_TOO_SHORT: Das Passwort ist zu kurz.
 E_PW_DISACCORD: Die Passwörter stimmen nicht überein.
-E_PW_INVALID: Das Passwort ist nicht valide.
+E_PW_INVALID: Das Passwort ist ungültig.
 E_ADDUSER_FAILED: Der angegebene Username existiert schon. Bitte wählen Sie einen anderen.
-E_CONFIG_ERR: Es scheint ein Konfigurations-Fehler vorzuliegen oder der Konfigurations-Parser ist veraltet.
-E_IO_ERR: Leider ist ein Datei-Fehler aufgetreten.
+E_CONFIG_ERR: Es scheint ein Konfigurationsfehler vorzuliegen oder der Konfigurations-Parser ist veraltet.
+E_IO_ERR: Leider ist ein Dateifehler aufgetreten.
 E_name_short: Sie haben einen zu kurzen Namen angegeben.
 E_name_long: Sie haben einen zu langen Namen angegeben.
 E_name_invalid: Sind Sie sicher, dass Sie unter einem solchen Namen posten möchten?
@@ -23,12 +23,12 @@ E_body_long: Das war jetzt etwas viel.
 E_email_invalid: Ihre E-Mail-Adresse scheint ungültig zu sein.
 E_manipulated: Falsche oder fehlende Daten. Die Daten scheinen in irgendeiner Weise manipuliert worden zu sein.
 E_image_invalid: Die Bild-URL scheint ungültig zu sein.
-E_homepage_invalud: Die Homepage-URL scheint ungültig zu sein.
+E_homepage_invalid: Die Homepage-URL scheint ungültig zu sein.
 E_cat: Bitte wählen Sie eine Kategorie aus!
 E_unid: Die Daten scheinen manipuliert worden zu sein...
-E_server: Der Server hat zurück gegeben:
+E_server: Der Server hat zurückgegeben:
 E_field_missing: Die Daten scheinen unvollständig zu sein.
-E_posting_format: Das Format Ihres Postings scheint unsauber zu sein (z. B. keine Zeilenumbrüche, keine Satzzeichen, alles Kleingeschrieben oder ähnliches). Solche Postings sind ungern gesehen, da sie oft schwer zu lesen sind. Sind Sie sicher, dass Sie so posten möchten?
+E_posting_format: Das Format Ihres Postings scheint unsauber zu sein (z. B. keine Zeilenumbrüche, keine Satzzeichen, alles klein geschrieben oder ähnliches). Solche Postings sind ungern gesehen, da sie oft schwer zu lesen sind. Sind Sie sicher, dass Sie so posten möchten?
 E_posting_badwords: Ihr Posting scheint mehr als die erlaubte Zahl von Schimpfwörtern zu enthalten.
 E_posting_quoting: Sie haben mehr als 25% zitierte Zeilen in Ihrem Posting. Sind Sie sicher, dass Sie das Posting so abschicken wollen?
 E_UserName_short: Der Username muss mindestens %d Zeichen lang sein.
@@ -40,14 +40,14 @@ E_uname_exists: Der Username existiert bereits!
 E_auth_required: Um unter diesem Namen posten zu können, müssen Sie sich authentifizieren!
 E_FO_403: Zugriff verweigert.
 E_FO_404: Die von Ihnen angeforderte Nachricht konnte nicht gefunden werden.
-E_FO_500: Leider konnte die Abfrage aufgrund von Servertechnischen Gründen nicht beantwortet werden.
+E_FO_500: Leider konnte die Abfrage aufgrund von servertechnischen Gründen nicht beantwortet werden.
 E_FO_501: Die Thread- oder Nachrichten-ID scheint zu fehlen.
 E_FO_502: Sie scheinen ein Posting doppelt abgeschickt zu haben.
 E_FO_503: Es wurde eine ungültige Anfrage an den Server geschickt.
 E_FO_504: Leider ist die Authentifizierung fehlgeschlagen. Es könnte sein, dass Sie versuchen, einen Namen zu registrieren, der bereits registriert ist oder einfach vergessen haben, alle notwendigen Informationen anzugeben.
 E_FO_505: Der Server ist anscheinend etwas ausgelastet. Versuchen Sie es doch später noch einmal.
 E_FO_506: Der Server wird gerade heruntergefahren. Versuchen Sie es doch später noch einmal.
-E_FO_507: Der Server scheint gerade etwas ausgelastet zu sein. Versuchen sie es doch später noch einmal.
+E_FO_507: Der Server scheint gerade etwas ausgelastet zu sein. Versuchen Sie es doch später noch einmal.
 E_FO_600: Das Forum ist aus administrativen oder technischen Gründen gesperrt. Bitte versuchen Sie es später noch einmal.
 E_ARCHIVE_ERROR: Leider ist ein interner Fehler aufgetreten.
 E_ARCHIVE_GENERIC404: Sie haben einen ungültige URL angegeben.
@@ -57,9 +57,9 @@ E_ARCHIVE_THREADNOTPRESENT: Leider gibt es den von Ihnen ausgewählten Thread ni
 E_posting_links: Einige [link:]-, [image:]- oder [iframe:]-URIs können nicht umgewandelt werden. Sicher, dass alle URIs korrekt sind?
 E_user_create: Leider konnte der User aus servertechnischen Gründen nicht angelegt werden.
 E_posting_category: Sie haben eine ungültige Kategorie ausgewählt.
-E_posting_charset: Sie haben ein Zeichen eingegeben, dass weder gültiges UTF-8 noch gültiges Latin-1 ist. Vielleicht haben Sie ja Binär-Zeichen eingegeben?
-E_POST_NOT_ALLOWED: Das Schreiben neuer Nachrichten ist Momentan nicht erlaubt.
-E_VOTE_INTERNAL: Interner Fehler aufgetreten. Vielleicht haben sie keine Thread- oder Nachrichten-ID übermittelt?
+E_posting_charset: Sie haben ein Zeichen eingegeben, dass weder gültiges UTF-8 noch gültiges Latin-1 ist. Vielleicht haben Sie ja Binärzeichen eingegeben?
+E_POST_NOT_ALLOWED: Das Schreiben neuer Nachrichten ist momentan nicht erlaubt.
+E_VOTE_INTERNAL: Interner Fehler aufgetreten. Vielleicht haben Sie keine Thread- oder Nachrichten-ID übermittelt?
 E_VOTE_MULTIPLE: Sie dürfen nur einmal abstimmen!
 E_VOTE_AUTH: Sie müssen angemeldet sein, um abzustimmen!
 E_sendpw_error: Leider ist ein interner Fehler aufgetreten.
@@ -67,6 +67,6 @@ E_sendpw_subject: SELFHTML-Forum-Passwort
 E_sendpw_body: Ihr SELFHTML-Forum-Passwort lautet: {$pass}
 E_new_post_mail_subject: Neue Antwort auf http://forum.de.selfhtml.org/my/?t={tid}&m={mid}
 E_new_post_mail_body: Hallo {name},\n\nes gibt eine neue Antwort auf:\n\n  http://forum.de.selfhtml.org/my/?t={tid}&m={mid}\n\nGrüsse,\n das Forum\n
-E_SQL_connect: Ein Datenbankfehler ist aufgetreten. Bitte wenden Sie sich an den Systemadministrator.
-E_SQL_execute: Ein Datenbankfehler ist aufgetreten. Bitte wenden Sie sich an den Systemadministrator.
+E_SQL_connect: Ein Datenbankfehler ist aufgetreten. Bitte wenden Sie sich an den System-Administrator.
+E_SQL_execute: Ein Datenbankfehler ist aufgetreten. Bitte wenden Sie sich an den System-Administrator.
 E_SMTP_failed: Auf Grund eines internen Fehlers konnte die Mail nicht verschickt werden.
