@@ -1124,7 +1124,7 @@ int is_valid_file_link(const u_char *link) {
     if((slash = strstr(link+7,"/")) == NULL) return -1;
 
     /* we got a hostname without port number */
-    if((db = strstr(link+7,":")) == NULL) {
+    if((dp = strstr(link+7,":")) == NULL) {
       hostname = strndup(link+7,ptr-link+7);
       if(!is_valid_hostname(hostname)) {
         free(hostname);
@@ -1136,12 +1136,12 @@ int is_valid_file_link(const u_char *link) {
     else {
       hostname = strndup(link+7,dp-link+7);
       if(!is_valid_hostname(hostname)) {
-        free(hostname),
+        free(hostname);
         return -1;
       }
       free(hostname);
 
-      for(ptr=doublepoint+1;*ptr;ptr++) {
+      for(ptr=dp+1;*ptr;ptr++) {
         if(!isdigit(*ptr)) return -1;
       }
     }
