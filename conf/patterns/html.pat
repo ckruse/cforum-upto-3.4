@@ -3,6 +3,7 @@ start = "default"
 block "default"
   lineend stay
 
+  onregexp "^&lt;[A-Za-z][A-Za-z_0-9:-]*\\s*/&gt;" highlight "empty-tag"
   onstring "&lt;!--" "comment" "comment"
   onstring "&lt;!" "specialtag" "tag"
   onstring "&lt;/" "ctag" "tag"
