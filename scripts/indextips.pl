@@ -9,8 +9,8 @@ our $INDEX_FILE = 'tipoftheday.idx';
 our $help = 0;
 
 GetOptions(
-  "tips-file=s" => \$messagefile_in,
-  "tips-index=s" => \$messagefile_out,
+  "tips-file=s" => \$TIPS_FILE,
+  "tips-index=s" => \$INDEX_FILE,
   "help" => \$help
 )
 
