@@ -2,6 +2,11 @@
 	* src/templates/tpl_*/forum_begin.html:
 	* src/templates/tpl_*/forum_end.html:
 	  Changed/added anchor
+	* src/templates/tpl_html4/forum_begin.html
+	* src/templates/tpl_html4/forum_end.html
+	* src/templates/tpl_html4/forum_posting.html
+	* src/templates/tpl_html4/post_ok.html
+	* src/templates/tpl_html4/thread.html
 	* src/templates/tpl_xhtml10/arcmonths.html
 	* src/templates/tpl_xhtml10/arcthread.html
 	* src/templates/tpl_xhtml10/arcyears.html

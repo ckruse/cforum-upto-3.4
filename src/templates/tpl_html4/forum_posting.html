@@ -145,7 +145,7 @@
       </tr>
     </table>
     <h2 class="sh2"><a class="an" name="nachricht">Nachricht lesen</a></h2>
-    <p>{if $messagebefore}Urspr&uuml;ngliche Nachricht zum Thema: <img src="http://src.selfhtml.org/dok.gif" width="15" height="10" border="0" alt="Seite">&nbsp;{if $b_category}<b>({$b_category})</b> {endif}<a href="{$b_link}">{$b_title}</a> von <b>{$b_name}</b>, {$b_time}<br>{endif}Die folgende Nachricht zum Thema stammt von: <b>{$name}</b>{if $email}, <img src="http://src.selfhtml.org/mail.gif" width="15" height="10" border="0" alt="E-Mail">&nbsp;<a href="mailto:{$email}">{$email}</a>{endif}, {$time}{if $link}<br><a href="{$link}"{if $frame} target="_top"{endif}>{$link}</a>{endif}</p>
+    <p>{if $messagebefore}Urspr&uuml;ngliche Nachricht zum Thema: <img src="http://src.selfhtml.org/dok.gif" width="15" height="10" border="0" alt="Seite">&nbsp;{if $b_category}<b>({$b_category})</b> {endif}<a href="{$b_link}"><b>{$b_title}</b></a> von <b>{$b_name}</b>, {$b_time}<br>{endif}Die folgende Nachricht zum Thema stammt von: <b>{$name}</b>{if $email}, <img src="http://src.selfhtml.org/mail.gif" width="15" height="10" border="0" alt="E-Mail">&nbsp;<a href="mailto:{$email}"><b>{$email}</b></a>{endif}, {$time}{if $link}<br><a href="{$link}"{if $frame} target="_top"{endif}><b>{$link}</b></a>{endif}</p>
     <p><tt>{$message}</tt></p>{if $image}
     <p><img src="{$image}" alt=""></p>{endif}
     <table bgcolor="#EEEEEE" class="doc" width="100%">

@@ -181,18 +181,18 @@
         <td bgcolor="#FFFFFF" valign="top" width="100%">
           <p>{if $livefilter}
             <img src="http://src.selfhtml.org/down.gif" width="14" height="10" border="0" alt="nach unten">&nbsp;<a href="#live-filter"><b>Live-Filter</b></a><br>{endif}
-            <img src="http://src.selfhtml.org/down.gif" width="14" height="10" border="0" alt="nach unten">&nbsp;<a href="#aktuelle_nachrichten">Aktuelle Nachrichten</a><br>
-            <img src="http://src.selfhtml.org/down.gif" width="14" height="10" border="0" alt="nach unten">&nbsp;<a href="#alte_nachrichten">Alte Nachrichten</a><br>
-            <img src="http://src.selfhtml.org/dok.gif" width="15" height="10" border="0" alt="Seite">&nbsp;<a href="{if $authed}/cgi-bin/user/fo_post{else}/cgi-bin/fo_post{endif}"{if $frame} target="_top"{endif}>Neue Nachricht verfassen</a><br>
+            <img src="http://src.selfhtml.org/down.gif" width="14" height="10" border="0" alt="nach unten">&nbsp;<a href="#aktuelle_nachrichten"><b>Aktuelle Nachrichten</b></a><br>
+            <img src="http://src.selfhtml.org/down.gif" width="14" height="10" border="0" alt="nach unten">&nbsp;<a href="#alte_nachrichten"><b>Alte Nachrichten</b></a><br>
+            <img src="http://src.selfhtml.org/dok.gif" width="15" height="10" border="0" alt="Seite">&nbsp;<a href="{if $authed}/cgi-bin/user/fo_post{else}/cgi-bin/fo_post{endif}"{if $frame} target="_top"{endif}><b>Neue Nachricht verfassen</b></a><br>
           </p>
           <p>
-            <a name="zu_diesem_Forum" class="an">Dies</a> ist ein Forum als Erg&auml;nzung zu der Dokumentation <img src="http://src.selfhtml.org/serverkap.gif" width="15" height="13" border="0" alt="bereichs&uuml;bergreifendes Kapitel">&nbsp;<a href="http://de.selfhtml.org/"{if $frame} target="_top"{endif}>SELFHTML</a>.
+            <a name="zu_diesem_Forum" class="an">Dies</a> ist ein Forum als Erg&auml;nzung zu der Dokumentation <img src="http://src.selfhtml.org/serverkap.gif" width="15" height="13" border="0" alt="bereichs&uuml;bergreifendes Kapitel">&nbsp;<a href="http://de.selfhtml.org/"{if $frame} target="_top"{endif}><b>SELFHTML</b></a>.
           </p>
           <p>
             Von allen hier Teilnehmenden werden HTML-Grundkenntnisse erwartet. Es wird erwartet, daﬂ bei Problemen erst einmal in SELFHTML, im <img src="http://src.selfhtml.org/kap.gif" width="15" height="13" border="0" alt="Kapitel">&nbsp;<a href="/archiv/"{if $frame} target="_top"{endif}><b>Forumsarchiv</b></a> oder in anderen Quellen nach einer L&ouml;sung gesucht wird.
           </p>
           <p>
-            Zum Mitmachen im SELFHTML Forum gibt es einige grunds&auml;tzliche Verhaltensregeln. Diese Regeln sind in der <img src="http://src.selfhtml.org/dok.gif" width="15" height="10" border="0" alt="Seite">&nbsp;<a href="/faq/"{if $frame} target="_top"{endif}>Forums-FAQ</a> nachzulesen. Es wird erwartet, da&szlig; Forumsteilnehmer die Forums-FAQ kennen und die dort genannten Regeln einhalten.
+            Zum Mitmachen im SELFHTML Forum gibt es einige grunds&auml;tzliche Verhaltensregeln. Diese Regeln sind in der <img src="http://src.selfhtml.org/dok.gif" width="15" height="10" border="0" alt="Seite">&nbsp;<a href="/faq/"{if $frame} target="_top"{endif}><b>Forums-FAQ</b></a> nachzulesen. Es wird erwartet, da&szlig; Forumsteilnehmer die Forums-FAQ kennen und die dort genannten Regeln einhalten.
           </p>{if $LOAD_TIME}
           <p>Ladezeitpunkt: {$LOAD_TIME}{if $autoreload}, automatischer Reload: {$autoreloadtime}{endif}</p>{endif}{if $flt_admin_errmsg}
           <p><b>{$flt_admin_errmsg}</b></p>{endif}
@@ -204,7 +204,7 @@
     </table>{if $livefilter}
     <h2 class="sh2"><a class="an" name="live-filter">Live-Filter</a></h2>
     <p>
-      Der Live-Filter filtert die Thread-Liste nach Kriterien, die Sie in diesem Text-Feld angeben k&ouml;nnen. Die Bedienungsweise wird in der <img src="http://src.selfhtml.org/dok.gif" width="15" height="10" border="0" alt="Seite">&nbsp;<a href="/live_syntax.html"{if $frame} target="_top"{endif}>Syntax-Beschreibung</a> erkl&auml;rt.
+      Der Live-Filter filtert die Thread-Liste nach Kriterien, die Sie in diesem Text-Feld angeben k&ouml;nnen. Die Bedienungsweise wird in der <img src="http://src.selfhtml.org/dok.gif" width="15" height="10" border="0" alt="Seite">&nbsp;<a href="/live_syntax.html"{if $frame} target="_top"{endif}><b>Syntax-Beschreibung</b></a> erkl&auml;rt.
     </p>
     <form method="get" action="{$ubase}" accept-charset="{$charset},UTF-8">
       <p><label for="lf">Filter-String:</label> <input type="text" name="lf" id="lf" value="{$lf}" size="50"> <input type="submit" value="Filtern!"></p>

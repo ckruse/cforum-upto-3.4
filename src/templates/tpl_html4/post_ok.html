@@ -65,7 +65,7 @@
       </tr>
     </table>
     <h2 class="sh2"><a class="an" name="bestaetigung">Diese Nachricht ist nun im Forum lesbar</a></h2>
-    <p>Die folgende Nachricht zum Thema stammt von: <b>{$Name}</b>{if $EMail}, <img src="http://src.selfhtml.org/mail.gif" width="15" height="10" border="0" alt="E-Mail">&nbsp;<a href="mailto:{$EMail}">{$EMail}</a>{endif}, {$date}{if $HomepageUrl}<br><a href="{$HomepageUrl}"{if $frame} target="_top"{endif}>{$HomepageUrl}</a>{endif}</p>
+    <p>Die folgende Nachricht zum Thema stammt von: <b>{$Name}</b>{if $EMail}, <img src="http://src.selfhtml.org/mail.gif" width="15" height="10" border="0" alt="E-Mail">&nbsp;<a href="mailto:{$EMail}"><b>{$EMail}</b></a>{endif}, {$date}{if $HomepageUrl}<br><a href="{$HomepageUrl}"{if $frame} target="_top"{endif}><b>{$HomepageUrl}</b></a>{endif}</p>
     <h3>{if $cat}({$cat}) {endif}{$subject}</h3>
     <p><tt>{$body}</tt></p>{if $ImageUrl}
     <p><img src="{$ImageUrl}" alt=""></p>{endif}
