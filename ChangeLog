@@ -3,4 +3,6 @@
 		NULL if FLT_DECLINE should returned, not non-NULL
 	* src/modules/flt_syntax.c: Made parser more tollerant, now it also recognizes
 		"lang" and 'lang' and so on
+	* src/perl/Plugins/ImportExport.pm: Changed import behavior, unknown
+		directives will be ignored
 
