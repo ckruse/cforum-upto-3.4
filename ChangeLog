@@ -1,3 +1,6 @@
+2004-10-27 Christian Kruse <ckruse@wwwtech.de>
+	* src/htmllib.c: Fixed a bug in directive parsing
+
 2004-10-26 Christian Kruse <ckruse@wwwtech.de>
 	* cgi-shared/ForumUtils.pm: Fixed bug in [iframe:] handling
 
