@@ -107,95 +107,61 @@ void flt_mailonpost_destroy(DB *db) {
 
 /* {{{ flt_mailonpost_init_handler */
 int flt_mailonpost_init_handler(t_cf_hash *head,t_configuration *dc,t_configuration *vc) {
-  u_char *val,*email,*ctid,buff[256],*user = cf_hash_get(GlobalValues,"UserName",8),**list = NULL;
+  u_char *val,*email,buff[256],*user = cf_hash_get(GlobalValues,"UserName",8),**list = NULL;
   DB *db = NULL,*udb = NULL;
   DBT key,data;
   size_t n,i;
-  u_int64_t tid;
+  u_int64_t tid = 0;
   int ret;
   t_string str;
-  t_name_value *v;
+  t_name_value *v = NULL;
 
   if(!head) return FLT_DECLINE;
 
-  if((val = cf_cgi_get(head,"mailonpost")) != NULL && (cf_strcmp(val,"yes") == 0 || cf_strcmp(val,"no") == 0) && (ctid = cf_cgi_get(head,"t")) != NULL) {
-    tid = str_to_u_int64(ctid);
+  if((val = cf_cgi_get(head,"t")) == NULL) {
+    if((val = cf_cgi_get(head,"fupto")) == NULL) return FLT_DECLINE;
+  }
 
-    if(tid) {
-      /* {{{ get email address; either from CGI parameter or from config file, depends */
-      if((email = cf_cgi_get(head,"EMail")) == NULL) {
-        if(user == NULL) return FLT_DECLINE;
-        if(flt_mailonpost_uemail) email = flt_mailonpost_uemail;
-        else {
-          if((v = cfg_get_first_value(vc,flt_mailonpost_fn,"EMail")) == NULL) return FLT_DECLINE;
-        }
+  tid = str_to_u_int64(val);
 
+  if((val = cf_cgi_get(head,"mailonpost")) != NULL && (cf_strcmp(val,"yes") == 0 || cf_strcmp(val,"no") == 0) && tid != 0) {
+    /* {{{ get email address; either from CGI parameter or from config file, depends */
+    if((email = cf_cgi_get(head,"EMail")) == NULL) {
+      if(user == NULL) return FLT_DECLINE;
+      if(flt_mailonpost_uemail) email = flt_mailonpost_uemail;
+      else {
+        if((v = cfg_get_first_value(vc,flt_mailonpost_fn,"EMail")) == NULL) return FLT_DECLINE;
         email = v->values[0];
       }
-      /* }}} */
+    }
+    /* }}} */
 
-      if(flt_mailonpost_create(&db,flt_mailonpost_dbname) == -1) return FLT_DECLINE;
-      if(flt_mailonpost_udb && flt_mailonpost_create(&udb,flt_mailonpost_udb) == -1) {
+    if(flt_mailonpost_create(&db,flt_mailonpost_dbname) == -1) return FLT_DECLINE;
+    if(flt_mailonpost_udb && flt_mailonpost_create(&udb,flt_mailonpost_udb) == -1) {
+      flt_mailonpost_destroy(db);
+      return FLT_DECLINE;
+    }
+
+    n = snprintf(buff,256,"t%llu",tid);
+
+    memset(&key,0,sizeof(key));
+    memset(&data,0,sizeof(data));
+
+    str_init(&str);
+
+    key.data = buff;
+    key.size = n;
+
+    if((ret = db->get(db,NULL,&key,&data,0)) != 0) {
+      if(ret != DB_NOTFOUND) {
+        if(udb) flt_mailonpost_destroy(udb);
         flt_mailonpost_destroy(db);
+
+        fprintf(stderr,"DB error: %s\n",db_strerror(ret));
         return FLT_DECLINE;
       }
-
-      n = snprintf(buff,256,"t%llu",tid);
-
-      memset(&key,0,sizeof(key));
-      memset(&data,0,sizeof(data));
-
-      str_init(&str);
-
-      key.data = buff;
-      key.size = n;
-
-      if((ret = db->get(db,NULL,&key,&data,0)) != 0) {
-        if(ret != DB_NOTFOUND) {
-          if(udb) flt_mailonpost_destroy(udb);
-          flt_mailonpost_destroy(db);
-
-          fprintf(stderr,"DB error: %s\n",db_strerror(ret));
-          return FLT_DECLINE;
-        }
-        else {
-          if(cf_strcmp(val,"yes") == 0) {
-            str_chars_append(&str,email,strlen(email));
-
-            data.data = "1";
-            data.size = sizeof("1");
-
-            if(udb && (ret = udb->put(udb,NULL,&key,&data,DB_NODUPDATA|DB_NOOVERWRITE)) != 0) {
-              if(ret != DB_KEYEXIST) {
-                flt_mailonpost_destroy(udb);
-                flt_mailonpost_destroy(db);
-                fprintf(stderr,"DB error: %s\n",db_strerror(ret));
-                return FLT_DECLINE;
-              }
-            }
-          }
-        }
-      }
       else {
-        str_char_set(&str,data.data,data.size);
-
         if(cf_strcmp(val,"yes") == 0) {
-          /* {{{ check if mail already exists in data entry */
-          n = split(str.content,"\x7F",&list);
-          for(i=0,ret=0;i<n;++i) {
-            if(ret == 0 && cf_strcmp(email,list[i]) == 0) ret = 1;
-            free(list[i]);
-          }
-
-          free(list);
-          if(ret) {
-            if(udb) flt_mailonpost_destroy(udb);
-            flt_mailonpost_destroy(db);
-            return FLT_DECLINE;
-          }
-          /* }}} */
-
-          str_char_append(&str,'\x7F');
           str_chars_append(&str,email,strlen(email));
 
           data.data = "1";
@@ -210,64 +176,99 @@ int flt_mailonpost_init_handler(t_cf_hash *head,t_configuration *dc,t_configurat
             }
           }
         }
-        else {
-          n = split(str.content,"\x7F",&list);
-          str_cleanup(&str);
+      }
+    }
+    else {
+      str_char_set(&str,data.data,data.size);
 
-          for(i=0,ret=0;i<n;++i) {
-            if(cf_strcmp(list[i],email) != 0) {
-              if(ret) str_char_append(&str,'\x74');
-              ret = 1;
-              str_chars_append(&str,list[i],strlen(list[i]));
-            }
-            free(list[i]);
+      if(cf_strcmp(val,"yes") == 0) {
+        /* {{{ check if mail already exists in data entry */
+        n = split(str.content,"\x7F",&list);
+        for(i=0,ret=0;i<n;++i) {
+          if(ret == 0 && cf_strcmp(email,list[i]) == 0) ret = 1;
+          free(list[i]);
+        }
+
+        free(list);
+        if(ret) {
+          if(udb) flt_mailonpost_destroy(udb);
+          flt_mailonpost_destroy(db);
+          return FLT_DECLINE;
+        }
+        /* }}} */
+
+        str_char_append(&str,'\x7F');
+        str_chars_append(&str,email,strlen(email));
+
+        data.data = "1";
+        data.size = sizeof("1");
+
+        if(udb && (ret = udb->put(udb,NULL,&key,&data,DB_NODUPDATA|DB_NOOVERWRITE)) != 0) {
+          if(ret != DB_KEYEXIST) {
+            flt_mailonpost_destroy(udb);
+            flt_mailonpost_destroy(db);
+            fprintf(stderr,"DB error: %s\n",db_strerror(ret));
+            return FLT_DECLINE;
           }
+        }
+      }
+      else {
+        n = split(str.content,"\x7F",&list);
+        str_cleanup(&str);
 
-          free(list);
+        for(i=0,ret=0;i<n;++i) {
+          if(cf_strcmp(list[i],email) != 0) {
+            if(ret) str_char_append(&str,'\x74');
+            ret = 1;
+            str_chars_append(&str,list[i],strlen(list[i]));
+          }
+          free(list[i]);
+        }
 
-          if(udb && (ret = udb->del(udb,NULL,&key,0)) != 0) {
+        free(list);
+
+        if(udb && (ret = udb->del(udb,NULL,&key,0)) != 0) {
+          if(ret != DB_NOTFOUND) {
+            flt_mailonpost_destroy(udb);
+            flt_mailonpost_destroy(db);
+            fprintf(stderr,"DB error: %s\n",db_strerror(ret));
+            return FLT_DECLINE;
+          }
+        }
+
+        if(str.len == 0) {
+          if((ret = db->del(db,NULL,&key,0)) != 0) {
             if(ret != DB_NOTFOUND) {
-              flt_mailonpost_destroy(udb);
+              if(udb) flt_mailonpost_destroy(udb);
               flt_mailonpost_destroy(db);
               fprintf(stderr,"DB error: %s\n",db_strerror(ret));
               return FLT_DECLINE;
             }
           }
-
-          if(str.len == 0) {
-            if((ret = db->del(db,NULL,&key,0)) != 0) {
-              if(ret != DB_NOTFOUND) {
-                if(udb) flt_mailonpost_destroy(udb);
-                flt_mailonpost_destroy(db);
-                fprintf(stderr,"DB error: %s\n",db_strerror(ret));
-                return FLT_DECLINE;
-              }
-            }
-          }
         }
       }
-
-      if(str.len) {
-        memset(&data,0,sizeof(data));
-        data.data = str.content;
-        data.size = str.len;
-
-        if((ret = db->put(db,NULL,&key,&data,0)) != 0) {
-          flt_mailonpost_destroy(db);
-          if(udb) flt_mailonpost_destroy(udb);
-
-          fprintf(stderr,"DB error: %s\n",db_strerror(ret));
-          return FLT_DECLINE;
-        }
-
-        str_cleanup(&str);
-      }
-
-      flt_mailonpost_destroy(db);
-      if(udb) flt_mailonpost_destroy(udb);
-
-      return FLT_OK;
     }
+
+    if(str.len) {
+      memset(&data,0,sizeof(data));
+      data.data = str.content;
+      data.size = str.len;
+
+      if((ret = db->put(db,NULL,&key,&data,0)) != 0) {
+        flt_mailonpost_destroy(db);
+        if(udb) flt_mailonpost_destroy(udb);
+
+        fprintf(stderr,"DB error: %s\n",db_strerror(ret));
+        return FLT_DECLINE;
+      }
+
+      str_cleanup(&str);
+    }
+
+    flt_mailonpost_destroy(db);
+    if(udb) flt_mailonpost_destroy(udb);
+
+    return FLT_OK;
   }
 
   return FLT_DECLINE;

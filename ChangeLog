@@ -1,3 +1,6 @@
+2005-02-22 Christian Kruse <ckruse@wwwtech.de>
+	* src/modules/flt_mailonpost.c: Fixed bug in checkbox, now it should work
+
 2005-02-21 Christian Kruse <ckruse@wwwtech.de>
 	* src/modules/flt_mailonpost.c: Fixed bug, flt_mailonpost_udb has to be equal
 		NULL if FLT_DECLINE should returned, not non-NULL
