@@ -18,13 +18,13 @@ end
 
 block "tag"
   lineend stay
-  onregexp_start "^[A-Za-z][A-Za-z_0-9]+" highlight "name"
+  onregexp_start "^[A-Za-z][A-Za-z_0-9]*" highlight "name"
   onregexp "^[A-Za-z]" "tagattr" "attribute"
   onstring "&gt;" pop
 end
 
 block "ctag"
-  onregexp_start "^[A-Za-z][A-Za-z_0-9-]+" highlight "name"
+  onregexp_start "^[A-Za-z][A-Za-z_0-9-]*" highlight "name"
   onstring "&gt;" pop
 end
 
@@ -76,3 +76,5 @@ block "scomment"
   lineend stay
   onstring "--" pop
 end
+
+# eof
