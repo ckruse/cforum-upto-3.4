@@ -41,6 +41,8 @@
 	* src/modules/flt_syntax.c: Bugfix in tokenizer
 	* conf/patterns/php.pat: Added patterns for <?php and ?>
 	* src/modules/flt_listhighlight.c: Fixed bug in cfg_get_first_value() call
+	* src/fo_post.c: Fixed a small bug in quote char handling
+	* src/htmllib.c: Fixed a small bug in quote char handling
 
 2005-02-08 Christian Kruse <ckruse@wwwtech.de>
 	* configure.in: Added cf-cleanup.pl

@@ -144,7 +144,6 @@ void display_posting_form(t_cf_hash *head,t_message *p) {
   size_t qclen;
   int utf8;
 
-  u_int32_t f;
   t_cf_hash_entry *ent;
   t_cf_cgi_param *param;
 
@@ -510,7 +509,14 @@ t_string *body_plain2coded(const u_char *text) {
       case '\015':
         if(*(ptr+1) == '\012') ++ptr;
         str_char_append(str,'\012');
+
+        if(cf_strncmp(ptr+1,qchars,len) == 0) {
+          str_char_append(str,(u_char)127);
+          ptr += len - 1;
+        }
+
         break;
+
       case '[':
         /* transform only if [message:] */
         if(cf_strncmp(ptr+1,"message:",8) == 0) {
@@ -530,12 +536,9 @@ t_string *body_plain2coded(const u_char *text) {
             free(tmp);
           }
         }
+
       default:
-        if(cf_strncmp(ptr,qchars,len) == 0) {
-          str_char_append(str,(u_char)127);
-          ptr += len - 1;
-        }
-        else str_char_append(str,*ptr);
+        str_char_append(str,*ptr);
     }
   }
 

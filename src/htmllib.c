@@ -478,7 +478,7 @@ void msg_to_html(t_cl_thread *thread,const u_char *msg,t_string *content,t_strin
   xml = cf_strcmp(xmlm->values[0],"yes") == 0;
 
   if(utf8 || (qchars = htmlentities_charset_convert(quote_chars,"UTF-8",cs->values[0],&qclen,0)) == NULL) {
-    qchars = strdup(quote_chars);
+    qchars = htmlentities(quote_chars,0);
     qclen  = strlen(qchars);
   }
 
