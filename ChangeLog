@@ -4,6 +4,7 @@
 	* conf/patterns/java.pat: Added java syntax highlighting
 	* conf/patterns/perl.pat, conf/patterns/c.pat, conf/patterns/javascript.pat,
 		conf/patterns/php.pat: Fixed escape sequences patterns
+	* conf/patterns/ruby.pat: Added ruby highlighting pattern file
 
 2005-03-08 Christian Kruse <ckruse@wwwtech.de>
 	* conf/patterns/sql.pat: Added syntax highlighting for SQL, Daniela Koller
