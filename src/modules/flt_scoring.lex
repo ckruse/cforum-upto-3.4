@@ -146,7 +146,7 @@ size_t flt_scoring_calc_col(u_char buff[],int score) {
   /* we got a negative scoring */
   else if(score < finish) {
     /* calculate the matching percentage */
-    if(score <= flt_scoring_min_val) percentage = .0;
+    if(score <= flt_scoring_min_val) percentage = 1.0;
     else percentage = (float)score / (float)flt_scoring_min_val;
 
     /* calculate the color (percentage * difference) */

@@ -15,6 +15,7 @@
 	* src/clientlib.[ch]: Added a new function (gen_tpl_name)
 	* cgi-shared/config/modules.de.xml: Added flt_scoring directives, fixed
 		validation of ShowFrom and ShowUntil
+	* src/modules/flt_scoring.lex: Fixed a silly bug in percentage calculation
 
 2004-08-08 Christian Kruse <ckruse@wwwtech.de>
 	* src/modules/flt_scoring.lex: Fixed bug in applying score and config parsing
