@@ -627,6 +627,8 @@ int execute_filter(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cl_
           tpl_cf_appendvar(tpl,"threadlist",msg->tpl.parsed.content,msg->tpl.parsed.len-1);
 
           tpl_cf_appendvar(tpl,"threadlist","<ul>",4);
+
+          level++;
         }
         else {
           tpl_cf_appendvar(tpl,"threadlist","<li>",4);

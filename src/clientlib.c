@@ -585,7 +585,7 @@ int has_answers(t_message *msg) {
   int ShowInvisible = cf_hash_get(GlobalValues,"ShowInvisible",13) == NULL ? 0 : 1;
 
   if(msg->next) {
-    if((msg->next->may_show && msg->invisible == 0) || ShowInvisible == 1) {
+    if((msg->next->may_show && msg->next->invisible == 0) || ShowInvisible == 1) {
       if(msg->next->level > msg->level) {
         return 1;
       }
@@ -598,6 +598,8 @@ int has_answers(t_message *msg) {
         return 0;
       }
       else {
+        if((msg->invisible == 1 || msg->may_show == 0) && ShowInvisible == 0) return 0;
+
         if(msg->level > lvl) {
           return 1;
         }
