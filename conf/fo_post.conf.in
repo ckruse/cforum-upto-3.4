@@ -72,7 +72,7 @@ Forum FORUM1 {
  SMTPHost "localhost"
  SMTPFrom "cforum@wwwtech.de"
  SMTPReverse "devnull@wwwtech.de"
- MailDatabase "@sharedstatedir@/cforum/mail_forum1.db"
+ MailDatabase "@localstatedir@/cforum/mail_forum1.db"
 
  Image "selbermachen" "/images/01.gif" "Für dein Problem gibt es nur eine Lösung: SELFmade von Selbermachen."
  Image "archiv" "/images/02.gif" "Die Antwort auf deine Frage findest du im Archiv."

@@ -15,9 +15,9 @@ Forum FORUM1 {
  TemplateMode "html4"
  XHTMLMode "no"
 
- ErrorTemplate "@sysconfdir@/cforum/forum1/%s_%s_errortpl.so"
+ ErrorTemplate "@sysconfdir@/cforum/templates/forum1/%s_%s_errortpl.so"
 
- ThreadIndexFile "@sharedstatedir@/cforum/forum1/tididx.dat"
+ ThreadIndexFile "@localstatedir@/cforum/forum1_tididx.dat"
 
  BaseURL "/"
  PostingURL "?t=%t&m=%m"
@@ -44,11 +44,11 @@ Forum FORUM1 {
 
  DateLocale "de_DE.UTF-8"
  Language "de"
- MessagesDatabase "@sharedstatedir@/cforum/messages.db"
+ MessagesDatabase "@localstatedir@/cforum/forum1_messages.db"
 
  Categories "ASP" "BROWSER" "CGI" "CSS" "DATENBANK" "DESIGN" "DHTML" "E-MAIL" "FTP" "GRAFIK" "HTML" "HTTP" "INTERNET-ANBINDUNG" "JAVA" "JAVASCRIPT" "MEINUNG" "MENSCHELEI" "PERL" "PHP" "PROGRAMMIERTECHNIK" "PROJEKTVERWALTUNG" "PROVIDER" "RECHT" "SERVER" "SOFTWARE" "SONSTIGES" "VB-SCRIPT" "XML" "XML-DERIVAT" "XSL" "ZUR INFO" "ZU DIESEM FORUM"
 
- ConfigDirectory "@sharedstatedir@/cforum/forum1/users/"
+ ConfigDirectory "@localstatedir@/cforum/forum1/users/"
  InactivityDelete "50"
  SendMailBeforeDelete "yes"
 }

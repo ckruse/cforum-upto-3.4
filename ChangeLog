@@ -1,6 +1,10 @@
 2005-02-16 Christian Kruse <ckruse@wwwtech.de>
 	* src/modules/flt_mailonpost.c: Fixed several bugs, now it seems to work
 	* conf/fo_post.conf.in: Added cleanup routines for mailonpost database
+	* conf/fo_server.conf.in, conf/fo_view.conf.in, conf/fo_vote.conf.in,
+		conf/fo_default.conf.in, conf/fo_post.conf.in, conf/fo_arcview.conf.in:
+		Changed some default pathes for better LFSH conformance
+	* configure.in: Changed default path for socket name
 
 2005-02-15 Christian Kruse <ckruse@wwwtech.de>
 	* src/cf-recovery.c: Migration finished, seems to work fine

@@ -175,7 +175,7 @@ AC_ARG_WITH(socket-path,
      [--with-socket-path=DIR],
      [the path where the socket should be located])],
   [fake=1],
-  [ with_socket_path="/tmp/selfforum_socket" ]
+  [ with_socket_path="/var/run/selfforum_socket" ]
 )
 
 AC_ARG_WITH(proto-file,

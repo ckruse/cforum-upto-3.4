@@ -33,6 +33,7 @@ Load "flt_tipoftheday"
 Load "flt_sorting"
 Load "flt_directives"
 Load "flt_syntax"
+Load "flt_mailonpost"
 
 Forum FORUM1 {
  ThreadsOpenByDefault    "yes"
@@ -79,6 +80,8 @@ Forum FORUM1 {
  CloseSubtree "</ul>"
  ClosePosting "</li>"
  CloseThread "</li>"
+
+ MailDatabase "@localstatedir@/cforum/mail_forum1.db"
 }
 
 # eof
