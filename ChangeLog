@@ -7,6 +7,7 @@
 		URIs), added link templates (not yet tested!)
 	* src/modules/flt_posting.c: Deleted directives code and moved it up to
 		src/modules/flt_directives.c
+	* cgi-shared/config/modules.{fr,de}.xml: Added LinkTemplate directive
 
 2004-10-10 Christian Seiler <self@christian-seiler.de>
 	* src/modules/flt_handle404.c: fixed bug #408

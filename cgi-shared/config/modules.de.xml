@@ -7,6 +7,14 @@
 
   <page title="Anzeige-Funktionen" id="viewfuncs">
     <section name="Design-Ändernde Anzeige-Funktionen">
+      <directive name="LinkTemplate" arguments="1">
+        <argument paramname="linktemplate" type="text" encode="plain">
+          <validate>.?</validate>
+          <question>Möchten Sie ein Link-Template angeben? Sie können das Aussehen von Links mit benutzerdefiniertem Link-Text beeinflussen, wenn Sie hier ein Template angeben. Dabei steht &quot;%t&quot; für den Link-Text und &quot;%u&quot; für die URL. Beispiel: &quot;%t (%u)&quot; würde zu &quot;Titel (URL)&quot;.</question>
+          <error>Bitte geben Sie ein gültiges Link-Template an!</error>
+        </argument>
+      </directive>
+
       <directive name="TPLMode" arguments="1">
         <argument paramname="tplmode" type="radio" encode="plain">
           <validate>^\S+$</validate>
