@@ -520,12 +520,12 @@ t_string *body_plain2coded(const u_char *text) {
 
         break;
       case '[':
-        /* transform only if [message:] */
-        if(cf_strncmp(ptr+1,"message:",8) == 0) {
-          for(end=ptr;*end;++end) if(isspace(*end) || *end == ']') break;
+        /* transform only if [msg:] */
+        if(cf_strncmp(ptr+1,"msg:",4) == 0) {
+          for(end=ptr;*end && !isspace(*end) && *end != ']';++end);
 
           if(*end == ']') {
-            tmp  = strndup(ptr+7,end-ptr-7);
+            tmp  = strndup(ptr+5,end-ptr-5);
 
             if(get_message_url(tmp,&v) == 0) {
               str_chars_append(str,"[image:",7);
@@ -533,6 +533,8 @@ t_string *body_plain2coded(const u_char *text) {
               str_chars_append(str,"@alt=",5);
               str_chars_append(str,v->values[2],strlen(v->values[2]));
               str_char_append(str,']');
+
+              ptr = end + 1;
             }
 
             free(tmp);
