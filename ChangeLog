@@ -11,6 +11,7 @@
 		protocol handling
 	* src/readline.c: Little bit code cleaning
 	* src/communication.c: Fixed several bugs in protocol handling
+	* src/perl/ForumUtils.pm: Made error message more informative
 
 2005-03-03 Christian Kruse <ckruse@wwwtech.de>
 	* src/modules/flt_latex.c: Enhanced behavior, now PNG will alwas be created

@@ -135,7 +135,7 @@ sub create_directory_structure {
     next if -d $dir;
 
     mkdir $dir,0771 or do {
-      print STDERR $!;
+      print STDERR "Could not create $dir: $!";
       return;
     };
   }
