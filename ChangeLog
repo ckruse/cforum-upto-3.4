@@ -1,5 +1,5 @@
 2004-10-05 Christian seiler <self@christian-seiler.de>
-	* fixed bugs #384 and #335, this includes:
+	* fixed bugs #384, #335 and #381, this includes:
 	* cgi-shared/ForumUtils.pm: korrekted plaintext() function to
 		correctly convert back &#39; to '
 	* cgi-shared/Plugins/SpellCheck.pm: fixed a 500 internal server
@@ -15,7 +15,9 @@
 		able to create error messages, return error messages if
 		connect to database or execution of a command fails
 	* cgi-shared/config/errormessages.*.txt: added E_SQL_connect,
-		E_SQL_execute and E_SMTP_failed
+		E_SQL_execute and E_SMTP_failed; also added
+		E_ARCHIVE_GENERIC404 for later usage but not yet implemented
+		it (discussion is needed)
 	* cgi-shared/config/fo_usermanagement.conf.in: added FatalTemplate
 		configuration entry
 	* cgi-bin/fo_usermanagement.in: fo_default_conf is now declared in
@@ -25,6 +27,18 @@
 		be found or an error occured in management plugin, remove
 		directory structure and configuration files if management
 		plugin could not successfully create the user
+	* src/fo_arcview.c: include htmllib.h, changed generate_thread_output
+		prototype to include t_cl_thread structure, additionally
+		read configuration variables out of fo_arcview.conf, use
+		msg_to_html from htmllib and not api entry, added
+		convert_arc_message and convert_arc_thread functions to
+		create t_cl_thread structure from t_arc_thread struct.
+	* src/configparser.c: updated <General> & similar entries to have
+		CFG_OPT_CONFIG flag set, added MaxSigLines and ShowSig to
+		fo_arcview.conf
+	* cgi-bin/fo_post_old.in: fixed small bug that caused homepage url
+		not to be validated correctly
+	* src/Makefile.am: added libcfhtml.la to fo_arcview
 
 2004-10-04 Christian Seiler <self@christian-seiler.de>
 	* fixed bugs #387, #359, #340, #330 and #306, this includes:

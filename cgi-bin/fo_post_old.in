@@ -202,7 +202,7 @@ sub check_input {
   }
 
   return get_error($dcfg,'image','invalid') if $cgi->param('ImageUrl') && $cgi->param('ImageUrl') ne 'http://' && !is_valid_http_link($cgi->param('ImageUrl'),CForum::Validator::VALIDATE_STRICT);
-  return get_error($dcfg,'homepage','invalid') if $cgi->param('HomepageUrl') && $cgi->param('HomepageUrl') ne 'http://' && is_valid_http_link($cgi->param('HomepageUrl'));
+  return get_error($dcfg,'homepage','invalid') if $cgi->param('HomepageUrl') && $cgi->param('HomepageUrl') ne 'http://' && !is_valid_http_link($cgi->param('HomepageUrl'));
   return get_error($dcfg,'email','invalid') if $cgi->param('EMail') && !is_valid_mailaddress($cgi->param('EMail'));
 
   return 0;

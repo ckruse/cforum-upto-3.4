@@ -50,6 +50,7 @@ E_FO_506: Der Server wird gerade heruntergefahren. Versuchen Sie es doch später
 E_FO_507: Der Server scheint gerade etwas ausgelastet zu sein. Versuchen sie es doch später noch einmal.
 E_FO_600: Das Forum ist aus administrativen oder technischen Gründen gesperrt. Bitte versuchen Sie es später noch einmal.
 E_ARCHIVE_ERROR: Leider ist ein interner Fehler aufgetreten.
+E_ARCHIVE_GENERIC404: Sie haben einen ungültige URL angegeben.
 E_ARCHIVE_YEARNOTPRESENT: Leider gibt es das von Ihnen ausgewählte Jahr nicht.
 E_ARCHIVE_MONTHNOTPRESENT: Leider gibt es den von Ihnen ausgewählten Monat nicht.
 E_ARCHIVE_THREADNOTPRESENT: Leider gibt es den von Ihnen ausgewählten Thread nicht.

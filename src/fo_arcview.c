@@ -46,6 +46,7 @@
 #include "template.h"
 #include "charconvert.h"
 #include "clientlib.h"
+#include "htmllib.h"
 #include "fo_arcview.h"
 /* }}} */
 
@@ -180,6 +181,7 @@ u_int64_t get_id(u_char *ptr,const u_char *base,size_t len) {
 /* {{{ generate_thread_output */
 /**
  * Recursive function for generating a thread view
+ * \param cl_thread A pointer to the clientlib-thread structure
  * \param msg A pointer to the message
  * \param threads The string reference pointer for the threads contents
  * \param threadlist The string reference pointer for the thread list in the header of the file
@@ -190,7 +192,7 @@ u_int64_t get_id(u_char *ptr,const u_char *base,size_t len) {
  * \param admin Is the viewing user an administrator?
  * \param show_invisible Boolean for showing invisible postings of not (only affects if admin is true)
  */
-void generate_thread_output(t_arc_message *msg,t_string *threads,t_string *threadlist,t_cf_template *pt_tpl,t_cf_template *tl_tpl,t_cf_template *ud_tpl,t_name_value *cs,int admin,int show_invisible) {
+void generate_thread_output(t_cl_thread *cl_thread, t_arc_message *msg,t_string *threads,t_string *threadlist,t_cf_template *pt_tpl,t_cf_template *tl_tpl,t_cf_template *ud_tpl,t_name_value *cs,int admin,int show_invisible) {
   size_t i;
   t_arc_message *child;
   u_char buff[256];
@@ -198,18 +200,19 @@ void generate_thread_output(t_arc_message *msg,t_string *threads,t_string *threa
   t_string *str = fo_alloc(NULL,1,sizeof(*str),FO_ALLOC_CALLOC);
   u_char *cnt = NULL;
   size_t cntlen;
-  t_mod_api msg_to_html = cf_get_mod_api_ent("msg_to_html");
   void *ptr = fo_alloc(NULL,1,2 * sizeof(const u_char *) + 2 * sizeof(t_string *),FO_ALLOC_MALLOC);
   int printed = 0;
   u_char *date;
   t_string strbuffer;
-  t_name_value *vs = cfg_get_first_value(&fo_default_conf,"ArchivePostingURL");
+  t_name_value *vs = cfg_get_first_value(&fo_default_conf,"ArchivePostingURL"),
+               *cs = cfg_get_first_value(&fo_default_conf,"ExternCharset"),
+               *qc = cfg_get_first_value(&fo_arcview_conf,"QuotingChars"),
+               *ms = cfg_get_first_value(&fo_arcview_conf,"MaxSigLines"),
+               *ss = cfg_get_first_value(&fo_arcview_conf,"ShowSig");
 
   str_init(&strbuffer);
 
   /* first: set threadlist variables */
-  //len = snprintf(buff,256,"m%llu",msg->mid);
-
   str_char_append(&strbuffer,'m');
   u_int64_to_str(&strbuffer,msg->mid);
 
@@ -263,7 +266,7 @@ void generate_thread_output(t_arc_message *msg,t_string *threads,t_string *threa
   memset(ptr+sizeof(const u_char *)+sizeof(str),0,sizeof(str));
   memcpy(ptr+sizeof(const u_char *)+sizeof(str)+sizeof(str),&vs->values[0],sizeof(const u_char *));
 
-  msg_to_html(ptr);
+  msg_to_html(cl_thread,cnt,str,NULL,qc->values[0],ms ? atoi(ms->values[0]) : -1,ss ? cf_strcmp(ss->values[0],"yes") == 0 : 1);
 
   free(cnt);
 
@@ -289,7 +292,7 @@ void generate_thread_output(t_arc_message *msg,t_string *threads,t_string *threa
       ud_tpl->parsed.len = 0;
 
       str_chars_append(threadlist,"<li>",4);
-      generate_thread_output(child,threads,threadlist,pt_tpl,tl_tpl,ud_tpl,cs,admin,show_invisible);
+      generate_thread_output(cl_thread,child,threads,threadlist,pt_tpl,tl_tpl,ud_tpl,cs,admin,show_invisible);
       str_chars_append(threadlist,"</li>",5);
     }
 
@@ -299,6 +302,73 @@ void generate_thread_output(t_arc_message *msg,t_string *threads,t_string *threa
       *(threadlist->content + threadlist->len) = '\0';
     }
   }
+}
+/* }}} */
+
+/* {{{ convert_arc_message */
+/**
+ * Function to convert t_arc_thread to t_cl_thread
+ * \param head Reference pointer to the list head where the message shall be appended
+ * \param msg Reference pointer to the message
+ * \return the number of elements
+ */
+u_int32_t convert_arc_message(t_cf_list_head *head,t_arc_message *msg,unsigned short level) {
+  t_message *cl_msg;
+  size_t ctr,ret;
+  
+  cl_msg = (t_message *)fo_alloc(NULL,1,sizeof(*cl_msg),FO_ALLOC_CALLOC);
+  if(!cl_msg) return 0;
+  cl_msg->mid = msg->mid;
+  cl_msg->author = msg->author.content;
+  cl_msg->author_len = msg->author.len;
+  cl_msg->subject = msg->subject.content;
+  cl_msg->subject_len = msg->subject.len;
+  cl_msg->category = msg->category.content;
+  cl_msg->category_len = msg->category.len;
+  cl_msg->content = msg->content.content;
+  cl_msg->content_len = msg->content.len;
+  cl_msg->email = msg->email.content;
+  cl_msg->email_len = msg->email.len;
+  cl_msg->hp = msg->hp.content;
+  cl_msg->hp_len = msg->hp.len;
+  cl_msg->img = msg->img.content;
+  cl_msg->img_len = msg->img.len;
+  cl_msg->date = msg->date;
+  cl_msg->level = level;
+  cl_msg->may_show = msg->may_show;
+  cl_msg->invisible = msg->invisible;
+  memcpy(&cl_msg->tpl,&msg->tpl,sizeof(msg->tpl));
+  if(head->last) {
+    cl_msg->prev = *((t_message **)head->last->data);
+    (*((t_message **)head->last->data))->next = cl_msg;
+  }
+  ret = 1;
+  cf_list_append(head,(void *)&cl_msg,sizeof(cl_msg));
+  for(ctr = 0; ctr < msg->childs.elements; ctr++) {
+    ret += convert_arc_message(head,(t_arc_message*)array_element_at(&msg->childs,ctr),level+1);
+  }
+  return ret;
+}
+/* }}} */
+
+/* {{{ convert_arc_thread */
+/**
+ * Function to convert t_arc_thread to t_cl_thread
+ * \param cl_thread Reference pointer to the t_cl_thread
+ * \param arc_thread Reference pointer to the t_arc_thread
+ */
+void convert_arc_thread(t_cl_thread *cl_thread,t_arc_thread *arc_thread) {
+  t_cf_list_head *head;
+  
+  cl_thread->tid = arc_thread->tid;
+  head = (t_cf_list_head *)fo_alloc(NULL,1,sizeof(*head),FO_ALLOC_CALLOC);
+  if(!head) return;
+  cf_list_init(head);
+  cl_thread->msg_len = convert_arc_message(head,arc_thread->msgs,0);
+  cl_thread->messages = cl_thread->threadmsg = *((t_message **)head->elements->data);
+  cl_thread->last = *((t_message **)head->last->data);
+  cf_list_destroy(head,NULL);
+  free(head);
 }
 /* }}} */
 
@@ -331,6 +401,8 @@ void print_thread_structure(t_arc_thread *thr,const u_char *year,const u_char *m
   int len,cache_level = 0;
 
   t_string threadlist,threads;
+  
+  t_cl_thread cl_thread;
 
   if(ecache && *ecache->values[0] == 'y') {
     cache  = cfg_get_first_value(&fo_arcview_conf,"CacheDir");
@@ -368,7 +440,8 @@ void print_thread_structure(t_arc_thread *thr,const u_char *year,const u_char *m
   str_init(&threads);
   str_init(&threadlist);
 
-  generate_thread_output(thr->msgs,&threads,&threadlist,&per_thread_tpl,&threadlist_tpl,&up_down_tpl,cs,admin,show_invisible);
+  convert_arc_thread(&cl_thread,thr);
+  generate_thread_output(&cl_thread,thr->msgs,&threads,&threadlist,&per_thread_tpl,&threadlist_tpl,&up_down_tpl,cs,admin,show_invisible);
 
   tpl_cf_setvar(&main_tpl,"threads",threads.content,threads.len,0);
   tpl_cf_setvar(&main_tpl,"threadlist",threadlist.content,threadlist.len,0);

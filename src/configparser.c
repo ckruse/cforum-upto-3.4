@@ -59,7 +59,7 @@ t_array Modules[MOD_MAX+1];
 
 /* {{{ forum default config options */
 t_conf_opt default_options[] = {
-  { "<General>", NULL, 0, NULL },
+  { "<General>", NULL, CFG_OPT_CONFIG, NULL },
   { "ExternCharset",            handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG, &fo_default_conf },
   { "TemplateMode",             handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG, &fo_default_conf },
   { "XHTMLMode",                handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_UNIQUE, &fo_default_conf },
@@ -83,23 +83,23 @@ t_conf_opt default_options[] = {
   { "SharedMemIds",             handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG, &fo_default_conf },
   { "Administrators",           handle_command,   CFG_OPT_CONFIG,                &fo_default_conf },
   { "AuthMode",                 handle_command,   CFG_OPT_CONFIG,                &fo_default_conf },
-  { "</General>", NULL, 0, NULL },
+  { "</General>", NULL, CFG_OPT_CONFIG, NULL },
 
-  { "<Categories>", NULL, 0, NULL },
+  { "<Categories>", NULL, CFG_OPT_CONFIG, NULL },
   { "Category",                 handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG, &fo_default_conf },
-  { "</Categories>", NULL, 0, NULL },
+  { "</Categories>", NULL, CFG_OPT_CONFIG, NULL },
 
-  { "<LocaleConfig>", NULL, 0, NULL},
+  { "<LocaleConfig>", NULL, CFG_OPT_CONFIG, NULL},
   { "DateLocale",               handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG, &fo_default_conf },
   { "Language",                 handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG, &fo_default_conf },
   { "MessagesDatabase",         handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG, &fo_default_conf },
-  { "</LocaleConfig>", NULL, 0, NULL },
+  { "</LocaleConfig>", NULL, CFG_OPT_CONFIG, NULL },
 
-  { "<Users>", NULL, 0, NULL },
+  { "<Users>", NULL, CFG_OPT_CONFIG, NULL },
   { "ConfigDirectory",          handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG, &fo_default_conf },
   { "InactivityDelete",         handle_command,   CFG_OPT_CONFIG,                &fo_default_conf },
   { "SendMailBeforeDelete",     handle_command,   CFG_OPT_CONFIG,                &fo_default_conf },
-  { "</Users>", NULL, 0, NULL },
+  { "</Users>", NULL, CFG_OPT_CONFIG, NULL },
 
   { NULL, NULL, 0, NULL }
 };
@@ -107,7 +107,7 @@ t_conf_opt default_options[] = {
 
 /* {{{ forum client config options */
 t_conf_opt fo_view_options[] = {
-  { "<ForumBehavior>", NULL, 0, NULL },
+  { "<ForumBehavior>", NULL, CFG_OPT_CONFIG, NULL },
   { "DoQuote",                    handle_command,   CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_UNIQUE,                &fo_view_conf },
   { "QuotingChars",               handle_command,   CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_NEEDED|CFG_OPT_UNIQUE, &fo_view_conf },
   { "ShowThread",                 handle_command,   CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_UNIQUE,                &fo_view_conf },
@@ -116,31 +116,31 @@ t_conf_opt fo_view_options[] = {
   { "ParamType",                  handle_command,   CFG_OPT_CONFIG|CFG_OPT_NEEDED,                             &fo_view_conf },
   { "ShowSig",                    handle_command,   CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_UNIQUE,                &fo_view_conf },
   { "MaxSigLines",                handle_command,   CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_UNIQUE,                &fo_view_conf },
-  { "</ForumBehavior>", NULL, 0, NULL },
+  { "</ForumBehavior>", NULL, CFG_OPT_CONFIG, NULL },
 
-  { "<Templates>", NULL, 0, NULL },
+  { "<Templates>", NULL, CFG_OPT_CONFIG, NULL },
   { "TemplateForumBegin",         handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG, &fo_view_conf },
   { "TemplateForumEnd",           handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG, &fo_view_conf },
   { "TemplateForumThread",        handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG, &fo_view_conf },
   { "TemplatePosting",            handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG, &fo_view_conf },
-  { "</Templates>", NULL, 0, NULL },
+  { "</Templates>", NULL, CFG_OPT_CONFIG, NULL },
 
-  { "<DateConfig>", NULL, 0, NULL },
+  { "<DateConfig>", NULL, CFG_OPT_CONFIG, NULL },
   { "DateFormatThreadList",       handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG, &fo_view_conf },
   { "DateFormatThreadView",       handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG, &fo_view_conf },
   { "DateFormatLoadTime",         handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG, &fo_view_conf },
-  { "</DateConfig>", NULL, 0, NULL},
+  { "</DateConfig>", NULL, CFG_OPT_CONFIG, NULL},
 
-  { "<Form>", NULL, 0, NULL },
+  { "<Form>", NULL, CFG_OPT_CONFIG, NULL },
   { "Name",                       handle_command,   CFG_OPT_USER|CFG_OPT_UNIQUE, &fo_view_conf },
   { "EMail",                      handle_command,   CFG_OPT_USER|CFG_OPT_UNIQUE, &fo_view_conf },
   { "HomepageUrl",                handle_command,   CFG_OPT_USER|CFG_OPT_UNIQUE, &fo_view_conf },
   { "ImageUrl",                   handle_command,   CFG_OPT_USER|CFG_OPT_UNIQUE, &fo_view_conf },
-  { "</Form>", NULL, 0, NULL },
+  { "</Form>", NULL, CFG_OPT_CONFIG, NULL },
 
-  { "<Filters>", NULL, 0, NULL },
+  { "<Filters>", NULL, CFG_OPT_CONFIG, NULL },
   { "AddFilter",                  add_module,       CFG_OPT_CONFIG,              &Modules      },
-  { "</Filters>", NULL, 0, NULL },
+  { "</Filters>", NULL, CFG_OPT_CONFIG, NULL },
 
   { NULL, NULL, 0, NULL }
 };
@@ -148,23 +148,23 @@ t_conf_opt fo_view_options[] = {
 
 /* {{{ Posting configuration options */
 t_conf_opt fo_post_options[] = {
-  {  "<General>", NULL, 0, NULL },
+  {  "<General>", NULL, CFG_OPT_CONFIG, NULL },
   {  "AddFilter",                 add_module,       CFG_OPT_CONFIG, &Modules      },
   {  "PostingUrl",                handle_command,   CFG_OPT_CONFIG,              &fo_post_conf },
   {  "FieldConfig",               handle_command,   CFG_OPT_CONFIG,              &fo_post_conf },
   {  "FieldNeeded",               handle_command,   CFG_OPT_CONFIG,              &fo_post_conf },
   {  "RedirectOnPost",            handle_command,   CFG_OPT_CONFIG,              &fo_post_conf },
-  {  "</General>", NULL, 0, NULL },
+  {  "</General>", NULL, CFG_OPT_CONFIG, NULL },
 
-  {  "<Images>", NULL, 0, NULL },
+  {  "<Images>", NULL, CFG_OPT_CONFIG, NULL },
   {  "Image",                     handle_command,   CFG_OPT_CONFIG,              &fo_post_conf },
-  {  "</Images>", NULL, 0, NULL },
+  {  "</Images>", NULL, CFG_OPT_CONFIG, NULL },
 
-  {  "<Templates>", NULL, 0, NULL },
+  {  "<Templates>", NULL, CFG_OPT_CONFIG, NULL },
   {  "ThreadTemplate",            handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG, &fo_post_conf },
   {  "FatalTemplate",             handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG, &fo_post_conf },
   {  "OkTemplate",                handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG, &fo_post_conf },
-  {  "</Templates>", NULL, 0, NULL },
+  {  "</Templates>", NULL, CFG_OPT_CONFIG, NULL },
 
   {  NULL, NULL, 0, NULL }
 };
@@ -172,25 +172,25 @@ t_conf_opt fo_post_options[] = {
 
 /* {{{ fo_server config options */
 t_conf_opt fo_server_options[] = {
-  { "<General>", NULL, 0, NULL },
+  { "<General>", NULL, CFG_OPT_CONFIG, NULL },
   { "SortThreads",          handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG, &fo_server_conf },
   { "SortMessages",         handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG, &fo_server_conf },
   { "RunArchiver",          handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG, &fo_server_conf },
   { "ErrorLog",             handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG, &fo_server_conf },
   { "StdLog",               handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG, &fo_server_conf },
   { "PIDFile",              handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG, &fo_server_conf },
-  { "</General>",NULL,0,NULL },
+  { "</General>", NULL, CFG_OPT_CONFIG, NULL },
 
-  { "<Archiving>", NULL, 0, NULL },
+  { "<Archiving>", NULL, CFG_OPT_CONFIG, NULL },
   { "ArchiveOnVote",        handle_command,   CFG_OPT_CONFIG,              &fo_server_conf },
   { "MainFileMaxBytes",     handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG, &fo_server_conf },
   { "MainFileMaxPostings",  handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG, &fo_server_conf },
   { "MainFileMaxThreads",   handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG, &fo_server_conf },
-  { "</Archiving>", NULL, 0, NULL },
+  { "</Archiving>", NULL, CFG_OPT_CONFIG, NULL },
 
-  { "<Filters>", NULL, 0, NULL},
+  { "<Filters>", NULL, CFG_OPT_CONFIG, NULL},
   { "AddFilter",            add_module,       CFG_OPT_CONFIG,              &Modules        },
-  { "</Filters>", NULL, 0, NULL },
+  { "</Filters>", NULL, CFG_OPT_CONFIG, NULL },
 
   { NULL, NULL, 0, NULL }
 };
@@ -198,11 +198,11 @@ t_conf_opt fo_server_options[] = {
 
 /* {{{ archiv viewer options */
 t_conf_opt fo_arcview_options[] = {
-  { "<Filters>", NULL, 0, NULL },
+  { "<Filters>", NULL, CFG_OPT_CONFIG, NULL },
   { "AddFilter",               add_module,       CFG_OPT_CONFIG,                  &Modules        },
-  { "</Filters>", NULL, 0, NULL },
+  { "</Filters>", NULL, CFG_OPT_CONFIG, NULL },
 
-  { "<General>", NULL, 0, NULL },
+  { "<General>", NULL, CFG_OPT_CONFIG, NULL },
   { "SortYearList",            handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG,   &fo_arcview_conf },
   { "SortMonthList",           handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG,   &fo_arcview_conf },
   { "DateFormatList",          handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG,   &fo_arcview_conf },
@@ -211,9 +211,11 @@ t_conf_opt fo_arcview_options[] = {
   { "CacheLevel",              handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG,   &fo_arcview_conf },
   { "CacheDir",                handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG,   &fo_arcview_conf },
   { "QuotingChars",            handle_command,   CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_NEEDED|CFG_OPT_UNIQUE, &fo_arcview_conf },
-  { "</General>", NULL, 0, NULL },
+  { "MaxSigLines",             handle_command,   CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_UNIQUE,                &fo_arcview_conf },
+  { "ShowSig",                 handle_command,   CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_UNIQUE,                &fo_arcview_conf },
+  { "</General>", NULL, CFG_OPT_CONFIG, NULL },
 
-  { "<Templates>", NULL, 0, NULL },
+  { "<Templates>", NULL, CFG_OPT_CONFIG, NULL },
   { "FatalTemplate",           handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG,   &fo_arcview_conf },
   { "YearsTemplate",           handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG,   &fo_arcview_conf },
   { "YearListTemplate",        handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG,   &fo_arcview_conf },
@@ -224,7 +226,7 @@ t_conf_opt fo_arcview_options[] = {
   { "ThreadListTemplate",      handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG,   &fo_arcview_conf },
   { "PerThreadTemplate",       handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG,   &fo_arcview_conf },
   { "UpDownTemplate",          handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG,   &fo_arcview_conf },
-  { "</Templates>", NULL, 0, NULL },
+  { "</Templates>", NULL, CFG_OPT_CONFIG, NULL },
 
   { NULL, NULL, 0, NULL }
 };
@@ -232,13 +234,13 @@ t_conf_opt fo_arcview_options[] = {
 
 /* {{{ vote options */
 t_conf_opt fo_vote_options[] = {
-  { "<Filters>", NULL, 0, NULL },
+  { "<Filters>", NULL, CFG_OPT_CONFIG, NULL },
   { "AddFilter",                add_module,       CFG_OPT_CONFIG,                  &Modules        },
-  { "</Filters>", NULL, 0, NULL },
+  { "</Filters>", NULL, CFG_OPT_CONFIG, NULL },
 
-  { "<General>", NULL, 0, NULL },
+  { "<General>", NULL, CFG_OPT_CONFIG, NULL },
   { "VotingDatabase",           handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG,   &fo_vote_conf    },
-  { "</General>", NULL, 0, NULL },
+  { "</General>", NULL, CFG_OPT_CONFIG, NULL },
 
   { NULL, NULL, 0, NULL }
 };
