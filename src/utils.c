@@ -165,7 +165,7 @@ int cf_make_path(const u_char *path,mode_t mode) {
   u_char *mpath = strdup(path);
   register u_char *ptr;
 
-  for(ptr=mpath;*ptr;++ptr) {
+  for(ptr=mpath+1;*ptr;++ptr) {
     if(*ptr == '/') {
       *ptr = '\0';
 
