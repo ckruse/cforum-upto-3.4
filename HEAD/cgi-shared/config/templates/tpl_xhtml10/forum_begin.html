@@ -158,8 +158,9 @@
               </form>
               <p>
                 <b>QuickLink:</b><br />{if $authed}
-                <a href="{$ubase}?a=nd">Gelöschte Threads einblenden</a>
-                {endif}<a href="{$userconfig}"{if $frame} onclick="window.open(this,'_top'); return false;"{endif}>{if $authed}Benutzer-Administration{else}Benutzer-Registrierung{endif}</a><br />{if !$authed}
+                <a href="{$ubase}?a=nd">Ausgeblendete Threads anzeigen</a>
+{endif}
+                <a href="{$userconfig}"{if $frame} onclick="window.open(this,'_top'); return false;"{endif}>{if $authed}Benutzer-Administration{else}Benutzer-Registrierung{endif}</a><br />{if !$authed}
                 <a href="{$ubase}"{if $frame} onclick="window.open(this,'_top'); return false;"{endif}>Benutzerspezifische Ansicht</a><br />{endif}{if $admin}{if $aaf}
                 <a href="{$ubase}"{if $frame} onclick="window.open(this,'_top'); return false;"{endif}>Administrator-Ansicht deaktivieren</a>{else}<a href="{$ubase}?aaf=1"{if $frame} onclick="window.open(this,'_top'); return false;"{endif}>Administrator-Ansicht</a>{endif}<br />{endif}
                 <a href="http://selfforum.selfhtml.com.fr/"{if $frame} onclick="window.open(this,'_top'); return false;"{endif}>en fran&ccedil;ais!</a><br />
