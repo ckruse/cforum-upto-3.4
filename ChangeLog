@@ -1,3 +1,7 @@
+2005-02-18 Christian Seiler <self@christian-seiler.de>
+	* scripts/fo_userconf.in: Small bugfix + implemented feature request
+		#207 (http://bugs.selfhtml.org/bug.php?op=show&bugid=207)
+
 2005-02-17 Christian Seiler <self@christian-seiler.de>
 	* conf/fo_post.conf.in: Added spellchecker configuration directives
 	* src/modules/flt_spellcheck.c: First implementation of a

@@ -246,7 +246,13 @@ sub generate_edit_output {
       my $section  = new CForum::Template(get_template($fo_default_conf,$user_config,get_conf_val($fo_userconf_conf,$Forum,'SectEntry')));
       my $updown   = new CForum::Template(get_template($fo_default_conf,$user_config,get_conf_val($fo_userconf_conf,$Forum,'UpDown')));
       my @sections = $node->findnodes('./section');
-
+      
+      my $pageinfo = new CForum::Template::t_cf_tpl_variable(3);
+      $pageinfo->addvalue($page);
+      $pageinfo->addvalue($node->getAttribute('title'));
+      $tpl->setvar('current_page',$pageinfo);
+      
+      my $sectinfos = new CForum::Template::t_cf_tpl_variable(3);
       foreach my $sect (@sections) {
         my @nodes  = $sect->findnodes('./directive');
         my $tmptxt = '';
@@ -256,6 +262,11 @@ sub generate_edit_output {
           $txt .= $updown->parseToMem;
           $ud = 0;
         }
+        
+        my $sectinfo = new CForum::Template::t_cf_tpl_variable(3);
+        $sectinfo->addvalue('a'.$i);
+        $sectinfo->addvalue($sect->getAttribute('name'));
+        $sectinfos->add($sectinfo);
 
         foreach my $directive (@nodes) {
           my $dname     = $directive->getAttribute('name');
@@ -283,6 +294,8 @@ sub generate_edit_output {
         $txt .= $section->parseToMem;
         $ud = 1;
       }
+      
+      $tpl->setvar('sections',$sectinfos);
     }
   }
 
@@ -400,7 +413,7 @@ if($UserName) {
   $user_config = read_configuration($cfile) or die $!;
 }
 else {
-  print $cgi->redirect($fo_default_conf->{UserRegister}->[0]->[0]);
+  print $cgi->redirect($fo_default_conf->{$Forum}->{UserRegister}->[0]->[0]);
   exit;
 }
 # }}}
