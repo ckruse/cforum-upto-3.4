@@ -307,7 +307,7 @@ void cf_error_message(const u_char *err,FILE *out, ...) {
 
       if(Msgs == NULL) {
         if((ret = db_create(&Msgs,NULL,0)) == 0) {
-          if((ret = Msgs->open(Msgs,NULL,db->values[0],NULL,DB_BTREE,0,0)) != 0) {
+          if((ret = Msgs->open(Msgs,NULL,db->values[0],NULL,DB_BTREE,DB_RDONLY,0)) != 0) {
             fprintf(stderr,"DB->open(%s) error: %s\n",db->values[0],db_strerror(ret));
           }
         }
@@ -407,7 +407,7 @@ u_char *cf_get_error_message(const u_char *err,size_t *len, ...) {
 
     if(Msgs == NULL) {
       if((ret = db_create(&Msgs,NULL,0)) == 0) {
-        if((ret = Msgs->open(Msgs,NULL,db->values[0],NULL,DB_BTREE,0,0)) != 0) {
+        if((ret = Msgs->open(Msgs,NULL,db->values[0],NULL,DB_BTREE,DB_RDONLY,0)) != 0) {
           fprintf(stderr,"DB->open(%s) error: %s\n",db->values[0],db_strerror(ret));
         }
       }

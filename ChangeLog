@@ -10,6 +10,7 @@
 	* src/modules/flt_remotesignature.c: Moved to 3.0 API, debugged it
 	* src/defines.h: Invented new symbol CF_VERSION
 	* src/fo_post.h: Added prototype for body_plain2coded()
+	* src/clientlib.c: Added DB_RDONLY flag to db->open() call
 
 2005-01-20 Christian Seiler <self@christian-seiler.de>
 	* src/template.h: added cf_tpl_var_clone prototype
