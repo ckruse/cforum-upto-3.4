@@ -86,7 +86,6 @@ void flt_sorting_sort_msgs(t_hierarchical_node *h) {
   size_t i;
 
   array_sort(&h->childs,flt_sorting_msgs_cmp);
-
   for(i=0;i<h->childs.elements;++i) flt_sorting_sort_msgs(array_element_at(&h->childs,i));
 }
 /* }}} */
@@ -116,10 +115,11 @@ int flt_sorting_sort(t_cf_hash *head,t_configuration *dc,t_configuration *vc,voi
 }
 /* }}} */
 
+/* {{{ flt_sorting_sort_thread */
 #ifndef CF_SHARED_MEM
-int flt_sorting_sort_thread(t_cf_hash *head,int sock,rline_t *tsd,t_cl_thread *thread)
+int flt_sorting_sort_thread(t_cf_hash *head,t_configuration *vc,t_configuration *dc,int sock,rline_t *tsd,t_cl_thread *thread)
 #else
-int flt_sorting_sort_thread(t_cf_hash *head,void *shm_ptr,t_cl_thread *thread)
+int flt_sorting_sort_thread(t_cf_hash *head,t_configuration *vc,t_configuration *dc,void *shm_ptr,t_cl_thread *thread)
 #endif
 {
   if(flt_sorting_sort_messages != -1) {
@@ -129,6 +129,7 @@ int flt_sorting_sort_thread(t_cf_hash *head,void *shm_ptr,t_cl_thread *thread)
 
   return FLT_OK;
 }
+/* }}} */
 
 /* {{{ flt_sorting_cfg */
 int flt_sorting_cfg(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {

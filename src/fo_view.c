@@ -154,6 +154,8 @@ void show_posting(t_cf_hash *head,void *shm_ptr,u_int64_t tid,u_int64_t mid)
   char buff[128];
   int del = cf_hash_get(GlobalValues,"ShowInvisible",13) == NULL ? CF_KILL_DELETED : CF_KEEP_DELETED;
 
+  memset(&thread,0,sizeof(thread));
+
 
   if(cf_strcmp(rm->values[0],"thread") == 0)          fo_thread_tpl = cfg_get_first_value(&fo_view_conf,forum_name,"TemplateForumThread");
   else if(cf_strcmp(rm->values[0],"threadlist") == 0) fo_thread_tpl = cfg_get_first_value(&fo_view_conf,forum_name,"TemplateForumThreadList");
@@ -220,10 +222,12 @@ void show_posting(t_cf_hash *head,void *shm_ptr,u_int64_t tid,u_int64_t mid)
 
   printf("Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
 
+  #ifndef CF_NO_SORTING
   #ifdef CF_SHARED_MEM
   cf_run_thread_sorting_handlers(head,shm_ptr,&thread);
   #else
   cf_run_thread_sorting_handlers(head,sock,&tsd,&thread);
+  #endif
   #endif
 
   if(cf_run_posting_handlers(head,&thread,&tpl,&fo_view_conf) != FLT_EXIT) cf_tpl_parse(&tpl);
