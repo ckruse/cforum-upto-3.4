@@ -191,12 +191,8 @@ t_conf_opt fo_arcview_options[] = {
   { "FatalTemplate",           handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL,   &fo_arcview_conf },
   { "YearsTemplate",           handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL,   &fo_arcview_conf },
   { "MonthsTemplate",          handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL,   &fo_arcview_conf },
-  { "MonthsListTemplate",      handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL,   &fo_arcview_conf },
-  { "ThreadListMonthTemplate", handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL,   &fo_arcview_conf },
   { "ThreadTemplate",          handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL,   &fo_arcview_conf },
   { "ThreadListTemplate",      handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL,   &fo_arcview_conf },
-  { "PerThreadTemplate",       handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL,   &fo_arcview_conf },
-  { "UpDownTemplate",          handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL,   &fo_arcview_conf },
 
   { NULL, NULL, 0, NULL }
 };
