@@ -19,9 +19,9 @@ block "default"
   onstringlist "keywords" highlight "keyword"
   onstringlist "makros" highlight "makro"
 
-  onregexpafter "^[^a-zA-Z0-9]" "^0[0-7](\\.[0-7]*|[0-7]+)" highlight "octnumber"
-  onregexpafter "^[^a-zA-Z0-9]" "^0[xX][0-9A-Fa-f](\\.[0-9A-Fa-f]+|[0-9A-Fa-f]*)" highlight "hexnumber"
-  onregexpafter "^[^a-zA-Z0-9]" "^[0-9](\\.[0-9]+|[0-9]*)" highlight "number"
+  onregexpafter "^[^a-zA-Z0-9]" "^0[0-7]\\.?[0-7]*" highlight "octnumber"
+  onregexpafter "^[^a-zA-Z0-9]" "^0[xX][0-9A-Fa-f]\\.?[0-9A-Fa-f]*" highlight "hexnumber"
+  onregexpafter "^[^a-zA-Z0-9]" "^[0-9]\\.[0-9]*" highlight "number"
 
   onregexp_backref "^&lt;&lt;(`|'|&quot;)?(\\w+)\\1" "heredoc" 2 "string"
 end

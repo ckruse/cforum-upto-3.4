@@ -26,9 +26,9 @@ block "default"
 
   onregexp "^(\\.|\\*=|/=|%=|\\+=|-=|&lt;&lt;=|&gt;(&gt;){1,2}=|&amp;=|^=|\\|=|\\+(\\+)?|--?|~|!|\\*|/|%|&gt;(&gt;){0,2}|(&lt;){1,2}|&lt;=|&gt;=|==|!=|===|!==|(&amp;){1,2}|\\^|\\|{1,2}|\\?|=)" highlight "operator"
 
-  onregexpafter "^[^a-zA-Z0-9]" "^0[0-7](\\.[0-7]*|[0-7]+)" highlight "octnumber"
-  onregexpafter "^[^a-zA-Z0-9]" "^0[xX][0-9A-Fa-f](\\.[0-9A-Fa-f]+|[0-9A-Fa-f]*)" highlight "hexnumber"
-  onregexpafter "^[^a-zA-Z0-9]" "^[0-9](\\.[0-9]+|[0-9]*)" highlight "number"
+  onregexpafter "^[^a-zA-Z0-9]" "^0[0-7]\\.?[0-7]*" highlight "octnumber"
+  onregexpafter "^[^a-zA-Z0-9]" "^0[xX][0-9A-Fa-f]\\.?[0-9A-Fa-f]*" highlight "hexnumber"
+  onregexpafter "^[^a-zA-Z0-9]" "^[0-9]\\.[0-9]*" highlight "number"
 end
 
 block "comment"
