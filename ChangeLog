@@ -1,3 +1,6 @@
+2005-03-01 Christian Seiler <self@christian-seiler.de>
+	* src/perl/Plugins/XMLRPCUserManagement.pm: Fixed small bug
+
 2005-03-01 Christian Kruse <ckruse@wwwtech.de>
 	* conf/errormessages.de.txt: Added two warnings, changed error message
 	* src/modules/flt_directives.c: Added validator function

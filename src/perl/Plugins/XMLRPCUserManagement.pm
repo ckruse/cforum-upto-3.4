@@ -22,7 +22,7 @@ use strict;
 
 sub VERSION {(q$Revision$ =~ /([\d.]+)\s*$/)[0] or '0.0'}
 
-use ForumUtils qw/get_config_files get_user_config_file create_directory_structure/;
+use ForumUtils qw/get_config_files get_user_config_file create_directory_structure read_configuration/;
 
 use File::Path;
 
