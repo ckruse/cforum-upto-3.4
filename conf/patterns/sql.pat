@@ -28,7 +28,7 @@ block "default"
   onstring "/*" "multilinecomment" "comment"
 
   onstring "'" "qstring" "string"
-  onstring "\"" "string" "prop-string-quoted"
+  onstring "&quot;" "string" "prop-string-quoted"
   onstring "`" "qop" "prop-quoted"
 
   onstringlist "word_operators" highlight "operator"
@@ -51,7 +51,7 @@ end
 
 block "string"
   lineend stay
-  onstring "\\"" highlight "prop-escaped"
+  onstring "\\&quot;" highlight "prop-escaped"
 
   onstring "'%" highlight "escaped"
   onstring "'_" highlight "escaped"
@@ -61,7 +61,7 @@ block "string"
 
   onstring "%" highlight "operator"
   onstring "_" highlight "operator"
-  onstring "\"" pop
+  onstring "&quot;" pop
 end
 
 block "qop"
