@@ -137,7 +137,7 @@ void cf_log(int mode,const u_char *file,unsigned int line,const u_char *format, 
   register u_char *ptr,*ptr1;
 
   #ifndef DEBUG
-  if(mode == CF_DBG) return;
+  if(mode & CF_DBG) return;
   #endif
 
   for(ptr1=ptr=(u_char *)file;*ptr;ptr++) {
@@ -164,31 +164,28 @@ void cf_log(int mode,const u_char *file,unsigned int line,const u_char *format, 
   sz = snprintf(str,300,"[%4d-%02d-%02d %02d:%02d:%02d]:%s:%d ",tm->tm_year+1900,tm->tm_mon+1,tm->tm_mday,tm->tm_hour,tm->tm_min,tm->tm_sec,ptr1,line);
 
   va_start(ap, format);
-  if(mode == CF_ERR) {
+  if(mode & CF_ERR) {
     fwrite(str,sz,1,head.log.err);
     vfprintf(head.log.err,format,ap);
-    fflush(head.log.err);
+    
+    if(mode & CF_FLSH) fflush(head.log.err);
 
     #ifdef DEBUG
     fwrite(str,sz,1,stderr);
     vfprintf(stderr,format,ap);
+    fflush(stderr);
     #endif
   }
-  else if(mode == CF_STD) {
+  else if(mode & CF_STD) {
     fwrite(str,sz,1,head.log.std);
     vfprintf(head.log.std,format,ap);
 
-    /*
-     * we want fflush() only if debugging is enabled
-     * if not, we want to avoid system calls so fflush()
-     * is silly and buffering is ok (stdlog is not critical,
-     * stdlog contains only non-critical infos)
-     */
-    #ifdef DEBUG
-    fflush(head.log.std);
+    if(mode & CF_FLSH) fflush(head.log.std);
 
+    #ifdef DEBUG
     fwrite(str,sz,1,stdout);
     vfprintf(stdout,format,ap);
+    fflush(stdout);
     #endif
   }
   #ifdef DEBUG
@@ -199,7 +196,7 @@ void cf_log(int mode,const u_char *file,unsigned int line,const u_char *format, 
     fwrite("DEBUG: ",7,1,stdout);
     vfprintf(head.log.std,format,ap);
     vfprintf(stdout,format,ap);
-    fflush(head.log.std);
+    if(mode & CF_FLSH) fflush(head.log.std);
     fflush(stdout);
   }
   #endif
@@ -456,13 +453,13 @@ int cf_register_protocol_handler(u_char *handler_hook,t_server_protocol_handler 
 
   if(head.protocol_handlers == NULL) {
     if((head.protocol_handlers = cf_hash_new(NULL)) == NULL) {
-      cf_log(LOG_ERR,__FILE__,__LINE__,"cf_hash_new: %s\n",strerror(errno));
+      cf_log(CF_ERR,__FILE__,__LINE__,"cf_hash_new: %s\n",strerror(errno));
       exit(EXIT_FAILURE);
     }
   }
 
   if(cf_hash_set_static(head.protocol_handlers,handler_hook,strlen(handler_hook),handler) == 0) {
-    cf_log(LOG_ERR,__FILE__,__LINE__,"cf_hash_set: %s\n",strerror(errno));
+    cf_log(CF_ERR,__FILE__,__LINE__,"cf_hash_set: %s\n",strerror(errno));
     return -1;
   }
 
@@ -485,7 +482,7 @@ void cf_register_thread(t_forum *forum,t_thread *t) {
 
 /* {{{ cf_unregister_thread */
 void cf_unregister_thread(t_forum *forum,t_thread *t) {
-  cf_log(LOG_DBG,__FILE__,__LINE__,"unregistering thread %llu...\n",t->tid);
+  cf_log(CF_DBG,__FILE__,__LINE__,"unregistering thread %llu...\n",t->tid);
 
   CF_RW_WR(&forum->threads.lock);
   cf_hash_entry_delete(forum->threads.threads,&t->tid,sizeof(t->tid));
@@ -537,7 +534,7 @@ void cf_cftp_handler(int sockfd) {
 
   while(shallRun) {
     line = readline(sockfd,tsd);
-    cf_log(LOG_DBG,__FILE__,__LINE__,"%s",line?line:(u_char *)"(NULL)\n");
+    cf_log(CF_DBG,__FILE__,__LINE__,"%s",line?line:(u_char *)"(NULL)\n");
 
     if(line) {
       tnum = cf_tokenize(line,&tokens);
@@ -570,16 +567,16 @@ void cf_cftp_handler(int sockfd) {
             u_char *ln = readline(sockfd,tsd);
 
             if(ln == NULL) {
-              cf_log(LOG_ERR,__FILE__,__LINE__,"declined archivation because user name not present\n");
+              cf_log(CF_ERR,__FILE__,__LINE__,"declined archivation because user name not present\n");
               writen(sockfd,"403 Access Denied\n",18);
             }
             if(tnum < 3) {
               writen(sockfd,"500 Sorry\n",10);
-              cf_log(LOG_ERR,__FILE__,__LINE__,"Bad request\n");
+              cf_log(CF_ERR,__FILE__,__LINE__,"Bad request\n");
             }
             else {
               tid      = strtoull(tokens[2]+1,NULL,10);
-              cf_log(LOG_ERR,__FILE__,__LINE__,"archiving thread %lld by user %s",tid,ln);
+              cf_log(CF_ERR,__FILE__,__LINE__,"archiving thread %lld by user %s",tid,ln);
 
               writen(sockfd,"200 Ok\n",7);
 
@@ -599,7 +596,7 @@ void cf_cftp_handler(int sockfd) {
             u_char *ln = readline(sockfd,tsd);
 
             if(ln == NULL) {
-              cf_log(LOG_ERR,__FILE__,__LINE__,"declined deletion because user name not present\n");
+              cf_log(CF_ERR,__FILE__,__LINE__,"declined deletion because user name not present\n");
               writen(sockfd,"403 Access Denied\n",18);
             }
             else if(tnum != 3) {
@@ -613,17 +610,17 @@ void cf_cftp_handler(int sockfd) {
 
               if(!t) {
                 writen(sockfd,"404 Thread Not Found\n",21);
-                cf_log(LOG_ERR,__FILE__,__LINE__,"Thread not found\n");
+                cf_log(CF_ERR,__FILE__,__LINE__,"Thread not found\n");
               }
               else {
                 p = cf_get_posting(t,mid);
 
                 if(!p) {
                   writen(sockfd,"404 Message Not Found\n",22);
-                  cf_log(LOG_ERR,__FILE__,__LINE__,"Message not found\n");
+                  cf_log(CF_ERR,__FILE__,__LINE__,"Message not found\n");
                 }
                 else {
-                  cf_log(LOG_ERR,__FILE__,__LINE__,"Deleted posting %lld in thread %lld by user %s",mid,tid,ln);
+                  cf_log(CF_ERR,__FILE__,__LINE__,"Deleted posting %lld in thread %lld by user %s",mid,tid,ln);
 
                   CF_RW_WR(&t->lock);
 
@@ -656,7 +653,7 @@ void cf_cftp_handler(int sockfd) {
             u_char *ln = readline(sockfd,tsd);
 
             if(ln == NULL) {
-              cf_log(LOG_ERR,__FILE__,__LINE__,"declined undelete because user name not present\n");
+              cf_log(CF_ERR,__FILE__,__LINE__,"declined undelete because user name not present\n");
               writen(sockfd,"403 Access Denied\n",18);
             }
             if(tnum < 3) {
@@ -670,15 +667,15 @@ void cf_cftp_handler(int sockfd) {
 
               if(!t) {
                 writen(sockfd,"404 Thread Not Found\n",21);
-                cf_log(LOG_ERR,__FILE__,__LINE__,"Thread not found\n");
+                cf_log(CF_ERR,__FILE__,__LINE__,"Thread not found\n");
               }
               else {
                 p = cf_get_posting(t,mid);
-                cf_log(LOG_ERR,__FILE__,__LINE__,"Undelete posting %lld in posting %lld by user %lld\n",tid,mid,ln);
+                cf_log(CF_ERR,__FILE__,__LINE__,"Undelete posting %lld in posting %lld by user %lld\n",tid,mid,ln);
 
                 if(!p) {
                   writen(sockfd,"404 Message Not Found\n",22);
-                  cf_log(LOG_ERR,__FILE__,__LINE__,"Message not found\n");
+                  cf_log(CF_ERR,__FILE__,__LINE__,"Message not found\n");
                 }
                 else {
                   CF_RW_WR(&t->lock);
@@ -889,7 +886,7 @@ void *cf_generate_cache(void *arg) {
 /* }}} */
 
 /* {{{ cf_generate_list */
-void cf_generate_list(t_string *str,int del) {
+void cf_generate_list(t_forum *forum,t_string *str,int del) {
   int n;
   u_char buff[500];
   t_thread *t,*t1;
@@ -898,9 +895,9 @@ void cf_generate_list(t_string *str,int del) {
 
   str_chars_append(str,"200 Ok\n",7);
 
-  CF_RW_RD(&head.lock);
-  t1 = head.thread;
-  CF_RW_UN(&head.lock);
+  CF_RW_RD(&forum->threads.lock);
+  t1 = forum->list;
+  CF_RW_UN(&forum->threads.lock);
 
   while(t1) {
     first = 1;
@@ -963,6 +960,202 @@ void cf_generate_list(t_string *str,int del) {
 }
 /* }}} */
 
+#ifdef CF_SHARED_MEM
+/* {{{ cf_shmdt */
+/**
+ * Wrapper function of the shmdt function. Used to log access
+ * to the shared memory segments
+ * \param ptr The pointer to the shared memory segment
+ * \return Returns 0 or -1
+ */
+int cf_shmdt(void *ptr) {
+  cf_log(CF_DBG,__FILE__,__LINE__,"shmdt: detaching %p\n",ptr);
+  return shmdt(ptr);
+}
+/* }}} */
+
+/* {{{ cf_shmat */
+/**
+ * Wrapper function to the shmat() function. Used to
+ * log access to the shared memory segments
+ * \param shmid The shared memory id
+ * \param addr The start address
+ * \param shmflag Flags to the shmat() function
+ * \return NULL on failure, pointer on success
+ */
+void *cf_shmat(int shmid,void *addr,int shmflag) {
+  void *ptr = shmat(shmid,addr,shmflag);
+
+  cf_log(CF_DBG,__FILE__,__LINE__,"shmat: attatching segment %d (%p)\n",shmid,ptr);
+
+  return ptr;
+}
+/* }}} */
+
+/* {{{ cf_generate_shared_memory */
+void cf_generate_shared_memory(t_forum *forum) {
+  t_mem_pool pool;
+  t_thread *t,*t1;
+  t_posting *p;
+  t_name_value *v = cfg_get_first_value(&fo_default_conf,forum->name,"SharedMemIds");
+  u_int32_t val;
+  time_t tm = time(NULL);
+  unsigned short semval;
+
+  mem_init(&pool);
+
+  CF_RW_RD(&forum->threads.lock);
+  t1 = t = forum->threads.list;
+  CF_RW_UN(&forum->threads.lock);
+
+  /*
+   * {{{ CAUTION! Deep magic begins here!
+   */
+
+  mem_append(&pool,&tm,sizeof(t));
+
+  for(;t;t=t1) {
+    CF_RW_RD(&t->lock);
+
+    /* we only need thread id and postings */
+    mem_append(&pool,&(t->tid),sizeof(t->tid));
+    mem_append(&pool,&(t->posts),sizeof(t->posts));
+
+    for(p=t->postings;p;p=p->next) {
+      mem_append(&pool,&(p->mid),sizeof(p->mid));
+
+      val = p->subject_len + 1;
+      mem_append(&pool,&val,sizeof(val));
+      mem_append(&pool,p->subject,val);
+
+      val = p->category_len + 1;
+      if(val > 1) {
+        mem_append(&pool,&val,sizeof(val));
+        mem_append(&pool,p->category,val);
+      }
+      else {
+        val = 0;
+        mem_append(&pool,&val,sizeof(val));
+      }
+
+      val = p->content_len + 1;
+      mem_append(&pool,&val,sizeof(val));
+      mem_append(&pool,p->content,val);
+
+      mem_append(&pool,&(p->date),sizeof(p->date));
+      mem_append(&pool,&(p->level),sizeof(p->level));
+      mem_append(&pool,&(p->invisible),sizeof(p->invisible));
+
+      val = p->user.name_len + 1;
+      mem_append(&pool,&val,sizeof(val));
+      mem_append(&pool,p->user.name,val);
+
+      val = p->user.email_len + 1;
+      if(val > 1) {
+        mem_append(&pool,&val,sizeof(val));
+        mem_append(&pool,p->user.email,val);
+      }
+      else {
+        val = 0;
+        mem_append(&pool,&val,sizeof(val));
+      }
+
+      val = p->user.hp_len + 1;
+      if(val > 1) {
+        mem_append(&pool,&val,sizeof(val));
+        mem_append(&pool,p->user.hp,val);
+      }
+      else {
+        val = 0;
+        mem_append(&pool,&val,sizeof(val));
+      }
+
+      val = p->user.img_len + 1;
+      if(val > 1) {
+        mem_append(&pool,&val,sizeof(val));
+        mem_append(&pool,p->user.img,val);
+      }
+      else {
+        val = 0;
+        mem_append(&pool,&val,sizeof(val));
+      }
+    }
+
+    t1 = t->next;
+    CF_RW_UN(&t->lock);
+    t = t1;
+  }
+
+  /*
+   * Phew. Deep magic ends
+   * }}}
+   */
+
+
+  /* lets go surfin' */
+  CF_LM(&forum->shm.lock);
+
+  if(cf_sem_getval(forum->shm.sem,0,1,&semval) == -1) {
+    cf_log(CF_ERR,__FILE__,__LINE__,"cf_sem_getval: %s\n",strerror(errno));
+    exit(-1);
+  }
+
+  /* semval contains now the number of the shared memory segment *not* used */
+  if(semval != 0 && semval != 1) {
+    cf_log(CF_ERR,__FILE__,__LINE__,"hu? what happened? semval is %d\n",semval);
+    semval = 0;
+  }
+
+  cf_log(CF_DBG,__FILE__,__LINE__,"shm_ids[%d]: %ld\n",semval,forum->shm.ids[semval]);
+
+  /* does the segment already exists? */
+  if(forum->shm.ids[semval] != -1) {
+    /* yeah, baby, yeah! */
+
+    cf_log(CF_DBG,__FILE__,__LINE__,"shm_ptrs[%d]: %p\n",semval,forum->shm.ptrs[semval]);
+
+    /* oh behave! detach the memory */
+    if(forum->shm.ptrs[semval]) {
+      if(cf_shmdt(forum->shm.ptrs[semval]) != 0) {
+        cf_log(CF_ERR,__FILE__,__LINE__,"shmdt: %s (semval: %d)\n",strerror(errno),semval);
+        CF_UM(&head.shm_lock);
+        mem_cleanup(&pool);
+        return;
+      }
+    }
+
+    /* delete the segment */
+    if(shmctl(forum->shm.ids[semval],IPC_RMID,NULL) != 0) {
+      cf_log(CF_ERR,__FILE__,__LINE__,"shmctl: %s\n",strerror(errno));
+      CF_UM(&head.shm_lock);
+      mem_cleanup(&pool);
+      return;
+    }
+  }
+
+  if((forum->shm.ids[semval] = shmget(atoi(v->values[semval]),pool.len,IPC_CREAT|CF_SHARED_MODE)) == -1) {
+    cf_log(CF_ERR,__FILE__,__LINE__,"shmget: %s\n",strerror(errno));
+    exit(EXIT_FAILURE);
+  }
+
+  if((forum->shm.ptrs[semval] = cf_shmat(forum->shm.ids[semval],NULL,0)) == NULL) {
+    cf_log(CF_ERR,__FILE__,__LINE__,"shmat: %s\n",strerror(errno));
+    exit(EXIT_FAILURE);
+  }
+
+  memcpy(forum->shm.ptrs[semval],pool.content,pool.len);
+
+  mem_cleanup(&pool);
+
+  if(semval == 1) CF_SEM_DOWN(head.shm_sem,0);
+  else CF_SEM_UP(head.shm.sem,0);
+
+  CF_UM(&forum->shm.lock);
+
+  cf_log(CF_DBG,__FILE__,__LINE__,"generated shared memory segment %d\n",semval);
+}
+/* }}} */
+#endif
 
 /* eof */
 

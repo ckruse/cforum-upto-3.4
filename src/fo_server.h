@@ -138,7 +138,7 @@ typedef struct s_forum {
     t_cf_hash *threads;
 
     /** The thread list */
-    t_thread *threads;
+    t_thread *list;
 
     /** The last tid */
     u_int64_t last_tid;

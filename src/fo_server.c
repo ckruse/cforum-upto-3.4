@@ -120,12 +120,15 @@ int main(int argc,char *argv[]) {
 
   int c,
       sock,
+      connfd,
       error = 1,
       daemonize = 0,
       start_threads = 0,
       spare_threads = 0;
 
   size_t i;
+
+  fd_set rfds;
 
   u_char *pidfile = NULL,
          *cfgfile;
@@ -141,9 +144,12 @@ int main(int argc,char *argv[]) {
 
   t_forum *actforum;
 
+  t_cf_list_element *elem;
+  t_server *srv;
   pthread_attr_t attr;
   pthread_t thread;
   struct sockaddr_un addr;
+  struct timeval timeout;
 
   /* {{{ initialize  variables */
   cf_rwlock_init("head.lock",&head.lock);
@@ -224,6 +230,30 @@ int main(int argc,char *argv[]) {
     pidfile    = strdup(pidfile_nv->values[0]);
   }
 
+  /* be sure that only one instance runs */
+  setup_server_environment(pidfile);
+
+  /* {{{ ok, go through each forum, register it and read it's data...
+   *
+   * this can take a while, maybe we should send a message to the user?
+   */
+  forums = cfg_get_first_value(&fo_server_conf,NULL,"Forums");
+  for(i=0;i<forums->valnum;i++) {
+    if((actforum = cf_register_forum(forums->values[i])) == NULL) {
+      cf_log(CF_ERR,__FILE__,__LINE__,"could not register forum %s\n",forums->values[i]);
+      continue;
+    }
+
+    if(cf_load_data(actforum) == -1) {
+      cf_log(CF_ERR,__FILE__,__LINE__,"could not load data for forum %s!\n",forums->values[i]);
+      error = 1;
+      break;
+    }
+
+    cf_log(CF_STD,__FILE__,__LINE__,"Loaded data for forum %s\n",forums->values[i]);
+  }
+  /* }}} */
+
   /* {{{ become a deamon */
   /* shall we daemonize? */
   if(daemonize) {
@@ -245,10 +275,7 @@ int main(int argc,char *argv[]) {
         exit(0);
     }
   }
-  /* }}} */
-
-  /* be sure that only one instance runs */
-  setup_server_environment(pidfile);
+   /* }}} */
 
   /* {{{ we need no standard streams any longer */
   if(daemonize) {
@@ -258,23 +285,8 @@ int main(int argc,char *argv[]) {
   }
   /* }}} */
 
-  /* {{{ ok, go through each forum, register it and read it's data... */
-  forums = cfg_get_first_value(&fo_server_conf,NULL,"Forums");
-  for(i=0;i<forums->valnum;i++) {
-    if((actforum = cf_register_forum(forums->values[i])) == NULL) {
-      cf_log(CF_ERR,__FILE__,__LINE__,"could not register forum %s\n",forums->values[i]);
-      continue;
-    }
-
-    if(cf_load_data(actforum) == -1) {
-      cf_log(CF_ERR,__FILE__,__LINE__,"could not load data for forum %s!\n",forums->values[i]);
-      error = 1;
-      break;
-    }
-
-    cf_log(CF_STD,__FILE__,__LINE__,"Loaded data for forum %s\n",forums->values[i]);
-  }
-  /* }}} */
+  /* go and load shared memory/cache data */
+  cf_generate_cache(NULL);
 
   /* {{{ more initialization (some threading options, starting of the worker threads, etc, pp) */
   if(error == 0) {
@@ -332,8 +344,64 @@ int main(int argc,char *argv[]) {
   sock = cf_setup_socket(&addr);
   cf_push_server(sock,&addr,sizeof(addr),cf_cftp_handler);
 
+  cf_log(CF_STD|CF_FLUSH,__FILE__,__LINE__,"Read config, load data, set up socket and generated caches. Now listening...\n");
+
   /* {{{ main loop */
   while(RUN) {
+    /* set the fdset */
+    FD_ZERO(&rfds);
+
+    /* {{{ fill the fdset with the server sockets */
+    CF_LM(&head.servers.lock);
+
+    for(elem = head.servers.list.elements;elem;elem = elem->next) {
+      srv = (t_server *)elem->data;
+
+      if(sock < srv->sock) sock = srv->sock;
+      FD_SET(srv->sock,&rfds);
+    }
+
+    CF_UM(&head.servers.lock);
+    /* }}} */
+
+    /*
+     * since linux developers had the silly idea to modify
+     * the timeout struct of select(), we have to re-initialize
+     * it in each loop
+     */
+    memset(&timeout,0,sizeof(struct timeval));
+
+    /* check every 10 seconds if we shall exit */
+    timeout.tv_sec = 10;
+
+    /* wait for incoming connections */
+    ret = select(sockfd+1,&rfds,NULL,NULL,&timeout);
+
+    /* timeout? */
+    if(ret > 0) {
+      /* {{{ get the connection */
+      CF_LM(&head.servers.lock);
+
+      for(elem=head.servers.list.elements;elem;elem=elem->next) {
+        srv = (t_server *)elem->data;
+
+        if(FD_ISSET(srv->sock,&rfds)) {
+          size   = srv->size;
+          connfd = accept(srv->sock,srv->addr,&size);
+
+          /* accept-error? */
+          if(connfd <= 0) {
+            cf_log(LOG_ERR,__FILE__,__LINE__,"accept: %s\n",strerror(errno));
+            continue;
+          }
+
+          cf_push_client(connfd,srv->worker);
+        }
+      }
+
+      CF_UM(&head.server_lock);
+      /* }}} */
+    }
 
   }
   /* }}} */

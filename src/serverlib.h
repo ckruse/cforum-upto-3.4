@@ -39,4 +39,12 @@ int cf_register_protocol_handler(u_char *handler_hook,t_server_protocol_handler 
 int cf_tokenize(u_char *line,u_char ***tokens);
 void cf_cftp_handler(int sockfd);
 
+int cf_shmdt(void *ptr);
+void *cf_shmat(int shmid,void *addr,int shmflag);
+
+void cf_generate_list(t_forum *forum,t_string *str,int del);
+void cf_generate_shared_memory(t_forum *forum);
+void *cf_generate_cache(void *arg);
+
+
 /* eof */
