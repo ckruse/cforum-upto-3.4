@@ -333,19 +333,21 @@ void send_threadlist(void *shm_ptr,t_cf_hash *head) {
     #else
     while((ptr1 = cf_get_next_thread_through_shm(ptr1,&thread,fo_thread_tplname)) != NULL) {
     #endif
-      if((thread.messages->invisible == 0 && thread.messages->may_show) || del == CF_KEEP_DELETED) {
-        tpl_cf_setvar(&thread.messages->tpl,"start","1",1,0);
+      if(thread.messages) {
+        if((thread.messages->invisible == 0 && thread.messages->may_show) || del == CF_KEEP_DELETED) {
+          tpl_cf_setvar(&thread.messages->tpl,"start","1",1,0);
 
-        len = snprintf(buff,128,"%d",thread.msg_len);
-        tpl_cf_setvar(&thread.messages->tpl,"msgnum",buff,len,0);
+          len = snprintf(buff,128,"%d",thread.msg_len);
+          tpl_cf_setvar(&thread.messages->tpl,"msgnum",buff,len,0);
 
-        len = snprintf(buff,128,"%d",thread.msg_len-1);
-        tpl_cf_setvar(&thread.messages->tpl,"answers",buff,len,0);
+          len = snprintf(buff,128,"%d",thread.msg_len-1);
+          tpl_cf_setvar(&thread.messages->tpl,"answers",buff,len,0);
 
-        ret = handle_thread(&thread,head,0);
-        if(ret == FLT_OK || ret == FLT_DECLINE || del == CF_KEEP_DELETED) print_thread_structure(&thread,head);
+          ret = handle_thread(&thread,head,0);
+          if(ret == FLT_OK || ret == FLT_DECLINE || del == CF_KEEP_DELETED) print_thread_structure(&thread,head);
 
-        cleanup_struct(&thread);
+          cleanup_struct(&thread);
+        }
       }
     }
 
@@ -398,6 +400,7 @@ void sighandler(int segnum) {
     fclose(fd);
   }
 
+  exit(0);
 }
 /* }}} */
 

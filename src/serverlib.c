@@ -643,7 +643,7 @@ void cf_handle_request(int sockfd) {
                 cf_log(LOG_ERR,__FILE__,__LINE__,"Message not found\n");
               }
               else {
-                cf_log(LOG_ERR,__FILE__,__LINE__,"Deleted posting %lld in thread %lld by user %s\n",tid,mid,ln);
+                cf_log(LOG_ERR,__FILE__,__LINE__,"Deleted posting %lld in thread %lld by user %s",tid,mid,ln);
 
                 CF_RW_WR(&t->lock);
 

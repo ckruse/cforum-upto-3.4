@@ -1008,6 +1008,7 @@ void sighandler(int segnum) {
     fclose(fd);
   }
 
+  exit(0);
 }
 /* }}} */
 

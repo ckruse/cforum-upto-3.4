@@ -331,6 +331,7 @@ int flt_lf_form(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cf_tem
 
     if(head) {
       if((filter_str = cf_cgi_get(head,"lf")) != NULL) {
+        cf_hash_set(GlobalValues,"openclose",9,"0",1);
         pos = filter_str;
         flt_lf_parse_string(filter_str,&pos,begin,NULL,NULL,dc);
         tpl_cf_setvar(begin,"lf",filter_str,strlen(filter_str),1);
@@ -571,9 +572,6 @@ int flt_lf_filter(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_mess
     if(flt_lf_first && flt_lf_success) {
       if(flt_lf_evaluate(flt_lf_first,msg,tid) == 0) {
         msg->may_show = 0;
-      }
-      else {
-        msg->may_show = -1;
       }
     }
 

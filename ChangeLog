@@ -1,8 +1,21 @@
+2004-06-22 Christian Kruse <ckruse@wwwtech.de>
+	* src/modules/flt_livefilter.c: Filter now sets 'openclose' to a true value
+		to avoid closing of threads in livefilter mode
+	* src/modules/flt_openclose.c: Filter now recognizes 'openclose' value in
+		the global values hash. If it is set, threads will not get closed.
+	* src/fo_view.c, src/fo_arcview.c: Added exit() call in signal handler
+	* src/fo_view.c: Fixed bug in message handling
+	* src/serverlib.c: stripped additional newline from log line
+
+2004-06-21 Christian Kruse <ckruse@wwwtech.de>
+	* cgi-shared/config/modules.xml: Added optional deactivation of the
+		Tip-Of-The-Day filter
+
 2004-06-21 Jan Rieger <jr@occuris.de>
 	* src/templates/tpl_*/*.html:
 	  Changed copyright notice
 
-2004-06-20 Christian Kruse <ckruseqwwwtech.de>
+2004-06-20 Christian Kruse <ckruse@wwwtech.de>
 	* src/Makefile.am: Added fo_post
 	* src/utils.[ch], src/fo_view.c, src/configparser.c, src/configparser.h:
 		Rename from t_list to t_cf_list

@@ -744,6 +744,8 @@ int main(int argc,char *argv[],char *env[]) {
   }
 
   cs = cfg_get_first_value(&fo_default_conf,"ExternCharset");
+  printf("exit\n");
+  exit(0);
 
   if(ret != FLT_EXIT) {
     /* fine -- lets spit out http headers */

@@ -176,6 +176,11 @@ int execute_filter(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cl_
         }
       }
 
+      /* shall we close threads? Other filters can tell us not to do
+       * this.
+       */
+      if(cf_hash_get(GlobalValues,"openclose",9) != NULL) return FLT_DECLINE;
+
       /* Ok, thread should normaly be closed. But lets check for new posts */
       if(OpenThreadIfNew) {
         if((is_visited = cf_get_mod_api_ent("is_visited")) != NULL) {

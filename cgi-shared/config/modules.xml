@@ -293,6 +293,19 @@
           </formvalues>
         </argument>
       </directive>
+
+      <directive name="TipOfTheDayActivate" arguments="1">
+        <argument paramname="totdactivate" type="radio" encode="plain">
+          <validate>^(?:yes|no)$</validate>
+          <question>Sollen die Tips des Tages angezeigt werden?</question>
+          <error>Sollen die Tips des Tages angezeigt werden? Bitte geben Sie &quot;Ja&quot; oder &quot;Nein&quot; an!</error>
+          <formvalues>
+            <value val="yes" default="yes">Ja</value>
+            <value val="no">Nein</value>
+          </formvalues>
+        </argument>
+      </directive>
+
     </section>
   </page>
 
