@@ -283,11 +283,11 @@ int normalize_cgi_variables(t_cf_hash *head,const u_char *field_name) {
               // \xE2\x80[\x80-\x8B\xA8-\xAF] are unicode whitespaces
               else if(cf_strncmp(ptr,"\xE2\x80",2) == 0) {
                 c = *(ptr+3);
-                if((c < 0x80 || c > 0x8B) && (c < 0xA8 || c > 0xAF)) str_char_append(&str,*ptr);
-                else {
+                if((c >= 0x80 && c <= 0x8B) || (c >= 0xA8 || c <= 0xAF)) {
                   str_char_append(&str,' ');
                   ptr += 2;
                 }
+                else str_char_append(&str,*ptr);
               }
               else str_char_append(&str,*ptr);
             }
@@ -322,11 +322,11 @@ int normalize_cgi_variables(t_cf_hash *head,const u_char *field_name) {
               // \xE2\x80[\x80-\x8B\xA8-\xAF] are unicode whitespaces
               else if(cf_strncmp(ptr,"\xE2\x80",2) == 0) {
                 c = *(ptr+3);
-                if((c < 0x80 || c > 0x8B) && (c < 0xA8 || c > 0xAF)) str_char_append(&str,*ptr);
-                else {
+                if((c >= 0x80 && c <= 0x8B) || (c >= 0xA8 || c <= 0xAF)) {
                   str_char_append(&str,' ');
                   ptr += 2;
                 }
+                else str_char_append(&str,*ptr);
               }
               else str_char_append(&str,*ptr);
             }
@@ -516,7 +516,6 @@ t_string *body_plain2coded(const u_char *text) {
         }
 
         break;
-
       case '[':
         /* transform only if [message:] */
         if(cf_strncmp(ptr+1,"message:",8) == 0) {
