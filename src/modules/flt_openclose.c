@@ -282,9 +282,9 @@ int flt_oc_get_conf(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_
 /* }}} */
 
 t_conf_opt flt_openclose_config[] = {
-  { "ThreadsOpenByDefault", flt_oc_get_conf, CFG_OPT_CONFIG|CFG_OPT_USER, NULL },
-  { "UseJavaScript",        flt_oc_get_conf, CFG_OPT_CONFIG|CFG_OPT_USER, NULL },
-  { "OpenThreadIfNew",      flt_oc_get_conf, CFG_OPT_CONFIG|CFG_OPT_USER, NULL },
+  { "ThreadsOpenByDefault", flt_oc_get_conf, CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
+  { "UseJavaScript",        flt_oc_get_conf, CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
+  { "OpenThreadIfNew",      flt_oc_get_conf, CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
   { NULL, NULL, 0, NULL }
 };
 

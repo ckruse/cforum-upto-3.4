@@ -147,4 +147,9 @@ flt_xmlstorage_la_LIBADD=$(GDOME_LIBS)
 flt_xmlstorage_la_LDFLAGS=-module -export-dynamic -avoid-version
 
 
+pkglib_LTLIBRARIES+=flt_sorting.la
+flt_sorting_la_SOURCES=flt_sorting.c
+flt_sorting_la_LDFLAGS=-module -export-dynamic -avoid-version
+
+
 # eof

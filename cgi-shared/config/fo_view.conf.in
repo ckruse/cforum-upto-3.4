@@ -9,7 +9,7 @@
 # $LastChangedBy$
 #
 
-ModulePath "@libdir@"
+ModulePath "@libdir@/cforum"
 
 Load "flt_tplmode"
 Load "flt_http"
@@ -21,7 +21,7 @@ Load "flt_listhighlight"
 Load "flt_category"
 Load "flt_deleted"
 Load "flt_visited"
-Load "flt_owncss"
+Load "flt_include"
 Load "flt_livefilter"
 Load "flt_httpauth"
 Load "flt_admin"
@@ -30,6 +30,7 @@ Load "flt_threadreturnanchor"
 Load "flt_handle404"
 Load "flt_motd"
 Load "flt_tipoftheday"
+Load "flt_sorting"
 
 
 Forum FORUM1 {

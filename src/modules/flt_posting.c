@@ -375,7 +375,6 @@ int flt_posting_pre_cnt(t_configuration *dc,t_configuration *vc,t_cl_thread *thr
 }
 /* }}} */
 
-/* {{{ module configuration */
 /* {{{ flt_posting_handle_greet */
 int flt_posting_handle_greet(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
   u_char *tmp = strdup(args[0]);
@@ -456,29 +455,24 @@ void flt_posting_cleanup(void) {
 }
 /* }}} */
 
-/* {{{ t_conf_opt config[] */
 t_conf_opt flt_posting_config[] = {
-  { "Hi",                 flt_posting_handle_greet,    CFG_OPT_CONFIG|CFG_OPT_USER, NULL },
-  { "Bye",                flt_posting_handle_greet,    CFG_OPT_CONFIG|CFG_OPT_USER, NULL },
-  { "Signature",          flt_posting_handle_greet,    CFG_OPT_CONFIG|CFG_OPT_USER, NULL },
-  { "TextBox",            flt_posting_handle_box,      CFG_OPT_CONFIG|CFG_OPT_USER, NULL },
-  { "GeneratePreview",    flt_posting_handle_prev,     CFG_OPT_CONFIG|CFG_OPT_USER, NULL },
-  { "PreviewSwitchType",  flt_posting_handle_prevt,    CFG_OPT_CONFIG|CFG_OPT_USER, NULL },
-  { "ActivePostingColor", flt_posting_handle_actpcol,  CFG_OPT_CONFIG|CFG_OPT_USER, NULL },
+  { "Hi",                 flt_posting_handle_greet,    CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
+  { "Bye",                flt_posting_handle_greet,    CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
+  { "Signature",          flt_posting_handle_greet,    CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
+  { "TextBox",            flt_posting_handle_box,      CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
+  { "GeneratePreview",    flt_posting_handle_prev,     CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
+  { "PreviewSwitchType",  flt_posting_handle_prevt,    CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
+  { "ActivePostingColor", flt_posting_handle_actpcol,  CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
   { NULL, NULL, 0, NULL }
 };
-/* }}} */
 
-/* {{{ t_handler_config handlers[] */
 t_handler_config flt_posting_handlers[] = {
   { POSTING_HANDLER,     flt_posting_execute_filter },
   { PRE_CONTENT_FILTER,  flt_posting_pre_cnt        },
   { POST_CONTENT_FILTER, flt_posting_post_cnt       },
   { 0, NULL }
 };
-/* }}} */
 
-/* {{{ t_module_config flt_posting */
 t_module_config flt_posting = {
   flt_posting_config,
   flt_posting_handlers,
@@ -487,7 +481,5 @@ t_module_config flt_posting = {
   NULL,
   flt_posting_cleanup
 };
-/* }}} */
-/* }}} */
 
 /* eof */

@@ -49,14 +49,15 @@ int cf_get_threadlist(t_array *ary,void *ptr,const u_char *tplname)
   t_cl_thread thread;
   array_init(ary,sizeof(thread),cf_cleanup_thread);
 
-  memset(&thread,0,sizeof(thread));
-
   #ifndef CF_SHARED_MEM
   while(cf_get_next_thread_through_sock(sock,&tsd,&thread,tplname) == 0)
   #else
   while((ptr = cf_get_next_thread_through_shm(ptr,&thread,tplname)) != NULL)
   #endif
+  {
     array_push(ary,&thread);
+    memset(&thread,0,sizeof(thread));
+  }
 
   return 0;
 }
@@ -85,6 +86,7 @@ int cf_get_next_thread_through_sock(int sock,rline_t *tsd,t_cl_thread *thr,const
 
         thr->messages           = fo_alloc(NULL,1,sizeof(t_message),FO_ALLOC_CALLOC);
         thr->last               = thr->messages;
+	thr->newest             = thr->messages;
         thr->last->mid          = str_to_u_int64(&line[chtmp-line+1]);
         thr->messages->may_show = 1;
         thr->msg_len            = 1;
@@ -123,10 +125,13 @@ int cf_get_next_thread_through_sock(int sock,rline_t *tsd,t_cl_thread *thr,const
 
 	cf_list_append(&thr->last->flags,&flag,sizeof(flag));
       }
+      else if(cf_strncmp(line,"Date:",5) == 0) {
+	thr->last->date = strtoul(line+5,NULL,10);
+	if(thr->last->date > thr->newest->date) thr->newest = thr->last;
+      }
       else if(cf_strncmp(line,"Author:",7) == 0)   str_char_set(&thr->last->author,line+7,tsd->rl_len-8);
       else if(cf_strncmp(line,"Subject:",8) == 0)  str_char_set(&thr->last->subject,line+8,tsd->rl_len-9);
       else if(cf_strncmp(line,"Category:",9) == 0) str_char_set(&thr->last->category,line+9,tsd->rl_len-10);
-      else if(cf_strncmp(line,"Date:",5) == 0)     thr->last->date = strtoul(line+5,NULL,10);
       else if(cf_strncmp(line,"Level:",6) == 0)    thr->last->level = atoi(line+6);
       else if(cf_strncmp(line,"Content:",8) == 0)  str_char_set(&thr->last->content,line+8,tsd->rl_len-9);
       else if(cf_strncmp(line,"Homepage:",9) == 0) str_char_set(&thr->last->hp,line+9,tsd->rl_len-10);
@@ -201,6 +206,7 @@ void *cf_get_next_thread_through_shm(void *shm_ptr,t_cl_thread *thr,const u_char
       thr->last       = thr->last->next;
     }
 
+    if(!thr->newest) thr->newest = thr->last;
     if(tplname) tpl_cf_init(&thr->last->tpl,tplname);
 
     /* {{{ message id */
@@ -262,6 +268,8 @@ void *cf_get_next_thread_through_shm(void *shm_ptr,t_cl_thread *thr,const u_char
     /* {{{ date */
     thr->last->date = *((time_t *)ptr);
     ptr += sizeof(time_t);
+
+    if(thr->last->date > thr->newest->date) thr->newest = thr->last;
     /* }}} */
 
     /* {{{ level */

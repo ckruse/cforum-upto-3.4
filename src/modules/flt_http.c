@@ -398,9 +398,9 @@ time_t flt_http_lm(t_cf_hash *head,t_configuration *dc,t_configuration *vc,void 
 /* }}} */
 
 t_conf_opt flt_http_config[] = {
-  { "SendLastModified",        flt_http_handle_command, CFG_OPT_CONFIG, NULL },
-  { "SendExpires",             flt_http_handle_command, CFG_OPT_CONFIG, NULL },
-  { "HandleLastModifiedSince", flt_http_handle_command, CFG_OPT_CONFIG, NULL },
+  { "SendLastModified",        flt_http_handle_command, CFG_OPT_CONFIG|CFG_OPT_LOCAL, NULL },
+  { "SendExpires",             flt_http_handle_command, CFG_OPT_CONFIG|CFG_OPT_LOCAL, NULL },
+  { "HandleLastModifiedSince", flt_http_handle_command, CFG_OPT_CONFIG|CFG_OPT_LOCAL, NULL },
   { NULL, NULL, 0, NULL }
 };
 

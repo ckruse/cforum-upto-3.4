@@ -466,7 +466,7 @@ void show_threadlist(void *shm_ptr,t_cf_hash *head)
           tpl_cf_setvar(&threadp->messages->tpl,"answers",buff,len,0);
 
 	  /* first: run VIEW_HANDLER handlers in pre-mode */
-          ret = cf_run_view_handlers(&thread,head,CF_MODE_THREADLIST|CF_MODE_PRE);
+          ret = cf_run_view_handlers(threadp,head,CF_MODE_THREADLIST|CF_MODE_PRE);
 
           if(ret == FLT_OK || ret == FLT_DECLINE || del == CF_KEEP_DELETED) {
 	    /* run list handlers */

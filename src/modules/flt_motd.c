@@ -80,8 +80,8 @@ void flt_motd_cleanup(void) {
 }
 
 t_conf_opt flt_motd_config[] = {
-  { "MotdFile",   flt_motd_handle, CFG_OPT_CONFIG, NULL },
-  { "EnableMotd", flt_motd_handle, CFG_OPT_USER|CFG_OPT_CONFIG, NULL },
+  { "MotdFile",   flt_motd_handle, CFG_OPT_CONFIG|CFG_OPT_LOCAL, NULL },
+  { "EnableMotd", flt_motd_handle, CFG_OPT_USER|CFG_OPT_CONFIG|CFG_OPT_LOCAL, NULL },
   { NULL, NULL, 0, NULL }
 };
 
@@ -96,7 +96,7 @@ t_module_config flt_motd = {
   NULL,
   NULL,
   NULL,
-  NULL
+  flt_motd_cleanup
 };
 
 

@@ -160,8 +160,8 @@ void flt_frameset_finish(void) {
 }
 
 t_conf_opt flt_frameset_config[] = {
-  { "ShowForumAsFrameset", flt_frameset_get_conf, CFG_OPT_CONFIG|CFG_OPT_USER,   NULL },
-  { "TemplatesFrameset",   flt_frameset_get_tpls, CFG_OPT_CONFIG|CFG_OPT_NEEDED, NULL },
+  { "ShowForumAsFrameset", flt_frameset_get_conf, CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL,   NULL },
+  { "TemplatesFrameset",   flt_frameset_get_tpls, CFG_OPT_CONFIG|CFG_OPT_NEEDED|CFG_OPT_LOCAL, NULL },
   { NULL, NULL, 0, NULL }
 };
 

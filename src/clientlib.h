@@ -84,6 +84,7 @@ typedef struct s_cl_thread {
   t_message *messages; /**< Pointer to the first message (thread message) in the chain */
   t_message *last; /**< Pointer to the last message in the chain */
   t_message *threadmsg; /**< Pointer to the message the user wants to see */
+  t_message *newest; /**< Pointer to the newest message in this thread */
 } t_cl_thread;
 
 
