@@ -1,8 +1,13 @@
+2004-06-24 Christian Kruse <ckruse@wwwtech.de>
+	* src/fo_arcview.c: Bugfix for bug #258: threads will now be get sorted
+	* src/templates/tpl_*/*.html: Changed mailto link to impressum link
+
 2004-06-23 Christian Kruse <ckruse@wwwtech.de>
 	* src/cacheutils.c: Bugfix in cache handling
-	* src/configparser.c: Added CacheDir directive
+	* src/configparser.c: Added CacheDir directive, bugfix in header handling
 	* src/fo_arcview.c: Added caching for thread and month view
 	* cgi-shared/config/fo_arcview.conf.in: Added CacheDir directive
+	* src/utils.c: Added split() function again :-)
 
 2004-06-22 Christian Kruse <ckruse@wwwtech.de>
 	* src/modules/flt_livefilter.c: Filter now sets 'openclose' to a true value

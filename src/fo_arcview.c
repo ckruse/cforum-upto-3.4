@@ -731,9 +731,50 @@ void show_thread(const u_char *year,const u_char *month,const u_char *tid) {
     }
   }
   else {
+    printf("\015\012");
     fwrite(ent->ptr,1,ent->size,stdout);
     cf_cache_destroy(ent);
   }
+}
+/* }}} */
+
+/* {{{ threadlist sort algorithms */
+/**
+ * struct used for sorting the threadlist
+ */
+struct s_arc_content {
+  t_string content; /**< string containing the content */
+  time_t date;      /**< date of this thread (used for sort) */
+  u_int64_t tid;    /**< thread id (used for sort) */
+};
+
+/**
+ * internal cleanup function for the array
+ * \param arg The element to destroy
+ */
+void destroy_sort_array(void *arg) {
+  struct s_arc_content *cnt1 = (struct s_arc_content *)arg;
+  str_cleanup(&cnt1->content);
+}
+
+
+/**
+ * Comparing function for array_sort() call
+ * \param arg1 The first argument
+ * \param arg2 The second argument
+ * \return -1 if first argument is lesser, +1 if first argument is greater, 0 if arguments are equal
+ */
+int month_cnt_cmp(const void *arg1,const void *arg2) {
+  struct s_arc_content *cnt1 = (struct s_arc_content *)arg1;
+  struct s_arc_content *cnt2 = (struct s_arc_content *)arg2;
+
+  if(cnt1->date > cnt2->date) return 1;
+  if(cnt1->date < cnt2->date) return -1;
+  if(cnt1->tid > cnt2->tid) return 1;
+  if(cnt1->tid < cnt2->tid) return -1;
+
+  /* cannot happen */
+  return 0;
 }
 /* }}} */
 
@@ -750,13 +791,16 @@ void show_month_content(const u_char *year,const u_char *month) {
   t_name_value *tl_tp  = cfg_get_first_value(&fo_arcview_conf,"ThreadListMonthTemplate");
   t_name_value *cache  = cfg_get_first_value(&fo_arcview_conf,"CacheDir");
   t_cache_entry *ent;
-  t_string path;
+  t_string path,mstr;
   struct stat st;
   u_char *ptr,*file,*tmp1,*tmp2,*pi = getenv("PATH_INFO");
   int fd;
   u_int64_t tid;
   time_t date;
   int len;
+  t_array ary;
+  struct s_arc_content cnt_str,*cnt_str1;
+  size_t i;
 
   t_cf_template m_tpl,tl_tpl;
   u_char mt_name[256],tl_name[256],buff[256];
@@ -782,6 +826,8 @@ void show_month_content(const u_char *year,const u_char *month) {
   fwrite("\015\012",1,2,stdout);
 
   if(cf_cache_outdated(cache->values[0],pi,path.content) == -1 || (ent = cf_get_cache(cache->values[0],pi)) == NULL) {
+    array_init(&ary,sizeof(cnt_str),destroy_sort_array);
+
     /* get templates */
     generate_tpl_name(mt_name,256,m_tp);
     generate_tpl_name(tl_name,256,tl_tp);
@@ -806,6 +852,7 @@ void show_month_content(const u_char *year,const u_char *month) {
 
     for(;ptr < file + st.st_size;ptr++) {
       if(!(ptr = get_next_token(ptr,file,st.st_size,"<Thread",7))) break;
+
       tid = get_id(ptr,file,st.st_size);
       len = snprintf(buff,256,"%llu",tid);
       cf_set_variable(&tl_tpl,cs,"link",buff,len,1);
@@ -851,16 +898,38 @@ void show_month_content(const u_char *year,const u_char *month) {
       }
 
       tpl_cf_parse_to_mem(&tl_tpl);
+
+      cnt_str.content.len      = tl_tpl.parsed.len;
+      cnt_str.content.reserved = tl_tpl.parsed.reserved;
+      cnt_str.content.content  = tl_tpl.parsed.content;
+      cnt_str.date             = date;
+      cnt_str.tid              = tid;
+
+      array_push(&ary,&cnt_str);
+
+      memset(&tl_tpl.parsed,0,sizeof(tl_tpl.parsed));
     }
 
     munmap(file,st.st_size);
+
+    array_sort(&ary,month_cnt_cmp);
+    str_init(&mstr);
+
+    for(i=0;i<ary.elements;i++) {
+      cnt_str1 = array_element_at(&ary,i);
+      str_str_append(&mstr,&cnt_str1->content);
+    }
 
     len = get_month_name(atoi(month),&tmp1);
     tpl_cf_setvar(&m_tpl,"month",tmp1,len,1);
     cf_set_variable(&m_tpl,cs,"year",year,strlen(year),1);
 
     tpl_cf_setvar(&m_tpl,"charset",cs->values[0],strlen(cs->values[0]),0);
-    tpl_cf_setvar(&m_tpl,"threads",tl_tpl.parsed.content,tl_tpl.parsed.len,0);
+    //tpl_cf_setvar(&m_tpl,"threads",tl_tpl.parsed.content,tl_tpl.parsed.len,0);
+    tpl_cf_setvar(&m_tpl,"threads",mstr.content,mstr.len,0);
+
+    str_cleanup(&mstr);
+    array_destroy(&ary);
 
     tpl_cf_parse_to_mem(&m_tpl);
     cf_cache(cache->values[0],pi,m_tpl.parsed.content,m_tpl.parsed.len);

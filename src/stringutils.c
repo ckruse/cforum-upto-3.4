@@ -330,5 +330,47 @@ size_t cf_strlen_utf8(const u_char *str,size_t rlen) {
 }
 /* }}} */
 
+/* {{{ split
+ * Returns: long       the length of the list
+ * Parameters:
+ *   - const u_char *big     the string to split
+ *   - const u_char *small   the string where to split
+ *   - u_char ***list        the list
+ *
+ * This function splits a string into pieces
+ *
+ */
+size_t split(const u_char *big,const u_char *small,u_char ***ulist) {
+  u_char **list  = fo_alloc(NULL,PRERESERVE,sizeof(*list),FO_ALLOC_MALLOC);
+  u_char  *pos   = (u_char *)big,*pre = (u_char *)big;
+  size_t len   = 0;
+  size_t reser = PRERESERVE;
+  size_t slen  = strlen(small);
+
+  while((pos = strstr(pos,small)) != NULL) {
+    *pos = '\0';
+
+    list[len++] = strdup(pre);
+
+    if(len >= reser) {
+      reser += PRERESERVE;
+      list = fo_alloc(list,reser,sizeof(*list),FO_ALLOC_REALLOC);
+    }
+
+    pre    = pos+slen;
+    *pos++ = *small;
+  }
+
+  if(len >= reser) {
+    list = fo_alloc(list,++reser,sizeof(*list),FO_ALLOC_REALLOC);
+  }
+  list[len++] = strdup(pre);
+
+  list   = fo_alloc(list,len,sizeof(*list),FO_ALLOC_REALLOC);
+  *ulist = list;
+
+  return len;
+}
+/* }}} */
 
 /* eof */
