@@ -33,7 +33,7 @@ BEGIN {
 
 use lib ("@PERLMODULES@","@libdir@");
 
-sub VERSION {(q$Revision: 1.24 $ =~ /([\d.]+)\s*$/)[0] or '0.0'}
+sub VERSION {(q$Revision$ =~ /([\d.]+)\s*$/)[0] or '0.0'}
 
 use CGI;
 use CGI::Carp qw/fatalsToBrowser/;
@@ -370,18 +370,26 @@ else {
   # }}}
   # {{{ send password
   elsif($action eq 'sendpw') {
-    if($cgi->param('uname')) {
+    if($cgi->param('uname') || $cgi->param('email')) {
       my $username = $cgi->param('uname');
+      my $f_email  = $cgi->param('email');
       my $result = undef;
-      $result = $Management->get_password($fo_default_conf,$fo_usermanagement_conf,$username) if $Management;
+      if($Management) {
+        if($username) {
+          $result = $Management->get_password_by_username($fo_default_conf,$fo_usermanagement_conf,$username);
+        }
+        else {
+          $result = $Management->get_password_by_mail($fo_default_conf,$fo_usermanagement_conf,$f_email);
+        }
+      }
 
       if(ref($result) eq "HASH") {
         # send mail
         my $body = get_error($fo_default_conf,'sendpw','body');
         $body =~ s!\{\$pass\}!$result->{pass}!g;
         $body =~ s!\{\$email\}!$result->{email}!g;
-        $body =~ s!\{\$user\}!$username!g;
-        
+        $body =~ s!\{\$user\}!$result->{uname}!g;
+
         my $smtp = new Net::SMTP($fo_usermanagement_conf->{SMTPHost}->[0]->[0]);
         fatal($cgi,$fo_default_conf,$user_config,get_error($fo_default_conf,'SMTP_failed'),$fo_usermanagement_conf->{FatalTemplate}->[0]->[0]) unless $smtp;
         $smtp->mail($fo_usermanagement_conf->{SMTPFrom}->[0]->[0]);

@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="{$charset}" ?>
 {if $frame}<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 {else}<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-{endif}<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="de" lang="de">
+{endif}{if $ownxslt}<?xml-stylesheet type="text/xsl" href="{$ownxslt}"?>
+{endif}
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="de" lang="de">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset={$charset}" />
 {if $autoreload}<meta http-equiv="Refresh" content="{$autoreload}; URL={if $frame}?a=f{endif}" />

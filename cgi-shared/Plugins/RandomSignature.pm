@@ -19,35 +19,40 @@ package Plugins::RandomSignature;
 
 use strict;
 
-use CheckRFC;
 use ForumUtils qw/transform_body/;
+use CForum::Clientlib;
+use CForum::Validator;
 
 use LWP::Simple;
 
-sub VERSION {(q$Revision: 1.2 $ =~ /([\d.]+)\s*$/)[0] or '0.0'}
+our $VERSION = (q$Revision$ =~ /([\d.]+)\s*$/)[0] or '0.0';
 
 push @{$main::Plugins->{newthread}},\&execute;
 push @{$main::Plugins->{newpost}},\&execute;
 
 sub execute {
   my ($fo_default_conf,$fo_view_conf,$fo_post_conf,$user_config,$cgi) = @_;
+  my $cl = new CForum::Clientlib;
 
   my $body = $cgi->param('newbody');
 
-  if($body =~ m!\[remote-signature:(http://[^\]]+)\]!) {
+  while($body =~ m!\[remote-signature:(http://[^\]]+)\]!) {
     my $uri = $1;
-    if(is_URL($uri)) {
+    if(is_valid_http_link($uri,CForum::Validator::VALIDATE_STRICT)) {
       my $sig = '';
 
       if($sig = LWP::Simple::get($uri)) {
-        $sig = transform_body($fo_default_conf,$fo_post_conf,$sig,$cgi->param('qchar'));
+        if($cl->is_valid_utf8_string($sig,length $sig)) {
+          $sig = transform_body($fo_default_conf,$fo_post_conf,$sig,$cgi->param('qchar'));
 
-        $uri  = quotemeta $uri;
-        $body =~ s!\[remote-signature:$uri\]!$sig!;
-        $cgi->param(newbody => $body);
+          $uri  = quotemeta $uri;
+          $body =~ s!\[remote-signature:$uri\]!$sig!;
+        }
       }
     }
   }
+
+  $cgi->param(newbody => $body);
 }
 
 1;

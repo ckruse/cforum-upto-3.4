@@ -20,7 +20,6 @@ use strict;
 
 use CForum::Template;
 
-use CheckRFC;
 use ForumUtils qw/transform_body get_node_data get_template/;
 
 use XML::GDOME;

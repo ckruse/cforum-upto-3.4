@@ -391,10 +391,11 @@ int set_link(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cl_thread
   int UserName = cf_hash_get(GlobalValues,"UserName",8) != NULL;
   t_name_value *x = cfg_get_first_value(dc,NULL,UserName?"UBaseURL":"BaseURL");
   size_t len;
+  t_message *msg = cf_get_first_visible(thr->messages);
 
   if(Cfg.VisitedFile && Cfg.HighlightVisitedPostings) {
     len = snprintf(buff,512,"%s?mv=%llu",x->values[0],thr->tid);
-    tpl_cf_setvar(&thr->messages->tpl,"mvlink",buff,len,1);
+    tpl_cf_setvar(&msg->tpl,"mvlink",buff,len,1);
   }
 
   return FLT_OK;

@@ -690,10 +690,10 @@ may_show(class,ms=-1)
   OUTPUT:
     RETVAL
 
-short invisible(class)
+bool invisible(class)
     t_message *class
   CODE:
-    RETVAL=class->invisible;
+    RETVAL=class->invisible != 0;
   OUTPUT:
     RETVAL
 

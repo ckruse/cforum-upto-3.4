@@ -17,12 +17,11 @@ package Plugins::CategoryCheck;
 
 use strict;
 
-sub VERSION {(q$Revision: 1.9 $ =~ /([\d.]+)\s*$/)[0] or '0.0'}
+sub VERSION {(q$Revision$ =~ /([\d.]+)\s*$/)[0] or '0.0'}
 
 use CGI;
 use CGI::Carp qw/fatalsToBrowser/;
 
-use CheckRFC;
 use ForumUtils qw(
   get_error
   rel_uri

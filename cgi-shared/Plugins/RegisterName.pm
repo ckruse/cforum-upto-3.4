@@ -20,14 +20,13 @@ package Plugins::RegisterName;
 
 use strict;
 
-sub VERSION {(q$Revision: 1.3 $ =~ /([\d.]+)\s*$/)[0] or '0.0'}
+sub VERSION {(q$Revision$ =~ /([\d.]+)\s*$/)[0] or '0.0'}
 
 use IO::Socket;
 
 use CGI;
 use CGI::Carp qw/fatalsToBrowser/;
 
-use CheckRFC;
 use ForumUtils qw(
   recode
   get_error

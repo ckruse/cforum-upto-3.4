@@ -20,12 +20,11 @@ package Plugins::Preview;
 # {{{ Program headers
 use strict;
 
-our $VERSION = (q$Revision: 1.6 $ =~ /([\d.]+)\s*$/)[0] or '0.0';
+our $VERSION = (q$Revision$ =~ /([\d.]+)\s*$/)[0] or '0.0';
 
 use CGI::Carp qw/fatalsToBrowser/;
 
 use CForum::Clientlib;
-use CheckRFC;
 use ForumUtils qw(
   message_field
   gen_time

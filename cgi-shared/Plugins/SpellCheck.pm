@@ -29,7 +29,6 @@ use Unicode::MapUTF8 qw(from_utf8);
 
 use Lingua::Ispell qw(spellcheck);
 
-use CheckRFC;
 use ForumUtils qw(
   generate_unid
   get_error

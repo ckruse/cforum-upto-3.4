@@ -35,6 +35,7 @@
 
 static u_char *CSSUri = NULL;
 static u_char *JSFile = NULL;
+static u_char **XSLTUri = NULL;
 static int    CSS_Overwrite = 0;
 
 int flt_include_exec_list(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cf_template *begin,t_cf_template *end) {
@@ -55,6 +56,18 @@ int flt_include_exec_list(t_cf_hash *head,t_configuration *dc,t_configuration *v
     tpl_cf_setvar(begin,"ownjs",JSFile,strlen(JSFile),1);
   }
 
+  if(XSLTUri) {
+    rc = FLT_OK;
+
+    /* list mode */
+    if(end) {
+      if(XSLTUri[0]) tpl_cf_setvar(begin,"ownxslt",XSLTUri[0],strlen(XSLTUri[0]),1);
+    }
+    /* posting mode */
+    else {
+      if(XSLTUri[1]) tpl_cf_setvar(begin,"ownxslt",XSLTUri[1],strlen(XSLTUri[1]),1);
+    }
+  }
 
   return rc;
 }
@@ -72,6 +85,11 @@ int flt_include_handle(t_configfile *cf,t_conf_opt *opt,const u_char *context,u_
     if(JSFile) free(JSFile);
     JSFile = strdup(args[0]);
   }
+  else if(cf_strcmp(opt->name,"OwnXSLTFile") == 0) {
+    if(XSLTUri) free(XSLTUri);
+    XSLTUri = args;
+    return -1;
+  }
   else {
     CSS_Overwrite = cf_strcmp(args[0],"yes") == 0;
   }
@@ -87,6 +105,7 @@ t_conf_opt config[] = {
   { "OwnCSSFile",           flt_include_handle, CFG_OPT_USER, NULL },
   { "OverwriteStandardCSS", flt_include_handle, CFG_OPT_USER, NULL },
   { "OwnJSFile",            flt_include_handle, CFG_OPT_USER, NULL },
+  { "OwnXSLTFile",          flt_include_handle, CFG_OPT_USER, NULL },
   { NULL, NULL, 0, NULL }
 };
 

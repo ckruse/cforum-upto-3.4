@@ -268,6 +268,19 @@ void cf_set_variable(t_cf_template *tpl,t_name_value *cs,u_char *vname,const u_c
 }
 /* }}} */
 
+/* {{{ cf_get_first_visible */
+t_message *cf_get_first_visible(t_message *msg) {
+  register t_message *msg1;
+
+  if(msg->may_show && msg->invisible == 0) return msg;
+  for(msg1=msg;msg1;msg1=msg1->next) {
+    if(msg1->may_show && msg1->invisible == 0) return msg1;
+  }
+
+  return msg;
+}
+/* }}} */
+
 /* {{{ str_error_message
  * Returns: nothing
  * Parameters:
