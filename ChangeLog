@@ -1,5 +1,6 @@
 2004-10-11 Christian Kruse <ckruse@wwwtech.de>
-	* src/modules/Makefile.am: Added flt_directives
+	* src/modules/Makefile.am: Added flt_directives, added libcfvalidate.la to
+		flt_directives.la
 	* src/modules/flt_directives.c: Added module for directives, fixed a bug in
 		[link:] handling ([link: url] has not been recognized as a valid URI),
 		fixed a bug in [image:] and [iframe:] handling (forgot to handle relative

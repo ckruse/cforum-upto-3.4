@@ -139,5 +139,6 @@ flt_failsafe_la_LDFLAGS=-module -export-dynamic -avoid-version
 pkglib_LTLIBRARIES+=flt_directives.la
 flt_directives_la_SOURCES=flt_directives.c
 flt_directives_la_LDFLAGS=-module -export-dynamic -avoid-version
+flt_directives_la_LIBADD=../libcfvalidate.la
 
 # eof

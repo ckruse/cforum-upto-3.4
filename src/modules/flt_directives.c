@@ -499,9 +499,11 @@ int flt_directives_handle_lt(t_configfile *cfile,t_conf_opt *opt,u_char **args,i
               str_char_append(&str,*(ptr+1));
               break;
             case 't':
-              tok.tok  = htmlentities(str.content,1);
-              tok.type = strlen(tok.tok);
-              array_push(&flt_directives_lt_toks,&tok);
+              if(str.len) {
+                tok.tok  = htmlentities(str.content,1);
+                tok.type = strlen(tok.tok);
+                array_push(&flt_directives_lt_toks,&tok);
+              }
 
               tok.type = FLT_DIRECTIVES_TOK_TITLE;
               tok.tok  = NULL;
@@ -512,9 +514,11 @@ int flt_directives_handle_lt(t_configfile *cfile,t_conf_opt *opt,u_char **args,i
               break;
 
             case 'u':
-              tok.tok  = htmlentities(str.content,1);
-              tok.type = strlen(tok.tok);
-              array_push(&flt_directives_lt_toks,&tok);
+              if(str.len) {
+                tok.tok  = htmlentities(str.content,1);
+                tok.type = strlen(tok.tok);
+                array_push(&flt_directives_lt_toks,&tok);
+              }
 
               tok.type = FLT_DIRECTIVES_TOK_URI;
               tok.tok  = NULL;
