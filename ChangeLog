@@ -6,6 +6,8 @@
 	* src/fo_view.c, src/fo_arcview.c: Added exit() call in signal handler
 	* src/fo_view.c: Fixed bug in message handling
 	* src/serverlib.c: stripped additional newline from log line
+	* src/*utils.c: Split the utils library into different module files
+	* src/cacheutils.c: Added a cache module
 
 2004-06-21 Christian Kruse <ckruse@wwwtech.de>
 	* cgi-shared/config/modules.xml: Added optional deactivation of the

@@ -623,6 +623,61 @@ size_t cf_strlen_utf8(const u_char *str,size_t rlen);
 
 /* }}} */
 
+/* {{{ caching functions */
+
+/**
+ * used for giving the user a cache entry
+ */
+typedef struct {
+  void *ptr;   /**< Pointer to the content */
+  size_t size; /**< Size of the segment */
+  int fd;      /**< file descriptor */
+} t_cache_entry;
+
+/**
+ * function to check if a cache entry is outdated
+ * \param base The base directory
+ * \param uri The URI of the entry
+ * \param file The file to compare
+ * \return -1 on failure (e.g. cache file is outdated), 0 on success
+ */
+int cf_cache_outdated(const u_char *base,const u_char *uri,const u_char *file);
+
+/**
+ * This function checks if a cache entry is outdated by a given date
+ * \param base The base directory
+ * \param uri The URI of the entry
+ * \param date The outdated date
+ * \return -1 on failure (e.g. cache file is outdated), 0 on success
+ */
+int cf_cache_outdated_date(const u_char *base,const u_char *uri,time_t date);
+
+/**
+ * Function creates or updates a cache entry
+ * \param base The base directory
+ * \param uri The URI of the entry
+ * \param content The content of the entry
+ * \param len The length of the content segment
+ * \return 0 on success, -1 on error
+ */
+int cf_cache(const u_char *base,const u_char *uri,const u_char *content,size_t len);
+
+/**
+ * Function used to get a cache entry
+ * \param base The base directory
+ * \param uri The URI of the entry
+ * \return NULL on error, a cache entry on success
+ */
+t_cache_entry *cf_get_cache(u_char *base,u_char *uri);
+
+/**
+ * Function cleaning up a t_cache_entry struct
+ * \param ent The entry to clean up
+ */
+void cf_cache_destroy(t_cache_entry *ent);
+
+/* }}} */
+
 #endif
 
 /* eof */
