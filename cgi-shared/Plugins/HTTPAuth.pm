@@ -17,10 +17,10 @@ package Plugins::HTTPAuth;
 #
 use strict;
 
-sub VERSION {(q$Revision: 1.1 $ =~ /([\d.]+)\s*$/)[0] or '0.0'}
+sub VERSION {(q$Revision$ =~ /([\d.]+)\s*$/)[0] or '0.0'}
 
 use CGI::Carp qw(fatalsToBrowser);
-use ForumUtils qw(get_config_file);
+use ForumUtils qw(get_user_config_file get_conf_val);
 # }}}
 
 push @{$main::Plugins->{auth}},\&execute;
@@ -28,10 +28,10 @@ push @{$main::Plugins->{auth}},\&execute;
 sub execute {
   my ($fo_default_conf,$fo_view_conf,$fo_script_conf) = @_;
 
-  return unless $fo_default_conf->{AuthMode}->[0]->[0] eq 'http';
+  return unless get_conf_val($fo_default_conf,$main::Forum,'AuthMode') eq 'http';
 
   if($ENV{REMOTE_USER}) {
-    if(-f get_config_file($fo_default_conf,$ENV{'REMOTE_USER'})) {
+    if(-f get_user_config_file($fo_default_conf,$ENV{'REMOTE_USER'})) {
       $main::UserName = $ENV{REMOTE_USER};
     }
   }

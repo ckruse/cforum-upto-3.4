@@ -106,9 +106,10 @@ sub htmlize {
   my $arg      = shift;
   my $cgi      = shift;
   my $cfgval   = shift;
-  my $xhtml    = get_conf_val($fo_default_conf,$Forum,'XHMLMode') eq 'yes';
 
   my ($fo_default_conf,$fo_view_conf,$fo_userconf_conf,$user_config) = @_;
+
+  my $xhtml    = get_conf_val($fo_default_conf,$Forum,'XHMLMode') eq 'yes';
 
   my $default  = '';
   my $fname    = $arg->getAttribute('paramname');
@@ -160,7 +161,7 @@ sub htmlize {
   }
   elsif($type eq 'RADIO') {
     foreach my $v (@fvals) {
-      $element .= '<input type="radio" name="'.$fname.'" value="'.recode($fo_default_conf,$v->[0]).'" '.($v->[0] eq $val ? ' checked'.($xhtml?'="checked"':'')) : '').($xhtml?' /':'').'> '.recode($fo_default_conf,$v->[1] || $v->[0]).'<br'.($xhtml?' /':'').'>';
+      $element .= '<input type="radio" name="'.$fname.'" value="'.recode($fo_default_conf,$v->[0]).'" '.($v->[0] eq $val ? ' checked'.($xhtml?'="checked"':'') : '').($xhtml?' /':'').'> '.recode($fo_default_conf,$v->[1] || $v->[0]).'<br'.($xhtml?' /':'').'>';
     }
 
   }
@@ -191,7 +192,7 @@ sub htmlize {
     $element = '<textarea name="'.$fname.'">'.recode($fo_default_conf,$val).'</textarea>';
   }
   else {
-    fatal($cgi,$fo_default_conf,$user_config,get_error($fo_default_conf,'E_UNKNOWN_DIRECTIVE_TYPE'),get_conf_val($fo_userconf_conf,$Forum,'FatalTemplate'));
+    fatal($cgi,$fo_default_conf,$user_config,get_error($fo_default_conf,'UNKNOWN_DIRECTIVE_TYPE'),get_conf_val($fo_userconf_conf,$Forum,'FatalTemplate'));
   }
 
   return ($question,$element);
@@ -214,7 +215,7 @@ sub generate_edit_output {
   my $tpl              = new CForum::Template(get_template($fo_default_conf,$user_config,get_conf_val($fo_userconf_conf,$Forum,'Edit')));
   my $txt              = '';
 
-  my $doc   = XML::GDOME->createDocFromURI(sprintf(get_conf_val($fo_userconf_conf,$Forum,'ModuleConfig'),get_conf_val($fo_default_conf,$Forum,'Language'))) or fatal($cgi,$fo_default_conf,$user_config,sprintf(get_error($fo_default_conf,'E_XML_PARSE'),"$!"),get_conf_val($fo_userconf_conf,$Forum,'FatalTemplate'));
+  my $doc   = XML::GDOME->createDocFromURI(sprintf(get_conf_val($fo_userconf_conf,$Forum,'ModuleConfig'),get_conf_val($fo_default_conf,$Forum,'Language'))) or fatal($cgi,$fo_default_conf,$user_config,sprintf(get_error($fo_default_conf,'XML_PARSE'),"$!"),get_conf_val($fo_userconf_conf,$Forum,'FatalTemplate'));
 
   if($page) {
     # hmpf, findnodes doesn't work properly for /config/page@id="$page", nor for /config/page/@id="$page", neither
@@ -360,10 +361,13 @@ my $fo_view_conf     = read_configuration($fnames[1]) or die $!;
 my $fo_userconf_conf = read_configuration($fnames[2]) or die $!;
 my $user_config      = {};
 
+my $cgi              = new CGI;
+my $action           = $cgi->param('a') || 'view';
+
 # {{{ load plugins and authenticate
-foreach(@{$fo_userconf_conf->{$Forum}->{AddModule}}) {
+foreach(@{$fo_userconf_conf->{global}->{AddModule}}) {
   eval "use $_->[0];";
-  fatal($cgi,$fo_default_conf,$user_config,sprintf(get_error($fo_default_conf,'E_PLUGIN_ERR'),"$@"),get_conf_val($fo_userconf_conf,$Forum,'FatalTemplate')) if $@;
+  fatal($cgi,$fo_default_conf,$user_config,sprintf(get_error($fo_default_conf,'PLUGIN_ERR'),"$@"),get_conf_val($fo_userconf_conf,$Forum,'FatalTemplate')) if $@;
 }
 
 foreach(@{$Plugins->{auth}}) {
@@ -371,12 +375,9 @@ foreach(@{$Plugins->{auth}}) {
 }
 # }}}
 
-my $cgi              = new CGI;
-my $action           = $cgi->param('a') || 'view';
-
 if($cgi->param('cs')) {
   my $err = uniquify_params($fo_default_conf,$cgi,'cs');
-  fatal(recode($fo_default_conf,$err)) if $err;
+  fatal($cgi,$fo_default_conf,$user_config,recode($fo_default_conf,$err),get_conf_val($fo_userconf_conf,$Forum,'FatalTemplate')) if $err;
 }
 
 # {{{ read user configuration
@@ -415,7 +416,7 @@ elsif($action eq 'save') {
     exit;
   }
 
-  my $doc      = XML::GDOME->createDocFromURI(sprintf(get_conf_val($fo_userconf_conf,$Forum,'ModuleConfig'),get_conf_val($fo_default_conf,$Forum,'Language'))) or fatal($cgi,$fo_default_conf,$user_config,sprintf(get_error($fo_default_conf,'E_PLUGIN_ERR'),"$!"),get_conf_val($fo_userconf_conf,$Forum,'FatalTemplate'));
+  my $doc      = XML::GDOME->createDocFromURI(sprintf(get_conf_val($fo_userconf_conf,$Forum,'ModuleConfig'),get_conf_val($fo_default_conf,$Forum,'Language'))) or fatal($cgi,$fo_default_conf,$user_config,sprintf(get_error($fo_default_conf,'PLUGIN_ERR'),"$!"),get_conf_val($fo_userconf_conf,$Forum,'FatalTemplate'));
   my ($pgnode) = grep { $_->getAttribute('id') eq $page } $doc->findnodes('/config/page');
   my @nodes    = $pgnode->findnodes('./section/directive');
 
@@ -498,7 +499,7 @@ elsif($action eq 'save') {
           }
         }
         else {
-          fatal($cgi,$fo_default_conf,$user_config,get_error($fo_default_conf,'E_UNKNOWN_DIRECTIVE_TYPE'),get_conf_val($fo_userconf_conf,$Forum,'FatalTemplate'));
+          fatal($cgi,$fo_default_conf,$user_config,get_error($fo_default_conf,'UNKNOWN_DIRECTIVE_TYPE'),get_conf_val($fo_userconf_conf,$Forum,'FatalTemplate'));
         }
       }
       # }}}
@@ -535,8 +536,8 @@ elsif($action eq 'save') {
   }
 
   # all checks are ok, lets write the config file
-  my $cfile = get_config_file($fo_default_conf,$UserName);
-  open DAT,'>'.$cfile or fatal($cgi,$fo_default_conf,$user_config,sprintf(get_error($fo_default_conf,'E_IO_ERR'),"$!"),get_conf_val($fo_userconf_conf,$Forum,'FatalTemplate'));;
+  my $cfile = get_user_config_file($fo_default_conf,$UserName);
+  open DAT,'>'.$cfile or fatal($cgi,$fo_default_conf,$user_config,sprintf(get_error($fo_default_conf,'IO_ERR'),"$!"),get_conf_val($fo_userconf_conf,$Forum,'FatalTemplate'));
 
   foreach my $dir (keys %{$own_ucfg->{global}}) {
     next if !$own_ucfg->{global}->{$dir} || !@{$own_ucfg->{global}->{$dir}};
@@ -563,11 +564,11 @@ elsif($action eq 'save') {
 
   $tpl->setVar('forumbase',recode($fo_default_conf,get_conf_val($fo_default_conf,$Forum,'UBaseURL')));
   $tpl->setVar('userconfig',recode($fo_default_conf,get_conf_val($fo_default_conf,$Forum,'UserConfig')));
-  $tpl->setVar('script',recode($fo_default_conf,get_conf_val($fo_default_conf,'UserConfig')));
-  $tpl->setVar('charset',$cs);
-  $tpl->setVar('acceptcharset',$cs.', UTF-8');
+  $tpl->setVar('script',recode($fo_default_conf,get_conf_val($fo_default_conf,$Forum,'UserConfig')));
+  $tpl->setVar('charset',get_conf_val($fo_default_conf,$Forum,'ExternCharset'));
+  $tpl->setVar('acceptcharset',get_conf_val($fo_default_conf,$Forum,'ExternCharset').', UTF-8');
 
-  print $cgi->header(-type => 'text/html; charset='.$cs),$tpl->parseToMem;
+  print $cgi->header(-type => 'text/html; charset='.get_conf_val($fo_default_conf,$Forum,'ExternCharset')),$tpl->parseToMem;
 }
 # }}}
 # {{{ show options
@@ -617,7 +618,7 @@ else {
 
     $tpl->setVar('usermanagement',get_conf_val($fo_default_conf,$Forum,'UserManagement'));
     $tpl->setVar('charset',get_conf_val($fo_default_conf,$Forum,'ExternCharset'));
-    $tpl->setVar('acceptcharset',get_conf_val($fo_default_conf,$Forum,'ExternCharset')', UTF-8');
+    $tpl->setVar('acceptcharset',get_conf_val($fo_default_conf,$Forum,'ExternCharset').', UTF-8');
 
     print $cgi->header(-type => 'text/html; charset='.get_conf_val($fo_default_conf,$Forum,'ExternCharset')),$tpl->parseToMem;
   }

@@ -1,5 +1,5 @@
 2005-01-16 Christian Kruse <ckruse@wwwtech.de>
-	* cgi-shared/ForumUtils.pm: Small bugfix
+	* cgi-shared/ForumUtils.pm: Bugfixes
 	* cgi-bin/fo_usermanagement.in: Moved to 3.0 API
 	* cgi-shared/Plugins/ImportExport.pm: Added plugin to import and export
 		configuration data
@@ -12,6 +12,17 @@
 		Quotings.pm, RandomSignature.pm, SendMailOnAnswer.pm, SpellCheck.pm,
 		Variables.pm: Removed for 3.0 release
 	* cgi-bin/Makefile.am: Removed fo_post_old
+	* src/templates/de/tpl_*/importform.html,
+		src/templates/de/tpl_*/importok.html: Added templates for importing
+		configuration data
+	* src/templates/de/tpl_*/usersettings.html: Added links to import and export
+		user configuration data
+	* src/templates/de/tpl_*/Makefile.am: Added import templates
+	* cgi-shared/Plugins/Makefile.am: Removed old plugins, added ImportExport.pm
+	* cgi-shared/Plugins/HTTPAuth.pm: Moved to new API
+	* cgi-shared/config/fo_userconf.conf.in: Added templates
+	* cgi-bin/fo_usermanagement.in: Bugfixes
+	* cgi-bin/fo_userconf.in: Bugfixes
 
 2005-01-15 Christian Kruse <ckruse@wwwtech.de>
 	* src/modules/flt_directives.c: Bugfix for [ref:], now it supports @title=

@@ -62,9 +62,9 @@ sub show_register_form {
   my $reg_tpl = get_conf_val($fo_usermanagement_conf,$Forum,'Register');
   my $cs = get_conf_val($fo_default_conf,$Forum,'ExternCharset');
 
-  fatal($cgi,$fo_default_conf,$user_config,get_error($fo_default_conf,'TPL_NOT_FOUND'),$fatal_tpl) unless defined($fo_usermanagement_conf->{Register}->[0]->[0]);
+  fatal($cgi,$fo_default_conf,$user_config,get_error($fo_default_conf,'TPL_NOT_FOUND'),$fatal_tpl) unless defined $reg_tpl;
   my $tpl = new CForum::Template(get_template($fo_default_conf,$user_config,$reg_tpl));
-  fatal($cgi,$fo_default_conf,$user_config,get_error($fo_default_conf,'TPL_NOT_FOUND'),$fatal_tpl) unless defined($tpl);
+  fatal($cgi,$fo_default_conf,$user_config,get_error($fo_default_conf,'TPL_NOT_FOUND'),$fatal_tpl) unless define $tpl;
 
   $tpl->setVar('forumbase',recode($fo_default_conf,get_conf_val($fo_default_conf,$Forum,'BaseURL')));
   $tpl->setVar('script',recode($fo_default_conf,get_conf_val($fo_default_conf,$Forum,'UserRegister')));
@@ -176,7 +176,7 @@ else {
 
 # {{{ validate action
 # hehe, I *love* perl for statements like this ;)
-my %am = map { ($_,1) } split /,/,get_conf_file($fo_usermanagement_conf,$Forum,'ActivateModules');
+my %am = map { ($_,1) } split /,/,get_conf_val($fo_usermanagement_conf,$Forum,'ActivateModules');
 
 if($action eq 'unreg' || $action eq 'unregok') {
   $action = 'redirect' unless $am{unregister};
@@ -325,7 +325,7 @@ else {
       );
     }
 
-    my $ufile = get_config_file($fo_default_conf,$user);
+    my $ufile = get_user_config_file($fo_default_conf,$user);
     if(-f $ufile) {
       show_register_form(
         $cgi,

@@ -179,5 +179,15 @@ de_xhtml10_vote_ok_la_SOURCES=vote_ok.html
 de_xhtml10_vote_ok_la_LIBADD=../../../libcfutils.la ../../../libcftemplate.la
 de_xhtml10_vote_ok_la_LDFLAGS=-module -export-dynamic -avoid-version
 
+pkglib_LTLIBRARIES+=de_xhtml10_importform.la
+de_xhtml10_importform_la_SOURCES=importform.c
+de_xhtml10_importform_la_LIBADD=../../../libcfutils.la ../../../libcftemplate.la
+de_xhtml10_importform_la_LDFLAGS=-module -export-dynamic -avoid-version
+
+pkglib_LTLIBRARIES+=de_xhtml10_importok.la
+de_xhtml10_importok_la_SOURCES=importok.c
+de_xhtml10_importok_la_LIBADD=../../../libcfutils.la ../../../libcftemplate.la
+de_xhtml10_importok_la_LDFLAGS=-module -export-dynamic -avoid-version
+
 
 # eof

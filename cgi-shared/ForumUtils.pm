@@ -208,7 +208,7 @@ sub uniquify_params {
   my $dcfg  = shift;
   my $cgi   = shift;
   my $fname = shift;
-  my $cs    = get_conf_val($fo_default_conf,$main::Forum,'ExternCharset');
+  my $cs    = get_conf_val($dcfg,$main::Forum,'ExternCharset');
 
   my $val = $cgi->param($fname) or return get_error($dcfg,'manipulated');
 
@@ -357,6 +357,7 @@ sub read_string {
 # {{{ parse_argument
 sub parse_argument {
   my $cfg  = shift;
+  my $context = shift;
   my $line = shift;
 
   return 1 if $line =~ /^\s*#/;
@@ -376,7 +377,7 @@ sub parse_argument {
       }
     }
 
-    if($#vals != -1) {
+    if(@vals != 0) {
       push @{$cfg->{$context}->{$directive}},[@vals];
       return 1;
     }
@@ -396,9 +397,12 @@ sub get_conf_val {
   return unless $conf->{$context};
   return unless $conf->{$context}->{$name};
 
-  my @vals = $conf->{$context}->{$name};
-  return @vals if @vals > 1;
-  return $vals[0];
+  my $vals = $conf->{$context}->{$name};
+  if(wantarray) {
+    return @$vals if @$vals > 1;
+    return @{$vals->[0]} if @{$vals->[0]} > 0;
+  }
+  return $vals->[0]->[0];
 }
 # }}}
 
@@ -418,7 +422,7 @@ sub read_configuration {
       $context = $1;
       next;
     }
-    else if(m/\s*}$/) {
+    elsif(m/\s*}$/) {
       $context = 'global';
       next;
     }

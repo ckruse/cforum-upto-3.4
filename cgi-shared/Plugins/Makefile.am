@@ -1,18 +1,9 @@
 SUBDIRS=Management
 
 EXTRA_DIST=CategoryCheck.pm \
-  PostOkLink.pm \
-  FixedLineWidth.pm \
-  MarkOwnVisited.pm \
-  Preview.pm \
-  RandomSignature.pm \
-  SpellCheck.pm \
-  CheckRegisteredName.pm \
   HTTPAuth.pm \
-  PostingAssistant.pm \
-  Quotings.pm \
   RegisterName.pm \
-  Variables.pm \
+	ImportExport.pm \
   XMLRPCUserManagement.pm
 
 install-data-local:
