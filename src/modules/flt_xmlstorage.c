@@ -104,12 +104,8 @@ t_posting *flt_xmlstorage_hirarchy_them(t_h_p *parent,t_posting *pst) {
       parent->childs[parent->len++].node = p;
       p = p->next;
     }
-    else if(p->level > lvl) {
-      p = flt_xmlstorage_hirarchy_them(&parent->childs[parent->len-1],p);
-    }
-    else {
-      return p;
-    }
+    else if(p->level > lvl) p = flt_xmlstorage_hirarchy_them(&parent->childs[parent->len-1],p);
+    else return p;
   }
 
   return NULL;

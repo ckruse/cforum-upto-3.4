@@ -63,6 +63,7 @@ int cf_get_threadlist(t_array *ary,void *ptr,const u_char *tplname)
 }
 /* }}} */
 
+
 /* {{{ cf_get_next_thread_through_sock */
 int cf_get_next_thread_through_sock(int sock,rline_t *tsd,t_cl_thread *thr,const u_char *tplname) {
   u_char *line,*chtmp;
@@ -156,7 +157,16 @@ int cf_get_next_thread_through_sock(int sock,rline_t *tsd,t_cl_thread *thr,const
     }
   }
 
-  if(ok) return 0;
+  if(ok) {
+    return 0;
+
+    /* {{{ build hierarchical structure */
+    thr->ht = fo_alloc(NULL,1,sizeof(*thr->ht),FO_ALLOC_CALLOC);
+    thr->ht->msg = thr->messages;
+
+    cf_msg_build_hierarchical_structure(thr->ht,thr->messages);
+    /* }}} */
+  }
   return -1;
 }
 /* }}} */
@@ -351,6 +361,13 @@ void *cf_get_next_thread_through_shm(void *shm_ptr,t_cl_thread *thr,const u_char
       tpl_cf_setvar(&thr->messages->tpl,"answers",buff,len,0);
     }
   }
+
+  /* {{{ build hierarchical structure */
+  thr->ht = fo_alloc(NULL,1,sizeof(*thr->ht),FO_ALLOC_CALLOC);
+  thr->ht->msg = thr->messages;
+
+  cf_msg_build_hierarchical_structure(thr->ht,thr->messages);
+  /* }}} */
 
   return ptr;
 }

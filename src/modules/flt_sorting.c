@@ -65,8 +65,33 @@ int flt_sorting_threads_cmp(const void *a,const void *b) {
 }
 /* }}} */
 
-void flt_sorting_sort_messages(t_array *threads) {
+/* {{{ flt_sorting_msgs_cmp */
+int flt_sorting_msgs_cmp(const void *a,const void *b) {
+  t_hierarchical_node *na = (t_hierarchical_node *)a;
+  t_hierarchical_node *nb = (t_hierarchical_node *)b;
+
+  if(sort_messages == CF_SORT_ASCENDING) {
+    if(na->msg->date > nb->msg->date) return 1;
+    else if(na->msg->date < nb->msg->date) return -1;
+  }
+  else {
+    if(na->msg->date > nb->msg->date) return -1;
+    else if(na->msg->date < nb->msg->date) return 1;
+  }
+
+  return 0;
 }
+/* }}} */
+
+/* {{{ flt_sorting_sort_messages */
+void flt_sorting_sort_messages(t_hierarchical_node *h) {
+  size_t i;
+
+  array_sort(&h->childs,flt_sorting_msgs_cmp);
+
+  for(i=0;i<h->childs.elements;++i) flt_sorting_sort_messages(array_element_at(&h->childs,i));
+}
+/* }}} */
 
 /* {{{ flt_sorting_sort */
 #ifndef CF_SHARED_MEM
@@ -75,10 +100,17 @@ int flt_sorting_sort(t_cf_hash *head,t_configuration *dc,t_configuration *vc,int
 int flt_sorting_sort(t_cf_hash *head,t_configuration *dc,t_configuration *vc,void *ptr,t_array *threads)
 #endif
 {
+  size_t i;
+  t_cl_thread *thr;
+
   /* sort threads first */
   array_sort(threads,flt_sorting_threads_cmp);
 
-  flt_sorting_sort_messages(threads);
+  for(i=0;i<threads->elements;++i) {
+    thr = array_element_at(threads,i);
+    flt_sorting_sort_messages(thr->ht);
+    cf_msg_linearize(thr->ht);
+  }
 
   return FLT_OK;
 }

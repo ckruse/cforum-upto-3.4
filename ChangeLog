@@ -1,3 +1,11 @@
+2005-01-14 Christian Kruse <ckruse@wwwtech.de>
+	* src/clientlib.h: Added t_hierarchical_node and some prototypes for handling
+		them
+	* src/modules/flt_xmlstorage.c: Little bit code cleaning
+	* src/modules/flt_sorting.c: Implemented message sorting
+	* src/communication.c: Added hierarchical structure in threads
+	* src/messageutils.c: Added some functions to handle hierarchical messages
+
 2005-01-13 Christian Kruse <ckruse@wwwtech.de>
 	* src/fo_view.c: Small bugfix (cut'n'paste is evil!)
 	* src/clientlib.h: Invented thread->newest

@@ -76,10 +76,17 @@ typedef struct s_message {
   struct s_message *prev; /**< The pointer to the previous message in the chain */
 } t_message;
 
+typedef struct s_hierchical_node {
+  t_message *msg;
+  t_array childs;
+} t_hierarchical_node;
+
 /** This struct is used to store and handle whole threads */
 typedef struct s_cl_thread {
   u_int64_t tid; /**< The thread id */
   u_int32_t msg_len; /**< The number of messages */
+
+  t_hierarchical_node *ht; /**< Thread in hierarchical datatypes */
 
   t_message *messages; /**< Pointer to the first message (thread message) in the chain */
   t_message *last; /**< Pointer to the last message in the chain */
@@ -353,6 +360,22 @@ void cf_cleanup_message(t_message *msg);
  * \param thr The thread to clean up
  */
 void cf_cleanup_thread(t_cl_thread *thr);
+
+/**
+ * Insert the postings to a hierarchy level. This function works recursively.
+ * \param parent The parent t_hierarchical structure
+ * \param msg The message pointer
+ * \return The pointer to the next posting in a hierarchy level smaller or equal to ours.
+ */
+t_message *cf_msg_build_hierarchical_structure(t_hierarchical_node *parent,t_message *msg);
+
+/**
+ * This function serializes a hierarchical structure into a flat chain
+ * \param node The t_hierarchical_node node
+ * \return A posting in this or lower than this hierarchy level or NULL
+ */
+t_message *cf_msg_linearize(t_hierarchical_node *node);
+
 
 /**
  * Run VIEW_LIST_HANDLER handlers.

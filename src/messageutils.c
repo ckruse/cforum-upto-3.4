@@ -131,6 +131,20 @@ void cf_destroy_flag(void *data) {
 }
 /* }}} */
 
+/* {{{ _cf_cleanup_hierarchical */
+void _cf_cleanup_hierarchical(t_hierarchical_node *n) {
+  size_t i;
+  t_hierarchical_node *tmp;
+
+  for(i=0;i<n->childs.elements;++i) {
+    tmp = array_element_at(&n->childs,i);
+    _cf_cleanup_hierarchical(tmp);
+  }
+
+  array_destroy(&n->childs);
+}
+/* }}} */
+
 /* {{{ cf_cleanup_message */
 void cf_cleanup_message(t_message *msg) {
   str_cleanup(&msg->author);
@@ -152,13 +166,91 @@ void cf_cleanup_message(t_message *msg) {
 void cf_cleanup_thread(t_cl_thread *thr) {
   t_message *msg = thr->messages,*last = thr->messages;
 
+  _cf_cleanup_hierarchical(thr->ht);
+  free(thr->ht);
+
   for(;msg;msg=last) {
     last = msg->next;
 
     cf_cleanup_message(msg);
     free(msg);
   }
+}
+/* }}} */
 
+/* {{{ cf_msg_build_hierarchical_structure */
+t_message *cf_msg_build_hierarchical_structure(t_hierarchical_node *parent,t_message *msg) {
+  t_message *m;
+  int lvl;
+  t_hierarchical_node h;
+
+  m   = msg;
+  lvl = m->level;
+
+  while(m) {
+    if(m->level == lvl) {
+      if(!parent->childs.element_size) array_init(&parent->childs,sizeof(*parent),NULL);
+
+      memset(&h,0,sizeof(h));
+
+      h.msg = m;
+      array_push(&parent->childs,&h);
+      m = m->next;
+    }
+    else if(m->level > lvl) m = cf_msg_build_hierarchical_structure(array_element_at(&parent->childs,parent->childs.elements-1),m);
+    else return m;
+  }
+
+  return NULL;
+}
+/* }}} */
+
+/* {{{ cf_msg_linearize */
+t_message *cf_msg_linearize(t_hierarchical_node *node) {
+  size_t i;
+  t_message *p;
+  t_hierarchical_node *tmp,*tmp1;
+
+  if(node->childs.elements) {
+    tmp = array_element_at(&node->childs,0);
+    node->msg->next = tmp->msg;
+    tmp->msg->prev  = node->msg;
+
+    for(i=0;i<node->childs.elements;++i) {
+      tmp = array_element_at(&node->childs,i);
+
+      if(tmp->childs.elements) {
+        p = cf_msg_linearize(tmp);
+
+        if(i < node->childs.elements-1) {
+          tmp1 = array_element_at(&node->childs,i+1);
+          p->next = tmp1->msg;
+          tmp1->msg->prev = p;
+        }
+        else {
+          p->next = NULL;
+          return p;
+        }
+      }
+      else {
+        if(i < node->childs.elements-1) {
+          tmp1 = array_element_at(&node->childs,i+1);
+          tmp->msg->next = tmp1->msg;
+          tmp1->msg->prev = tmp->msg;
+        }
+        else {
+          tmp->msg->next = NULL;
+          return tmp->msg;
+        }
+      }
+    }
+  }
+  else {
+    node->msg->next = NULL;
+    return node->msg;
+  }
+
+  return NULL;
 }
 /* }}} */
 
