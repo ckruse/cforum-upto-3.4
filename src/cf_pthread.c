@@ -28,15 +28,20 @@
 
 #include <sys/time.h>
 
+#include <errno.h>
+
+struct sockaddr_un;
+
 #include "cf_pthread.h"
 
 #include "hashlib.h"
-#include "readline.h"
 #include "utils.h"
 #include "configparser.h"
 #include "readline.h"
-#include "fo_server.h"
+
 #include "serverlib.h"
+#include "fo_server.h"
+
 /* }}} */
 
 
@@ -215,6 +220,7 @@ void cf_rwlock_wrlock(const u_char *file,const int line,t_cf_rwlock *rwlock) {
 
 /* {{{ cf_rwlock_unlock */
 void cf_rwlock_unlock(const u_char *file,const int line,t_cf_rwlock *rwlock) {
+  int status;
 
   if((status = pthread_rwlock_unlock(&rwlock->rwlock)) != 0) {
     cf_log(CF_ERR,__FILE__,__LINE__,"pthread_rwlock_unlock: %s\n",strerror(status));
@@ -241,7 +247,7 @@ void cf_rwlock_unlock(const u_char *file,const int line,t_cf_rwlock *rwlock) {
 /* {{{ cf_cond_init */
 void cf_cond_init(const u_char *name,t_cf_cond *cond,const pthread_condattr_t *attr) {
   cond->name = strdup(name);
-  pthread_mutex_init(&cond->lock);
+  pthread_mutex_init(&cond->lock,NULL);
   pthread_cond_init(&cond->cond,attr);
 }
 /* }}} */
@@ -339,7 +345,7 @@ void cf_cond_broadcast(t_cf_cond *cond) {
 /* }}} */
 
 /* {{{ cf_cond_wait */
-void cf_cond_wait(cf_cond_t *cond) {
+void cf_cond_wait(t_cf_cond *cond) {
   #ifdef _FO_LOCK_DEBUG
   struct timeval tv1,tv2;
   struct timezone tz;

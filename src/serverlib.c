@@ -137,6 +137,36 @@ void cf_rw_list_destroy(t_cf_rw_list_head *head,void (*destroy)(void *data)) {
 /* }}} */
 /* }}} */
 
+/* {{{ cf_setup_shared_mem */
+void cf_setup_shared_mem(t_forum *forum) {
+  union semun smn;
+  unsigned short x = 0;
+  t_name_value *v = cfg_get_first_value(&fo_default_conf,forum->name,"SharedMemIds");
+
+  if((forum->shm.sem = semget(atoi(v->values[2]),1,S_IRWXU|S_IRWXG|S_IRWXO|IPC_CREAT)) == -1) {
+    cf_log(CF_ERR,__FILE__,__LINE__,"semget: %s\n",strerror(errno));
+    exit(-1);
+  }
+
+  smn.array = &x;
+  if(semctl(forum->shm.sem,0,SETALL,smn) == -1) {
+    cf_log(CF_ERR,__FILE__,__LINE__,"semctl: %s\n",strerror(errno));
+    exit(-1);
+  }
+
+  /* check if there are shared memory segments and, if there are, report an error */
+  if(shmget(atoi(v->values[0]),0,0) != -1) {
+    cf_log(CF_ERR,__FILE__,__LINE__,"The shared memory segments for forum %s already exist! This can be because of a crash, but this can also be because of a running server with this ids. We exit, please repair!\n",forum->name);
+    exit(-1);
+  }
+
+  if(shmget(atoi(v->values[1]),0,0) != -1) {
+    cf_log(CF_ERR,__FILE__,__LINE__,"The shared memory segments for forum %s already exist! This can be because of a crash, but this can also be because of a running server with this ids. We exit, please repair!\n",forum->name);
+    exit(-1);
+  }
+}
+/* }}} */
+
 /* {{{ cf_register_forum */
 t_forum *cf_register_forum(const u_char *name) {
   t_forum *forum = fo_alloc(NULL,1,sizeof(*forum),FO_ALLOC_MALLOC);
@@ -151,12 +181,14 @@ t_forum *cf_register_forum(const u_char *name) {
   forum->date.visible = forum->date.invisible = 0;
 
   #ifdef CF_SHARED_MEM
-  nv = cfg_get_first_value(&fo_server_conf,name,"SharedMemIds");
+  nv = cfg_get_first_value(&fo_default_conf,name,"SharedMemIds");
   forum->shm.ids[0] = atoi(nv->values[0]);
   forum->shm.ids[1] = atoi(nv->values[1]);
   forum->shm.sem    = atoi(nv->values[2]);
 
   cf_mutex_init("forum.shm.lock",&forum->shm.lock);
+
+  cf_setup_shared_mem(forum);
   #endif
 
   cf_rwlock_init("forum.lock",&forum->lock);

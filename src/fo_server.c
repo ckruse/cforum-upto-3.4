@@ -50,9 +50,9 @@
 #include "hashlib.h"
 #include "utils.h"
 #include "configparser.h"
+#include "readline.h"
 #include "serverlib.h"
 #include "fo_server.h"
-#include "readline.h"
 /* }}} */
 
 /* {{{ setup_server_environment */
@@ -66,7 +66,7 @@ void setup_server_environment(const u_char *pidfile) {
   if(stat(pidfile,&st) == 0) {
     fprintf(stderr,"the PID file (%s) exists! Maybe there is already an instance running" \
       "or the server crashed. However, if there is no instance running you" \
-      "should remove the file. Sorry, but I have to exit",
+      "should remove the file. Sorry, but I have to exit\n",
       pidfile
     );
 
@@ -80,7 +80,7 @@ void setup_server_environment(const u_char *pidfile) {
 
   pid = getpid();
   len = snprintf(buff,50,"%d",pid);
-  fwrite(fd,buff,len,1,fd);
+  fwrite(buff,len,1,fd);
   fclose(fd);
 }
 /* }}} */
@@ -101,6 +101,20 @@ void usage(void) {
 }
 /* }}} */
 
+/* {{{ flsh */
+void flsh(int sig) {
+  cf_log(CF_STD|CF_FLSH,__FILE__,__LINE__,"flushing file handles...\n");
+  cf_log(CF_ERR|CF_FLSH,__FILE__,__LINE__,"flushing file handles...\n");
+}
+/* }}} */
+
+/* {{{ terminate */
+void terminate(int sig) {
+  cf_log(CF_STD|CF_FLSH,__FILE__,__LINE__,"got SIGTERM, terminating\n");
+  RUN = 0;
+}
+/* }}} */
+
 /* {{{ struct option server_cmdline_options[] */
 static struct option server_cmdline_options[] = {
   { "pid-file",         1, NULL, 'p' },
@@ -111,6 +125,9 @@ static struct option server_cmdline_options[] = {
 };
 /* }}} */
 
+t_head head;
+int RUN = 1;
+
 static const u_char *wanted[] = {
   "fo_default", "fo_server"
 };
@@ -119,19 +136,24 @@ int main(int argc,char *argv[]) {
   pid_t pid;
 
   int c,
+	    j,
+			ret,
       sock,
       connfd,
+			status,
       error = 1,
       daemonize = 0,
+			max_threads = 0,
       start_threads = 0,
       spare_threads = 0;
 
-  size_t i;
+  size_t i,
+	       size;
 
   fd_set rfds;
 
   u_char *pidfile = NULL,
-         *cfgfile;
+         *fname;
 
   t_array *cfgfiles;
 
@@ -144,26 +166,39 @@ int main(int argc,char *argv[]) {
 
   t_forum *actforum;
 
+  t_internal_config *icfg;
+
   t_cf_list_element *elem;
   t_server *srv;
-  pthread_attr_t attr;
+  pthread_attr_t thread_attr;
   pthread_t thread;
   struct sockaddr_un addr;
   struct timeval timeout;
+  struct sched_param param;
+
+  /* set signal handlers */
+  signal(SIGPIPE,SIG_IGN);
+  signal(SIGINT,flsh);
+  signal(SIGHUP,flsh);
+  signal(SIGTERM,terminate);
+
 
   /* {{{ initialize  variables */
   cf_rwlock_init("head.lock",&head.lock);
   cf_rw_list_init("head.workers",&head.workers.list);
 
-  cf_mutex_init("head.log.lock",&head.log.lock);
+  pthread_mutex_init(&head.log.lock,NULL);
   head.log.std = NULL;
   head.log.err = NULL;
+
+  /* \todo write cleanup code */
+  head.forums  = cf_hash_new(NULL);
 
   head.workers.num = 0;
   head.clients.num = 0;
 
   cf_list_init(&head.clients.list);
-  cf_cond_init("head.clients.cond",&head.clients.cond);
+  cf_cond_init("head.clients.cond",&head.clients.cond,NULL);
   cf_mutex_init("head.clients.lock",&head.clients.lock);
 
   cf_mutex_init("head.servers.lock",&head.servers.lock);
@@ -225,6 +260,25 @@ int main(int argc,char *argv[]) {
   free(cfgfiles);
   /* }}} */
 
+  /* {{{ check if all forum contexts are present */
+  forums = cfg_get_first_value(&fo_server_conf,NULL,"Forums");
+  for(i=0;i<forums->valnum;i++) {
+    status = 0;
+    for(elem=fo_server_conf.forums.elements;elem;elem=elem->next) {
+      icfg = (t_internal_config *)elem->data;
+      if(cf_strcmp(icfg->name,forums->values[i]) == 0) {
+        status = 1;
+        break;
+      }
+    }
+
+    if(status == 0) {
+      printf("Could not find context for forum %s! Exiting!\n",forums->values[i]);
+      exit(-1);
+    }
+  }
+  /* }}} */
+
   if(!pidfile) {
     pidfile_nv = cfg_get_first_value(&fo_server_conf,NULL,"PIDFile");
     pidfile    = strdup(pidfile_nv->values[0]);
@@ -250,7 +304,7 @@ int main(int argc,char *argv[]) {
       break;
     }
 
-    cf_log(CF_STD,__FILE__,__LINE__,"Loaded data for forum %s\n",forums->values[i]);
+    cf_log(CF_STD|CF_FLSH,__FILE__,__LINE__,"Loaded data for forum %s\n",forums->values[i]);
   }
   /* }}} */
 
@@ -310,24 +364,24 @@ int main(int argc,char *argv[]) {
      * scheduling...
      */
     #ifdef _POSIX_THREAD_PRIORITY_SCHEDULING
-    memset(&param,0,sizeof(struct sched_param));
+    memset(&param,0,sizeof(param));
 
     param.sched_priority = (sched_get_priority_min(SCHEDULING) + sched_get_priority_max(SCHEDULING)) / 2;
 
     pthread_setschedparam(pthread_self(),SCHEDULING,&param);
 
     param.sched_priority++;
-    pthread_attr_setschedparam(&attr,&param);
-    pthread_attr_setinheritsched(&attr,PTHREAD_INHERIT_SCHED);
+    pthread_attr_setschedparam(&thread_attr,&param);
+    pthread_attr_setinheritsched(&thread_attr,PTHREAD_INHERIT_SCHED);
     #endif
 
     /* ok, start worker threads */
     threads = cfg_get_first_value(&fo_server_conf,NULL,"MinThreads");
     start_threads = atoi(threads->values[0]);
 
-    for(i=0;i<start_threads;i++) {
-      if((status = pthread_create(&thread,&attr,cf_worker,NULL)) != 0) {
-        cf_log(LOG_ERR,__FILE__,__LINE__,"error creating worker thread %d: %s\n",i,strerror(errno));
+    for(j=0;j<start_threads;j++) {
+      if((status = pthread_create(&thread,&thread_attr,cf_worker,NULL)) != 0) {
+        cf_log(CF_ERR,__FILE__,__LINE__,"error creating worker thread %u: %s\n",j,strerror(errno));
         exit(-1);
       }
 
@@ -336,15 +390,18 @@ int main(int argc,char *argv[]) {
     }
 
     /* needed later */
-    threads = cfg_get_first_value(&fo_server_conf,NULL,"SpareThreads")
+    threads = cfg_get_first_value(&fo_server_conf,NULL,"SpareThreads");
     spare_threads = atoi(threads->values[0]);
+
+		threads = cfg_get_first_value(&fo_server_conf,NULL,"MaxThreads");
+		max_threads = atoi(threads->values[0]);
   }
   /* }}} */
 
   sock = cf_setup_socket(&addr);
-  cf_push_server(sock,&addr,sizeof(addr),cf_cftp_handler);
+  cf_push_server(sock,(struct sockaddr *)&addr,sizeof(addr),cf_cftp_handler);
 
-  cf_log(CF_STD|CF_FLUSH,__FILE__,__LINE__,"Read config, load data, set up socket and generated caches. Now listening...\n");
+  cf_log(CF_STD|CF_FLSH,__FILE__,__LINE__,"Read config, load data, set up socket and generated caches. Now listening...\n");
 
   /* {{{ main loop */
   while(RUN) {
@@ -375,7 +432,7 @@ int main(int argc,char *argv[]) {
     timeout.tv_sec = 10;
 
     /* wait for incoming connections */
-    ret = select(sockfd+1,&rfds,NULL,NULL,&timeout);
+    ret = select(sock+1,&rfds,NULL,NULL,&timeout);
 
     /* timeout? */
     if(ret > 0) {
@@ -391,20 +448,23 @@ int main(int argc,char *argv[]) {
 
           /* accept-error? */
           if(connfd <= 0) {
-            cf_log(LOG_ERR,__FILE__,__LINE__,"accept: %s\n",strerror(errno));
+            cf_log(CF_ERR|CF_FLSH,__FILE__,__LINE__,"accept: %s\n",strerror(errno));
             continue;
           }
 
-          cf_push_client(connfd,srv->worker);
+          cf_push_client(connfd,srv->worker,spare_threads,max_threads,&thread_attr);
         }
       }
 
-      CF_UM(&head.server_lock);
+      CF_UM(&head.servers.lock);
       /* }}} */
     }
 
   }
   /* }}} */
+
+
+  /* \todo cleanup code */
 
   /* cleanup */
   remove(pidfile);
@@ -413,8 +473,8 @@ int main(int argc,char *argv[]) {
   cfg_cleanup(&fo_default_conf);
   cfg_cleanup(&fo_server_conf);
 
-  cfg_cleanup_file(&default_conf);
-  cfg_cleanup_file(&server_conf);
+  cfg_cleanup_file(&dconf);
+  cfg_cleanup_file(&conf);
 
   return EXIT_SUCCESS;
 }

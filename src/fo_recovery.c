@@ -55,7 +55,6 @@
 #include "fo_server.h"
 #include "initfinish.h"
 #include "serverlib.h"
-#include "xml_handling.h"
 #include "archiver.h"
 /* }}} */
 

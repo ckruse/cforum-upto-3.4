@@ -65,7 +65,7 @@ t_conf_opt default_options[] = {
   { "MessagePath",              handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_default_conf },
   { "ArchivePath",              handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_default_conf },
   { "ThreadIndexFile",          handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_default_conf },
-  { "SocketName",               handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_default_conf },
+  { "SocketName",               handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_GLOBAL,&fo_default_conf },
   { "BaseURL",                  handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_default_conf },
   { "UBaseURL",                 handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_default_conf },
   { "PostingURL",               handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_default_conf },
@@ -298,7 +298,7 @@ int parse_args(u_char *fname,u_char *line,u_char ***args,int lnum) {
     /*
      * skip trailing whitespaces
      */
-    for(;*ptr && isspace(*ptr) && *ptr != (u_char)012;ptr++);
+    for(;*ptr && isspace(*ptr) && *ptr != (u_char)012;++ptr);
     if(*ptr == (u_char)012 || *ptr == (u_char)0 || *ptr == '#') break; /* end of line or end of file or comment */
 
     if(*ptr != '"') {
@@ -309,7 +309,7 @@ int parse_args(u_char *fname,u_char *line,u_char ***args,int lnum) {
     str_init(&argument);
     run = 1;
 
-    for(ptr++;*ptr && run;ptr++) {
+    for(++ptr;*ptr && run;++ptr) {
       switch(*ptr) {
         case '\\':
           switch(*++ptr) {
@@ -350,17 +350,10 @@ int parse_args(u_char *fname,u_char *line,u_char ***args,int lnum) {
 }
 /* }}} */
 
-/* {{{ read_config
- * Returns: int              0 on success, 1 on error
- * Parameters:
- *   - t_configuration conf  the configuration structure
- *
- * This function parses an configuration structure
- *
- */
+/* {{{ read_config */
 int read_config(t_configfile *conf,t_take_default deflt,int mode) {
-  int fd  = open(conf->filename,O_RDONLY);
-  u_char *buff;
+  int fd = open(conf->filename,O_RDONLY);
+  u_char *buff,buff1[512];
   u_char *ptr,*ptr1;
   struct stat st;
   u_char *directive_name;
@@ -372,7 +365,14 @@ int read_config(t_configfile *conf,t_take_default deflt,int mode) {
   t_cf_list_element *lelem;
   u_char *context = NULL;
   t_string mpath;
+  size_t len,j;
+  t_cf_hash *hsh;
+  t_array ary;
 
+  hsh = cf_hash_new(NULL);
+  array_init(&ary,sizeof(u_char **),NULL);
+
+  /* {{{ initializing */
   /*
    * open() could fail :)
    */
@@ -392,6 +392,7 @@ int read_config(t_configfile *conf,t_take_default deflt,int mode) {
     perror("mmap");
     return 1;
   }
+  /* }}} */
 
   ptr = buff;
 
@@ -404,8 +405,9 @@ int read_config(t_configfile *conf,t_take_default deflt,int mode) {
     /* we're at the next line */
     ++linenum;
 
+    /* {{{ get beginning of directive */
     /* first, lets find the beginning of the line (whitespaces have to be ignored) */
-    for(;*ptr && isspace(*ptr);ptr++);
+    for(;*ptr && isspace(*ptr);++ptr);
 
     /* eof */
     if(!*ptr) break;
@@ -413,17 +415,18 @@ int read_config(t_configfile *conf,t_take_default deflt,int mode) {
     /* comment - continue with next line */
     if(*ptr == '#') {
       /* read until the end of the line */
-      for(;*ptr && *ptr != (u_char)012;ptr++);
+      for(;*ptr && *ptr != (u_char)012;++ptr);
       if(!*ptr) break;
-      ptr += 1;
+      ++ptr;
       continue;
     }
 
     /* got end of line - continue with next line */
     if(*ptr == (u_char)012) {
-      ptr += 1;
+      ++ptr;
       continue;
     }
+    /* }}} */
 
     /* ok, we're at the beginning of the directive. */
     ptr1 = ptr;
@@ -463,7 +466,7 @@ int read_config(t_configfile *conf,t_take_default deflt,int mode) {
       }
 
       if(!isalnum(*ptr)) {
-        fprintf(stderr,"[%s:%d] Config file syntax error!\n",conf->filename,linenum);
+        fprintf(stderr,"[%s:%d] Config file syntax error! Got Forum but identifier consists of characters not alnum (%c)\n",conf->filename,linenum,*ptr);
         close(fd);
         munmap(buff,st.st_size);
         return 1;
@@ -495,7 +498,11 @@ int read_config(t_configfile *conf,t_take_default deflt,int mode) {
       }
 
       context = strndup(ptr1,ptr-ptr1);
+
       free(directive_name);
+      directive_name = strdup(context);
+      array_push(&ary,&directive_name);
+
 
       for(;*ptr && isspace(*ptr);++ptr);
 
@@ -533,7 +540,7 @@ int read_config(t_configfile *conf,t_take_default deflt,int mode) {
       free(args);
 
       /* now everything whith this directive has finished. Find end of line... */
-      for(;*ptr && *ptr != (u_char)012;ptr++);
+      for(;*ptr && *ptr != (u_char)012;++ptr);
 
       continue;
     }
@@ -564,7 +571,7 @@ int read_config(t_configfile *conf,t_take_default deflt,int mode) {
       free(args);
 
       /* now everything whith this directive has finished. Find end of line... */
-      for(;*ptr && *ptr != (u_char)012;ptr++);
+      for(;*ptr && *ptr != (u_char)012;++ptr);
 
       continue;
     }
@@ -593,7 +600,11 @@ int read_config(t_configfile *conf,t_take_default deflt,int mode) {
 
       if((opt->flags & mode)) {
         /* mark option as seen */
-        opt->flags |= CFG_OPT_SEEN;
+        if(context) {
+          len = snprintf(buff1,512,"%s_%s",context,directive_name);
+          cf_hash_set(hsh,buff1,len,"1",1);
+        }
+        else opt->flags |= CFG_OPT_SEEN;
 
         if(opt->callback) found = opt->callback(conf,opt,context,args,argnum);
       }
@@ -605,9 +616,7 @@ int read_config(t_configfile *conf,t_take_default deflt,int mode) {
       }
     }
     else {
-      if(deflt) {
-        found = deflt(conf,directive_name,context,args,argnum);
-      }
+      if(deflt) found = deflt(conf,directive_name,context,args,argnum);
       else {
         fprintf(stderr,"[%s:%d] Configuration entry for directive %s not found!\n",conf->filename,linenum,directive_name);
         return 1;
@@ -629,7 +638,7 @@ int read_config(t_configfile *conf,t_take_default deflt,int mode) {
     free(directive_name);
 
     /* now everything whith this directive has finished. Find end of line... */
-    for(;*ptr && *ptr != (u_char)012;ptr++);
+    for(;*ptr && *ptr != (u_char)012;++ptr);
 
     /* eof */
     if(!*ptr) break;
@@ -644,9 +653,23 @@ int read_config(t_configfile *conf,t_take_default deflt,int mode) {
     opt = (t_conf_opt *)lelem->data;
     if(opt->flags & CFG_OPT_NEEDED) {
       if(opt->flags & mode) {
-        if((opt->flags & CFG_OPT_SEEN) == 0) {
-          fatal = 1;
-          fprintf(stderr,"missing configuration entry %s in %s\n",opt->name,conf->filename);
+        /* ah, this directive has to be in every context */
+        if(opt->flags & CFG_OPT_LOCAL) {
+          for(j=0;j<ary.elements;++j) {
+            context = *((u_char **)array_element_at(&ary,j));
+            len = snprintf(buff1,512,"%s_%s",context,opt->name);
+            if(cf_hash_get(hsh,buff1,len) == NULL) {
+              fatal = 1;
+              fprintf(stderr,"missing configuration entry %s in %s for context %s\n",opt->name,conf->filename,context);
+            }
+          }
+        }
+        /* global directive */
+        else {
+          if((opt->flags & CFG_OPT_SEEN) == 0) {
+            fatal = 1;
+            fprintf(stderr,"missing configuration entry %s in %s\n",opt->name,conf->filename);
+          }
         }
       }
     }
@@ -698,6 +721,7 @@ int handle_command(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_c
       icfg = fo_alloc(NULL,1,sizeof(*icfg),FO_ALLOC_MALLOC);
       icfg->name = strdup(context);
       cf_tree_init(&icfg->directives,cfg_compare,NULL);
+      cf_list_append_static(&conf->forums,icfg,sizeof(*icfg));
     }
 
     tr = &icfg->directives;
@@ -885,7 +909,6 @@ t_cf_list_head *cfg_get_value(t_configuration *cfg,const u_char *context,const u
     tr = &icfg->directives;
   }
   else tr = &cfg->global_directives;
-
 
   if((dt = cf_tree_find(tr,tr->root,&dt1)) != NULL) return dt->data;
 

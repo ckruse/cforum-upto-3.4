@@ -192,4 +192,6 @@ void *cf_generate_cache(void *arg);
 t_thread *cf_get_thread(t_forum *forum,u_int64_t tid);
 t_posting *cf_get_posting(t_thread *t,u_int64_t mid);
 
+void *cf_worker(void *arg);
+
 /* eof */
