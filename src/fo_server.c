@@ -506,6 +506,9 @@ int main(int argc,char *argv[]) {
   }
   /* }}} */
 
+  /* give workers time to wait for conditional */
+  sleep(1);
+
   cf_log(CF_STD|CF_FLSH,__FILE__,__LINE__,"Read config, load data, set up socket and generated caches. Now listening...\n");
 
   /* {{{ main loop */
@@ -567,6 +570,8 @@ int main(int argc,char *argv[]) {
 
   }
   /* }}} */
+
+  RUN = 0;
 
   /*
    * Cleanup code follows

@@ -120,6 +120,7 @@ t_forum *cf_register_forum(const u_char *name) {
   forum->threads.last_tid = forum->threads.last_mid = 0;
   forum->threads.threads  = cf_hash_new(NULL);
   forum->threads.list     = NULL;
+  forum->threads.last     = NULL;
 
   cf_rwlock_init("forum.threads.lock",&forum->threads.lock);
 

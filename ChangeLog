@@ -3,6 +3,9 @@
 	* cgi-shared/Plugins/MarkOwnVisited.pm: Removed CheckRFC.pm, fixed little bug
 	* cgi-shared/Plugins/PostOkLink.pm: Removed CheckRFC.pm
 	* cgi-shared/Makefile.am: Removed CheckRFC.pm
+	* src/serverlib.c: Bugfix in t_forum initialization
+	* src/fo_server.c: Now setting RUN explicitely to 0 to ensure that (in error
+		case) the worker- and periodical threads end.
 
 2005-01-14 Christian Kruse <ckruse@wwwtech.de>
 	* src/clientlib.h: Added t_hierarchical_node and some prototypes for handling
