@@ -3,6 +3,8 @@
 	* src/modules/flt_deleted.c: Small bugfix in order
 	* src/modules/flt_openclose.c: Changed behavior; opened and closed threads are
 		now saved on the server
+	* conf/modules.de.xml: Added OcDbFile directive (invisible)
+	* src/perl/Plugins/Pathes.pm: Added OcDbFile directive
 
 2005-04-02 Christian Kruse <ckruse@wwwtech.de>
 	* src/fo_view.c: Removed print_thread_structure()

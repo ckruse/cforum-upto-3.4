@@ -5,6 +5,7 @@
   <directive name="DeletedFile" invisible="yes"/>
   <directive name="VisitedFile" invisible="yes"/>
   <directive name="MailUserDB"  invisible="yes"/>
+  <directive name="OcDbFile"    invisible="yes"/>
 
   <page title="Anzeige-Funktionen" id="viewfuncs">
     <section name="Design-Ändernde Anzeige-Funktionen">
