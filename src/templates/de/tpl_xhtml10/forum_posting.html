@@ -118,6 +118,7 @@
     <link rel="bookmark" href="http://aktuell.de.selfhtml.org/artikel/" title="Feature-Artikel" />
     <link rel="bookmark" href="http://aktuell.de.selfhtml.org/tippstricks/" title="Tipps+Tricks" />
     <link rel="bookmark" href="http://aktuell.de.selfhtml.org/links/" title="Linkverzeichnis" />
+    {if $ownjs}<script type="text/javascript" src="{$ownjs}"></script>{endif}
   </head>
   <body id="selfforumbody">
     <div class="nav"><a class="an" name="top"><img src="http://src.selfhtml.org/refkap.gif" width="16" height="13" alt="Teil von" /></a>&nbsp;<a href="{if $forumreturn}{$forumreturn}{else}{$forumbase}{endif}"{if $frame} onclick="window.open(this,'_top'); return false;"{endif}>SELFHTML Forum</a></div>

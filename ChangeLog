@@ -1,3 +1,8 @@
+2004-11-04 Christian Kruse <ckruse@wwwtech.de>
+	* src/templates/{de,fr}/tpl_*/forum_posting.html,
+		src/templates/{de,fr}/tpl_*/forum_begin.html: Fixed a bug, now JS will be
+		included
+
 2004-11-02 Christian Kruse <ckruse@wwwtech.de>
 	* src/modules/flt_directives.c: Bugfix in @title handling for [pref:]
 	* src/modules/flt_deleted.c: Bugfix, used uninitialized variable
