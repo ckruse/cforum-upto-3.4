@@ -1,6 +1,9 @@
 2004-10-27 Christian Kruse <ckruse@wwwtech.de>
 	* src/htmllib.c: Bugfix in directive parser
 	* cgi-shared/ForumUtils.pm: Bugfix in directive parsing
+	* src/modules/flt_directives.c: Bugfix in directive parsing
+	* src/fo_server.h, src/serverlib.c, src/fo_server.c: further developement of
+		the server components
 
 2004-10-26 Christian Kruse <ckruse@wwwtech.de>
 	* src/fo_server.h, src/cf_pthread.c, src/cf_pthread.h,

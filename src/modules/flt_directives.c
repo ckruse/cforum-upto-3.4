@@ -60,7 +60,7 @@ static t_array flt_directives_ref_uris = { 0, 0, 0, NULL, NULL };
 static t_array flt_directives_lt_toks  = { 0, 0, 0, NULL, NULL };
 
 /* {{{ flt_directives_is_valid_pref */
-int flt_directives_is_valid_pref(const u_char *parameter,u_char **tmp) {
+int flt_directives_is_valid_pref(const u_char *parameter,u_char **tmp,u_char **tmp1) {
   u_char *ptr;
 
   /* strict syntax checking for [pref:], necessary because of some idiots */
@@ -75,6 +75,12 @@ int flt_directives_is_valid_pref(const u_char *parameter,u_char **tmp) {
 
             for(;*ptr && isdigit(*ptr);++ptr);
 
+            if(cf_strncmp(ptr,"@title=",7) == 0) {
+              *tmp1 = ptr;
+              return 1;
+            }
+
+            *tmp1 = NULL;
             if(*ptr == '\0') return 1;
           }
         }
@@ -353,7 +359,7 @@ int flt_directives_execute(t_configuration *fdc,t_configuration *fvc,const u_cha
     if(cf_strcmp(directive,"pref") == 0) {
       tid = mid = 0;
 
-      if(flt_directives_is_valid_pref(parameter,&tmp1)) {
+      if(flt_directives_is_valid_pref(parameter,&tmp1,&tmp2)) {
         tid = str_to_u_int64(parameter+2);
         mid = str_to_u_int64(tmp1);
         tmp1 = get_link(vs->values[0],tid,mid);
@@ -361,6 +367,12 @@ int flt_directives_execute(t_configuration *fdc,t_configuration *fvc,const u_cha
         if(sig == 0 && cite) {
           str_chars_append(cite,"[link:",6);
           str_chars_append(cite,tmp1,strlen(tmp1));
+
+          if(tmp2) {
+            str_chars_append(cite,"@title=",7);
+            str_chars_append(cite,tmp2,strlen(tmp2));
+          }
+
           str_char_append(cite,']');
         }
 
@@ -373,7 +385,8 @@ int flt_directives_execute(t_configuration *fdc,t_configuration *fvc,const u_cha
         }
 
         str_chars_append(content,"\">",2);
-        str_chars_append(content,tmp1,strlen(tmp1));
+        if(tmp2) str_chars_append(content,tmp2,strlen(tmp2));
+        else str_chars_append(content,tmp1,strlen(tmp1));
         str_chars_append(content,"</a>",4);
 
         free(tmp1);

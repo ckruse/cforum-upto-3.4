@@ -155,6 +155,7 @@ typedef struct s_forum {
 } t_forum;
 /* }}} */
 
+/* {{{ t_head */
 /** This is the structure for the global 'I contain all necessary information' variable */
 typedef struct s_head {
   /** The read-write-lock */
@@ -205,6 +206,7 @@ typedef struct s_head {
   t_cf_hash *forums;
 
 } t_head;
+/* }}} */
 
 extern int    RUN; /**< Shall the server still run or shall we shutdown? */
 extern t_head head; /**< The head variable. Contains all neccessary information about the server. */

@@ -10,7 +10,6 @@
  * $LastChangedDate$
  * $LastChangedRevision$
  * $LastChangedBy$
- *
  */
 /* }}} */
 
@@ -64,9 +63,9 @@ void setup_server_environment(const u_char *pidfile) {
   size_t len;
 
   if(stat(pidfile,&st) == 0) {
-    fprintf(stderr,"the PID file (%s) exists! Maybe there is already an instance running\n" \
-      "or the server crashed. However, if there is no instance running you\n" \
-      "should remove the file. Sorry, but I have to exit\n",
+    fprintf(stderr,"the PID file (%s) exists! Maybe there is already an instance running" \
+      "or the server crashed. However, if there is no instance running you" \
+      "should remove the file. Sorry, but I have to exit",
       pidfile
     );
 

@@ -91,14 +91,12 @@ t_forum *cf_register_forum(const u_char *name) {
   t_name_value *nv;
 
   forum->name = strdup(name);
-  forum->fresh = 0;
+  forum->fresh = forum->locked = 0;
 
   str_init(&forum->cache.visible);
   str_init(&forum->cache.invisible);
 
   forum->date.visible = forum->date.invisible = 0;
-
-  forum->locked = 0;
 
   #ifdef CF_SHARED_MEM
   nv = cfg_get_first_value(&fo_server_conf,name,"SharedMemIds");
@@ -113,8 +111,8 @@ t_forum *cf_register_forum(const u_char *name) {
 
   forum->threads.last_tid = forum->threads.last_mid = 0;
   forum->threads.threads  = cf_hash_new(NULL);
+  forum->threads.list     = NULL;
 
-  cf_rw_list_init("forum.threads.thread_list",&forum->threads.thread_list);
   cf_rwlock_init("forum.threads.lock",&forum->threads.lock);
 
   forum->uniques.ids = cf_hash_new(NULL);
