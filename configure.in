@@ -79,16 +79,25 @@ if test ! -n "$LIBWWWCFG" ; then
   AC_MSG_ERROR([cannot find libwww-config. Be sure that libwww is installed and libwww-config is in your PATH])
 fi
 
+AC_PATH_PROG(PCRECFG, pcre-config)
+if test ! -n "$PCRECFG" ; then
+  AC_MSG_ERROR([cannot find pcre-config. Be sure that libpcre ist installed and pcre-config is in your PATH])
+fi
+
 GDOME_CFLAGS=`$GDOMECFG --cflags`
 GDOME_LIBS=`$GDOMECFG --libs`
 
 LIBWWW_CFLAGS=`$LIBWWWCFG --cflags`
 LIBWWW_LIBS=`$LIBWWWCFG --libs`
 
+PCRE_CFLAGS=`$PCRECFG --cflags`
+PCRE_LIBS=`$PCRECFG --libs`
+
 CFLAGS="$LIBWWW_CFLAGS $GDOME_CFLAGS $CFLAGS"
 
 AC_SUBST(LIBWWW_LIBS)
 AC_SUBST(GDOME_LIBS)
+AC_SUBST(PCRE_LIBS)
 AC_SUBST(ICONV)
 AC_SUBST(DL)
 

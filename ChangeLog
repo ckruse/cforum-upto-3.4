@@ -1,3 +1,11 @@
+2004-07-22 Christian Kruse <ckruse@wwwtech.de>
+	* src/templates/tpl_*/forum_begin.html: Changed 'Tip' to 'Hinweis'
+	* src/templates/tpl_*/forum_thread.html: Added space between images
+	* src/modules/flt_scoring.lex: Added module for newsreader-like scoring
+	* src/modules/Makefile.am: Added flt_scoring and PCRE-linking for
+		flt_urlrewrite
+	* configure.in: Added PCRE detection
+
 2004-07-21 Jan Rieger <jr@occuris.de>
 	* src/templates/tpl_*/forum_begin.html: Fixed bug #310
 
@@ -7,6 +15,7 @@
 	* src/configparser.c: Added fo_vote_conf in initialization
 	* cgi-shared/config/errormessages.txt: Added error messages for fo_vote
 	* cgi-shared/config/fo_server.conf.in: Added flt_voting
+	* src/modules/flt_deleted.c: Added template variable 'delnodelete'
 
 2004-07-20 Christian Kruse <ckruse@wwwtech.de>
 	* src/hashlib.c: Fixed bug in calloc() call, changed cf_hash_set() behavior:

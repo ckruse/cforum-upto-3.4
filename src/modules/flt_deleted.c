@@ -246,6 +246,8 @@ int flt_del_init_handler(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc)
 
 int flt_del_view_init_handler(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cf_template *begin,t_cf_template *end) {
   if(end && Cfg.CheckBoxes && Cfg.DeletedFile) {
+    if(cf_cgi_get(head,"nd") != NULL) tpl_cf_setvar(begin,"delnodelete","1",1,0);
+
     tpl_cf_setvar(begin,"delcheckbox","1",1,0);
     tpl_cf_setvar(end,"delcheckbox","1",1,0);
   }

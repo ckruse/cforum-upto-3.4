@@ -1,4 +1,9 @@
 
+SUFFIXES=.lex
+
+.lex.c:
+	flex -Pflt_scoring -o$@ $<
+
 pkglib_LTLIBRARIES=flt_admin.la
 flt_admin_la_SOURCES=flt_admin.c
 flt_admin_la_LDFLAGS=-module -export-dynamic -avoid-version
@@ -77,6 +82,7 @@ flt_tplmode_la_LDFLAGS=-module -export-dynamic -avoid-version
 pkglib_LTLIBRARIES+=flt_urlrewrite.la
 flt_urlrewrite_la_SOURCES=flt_urlrewrite.c
 flt_urlrewrite_la_LDFLAGS=-module -export-dynamic -avoid-version
+flt_urlrewrite_la_LIBADD=$(PCRE_LIBS)
 
 pkglib_LTLIBRARIES+=flt_visited.la
 flt_visited_la_SOURCES=flt_visited.c
@@ -120,5 +126,9 @@ pkglib_LTLIBRARIES+=flt_voting.la
 flt_voting_la_SOURCES=flt_voting.c
 flt_voting_la_LDFLAGS=-module -export-dynamic -avoid-version
 
+pkglib_LTLIBRARIES+=flt_scoring.la
+flt_scoring_la_SOURCES=flt_scoring.c
+flt_scoring_la_LDFLAGS=-module -export-dynamic -avoid-version
+flt_scoring_la_LIBADD=$(PCRE_LIBS)
 
 # eof
