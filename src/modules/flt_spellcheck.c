@@ -68,7 +68,7 @@ int flt_spellcheck_replacement_compare(t_flt_spellcheck_replacement *a, t_flt_sp
 
 /* {{{ flt_spellcheck_execute */
 #ifdef CF_SHARED_MEM
-int flt_spellcheck_execute(t_cf_hash *head,t_configuration *dc,t_configuration *pc,t_message *p,void *ptr,int sock,int mode)
+int flt_spellcheck_execute(t_cf_hash *head,t_configuration *dc,t_configuration *pc,t_message *p,void *shm_ptr,int sock,int mode)
 #else
 int flt_spellcheck_execute(t_cf_hash *head,t_configuration *dc,t_configuration *pc,t_message *p,int sock,int mode)
 #endif
