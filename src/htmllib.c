@@ -268,7 +268,7 @@ u_char *parse_message(u_char *start,t_array *stack,t_string *content,t_string *c
         /* }}} */
 
         /* {{{ we got [something something */
-        else if(isspace(*ptr1)) {
+        else if(isspace(*ptr1) || *ptr1 == ']') {
           directive = strndup(ptr+1,ptr1-ptr-1);
           memset(&stack_elem,0,sizeof(stack_elem));
 
@@ -276,7 +276,7 @@ u_char *parse_message(u_char *start,t_array *stack,t_string *content,t_string *c
           fail = 0;
 
           /* ok, we can have multiple arguments in the form of arg=value */
-          while(!sb) {
+          while(!sb && *ptr1 != ']') {
             /* eat up trailing whitespaces */
             for(++ptr1;isspace(*ptr1) || *ptr1 == '=';++ptr1);
 
@@ -313,7 +313,6 @@ u_char *parse_message(u_char *start,t_array *stack,t_string *content,t_string *c
             if(retval == NULL) {
               /* directive is invalid, get defined state */
               free(directive);
-              free(parameter);
               str_cleanup(&d_content);
               str_cleanup(&d_cite);
               free(stack_elem.args);
@@ -352,8 +351,8 @@ u_char *parse_message(u_char *start,t_array *stack,t_string *content,t_string *c
             }
             else ptr = retval;
 
-            str_str_append(content,&d_content);
-            if(cite) str_str_append(cite,&d_cite);
+            //str_str_append(content,&d_content);
+            //if(cite) str_str_append(cite,&d_cite);
           }
           else {
             ptr = safe;

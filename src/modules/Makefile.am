@@ -155,5 +155,11 @@ pkglib_LTLIBRARIES+=flt_categorycheck.la
 flt_categorycheck_la_SOURCES=flt_categorycheck.c
 flt_categorycheck_la_LDFLAGS=-module -export-dynamic -avoid-version
 
+pkglib_LTLIBRARIES+=flt_latex.la
+flt_latex_la_SOURCES=flt_latex.c
+flt_latex_la_LDFLAGS=-module -export-dynamic -avoid-version
+flt_latex_la_LIBADD=-lssl
+
+
 
 # eof
