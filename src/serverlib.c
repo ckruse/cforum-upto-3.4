@@ -396,7 +396,7 @@ void *cf_worker(void *arg) {
       timeout.tv_sec = time(NULL) + 5;
       timeout.tv_nsec = 0;
 
-      if(cf_cond_timedwait(&head.clients.cond,&timeout) != 0) {
+      if(CF_CD_TW(&head.clients.cond,&timeout) != 0) {
         /* we got a timeout; go and try it again */
         CF_LM(&head.clients.lock);
         continue;
@@ -539,7 +539,7 @@ int cf_push_client(int connfd,t_worker handler,int spare_threads,int max_threads
      * we broadcast instead of signaling to get more than one worker
      * working
      */
-    cf_cond_broadcast(&head.clients.cond);
+    CF_CD_BC(&head.clients.cond);
 
     /* uh, high traffic, go sleeping for 20ms (this gives the workers time to work) */
     if(num >= max_threads - spare_threads * 2) usleep(20);
@@ -1229,7 +1229,7 @@ void *cf_generate_cache(void *arg) {
 
 /* {{{ cf_generate_list */
 void cf_generate_list(t_forum *forum,t_string *str,int del) {
-  int n;
+  int n,did = 0;
   u_char buff[500];
   t_thread *t,*t1;
   int first;
@@ -1257,6 +1257,7 @@ void cf_generate_list(t_forum *forum,t_string *str,int del) {
         if(!p) break;
       }
 
+      did = 1;
 
       /* thread/posting header */
       if(first) {
@@ -1264,8 +1265,9 @@ void cf_generate_list(t_forum *forum,t_string *str,int del) {
         str_chars_append(str,"THREAD t",8);
         u_int64_to_str(str,t->tid);
       }
-      else str_chars_append(str,"MSG m",5);
+      else str_chars_append(str,"MSG",3);
 
+      str_chars_append(str," m",2);
       u_int64_to_str(str,p->mid);
       str_char_append(str,'\n');
 
@@ -1306,7 +1308,8 @@ void cf_generate_list(t_forum *forum,t_string *str,int del) {
       str_chars_append(str,buff,n);
     }
 
-    str_chars_append(str,"END\n",4);
+    if(did) str_chars_append(str,"END\n",4);
+    did = 0;
 
     t1   = t->next;
     CF_RW_UN(&t->lock);

@@ -47,15 +47,16 @@ u_int64_t str_to_u_int64(register const u_char *ptr) {
 /* {{{ u_int64_to_str */
 void u_int64_to_str(t_string *str, u_int64_t num) {
   register u_char *ptr1,*ptr2,tmp;
-  u_char *start = str->content + str->len;
+  size_t i = 0;
 
   while(num) {
     str_char_append(str,'0' + (num % 10));
     num /= 10;
+    ++i;
   }
 
   /* now we have to swap the bytes */
-  for(ptr1=start,ptr2=str->content+str->len-1;ptr1<ptr2;ptr1++,ptr2--) {
+  for(ptr1=str->content+str->len-i,ptr2=str->content+str->len-1;ptr1<ptr2;ptr1++,ptr2--) {
     tmp = *ptr1;
     *ptr1 = *ptr2;
     *ptr2 = tmp;

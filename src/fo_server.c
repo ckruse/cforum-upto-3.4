@@ -169,7 +169,7 @@ void logfile_worker(void) {
       rename(log->values[0],str.content);
 
       head.log.std = NULL;
-      
+
       str_cleanup(&str);
       pthread_mutex_unlock(&head.log.lock);
     }
@@ -189,7 +189,7 @@ void logfile_worker(void) {
       rename(log->values[0],str.content);
 
       head.log.err = NULL;
-      
+
       str_cleanup(&str);
       pthread_mutex_unlock(&head.log.lock);
     }
@@ -294,7 +294,7 @@ int main(int argc,char *argv[]) {
   /* }}} */
 
   /* {{{ read options from commandline */
-  while((c = getopt_long(argc,argv,"p:c:d:h",server_cmdline_options,NULL)) > 0) {
+  while((c = getopt_long(argc,argv,"p:c:dh",server_cmdline_options,NULL)) > 0) {
     switch(c) {
       case 'p':
         if(!optarg) usage();
@@ -587,7 +587,7 @@ int main(int argc,char *argv[]) {
 
   /* {{{ destroy workers */
   cf_log(CF_STD|CF_FLSH,__FILE__,__LINE__,"Destroying workers...\n");
-  cf_cond_broadcast(&head.clients.cond);
+  CF_CD_BC(&head.clients.cond);
   cf_rw_list_destroy(&head.workers.list,cleanup_worker);
   /* }}} */
 

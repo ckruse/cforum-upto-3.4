@@ -1,3 +1,12 @@
+2005-03-04 Christian Kruse <ckruse@wwwtech.de>
+	* src/cf_pthread.[ch]: Made error messages more informative
+	* src/modules/flt_cftp.c: Fixed fatal locking bug
+	* src/datautils.c: Fixed bug in u_int64_to_str()
+	* src/serverlib.c: Changed cf_cond_* calls to CF_CD_*, fixed several bugs in
+		protocol handling
+	* src/communication.c: Fixed several bugs in protocol handling
+	* src/fo_server.c: Changed cf_cond_* calls to CF_CD_*
+
 2005-03-01 Christian Seiler <self@christian-seiler.de>
 	* src/perl/Plugins/XMLRPCUserManagement.pm: Fixed small bug
 

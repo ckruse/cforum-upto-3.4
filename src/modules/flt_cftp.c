@@ -83,14 +83,10 @@ int flt_cftp_handler(int sockfd,t_forum *forum,const u_char **tokens,int tnum,rl
       if(cf_strcmp(tokens[1],"THREADLIST") == 0) {
         CF_RW_RD(&forum->lock);
 
-        if(tnum == 3 && cf_strcmp(tokens[2],"invisible=1") == 0) {
-          writen(sockfd,forum->cache.invisible.content,forum->cache.invisible.len);
-        }
-        else {
-          writen(sockfd,forum->cache.visible.content,forum->cache.visible.len);
-        }
+        if(tnum == 3 && cf_strcmp(tokens[2],"invisible=1") == 0) writen(sockfd,forum->cache.invisible.content,forum->cache.invisible.len);
+        else writen(sockfd,forum->cache.visible.content,forum->cache.visible.len);
 
-        CF_RW_UN(&head.lock);
+        CF_RW_UN(&forum->lock);
       }
       /* }}} */
 

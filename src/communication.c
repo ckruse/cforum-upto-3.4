@@ -48,9 +48,10 @@ int cf_get_threadlist(t_array *ary,void *ptr,const u_char *tplname)
 {
   t_cl_thread thread;
   array_init(ary,sizeof(thread),cf_cleanup_thread);
+  size_t i = 0;
 
   #ifndef CF_SHARED_MEM
-  while(cf_get_next_thread_through_sock(sock,&tsd,&thread,tplname) == 0)
+  while(cf_get_next_thread_through_sock(sock,tsd,&thread,tplname) == 0)
   #else
   while((ptr = cf_get_next_thread_through_shm(ptr,&thread,tplname)) != NULL)
   #endif
@@ -88,7 +89,7 @@ int cf_get_next_thread_through_sock(int sock,rline_t *tsd,t_cl_thread *thr,const
         thr->messages           = fo_alloc(NULL,1,sizeof(t_message),FO_ALLOC_CALLOC);
         thr->last               = thr->messages;
         thr->newest             = thr->messages;
-        thr->last->mid          = str_to_u_int64(&line[chtmp-line+1]);
+        thr->last->mid          = str_to_u_int64(chtmp+1);
         thr->messages->may_show = 1;
         thr->msg_len            = 1;
         thr->tid                = str_to_u_int64(line+8);
@@ -138,7 +139,7 @@ int cf_get_next_thread_through_sock(int sock,rline_t *tsd,t_cl_thread *thr,const
       else if(cf_strncmp(line,"Votes-Good:",11) == 0) thr->last->votes_good = strtoul(line+11,NULL,10);
       else if(cf_strncmp(line,"Votes-Bad:",10) == 0)  thr->last->votes_bad = strtoul(line+10,NULL,10);
       else if(cf_strncmp(line,"Visible:",8) == 0) {
-        thr->last->invisible = line[8] == '1';
+        thr->last->invisible = line[8] == '0';
         if(thr->last->invisible) thr->msg_len--;
       }
       else if(cf_strncmp(line,"END",3) == 0) {
@@ -155,14 +156,14 @@ int cf_get_next_thread_through_sock(int sock,rline_t *tsd,t_cl_thread *thr,const
   }
 
   if(ok) {
-    return 0;
-
     /* {{{ build hierarchical structure */
     thr->ht = fo_alloc(NULL,1,sizeof(*thr->ht),FO_ALLOC_CALLOC);
     thr->ht->msg = thr->messages;
 
     cf_msg_build_hierarchical_structure(thr->ht,thr->messages);
     /* }}} */
+
+    return 0;
   }
   return -1;
 }
@@ -317,7 +318,7 @@ void *cf_get_next_thread_through_shm(void *shm_ptr,t_cl_thread *thr,const u_char
 
     /* email */
     if(val) {
-      str_char_set(&thr->last->email,ptr,val);
+      str_char_set(&thr->last->email,ptr,val-1);
       ptr += val;
     }
     /* }}} */
@@ -329,7 +330,7 @@ void *cf_get_next_thread_through_shm(void *shm_ptr,t_cl_thread *thr,const u_char
 
     /* homepage */
     if(val) {
-      str_char_set(&thr->last->hp,ptr,val);
+      str_char_set(&thr->last->hp,ptr,val-1);
       ptr += val;
     }
     /* }}} */
@@ -341,7 +342,7 @@ void *cf_get_next_thread_through_shm(void *shm_ptr,t_cl_thread *thr,const u_char
 
     /* image */
     if(val) {
-      str_char_set(&thr->last->img,ptr,val);
+      str_char_set(&thr->last->img,ptr,val-1);
       ptr += val;
     }
     /* }}} */
