@@ -1,3 +1,9 @@
+2005-02-24 Christian Kruse <ckruse@wwwtech.de>
+	* conf/errormessages.de.txt: Changed the Send_Answer_Body text a little bit
+	* src/modules/flt_mailonpost.c: Changed behavior a little bit, added lots of
+		place holders
+	* src/fo_post.c: Fixed a bug
+
 2005-02-23 Christian Kruse <ckruse@wwwtech.de>
 	* src/modules/flt_syntax.c: Fixed several bugs in syntax highlighting
 	* src/modules/flt_failsafe.c: Fixed bug, forgot to fclose() file handle

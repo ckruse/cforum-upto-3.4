@@ -969,7 +969,7 @@ int main(int argc,char *argv[],char *env[]) {
         str_chars_append(&str1,"\nRemoteAddr: ",13);
         str_chars_append(&str1,val,strlen(val));
 
-        str_chars_append(&str1,"\n\nQUIT\n",7);
+        str_chars_append(&str1,"\n\n",2);
 
         /* now: transmit everything */
         writen(sock,str1.content,str1.len);
@@ -1005,6 +1005,8 @@ int main(int argc,char *argv[],char *env[]) {
           }
           else mid = 0;
 
+          if((val = readline(sock,&rl)) != NULL) free(val);
+
           cfg_val = cfg_get_first_value(&fo_post_conf,forum_name,"RedirectOnPost");
 
           p->mid = mid;
@@ -1013,6 +1015,8 @@ int main(int argc,char *argv[],char *env[]) {
           #else
           cf_run_after_post_handlers(head,p,tid,sock);
           #endif
+
+          writen(sock,"QUIT\n",5);
 
           if(cfg_val && cf_strcmp(cfg_val->values[0],"yes") == 0) {
             cfg_val = cfg_get_first_value(&fo_default_conf,forum_name,UserName ? "UPostingURL" : "PostingURL");

@@ -81,5 +81,5 @@ E_IMPORT_VERSION: Die Version des Import-Formats ist neuer als die unterstützte
 E_IMPORT_DATAFAILURE: Das Import-Format scheint ungültig zu sein!
 E_IMPORT_DATAINVALID: Einige Werte der zu importierenden Daten scheinen nicht valide zu sein!
 E_MUST_AUTH: Für diese Funktion müssen Sie angemeldet sein!
-Send_Answer_Subject: Antwort auf %%s (%%u)
-Send_Answer_Body: Hallo\n\nes wurde eine Antwort auf die Nachricht %%s,\nerreichbar unter %%u, gesendet.\n\nViele Grüße,\n das Forum\n
+Send_Answer_Subject: Antwort auf Posting %%bs
+Send_Answer_Body: Hallo\n\nes wurde eine Antwort auf die Nachricht %%bs gepostet.\nNeues Subject: %%s\nAutor: %%a\nURL: %%u\nMy-URL: %%m\nOrginal-Autor: %%oa\nOrginal-Subject: %%os\nOrginal-URL: %%ou\nOrginal-My-URL: %%om\n\nViele Grüsse,\n das Forum\n

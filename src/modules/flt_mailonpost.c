@@ -296,8 +296,113 @@ const char *flt_mailonpost_msgcb(void **buf, int *len, void *arg) {
 }
 /* }}} */
 
+/* {{{ flt_mailonpost_parsestr */
+void flt_mailonpost_parsestr(t_cl_thread *t,t_message *p,t_string *str,const u_char *pars,const u_char *link,const u_char *mlink,t_name_value *v,t_name_value *v1) {
+  register u_char *ptr;
+  u_char *l;
+
+  for(ptr=(u_char *)pars;*ptr;++ptr) {
+    switch(*ptr) {
+      case '%':
+        switch(*(ptr+1)) {
+          case 's':
+            str_str_append(str,&p->subject);
+            ++ptr;
+            continue;
+
+          case 'a':
+            str_str_append(str,&p->author);
+            ++ptr;
+            continue;
+
+          case 'u':
+            str_chars_append(str,link,strlen(link));
+            ++ptr;
+            continue;
+
+          case 'm':
+            str_chars_append(str,mlink,strlen(mlink));
+            ++ptr;
+            continue;
+
+          case 'b':
+            if(t->threadmsg->prev) {
+              switch(*(ptr+2)) {
+                case 's':
+                  str_str_append(str,&t->threadmsg->prev->subject);
+                  ptr += 2;
+                  continue;
+
+                case 'a':
+                  str_str_append(str,&t->threadmsg->prev->author);
+                  ptr += 2;
+                  continue;
+
+                case 'u':
+                  l = cf_get_link(v->values[0],NULL,t->tid,t->threadmsg->mid);
+                  str_chars_append(str,l,strlen(l));
+                  free(l);
+                  ptr += 2;
+                  continue;
+
+                case 'm':
+                  l = cf_get_link(v1->values[0],NULL,t->tid,t->threadmsg->mid);
+                  str_chars_append(str,l,strlen(l));
+                  free(l);
+                  ptr += 2;
+                  continue;
+              }
+            }
+
+            str_char_append(str,'%');
+            continue;
+
+          case 'o':
+            switch(*(ptr+2)) {
+              case 's':
+                str_str_append(str,&t->messages->subject);
+                ptr += 2;
+                continue;
+
+              case 'a':
+                str_str_append(str,&t->messages->author);
+                ptr += 2;
+                continue;
+
+              case 'u':
+                l = cf_get_link(v->values[0],NULL,t->tid,t->messages->mid);
+                str_chars_append(str,l,strlen(l));
+                free(l);
+                ptr += 2;
+                continue;
+
+              case 'm':
+                l = cf_get_link(v1->values[0],NULL,t->tid,t->messages->mid);
+                str_chars_append(str,l,strlen(l));
+                free(l);
+                ptr += 2;
+                continue;
+            }
+
+            str_char_append(str,'%');
+            continue;
+        }
+
+      case '\\':
+        if(*(ptr+1) == 'n') {
+          str_char_append(str,'\n');
+          ++ptr;
+          continue;
+        }
+      default:
+        str_char_append(str,*ptr);
+    }
+  }
+}
+/* }}} */
+
 /* {{{ flt_mailonpost_mail */
-void flt_mailonpost_mail(u_char **emails,u_int64_t len,t_message *p,u_int64_t tid) {
+void flt_mailonpost_mail(u_char **emails,u_int64_t len,t_message *p,t_cl_thread *t) {
   smtp_session_t sess;
   smtp_message_t msg;
 
@@ -305,12 +410,14 @@ void flt_mailonpost_mail(u_char **emails,u_int64_t len,t_message *p,u_int64_t ti
 
   struct s_smtp *inf;
 
-  t_name_value *v = cfg_get_first_value(&fo_default_conf,flt_mailonpost_fn,"PostingURL");
+  t_name_value *v  = cfg_get_first_value(&fo_default_conf,flt_mailonpost_fn,"PostingURL");
+  t_name_value *v1 = cfg_get_first_value(&fo_default_conf,flt_mailonpost_fn,"UPostingURL");
 
   u_char *msg_subj = cf_get_error_message("Send_Answer_Subject",NULL),
          *msg_body = cf_get_error_message("Send_Answer_Body",NULL),
          *ptr,
-         *link = cf_get_link(v->values[0],NULL,tid,p->mid);
+         *link = cf_get_link(v->values[0],NULL,t->tid,p->mid),
+         *mylink = cf_get_link(v1->values[0],NULL,t->tid,p->mid);
 
   t_string str;
 
@@ -318,40 +425,11 @@ void flt_mailonpost_mail(u_char **emails,u_int64_t len,t_message *p,u_int64_t ti
 
   /* {{{ parse subject and message body */
   str_chars_append(&str,"Content-Type: text/plain; charset=UTF-8\015\012Subject: ",50);
-
-  for(ptr=msg_subj;*ptr;++ptr) {
-    if(cf_strncmp(ptr,"%u",2) == 0) {
-      str_chars_append(&str,link,strlen(link));
-      ++ptr;
-    }
-    else if(cf_strncmp(ptr,"%s",2) == 0) {
-      str_str_append(&str,&p->subject);
-      ++ptr;
-    }
-    else if(cf_strncmp(ptr,"\\n",2) == 0) {
-      str_char_append(&str,'\n');
-      ++ptr;
-    }
-    else str_char_append(&str,*ptr);
-  }
-
+  flt_mailonpost_parsestr(t,p,&str,msg_subj,link,mylink,v,v1);
   str_chars_append(&str,"\015\012\015\012",4);
-  for(ptr=msg_body;*ptr;++ptr) {
-    if(cf_strncmp(ptr,"%u",2) == 0) {
-      str_chars_append(&str,link,strlen(link));
-      ++ptr;
-    }
-    else if(cf_strncmp(ptr,"%s",2) == 0) {
-      str_str_append(&str,&p->subject);
-      ++ptr;
-    }
-    else if(cf_strncmp(ptr,"\\n",2) == 0) {
-      str_char_append(&str,'\n');
-      ++ptr;
-    }
-    else str_char_append(&str,*ptr);
-  }
+  flt_mailonpost_parsestr(t,p,&str,msg_body,link,mylink,v,v1);
 
+  free(mylink);
   free(link);
   /* }}} */
 
@@ -385,8 +463,8 @@ void flt_mailonpost_mail(u_char **emails,u_int64_t len,t_message *p,u_int64_t ti
 /* }}} */
 
 /* {{{ flt_mailonpost_execute */
-#ifndef CF_SHARED_MEM
-int flt_mailonpost_execute(t_cf_hash *head,t_configuration *dc,t_configuration *pc,t_message *p,u_int64_t tid,void *shm,int sock)
+#ifdef CF_SHARED_MEM
+int flt_mailonpost_execute(t_cf_hash *head,t_configuration *dc,t_configuration *pc,t_message *p,u_int64_t tid,int sock,void *shm)
 #else
 int flt_mailonpost_execute(t_cf_hash *head,t_configuration *dc,t_configuration *pc,t_message *p,u_int64_t tid,int sock)
 #endif
@@ -395,11 +473,14 @@ int flt_mailonpost_execute(t_cf_hash *head,t_configuration *dc,t_configuration *
   u_char buff[256],**list = NULL,*ptr;
   size_t n,i;
   t_string str;
+  t_cl_thread thr;
 
   struct s_smtp *inf;
 
   DB *db = NULL;
   DBT key,data;
+
+  rline_t rl;
 
   if(!flt_mailonpost_from || !flt_mailonpost_host || flt_mailonpost_create(&db,flt_mailonpost_dbname) == -1) return FLT_DECLINE;
 
@@ -411,13 +492,21 @@ int flt_mailonpost_execute(t_cf_hash *head,t_configuration *dc,t_configuration *
   key.size = n;
 
   if(db->get(db,NULL,&key,&data,0) == 0) {
+    memset(&thr,0,sizeof(thr));
+    memset(&rl,0,sizeof(rl));
+
+    if(cf_get_message_through_sock(sock,&rl,&thr,NULL,tid,p->mid,CF_KILL_DELETED) == -1) {
+      fprintf(stderr,"Error getting thread: %s\n",ErrorString);
+      return FLT_DECLINE;
+    }
+
     /* send mails... */
     str_init(&str);
     str_char_set(&str,data.data,data.size);
 
     n = split(str.content,"\x7F",&list);
     if(n > 0) {
-      flt_mailonpost_mail(list,n,p,tid);
+      flt_mailonpost_mail(list,n,p,&thr);
 
       for(i=0;i<n;++i) free(list[i]);
       free(list);
