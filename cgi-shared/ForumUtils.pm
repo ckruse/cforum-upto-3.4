@@ -299,7 +299,7 @@ sub message_field {
 
   my @links = ();
   while($posting =~ /\[[Ll][Ii][Nn][Kk]:\s*([^\]\s]+?)\s*(?:\@title=([^\]]+)\s*)?\]/g) {
-    my ($uri,$title) = ($1,$2,$3);
+    my ($uri,$title) = ($1,$2);
     next if
       !is_valid_link($uri) &&
       !is_valid_http_link(($uri =~ /^[Vv][Ii][Ee][Ww]-[Ss][Oo][Uu][Rr][Cc][Ee]:(.+)/)[0],CForum::Validator::VALIDATE_STRICT) &&
@@ -332,7 +332,7 @@ sub message_field {
   # ... links
   $posting =~ s!$_!'<a href="'.$Clientlib->htmlentities($1,1).'">'.$Clientlib->htmlentities($2||$1,1).'</a>'!eg for map {
     '\[[Ll][Ii][Nn][Kk]:\s*('.
-    quotemeta(recode($fdcfg,$_->[0])).
+    quotemeta($_->[0]).
     ')'.
     ($_->[1] ? '\s*\@title=('.quotemeta($_->[1]).')' : '').
     '\s*\]'
@@ -341,7 +341,7 @@ sub message_field {
   # ... images
   $posting =~ s!$_!'<img src="'.$Clientlib->htmlentities($1,1).'" border="0" alt="'.$Clientlib->htmlentities($2?$2:'',1).'">'!eg for map {
     '\[[Ii][Mm][Aa][Gg][Ee]:\s*('.
-    quotemeta(recode($fdcfg,$_->[0])).
+    quotemeta($_->[0]).
     ')'.
     ($_->[1] ? '\s*\@alt=('.quotemeta($_->[1]).')' : '').
     '\s*\]'
@@ -349,7 +349,7 @@ sub message_field {
 
   # ... iframes
   $posting =~ s!$_!'<iframe src="'.$Clientlib->htmlentities($1,1).'" width="90%" height="90%"><a href="'.$Clientlib->htmlentities($1,1).'">'.$Clientlib->htmlentities($1,1).'</a></iframe>'!eg for map {
-    '\[[Ii][Ff][Rr][Aa][Mm][Ee]:\s*('.quotemeta($_->[1]).')\]'
+    '\[[Ii][Ff][Rr][Aa][Mm][Ee]:\s*('.quotemeta($_->[0]).')\]'
   } @iframes;
 
   # return
