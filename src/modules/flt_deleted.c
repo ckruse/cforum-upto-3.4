@@ -52,7 +52,8 @@ struct {
   DB *db;
   int DoDelete;
   int resp_204;
-} Cfg = { NULL, 0, 0, 0, 0, NULL, 0, NULL, 1, 0 };
+  int bl_in_thrv;
+} Cfg = { NULL, 0, 0, 0, 0, NULL, 0, NULL, 1, 0, 0 };
 
 static u_char *flt_deleted_fname = NULL;
 
@@ -123,12 +124,14 @@ int flt_deleted_pl_filter(t_cf_hash *head,t_configuration *dc,t_configuration *v
   long i;
 
   if(Cfg.BLlen) {
-    for(i=0;i<Cfg.BLlen;i++) {
-      if(cf_strcasecmp(msg->author.content,Cfg.BlackList[i]) == 0) {
-        msg->may_show = 0;
+    if(Cfg.bl_in_thrv || (mode & CF_MODE_THREADLIST)) {
+      for(i=0;i<Cfg.BLlen;i++) {
+        if(cf_strcasecmp(msg->author.content,Cfg.BlackList[i]) == 0) {
+          msg->may_show = 0;
 
-        if(Cfg.FollowUps == 0) {
-          if(!cf_msg_delete_subtree(msg)) return FLT_OK;
+          if(Cfg.FollowUps == 0) {
+            if(!cf_msg_delete_subtree(msg)) return FLT_OK;
+          }
         }
       }
     }
@@ -323,6 +326,9 @@ int flt_del_handle_command(t_configfile *cf,t_conf_opt *opt,const u_char *contex
   else if(cf_strcmp(opt->name,"DelThreadResponse204") == 0) {
     Cfg.resp_204 = cf_strcmp(args[0],"yes") == 0;
   }
+  else if(cf_strcmp(opt->name,"BlacklistInThreadView") == 0) {
+    Cfg.bl_in_thrv = cf_strcmp(args[0],"yes") == 0;
+  }
 
   return 0;
 }
@@ -399,6 +405,7 @@ time_t flt_deleted_lm(t_cf_hash *head,t_configuration *dc,t_configuration *vc,vo
 t_conf_opt flt_deleted_config[] = {
   { "BlackList",               flt_del_handle_command, CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
   { "ShowBlacklistFollowups",  flt_del_handle_command, CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
+  { "BlacklistInThreadview",   flt_del_handle_command, CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
   { "ShowFrom",                flt_del_handle_command, CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
   { "ShowUntil",               flt_del_handle_command, CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
   { "DeletedFile",             flt_del_handle_command, CFG_OPT_USER|CFG_OPT_NEEDED|CFG_OPT_LOCAL, NULL },
