@@ -67,7 +67,7 @@ block "string"
 
   onregexp "^\\\\[0-7]{1,3}" highlight "escaped"
   onregexp "^\\\\x[0-9A-Fa-f]{1,2}" highlight "escaped"
-  onregexp "^\\\\[nrt$]" highlight "escaped"
+  onregexp "^\\\\[btnvfr$]" highlight "escaped"
   onregexp "^\\$+[a-zA-Z_][a-zA-Z0-9_]*(\\[[a-zA-Z0-9_]*\\])*" highlight "variable"
   onregexp "^\\$\\{+[a-zA-Z_][a-zA-Z0-9_]*(\\[[a-zA-Z0-9_]*\\])*\\}" highlight "variable"
   # TODO: da muss noch {$a->b}, {$a['b']}, {$a[\"b\"]} etc. rein...

@@ -46,9 +46,11 @@ block "string"
   onstring "\\\\" highlight "escaped"
   onstring "\\&quot;" highlight "escaped"
 
+  onregexp "^\\\\u[0-9a-fA-F]{4}" highlight "escaped"
+
   onregexp "^\\\\[0-7]{1,3}" highlight "escaped"
   onregexp "^\\\\x[0-9A-Fa-f]{1,2}" highlight "escaped"
-  onregexp "^\\\\[nrt]" highlight "escaped"
+  onregexp "^\\\\[btnvfr]" highlight "escaped"
 
   onstring "&quot;" pop
 end
