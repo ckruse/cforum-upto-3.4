@@ -72,7 +72,7 @@ u_char *transform(const u_char *val) {
   while(isspace(str.content[str.len-1])) str.len--;
   str.content[str.len] = '\0';
 
-  return ptr;
+  return str.content;
 }
 
 int check_auth(u_char *name,u_char *pass) {

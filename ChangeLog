@@ -1,3 +1,6 @@
+2004-10-04 Christian Kruse <ckruse@wwwtech.de>
+	* src/modules/flt_registerednames.c: Fixed a bug in transform() function
+
 2004-10-03 Christian Kruse <ckruse@wwwtech.de>
 	* src/configparser.c: Fixed a bug in seen-handling
 
