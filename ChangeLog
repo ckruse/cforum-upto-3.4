@@ -4,6 +4,9 @@
 		place holders
 	* src/fo_post.c: Fixed a bug
 	* src/htmllib.c: Implemented #559
+	* conf/fo_view.conf.in: Added flt_threadlist in default config
+	* src/defines.h: Changed version number
+	* src/modules/flt_threadlist.c: Implements #307
 
 2005-02-23 Christian Kruse <ckruse@wwwtech.de>
 	* src/modules/flt_syntax.c: Fixed several bugs in syntax highlighting

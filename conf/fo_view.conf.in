@@ -35,6 +35,7 @@ Load "flt_directives"
 Load "flt_syntax"
 Load "flt_mailonpost"
 Load "flt_preview"
+Load "flt_threadlist"
 
 PatternsDirectory "@sysconfdir@/cforum/patterns/"
 

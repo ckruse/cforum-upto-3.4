@@ -183,4 +183,9 @@ flt_mailonpost_la_SOURCES=flt_mailonpost.c
 flt_mailonpost_la_LDFLAGS=-module -export-dynamic -avoid-version
 flt_mailonpost_la_LIBADD=$(BDB_LIB) $(ESMTP_LIBS)
 
+pkglib_LTLIBRARIES+=flt_threadlist.la
+flt_threadlist_la_SOURCES=flt_threadlist.c
+flt_threadlist_la_LDFLAGS=-module -export-dynamic -avoid-version
+
+
 # eof
