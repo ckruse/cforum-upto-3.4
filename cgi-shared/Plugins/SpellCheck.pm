@@ -56,6 +56,7 @@ sub execute {
   Lingua::Ispell::allow_compounds(1);
   Lingua::Ispell::use_dictionary($fo_post_conf->{'SpellCheckerDictionary'}->[0]->[0]);
   $Lingua::Ispell::options{'-T'.$fo_post_conf->{'SpellCheckerFormatterType'}->[0]->[0]} = [] if  $fo_post_conf->{'SpellCheckerFormatterType'};
+  $Lingua::Ispell::path = $fo_post_conf->{'SpellCheckerPath'}->[0]->[0] if  $fo_post_conf->{'SpellCheckerPath'};
 
   my $txt = $cgi->param ('newbody');
   $txt =~ s!<br />!\n!g;

@@ -1,3 +1,6 @@
+2004-08-09 Christian Seiler <self@christian-seiler.de>
+	* cgi-shared/Plugins/SpellCheck.pm: Added 'SpellCheckerPath' config option
+
 2004-08-09 Christian Kruse <ckruse@wwwtech.de>
 	* src/xml_handling.c, src/fo_post.c, src/modules/flt_registerednames.c,
 		src/modules/flt_remotesignature.c, src/modules/flt_openclose.c,
