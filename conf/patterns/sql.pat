@@ -7,6 +7,8 @@
 # Patternfile muss immer mit einem start = "block" anfangen.
 start = "default"
 
+list "word_operators" = "all,and,any,between,exists,in,like,not,or,some"
+
 list "std_function"      = "avg,count,min,max,sum,current_date,current_time,current_timestamp,current_user,session_user,system_user,bit_length_char_length,extract,octet_length,position,concatenate,convert,lower,substring,translate,trim,upper"
 list "mssql_function"    = "abs,acos,app_name,ascii,asin,atan,atn2,binary_checksum,cast,ceiling,char,charindex,checksum,checksum_avg,coalesce,col_length,col_name,contains,containsable,convert,cos,cot,count_big,current_timestamp,current_user,datalength,databasepropertyex,dateadd,datediff,datename,datepart,day,db_id,db_name,degrees,difference,exp,floor,file_id,file_name,filegroup_id,filegroup_name,filegroupproperty,fileproperty,fulltextcatalog,fulltextservice,formatmessage,freetexttable,getdate,geansinull,getutcdate,grouping,host_id,host_name,identincr,ident_seed,ident_current,identity,index_col,indexproperty,isdate,is_member,is_srvrolemember,isnull,isnumeric,left,len,log,log10,lower,ltrim,max,min,month,nchar,newid,nullif,object_id,object_name,objectproperty"
 list "mysql_function"    = "abs,acos,ascii,asin,atan,atan2,avg,benchmark,binary,bin,bit_count,bit_and,bit_or,cas,when,then,else,end,ceiling,char,coalesce,concat,concat_ws,connection_id,conv,cos,cot,count,current_date,curdate,curtime,current_time,database,date_add,date_sub,adddate,subdate,date_format,dayname,dayofmonth,dayofweek,dayofyear,decode,degrees,elt,encode,encrypt,exp,export_set,field,find_in_set,floor,format,from_days,from_unixtime,get_lock,greatest,hex,interval,hour,ifnull,isnull,insert,instr,last_insert_id,lcase,lower,least,left,length,octet_length,char_length,char_lengt,load_file,locate,position,locate,log,log10,lpad,ltrim,make_set,md5,min,max,minute,mod,month,monthname,now,sysdate,current_timestamp,nullif,oct,ord,password,period_add,period_diff,pi,pow,power,quarter,radians,rand,release_lock,repeat,replace,reverse,right,round,rpad,rtrim,sec_to_time,second,sign,sin,soundex,space,sqrt,std,stddev,strcmp,substring,substring,mid,substring_index,substring,sum,tan,time_format,time_to_sec,to_days,trim,truncate,ucase,upper,unix_timestamp,user,system_user,session_user,version,week,weekday,year,yearweek"
@@ -29,7 +31,8 @@ block "default"
   onstring "\"" "string" "prop-string-quoted"
   onstring "`" "qop" "prop-quoted"
 
-  onregexp "^(\\+|-|\\*|\\\\|=|\\(|\\)|%|_|,|@|\\.|&amp;|\\||\\^|~|all|and|any|between|exists|in|like|not|or|some|!=|!&lt;|!&gt;|&lt;|&gt;|&lt;&gt;|&lt;=|&gt;=|@@|\\|\\|)" highlight "operator"
+  onstringlist "word_operators" highlight "operator"
+  onregexp "^(\\+|-|\\*|\\\\|=|\\(|\\)|%|\b_\b|,|@|\\.|&amp;|\\||\\^|~|!=|!&lt;|!&gt;|&lt;|&gt;|&lt;&gt;|&lt;=|&gt;=|@@|\\|\\|)" highlight "operator"
 
   # Funktionen
   onstringlist "std_function"      highlight "function"

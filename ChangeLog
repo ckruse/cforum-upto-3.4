@@ -7,6 +7,7 @@
 		conf/patterns/php.pat: Fixed bugs in highlighting escaped values
 	* scripts/fo_userconf.in: Bugfix, now backslashes are correctly quoted
 	* src/fo_view.c: Added postscript variable for forum_begin template
+	* conf/patterns/apache.pat: Added syntax highlighting for apache config
 
 2005-03-07 Christian Kruse <ckruse@wwwtech.de>
 	* src/utils.c: Fixed nasty bug in cf_make_path()
