@@ -1,3 +1,6 @@
+2005-02-16 Christian Kruse <ckruse@wwwtech.de>
+	* src/modules/flt_mailonpost.c: Fixed several bugs, now it seems to work
+
 2005-02-15 Christian Kruse <ckruse@wwwtech.de>
 	* src/cf-recovery.c: Migration finished, seems to work fine
 	* src/modules/flt_failsafe.c: Added THRDLST_WRITTEN_HANDLER which re-creates
