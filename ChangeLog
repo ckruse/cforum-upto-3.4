@@ -12,6 +12,7 @@
 		made archive viewer directives local
 	* scripts/cf-cleanup.pl.in: Fixed bug in cleanup_deleted()
 	* src/modules/flt_cftp.c: Fixed bug in STAT * commands
+	* conf/modules.de.xml: Removed directive CheckForLinks (no longer supported)
 
 2005-02-08 Christian Kruse <ckruse@wwwtech.de>
 	* configure.in: Added cf-cleanup.pl

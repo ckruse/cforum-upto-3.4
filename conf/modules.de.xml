@@ -601,18 +601,6 @@
         </argument>
       </directive>
 
-      <directive name="CheckForLinks" arguments="1">
-        <argument paramname="checkforlinks" type="radio" encode="plain">
-          <validate>^(yes|no)$</validate>
-          <question>Wollen Sie darauf aufmerksam gemacht werden, wenn in [link:]-, [image:]- und [iframe:]-Elementen falsche URIs stehen? Achtung, wenn Sie nicht darauf aufmerksam gemacht werden wollen, werden diese Elemente nicht umgewandelt!</question>
-          <error>Bitte geben Sie bei der Frage, ob Sie auf falsche URIs in [link:]-, [image:]- und [iframe:]-Elementen aufmerksam gemacht werden möchten, &quot;Ja&quot; oder &quot;Nein&quot; an!</error>
-          <formvalues>
-            <value val="yes">Ja</value>
-            <value val="no" default="yes">Nein</value>
-          </formvalues>
-        </argument>
-      </directive>
-
       <directive name="GeneratePreview" arguments="1">
         <argument paramname="prev" type="radio" encode="plain">
           <validate>^(?:yes|no)$</validate>
