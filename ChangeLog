@@ -7,6 +7,9 @@
 		CFG_OPT_NEEDED flag, uniquified handling of error messages
 	* src/listutils.c: Added function for statically add a list member
 	* src/utils.h: Added cf_list_append_static() prototype
+	* cgi-shared/config/modules.de.xml: Edited description for LinkNoVisited
+	* cgi-shared/config/modules.fr.xml: Added several configuration directives.
+		Have to be translated to france!
 
 2004-09-26 Christian Kruse <ckrsue@wwwtech.de>
 	* src/configparser.c: Added QuotingChars directive for fo_arcview
