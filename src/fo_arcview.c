@@ -218,6 +218,7 @@ void generate_thread_output(t_arc_message *msg,t_string *threads,t_string *threa
 
   if((date = get_time(&fo_arcview_conf,"DateFormatViewList",(int *)&len,&msg->date)) != NULL) {
     tpl_cf_setvar(tl_tpl,"date",date,len,1);
+    tpl_cf_setvar(pt_tpl,"date",date,len,1);
     free(date);
   }
 
@@ -315,6 +316,8 @@ void print_thread_structure(t_arc_thread *thr,const u_char *year,const u_char *m
   t_name_value *up_down_tpl_cfg    = cfg_get_first_value(&fo_arcview_conf,"UpDownTemplate");
   t_name_value *cache  = cfg_get_first_value(&fo_arcview_conf,"CacheDir");
   u_char *pi = getenv("PATH_INFO");
+  u_char *username = cf_hash_get(GlobalValues,"UserName",8);
+  t_name_value *forumpath = cfg_get_first_value(&fo_default_conf,username?"UBaseURL":"BaseURL");
 
   t_name_value *cs = cfg_get_first_value(&fo_default_conf,"ExternCharset");
 
@@ -356,6 +359,7 @@ void print_thread_structure(t_arc_thread *thr,const u_char *year,const u_char *m
 
   tpl_cf_setvar(&main_tpl,"threads",threads.content,threads.len,0);
   tpl_cf_setvar(&main_tpl,"threadlist",threadlist.content,threadlist.len,0);
+  tpl_cf_setvar(&main_tpl,"forumbase",forumpath->values[0],strlen(forumpath->values[0]),1);
 
   tpl_cf_parse_to_mem(&main_tpl);
   
@@ -800,6 +804,9 @@ void show_month_content(const u_char *year,const u_char *month) {
   t_name_value *tl_tp  = cfg_get_first_value(&fo_arcview_conf,"ThreadListMonthTemplate");
   t_name_value *cache  = cfg_get_first_value(&fo_arcview_conf,"CacheDir");
   int show_invisible = cf_hash_get(GlobalValues,"ShowInvisible",13) != NULL;
+  u_char *username = cf_hash_get(GlobalValues,"UserName",8);
+  t_name_value *forumpath = cfg_get_first_value(&fo_default_conf,username?"UBaseURL":"BaseURL");
+
   t_cache_entry *ent;
   t_string path,mstr;
   struct stat st;
@@ -952,6 +959,7 @@ void show_month_content(const u_char *year,const u_char *month) {
     tpl_cf_setvar(&m_tpl,"charset",cs->values[0],strlen(cs->values[0]),0);
     //tpl_cf_setvar(&m_tpl,"threads",tl_tpl.parsed.content,tl_tpl.parsed.len,0);
     tpl_cf_setvar(&m_tpl,"threads",mstr.content,mstr.len,0);
+    tpl_cf_setvar(&m_tpl,"forumbase",forumpath->values[0],strlen(forumpath->values[0]),1);
 
     str_cleanup(&mstr);
     array_destroy(&ary);
@@ -980,6 +988,8 @@ void show_year_content(const u_char *year) {
   t_name_value *mt  = cfg_get_first_value(&fo_arcview_conf,"MonthsTemplate");
   t_name_value *mlt = cfg_get_first_value(&fo_arcview_conf,"MonthsListTemplate");
   t_name_value *cs  = cfg_get_first_value(&fo_default_conf,"ExternCharset");
+  u_char *username = cf_hash_get(GlobalValues,"UserName",8);
+  t_name_value *forumpath = cfg_get_first_value(&fo_default_conf,username?"UBaseURL":"BaseURL");
 
   t_cf_template mt_tpl,mlt_tpl;
 
@@ -1036,6 +1046,8 @@ void show_year_content(const u_char *year) {
 
   tpl_cf_setvar(&mt_tpl,"charset",cs->values[0],strlen(cs->values[0]),0);
   tpl_cf_setvar(&mt_tpl,"months",mlt_tpl.parsed.content,mlt_tpl.parsed.len,0);
+  tpl_cf_setvar(&mt_tpl,"forumbase",forumpath->values[0],strlen(forumpath->values[0]),1);
+
   tpl_cf_parse(&mt_tpl);
 
   tpl_cf_finish(&mlt_tpl);
@@ -1053,6 +1065,8 @@ void show_year_content(const u_char *year) {
 void show_year_list(void) {
   t_name_value *ap = cfg_get_first_value(&fo_default_conf,"ArchivePath");
   t_array *ary = read_dir_content(ap->values[0]);
+  u_char *username = cf_hash_get(GlobalValues,"UserName",8);
+  t_name_value *forumpath = cfg_get_first_value(&fo_default_conf,username?"UBaseURL":"BaseURL");
 
   t_name_value *yt  = cfg_get_first_value(&fo_arcview_conf,"YearsTemplate");
   t_name_value *ylt = cfg_get_first_value(&fo_arcview_conf,"YearListTemplate");
@@ -1086,6 +1100,8 @@ void show_year_list(void) {
   }
 
   tpl_cf_setvar(&years,"years",year.parsed.content,year.parsed.len,0);
+  tpl_cf_setvar(&years,"forumbase",forumpath->values[0],strlen(forumpath->values[0]),1);
+
   tpl_cf_parse(&years);
 
   tpl_cf_finish(&year);

@@ -3,6 +3,7 @@
 	* src/datautils.c: Bugfix for converting u_int64_t to strings (numbers have
 		been reversed, now the order is correct)
 	* src/modules/flt_reference.c: Now tested and bugfixed module, seems to work
+	* src/fo_arcview.c: Bugfix for bug #174
 
 2004-06-30 Christian Kruse <ckruse@wwwtech.de>
 	* configure.in: Bugfix in protocol file handling, AC_DEFINE() quotes so
