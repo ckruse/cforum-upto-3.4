@@ -188,16 +188,7 @@ int cf_make_path(const u_char *path,mode_t mode) {
 /* }}} */
 
 #ifdef HAS_NO_GETLINE
-/* {{{ getline
- * Returns: ssize_t         The number of bytes read or -1 on failure
- * Parameters:
- *   - u_char **lineptr      The line pointer
- *   - size_t *n            The number of bytes allocated
- *   - FILE *stream         The stream pointer
- *
- * This function reads a complete line from FILE *stream.
- *
- */
+/* {{{ getline */
 ssize_t getline(char **lineptr,size_t *n,FILE *stream) {
   return getdelim(lineptr,n,'\n',stream);
 }

@@ -1,3 +1,5 @@
+# Pattern file for perl
+#
 start = "default"
 
 list "symbols" = ";,(,),{,},:,[,],\,"
@@ -22,7 +24,7 @@ block "default"
 
   # TODO: qr,qx,regexps, etc
 
-  # syntax: onstrings <listen-name> <neuer-block> <span-klasse>
+  # syntax: onstringlist <listen-name> <neuer-block> <span-klasse>
   onstringlist "keywords" highlight "keyword"
   onstringlist "operators" highlight "operator"
   onstringlist "symbols" highlight "symbol"
@@ -61,8 +63,6 @@ block "string"
   onregexp "\\\\[nrt$]" highlight "escaped"
   onregexp "\$+[a-zA-Z_][a-zA-Z0-9_]*(\[[a-zA-Z0-9_]*\])*" highlight "variable"
   onregexp "\$\{+[a-zA-Z_][a-zA-Z0-9_]*(\[[a-zA-Z0-9_]*\])*\}" highlight "variable"
-  # TODO: da muss noch {$a->b}, {$a['b']}, {$a[\"b\"]} etc. rein...
-  onregexp "\{\$+[a-zA-Z_][a-zA-Z0-9_]*(\[[a-zA-Z0-9_]*\])*\}" highlight "variable"
 
   onstring "\"" pop
 end

@@ -4,6 +4,10 @@
 	* src/modules/flt_postingassistant.c: Small bugfix, used email without a check
 	* src/fo_post.c: Added two variables in posting templates
 	* src/configparser.c: Removed PostingURI
+	* conf/patterns/perl.pat: Removed line
+	* conf/patterns/html.pat: Fixed syntax
+	* src/utils.c: little bit code cleaning
+	* src/modules/flt_syntax.c: Module for syntax highlighting
 
 2005-02-01 Christian Kruse <ckruse@wwwtech.de>
 	* src/clientlib.c: Fixed a _really_ nasty bug in cf_get_error_message()
