@@ -241,10 +241,10 @@ void rss_head(t_string *str,t_cl_thread *thread) {
   else str_chars_append(str,burl->values[0],strlen(burl->values[0]));
   str_chars_append(str,"</link>",7);
 
-  str_chars_append(str,"<description>",13);
+  str_chars_append(str,"<description><![CDATA[",22);
   if(thread) gen_description(str,rss_descr->values[0],thread);
   else str_chars_append(str,rss_descr->values[0],strlen(rss_descr->values[0]));
-  str_chars_append(str,"</description>",14);
+  str_chars_append(str,"]]></description>",17);
 
   if(rss_copy) {
     str_chars_append(str,"<copyright>",11);

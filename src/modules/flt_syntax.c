@@ -208,11 +208,11 @@ int flt_syntax_read_list(const u_char *pos,flt_syntax_list_t *list) {
 /* }}} */
 
 int flt_syntax_my_cmp(const t_string *a,const t_string *b) {
-  return strcmp(a->content,b->content);
+  return strcasecmp(a->content,b->content);
 }
 
 int flt_syntax_my_scmp(const u_char *a,const t_string *b) {
-  return strcmp(a,b->content);
+  return strcasecmp(a,b->content);
 }
 
 /* {{{ flt_syntax_load */
