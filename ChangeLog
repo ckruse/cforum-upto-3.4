@@ -1,3 +1,6 @@
+2005-02-19 Christian Seiler <self@christian-seiler.de>
+	* src/modules/flt_syntax.c: Small bugfixes
+
 2005-02-19 Christian Kruse <ckruse@wwwtech.de>
 	* src/modules/flt_visited.c: Fixed bug in marking messages visible
 	* src/htmllib.c: Fixed bugs for str_cleanup()

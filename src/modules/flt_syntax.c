@@ -946,15 +946,15 @@ int flt_syntax_doit(flt_syntax_pattern_file_t *file,flt_syntax_block_t *block,u_
               str_chars_append(cnt,"<span class=\"",13);
               str_str_append(cnt,str);
               str_chars_append(cnt,"\">",2);
-
+              
+              str = array_element_at(&statement->args,1);
               if((tmpblock = flt_syntax_block_by_name(file,str->content)) == NULL) {
                 fprintf(stderr,"Could not find block %s!\n",str->content);
                 return 1;
               }
 
-              str = array_element_at(&statement->args,0);
-              str_str_append(cnt,str);
-              tmpchar = ptr + str->len;
+              str_chars_append(cnt,tmpstr->content,tmpstr->len);
+              tmpchar = ptr + tmpstr->len;
               priv_pops = 0;
               if(flt_syntax_doit(file,tmpblock,text,len,cnt,&tmpchar,NULL,xhtml,&priv_pops) != 0) return 1;
               ptr = tmpchar - 1;
