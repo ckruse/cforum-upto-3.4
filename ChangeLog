@@ -25,6 +25,7 @@
 	* src/modules/flt_postingassistant.c: Now series of dots are ignored in tests
 	* src/fo_post.c: Added date variable
 	* src/configparser.c: Added DateFormat directive for fo_post
+	* conf/fo_post.conf.in: Added DateFormat directive
 
 2005-02-08 Christian Kruse <ckruse@wwwtech.de>
 	* configure.in: Added cf-cleanup.pl

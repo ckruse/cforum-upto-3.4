@@ -52,6 +52,7 @@ Forum FORUM1 {
 
  QuotingChars "»» "
  PreviewDateFormat "%d. %B %Y, %H:%M"
+ DateFormat "%d. %B %Y, %H:%M"
 
  PostingAssistantMustValidate "yes"
 
