@@ -7,6 +7,8 @@
 	* src/serverlib.c, src/serverlib.h: little bit code cleaning (tabs are really
 		nasty), small bugfix, added support for flags in datatypes
 	* src/fo_server.c: little bit code cleaning (f*ck off tabs!)
+	* src/archiver.[ch]: rewrote archiver functions (not yet finished, not yet
+		tested!)
 
 2004-12-19 Christian Kruse <ckruse@wwwtech.de>
 	* *: Merged back changes from 2.1

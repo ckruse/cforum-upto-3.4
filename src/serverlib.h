@@ -50,7 +50,7 @@ typedef struct s_posting {
   } user;
 
   t_cf_list_head flags;
-  
+
   struct s_posting *next,*prev;
 } t_posting;
 /* }}} */

@@ -49,5 +49,12 @@ void cf_run_archiver(void);
  */
 int cf_archive_thread(t_forum *forum,u_int64_t tid);
 
+/**
+ * This function writes the thread list of a specified forum to
+ * the storage.
+ * \param forum The forum object
+ */
+void cf_write_threadlist(t_forum *forum);
+
 #endif
 /* eof */

@@ -393,8 +393,8 @@ int main(int argc,char *argv[]) {
     threads = cfg_get_first_value(&fo_server_conf,NULL,"SpareThreads");
     spare_threads = atoi(threads->values[0]);
 
-                threads = cfg_get_first_value(&fo_server_conf,NULL,"MaxThreads");
-                max_threads = atoi(threads->values[0]);
+    threads = cfg_get_first_value(&fo_server_conf,NULL,"MaxThreads");
+    max_threads = atoi(threads->values[0]);
   }
   /* }}} */
 
