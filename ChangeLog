@@ -31,6 +31,8 @@
 	* src/perl/Plugins/RegisterName.pm: Moved to new SWIG module API
 	* src/perl/Plugins/ImportExport.pm: Moved to new SWIG module API
 	* conf/modules.de.xml: Added several configuration options
+	* src/modules/flt_syntax.c: ActivateSyntax is now also allowed in user config
+		mode
 
 2005-02-06 Christian Seiler <self@christian-seiler.de>
 	* conf/patterns/php.pat: Some improvements

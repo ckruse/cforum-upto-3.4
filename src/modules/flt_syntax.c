@@ -1132,7 +1132,7 @@ void flt_syntax_cleanup(void) {
 }
 
 t_conf_opt flt_syntax_config[] = {
-  { "ActivateSyntax",    flt_syntax_handle, CFG_OPT_CONFIG|CFG_OPT_LOCAL, NULL },
+  { "ActivateSyntax",    flt_syntax_handle, CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
   { "PatternsDirectory", flt_syntax_handle, CFG_OPT_CONFIG|CFG_OPT_GLOBAL|CFG_OPT_NEEDED,  NULL },
   { NULL, NULL, 0, NULL }
 };
