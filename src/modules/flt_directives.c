@@ -398,6 +398,10 @@ int flt_directives_execute(t_configuration *fdc,t_configuration *fvc,const u_cha
               str_chars_append(cite,tmp,strlen(tmp));
               str_char_append(cite,';');
               str_chars_append(cite,tmp2,strlen(tmp2));
+              if(title_alt) {
+                str_chars_append(cite,"@title=",7);
+                str_chars_append(cite,title_alt,strlen(title_alt)),
+              }
               str_char_append(cite,']');
             }
 
