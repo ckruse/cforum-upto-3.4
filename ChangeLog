@@ -1,5 +1,7 @@
 2004-11-07 Christian Kruse <ckruse@wwwtech.de>
 	* cgi-shared/ForumUtils.pm: Fixed typo
+	* src/validate.[ch]: Fixed bugs in ftp URI validation, added file URI
+		validation
 
 2004-11-04 Christian Kruse <ckruse@wwwtech.de>
 	* src/templates/{de,fr}/tpl_*/forum_posting.html,
