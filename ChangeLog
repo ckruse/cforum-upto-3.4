@@ -1,3 +1,6 @@
+2005-02-26 Christian Seiler <self@christian-seiler.de>
+	* src/modules/flt_spellcheck.c: Fixed bug #555
+
 2005-02-25 Christian Kruse <ckruse@wwwtech.de>
 	* src/fo_server.c: Fixes a really nasty bug in logfile rolling
 
