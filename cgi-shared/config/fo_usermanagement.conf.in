@@ -64,5 +64,7 @@
 
   SendPass "@libdir@/cforum/%s_%s_sendpass.so"
   SendPassOk "@libdir@/cforum/%s_%s_sendpassok.so"
+  
+  FatalTemplate "@libdir@/cforum/%s_%s_fatal.so"
 </Templates>
 

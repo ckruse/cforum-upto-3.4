@@ -87,9 +87,9 @@ sub execute {
 
     $cpos = 0;
     foreach(@sorted_errors) {
-      $txt_modify .= substr($txt, $cpos, $_ - $cpos - 1);
+      $txt_modify .= substr($txt, $cpos, $_ - $cpos);
       $txt_modify .= $cgi->param('spelling_'.$_.'_'.$errors{$_});
-      $cpos = $_ + $errors{$_} - 1;
+      $cpos = $_ + $errors{$_};
     }
     $txt_modify .= substr($txt, $cpos);
     $txt_modify =~ s!\n!<br />!g;

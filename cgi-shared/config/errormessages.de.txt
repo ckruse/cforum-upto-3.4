@@ -66,3 +66,6 @@ E_sendpw_subject: SELFHTML-Forum-Passwort
 E_sendpw_body: Ihr SELFHTML-Forum-Passwort lautet: {$pass}
 E_new_post_mail_subject: Neue Antwort auf http://forum.de.selfhtml.org/my/?t={tid}&m={mid}
 E_new_post_mail_body: Hallo {name},\n\nes gibt eine neue Antwort auf:\n\n  http://forum.de.selfhtml.org/my/?t={tid}&m={mid}\n\nGrüsse,\n das Forum\n
+E_SQL_connect: Ein Datenbankfehler ist aufgetreten. Bitte wenden Sie sich an den Systemadministrator.
+E_SQL_execute: Ein Datenbankfehler ist aufgetreten. Bitte wenden Sie sich an den Systemadministrator.
+E_SMTP_failed: Auf Grund eines internen Fehlers konnte die Mail nicht verschickt werden.

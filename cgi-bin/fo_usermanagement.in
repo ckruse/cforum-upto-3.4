@@ -12,7 +12,7 @@
 
 #
 use strict;
-use vars qw($Bin $Config $Script $Plugins $UserName $prefix $Management);
+use vars qw($Bin $Config $Script $Plugins $UserName $prefix $fo_default_conf $Management);
 
 BEGIN {
   my $null = $0; $null =~ tr!\\!/!; # for win :-(
@@ -25,6 +25,8 @@ BEGIN {
   $Plugins = {};
   $UserName = '';
   $prefix  = '@prefix@';
+  
+  $fo_default_conf = undef;
 
   $Management = undef;
 }
@@ -43,24 +45,9 @@ use CForum::Validator;
 
 use File::Path;
 
-use ForumUtils qw/read_configuration get_template get_error recode uniquify_params get_config_file create_directory_structure/;
+use ForumUtils qw/read_configuration get_template get_error recode uniquify_params get_config_file create_directory_structure fatal/;
 
 use Net::SMTP;
-# }}}
-
-# {{{ fatal
-sub fatal {
-  my $err = shift;
-  die "error: $err";
-
-  print <<HTML;
-Content-Type: text/html
-
-$err
-HTML
-
-  exit;
-}
 # }}}
 
 # {{{ show_register_form
@@ -72,7 +59,9 @@ sub show_register_form {
   my $user_config            = shift;
   my $err                    = shift;
 
-  my $tpl = new CForum::Template(get_template($fo_default_conf,$user_config,$fo_usermanagement_conf->{Register}->[0]->[0])) or die $@;
+  fatal($cgi,$fo_default_conf,$user_config,get_error($fo_default_conf,'TPL_NOT_FOUND'),$fo_usermanagement_conf->{FatalTemplate}->[0]->[0]) unless defined($fo_usermanagement_conf->{Register}->[0]->[0]);
+  my $tpl = new CForum::Template(get_template($fo_default_conf,$user_config,$fo_usermanagement_conf->{Register}->[0]->[0]));
+  fatal($cgi,$fo_default_conf,$user_config,get_error($fo_default_conf,'TPL_NOT_FOUND'),$fo_usermanagement_conf->{FatalTemplate}->[0]->[0]) unless defined($tpl);
 
   $tpl->setVar('forumbase',recode($fo_default_conf,$fo_default_conf->{BaseURL}->[0]->[0]));
   $tpl->setVar('script',recode($fo_default_conf,$fo_default_conf->{UserRegister}->[0]->[0]));
@@ -137,14 +126,14 @@ sub validate_parameters {
 }
 # }}}
 
-my $fo_default_conf        = read_configuration($Config.'fo_default.conf')  or die "error: $!";
+   $fo_default_conf        = read_configuration($Config.'fo_default.conf')  or die "error: $!";
 my $fo_usermanagement_conf = read_configuration($Config.'fo_usermanagement.conf') or die "error: $!";
 my $user_config            = {};
 
 # {{{ load plugins and authenticate
 foreach(@{$fo_usermanagement_conf->{AddModule}}) {
   eval "use $_->[0];";
-  fatal($@) if $@;
+  die $@ if $@;
 }
 
 foreach(@{$Plugins->{auth}}) {
@@ -154,7 +143,7 @@ foreach(@{$Plugins->{auth}}) {
 
 # {{{ Load management engine
 eval "use ".$fo_usermanagement_conf->{ManagementEngine}->[0]->[0] if $fo_usermanagement_conf->{ManagementEngine};
-fatal($@) if $@;
+die $@ if $@;
 # }}}
 
 umask oct($fo_usermanagement_conf->{Umask}->[0]->[0]) if $fo_usermanagement_conf->{Umask}->[0]->[0];
@@ -164,7 +153,7 @@ my $action           = $cgi->param('a') || 'view';
 
 if($cgi->param('cs')) {
   my $err = uniquify_params($fo_default_conf,$cgi,'cs');
-  fatal(recode($fo_default_conf,$err)) if $err;
+  fatal($cgi,$fo_default_conf,$user_config,$err,$fo_usermanagement_conf->{FatalTemplate}->[0]->[0]) if $err;
 }
 
 if($UserName) {
@@ -202,7 +191,9 @@ if($action eq 'redirect') {
 if($UserName) {
   # {{{ unregister account
   if($action eq 'unreg') {
+    fatal($cgi,$fo_default_conf,$user_config,get_error($fo_default_conf,'TPL_NOT_FOUND'),$fo_usermanagement_conf->{FatalTemplate}->[0]->[0]) unless defined($fo_usermanagement_conf->{Unregister}->[0]->[0]);
     my $tpl = new CForum::Template(get_template($fo_default_conf,$user_config,$fo_usermanagement_conf->{Unregister}->[0]->[0]));
+    fatal($cgi,$fo_default_conf,$user_config,get_error($fo_default_conf,'TPL_NOT_FOUND'),$fo_usermanagement_conf->{FatalTemplate}->[0]->[0]) unless defined($tpl);
     $tpl->setVar('script',recode($fo_default_conf,$fo_default_conf->{UserManagement}->[0]->[0]));
     $tpl->setVar('forumbase',recode($fo_default_conf,$fo_default_conf->{UBaseURL}->[0]->[0]));
     $tpl->setVar('userconfig',recode($fo_default_conf,$fo_default_conf->{UserConfig}->[0]->[0]));
@@ -228,9 +219,13 @@ if($UserName) {
     rmtree($dir) or die $!;
     unlink($cfile) or die $!;
 
-    $Management->remove_user($fo_default_conf,$fo_usermanagement_conf,$UserName) if $Management;
+    my $err = undef;
+    $err = $Management->remove_user($fo_default_conf,$fo_usermanagement_conf,$UserName) if $Management;
+    fatal($cgi,$fo_default_conf,$user_config,$err,$fo_usermanagement_conf->{FatalTemplate}->[0]->[0]) if $err;
 
+    fatal($cgi,$fo_default_conf,$user_config,get_error($fo_default_conf,'TPL_NOT_FOUND'),$fo_usermanagement_conf->{FatalTemplate}->[0]->[0]) unless defined($fo_usermanagement_conf->{UnregisterOk}->[0]->[0]);
     my $tpl = new CForum::Template(get_template($fo_default_conf,$user_config,$fo_usermanagement_conf->{UnregisterOk}->[0]->[0]));
+    fatal($cgi,$fo_default_conf,$user_config,get_error($fo_default_conf,'TPL_NOT_FOUND'),$fo_usermanagement_conf->{FatalTemplate}->[0]->[0]) unless defined($tpl);
     $tpl->setVar('script',recode($fo_default_conf,$fo_default_conf->{UserRegister}->[0]->[0]));
     $tpl->setVar('forumbase',recode($fo_default_conf,$fo_default_conf->{BaseURL}->[0]->[0]));
     $tpl->setVar('charset',$fo_default_conf->{ExternCharset}->[0]->[0]);
@@ -252,7 +247,9 @@ if($UserName) {
         $form = 1 if $err = validate_parameters($fo_default_conf,$fo_usermanagement_conf,$cgi);
 
         unless($form) {
-          $Management->change_pass($fo_default_conf,$fo_usermanagement_conf,$UserName,$p) if $Management;
+          $err = undef;
+          $err = $Management->change_pass($fo_default_conf,$fo_usermanagement_conf,$UserName,$p) if $Management;
+          fatal($cgi,$fo_default_conf,$user_config,$err,$fo_usermanagement_conf->{FatalTemplate}->[0]->[0]) if $err;
         }
       }
       else {
@@ -261,7 +258,9 @@ if($UserName) {
     }
 
     if($form) {
+      fatal($cgi,$fo_default_conf,$user_config,get_error($fo_default_conf,'TPL_NOT_FOUND'),$fo_usermanagement_conf->{FatalTemplate}->[0]->[0]) unless defined($fo_usermanagement_conf->{ChangePass}->[0]->[0]);
       my $tpl = new CForum::Template(get_template($fo_default_conf,$user_config,$fo_usermanagement_conf->{ChangePass}->[0]->[0]));
+      fatal($cgi,$fo_default_conf,$user_config,get_error($fo_default_conf,'TPL_NOT_FOUND'),$fo_usermanagement_conf->{FatalTemplate}->[0]->[0]) unless defined($tpl);
 
       $tpl->setVar('script',recode($fo_default_conf,$fo_default_conf->{UserManagement}->[0]->[0]));
       $tpl->setVar('forumbase',recode($fo_default_conf,$fo_default_conf->{UBaseURL}->[0]->[0]));
@@ -273,7 +272,10 @@ if($UserName) {
       print $cgi->header(-type => 'text/html; charset='.$fo_default_conf->{ExternCharset}->[0]->[0]),$tpl->parseToMem;
     }
     else {
+      fatal($cgi,$fo_default_conf,$user_config,get_error($fo_default_conf,'TPL_NOT_FOUND'),$fo_usermanagement_conf->{FatalTemplate}->[0]->[0]) unless defined($fo_usermanagement_conf->{ChangePassOk}->[0]->[0]);
       my $tpl = new CForum::Template(get_template($fo_default_conf,$user_config,$fo_usermanagement_conf->{ChangePassOk}->[0]->[0]));
+      fatal($cgi,$fo_default_conf,$user_config,get_error($fo_default_conf,'TPL_NOT_FOUND'),$fo_usermanagement_conf->{FatalTemplate}->[0]->[0]) unless defined($tpl);
+      
       $tpl->setVar('script',recode($fo_default_conf,$fo_default_conf->{UserManagement}->[0]->[0]));
       $tpl->setVar('forumbase',recode($fo_default_conf,$fo_default_conf->{UBaseURL}->[0]->[0]));
       $tpl->setVar('userconfig',recode($fo_default_conf,$fo_default_conf->{UserConfig}->[0]->[0]));
@@ -343,9 +345,17 @@ else {
     print DAT 'VisitedFile "',$dir,"/vt.dat\"\n";
     close DAT;
 
-    $Management->add_user($fo_default_conf,$fo_usermanagement_conf,$user,$passwd,$email) if $Management;
+    my $err = undef;
+    $err = $Management->add_user($fo_default_conf,$fo_usermanagement_conf,$user,$passwd,$email) if $Management;
+    if($err) {
+      rmtree($dir) or die $!;
+      unlink($ufile) or die $!;
+      fatal($cgi,$fo_default_conf,$user_config,$err,$fo_usermanagement_conf->{FatalTemplate}->[0]->[0]);
+    }
 
+    fatal($cgi,$fo_default_conf,$user_config,get_error($fo_default_conf,'TPL_NOT_FOUND'),$fo_usermanagement_conf->{FatalTemplate}->[0]->[0]) unless defined($fo_usermanagement_conf->{RegisterOk}->[0]->[0]);
     my $tpl = new CForum::Template(get_template($fo_default_conf,$user_config,$fo_usermanagement_conf->{RegisterOk}->[0]->[0]));
+    fatal($cgi,$fo_default_conf,$user_config,get_error($fo_default_conf,'TPL_NOT_FOUND'),$fo_usermanagement_conf->{FatalTemplate}->[0]->[0]) unless defined($tpl);
 
     $tpl->setVar('ubase',recode($fo_default_conf,$fo_default_conf->{UBaseURL}->[0]->[0]));
     $tpl->setVar('userconfig',recode($fo_default_conf,$fo_default_conf->{UserConfig}->[0]->[0]));
@@ -365,7 +375,7 @@ else {
       my $result = undef;
       $result = $Management->get_password($fo_default_conf,$fo_usermanagement_conf,$username) if $Management;
 
-      if($result) {
+      if(ref($result) eq "HASH") {
         # send mail
         my $body = get_error($fo_default_conf,'sendpw','body');
         $body =~ s!\{\$pass\}!$result->{pass}!g;
@@ -373,6 +383,7 @@ else {
         $body =~ s!\{\$user\}!$username!g;
         
         my $smtp = new Net::SMTP($fo_usermanagement_conf->{SMTPHost}->[0]->[0]);
+        fatal($cgi,$fo_default_conf,$user_config,get_error($fo_default_conf,'SMTP_failed'),$fo_usermanagement_conf->{FatalTemplate}->[0]->[0]) unless $smtp;
         $smtp->mail($fo_usermanagement_conf->{SMTPFrom}->[0]->[0]);
         $smtp->to($result->{email});
         $smtp->data();
@@ -384,7 +395,9 @@ else {
         $smtp->quit();
 
         # send user output
+        fatal($cgi,$fo_default_conf,$user_config,get_error($fo_default_conf,'TPL_NOT_FOUND'),$fo_usermanagement_conf->{FatalTemplate}->[0]->[0]) unless defined($fo_usermanagement_conf->{SendPassOk}->[0]->[0]);
         my $tpl = new CForum::Template(get_template($fo_default_conf,$user_config,$fo_usermanagement_conf->{SendPassOk}->[0]->[0]));
+        fatal($cgi,$fo_default_conf,$user_config,get_error($fo_default_conf,'TPL_NOT_FOUND'),$fo_usermanagement_conf->{FatalTemplate}->[0]->[0]) unless defined($tpl);
         $tpl->setVar('script',recode($fo_default_conf,$fo_default_conf->{UserRegister}->[0]->[0]));
         $tpl->setVar('forumbase',recode($fo_default_conf,$fo_default_conf->{BaseURL}->[0]->[0]));
         $tpl->setVar('charset',$fo_default_conf->{ExternCharset}->[0]->[0]);
@@ -393,7 +406,9 @@ else {
         print $cgi->header(-type => 'text/html; charset='.$fo_default_conf->{ExternCharset}->[0]->[0]),$tpl->parseToMem;
       }
       else {
+        fatal($cgi,$fo_default_conf,$user_config,get_error($fo_default_conf,'TPL_NOT_FOUND'),$fo_usermanagement_conf->{FatalTemplate}->[0]->[0]) unless defined($fo_usermanagement_conf->{ErrorTemplate}->[0]->[0]);
         my $tpl = new CForum::Template(get_template($fo_default_conf,$user_config,$fo_default_conf->{ErrorTemplate}->[0]->[0]));
+        fatal($cgi,$fo_default_conf,$user_config,get_error($fo_default_conf,'TPL_NOT_FOUND'),$fo_usermanagement_conf->{FatalTemplate}->[0]->[0]) unless  defined($tpl);
         $tpl->setVar('script',recode($fo_default_conf,$fo_default_conf->{UserRegister}->[0]->[0]));
         $tpl->setVar('forumbase',recode($fo_default_conf,$fo_default_conf->{BaseURL}->[0]->[0]));
         $tpl->setVar('charset',$fo_default_conf->{ExternCharset}->[0]->[0]);
@@ -403,7 +418,9 @@ else {
       }
     }
     else {
+      fatal($cgi,$fo_default_conf,$user_config,get_error($fo_default_conf,'TPL_NOT_FOUND'),$fo_usermanagement_conf->{FatalTemplate}->[0]->[0]) unless defined($fo_usermanagement_conf->{SendPass}->[0]->[0]);
       my $tpl = new CForum::Template(get_template($fo_default_conf,$user_config,$fo_usermanagement_conf->{SendPass}->[0]->[0]));
+      fatal($cgi,$fo_default_conf,$user_config,get_error($fo_default_conf,'TPL_NOT_FOUND'),$fo_usermanagement_conf->{FatalTemplate}->[0]->[0]) unless defined($tpl);
 
       $tpl->setVar('script',recode($fo_default_conf,$fo_default_conf->{UserRegister}->[0]->[0]));
       $tpl->setVar('forumbase',recode($fo_default_conf,$fo_default_conf->{BaseURL}->[0]->[0]));

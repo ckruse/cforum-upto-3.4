@@ -1,3 +1,31 @@
+2004-10-05 Christian seiler <self@christian-seiler.de>
+	* fixed bugs #384 and #335, this includes:
+	* cgi-shared/ForumUtils.pm: korrekted plaintext() function to
+		correctly convert back &#39; to '
+	* cgi-shared/Plugins/SpellCheck.pm: fixed a 500 internal server
+		error caused by the possible generation of invalid utf-8 by
+		the plugin which is then passed on to the preview plugin
+	* src/templates/de/tpl_*/sendpassok.html,
+ 	  src/templates/de/tpl_*/sendpass.html: corrected references: now
+		the user registration script is linked and not the user
+		configuration script
+	* src/templates/de/tpl_*/userregister.html: corrected icon next
+		to send password link
+	* cgi-shared/Plugins/Management/SQL.pm: imported get_error to be
+		able to create error messages, return error messages if
+		connect to database or execution of a command fails
+	* cgi-shared/config/errormessages.*.txt: added E_SQL_connect,
+		E_SQL_execute and E_SMTP_failed
+	* cgi-shared/config/fo_usermanagement.conf.in: added FatalTemplate
+		configuration entry
+	* cgi-bin/fo_usermanagement.in: fo_default_conf is now declared in
+		use vars because it is needed by SQL management plugin,
+		imported fatal from ForumUtils, removed fatal() function
+		that was already there, added checks if template could not
+		be found or an error occured in management plugin, remove
+		directory structure and configuration files if management
+		plugin could not successfully create the user
+
 2004-10-04 Christian Seiler <self@christian-seiler.de>
 	* fixed bugs #387, #359, #340, #330 and #306, this includes:
 	* src/clientlib.c: Assign forumbase when error message ist generated

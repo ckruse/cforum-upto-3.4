@@ -371,6 +371,7 @@ sub plaintext {
   $posting =~ s!\177!$qchar!g;
   $posting =~ s!<br />!\n!g;
   $posting =~ s!&nbsp;! !g;
+  $posting =~ s!&#39;!'!g;
   $posting =~ s!_/_SIG_/_!\n-- \n!;
 
   return decode $posting;
