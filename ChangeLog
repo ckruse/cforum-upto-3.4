@@ -1,3 +1,16 @@
+2004-12-31 Christian Seiler <self@christian-seiler.de>
+	* Created cgi-bin/admin directory with corresponding Makefile.am
+	* Added cgi-bin/admin/fo_xmlrpc.in for XMLRPC requests
+	* cgi-bin/Makefile.am: Added SUBDIRS
+	* Added cgi-shared/config/fo_xmlrpc.conf.in
+	* cgi-shared/config/Makefile.am: added reference to
+		fo_xmlrpc.conf.in
+	* cgi-shared/Plugins/XMLRPCUserManagement.pm: added user management
+		module
+	* cgi-shared/Plugins/Makefile.am: added reference to new module
+	* configure.in: added cgi-bin/admin/Makefile, fo_xmlrpc.conf
+		and fo_xmlrpc.in to output
+
 2004-12-31 Christian Kruse <ckruse@wwwtech.de>
 	* src/modules/flt_category.c: Added configuration option
 		HideCategoriesInThreadView

@@ -12,7 +12,8 @@ EXTRA_DIST=CategoryCheck.pm \
   PostingAssistant.pm \
   Quotings.pm \
   RegisterName.pm \
-  Variables.pm
+  Variables.pm \
+  XMLRPCUserManagement.pm
 
 install-data-local:
 	if test ! -d $(PERLMODULES)/Plugins; then \
