@@ -31,6 +31,7 @@
  FieldNeeded "qchar"
  FieldNeeded "cat"
 
+ AddPlugin "Plugins::PostOkLink"
  AddPlugin "Plugins::SpellCheck"
  AddPlugin "Plugins::Preview"
  AddPlugin "Plugins::PostingAssistant"

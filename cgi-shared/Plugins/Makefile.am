@@ -1,6 +1,7 @@
 SUBDIRS=Management
 
 EXTRA_DIST=CategoryCheck.pm \
+  PostOkLink.pm \
   FixedLineWidth.pm \
   MarkOwnVisited.pm \
   Preview.pm \

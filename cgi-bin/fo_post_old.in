@@ -26,7 +26,7 @@ BEGIN {
   $prefix = '@prefix@';
 }
 
-use lib "@PERLMODULES@";
+use lib ("@PERLMODULES@","@libdir@");
 
 sub VERSION {(q$Revision: 1.48 $ =~ /([\d.]+)\s*$/)[0] or '0.0'}
 
@@ -93,6 +93,13 @@ sub show_form {
 
   $tpl->setVar('fupto',recode($fo_default_conf,$cgi->param('fupto'))) if $cgi->param('fupto');
 
+  # assign maximum field lengths
+  foreach my $field (@{$fo_post_conf->{FieldConfig}}) {
+    if ($field->[0] eq "subject" || $field->[0] eq "Name" || $field->[0] eq "EMail") {
+      $tpl->setVar ($field->[0].'_max', $field->[1]);
+    }
+  }
+  
   foreach(@{$Plugins->{display}}) {
     &$_($fo_default_conf,$fo_view_conf,$fo_post_conf,$user_config,$cgi,$tpl);
   }
@@ -196,7 +203,7 @@ sub check_input {
 
   return get_error($dcfg,'image','invalid') if $cgi->param('ImageUrl') && $cgi->param('ImageUrl') ne 'http://' && !is_valid_http_link($cgi->param('ImageUrl'),CForum::Validator::VALIDATE_STRICT);
   return get_error($dcfg,'homepage','invalid') if $cgi->param('HomepageUrl') && $cgi->param('HomepageUrl') ne 'http://' && is_valid_http_link($cgi->param('HomepageUrl'));
-  return get_error($dcfg,'email','invalid') if $cgi->param('EMail') && is_valid_mailaddress($cgi->param('EMail'));
+  return get_error($dcfg,'email','invalid') if $cgi->param('EMail') && !is_valid_mailaddress($cgi->param('EMail'));
 
   return 0;
 }
@@ -286,9 +293,12 @@ if($cgi->param) {
   #
 
   my $answer;
-  my $i   = 0;
-  my $j   = 0;
-  my $ret = 0;
+  my $line;
+  my $new_tid = -1;
+  my $new_mid = -1;
+  my $i       = 0;
+  my $j       = 0;
+  my $ret     = 0;
 
   # {{{ send the posting
   do {
@@ -372,6 +382,26 @@ if($cgi->param) {
     $i     += 1;
   } while($answer =~ /^500 Sorry/ && $i <= 3);
   # }}}
+
+  if($answer =~ /^200/) {
+    $j = 0;
+    while(!$j) {
+      $_ = <$sock>;
+      if($_ =~ /^Tid: ([0-9]+)/) {
+        $new_tid = $1;
+      } elsif($_ =~ /^Mid: ([0-9]+)/) {
+        $new_mid = $1;
+      } elsif($_ =~ /^\s*$/) {
+        $j = 1;
+      }
+      if($new_tid > -1 && $new_mid > -1) {
+        $j = 1;
+      }
+    }
+  }
+
+  $cgi->param ('new_tid' => $new_tid) if $new_tid > -1;
+  $cgi->param ('new_mid' => $new_mid) if $new_mid > -1;
 
   foreach(@{$Plugins->{afterpost}}) {
     &$_($fo_default_conf,$fo_view_conf,$fo_post_conf,$user_config,$cgi,$sock,$answer);

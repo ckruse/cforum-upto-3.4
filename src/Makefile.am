@@ -1,9 +1,9 @@
 
 SUBDIRS=. modules templates
 
+# fo_post not in 2.1!
 bin_PROGRAMS= \
   fo_view \
-  fo_post \
   fo_server \
   fo_cleanup \
   fo_threadlookup \
@@ -71,9 +71,10 @@ fo_view_SOURCES=fo_view.c
 fo_view_LDADD=libcfcharconvert.la libcfutils.la libcfcgi.la libcftemplate.la libconfigparser.la libcfclientlib.la libcfhtml.la
 fo_view_LDFLAGS=-export-dynamic
 
-fo_post_SOURCES=fo_post.c
-fo_post_LDADD=libcfcharconvert.la libcfutils.la libcfcgi.la libcftemplate.la libconfigparser.la libcfclientlib.la libcfvalidate.la
-fo_post_LDFLAGS=-export-dynamic
+# Not in 2.1!
+#fo_post_SOURCES=fo_post.c
+#fo_post_LDADD=libcfcharconvert.la libcfutils.la libcfcgi.la libcftemplate.la libconfigparser.la libcfclientlib.la libcfvalidate.la
+#fo_post_LDFLAGS=-export-dynamic
 
 fo_arcview_SOURCES=fo_arcview.c
 fo_arcview_LDADD=libcfcharconvert.la libcfutils.la libcfcgi.la libconfigparser.la libcfclientlib.la $(GDOME_LIBS)

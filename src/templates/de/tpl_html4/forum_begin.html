@@ -198,6 +198,8 @@
           <p><b>{$flt_admin_errmsg}</b></p>{endif}{if $tipoftheday}
           <p>Wussten Sie, {$tipoftheday}</p>{endif}{if $motd}
           {$motd}
+{endif}{if $aaf}
+          <p style="border: 1px solid red;">Sie befinden sich im Administrationsmodus. Nachdem Sie ein Posting gelöscht haben, sollten Sie das auch <img src="http://src.selfhtml.org/serverdok.gif" width="15" height="10" border="0" alt="bereichsübergreifende Seite">&nbsp;<a href="https://developer.selfhtml.org/tools/deletions/"><b>dokumentieren</b></a>!</p>
 {endif}        </td>
       </tr>
       <tr>

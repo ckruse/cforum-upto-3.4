@@ -281,6 +281,7 @@ void str_error_message(const u_char *err,FILE *out, ...) {
   t_name_value *db = cfg_get_first_value(&fo_default_conf,"MessagesDatabase");
   t_name_value *lang = cfg_get_first_value(&fo_default_conf,"Language");
   t_name_value *cs = cfg_get_first_value(&fo_default_conf,"ExternCharset");
+  t_name_value *vs = cfg_get_first_value(&fo_default_conf,cf_hash_get(GlobalValues,"UserName",8) ? "UBaseURL" : "BaseURL");
   t_cf_template tpl;
   u_char tplname[256];
   u_char errname[256];
@@ -300,6 +301,7 @@ void str_error_message(const u_char *err,FILE *out, ...) {
   if(v && db && lang) {
     generate_tpl_name(tplname,256,v);
     tpl_cf_init(&tpl,tplname);
+    cf_set_variable(&tpl,cs,"forumbase",vs->values[0],strlen(vs->values[0]),1);
 
     if(tpl.tpl) {
       str_init(&msg);

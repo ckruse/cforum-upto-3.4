@@ -12,6 +12,7 @@
 
 <General>
  TemplateMode "html4"
+ XHTMLMode "html"
  MessagePath "@with_message_dir@"
  ArchivePath "@with_archive_dir@"
  SocketName "@with_socket_path@"

@@ -32,8 +32,6 @@
 </Filters>
 
 <ForumBehavior>
- XHTMLMode "yes"
-
  ThreadsOpenByDefault    "yes"
  DoQuote                 "yes"
  QuotingChars            "»» "

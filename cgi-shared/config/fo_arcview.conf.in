@@ -40,6 +40,8 @@
 </General>
 
 <Templates>
+ TemplatesFrameset "@libdir@/cforum/%s_%s_frameset.so" "@libdir@/cforum/%s_%s_blank.so"
+
   FatalTemplate "@libdir@/cforum/%s_%s_fatal.so"
 
   YearsTemplate "@libdir@/cforum/%s_%s_arcyears.so"

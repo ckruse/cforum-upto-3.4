@@ -1,3 +1,30 @@
+2004-10-04 Christian Seiler <self@christian-seiler.de>
+	* fixed bugs #387, #359, #340, #330 and #306, this includes:
+	* src/clientlib.c: Assign forumbase when error message ist generated
+	* src/templates/de/tpl_*/forum_posting.html: Added hardcoded
+		maxlength attribute.
+	* src/templates/de/tpl_*/forum_begin.html: Added link to management
+		tool for deleted postings if administrative mode is activated.
+	* src/templates/de/tpl_*/thread.html: Added dynamic maxlength
+		attribute based on values set by fo_post.
+	* src/templates/de/tpl_*/post_ok.html: Added link back to thread
+		based on values set by plugins.
+	* src/templates/de/tpl_*/arcyears.html: Added search input field
+	* src/Makefile.am: Do not generate C-Version fo_post yet
+	* cgi-shared/Plugins/PostOkLink.pm: Assign variable to template that
+		defines the link to the newly added posting
+	* cgi-shared/Plugins/Makefile.am: added PostOkLink.pm to list
+	* cgi-shared/config/fo_view.conf.in: removed XHTMLMode (it is now in
+		fo_default.conf.in)
+	* cgi-shared/config/fo_default.conf.in: added XHTMLMode directive
+	* cgi-shared/config/fo_post.conf.in: added PostOkLink plugin
+	* cgi-shared/config/fo_arcview.conf.in: added frameset template
+		directive
+	* cgi-bin/fo_post_old.in: corrected use lib (...), assign dynamic
+		maxlengths to template, corrected bug in email validation,
+		added code that reads the thread and message id of the new
+		posting
+
 2004-10-04 Christian Kruse <ckruse@wwwtech.de>
 	* src/modules/flt_registerednames.c: Fixed a bug in transform() function
 
