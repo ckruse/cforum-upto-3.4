@@ -49,8 +49,9 @@
 #define DATA_LOADING_HANDLER   16 /**< ... */
 #define THRDLST_WRITE_HANDLER  17 /**< ... */
 #define ARCHIVE_THREAD_HANDLER 18 /**< ... */
+#define SORTING_HANDLER        19 /**< ... */
 
-#define MOD_MAX                18 /**< The maximum hook value. */
+#define MOD_MAX                19 /**< The maximum hook value. */
 
 #define FLT_OK       0 /**< Returned by a plugin function if everything as ok. */
 #define FLT_DECLINE -1 /**< Returned by a plugin function if this request is not for the plugin. */

@@ -120,7 +120,7 @@ void print_thread_structure(t_cl_thread *thread,t_cf_hash *head) {
 }
 /* }}} */
 
-/* {{{ send_posting */
+/* {{{ show_posting */
 #ifndef CF_SHARED_MEM
 void show_posting(t_cf_hash *head,int sock,u_int64_t tid,u_int64_t mid)
 #else
@@ -229,7 +229,18 @@ void show_posting(t_cf_hash *head,void *shm_ptr,u_int64_t tid,u_int64_t mid)
 }
 /* }}} */
 
-/* {{{ send_threadlist */
+/* {{{ show_thread */
+#ifndef CF_SHARED_MEM
+void show_thread(t_cf_hash *head,int sock,u_int64_t tid)
+#else
+void show_thread(t_cf_hash *head,void *sock,u_int64_t tid)
+#endif
+{
+  /** \todo implement it */
+}
+/* }}} */
+
+/* {{{ show_threadlist */
 #ifndef CF_SHARED_MEM
 void show_threadlist(int sock,t_cf_hash *head)
 #else
@@ -264,10 +275,14 @@ void show_threadlist(void *shm_ptr,t_cf_hash *head)
   t_cf_template tpl_begin,tpl_end;
 
   time_t tm;
-  t_cl_thread thread;
+  t_cl_thread thread,*threadp;
   t_message *msg;
   size_t i;
   int del = cf_hash_get(GlobalValues,"ShowInvisible",13) == NULL ? CF_KILL_DELETED : CF_KEEP_DELETED;
+
+  #ifndef CF_NO_SORTING
+  t_array threads;
+  #endif
   /* }}} */
 
   /* {{{ initialization work */
@@ -380,6 +395,8 @@ void show_threadlist(void *shm_ptr,t_cf_hash *head)
     tpl_cf_parse(&tpl_begin);
     tpl_cf_finish(&tpl_begin);
 
+    #ifdef CF_NO_SORTING
+
     #ifndef CF_SHARED_MEM
     while(cf_get_next_thread_through_sock(sock,&tsd,&thread,fo_thread_tplname) == 0)
     #else
@@ -414,6 +431,59 @@ void show_threadlist(void *shm_ptr,t_cf_hash *head)
         }
       }
     }
+
+    /* sorting algorithms are allowed */
+    #else
+
+    #ifdef CF_SHARED_MEM
+    if(cf_get_threadlist(&threads,ptr1,fo_thread_tplname) == -1)
+    #else
+    if(cf_get_threadlist(&threads,sock,&tsd,fo_thread_tplname) == -1)
+    #endif
+    {
+      if(*ErrorString) cf_error_message(ErrorString,NULL);
+      else cf_error_message("E_NO_THREADLIST",NULL);
+
+      return;
+    }
+    else {
+      #ifdef CF_SHARED_MEM
+      run_sorting_handlers(head,ptr,&threads);
+      #else
+      run_sorting_handlers(head,sock,&tsd,&threads);
+      #endif
+
+      for(i=0;i<threads.elements;++i) {
+        threadp = array_element_at(&threads,i);
+
+        if((threadp->messages->invisible == 0 && threadp->messages->may_show) || del == CF_KEEP_DELETED) {
+          tpl_cf_setvar(&threadp->messages->tpl,"start","1",1,0);
+
+          len = snprintf(buff,128,"%d",threadp->msg_len);
+          tpl_cf_setvar(&threadp->messages->tpl,"msgnum",buff,len,0);
+
+          len = snprintf(buff,128,"%d",thread.msg_len-1);
+          tpl_cf_setvar(&threadp->messages->tpl,"answers",buff,len,0);
+
+	  /* first: run VIEW_HANDLER handlers in pre-mode */
+          ret = cf_run_view_handlers(&thread,head,CF_MODE_THREADLIST|CF_MODE_PRE);
+
+          if(ret == FLT_OK || ret == FLT_DECLINE || del == CF_KEEP_DELETED) {
+	    /* run list handlers */
+	    for(msg=threadp->messages;msg;msg=msg->next) cf_run_view_list_handlers(msg,head,threadp->tid,CF_MODE_THREADLIST);
+
+	    /* after that, run VIEW_HANDLER handlers in post-mode */
+	    ret = cf_run_view_handlers(threadp,head,CF_MODE_THREADLIST|CF_MODE_POST);
+
+	    /* if thread is still visible print it out */
+	    if(ret == FLT_OK || ret == FLT_DECLINE || del == CF_KEEP_DELETED) print_thread_structure(threadp,head);
+	  }
+        }
+      }
+
+      array_destroy(&threads);
+    }
+    #endif
 
     #ifndef CF_SHARED_MEM
     if(*ErrorString) {
@@ -651,7 +721,7 @@ int main(int argc,char *argv[],char *env[]) {
       if(m) mid = str_to_u_int64(m);
 
       if(tid && mid) show_posting(head,sock,tid,mid);
-      /** \todo else if(tid)   show_thread(head,sock,tid); */
+      else if(tid)   show_thread(head,sock,tid);
       else           show_threadlist(sock,head);
     }
 

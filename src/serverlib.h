@@ -159,6 +159,11 @@ struct s_forum {
 };
 /* }}} */
 
+typedef struct s_periodical {
+  unsigned long periode;
+  void (*worker)(void);
+} t_periodical;
+
 typedef int (*t_data_loading_filter)(t_forum *);
 typedef int (*t_srv_new_post_filter)(t_forum *,u_int64_t,t_posting *);
 typedef int (*t_srv_new_thread_filter)(t_forum *,t_thread *);
@@ -198,7 +203,8 @@ void cf_cleanup_forumtree(t_forum *forum);
 void cf_cleanup_thread(t_thread *t);
 void cf_cleanup_posting(t_posting *p);
 
-void *cf_io_worker(void *arg);
+void *cf_periodical_worker(void *arg);
+void cf_io_worker(void);
 
 void cf_send_posting(t_forum *forum,int sock,u_int64_t tid,u_int64_t mid,int invisible);
 int cf_read_posting(t_forum *forum,t_posting *p,int sock,rline_t *tsd);

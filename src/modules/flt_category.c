@@ -67,7 +67,7 @@ int flt_category_execute_filter(t_cf_hash *head,t_configuration *dc,t_configurat
   if(cf_hash_get(flt_category_cats,msg->category.content,msg->category.len)) return FLT_OK;
 
   msg->may_show = 0;
-  delete_subtree(msg);
+  cf_msg_delete_subtree(msg);
   return FLT_OK;
 }
 /* }}} */

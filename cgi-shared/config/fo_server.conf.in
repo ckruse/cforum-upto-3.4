@@ -27,6 +27,8 @@ SpareThreads "5"
 MaxThreads "120"
 
 
+# We want logfiles to be 2MB max
+LogMaxSize "2097152"
 ErrorLog "@with_log_dir@/fo_errors"
 StdLog "@with_log_dir@/fo_stdlog"
 

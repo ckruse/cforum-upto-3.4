@@ -1110,7 +1110,7 @@ int is_valid_ftp_link(const u_char *link) {
 
 /* {{{ is_valid_file_link */
 int is_valid_file_link(const u_char *link) {
-  register u_char *ptr;
+  register u_char *ptr = NULL;
   const u_char *hostname;
   u_char *dp,*slash;
 

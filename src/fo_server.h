@@ -66,6 +66,9 @@ typedef struct s_head {
     t_cf_list_head list;
   } servers;
 
+  /** jobs to run periodical */
+  t_cf_list_head periodicals;
+
   /** This hash contains all the CFTP protocol handlers */
   t_cf_hash *protocol_handlers;
 

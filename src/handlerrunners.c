@@ -176,6 +176,35 @@ int cf_run_connect_init_handlers(t_cf_hash *head,int sock)
 }
 /* }}} */
 
+/* {{{ run_sorting_handlers */
+#ifdef CF_SHARED_MEM
+int run_sorting_handlers(t_cf_hash *head,void *ptr,t_array *threads)
+#else
+int run_sorting_handlers(t_cf_hash *head,int sock,rline_t *tsd,t_array *threads)
+#endif
+{
+  t_handler_config *handler;
+  t_sorting_handler exec;
+  size_t i;
+  int ret = FLT_DECLINE;
+
+  if(Modules[SORTING_HANDLER].elements) {
+    for(i=0;i<Modules[SORTING_HANDLER].elements && ret == FLT_DECLINE;i++) {
+      handler = array_element_at(&Modules[SORTING_HANDLER],i);
+      exec    = (t_sorting_handler)handler->func;
+
+      #ifdef CF_SHARED_MEM
+      ret     = exec(head,&fo_default_conf,&fo_view_conf,ptr,threads);
+      #else
+      ret     = exec(head,&fo_default_conf,&fo_view_conf,sock,tsd,threads);
+      #endif
+    }
+  }
+
+  return ret;
+}
+/* }}} */
+
 /* {{{ cf_run_view_init_handlers */
 int cf_run_view_init_handlers(t_cf_hash *head,t_cf_template *tpl_begin,t_cf_template *tpl_end) {
   t_handler_config *handler;

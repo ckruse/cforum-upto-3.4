@@ -315,35 +315,37 @@ void cf_cleanup_forumtree(t_forum *forum) {
 }
 /* }}} */
 
-/* {{{ cf_io_worker */
-void *cf_io_worker(void *arg) {
-  t_name_value *ra = cfg_get_first_value(&fo_server_conf,NULL,"RunArchiver");
-  unsigned tm = atoi(ra->values[0]),
-           rs = 0;
+/* {{{ cf_periodical_worker */
+void *cf_periodical_worker(void *arg) {
+  unsigned long rs = 0;
+  t_cf_list_element *elem;
+  t_periodical *per;
 
-  cf_log(CF_DBG|CF_FLSH,__FILE__,__LINE__,"I/O worker startet...\n");
+  cf_log(CF_DBG|CF_FLSH,__FILE__,__LINE__,"Periodical worker startet...\n");
 
   while(RUN) {
-    cf_log(CF_DBG|CF_FLSH,__FILE__,__LINE__,"going to sleep()...\n");
     sleep(1);
+    ++rs;
 
-    if(++rs >= tm || RUN == 0) {
-      cf_log(CF_DBG|CF_FLSH,__FILE__,__LINE__,"starting cf_run_archiver()...\n");
-      cf_run_archiver();
-
-      cf_log(CF_DBG|CF_FLSH,__FILE__,__LINE__,"starting cf_write_threadlist(NULL)...\n");
-      cf_write_threadlist(NULL);
-
-      rs = 0;
+    for(elem=head.periodicals.elements;elem;elem=elem->next) {
+      per = (t_periodical *)elem->data;
+      if(rs % per->periode == 0 && rs >= per->periode) per->worker();
     }
+
+    if(rs >= 86400) rs = 0;
   }
 
-  /* we are questioned to go down, so write threadlist */
-  /* we don't need this extra call. It's been done in the while() loop */
-  //cf_log(CF_DBG|CF_FLSH,__FILE__,__LINE__,"starting cf_write_threadlist(NULL)...\n");
-  //cf_write_threadlist(NULL);
-
   return NULL;
+}
+/* }}} */
+
+/* {{{ cf_io_worker */
+void cf_io_worker(void) {
+  cf_log(CF_DBG|CF_FLSH,__FILE__,__LINE__,"starting cf_run_archiver()...\n");
+  cf_run_archiver();
+
+  cf_log(CF_DBG|CF_FLSH,__FILE__,__LINE__,"starting cf_write_threadlist(NULL)...\n");
+  cf_write_threadlist(NULL);
 }
 /* }}} */
 

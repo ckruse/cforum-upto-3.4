@@ -234,6 +234,7 @@ void cf_write_threadlist(t_forum *forum) {
 
         cf_log(CF_DBG|CF_FLSH,__FILE__,__LINE__,"starting disc writer\n");
         ret     = fkt(forum);
+	cf_log(CF_DBG|CF_FLSH,__FILE__,__LINE__,"Discwriter ended\n");
       }
     }
   }
@@ -249,6 +250,7 @@ void cf_write_threadlist(t_forum *forum) {
 
           cf_log(CF_DBG|CF_FLSH,__FILE__,__LINE__,"starting disc writer\n");
           ret     = fkt(forum);
+	  cf_log(CF_DBG|CF_FLSH,__FILE__,__LINE__,"Discwriter ended\n");
         }
       }
     }

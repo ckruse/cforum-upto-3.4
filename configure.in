@@ -136,6 +136,14 @@ AC_ARG_ENABLE(debug,
   [ fake=1 ]
 )
 
+AC_ARG_ENABLE(sorting,
+  [AC_HELP_STRING(
+    [--enable-sorting],
+    [enable sorting APIs (beware of the performance consequences!)])],
+  [ fake=1 ],
+  [ AC_DEFINE(CF_NO_SORTING,1,[Defined if sorting is not enabled]) ]
+)
+
 dnl
 dnl shared memory is something like an after burner :)
 dnl

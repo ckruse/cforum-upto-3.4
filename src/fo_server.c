@@ -138,6 +138,59 @@ void destroy_server(void *data) {
 }
 /* }}} */
 
+/* {{{ logfile_worker */
+void logfile_worker(void) {
+  t_name_value *v = cfg_get_first_value(&fo_server_conf,NULL,"LogMaxSize");
+  t_name_value *log;
+  off_t size = strtol(v->values[0],NULL,10);
+  struct stat st;
+  u_char buff[256];
+  struct tm tm;
+  time_t t;
+  t_string str;
+  size_t len;
+
+  time(&t);
+  localtime_r(&t,&tm);
+
+  log = cfg_get_first_value(&fo_server_conf,NULL,"StdLog");
+  if(stat(log->values[0],&st) == 0) {
+    if(st.st_size >= size) {
+      pthread_mutex_lock(&head.log.lock);
+      fclose(head.log.std);
+
+      len = strftime(buff,256,".%Y-%m-%d-%T",&tm);
+      str_init(&str);
+      str_char_set(&str,log->values[0],strlen(log->values[0]));
+      str_chars_append(&str,buff,len);
+
+      rename(log->values[0],str.content);
+
+      str_cleanup(&str);
+      pthread_mutex_unlock(&head.log.lock);
+    }
+  }
+
+  log = cfg_get_first_value(&fo_server_conf,NULL,"ErrorLog");
+  if(stat(log->values[0],&st) == 0) {
+    if(st.st_size >= size) {
+      pthread_mutex_lock(&head.log.lock);
+      fclose(head.log.std);
+
+      len = strftime(buff,256,".%Y-%m-%d-%T",&tm);
+      str_init(&str);
+      str_char_set(&str,log->values[0],strlen(log->values[0]));
+      str_chars_append(&str,buff,len);
+
+      rename(log->values[0],str.content);
+
+      str_cleanup(&str);
+      pthread_mutex_unlock(&head.log.lock);
+    }
+  }
+}
+/* }}} */
+
 /* {{{ struct option server_cmdline_options[] */
 static struct option server_cmdline_options[] = {
   { "pid-file",         1, NULL, 'p' },
@@ -184,7 +237,8 @@ int main(int argc,char *argv[]) {
 
   t_name_value *pidfile_nv,
                *forums,
-               *threads;
+               *threads,
+               *run_archiver;
 
   t_forum *actforum;
 
@@ -200,6 +254,8 @@ int main(int argc,char *argv[]) {
 
   t_server_init_filter fkt;
   t_handler_config *handler;
+
+  t_periodical per;
 
   /* set signal handlers */
   signal(SIGPIPE,SIG_IGN);
@@ -417,9 +473,19 @@ int main(int argc,char *argv[]) {
   threads = cfg_get_first_value(&fo_server_conf,NULL,"MaxThreads");
   max_threads = atoi(threads->values[0]);
 
+  /* {{{ register periodicals */
+  run_archiver = cfg_get_first_value(&fo_server_conf,NULL,"RunArchiver");
+  per.periode = atoi(run_archiver->values[0]);
+  per.worker = cf_io_worker;
+  cf_list_append(&head.periodicals,&per,sizeof(per));
 
-  /* start thread for archiver and disk writer */
-  if((status = pthread_create(&thread,&thread_attr,cf_io_worker,NULL)) != 0) {
+  per.periode = 1800;
+  per.worker = logfile_worker;
+  cf_list_append(&head.periodicals,&per,sizeof(per));
+  /* }}} */
+
+  /* start thread for periodical jobs */
+  if((status = pthread_create(&thread,&thread_attr,cf_periodical_worker,NULL)) != 0) {
     cf_log(CF_ERR|CF_FLSH,__FILE__,__LINE__,"error creating I/O thread: %s\n",strerror(errno));
     exit(-1);
   }

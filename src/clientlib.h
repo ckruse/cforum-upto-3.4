@@ -86,6 +86,13 @@ typedef struct s_cl_thread {
   t_message *threadmsg; /**< Pointer to the message the user wants to see */
 } t_cl_thread;
 
+
+#ifndef CF_SHARED_MEM
+typedef int (*t_sorting_handler)(t_cf_hash *head,t_configuration *dc,t_configuration *vc,int sock,rline_t *tsd,t_array *threads);
+#else
+typedef int (*t_sorting_handler)(t_cf_hash *head,t_configuration *dc,t_configuration *vc,void *ptr,t_array *threads);
+#endif
+
 /**
  * This function prototype pointer is used for the authorization and the
  * initialization plugins
@@ -425,6 +432,11 @@ int cf_run_connect_init_handlers(t_cf_hash *head,int sock);
  */
 int cf_run_view_init_handlers(t_cf_hash *head,t_cf_template *tpl_begin,t_cf_template *tpl_end);
 
+#ifdef CF_SHARED_MEM
+int run_sorting_handlers(t_cf_hash *head,void *ptr,t_array *threads);
+#else
+int run_sorting_handlers(t_cf_hash *head,int sock,rline_t *tsd,t_array *threads);
+#endif
 
 
 /**
@@ -483,6 +495,29 @@ int cf_get_message_through_sock(int sock,rline_t *tsd,t_cl_thread *thr,const u_c
  * \param tplname The template name
  */
 int cf_get_next_thread_through_sock(int sock,rline_t *tsd,t_cl_thread *thr,const u_char *tplname);
+
+#ifndef CF_SHARED_MEM
+/**
+ * Reads a complete threadlist into an array
+ *
+ * \param ary Reference to an array object (will be initialized in this function!
+ * \param sock The socket to the server
+ * \param tsd The readline structure
+ * \param tplname The path to the template file, may be NULL if not used
+ * \return -1 on failure, 0 on success
+ */
+int cf_get_threadlist(t_array *ary,int sock,rline_t *tsd,const u_char *tplname);
+#else
+/**
+ * Reads a complete threadlist into an array
+ *
+ * \param ary Reference to an array object (will be initialized in this function!
+ * \param ptr Pointer to the shared memory
+ * \param tplname The path to the template file, may be NULL if not used
+ * \return -1 on failure, 0 on success
+ */
+int cf_get_threadlist(t_array *ary,void *ptr,const u_char *tplname);
+#endif
 
 #ifdef CF_SHARED_MEM
 /**

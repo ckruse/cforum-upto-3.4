@@ -39,6 +39,28 @@
 #include "clientlib.h"
 /* }}} */
 
+/* {{{ cf_get_threadlist */
+#ifndef CF_SHARED_MEM
+int cf_get_threadlist(t_array *ary,int sock,rline_t *tsd,const u_char *tplname)
+#else
+int cf_get_threadlist(t_array *ary,void *ptr,const u_char *tplname)
+#endif
+{
+  t_cl_thread thread;
+  array_init(ary,sizeof(thread),cf_cleanup_thread);
+
+  memset(&thread,0,sizeof(thread));
+
+  #ifndef CF_SHARED_MEM
+  while(cf_get_next_thread_through_sock(sock,&tsd,&thread,tplname) == 0)
+  #else
+  while((ptr = cf_get_next_thread_through_shm(ptr,&thread,tplname)) != NULL)
+  #endif
+    array_push(ary,&thread);
+
+  return 0;
+}
+/* }}} */
 
 /* {{{ cf_get_next_thread_through_sock */
 int cf_get_next_thread_through_sock(int sock,rline_t *tsd,t_cl_thread *thr,const u_char *tplname) {

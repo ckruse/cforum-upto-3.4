@@ -1,3 +1,22 @@
+2005-01-12 Christian Kruse <ckruse@wwwtech.de>
+	* configure.in: Added --enable-sorting parameter
+	* src/fo_view.c: Added sorting API
+	* src/fo_server.h: Added head.periodicals
+	* src/utils.c: Added header files
+	* src/clientlib.h: Added several proto- and datatypes
+	* src/modules/flt_category.c: Small bugfix
+	* src/serverlib.[c]: Moved to periodical system (you can add arbitrary jobs
+		which should executed periodically)
+	* src/config.h.in: Added CF_NO_SORTING
+	* src/communication.c: Added cf_get_threadlist()
+	* src/defines.h: Added SORTING_HANDLER
+	* src/validate.c: Small bugfixes
+	* src/handlerrunners.c: Added run_sorting_handlers()
+	* src/archiver.c: Added more debug output
+	* src/configparser.c: Added LogMaxSize
+	* src/fo_server.c: Added LogMaxSize worker
+	* cgi-shared/config/fo_server.conf.in: Added LogMaxSize directive
+
 2005-01-11 Christian Kruse <ckruse@wwwtech.de>
 	* src/fo_view.c: Bugfixes, implemented plugin API bugfix (now the modes are
 		meaningful)
