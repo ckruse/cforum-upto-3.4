@@ -110,11 +110,11 @@ void msg_to_html(t_cl_thread *thread,const u_char *msg,t_string *content,t_strin
         safe = (u_char *)ptr;
 
         /* ok, parse this directive */
-        for(ptr1=ptr;*ptr1 && *ptr1 != ':' && *ptr1 != ']' && !isspace(*ptr1);++ptr1);
+        for(ptr1=ptr;*ptr1 && *ptr1 != ':' && *ptr1 != ']' && !isspace(*ptr1) && *ptr1 != '[';++ptr1);
         if(*ptr1 == ':') {
           tmp = ptr1;
 
-          for(ptr1++;*ptr1 && *ptr1 != ']';++ptr1);
+          for(ptr1++;*ptr1 && *ptr1 != ']' && *ptr1 != '[';++ptr1);
           if(*ptr1 == ']') {
             directive = strndup(ptr+1,tmp-ptr-1);
             buff      = strndup(tmp+1,ptr1-tmp-1);

@@ -1,3 +1,6 @@
+2004-10-27 Christian Kruse <ckruse@wwwtech.de>
+	* src/htmllib.c: Bugfix in directive parser
+
 2004-10-26 Christian Kruse <ckruse@wwwtech.de>
 	* src/fo_server.h, src/cf_pthread.c, src/cf_pthread.h,
 		src/modules/flt_xmlstorage.c, src/serverlib.c, src/serverlib.h,
