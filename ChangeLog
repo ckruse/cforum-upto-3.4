@@ -1,4 +1,14 @@
 2004-12-19 Christian Kruse <ckruse@wwwtech.de>
+	* src/fo_view.c: several small changes for folding
+	* src/xml_handling.c, src/xml_handling.h: added some xml routines to make it
+		easier to handle DOM
+	* src/modules/flt_xmlstorage.c: totally rewrote flt_xmlstorage.c
+	* src/modules/flt_admin.c: several small changes for folding
+	* src/serverlib.c, src/serverlib.h: little bit code cleaning (tabs are really
+		nasty), small bugfix, added support for flags in datatypes
+	* src/fo_server.c: little bit code cleaning (f*ck off tabs!)
+
+2004-12-19 Christian Kruse <ckruse@wwwtech.de>
 	* *: Merged back changes from 2.1
 
 2004-12-19 Christian Kruse <ckruse@wwwtech.de>
@@ -6,6 +16,22 @@
 	* src/perl/CForum-Clientlib/Clientlib.xs: Fixed bug in
 		CForum::Clientlib::Thread->deleted
 	* src/fo_arcview.c: Deleted unecessary cfg_get_value() call
+
+2004-12-13 Christian Kruse <ckruse@wwwtech.de>
+	* src/clientlib.c, src/clientlib.h: Added cf_get_first_visible() in the client
+		library
+	* src/modules/flt_deleted.c, src/modules/flt_visited.c: Now using
+		cf_get_first_visible() for setting the links
+	* src/templates/de/tpl_*/sendpass.html: Added form field for sending email by
+		username
+	* cgi-shared/Plugins/Quotings.pm, cgi-shared/Plugins/CategoryCheck.pm,
+		cgi-shared/Plugins/SpellCheck.pm, cgi-shared/Plugins/Preview.pm,
+		cgi-shared/Plugins/RegisterName.pm,
+		cgi-shared/Plugins/CheckRegisteredName.pm,
+		cgi-shared/Plugins/RandomSignature.pm: Removed CheckRFC.pm
+	* cgi-shared/config/modules.de.xml: Corrected typo
+	* cgi-bin/fo_usermanagement.in, cgi-shared/Plugins/Management/SQL.pm: Added
+		code for sending email by username
 
 2004-11-28 Christian Kruse <ckruse@wwwtech.de>
 	* src/cfcgi.c: Fixed a really nasty bug in cf_cgi_url_decode(); now it is safe
@@ -28,25 +54,7 @@
 
 2004-11-24 Christian Kruse <ckruse@wwwtech.de>
 	* *: Merged 2.1 differences back to the trunk
-=======
-2004-12-13 Christian Kruse <ckruse@wwwtech.de>
-	* src/clientlib.c, src/clientlib.h: Added cf_get_first_visible() in the client
-		library
-	* src/modules/flt_deleted.c, src/modules/flt_visited.c: Now using
-		cf_get_first_visible() for setting the links
-	* src/templates/de/tpl_*/sendpass.html: Added form field for sending email by
-		username
-	* cgi-shared/Plugins/Quotings.pm, cgi-shared/Plugins/CategoryCheck.pm,
-		cgi-shared/Plugins/SpellCheck.pm, cgi-shared/Plugins/Preview.pm,
-		cgi-shared/Plugins/RegisterName.pm,
-		cgi-shared/Plugins/CheckRegisteredName.pm,
-		cgi-shared/Plugins/RandomSignature.pm: Removed CheckRFC.pm
-	* cgi-shared/config/modules.de.xml: Corrected typo
-	* cgi-bin/fo_usermanagement.in, cgi-shared/Plugins/Management/SQL.pm: Added
-		code for sending email by username
->>>>>>> .merge-rechts.r368
 
-<<<<<<< .working
 2004-11-18 Christian Kruse <ckruse@wwwtech.de>
 	* cgi-shared/Plugins/PostingAssistant.pm: Fixed typo
 

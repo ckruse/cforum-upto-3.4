@@ -25,16 +25,17 @@
  * \return NULL on error, the content as a string on success.
  * \attention You have to free() the returned string!
  */
-u_char *get_node_value(GdomeNode *n);
+u_char *xml_get_node_value(GdomeNode *n);
 
 /**
  * This function creates a new DOM document.
  * \param impl The DOM implementation
+ * \param root The name of the root element
  * \param dtd_uri The URI to the DTD
  * \return NULL on error, the document on success
  * \attention You have to destroy the GdomeDocument!
  */
-GdomeDocument *xml_create_doc(GdomeDOMImplementation *impl,const u_char *dtd_uri);
+GdomeDocument *xml_create_doc(GdomeDOMImplementation *impl,const u_char *root,const u_char *dtd_uri);
 
 /**
  * This function creates a new XML element.
@@ -54,6 +55,14 @@ GdomeElement *xml_create_element(GdomeDocument *doc,const u_char *name);
 void xml_set_attribute(GdomeElement *el,const u_char *name,const u_char *val);
 
 /**
+ * This function gets the value of an attribute of a node
+ * \param n The node object
+ * \param name The name of the attribute
+ * \return The value of the attribute or NULL if attribute is not present
+ */
+u_char *xml_get_attribute(GdomeNode *n,const u_char *name);
+
+/**
  * This function sets a value to a GdomeElement.
  * \param doc The Gdome DOM document object
  * \param el The Gdome DOM XML element
@@ -62,22 +71,13 @@ void xml_set_attribute(GdomeElement *el,const u_char *name,const u_char *val);
 void xml_set_value(GdomeDocument *doc,GdomeElement *el,const u_char *value);
 
 /**
- * This function stringifies the postings of a thread.
- * \param doc1 The Gdome DOM document of the index file
- * \param t1 The thread element of the index file
- * \param doc2 The Gdome DOM document of the thread file
- * \param t2 The thread element of the thread file
- * \param p The posting element
- * \return The next posting in this hierarchy or lower this hierarchy level.
+ * This function gets the first occurence of the give tag name
+ * and returns it
+ * \param node The node which child nodes should be searched
+ * \param name The name of the tag
+ * \return NULL if element could not be found or first occurence of element
  */
-t_posting *stringify_posting(GdomeDocument *doc1,GdomeElement *t1,GdomeDocument *doc2,GdomeElement *t2,t_posting *p);
-
-/**
- * This function stringifies the thread and its postings
- * \param doc1 The index file document
- * \param t The thread structure
- */
-void stringify_thread_and_write_to_disk(GdomeDocument *doc1,t_thread *t);
+GdomeNode *xml_get_first_element_by_name(GdomeNode *node,const u_char *name);
 
 #endif
 

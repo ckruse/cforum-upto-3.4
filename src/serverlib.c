@@ -109,7 +109,7 @@ void cf_rw_list_insert(t_cf_rw_list_head *head,t_cf_list_element *prev,void *dat
 /* {{{ cf_rw_list_search */
 void *cf_rw_list_search(t_cf_rw_list_head *head,void *data,int (*compare)(const void *data1,const void *data2)) {
   void *tmp;
-  
+
   CF_RW_RD(&head->lock);
   tmp = cf_list_search(&head->head,data,compare);
   CF_RW_UN(&head->lock);
@@ -249,7 +249,7 @@ void cf_log(int mode,const u_char *file,unsigned int line,const u_char *format, 
   if(mode & CF_ERR) {
     fwrite(str,sz,1,head.log.err);
     vfprintf(head.log.err,format,ap);
-    
+
     if(mode & CF_FLSH) fflush(head.log.err);
 
     #ifdef DEBUG
@@ -297,7 +297,7 @@ int cf_load_data(t_forum *forum) {
 
   /* all references to this thread are released, so run the archiver plugins */
   if(Modules[DATA_LOADING_HANDLER].elements) {
-    ret = FLT_OK;
+    ret = FLT_DECLINE;
 
     for(i=0;i<Modules[DATA_LOADING_HANDLER].elements && ret == FLT_DECLINE;i++) {
       handler = array_element_at(&Modules[DATA_LOADING_HANDLER],i);
@@ -317,9 +317,9 @@ void cf_cleanup_forum(t_forum *forum) {
 
   for(t=forum->threads.list;t;t=t1) {
     for(p=t->postings;p;p=p1) {
-		  str_cleanup(&p->user.name);
-			str_cleanup(&p->subject);
-			str_cleanup(&p->unid);
+                  str_cleanup(&p->user.name);
+                        str_cleanup(&p->subject);
+                        str_cleanup(&p->unid);
       str_cleanup(&p->user.ip);
       str_cleanup(&p->content);
 

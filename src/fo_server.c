@@ -136,19 +136,19 @@ int main(int argc,char *argv[]) {
   pid_t pid;
 
   int c,
-	    j,
-			ret,
+      j,
+      ret,
       sock,
       connfd,
-			status,
+      status,
       error = 1,
       daemonize = 0,
-			max_threads = 0,
+      max_threads = 0,
       start_threads = 0,
       spare_threads = 0;
 
   size_t i,
-	       size;
+         size;
 
   fd_set rfds;
 
@@ -393,8 +393,8 @@ int main(int argc,char *argv[]) {
     threads = cfg_get_first_value(&fo_server_conf,NULL,"SpareThreads");
     spare_threads = atoi(threads->values[0]);
 
-		threads = cfg_get_first_value(&fo_server_conf,NULL,"MaxThreads");
-		max_threads = atoi(threads->values[0]);
+                threads = cfg_get_first_value(&fo_server_conf,NULL,"MaxThreads");
+                max_threads = atoi(threads->values[0]);
   }
   /* }}} */
 

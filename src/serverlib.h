@@ -15,6 +15,11 @@ typedef struct s_cf_rwlocked_list_head {
 typedef void (*t_worker)(int); /**< This is a worker function */
 typedef int (*t_server_protocol_handler)(int,const u_char *,const u_char **,int,rline_t *); /**< Used for protocol plugins */
 
+typedef struct s_posting_flag {
+  u_char *name;
+  u_char *val;
+} t_posting_flag;
+
 /* {{{ t_posting */
 /**
  * this is the datatype for the postings
@@ -44,6 +49,8 @@ typedef struct s_posting {
     t_string ip; /**< The IP address of the  poster */
   } user;
 
+  t_cf_list_head flags;
+  
   struct s_posting *next,*prev;
 } t_posting;
 /* }}} */
@@ -137,7 +144,7 @@ typedef struct s_forum {
     t_cf_hash *threads;
 
     /** The thread list */
-    t_thread *list;
+    t_thread *list,*last;
 
     /** The last tid */
     u_int64_t last_tid;

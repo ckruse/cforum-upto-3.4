@@ -59,11 +59,12 @@ int flt_admin_is_admin(const u_char *name) {
 }
 
 #ifndef CF_SHARED_MEM
-int flt_admin_gogogo(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc,int sock) {
+int flt_admin_gogogo(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc,int sock)
 #else
-int flt_admin_gogogo(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc,void *ptr) {
+int flt_admin_gogogo(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc,void *ptr)
   int sock;
 #endif
+{
   u_char *action = NULL,*tid,*mid,buff[512],*answer;
   size_t len;
   rline_t rl;
@@ -222,10 +223,11 @@ void flt_admin_finish(void) {
 }
 
 #ifndef CF_SHARED_MEM
-int flt_admin_validator(t_cf_hash *head,t_configuration *dc,t_configuration *vc,time_t last_modified,int sock) {
+int flt_admin_validator(t_cf_hash *head,t_configuration *dc,t_configuration *vc,time_t last_modified,int sock)
 #else
-int flt_admin_validator(t_cf_hash *head,t_configuration *dc,t_configuration *vc,time_t last_modified,void *sock) {
+int flt_admin_validator(t_cf_hash *head,t_configuration *dc,t_configuration *vc,time_t last_modified,void *sock)
 #endif
+{
   u_char *UserName = cf_hash_get(GlobalValues,"UserName",8);
   int ShowInvisible = cf_hash_get(GlobalValues,"ShowInvisible",13) != NULL;
 
@@ -234,10 +236,11 @@ int flt_admin_validator(t_cf_hash *head,t_configuration *dc,t_configuration *vc,
 }
 
 #ifndef CF_SHARED_MEM
-time_t flt_admin_lm(t_cf_hash *head,t_configuration *dc,t_configuration *vc,int sock) {
+time_t flt_admin_lm(t_cf_hash *head,t_configuration *dc,t_configuration *vc,int sock)
 #else
-time_t flt_admin_lm(t_cf_hash *head,t_configuration *dc,t_configuration *vc,void *sock) {
+time_t flt_admin_lm(t_cf_hash *head,t_configuration *dc,t_configuration *vc,void *sock)
 #endif
+{
   u_char *UserName = cf_hash_get(GlobalValues,"UserName",8);
   int ShowInvisible = cf_hash_get(GlobalValues,"ShowInvisible",13) != NULL;
 
