@@ -1,3 +1,7 @@
+2004-06-21 Jan Rieger <jr@occuris.de>
+	* src/templates/tpl_*/*.html:
+	  Changed copyright notice
+
 2004-06-20 Christian Kruse <ckruseqwwwtech.de>
 	* src/Makefile.am: Added fo_post
 	* src/utils.[ch], src/fo_view.c, src/configparser.c, src/configparser.h:
@@ -14,27 +18,6 @@
 	* configure.in: Added new makefiles in output directive
 	* src/templates/tpl_*/forum_begin.html: Added tip of the day
 	* src/fo_threadlookup.c: Added content types for error messages
-
-2004-06-18 Christian Kruse <ckruse@wwwtech.de>
-	* src/modules/flt_tipoftheday.c: Changed handling for reading tips (now a
-		index is read first)
-	* cgi-shared/tipoftheday.txt: Added some tips
-	* indextips.pl: Added script do create an index for the Tip-Of-The-Day file
-	* cgi-shared/config/*.conf.in: Changed @pkglibdir@ to @libdir@/cforum
-	* configure.in: Added --with-protocol-file (for protocoling SIGSEGVs)
-	* src/fo_view.c: Fixed typo
-	* src/fo_arcview.c: Fixed typo
-	* THANKS: Added a thanks file
-	* AUTHORS: Formalized the AUTHORS file
-
-2004-06-17 Christian Kruse <ckruse@wwwtech.de>
-	* THANKS: Added file for thanking people
-	* src/modules/flt_livefilter.c: Now, the livefilter sets explicitely
-		may_show to 1
-	* configure.in: added better checks for berkeley database
-	* m4/: Added macros directory (e.g. berkeley database autodetection)
-	* src/fo_arcview.c: some bugfixes
-	* src/modules/flt_tipoftheday.c: Added a plugin for "Tip Of The Day"
 
 2004-06-19 Jan Rieger <jr@occuris.de>
 	* src/templates/tpl_*/forum_begin.html:
@@ -66,6 +49,27 @@
 	* src/templates/tpl_xhtml10/userregok.html
 	* src/templates/tpl_xhtml10/usersettings.html
 	  Fixed bug #228
+
+2004-06-18 Christian Kruse <ckruse@wwwtech.de>
+	* src/modules/flt_tipoftheday.c: Changed handling for reading tips (now a
+		index is read first)
+	* cgi-shared/tipoftheday.txt: Added some tips
+	* indextips.pl: Added script do create an index for the Tip-Of-The-Day file
+	* cgi-shared/config/*.conf.in: Changed @pkglibdir@ to @libdir@/cforum
+	* configure.in: Added --with-protocol-file (for protocoling SIGSEGVs)
+	* src/fo_view.c: Fixed typo
+	* src/fo_arcview.c: Fixed typo
+	* THANKS: Added a thanks file
+	* AUTHORS: Formalized the AUTHORS file
+
+2004-06-17 Christian Kruse <ckruse@wwwtech.de>
+	* THANKS: Added file for thanking people
+	* src/modules/flt_livefilter.c: Now, the livefilter sets explicitely
+		may_show to 1
+	* configure.in: added better checks for berkeley database
+	* m4/: Added macros directory (e.g. berkeley database autodetection)
+	* src/fo_arcview.c: some bugfixes
+	* src/modules/flt_tipoftheday.c: Added a plugin for "Tip Of The Day"
 
 2004-06-16 Christian Kruse <ckruse@wwwtech.de>
 	* configure.in: Stripped some uneccessary WITH arguments
