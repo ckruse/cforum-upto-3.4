@@ -66,6 +66,7 @@ sub execute {
   my $cpos = 0;
   my $txt_modify;
   my $fragment;
+  my $cs = $fo_default_conf->{ExternCharset}->[0]->[0];
 
   if($cgi->param('spellcheck_ok')) {
     $txt_modify = '';
@@ -124,14 +125,21 @@ sub execute {
     $cwl = length $spelling_error->{'original'};
     $fragment = substr ($txt,$cpos,$spelling_error->{'offset'} - $cpos - 1);
     $fragment =~ s!\n!<br />\n!g;
-    $fragment = message_field(from_utf8(-string => $fragment, -charset => $fo_default_conf->{ExternCharset}->[0]->[0]),$cgi->param('qchar'),$fo_default_conf);
+    $fragment = message_field(
+      $cs eq 'UTF-8' ?
+        $fragment :
+        from_utf8(-string => $fragment, -charset => $cs),
+      $cgi->param('qchar'),
+      $fo_default_conf
+    );
+
     $html_txt .= $fragment;
     $cpos = $spelling_error->{'offset'} + $cwl - 1;
     $html_txt .= '<select name="spelling_'.($spelling_error->{'offset'}-1).'_'.$cwl.'">';
-    $html_txt .= '<option>'.from_utf8(-string => $spelling_error->{'original'}, -charset => $fo_default_conf->{ExternCharset}->[0]->[0]).'</option>';
+    $html_txt .= '<option>'.($cs eq 'UTF-8' ? $spelling_error->{original} : from_utf8(-string => $spelling_error->{'original'}, -charset => $cs)).'</option>';
     if (defined $spelling_error->{'misses'}) {
       foreach (@{$spelling_error->{'misses'}}) {
-        $html_txt .= '<option>'.from_utf8(-string => $_, -charset => $fo_default_conf->{ExternCharset}->[0]->[0]).'</option>';
+        $html_txt .= '<option>'.($cs eq 'UTF-8' ? $_ : from_utf8(-string => $_, -charset => $cs)).'</option>';
       }
     }
     $html_txt .= '</select>';
@@ -139,10 +147,10 @@ sub execute {
 
   $fragment = substr($txt, $cpos);
   $fragment =~ s!\n!<br />\n!g;
-  $fragment = message_field(from_utf8(-string => $fragment, -charset => $fo_default_conf->{ExternCharset}->[0]->[0]),$cgi->param('qchar'),$fo_default_conf);
+  $fragment = message_field($cs eq 'UTF-8' ? $fragment : from_utf8(-string => $fragment, -charset => $cs),$cgi->param('qchar'),$fo_default_conf);
   $html_txt .= $fragment;
 
-  $cgi->param('ne_orig_txt',from_utf8(-string => encode($cgi->param ('body')), -charset => $fo_default_conf->{ExternCharset}->[0]->[0]));
+  $cgi->param('ne_orig_txt',$cs eq 'UTF-8' ? encode($cgi->param('body')) : from_utf8(-string => encode($cgi->param('body')), -charset => $cs));
   $cgi->param('ne_html_txt', $html_txt);
   $cgi->param('date',gen_time(time,$fo_default_conf,$fo_view_conf->{DateFormatThreadView}->[0]->[0]));
   $cgi->param('do_spellcheck', 1);

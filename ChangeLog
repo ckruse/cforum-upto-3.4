@@ -9,4 +9,5 @@
 		textbox
 	* src/templates/de/tpl_xhtml10/forum_posting.html: Added several IDs to make
 		it easier for user stylesheets
+	* cgi-shared/Plugins/SpellCheck.pm: Fixed UTF-8 handling bugs
 
