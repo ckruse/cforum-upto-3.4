@@ -74,17 +74,82 @@ static t_array flt_syntax_files;
 #define FLT_SYNTAX_GLOBAL 0
 #define FLT_SYNTAX_BLOCK  1
 
+#define FLT_SYNTAX_EOF -1
+#define FLT_SYNTAX_FAILURE -2
+
+#define FLT_SYNTAX_TOK_STR 1
+#define FLT_SYNTAX_TOK_KEY 2
+#define FLT_SYNTAX_TOK_EQ  3
+
 int flt_syntax_highlight(t_string *content,t_string *bco,const u_char *lang) {
   return 1;
 }
 
 /* {{{ flt_syntax_read_string */
-u_char *flt_syntax_read_string(const u_char *begin,u_char **pos) {
-  t_string str;
-  str_init(&str);
+int flt_syntax_read_string(const u_char *begin,u_char **pos,t_string *str) {
   register u_char *ptr;
 
   for(ptr=(u_char *)begin;*ptr;++ptr) {
+    switch(*ptr) {
+      case '\\':
+        switch(*(ptr+1)) {
+          case 'n':
+            str_char_append(str,'\n');
+            break;
+          case 't':
+            str_char_append(str,'\t');
+            break;
+          default:
+            str_char_append(str,*ptr);
+        }
+
+      case '"':
+        if(pos) *pos = ptr;
+        return 0;
+
+      default:
+        str_char_append(str,*ptr);
+    }
+  }
+
+  return FLT_SYNTAX_FAILURE;
+}
+/* }}} */
+
+/* {{{ flt_syntax_next_token */
+int flt_syntax_next_token(const u_char *line,u_char **pos,t_string *str) {
+  register u_char *ptr;
+
+  for(ptr=*pos?*pos:line;*ptr && isspace(*ptr);++ptr);
+
+  switch(*ptr) {
+    case '#':
+      return FLT_SYNTAX_EOF;
+    case '"':
+      flt_syntax_read_string(ptr+1,&ptr,str);
+      *pos = ptr+1;
+      return FLT_SYNTAX_TOK_STR;
+
+    case '=':
+      return FLT_SYNTAX_TOK_EQ;
+
+    default:
+      for(;*ptr && !isspace(*ptr);++ptr) str_char_append(str,*ptr);
+      return FLT_SYNTAX_TOK_KEY;
+  }
+
+  return FLT_SYNTAX_EOF;
+}
+/* }}} */
+
+/* {{{ flt_syntax_read_list */
+int flt_syntax_read_list(const u_char *pos,flt_syntax_list_t *list) {
+  register u_char *ptr;
+  st_string str;
+
+  str_init(&str);
+
+  for(ptr=(u_char *)pos;*ptr && *ptr != '"';++ptr) {
     switch(*ptr) {
       case '\\':
         switch(*(ptr+1)) {
@@ -98,25 +163,27 @@ u_char *flt_syntax_read_string(const u_char *begin,u_char **pos) {
             str_char_append(&str,*ptr);
         }
 
-      case '"':
-        if(pos) *pos = ptr;
-        return str.content;
+      case ',':
+        list->values = realloc(list->values,++list->len * sizeof(u_char **));
+        list->values[list->len-1] = str.content;
+        str_init(&str);
 
       default:
-        str_char_append(&str,*ptr);
+        str_char_append(str,*ptr);
     }
   }
 
-  str_cleanup(&str);
+  list->values = realloc(list->values,++list->len * sizeof(u_char **));
+  list->values[list->len-1] = str.content;
 
-  return NULL;
+  return 0;
 }
 /* }}} */
 
 int flt_syntax_load(const u_char *path,const u_char *lang) {
   FILE *fd;
   ssize_t len;
-  u_char *line = NULL,*ptr,*tmp;
+  u_char *line = NULL,*tmp,*pos;
   size_t buflen = 0;
   int state = FLT_SYNTAX_GLOBAL;
   t_string str;
@@ -128,75 +195,65 @@ int flt_syntax_load(const u_char *path,const u_char *lang) {
 
   if((fd = fopen(path,"r")) == NULL) return 1;
 
+  file.start = NULL;
   array_init(&file.lists,sizeof(flt_syntax_list_t),NULL);
   array_init(&file.blocks,sizeof(flt_syntax_block_t),NULL);
 
   while((len = getline(&line,&buflen,fd)) > 0) {
-    for(ptr=line;*ptr && isspace(*ptr);++ptr);
-    /* comment, go to next line */
-    if(*ptr == '#') continue;
+    str_init(&str);
 
-    if(block == FLT_SYNTAX_GLOBAL) {
-      /* {{{ read start symbol */
-      if(cf_strncmp(ptr,"start",5) == 0) {
-        for(;*ptr && *ptr != '"');
-        if(*ptr == '"') {
-          if((tmp = flt_syntax_read_string(ptr+1,NULL)) == NULL) return 1;
-          file.start = tmp;
-        }
-        else return 1;
+    pos  = NULL;
+    type = flt_syntax_next_token(line,&pos,&str);
+
+    if(state == FLT_SYNTAX_GLOBAL) {
+      if(type != FLT_SYNTAX_TOK_KEY) return 1;
+      if(cf_strcmp(str.content,"start") == 0) {
+        str_cleanup(&str);
+
+        type = flt_syntax_next_token(line,&pos,&str);
+        if(type != FLT_SYNTAX_TOK_EQ) return 1;
+
+        type = flt_syntax_next_token(line,&pos,&str);
+        if(type != FLT_SYNTAX_TOK_STR) return 1;
+
+        file.start = str.content;
+        str_init(&str);
       }
-      /* }}} */
-      /* {{{ read the list */
-      else if(cf_strncmp(ptr,"list") == 0) {
-        for(;*ptr && *ptr != '"');
-        if(*ptr == '"') {
-          memset(&list,0,sizeof(list));
-          if((list.name = flt_syntax_read_string(ptr+1,&ptr)) == NULL) return 1;
+      else if(cf_strcmp(str.content,"list") == 0) {
+        memset(&list,0,sizeof(list));
 
-          for(;isspace(*ptr) || *ptr == '=';++ptr);
-          if(*ptr != '"') return 1;
+        str_cleanup(&str);
+        type = flt_syntax_next_token(line,&pos,&str);
+        if(type != FLT_SYNTAX_TOK_STR) return 1;
 
-          str_init(&str);
-          for(++ptr;*ptr && *ptr != '"';++ptr) {
-            switch(*ptr) {
-              case '\\':
-                switch(*(ptr+1)) {
-                  case 'n':
-                    str_char_append(&str,'\n');
-                    break;
-                  case 't':
-                    str_char_append(&str,'\t');
-                    break;
-                  default:
-                    str_char_append(&str,*ptr);
-                }
+        list.name = str.content;
+        str_init(&str);
 
-              case ',':
-                list.values = realloc(list.values,++list.len * sizeof(u_char **));
-                list.values[list.len-1] = str.content;
-                str_init(&str);
-                break;
+        type = flt_syntax_next_token(line,&pos,&str);
+        if(type != FLT_SYNTAX_TOK_EQ) return 1;
 
-              default:
-                str_char_append(&str,*ptr);
-            }
-          }
+        if(flt_syntax_read_list(pos,&list) != 0) return 1;
 
-          list.values = realloc(list.values,++list.len * sizeof(u_char **));
-          list.values[list.len-1] = str.content;
-
-          array_append(&file.lists,&list);
-
-        }
-        else return 1;
+        array_push(&file.lists,&list);
       }
-      /* }}} */
-      else if(cf_strncmp(ptr,"block") == 0) {
+      else if(cf_strcmp(str.content,"block") == 0) {
+        array_init(&block.statements,sizeof(flt_syntax_statement_t),NULL);
+        str_cleanup(&str);
+
+        type = flt_syntax_next_token(line,&pos,&str);
+        if(type != FLT_SYNTAX_TOK_STR) return 1;
+
+        block.name = str.content;
+        str_init(&str);
+
+        state = FLT_SYNTAX_BLOCK;
       }
+      else return 1;
     }
     else {
+      /* dumdidum */
     }
+
   }
 
   fclose(fd);
