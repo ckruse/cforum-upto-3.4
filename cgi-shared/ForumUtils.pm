@@ -413,11 +413,18 @@ sub uniquify_params {
     # are many broken browsers which send e.g. binary input not
     # well-encoded as UTF-8
     foreach($cgi->param) {
+      my @nvals  = ();
       my @values = $cgi->param($_);
 
       foreach my $val (@values) {
         return get_error($dcfg,'posting','charset') unless $Clientlib->is_valid_utf8_string($val,length($val));
+
+        # we want non-breaking space as normal whitespaces
+        $val =~ s/\xC2\xA0/ /g;
+        push @nvals,$val;
       }
+
+      $cgi->param(-name => $_,-value => \@nvals);
     }
   }
   else {
@@ -448,9 +455,14 @@ sub uniquify_params {
             $dcfg->{ExternCharset}->[0]->[0],
             "UTF-8"
           );
+
         }
 
         return get_error($dcfg,'posting','charset') if !defined $nval;
+
+        # we want non-breaking space as normal whitespaces
+        $nval =~ s/\xC2\xA0/ /g;
+
         push @newvals,$nval;
       }
 

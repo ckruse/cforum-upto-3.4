@@ -10,6 +10,8 @@
 	* cgi-shared/config/modules.{fr,de}.xml: Added LinkTemplate directive
 	* src/modules/flt_registerednames.c: Added 0xA0 (non-breaking space) to
 		whitespace handling
+	* cgi-shared/ForumUtils.pm: Now transforming non-breaking spaces to
+		whitespaces
 
 2004-10-10 Christian Seiler <self@christian-seiler.de>
 	* src/modules/flt_handle404.c: fixed bug #408
