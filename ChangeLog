@@ -3,6 +3,7 @@
 		the thread trees
 	* src/validate.c: Fixed bug in hostname validation (hostnames like foo or bar
 		(without any dot in it) are now allowed)
+	* THANKS: new mail address for Christian Seiler
 
 2004-11-07 Christian Kruse <ckruse@wwwtech.de>
 	* cgi-shared/ForumUtils.pm: Fixed typo
