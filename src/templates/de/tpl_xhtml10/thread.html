@@ -26,11 +26,9 @@
 <link rel="bookmark" href="http://aktuell.de.selfhtml.org/tippstricks/" title="Tipps &amp; Tricks" />
 <link rel="bookmark" href="http://aktuell.de.selfhtml.org/links/" title="Linkverzeichnis" />
 <link rel="shortcut icon" href="http://src.selfhtml.org/favicon.ico" type="image/x-icon" title="SELFHTML Icon" />
-{if $owncss}{if $cssoverwrite}<link rel="stylesheet" type="text/css" href="http://src.selfhtml.org/forum_strict.css" title="SELFHTML Forum Stylesheet" />
-{endif}<link rel="stylesheet" type="text/css" href="{$owncss}" title="SELFHTML Forum Stylesheet" />
-{else}<link rel="stylesheet" type="text/css" href="http://src.selfhtml.org/forum_strict.css" title="SELFHTML Forum Stylesheet" />
-{endif}<style type="text/css" title="SELFHTML Forum Stylesheet">
-{if $font}body, h1, h2, h3, p, ul, ol, dl, div, th, td {
+<link rel="stylesheet" type="text/css" href="http://src.selfhtml.org/forum_strict.css" title="SELFHTML Forum Stylesheet" />
+<style type="text/css" title="SELFHTML Forum Stylesheet">
+{if $font}body, h1, h2, h3, p, ul, ol, dl, div, th, td, a:link, a:visited, a:active, #antwortformular textarea {
 {if $fontcolor}color:{$fontcolor};
 {endif}{if $fontsize}font-size:{$fontsize};
 {endif}{if $fontfamily}font-family:{$fontfamily};
@@ -38,10 +36,6 @@
 {endif}.q, .q a {{if $qcolor}
 color:{$qcolor};{endif}{if $qcolorback}
 background-color:{$qcolorback};
-{endif}}
-#antwortformular textarea {{if $fontsize}
-font-size:{$fontsize};{endif}{if $fontcolor}
-color:{$fontcolor};
 {endif}}
 </style>
 </head>
@@ -90,7 +84,7 @@ color:{$fontcolor};
 
 <form method="post" action="{$script}" accept-charset="{$charset},UTF-8">
 
-<p id="nachricht-text">{$html_txt}</p>
+<p id="nachricht-text-rechtschreibpruefung">{$html_txt}</p>
 
 <p>
 {if $fupto}<input type="hidden" name="fupto" value="{$fupto}" />{endif}
@@ -113,7 +107,7 @@ color:{$fontcolor};
 
 {else}{if $err}<h2 id="nachrichtverfassen">Fehler</h2>
 
-<p>{$err}</p>
+<p id="fehlermeldung">{$err}</p>
 
 {else}<h2 id="nachrichtverfassen">{if $fupto}Antwort verfassen{else}Neue Nachricht verfassen{endif}</h2>
 

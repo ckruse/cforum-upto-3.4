@@ -1,3 +1,14 @@
+2004-11-18 Christian Kruse <ckruse@wwwtech.de>
+	* src/templates/de/tpl_xhtml10/forum_thread.html,
+		src/templates/de/tpl_xhtml10/forum_posting.html,
+		src/templates/de/tpl_xhtml10/forum_begin.html,
+		src/templates/de/tpl_xhtml10/arcthread.html,
+		src/templates/de/tpl_xhtml10/arcmonths.html,
+		src/templates/de/tpl_xhtml10/thread.html,
+		src/templates/de/tpl_xhtml10/post_ok.html,
+		src/templates/de/tpl_xhtml10/arcyears.html: Mathias did several updates and
+		bugfixes on	the templates.
+
 2004-11-17 Christian Kruse <ckruse@wwwtech.de>
 	* src/fo_view.c, src/modules/flt_posting.c: Fixed bug in HTML generation of
 		the thread trees

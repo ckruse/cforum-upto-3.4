@@ -20,11 +20,9 @@
 <link rel="bookmark" href="http://aktuell.de.selfhtml.org/tippstricks/" title="Tipps &amp; Tricks" />
 <link rel="bookmark" href="http://aktuell.de.selfhtml.org/links/" title="Linkverzeichnis" />
 <link rel="shortcut icon" href="http://src.selfhtml.org/favicon.ico" type="image/x-icon" title="SELFHTML Icon" />
-{if $owncss}{if $cssoverwrite}<link rel="stylesheet" type="text/css" href="http://src.selfhtml.org/forum_strict.css" title="SELFHTML Forum Stylesheet" />
-{endif}<link rel="stylesheet" type="text/css" href="{$owncss}" title="SELFHTML Forum Stylesheet" />
-{else}<link rel="stylesheet" type="text/css" href="http://src.selfhtml.org/forum_strict.css" title="SELFHTML Forum Stylesheet" />
-{endif}<style type="text/css" title="SELFHTML Forum Stylesheet">
-{if $font}body, h1, h2, h3, p, ul, ol, dl, div, th, td {
+<link rel="stylesheet" type="text/css" href="http://src.selfhtml.org/forum_strict.css" title="SELFHTML Forum Stylesheet" />
+<style type="text/css" title="SELFHTML Forum Stylesheet">
+{if $font}body, h1, h2, h3, p, ul, ol, dl, div, th, td, a:link, a:visited, a:active {
 {if $fontcolor}color:{$fontcolor};
 {endif}{if $fontsize}font-size:{$fontsize};
 {endif}{if $fontfamily}font-family:{$fontfamily};
@@ -62,7 +60,7 @@ background-color:{$qcolorback};
 
 <h2 id="nachrichtbestaetigung">Diese Nachricht ist nun im Forum lesbar</h2>
 
-{if $new_link}<p>Die Nachricht ist nun unter <img src="http://src.selfhtml.org/doc.gif" width="15" height="10" alt="Seite" />&nbsp;<a href="{$new_link}">{$new_link}</a> erreichbar.</p>
+{if $new_link}<p id="link-zur-nachricht">Die Nachricht ist nun unter <img src="http://src.selfhtml.org/doc.gif" width="15" height="10" alt="Seite" />&nbsp;<a href="{$new_link}">{$new_link}</a> erreichbar.</p>
 
 {endif}<p id="nachricht-autor">Die folgende Nachricht zum Thema stammt von: <strong>{$Name}</strong>{if $EMail}, <img src="http://src.selfhtml.org/mail.gif" width="15" height="10" alt="E-Mail" />&nbsp;<a href="mailto:{$EMail}" rel="author">{$EMail}</a>{endif}, {$date}{if $HomepageUrl}<br />
 <a href="{$HomepageUrl}">{$HomepageUrl}</a>{endif}</p>

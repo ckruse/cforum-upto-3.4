@@ -30,7 +30,7 @@
 {endif}<link rel="stylesheet" type="text/css" href="{$owncss}" title="SELFHTML Forum Stylesheet" />
 {else}<link rel="stylesheet" type="text/css" href="http://src.selfhtml.org/forum_strict.css" title="SELFHTML Forum Stylesheet" />
 {endif}<style type="text/css" title="SELFHTML Forum Stylesheet">
-{if $font}body, h1, h2, h3, p, ul, ol, dl, div, th, td {
+{if $font}body, h1, h2, h3, p, ul, ol, dl, div, th, td, a:link, a:visited, a:active, #antwortformular textarea {
 {if $fontcolor}color:{$fontcolor};
 {endif}{if $fontsize}font-size:{$fontsize};
 {endif}{if $fontfamily}font-family:{$fontfamily};
@@ -64,10 +64,6 @@ background-color:{$qcolorback};
 {endif}{if $activecolorb}background-color:{$activecolorb};
 {endif}font-weight:bold;
 }
-#antwortformular textarea {{if $fontsize}
-font-size:{$fontsize};{endif}{if $fontcolor}
-color:{$fontcolor};
-{endif}}
 </style>
 {if $ownjs}<script type="text/javascript" src="{$ownjs}"></script>
 {endif}</head>
