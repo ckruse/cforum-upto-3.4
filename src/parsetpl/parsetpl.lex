@@ -153,7 +153,7 @@ static t_array   foreach_var_stack;
     str_chars_append(&content_backup,yytext,yyleng);
     return PARSETPL_TOK_NOT;
   }
-  else? ?if           {
+  else?[ ]?if         {
     str_chars_append(&content_backup,yytext,yyleng);
     return PARSETPL_TOK_ELSIF;
   }
@@ -190,7 +190,8 @@ static t_array   foreach_var_stack;
     return PARSETPL_ERR_UNTERMINATEDTAG;
   }
   .                   {
-    str_chars_append(&content_backup,yytext,yyleng);
+    //str_chars_append(&content_backup,yytext,yyleng);
+    unput(*yytext);
     return PARSETPL_ERR_UNRECOGNIZEDCHARACTER;
   }
 }

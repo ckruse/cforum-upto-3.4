@@ -2,7 +2,8 @@
 	* src/arrayutils.c: fixed really nasty bug in array_pop
 	* src/parsetpl/parsetpl.lex: fixed bug in foreach that could have
 		caused a segmentation fault while running; changed
-		strlen(yytext) to yyleng
+		strlen(yytext) to yyleng; fixed small bug in a rule;
+		fixed bug in ignoring of invalid tags
 
 2005-01-17 Christian Kruse <ckruse@wwwtech.de>
 	* src/perl/CForum-*: Removed for 3.0 release (will be replaced by
