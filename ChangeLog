@@ -7,6 +7,8 @@
 		parsed now
 	* src/modules/flt_deleted.c: Code cleaning
 	* src/modules/flt_xmlarc.c: Fixed a nasty bug
+	* src/modules/flt_postingassistant.c: Small bugfix because of ... handling
+	* src/fo_vote.c: Bugfix, forgot to SELECT the forum
 
 2005-02-19 Christian Seiler <self@christian-seiler.de>
 	* src/modules/flt_syntax.c: Small bugfixes

@@ -157,7 +157,9 @@ float flt_poas_check_for_signs(u_char *str,int strict,int musthave) {
 
   if(signs >= 2) {
     /* we *never* accept more than three signs */
-    if(signs > 3) return 3.0;
+    if(signs > 3) {
+      if(flt_poas_last_chars_consist_of(ptr,".",signs,1)) return 3.0;
+    }
 
     switch(strict) {
       case 0:

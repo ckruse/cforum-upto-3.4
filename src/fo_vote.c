@@ -325,7 +325,7 @@ int main(int argc,char *argv[],char *env[]) {
         flock(fd,LOCK_UN);
         db->close(db,0);
 
-        len = snprintf(buff,512,"VOTE %s\nTid: %s\nMid: %s\n\nQUIT\n",*a=='g'?"GOOD":"BAD",ctid,cmid);
+        len = snprintf(buff,512,"SELECT %s\nVOTE %s\nTid: %s\nMid: %s\n\nQUIT\n",forum_name,*a=='g'?"GOOD":"BAD",ctid,cmid);
         writen(sock,buff,len);
         close(sock);
 
