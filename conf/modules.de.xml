@@ -19,6 +19,14 @@
         </argument>
       </directive>
 
+      <directive name="InlineCSS" arguments="1">
+        <argument paramname="inlinecss" type="textarea" encode="plain">
+          <validate>.*</validate>
+          <question>Sie können Inline-CSS-Code definieren. Dieser wird innerhalb der &lt;style&gt;-Elemente in jedem Posting und in der Haupt-Ansicht eingefügt.</question>
+          <error>Inline-CSS-Fehler</error>
+        </argument>
+      </directive>
+
       <directive name="OwnCSSFile" arguments="1">
         <argument paramname="owncssfile" type="text" encode="plain">
           <validate type="url"/>
@@ -704,7 +712,7 @@
         <argument paramname="activatelivefilter" type="radio" encode="plain">
           <validate>^(yes|no)$</validate>
           <question>Möchten Sie den Live-Filter aktivieren? Dieser Filter ermöglicht es Ihnen, die Thread-Liste nach bestimmten Kriterien zu filtern.</question>
-          <error>Bitte geben Sie hier &quot;ja&quot; oder &quot;nein&quot; an!</error>
+          <error>Möchten Sie den Live-Filter aktivieren? Bitte geben Sie hier &quot;ja&quot; oder &quot;nein&quot; an!</error>
           <formvalues>
             <value val="yes">Ja</value>
             <value val="no" default="yes">Nein</value>
@@ -716,7 +724,7 @@
         <argument paramname="livefilteroverwrite" type="radio" encode="plain">
           <validate>^(yes|no)$</validate>
           <question>Soll der Live-Filter Filter wie die Blacklist oder ausgeblendete Threads überschreiben?</question>
-          <error>Bitte geben Sie hier &quot;ja&quot; oder &quot;nein&quot; an!</error>
+          <error>Soll der Live-Filter Filter wie die Blacklist oder ausgeblendete Threads überschreiben? Bitte geben Sie hier &quot;ja&quot; oder &quot;nein&quot; an!</error>
           <formvalues>
             <value val="yes">Ja</value>
             <value val="no" default="yes">Nein</value>

@@ -404,6 +404,8 @@ void show_threadlist(void *shm_ptr,t_cf_hash *head)
 
     cf_set_variable(&tpl_end,cs,"forumbase",fbase->values[0],strlen(fbase->values[0]),1);
     cf_tpl_setvalue(&tpl_begin,"charset",TPL_VARIABLE_STRING,cs->values[0],strlen(cs->values[0]));
+    cf_tpl_setvar(&tpl_end,"cf_version",CF_VERSION,strlen(CF_VERSION),1);
+    cf_tpl_setvar(&tpl_begin,"cf_version",CF_VERSION,strlen(CF_VERSION),1);
     /* }}} */
 
     /* run some plugins */

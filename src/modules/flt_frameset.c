@@ -143,7 +143,7 @@ int flt_frameset_set_list_vars(t_cf_hash *head,t_configuration *dc,t_configurati
 /* {{{ flt_frameset_get_conf */
 int flt_frameset_get_conf(t_configfile *f,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
   if(flt_frameset_fname == NULL) flt_frameset_fname = cf_hash_get(GlobalValues,"FORUM_NAME",10);
-  if(!context || cf_strcmp(context,flt_frameset_fname) == 0) return 0;
+  if(!context || cf_strcmp(context,flt_frameset_fname) != 0) return 0;
 
   ShallFrameset = cf_strcmp(args[0],"yes") == 0 ? 1 : 0;
   return 0;
@@ -153,7 +153,7 @@ int flt_frameset_get_conf(t_configfile *f,t_conf_opt *opt,const u_char *context,
 /* {{{ flt_frameset_get_tpls */
 int flt_frameset_get_tpls(t_configfile *f,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
   if(flt_frameset_fname == NULL) flt_frameset_fname = cf_hash_get(GlobalValues,"FORUM_NAME",10);
-  if(!context || cf_strcmp(context,flt_frameset_fname) == 0) return 0;
+  if(!context || cf_strcmp(context,flt_frameset_fname) != 0) return 0;
 
   if(TplFrameset) free(TplFrameset);
   if(TplBlank) free(TplBlank);

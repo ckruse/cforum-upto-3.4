@@ -37,6 +37,7 @@ static u_char *CSSUri = NULL;
 static u_char *JSFile = NULL;
 static u_char **XSLTUri = NULL;
 static int    CSS_Overwrite = 0;
+static u_char *InlineCSS = NULL;
 
 static u_char *flt_include_fn = NULL;
 
@@ -70,6 +71,10 @@ int flt_include_exec_list(t_cf_hash *head,t_configuration *dc,t_configuration *v
     }
   }
 
+  if(InlineCSS) {
+    cf_tpl_setvalue(begin,"inlinecss",TPL_VARIABLE_STRING,InlineCSS,strlen(InlineCSS));
+  }
+
   return rc;
 }
 /* }}} */
@@ -98,6 +103,10 @@ int flt_include_handle(t_configfile *cf,t_conf_opt *opt,const u_char *context,u_
     XSLTUri = args;
     return -1;
   }
+  else if(cf_strcmp(opt->name,"InlineCSS") == 0) {
+    if(InlineCSS) free(InlineCSS);
+    InlineCSS = strdup(args[0]);
+  }
   else CSS_Overwrite = cf_strcmp(args[0],"yes") == 0;
 
   return 0;
@@ -106,6 +115,14 @@ int flt_include_handle(t_configfile *cf,t_conf_opt *opt,const u_char *context,u_
 
 void flt_include_finish(void) {
   if(CSSUri) free(CSSUri);
+  if(InlineCSS) free(InlineCSS);
+  if(JSFile) free(JSFile);
+
+  if(XSLTUri) {
+    if(XSLTUri[0]) free(XSLTUri[0]);
+    if(XSLTUri[1]) free(XSLTUri[1]);
+    free(XSLTUri);
+  }
 }
 
 t_conf_opt config[] = {
@@ -113,6 +130,7 @@ t_conf_opt config[] = {
   { "OverwriteStandardCSS", flt_include_handle, CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
   { "OwnJSFile",            flt_include_handle, CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
   { "OwnXSLTFile",          flt_include_handle, CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
+  { "InlineCSS",            flt_include_handle, CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
   { NULL, NULL, 0, NULL }
 };
 

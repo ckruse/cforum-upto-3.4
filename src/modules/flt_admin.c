@@ -75,6 +75,7 @@ int flt_admin_gogogo(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc,void
   rline_t rl;
   int x;
   u_char *UserName = cf_hash_get(GlobalValues,"UserName",8);
+  u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
 
   if(!flt_admin_is_admin(UserName)) return FLT_DECLINE;
 
@@ -93,16 +94,19 @@ int flt_admin_gogogo(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc,void
     sock = cf_socket_setup();
     #endif
 
+    len = snprintf(buff,512,"SELECT %s\n",forum_name);
+    writen(sock,buff,len);
+
     if(cf_strcmp(action,"del") == 0) {
-      len = snprintf(buff,512,"DELETE t=%s m=%s\nUser-Name: %s\n",tid,mid,UserName);
+      len = snprintf(buff,512,"DELETE t%s m%s\nUser-Name: %s\n",tid,mid,UserName);
       writen(sock,buff,len);
     }
     else if(cf_strcmp(action,"undel") == 0) {
-      len = snprintf(buff,512,"UNDELETE t=%s m=%s\nUser-Name: %s\n",tid,mid,UserName);
+      len = snprintf(buff,512,"UNDELETE t%s m%s\nUser-Name: %s\n",tid,mid,UserName);
       writen(sock,buff,len);
     }
     else if(cf_strcmp(action,"archive") == 0) {
-      len = snprintf(buff,512,"ARCHIVE THREAD t=%s\nUser-Name: %s\n",tid,UserName);
+      len = snprintf(buff,512,"ARCHIVE THREAD t%s\nUser-Name: %s\n",tid,UserName);
       writen(sock,buff,len);
     }
 

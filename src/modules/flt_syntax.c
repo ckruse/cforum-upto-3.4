@@ -773,7 +773,7 @@ u_char *flt_syntax_get_token(const u_char *txt) {
 
 /* {{{ flt_syntax_doit */
 int flt_syntax_doit(flt_syntax_pattern_file_t *file,flt_syntax_block_t *block,u_char *text,size_t len,t_string *cnt,u_char **pos,const u_char *extra_arg,int xhtml,int *pops) {
-  u_char *ptr,*tmpchar,*priv_extra;
+  u_char *ptr,*tmpchar,*priv_extra,*begin;
   size_t i,x;
   flt_syntax_statement_t *statement;
   t_string *str,*tmpstr;
@@ -805,7 +805,9 @@ int flt_syntax_doit(flt_syntax_pattern_file_t *file,flt_syntax_block_t *block,u_
     }
   }
 
-  for(ptr=*pos?*pos:text;*ptr;++ptr) {
+  begin = *pos ? *pos : text;
+
+  for(ptr=begin;*ptr;++ptr) {
     if(block->le_behavior == FLT_SYNTAX_POP && cf_strncmp(ptr,"<br",3) == 0) {
       str_chars_append(cnt,"<br",3);
       if(xhtml) str_chars_append(cnt," />",3);
@@ -897,6 +899,8 @@ int flt_syntax_doit(flt_syntax_pattern_file_t *file,flt_syntax_block_t *block,u_
 
         case FLT_SYNTAX_ONSTRINGLIST:
           /* {{{ onstringlist */
+          if(ptr != begin && !isspace(*(ptr-1))) continue;
+
           str = array_element_at(&statement->args,0);
           if((tmplist = flt_syntax_list_by_name(file,str->content)) == NULL) {
             fprintf(stderr,"could not find list %s!\n",str->content);

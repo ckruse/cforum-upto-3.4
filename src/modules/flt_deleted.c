@@ -299,9 +299,7 @@ int flt_del_handle_command(t_configfile *cf,t_conf_opt *opt,const u_char *contex
 
   if(cf_strcmp(opt->name,"BlackList") == 0) {
     if(Cfg.BLlen) {
-      for(i=0;i<Cfg.BLlen;i++) {
-        free(Cfg.BlackList[i]);
-      }
+      for(i=0;i<Cfg.BLlen;i++) free(Cfg.BlackList[i]);
       free(Cfg.BlackList);
     }
 
@@ -326,7 +324,7 @@ int flt_del_handle_command(t_configfile *cf,t_conf_opt *opt,const u_char *contex
   else if(cf_strcmp(opt->name,"DelThreadResponse204") == 0) {
     Cfg.resp_204 = cf_strcmp(args[0],"yes") == 0;
   }
-  else if(cf_strcmp(opt->name,"BlacklistInThreadView") == 0) {
+  else if(cf_strcmp(opt->name,"BlacklistInThreadview") == 0) {
     Cfg.bl_in_thrv = cf_strcmp(args[0],"yes") == 0;
   }
 

@@ -68,7 +68,7 @@ int flt_latex_create_cache(const u_char *cnt,const u_char *our_sum) {
   int fds[2];
   char c,sum[33],buff[512];
   ssize_t n;
-  t_string mml,path,path1;
+  t_string mml,html,path,path1,path2;
 
   FILE *fd;
   pid_t pid;
@@ -96,7 +96,8 @@ int flt_latex_create_cache(const u_char *cnt,const u_char *our_sum) {
 
   n = read(fds[0],&c,1);
 
-  if(!isalpha(c) || !isupper(c) || c == 'F' || c == 'S' || c == 'E') {
+  if(!isalpha(c) || c == 'F' || c == 'S' || c == 'E') {
+    fprintf(stderr,"textvc returned %c\n",c);
     close(fds[0]);
     waitpid(pid,NULL,0);
     return -1;
@@ -104,29 +105,29 @@ int flt_latex_create_cache(const u_char *cnt,const u_char *our_sum) {
 
   read(fds[0],sum,32);
 
-  switch(c) {
-    case 'C':
-    case 'M':
-    case 'L':
-      while(read(fds[0],&c,1) > 0 && c != '\0');
-
-      /* something went wrong */
-      if(c != '\0') {
-        close(fds[0]);
-        waitpid(pid,NULL,0);
-        return -1;
-      }
-  }
-
   str_init(&mml);
+  str_init(&html);
   str_init(&path);
   str_init(&path1);
+  str_init(&path2);
+
+  if(c != 'X') {
+    while((n = read(fds[0],buff,512)) > 0 && c != '\0') str_chars_append(&html,buff,n);
+    if(n < 0) {
+      str_cleanup(&html);
+
+      close(fds[0]);
+      waitpid(pid,NULL,0);
+      return -1;
+    }
+  }
 
   while((n = read(fds[0],buff,512)) > 0) str_chars_append(&mml,buff,n);
 
   /* something went wrong */
   if(n < 0) {
     str_cleanup(&mml);
+    str_cleanup(&html);
 
     close(fds[0]);
     waitpid(pid,NULL,0);
@@ -135,15 +136,19 @@ int flt_latex_create_cache(const u_char *cnt,const u_char *our_sum) {
 
   str_char_set(&path,flt_latex_cfg.cache_path,strlen(flt_latex_cfg.cache_path));
   str_char_set(&path1,flt_latex_cfg.cache_path,strlen(flt_latex_cfg.cache_path));
+  str_char_set(&path2,flt_latex_cfg.cache_path,strlen(flt_latex_cfg.cache_path));
   str_chars_append(&path,our_sum,32);
   str_chars_append(&path1,sum,32);
   str_chars_append(&path,".mml",4);
   str_chars_append(&path1,".png",4);
+  str_chars_append(&path2,".html",5);
 
   if((fd = fopen(path.content,"w")) == NULL) {
+    str_cleanup(&html);
     str_cleanup(&mml);
     str_cleanup(&path);
     str_cleanup(&path1);
+    str_cleanup(&path2);
 
     close(fds[0]);
     waitpid(pid,NULL,0);
@@ -157,6 +162,24 @@ int flt_latex_create_cache(const u_char *cnt,const u_char *our_sum) {
   str_chars_append(&path,".png",4);
   rename(path1.content,path.content);
 
+  if(c != 'X') {
+    if((fd = fopen(path2.content,"w")) == NULL) {
+      str_cleanup(&html);
+      str_cleanup(&mml);
+      str_cleanup(&path);
+      str_cleanup(&path1);
+      str_cleanup(&path2);
+
+      close(fds[0]);
+      waitpid(pid,NULL,0);
+      return -1;
+    }
+
+    fwrite(html.content,1,html.len,fd);
+    fclose(fd);
+  }
+
+  str_cleanup(&html);
   str_cleanup(&mml);
   str_cleanup(&path);
   str_cleanup(&path1);
@@ -180,8 +203,8 @@ void flt_latex_create_md5_sum(u_char *str,size_t len,u_char *res) {
 }
 /* }}} */
 
-/* {{{ flt_latex_get_mml */
-int flt_latex_get_mml(t_string *which,u_char *sum) {
+/* {{{ flt_latex_get_ml */
+int flt_latex_get_ml(t_string *which,u_char *sum,const u_char *type) {
   t_string path;
   FILE *fd;
   u_char buff[512];
@@ -190,9 +213,15 @@ int flt_latex_get_mml(t_string *which,u_char *sum) {
   str_init(&path);
   str_char_set(&path,flt_latex_cfg.cache_path,strlen(flt_latex_cfg.cache_path));
   str_chars_append(&path,sum,32);
-  str_chars_append(&path,".mml",4);
+  str_char_append(&path,'.');
+  str_chars_append(&path,type,strlen(type));
 
-  if((fd = fopen(path.content,"r")) == NULL) return -1;
+  if((fd = fopen(path.content,"r")) == NULL) {
+    str_cleanup(&path);
+    return -1;
+  }
+
+  str_cleanup(&path);
 
   while(!feof(fd) && n > 0) {
     n = fread(buff,1,512,fd);
@@ -227,7 +256,7 @@ int flt_latex_execute(t_configuration *fdc,t_configuration *fvc,const u_char *di
 
   str_char_set(&str,flt_latex_cfg.cache_path,strlen(flt_latex_cfg.cache_path));
   str_chars_append(&str,sum,32);
-  str_chars_append(&str,".png",4);
+  str_chars_append(&str,".html",5);
 
   if(stat(str.content,&st) == -1) {
     if(flt_latex_create_cache(content->content,sum) == -1) return FLT_DECLINE;
