@@ -4,27 +4,22 @@ PERL = @PERL@
 libdir = @libdir@
 PERLMODULES = @PERLMODULES@
 
-all:
-	cd CForum-Clientlib && $(PERL) Makefile.PL LIB=$(PERLMODULES)
-	cd CForum-Configparser && $(PERL) Makefile.PL LIB=$(PERLMODULES)
-	cd CForum-Template && $(PERL) Makefile.PL LIB=$(PERLMODULES)
-	cd CForum-Validator && $(PERL) Makefile.PL LIB=$(PERLMODULES)
+SUBDIRS=CForum-Clientlib CForum-Configparser CForum-Template CForum-Validator
 
-	cd CForum-Clientlib && make
-	cd CForum-Configparser && make
-	cd CForum-Template && make
-	cd CForum-Validator && make
+all:
+	for dir in $(SUBDIRS); do cd $$dir; $(PERL) Makefile.PL LIB=$(PERLMODULES); cd ..; done;
+	for dir in $(SUBDIRS); do cd $$dir; make; cd ..; done;
 
 install:
-	cd CForum-Clientlib && make install
-	cd CForum-Configparser && make install
-	cd CForum-Template && make install
-	cd CForum-Validator && make install
+	for dir in $(SUBDIRS); do cd $$dir; make install; cd ..; done;
 
 clean:
+	for dir in $(SUBDIRS); do cd $$dir; make clean; cd ..; done;
 
 distclean:
+	for dir in $(SUBDIRS); do cd $$dir; make distclean; cd ..; done;
 
 maintainer-clean:
+	for dir in $(SUBDIRS); do cd $$dir; make maintainer-clean; cd ..; done;
 
 # eof
