@@ -1,3 +1,11 @@
+2004-12-31 Christian Kruse <ckruse@wwwtech.de>
+	* src/modules/flt_category.c: Added configuration option
+		HideCategoriesInThreadView
+	* src/modules/flt_listhighlight.c: A little bit code cleaning
+	* cgi-shared/config/modules.de.xml: Added configuration option
+		HideCategoriesInThreadView and moved several configuration options to
+		different sections
+
 2004-12-30 Christian Kruse <ckruse@wwwtech.de>
 	* src/fo_vote.c: Added variable backlink in OK output
 	* src/templates/de/tpl_*/vote_ok.html: Added link back to posting

@@ -7,26 +7,6 @@
 
   <page title="Anzeige-Funktionen" id="viewfuncs">
     <section name="Design-Ändernde Anzeige-Funktionen">
-      <directive name="LinkTemplate" arguments="1">
-        <argument paramname="linktemplate" type="text" encode="plain">
-          <validate>.?</validate>
-          <question>Möchten Sie ein Link-Template angeben? Sie können das Aussehen von Links mit benutzerdefiniertem Link-Text beeinflussen, wenn Sie hier ein Template angeben. Dabei steht &quot;%t&quot; für den Link-Text und &quot;%u&quot; für die URL. Beispiel: &quot;%t (%u)&quot; würde zu &quot;Titel (URL)&quot;.</question>
-          <error>Bitte geben Sie ein gültiges Link-Template an!</error>
-        </argument>
-      </directive>
-
-      <directive name="Send204" arguments="1">
-        <argument paramname="vote_send204" type="radio" encode="plain">
-          <validate>^(yes|no)$</validate>
-          <question>Soll das Voting-Programm &quot;204 No Content&quot; als Antwort auf eine erfolgreiche Abstimmung liefern?</question>
-          <error>Soll das Voting-Programm &quot;204 No Content&quot; als Antwort auf eine erfolgreiche Abstimmung liefern? Bitte geben Sie &quot;ja&quot; oder &quot;nein&quot; an!</error>
-          <formvalues>
-            <value val="yes">Ja</value>
-            <value val="no" default="yes">Nein</value>
-          </formvalues>
-        </argument>
-      </directive>
-
       <directive name="TPLMode" arguments="1">
         <argument paramname="tplmode" type="radio" encode="plain">
           <validate>^\S+$</validate>
@@ -182,6 +162,38 @@
     </section>
 
     <section name="Die Funktionalität beeinflussende Anzeige-Funktionen">
+      <directive name="HideCategoriesInThreadView" arguments="1">
+        <argument paramname="hidecategoriesinthreadview" type="radio" encode="plain">
+          <validate>^(yes|no)$</validate>
+          <question>Sollen ausgeblendete Kategorien auch in der Thread-Ansicht ausgeblendet werden?</question>
+          <error>Sollen ausgeblendete Kategorien auch in der Thread-Ansicht ausgeblendet werden? Bitte geben Sie &quot;ja&quot; oder &quot;nein&quot; an!</error>
+          <formvalues>
+            <value val="yes">Ja</value>
+            <value val="no" default="yes">Nein</value>
+          </formvalues>
+        </argument>
+      </directive>
+
+      <directive name="LinkTemplate" arguments="1">
+        <argument paramname="linktemplate" type="text" encode="plain">
+          <validate>.?</validate>
+          <question>Möchten Sie ein Link-Template angeben? Sie können das Aussehen von Links mit benutzerdefiniertem Link-Text beeinflussen, wenn Sie hier ein Template angeben. Dabei steht &quot;%t&quot; für den Link-Text und &quot;%u&quot; für die URL. Beispiel: &quot;%t (%u)&quot; würde zu &quot;Titel (URL)&quot;.</question>
+          <error>Bitte geben Sie ein gültiges Link-Template an!</error>
+        </argument>
+      </directive>
+
+      <directive name="Send204" arguments="1">
+        <argument paramname="vote_send204" type="radio" encode="plain">
+          <validate>^(yes|no)$</validate>
+          <question>Soll das Voting-Programm &quot;204 No Content&quot; als Antwort auf eine erfolgreiche Abstimmung liefern?</question>
+          <error>Soll das Voting-Programm &quot;204 No Content&quot; als Antwort auf eine erfolgreiche Abstimmung liefern? Bitte geben Sie &quot;ja&quot; oder &quot;nein&quot; an!</error>
+          <formvalues>
+            <value val="yes">Ja</value>
+            <value val="no" default="yes">Nein</value>
+          </formvalues>
+        </argument>
+      </directive>
+
       <directive name="MarkThreadResponse204" arguments="1">
         <argument paramname="markthreadresponse204" type="radio" encode="plain">
           <validate>^(yes|no)$</validate>

@@ -49,7 +49,7 @@ struct {
   u_char *VIPColorB;
 } Cfg = { 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL };
 
-void parse_list(u_char *vips,t_cf_hash *hash) {
+void flt_lh_parse_list(u_char *vips,t_cf_hash *hash) {
   if(vips) {
     u_char *ptr = vips;
     u_char *pos = ptr,*pre = ptr;
@@ -67,7 +67,7 @@ void parse_list(u_char *vips,t_cf_hash *hash) {
   }
 }
 
-u_char *tolwer(const u_char *str,register int *len) {
+u_char *flt_lh_tolwer(const u_char *str,register int *len) {
   register u_char *ptr = (u_char *)str,*ptr1;
   u_char *result = strdup(str);
 
@@ -82,7 +82,7 @@ u_char *tolwer(const u_char *str,register int *len) {
   return result;
 }
 
-int execute_filter(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_message *msg,u_int64_t tid,int mode) {
+int flt_lh_execute_filter(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_message *msg,u_int64_t tid,int mode) {
   t_name_value *uname = NULL;
   int len = 0;
   u_char *tmp;
@@ -100,7 +100,7 @@ int execute_filter(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_mes
   }
 
   if(Cfg.VIPList) {
-    tmp = tolwer(msg->author,&len);
+    tmp = flt_lh_tolwer(msg->author,&len);
     if(cf_hash_get(Cfg.VIPList,tmp,len)) {
       tpl_cf_setvar(&msg->tpl,"vip","1",1,0);
     }
@@ -108,7 +108,7 @@ int execute_filter(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_mes
   }
 
   if(Cfg.WhiteList) {
-    tmp = tolwer(msg->author,&len);
+    tmp = flt_lh_tolwer(msg->author,&len);
     if(cf_hash_get(Cfg.WhiteList,tmp,len)) {
       tpl_cf_setvar(&msg->tpl,"whitelist","1",1,0);
     }
@@ -213,8 +213,8 @@ int flt_lh_handle_command(t_configfile *cf,t_conf_opt *opt,u_char **args,int arg
   }
   else if(cf_strcmp(opt->name,"WhiteList") == 0) {
     if(!Cfg.WhiteList) Cfg.WhiteList = cf_hash_new(NULL);
-    list = tolwer(args[0],&len);
-    parse_list(list,Cfg.WhiteList);
+    list = flt_lh_tolwer(args[0],&len);
+    flt_lh_parse_list(list,Cfg.WhiteList);
     free(list);
   }
   else if(cf_strcmp(opt->name,"WhiteListColors") == 0) {
@@ -225,7 +225,7 @@ int flt_lh_handle_command(t_configfile *cf,t_conf_opt *opt,u_char **args,int arg
   }
   else if(cf_strcmp(opt->name,"HighlightCategories") == 0) {
     if(!Cfg.HighlightCategories) Cfg.HighlightCategories = cf_hash_new(NULL);
-    parse_list((u_char *)args[0],Cfg.HighlightCategories);
+    flt_lh_parse_list((u_char *)args[0],Cfg.HighlightCategories);
   }
   else if(cf_strcmp(opt->name,"CategoryHighlightColors") == 0) {
     if(Cfg.CategoryHighlightColorF) free(Cfg.CategoryHighlightColorF);
@@ -235,8 +235,8 @@ int flt_lh_handle_command(t_configfile *cf,t_conf_opt *opt,u_char **args,int arg
   }
   else if(cf_strcmp(opt->name,"VIPList") == 0) {
     if(!Cfg.VIPList) Cfg.VIPList = cf_hash_new(NULL);
-    list = tolwer(args[0],&len);
-    parse_list(list,Cfg.VIPList);
+    list = flt_lh_tolwer(args[0],&len);
+    flt_lh_parse_list(list,Cfg.VIPList);
     free(list);
   }
   else if(cf_strcmp(opt->name,"VIPColors") == 0) {
@@ -262,7 +262,7 @@ t_conf_opt config[] = {
 };
 
 t_handler_config handlers[] = {
-  { VIEW_LIST_HANDLER, execute_filter    },
+  { VIEW_LIST_HANDLER, flt_lh_execute_filter    },
   { VIEW_INIT_HANDLER, flt_lh_set_colors },
   { POSTING_HANDLER,   flt_lh_set_cols_p },
   { 0, NULL }

@@ -36,7 +36,8 @@
 #include "hashlib.h"
 /* }}} */
 
-t_cf_hash *flt_category_cats = NULL;
+static t_cf_hash *flt_category_cats = NULL;
+static int flt_category_hide_in_thread = 0;
 
 void flt_category_parse_list(u_char *vips,t_cf_hash *hash) {
   if(vips) {
@@ -57,7 +58,8 @@ void flt_category_parse_list(u_char *vips,t_cf_hash *hash) {
 }
 
 int flt_category_execute_filter(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_message *msg,u_int64_t tid,int mode) {
-  if(mode || !flt_category_cats) return FLT_DECLINE;
+  if(mode && flt_category_hide_in_thread == 0) return FLT_DECLINE;
+  if(!flt_category_cats) return FLT_DECLINE;
 
   if(cf_hash_get(flt_category_cats,msg->category,msg->category_len)) return FLT_OK;
 
@@ -67,9 +69,14 @@ int flt_category_execute_filter(t_cf_hash *head,t_configuration *dc,t_configurat
 }
 
 int flt_category_handle_command(t_configfile *cf,t_conf_opt *opt,u_char **args,int argnum) {
-  if(!flt_category_cats) flt_category_cats = cf_hash_new(NULL);
+  if(cf_strcmp(opt->name,"ShowCategories") == 0) {
+    if(!flt_category_cats) flt_category_cats = cf_hash_new(NULL);
 
-  flt_category_parse_list(args[0],flt_category_cats);
+    flt_category_parse_list(args[0],flt_category_cats);
+  }
+  else {
+    flt_category_hide_in_thread = cf_strcmp(args[0],"yes") == 0;
+  }
 
   return 0;
 }
@@ -82,7 +89,8 @@ void flt_category_finish(void) {
 }
 
 t_conf_opt flt_category_config[] = {
-  { "ShowCategories", flt_category_handle_command, CFG_OPT_USER|CFG_OPT_CONFIG, NULL },
+  { "ShowCategories",             flt_category_handle_command, CFG_OPT_USER|CFG_OPT_CONFIG, NULL },
+  { "HideCategoriesInThreadView", flt_category_handle_command, CFG_OPT_USER|CFG_OPT_CONFIG, NULL },
   { NULL, NULL, 0, NULL }
 };
 
