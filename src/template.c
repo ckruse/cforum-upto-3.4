@@ -293,6 +293,10 @@ t_cf_tpl_variable *cf_tpl_var_convert(t_cf_tpl_variable *dest,t_cf_tpl_variable 
         snprintf(intbuf,19,"%ld",src->data.d_int);
         str_char_set(&var->data.d_string,intbuf,strlen(intbuf));
         break;
+      case TPL_VARIABLE_ARRAY:
+        snprintf(intbuf,19,"%ld",src->data.d_array.elements);
+        str_char_set(&var->data.d_string,intbuf,strlen(intbuf));
+        break;
     }
   } else if(new_type == TPL_VARIABLE_INT) {
     switch(src->type) {
