@@ -171,14 +171,6 @@ AC_ARG_WITH(data-dir,
 	[ DATADIR="${localstatedir}/cforum/data" ]
 )
 
-AC_ARG_WITH(document-root,
-  [AC_HELP_STRING(
-    [--with-document-root=DIR],
-    [the document root directory])],
-  [ DOCROOT="${with_document_root}" ],
-  [ AC_MSG_ERROR([document root not given]) ]
-)
-
 AC_ARG_WITH(archive-dir,
   [AC_HELP_STRING(
     [--with-archive-dir=DIR],
