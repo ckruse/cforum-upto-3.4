@@ -7,6 +7,9 @@
 		thread view
 	* conf/modules.de.xml: Added blacklist configuration directive
 	* src/swig/Makefile.in: Enhanced makefile template
+	* src/clientlib.h: Changed prototype for cf_msg_linearize()
+	* src/messageutils.c: Fixed a really nasty bug in cf_msg_linearize(), now the
+		prev pointers will be set correctly
 
 2005-02-09 Christian Kruse <ckruse@wwwtech.de>
 	* conf/fo_view.conf.in: Added two modules

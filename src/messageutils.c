@@ -205,8 +205,8 @@ t_message *cf_msg_build_hierarchical_structure(t_hierarchical_node *parent,t_mes
 }
 /* }}} */
 
-/* {{{ cf_msg_linearize */
-t_message *cf_msg_linearize(t_hierarchical_node *node) {
+/* {{{ cf_msg_do_linearize */
+t_message *cf_msg_do_linearize(t_hierarchical_node *node) {
   size_t i;
   t_message *p;
   t_hierarchical_node *tmp,*tmp1;
@@ -214,18 +214,16 @@ t_message *cf_msg_linearize(t_hierarchical_node *node) {
   if(node->childs.elements) {
     tmp = array_element_at(&node->childs,0);
     node->msg->next = tmp->msg;
-    tmp->msg->prev  = node->msg;
 
     for(i=0;i<node->childs.elements;++i) {
       tmp = array_element_at(&node->childs,i);
 
       if(tmp->childs.elements) {
-        p = cf_msg_linearize(tmp);
+        p = cf_msg_do_linearize(tmp);
 
         if(i < node->childs.elements-1) {
           tmp1 = array_element_at(&node->childs,i+1);
           p->next = tmp1->msg;
-          tmp1->msg->prev = p;
         }
         else {
           p->next = NULL;
@@ -236,7 +234,6 @@ t_message *cf_msg_linearize(t_hierarchical_node *node) {
         if(i < node->childs.elements-1) {
           tmp1 = array_element_at(&node->childs,i+1);
           tmp->msg->next = tmp1->msg;
-          tmp1->msg->prev = tmp->msg;
         }
         else {
           tmp->msg->next = NULL;
@@ -251,6 +248,20 @@ t_message *cf_msg_linearize(t_hierarchical_node *node) {
   }
 
   return NULL;
+}
+/* }}} */
+
+/* {{{ cf_msg_linearize */
+void cf_msg_linearize(t_hierarchical_node *h) {
+  t_message *p,*p1;
+
+  cf_msg_do_linearize(h);
+
+  /* reset prev-pointers */
+  for(p=h->msg,p1=NULL;p;p=p->next) {
+    p->prev = p1;
+    p1      = p;
+  }
 }
 /* }}} */
 

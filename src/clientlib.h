@@ -382,10 +382,10 @@ t_message *cf_msg_build_hierarchical_structure(t_hierarchical_node *parent,t_mes
 
 /**
  * This function serializes a hierarchical structure into a flat chain
- * \param node The t_hierarchical_node node
+ * \param h The t_hierarchical_node node
  * \return A posting in this or lower than this hierarchy level or NULL
  */
-t_message *cf_msg_linearize(t_hierarchical_node *node);
+void cf_msg_linearize(t_hierarchical_node *h);
 
 
 /**
