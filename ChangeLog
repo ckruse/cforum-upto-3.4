@@ -10,13 +10,16 @@
 	* src/modules/flt_syntax.c: Implemented first version of syntax highlighting
 	* src/serverlib.c: Fixed bug in periodical worker
 	* src/htmllib.c: Fixed bug in XHTML mode recognizing
-	* src/fo_server.c: Fixed bug of logfile handler
+	* src/fo_server.c: Fixed bug of logfile handler, moved server environment to
+		new position _after_ daemonizing
 	* src/modules/flt_link.c: Bugfix, now directives are local
 	* scripts/cf-indextips.pl: Bugfix, forgot a ;
 	* src/modules/flt_cftp.c: Fixed nasty bug in message insertion on posting
 		answers to existing threads
 	* src/modules/flt_xmlstorage.c: removed CF_SORT_* and added it to defines.h
 	* src/defines.h: Added CF_SORT_* symbols
+	* src/serverlib.c: Fixed bug in cf_read_posting()
+	* conf/patterns/html.pat: Fixed bugs in html pattern file
 
 2005-02-03 Christian Kruse <ckruse@wwwtech.de>
 	* conf/patterns/perl.pat, conf/patterns/php.pat: Corrected escaping

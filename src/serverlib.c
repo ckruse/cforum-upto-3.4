@@ -1092,7 +1092,7 @@ int cf_read_posting(t_forum *forum,t_posting *p,int sock,rline_t *tsd) {
         str_char_set(&p->user.img,line+12,llen-13);
       }
       else if(cf_strncmp(line,"Body:",5) == 0) {
-        str_char_set(&p->content,line+6,llen-13);
+        str_char_set(&p->content,line+6,llen-7);
       }
       else if(cf_strncmp(line,"RemoteAddr:",11) == 0) {
         str_char_set(&p->user.ip,line+12,llen-13);
