@@ -917,7 +917,7 @@ int flt_syntax_doit(flt_syntax_pattern_file_t *file,flt_syntax_block_t *block,u_
 
         case FLT_SYNTAX_ONSTRINGLIST:
           /* {{{ onstringlist */
-          if(ptr != begin && !isspace(*(ptr-1))) continue;
+          if(ptr != begin && !isspace(*(ptr-1)) && (ptr-begin > (xhtml?6:4) && cf_strncmp(ptr-(xhtml?6:4),"<br",3) != 0) && isalpha(*ptr)) continue;
 
           str = array_element_at(&statement->args,0);
           if((tmplist = flt_syntax_list_by_name(file,str->content)) == NULL) {
@@ -1222,6 +1222,8 @@ int flt_syntax_doit(flt_syntax_pattern_file_t *file,flt_syntax_block_t *block,u_
     }
     else start = 0;
   }
+
+  if(pos) *pos = ptr;
 
   return 0;
 }

@@ -1,3 +1,7 @@
+2005-02-23 Christian Kruse <ckruse@wwwtech.de>
+	* src/modules/flt_syntax.c: Fixed several bugs in syntax highlighting
+	* src/modules/flt_failsafe.c: Fixed bug, forgot to fclose() file handle
+
 2005-02-22 Christian Kruse <ckruse@wwwtech.de>
 	* src/modules/flt_mailonpost.c: Fixed bug in checkbox, now it should work
 	* conf/fo_feeds.conf.in: Added configuration file for forum feeds program
