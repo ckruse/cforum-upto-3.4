@@ -1,6 +1,0 @@
-
-AuthName "SELFHTML Forum"
-AuthType basic
-AuthUserFile "/home/ckruse/users.dat"
-require valid-user
-
