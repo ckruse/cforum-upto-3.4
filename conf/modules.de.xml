@@ -171,6 +171,19 @@
     </section>
 
     <section name="Die Funktionalität beeinflussende Anzeige-Funktionen">
+      <directive name="ReadMode" arguments="1">
+        <argument paramname="readmode" type="radio" encode="plain">
+          <validate>^(list|nested|thread)$</validate>
+          <question>Wie soll die Thread-Anzeige gestaltet sein?</question>
+          <error>Wie soll die Thread-Anzeige gestaltet sein? Bitte geben Sie &quot;Listen-Modus&quot;, &quot;Nested-Modus&quot; oder &quot;Thread-Modus&quot; an!</error>
+          <formvalues>
+            <value val="thread" default="yes">Thread-Modus</value>
+            <value val="list">Listen-Modus</value>
+            <value val="nested">Nested-Modus</value>
+          </formvalues>
+        </argument>
+      </directive>
+
       <directive name="SortThreads" arguments="1">
         <argument paramname="sortthreads" type="radio" encode="plain">
           <validate>^(ascending|descending|newestfirst|default)$</validate>
