@@ -90,6 +90,7 @@ int main(int argc,char *argv[],char *envp[]) {
   DBT key,data;
   int ret;
   size_t len;
+  t_string str;
 
   static const u_char *wanted[] = {
     "fo_default"
@@ -185,21 +186,24 @@ int main(int argc,char *argv[],char *envp[]) {
 
   /* {{{ redirect */
   printf("Status: 302 Moved Temporarily\015\012");
+  
+  str_init (&str);
+  str_char_set (&str, data.data, data.size);
 
   if(!port || cf_strcmp(port,"80") == 0) {
     if(infos.elements == 4) {
-      printf("Location: http://%s%s/%s/t%s/#m%s\015\012\015\012",getenv("SERVER_NAME"),archive_path->values[0],(u_char *)data.data,ctid,*((char **)array_element_at(&infos,3)));
+      printf("Location: http://%s%s/%s/t%s/#m%s\015\012\015\012",getenv("SERVER_NAME"),archive_path->values[0],(u_char *)str.content,ctid,*((char **)array_element_at(&infos,3)));
     }
     else {
-      printf("Location: http://%s%s/%s/t%s/\015\012\015\012",getenv("SERVER_NAME"),archive_path->values[0],(u_char *)data.data,ctid);
+      printf("Location: http://%s%s/%s/t%s/\015\012\015\012",getenv("SERVER_NAME"),archive_path->values[0],(u_char *)str.content,ctid);
     }
   }
   else {
     if(infos.elements == 4) {
-      printf("Location: http://%s:%s%s/%s/t%s/#m%s\015\012\015\012",getenv("SERVER_NAME"),getenv("SERVER_PORT"),archive_path->values[0],(u_char *)data.data,ctid,*((char **)array_element_at(&infos,3)));
+      printf("Location: http://%s:%s%s/%s/t%s/#m%s\015\012\015\012",getenv("SERVER_NAME"),getenv("SERVER_PORT"),archive_path->values[0],(u_char *)str.content,ctid,*((char **)array_element_at(&infos,3)));
     }
     else {
-      printf("Location: http://%s:%s%s/%s/t%s/\015\012\015\012",getenv("SERVER_NAME"),getenv("SERVER_PORT"),archive_path->values[0],(u_char *)data.data,ctid);
+      printf("Location: http://%s:%s%s/%s/t%s/\015\012\015\012",getenv("SERVER_NAME"),getenv("SERVER_PORT"),archive_path->values[0],(u_char *)str.content,ctid);
     }
   }
   /* }}} */
