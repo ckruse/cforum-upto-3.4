@@ -1,5 +1,7 @@
 2004-11-28 Christian Kruse <ckruse@wwwtech.de>
 	* src/cfcgi.c: Fixed a really nasty bug; now cf_cgi_url_decode() is safe
+	* src/templates/de/tpl_html4/usersettings.html: Fixed several double UTF-8
+		encodings
 
 2004-11-24 Christian Kruse <ckruse@wwwtech.de>
 	* src/modules/flt_deleted.c, src/modules/flt_visited.c: Added file locking
