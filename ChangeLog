@@ -4,7 +4,8 @@
 	* src/cf_pthread.c: Added names in error messages
 	* src/fo_server.c: Fixed getopt() string, changed cf_cond_* calls to CF_CD_*
 	* src/cf_pthread.[ch]: Made error messages more informative
-	* src/modules/flt_cftp.c: Little bit code cleaning
+	* src/modules/flt_cftp.c: Little bit code cleaning, fixed a fatal bug in
+		locking
 	* src/datautils.c: Fixed bug in u_int64_to_str()
 	* src/serverlib.c: Changed cf_cond_* calls to CF_CD_*, fixed several bugs in
 		protocol handling
