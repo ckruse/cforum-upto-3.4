@@ -200,7 +200,6 @@ void generate_thread_output(t_cl_thread *cl_thread, t_arc_message *msg,t_string 
   t_string *str = fo_alloc(NULL,1,sizeof(*str),FO_ALLOC_CALLOC);
   u_char *cnt = NULL;
   size_t cntlen;
-  void *ptr = fo_alloc(NULL,1,2 * sizeof(const u_char *) + 2 * sizeof(t_string *),FO_ALLOC_MALLOC);
   int printed = 0;
   u_char *date;
   t_string strbuffer;
@@ -260,12 +259,7 @@ void generate_thread_output(t_cl_thread *cl_thread, t_arc_message *msg,t_string 
     cnt = strdup(msg->content.content);
   }
 
-  /* set message... */
-  memcpy(ptr,&cnt,sizeof(const u_char *));
-  memcpy(ptr+sizeof(const u_char *),&str,sizeof(str));
-  memset(ptr+sizeof(const u_char *)+sizeof(str),0,sizeof(str));
-  memcpy(ptr+sizeof(const u_char *)+sizeof(str)+sizeof(str),&vs->values[0],sizeof(const u_char *));
-
+  /* convert message to html */
   msg_to_html(cl_thread,cnt,str,NULL,qc->values[0],ms ? atoi(ms->values[0]) : -1,ss ? cf_strcmp(ss->values[0],"yes") == 0 : 1);
 
   free(cnt);

@@ -1,3 +1,7 @@
+2004-10-18 Christian Kruse <ckruse@wwwtech.de>
+	* src/fo_arcview.c: Removed several silly memcpy() (from old msg_to_html()
+		API)
+
 2004-10-15 Christian Kruse <ckruse@wwwtech.de>
 	* cgi-shared/ForumUtils.pm: Fixed a typo (nval instead of val)
 
