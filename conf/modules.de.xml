@@ -780,7 +780,7 @@
         <argument paramname="blacklistthreadview" type="radio" encode="plain">
           <validate>^(?:yes|no)$</validate>
           <question>Soll die Blacklist auch in der Thread-Anzeige wirken?</question>
-          <error>Soll die Blacklist auch in der Thread-Anzeige wirken? Bitte geben Sie &quot;ja&quot; oder &quot;nein&quot; an!</error<
+          <error>Soll die Blacklist auch in der Thread-Anzeige wirken? Bitte geben Sie &quot;ja&quot; oder &quot;nein&quot; an!</error>
           <formvalues>
             <value val="yes" default="yes">Ja</value>
             <value val="no">Nein</value>
