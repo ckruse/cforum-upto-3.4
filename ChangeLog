@@ -1,4 +1,4 @@
-Christian Kruse <ckruse@wwwtech.de>
+2005-02-19 Christian Kruse <ckruse@wwwtech.de>
 	* src/modules/flt_deleted.c: Fixed small typo
 	* src/modules/flt_frameset.c: Fixed small typo
 	* src/modules/flt_include.c: Fixed #517
@@ -10,4 +10,5 @@ Christian Kruse <ckruse@wwwtech.de>
 	* src/modules/flt_latex.c: Several small bugfixes, not yet finished
 	* src/modules/flt_admin.c: Bugfix, forgot to SELECT the forum
 	* src/defines.h: Changed CF_VERSION symbol
+	* conf/modules.de.xml: Fixed bug, LiveFilterOverwrite was twice
 
