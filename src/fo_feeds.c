@@ -139,14 +139,14 @@ void atom_head(t_string *str,t_cl_thread *thread) {
   }
 
   str_chars_append(str,"<?xml version=\"1.0\"?>\n" \
-    "<feed version=\"0.3\" xmlns=\"http://purl.org/atom/ns#\"",
-    74
+    "<feed version=\"0.3\" xmlns=\"http://purl.org/atom/ns#",
+    73
   );
   if(atom_lang) {
-    str_chars_append(str," xml:lang=\"",11);
+    str_chars_append(str,"\" xml:lang=\"",12);
     str_chars_append(str,atom_lang->values[0],strlen(atom_lang->values[0]));
-    str_chars_append(str,"\">\n",3);
   }
+  str_chars_append(str,"\">\n",3);
 
   str_chars_append(str,"<title>",7);
   if(thread) {
