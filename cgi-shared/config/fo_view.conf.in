@@ -20,7 +20,7 @@
  AddFilter "@libdir@/cforum/flt_category.so" "flt_category"
  AddFilter "@libdir@/cforum/flt_deleted.so" "flt_deleted"
  AddFilter "@libdir@/cforum/flt_visited.so" "flt_visited"
- AddFilter "@libdir@/cforum/flt_owncss.so" "flt_owncss"
+ AddFilter "@libdir@/cforum/flt_include.so" "flt_include"
  AddFilter "@libdir@/cforum/flt_livefilter.so" "flt_livefilter"
  AddFilter "@libdir@/cforum/flt_httpauth.so" "flt_httpauth"
  AddFilter "@libdir@/cforum/flt_admin.so" "flt_admin"

@@ -159,10 +159,11 @@ void print_thread_structure(t_cl_thread *thread,t_cf_hash *head) {
  *
  */
 #ifndef CF_SHARED_MEM
-void send_posting(t_cf_hash *head,int sock,u_int64_t tid,u_int64_t mid) {
+void send_posting(t_cf_hash *head,int sock,u_int64_t tid,u_int64_t mid)
 #else
-void send_posting(t_cf_hash *head,void *shm_ptr,u_int64_t tid,u_int64_t mid) {
+void send_posting(t_cf_hash *head,void *shm_ptr,u_int64_t tid,u_int64_t mid)
 #endif
+{
   t_cl_thread thread;
   #ifndef CF_SHARED_MEM
   rline_t tsd;
@@ -209,10 +210,11 @@ void send_posting(t_cf_hash *head,void *shm_ptr,u_int64_t tid,u_int64_t mid) {
   }
 
   #ifndef CF_SHARED_MEM
-  if(cf_get_message_through_sock(sock,&tsd,&thread,fo_thread_tplname,tid,mid,del) == -1) {
+  if(cf_get_message_through_sock(sock,&tsd,&thread,fo_thread_tplname,tid,mid,del) == -1)
   #else
-  if(cf_get_message_through_shm(shm_ptr,&thread,fo_thread_tplname,tid,mid,del) == -1) {
+  if(cf_get_message_through_shm(shm_ptr,&thread,fo_thread_tplname,tid,mid,del) == -1)
   #endif
+  {
     if(cf_strcmp(ErrorString,"E_FO_404") == 0) {
       if(run_404_filters(head,tid,mid) != FLT_EXIT) {
         printf("Status: 404 Not Found\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs?cs->values[0]?cs->values[0]:(u_char *)"UTF-8":(u_char *)"UTF-8");
@@ -271,10 +273,11 @@ void send_posting(t_cf_hash *head,void *shm_ptr,u_int64_t tid,u_int64_t mid) {
  *
  */
 #ifndef CF_SHARED_MEM
-void send_threadlist(int sock,t_cf_hash *head) {
+void send_threadlist(int sock,t_cf_hash *head)
 #else
-void send_threadlist(void *shm_ptr,t_cf_hash *head) {
+void send_threadlist(void *shm_ptr,t_cf_hash *head)
 #endif
+{
   int ret,len;
   #ifndef CF_SHARED_MEM
   rline_t tsd;
@@ -416,10 +419,11 @@ void send_threadlist(void *shm_ptr,t_cf_hash *head) {
     tpl_cf_finish(&tpl_begin);
 
     #ifndef CF_SHARED_MEM
-    while(cf_get_next_thread_through_sock(sock,&tsd,&thread,fo_thread_tplname) == 0) {
+    while(cf_get_next_thread_through_sock(sock,&tsd,&thread,fo_thread_tplname) == 0)
     #else
-    while((ptr1 = cf_get_next_thread_through_shm(ptr1,&thread,fo_thread_tplname)) != NULL) {
+    while((ptr1 = cf_get_next_thread_through_shm(ptr1,&thread,fo_thread_tplname)) != NULL)
     #endif
+    {
       if(thread.messages) {
         if((thread.messages->invisible == 0 && thread.messages->may_show) || del == CF_KEEP_DELETED) {
           tpl_cf_setvar(&thread.messages->tpl,"start","1",1,0);
@@ -616,6 +620,20 @@ int main(int argc,char *argv[],char *env[]) {
   cs = cfg_get_first_value(&fo_default_conf,"ExternCharset");
 
   if(ret != FLT_EXIT) {
+    #ifndef CF_SHARED_MEM
+    if((sock = set_us_up_the_socket()) <= 0) {
+      printf("Content-Type: text/html; charset=%s\015\012\015\012",cs?cs->values[0]?cs->values[0]:(u_char *)"UTF-8":(u_char *)"UTF-8");
+      str_error_message("E_NO_SOCK",NULL,strerror(errno));
+      exit(0);
+    }
+    #else
+    if((sock = get_shm_ptr()) == NULL) {
+      printf("Content-Type: text/html; charset=%s\015\012\015\012",cs?cs->values[0]?cs->values[0]:(u_char *)"UTF-8":(u_char *)"UTF-8");
+      str_error_message("E_NO_CONN",NULL,strerror(errno));
+      exit(0);
+    }
+    #endif
+
     /* now, we need a socket connection */
     // main source
     if(Modules[CONNECT_INIT_HANDLER].elements) {
@@ -631,20 +649,6 @@ int main(int argc,char *argv[],char *env[]) {
     }
 
     if(ret != FLT_EXIT) {
-      #ifndef CF_SHARED_MEM
-      if((sock = set_us_up_the_socket()) <= 0) {
-        printf("Content-Type: text/html; charset=%s\015\012\015\012",cs?cs->values[0]?cs->values[0]:(u_char *)"UTF-8":(u_char *)"UTF-8");
-        str_error_message("E_NO_SOCK",NULL,strerror(errno));
-        exit(0);
-      }
-      #else
-      if((sock = get_shm_ptr()) == NULL) {
-        printf("Content-Type: text/html; charset=%s\015\012\015\012",cs?cs->values[0]?cs->values[0]:(u_char *)"UTF-8":(u_char *)"UTF-8");
-        str_error_message("E_NO_CONN",NULL,strerror(errno));
-        exit(0);
-      }
-      #endif
-
       /* after that, look for m= and t= */
       if(head) {
         t = cf_cgi_get(head,"t");
