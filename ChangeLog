@@ -20,9 +20,11 @@
 		src/modules/flt_include.c, src/modules/flt_posting.c,
 		src/modules/flt_sorting.c, src/modules/flt_openclose.c: Added multi forum
 		abilities
-	* src/defines.h: Added CF_SORT_NEWESTFIRST
+	* src/defines.h: Added CF_SORT_NEWESTFIRST, added URL_REWRITE_HANDLER
 	* src/perl/Plugins/ImportExport.pm: Moved to upload() routine, the new way of
 		handling file uploads in CGI.pm
+	* src/clientlib.h: Added t_filter_urlrewrite
+	* src/modules/flt_directives.c: Added hook for URL rewriting
 
 2005-02-07 Christian Kruse <ckruse@wwwtech.de>
 	* src/modules/flt_link.c: Fixed bug in variable setting

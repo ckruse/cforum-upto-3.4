@@ -216,6 +216,8 @@ typedef int (*t_after_post_filter)(t_cf_hash *,t_configuration *,t_configuration
 
 typedef int (*t_post_display_filter)(t_cf_hash *,t_configuration *,t_configuration *,t_cf_template *);
 
+typedef int (*t_filter_urlrewrite)(t_configuration *,t_configuration *,const u_char *,u_char **);
+
 
 /**
  * In this hash global values can be saved,

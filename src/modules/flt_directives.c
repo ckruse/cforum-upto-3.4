@@ -121,10 +121,25 @@ int flt_directives_is_relative_uri(const u_char *tmp,size_t len) {
 /* }}} */
 
 /* {{{ flt_directives_generate_uri */
-void flt_directives_generate_uri(const u_char *uri,const u_char *title,t_string *content,t_string *cite,int sig) {
+void flt_directives_generate_uri(const u_char *uri,const u_char *title,t_string *content,t_string *cite,int sig,t_configuration *dc,t_configuration *vc) {
   u_char *tmp2 = NULL;
   size_t len = 0,len1,i;
   t_flt_directives_lt_tok *tok;
+  u_char *new_uri = NULL;
+  t_handler_config *handler;
+  t_filter_urlrewrite fkt;
+  int ret = FLT_DECLINE;
+
+  if(Modules[URL_REWRITE_HANDLER].elements) {
+    for(i=0;i<Modules[URL_REWRITE_HANDLER].elements && ret == FLT_DECLINE;++i) {
+      handler = array_element_at(&Modules[URL_REWRITE_HANDLER],i);
+      fkt     = (t_filter_urlrewrite)handler->func;
+      ret     = fkt(dc,vc,uri,&new_uri);
+    }
+
+    if(new_uri) uri = new_uri;
+  }
+
 
   /* {{{ generate <a href */
   tmp2 = htmlentities(uri,1);
@@ -221,7 +236,7 @@ int flt_directives_execute(t_configuration *fdc,t_configuration *fvc,const u_cha
       }
 
       if(go) {
-        flt_directives_generate_uri(tmp1,title_alt,content,cite,sig);
+        flt_directives_generate_uri(tmp1,title_alt,content,cite,sig,fdc,fvc);
         if(title_alt) free(title_alt);
 
         return FLT_OK;
@@ -259,7 +274,7 @@ int flt_directives_execute(t_configuration *fdc,t_configuration *fvc,const u_cha
         len = strlen(tmp2);
 
         if(flt_directives_imagesaslink) {
-          flt_directives_generate_uri(tmp1,title_alt,content,NULL,sig);
+          flt_directives_generate_uri(tmp1,title_alt,content,NULL,sig,fdc,fvc);
         }
         else {
           str_chars_append(content,"<img src=\"",10);
@@ -312,7 +327,7 @@ int flt_directives_execute(t_configuration *fdc,t_configuration *fvc,const u_cha
         len = strlen(tmp2);
 
         if(flt_directives_iframesaslink) {
-          flt_directives_generate_uri(parameter,NULL,content,NULL,sig);
+          flt_directives_generate_uri(parameter,NULL,content,NULL,sig,fdc,fvc);
         }
         else {
           str_chars_append(content,"<iframe src=\"",13);
@@ -354,7 +369,7 @@ int flt_directives_execute(t_configuration *fdc,t_configuration *fvc,const u_cha
         tmp1 = cf_get_link(vs->values[0],forum_name,tid,mid);
         if(tmp2) tmp2 += 7;
 
-        flt_directives_generate_uri(tmp1,tmp2,content,cite,sig);
+        flt_directives_generate_uri(tmp1,tmp2,content,cite,sig,fdc,fvc);
 
         free(tmp1);
 
@@ -386,7 +401,7 @@ int flt_directives_execute(t_configuration *fdc,t_configuration *fvc,const u_cha
             str_chars_append(&tmpstr,uri->uri,strlen(uri->uri));
             str_chars_append(&tmpstr,tmp2,strlen(tmp2));
 
-            flt_directives_generate_uri(tmpstr.content,title_alt,content,NULL,0);
+            flt_directives_generate_uri(tmpstr.content,title_alt,content,NULL,0,fdc,fvc);
 
             if(sig == 0 && cite) {
               str_chars_append(cite,"[ref:",5);
