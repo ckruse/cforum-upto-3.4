@@ -26,6 +26,11 @@
 	* src/fo_post.c: Added date variable
 	* src/configparser.c: Added DateFormat directive for fo_post
 	* conf/fo_post.conf.in: Added DateFormat directive
+	* src/fo_view.c: Added handler hook to sort a thread in thread view
+	* src/clientlib.h: Added prototypes for new handler runner
+	* src/modules/flt_sorting.c: Added hook to sort messages in thread view
+	* src/defines.h: Added new handler hook number
+	* src/handlerrunners.c: Added new handler runner
 
 2005-02-08 Christian Kruse <ckruse@wwwtech.de>
 	* configure.in: Added cf-cleanup.pl

@@ -101,6 +101,12 @@ typedef int (*t_sorting_handler)(t_cf_hash *head,t_configuration *dc,t_configura
 typedef int (*t_sorting_handler)(t_cf_hash *head,t_configuration *dc,t_configuration *vc,void *ptr,t_array *threads);
 #endif
 
+#ifdef CF_SHARED_MEM
+typedef int (*t_thread_sorting_handler)(t_cf_hash *head,t_configuration *dc,t_configuration *vc,void *shm_ptr,t_cl_thread *thread);
+#else
+typedef int (*t_thread_sorting_handler)(t_cf_hash *head,t_configuration *dc,t_configuration *vc,int sock,rline_t *tsd,t_cl_thread *thread);
+#endif
+
 /**
  * This function prototype pointer is used for the authorization and the
  * initialization plugins
@@ -465,6 +471,12 @@ int cf_run_view_init_handlers(t_cf_hash *head,t_cf_template *tpl_begin,t_cf_temp
 int cf_run_sorting_handlers(t_cf_hash *head,void *ptr,t_array *threads);
 #else
 int cf_run_sorting_handlers(t_cf_hash *head,int sock,rline_t *tsd,t_array *threads);
+#endif
+
+#ifdef CF_SHARED_MEM
+int cf_run_thread_sorting_handlers(t_cf_hash *head,void *shm_ptr,t_cl_thread *thread);
+#else
+int cf_run_thread_sorting_handlers(t_cf_hash *head,int sock,rline_t *tsd,t_cl_thread *thread);
 #endif
 
 void cf_run_after_post_handlers(t_cf_hash *head,t_message *p,u_int64_t tid);

@@ -220,6 +220,12 @@ void show_posting(t_cf_hash *head,void *shm_ptr,u_int64_t tid,u_int64_t mid)
 
   printf("Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
 
+  #ifdef CF_SHARED_MEM
+  cf_run_thread_sorting_handlers(head,shm_ptr,&thread);
+  #else
+  cf_run_thread_sorting_handlers(head,sock,&tsd,&thread);
+  #endif
+
   if(cf_run_posting_handlers(head,&thread,&tpl,&fo_view_conf) != FLT_EXIT) cf_tpl_parse(&tpl);
   cf_tpl_finish(&tpl);
 

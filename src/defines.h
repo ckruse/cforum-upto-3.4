@@ -60,8 +60,9 @@
 #define SORTING_HANDLER        19 /**< ... */
 #define POST_DISPLAY_HANDLER   20 /**< ... */
 #define URL_REWRITE_HANDLER    21
+#define THREAD_SORTING_HANDLER 22
 
-#define MOD_MAX                21 /**< The maximum hook value. */
+#define MOD_MAX                22 /**< The maximum hook value. */
 
 #define FLT_OK       0 /**< Returned by a plugin function if everything as ok. */
 #define FLT_DECLINE -1 /**< Returned by a plugin function if this request is not for the plugin. */

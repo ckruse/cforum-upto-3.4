@@ -81,13 +81,13 @@ int flt_sorting_msgs_cmp(const void *a,const void *b) {
 }
 /* }}} */
 
-/* {{{ flt_sorting_flt_sorting_sort_messages */
-void flt_sorting_flt_sorting_sort_messages(t_hierarchical_node *h) {
+/* {{{ flt_sorting_sort_msgs */
+void flt_sorting_sort_msgs(t_hierarchical_node *h) {
   size_t i;
 
   array_sort(&h->childs,flt_sorting_msgs_cmp);
 
-  for(i=0;i<h->childs.elements;++i) flt_sorting_flt_sorting_sort_messages(array_element_at(&h->childs,i));
+  for(i=0;i<h->childs.elements;++i) flt_sorting_sort_msgs(array_element_at(&h->childs,i));
 }
 /* }}} */
 
@@ -107,7 +107,7 @@ int flt_sorting_sort(t_cf_hash *head,t_configuration *dc,t_configuration *vc,voi
   if(flt_sorting_sort_messages != -1) {
     for(i=0;i<threads->elements;++i) {
       thr = array_element_at(threads,i);
-      flt_sorting_flt_sorting_sort_messages(thr->ht);
+      flt_sorting_sort_msgs(thr->ht);
       cf_msg_linearize(thr->ht);
     }
   }
@@ -115,6 +115,20 @@ int flt_sorting_sort(t_cf_hash *head,t_configuration *dc,t_configuration *vc,voi
   return FLT_OK;
 }
 /* }}} */
+
+#ifndef CF_SHARED_MEM
+int flt_sorting_sort_thread(t_cf_hash *head,int sock,rline_t *tsd,t_cl_thread *thread)
+#else
+int flt_sorting_sort_thread(t_cf_hash *head,void *shm_ptr,t_cl_thread *thread)
+#endif
+{
+  if(flt_sorting_sort_messages != -1) {
+    flt_sorting_sort_msgs(thread->ht);
+    cf_msg_linearize(thread->ht);
+  }
+
+  return FLT_OK;
+}
 
 /* {{{ flt_sorting_cfg */
 int flt_sorting_cfg(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
@@ -139,7 +153,8 @@ t_conf_opt flt_sorting_config[] = {
 };
 
 t_handler_config flt_sorting_handlers[] = {
-  { SORTING_HANDLER, flt_sorting_sort },
+  { SORTING_HANDLER,        flt_sorting_sort },
+  { THREAD_SORTING_HANDLER, flt_sorting_sort_thread },
   { 0, NULL }
 };
 
