@@ -162,6 +162,52 @@ u_char *charset_convert(const u_char *toencode,size_t in_len,const u_char *from_
 }
 /* }}} */
 
+/* {{{ htmlentities_decode */
+u_char *htmlentities_decode(const u_char *string) {
+  register u_char *ptr;
+  t_string new_str;
+
+  str_init(&new_str);
+
+  if(!string) {
+    return NULL;
+  }
+
+  for(ptr=(u_char *)string;*ptr;ptr++) {
+	  if(*ptr == '&') {
+			if(cf_strncmp(ptr,"&gt;",4) == 0) {
+				str_char_append(&new_str,'>');
+				ptr += 3;
+			}
+			else if(cf_strncmp(ptr,"&lt;",4) == 0) {
+				str_char_append(&new_str,'<');
+				ptr += 3;
+			}
+			else if(cf_strncmp(ptr,"&amp;",5) == 0) {
+				str_char_append(&new_str,'&');
+				ptr += 4;
+			}
+			else if(cf_strncmp(ptr,"&quot;",6) == 0) {
+				str_char_append(&new_str,'"');
+				ptr += 5;
+			}
+			else if(cf_strncmp(ptr,"&#39;",5) == 0) {
+				str_char_append(&new_str,'\'');
+				ptr += 4;
+			}
+      else {
+        str_char_append(&new_str,*ptr);
+      }
+		}
+		else {
+			str_char_append(&new_str,*ptr);
+    }
+  }
+
+  return fo_alloc(new_str.content,new_str.len+1,1,FO_ALLOC_REALLOC);
+}
+/* }}} */
+
 /* {{{ htmlentities
  * Returns: u_char * (NULL on failure, a string-array on success)
  * Parameters:

@@ -396,7 +396,7 @@ size_t nsplit(const u_char *big,const u_char *small,u_char ***ulist,size_t max) 
     if(len + 1 == max) break;
   }
 
-  if(len + 1 == max) {
+  if(len + 1 <= max) {
     if(len >= reser) list = fo_alloc(list,++reser,sizeof(*list),FO_ALLOC_REALLOC);
     list[len++] = strdup(pre);
   }

@@ -1,3 +1,13 @@
+2004-10-09 Christian Kruse <ckruse@wwwtech.de>
+	* src/stringutils.c: Fixed a bug in nsplit() (I didn't cover the len == 0
+		case)
+	* src/htmllib.c: Fixed a bug in directive handling; now the parameters are no
+		longer htmlentities() encoded!
+	* src/modules/flt_posting.c: Fixed bugs in directive handling (link checking
+		was buggy and htmlentities() now will be called before every
+		str_chars_append()), added very strict checking for [pref:]
+	* src/charconvert.[ch]: Added htmlentities_decode() function
+
 2004-10-07 Christian Kruse <ckruse@wwwtech.de>
 	* src/templates/de/tpl_xhtml10/forum_thread.html: Fixed typo (${} instead of
 		{$})

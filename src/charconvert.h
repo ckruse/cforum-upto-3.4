@@ -101,6 +101,12 @@ u_char *charset_convert_entities(const u_char *toencode, size_t in_len,const u_c
  */
 int is_valid_utf8_string(const u_char *str,size_t len);
 
+/**
+ * This function decodes the entities in a string
+ * \param string The string to decode
+ * \return NULL on failure, the new string on success
+ */
+u_char *htmlentities_decode(const u_char *string);
 #endif
 
 /* eof */

@@ -90,7 +90,7 @@ void msg_to_html(t_cl_thread *thread,const u_char *msg,t_string *content,t_strin
   u_char *qchars;
   size_t qclen;
   int linebrk = 0,quotemode = 0,sig = 0,utf8 = cf_strcmp(cs->values[0],"UTF-8") == 0,line = 0,rc,xml,run = 1;
-  u_char *directive,*parameter,*safe;
+  u_char *directive,*parameter,*safe,*buff;
 
   xml = cf_strcmp(xmlm->values[0],"yes");
 
@@ -117,7 +117,9 @@ void msg_to_html(t_cl_thread *thread,const u_char *msg,t_string *content,t_strin
           for(ptr1++;*ptr1 && *ptr1 != ']';++ptr1);
           if(*ptr1 == ']') {
             directive = strndup(ptr+1,tmp-ptr-1);
-            parameter = strndup(tmp+1,ptr1-tmp-1);
+            buff      = strndup(tmp+1,ptr1-tmp-1);
+						parameter = htmlentities_decode(buff);
+						free(buff);
 
             rc = run_directive_filters(directive,parameter,content,cite,qchars,sig);
 
@@ -172,7 +174,9 @@ void msg_to_html(t_cl_thread *thread,const u_char *msg,t_string *content,t_strin
 
           if(tmp) {
             directive = strdup("link");
-            parameter = strndup(ptr,tmp-ptr);
+            buff      = strndup(ptr,tmp-ptr);
+						parameter = htmlentities_decode(buff);
+						free(buff);
 
             rc = run_directive_filters(directive,parameter,content,cite,qchars,sig);
 
@@ -200,7 +204,9 @@ void msg_to_html(t_cl_thread *thread,const u_char *msg,t_string *content,t_strin
 
           if(tmp) {
             directive = strdup("image");
-            parameter = strndup(ptr,tmp-ptr);
+            buff      = strndup(ptr,tmp-ptr);
+						parameter = htmlentities_decode(buff);
+						free(buff);
             
             run_directive_filters(directive,parameter,content,cite,qchars,sig);
 
@@ -225,7 +231,9 @@ void msg_to_html(t_cl_thread *thread,const u_char *msg,t_string *content,t_strin
           ptr = strstr(ptr,"\"");
 
           directive = strdup("iframe");
-          parameter = strndup(tmp,ptr-tmp);
+          buff      = strndup(tmp,ptr-tmp);
+					parameter = htmlentities_decode(buff);
+					free(buff);
 
           rc = run_directive_filters(directive,parameter,content,cite,qchars,sig);
 
