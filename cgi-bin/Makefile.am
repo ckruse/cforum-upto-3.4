@@ -1,7 +1,6 @@
 SUBDIRS=admin
 
-EXTRA_DIST=fo_post_old \
-  fo_userconf \
+EXTRA_DIST=fo_userconf \
   fo_usermanagement \
   .htaccess
 

@@ -11,6 +11,7 @@
 		MarkOwnVisited.pm, PostingAssistant.pm, PostOkLink.pm, Preview.pm,
 		Quotings.pm, RandomSignature.pm, SendMailOnAnswer.pm, SpellCheck.pm,
 		Variables.pm: Removed for 3.0 release
+	* cgi-bin/Makefile.am: Removed fo_post_old
 
 2005-01-15 Christian Kruse <ckruse@wwwtech.de>
 	* src/modules/flt_directives.c: Bugfix for [ref:], now it supports @title=
