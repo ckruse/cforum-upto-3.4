@@ -1,3 +1,7 @@
+2005-02-03 Christian Kruse <ckruse@wwwtech.de>
+	* conf/patterns/perl.pat, conf/patterns/php.pat: Corrected escaping
+	* src/modules/flt_syntax.c: Implemented pattern file parser
+
 2005-02-02 Christian Kruse <ckruse@wwwtech.de>
 	* src/modules/flt_directives.c: Added hook for rewriting [link:] URLs to
 		posting references

@@ -20,7 +20,7 @@ block "default"
   onstring "'" "sqstring" "string"
 
   # syntax: onregexp_backref <pattern> <block> <backreference number> <span-klasse>
-  onregexp_backref "<<<(\w+)" "heredoc" 1 "heredoc"
+  onregexp_backref "<<<(\\w+)" "heredoc" 1 "heredoc"
 
   # syntax: onstrings <listen-name> <neuer-block> <span-klasse>
   onstringlist "keywords" highlight "keyword"
@@ -29,7 +29,7 @@ block "default"
   onstringlist "makros" highlight "makro"
 
   # syntax: onregexp <regexp> <neuer-block> <span-klasse>
-  onregexp "\$+[a-zA-Z_][a-zA-Z0-9_]*" highlight "variable"
+  onregexp "\\$+[a-zA-Z_][a-zA-Z0-9_]*" highlight "variable"
   
   # syntax onregexpafter <vorher-regexp> <regexp-zu-matchen> <neuer-block> <span-klasse>
   # vorher-regexp wird auf das zeichen davor angewandt
@@ -56,16 +56,16 @@ end
 block "string"
   lineend stay
 
-  onstring "\\\\" highlight "escaped"
-  onstring "\\\"" highlight "escaped"
+  onstring "\\\\\\\\" highlight "escaped"
+  onstring "\\\\\"" highlight "escaped"
 
   onregexp "\\\\[0-7]{1,3}" highlight "escaped"
   onregexp "\\\\x[0-9A-Fa-f]{1,2}" highlight "escaped"
   onregexp "\\\\[nrt$]" highlight "escaped"
-  onregexp "\$+[a-zA-Z_][a-zA-Z0-9_]*(\[[a-zA-Z0-9_]*\])*" highlight "variable"
-  onregexp "\$\{+[a-zA-Z_][a-zA-Z0-9_]*(\[[a-zA-Z0-9_]*\])*\}" highlight "variable"
+  onregexp "\\$+[a-zA-Z_][a-zA-Z0-9_]*(\\[[a-zA-Z0-9_]*\\])*" highlight "variable"
+  onregexp "\\$\\{+[a-zA-Z_][a-zA-Z0-9_]*(\\[[a-zA-Z0-9_]*\\])*\\}" highlight "variable"
   # TODO: da muss noch {$a->b}, {$a['b']}, {$a[\"b\"]} etc. rein...
-  onregexp "\{\$+[a-zA-Z_][a-zA-Z0-9_]*(\[[a-zA-Z0-9_]*\])*\}" highlight "variable"
+  onregexp "\\{\\$+[a-zA-Z_][a-zA-Z0-9_]*(\\[[a-zA-Z0-9_]*\\])*\\}" highlight "variable"
 
   onstring "\"" pop
 end
@@ -73,8 +73,8 @@ end
 block "sqstring"
   lineend stay
 
-  onstring "\\\\" highlight "escaped"
-  onstring "\\'" highlight "escaped"
+  onstring "\\\\\\\\" highlight "escaped"
+  onstring "\\\\'" highlight "escaped"
 
   onstring "'" pop
 end

@@ -29,6 +29,10 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
+#include <pcre.h>
+
+#include <errno.h>
+
 #include "readline.h"
 #include "hashlib.h"
 #include "utils.h"
@@ -51,15 +55,23 @@ typedef struct {
 } flt_syntax_list_t;
 
 typedef struct {
+  pcre *re;
+  pcre_extra *extra;
+} flt_syntax_preg_t;
+
+typedef struct {
   int type;
 
   u_char **args;
   size_t len;
+
+  t_array pregs;
 } flt_syntax_statement_t;
 
 typedef struct {
   u_char *name;
-  t_array statements;
+  int le_behavior;
+  t_array statement;
 } flt_syntax_block_t;
 
 typedef struct {
@@ -81,6 +93,11 @@ static t_array flt_syntax_files;
 #define FLT_SYNTAX_TOK_KEY 2
 #define FLT_SYNTAX_TOK_EQ  3
 
+#define FLT_SYNTAX_STAY         0xF
+#define FLT_SYNTAX_POP          0x10
+#define FLT_SYNTAX_ONSTRING     0x11
+#define FLT_SYNTAX_ONSTRINGLIST 0x12
+
 int flt_syntax_highlight(t_string *content,t_string *bco,const u_char *lang) {
   return 1;
 }
@@ -100,8 +117,10 @@ int flt_syntax_read_string(const u_char *begin,u_char **pos,t_string *str) {
             str_char_append(str,'\t');
             break;
           default:
-            str_char_append(str,*ptr);
+            str_char_append(str,*(ptr+1));
         }
+        ++ptr;
+        break;
 
       case '"':
         if(pos) *pos = ptr;
@@ -118,9 +137,10 @@ int flt_syntax_read_string(const u_char *begin,u_char **pos,t_string *str) {
 
 /* {{{ flt_syntax_next_token */
 int flt_syntax_next_token(const u_char *line,u_char **pos,t_string *str) {
-  register u_char *ptr;
+  u_char *ptr;
 
-  for(ptr=*pos?*pos:line;*ptr && isspace(*ptr);++ptr);
+  for(ptr=(u_char *)(*pos?*pos:line);*ptr && isspace(*ptr);++ptr);
+  if(!*ptr) return FLT_SYNTAX_EOF;
 
   switch(*ptr) {
     case '#':
@@ -131,10 +151,12 @@ int flt_syntax_next_token(const u_char *line,u_char **pos,t_string *str) {
       return FLT_SYNTAX_TOK_STR;
 
     case '=':
+      *pos = ptr+1;
       return FLT_SYNTAX_TOK_EQ;
 
     default:
       for(;*ptr && !isspace(*ptr);++ptr) str_char_append(str,*ptr);
+      *pos = ptr;
       return FLT_SYNTAX_TOK_KEY;
   }
 
@@ -145,7 +167,7 @@ int flt_syntax_next_token(const u_char *line,u_char **pos,t_string *str) {
 /* {{{ flt_syntax_read_list */
 int flt_syntax_read_list(const u_char *pos,flt_syntax_list_t *list) {
   register u_char *ptr;
-  st_string str;
+  t_string str;
 
   str_init(&str);
 
@@ -162,104 +184,423 @@ int flt_syntax_read_list(const u_char *pos,flt_syntax_list_t *list) {
           default:
             str_char_append(&str,*ptr);
         }
+        ++ptr;
+        continue;
 
       case ',':
-        list->values = realloc(list->values,++list->len * sizeof(u_char **));
+        list->values = fo_alloc(list->values,++list->len,sizeof(u_char **),FO_ALLOC_REALLOC);
         list->values[list->len-1] = str.content;
         str_init(&str);
 
       default:
-        str_char_append(str,*ptr);
+        str_char_append(&str,*ptr);
     }
   }
 
-  list->values = realloc(list->values,++list->len * sizeof(u_char **));
+  list->values = fo_alloc(list->values,++list->len,sizeof(u_char **),FO_ALLOC_REALLOC);
   list->values[list->len-1] = str.content;
 
   return 0;
 }
 /* }}} */
 
+/* {{{ flt_syntax_load */
 int flt_syntax_load(const u_char *path,const u_char *lang) {
   FILE *fd;
   ssize_t len;
-  u_char *line = NULL,*tmp,*pos;
+  u_char *line = NULL,*tmp,*pos,*error;
   size_t buflen = 0;
-  int state = FLT_SYNTAX_GLOBAL;
+  int state = FLT_SYNTAX_GLOBAL,offset,type,tb,lineno = 0;
   t_string str;
+  flt_syntax_preg_t preg;
 
-  flt_syntax_pattern_file file;
+  flt_syntax_pattern_file_t file;
   flt_syntax_list_t list;
   flt_syntax_block_t block;
   flt_syntax_statement_t statement;
 
-  if((fd = fopen(path,"r")) == NULL) return 1;
+  if((fd = fopen(path,"r")) == NULL) {
+    fprintf(stderr,"I/O error opening file %s: %s\n",path,strerror(errno));
+    return 1;
+  }
 
   file.start = NULL;
   array_init(&file.lists,sizeof(flt_syntax_list_t),NULL);
   array_init(&file.blocks,sizeof(flt_syntax_block_t),NULL);
 
-  while((len = getline(&line,&buflen,fd)) > 0) {
+  while((len = getline((char **)&line,&buflen,fd)) > 0) {
+    lineno++;
     str_init(&str);
 
     pos  = NULL;
     type = flt_syntax_next_token(line,&pos,&str);
 
     if(state == FLT_SYNTAX_GLOBAL) {
-      if(type != FLT_SYNTAX_TOK_KEY) return 1;
+      if(type != FLT_SYNTAX_TOK_KEY) {
+        if(type == FLT_SYNTAX_EOF) continue;
+
+        fprintf(stderr,"unknown token at line %d!\n",lineno);
+        return 1;
+      }
+      /* {{{ start = "key" */
       if(cf_strcmp(str.content,"start") == 0) {
         str_cleanup(&str);
 
-        type = flt_syntax_next_token(line,&pos,&str);
-        if(type != FLT_SYNTAX_TOK_EQ) return 1;
-
-        type = flt_syntax_next_token(line,&pos,&str);
-        if(type != FLT_SYNTAX_TOK_STR) return 1;
+        if((type = flt_syntax_next_token(line,&pos,&str)) != FLT_SYNTAX_TOK_EQ) {
+          fprintf(stderr,"after start we got no eqal at line %d!\n",lineno);
+          return 1;
+        }
+        if((type = flt_syntax_next_token(line,&pos,&str)) != FLT_SYNTAX_TOK_STR) {
+          fprintf(stderr,"after start we got no string at line %d!\n",lineno);
+          return 1;
+        }
 
         file.start = str.content;
         str_init(&str);
       }
+      /* }}} */
+      /* {{{ list "name" = "value,value" */
       else if(cf_strcmp(str.content,"list") == 0) {
         memset(&list,0,sizeof(list));
 
         str_cleanup(&str);
-        type = flt_syntax_next_token(line,&pos,&str);
-        if(type != FLT_SYNTAX_TOK_STR) return 1;
+        if((type = flt_syntax_next_token(line,&pos,&str)) != FLT_SYNTAX_TOK_STR) {
+          fprintf(stderr,"after list we got no list name at line %d!\n",lineno);
+          return 1;
+        }
 
         list.name = str.content;
         str_init(&str);
 
-        type = flt_syntax_next_token(line,&pos,&str);
-        if(type != FLT_SYNTAX_TOK_EQ) return 1;
+        if((type = flt_syntax_next_token(line,&pos,&str)) != FLT_SYNTAX_TOK_EQ) {
+          fprintf(stderr,"after list we got no eqal at line %d!\n",lineno);
+          return 1;
+        }
+        if(flt_syntax_read_list(pos,&list) != 0) {
+          fprintf(stderr,"syntax error in list %s at line %d!\n",list.name,lineno);
+          return 1;
+        }
 
-        if(flt_syntax_read_list(pos,&list) != 0) return 1;
-
+        /* we sort them to be able to search faster in it */
+        qsort(list.values,list.len,sizeof(*list.values),cf_strcmp);
         array_push(&file.lists,&list);
       }
+      /* }}} */
+      /* {{{ block "name" */
       else if(cf_strcmp(str.content,"block") == 0) {
-        array_init(&block.statements,sizeof(flt_syntax_statement_t),NULL);
+        array_init(&block.statement,sizeof(flt_syntax_statement_t),NULL);
         str_cleanup(&str);
 
-        type = flt_syntax_next_token(line,&pos,&str);
-        if(type != FLT_SYNTAX_TOK_STR) return 1;
+        if((type = flt_syntax_next_token(line,&pos,&str)) != FLT_SYNTAX_TOK_STR) {
+          fprintf(stderr,"after block we got no block name at line %d!\n",lineno);
+          return 1;
+        }
 
         block.name = str.content;
         str_init(&str);
 
         state = FLT_SYNTAX_BLOCK;
       }
-      else return 1;
+      /* }}} */
+      else {
+        fprintf(stderr,"unknown token in global state at line %d!\n",lineno);
+        return 1;
+      }
     }
     else {
-      /* dumdidum */
+      if(type != FLT_SYNTAX_TOK_KEY) {
+        if(type == FLT_SYNTAX_EOF) continue;
+        fprintf(stderr,"unknown token at line %d!\n",lineno);
+        return 1;
+      }
+      memset(&statement,0,sizeof(statement));
+
+      if(cf_strcmp(str.content,"lineend") == 0) {
+        str_cleanup(&str);
+
+        if((type = flt_syntax_next_token(line,&pos,&str)) != FLT_SYNTAX_TOK_KEY) {
+          fprintf(stderr,"after lineend we got no keyword at line %d!\n",lineno);
+          return 1;
+        }
+        block.le_behavior = cf_strcmp(str.content,"stay") == 0 ? FLT_SYNTAX_STAY : FLT_SYNTAX_POP;
+      }
+      else if(cf_strcmp(str.content,"end") == 0) {
+        str_cleanup(&str);
+        state = FLT_SYNTAX_GLOBAL;
+      }
+
+      /* {{{ onstring <zeichenkette> <neuer-block> <span-klasse> */
+      else if(cf_strcmp(str.content,"onstring") == 0) {
+        str_cleanup(&str);
+
+        if((type = flt_syntax_next_token(line,&pos,&str)) != FLT_SYNTAX_TOK_STR) {
+          fprintf(stderr,"after onstring we got no string at line %d!\n",lineno);
+          return 1;
+        }
+
+        statement.type = FLT_SYNTAX_ONSTRING;
+        statement.args = fo_alloc(NULL,3,sizeof(u_char **),FO_ALLOC_MALLOC);
+
+        statement.args[0] = str.content;
+        str_init(&str);
+
+        type = flt_syntax_next_token(line,&pos,&str);
+        if(type == FLT_SYNTAX_TOK_KEY) {
+          statement.args[1] = str.content;
+          statement.len = 2;
+          tb = type;
+        }
+        else if(type != FLT_SYNTAX_TOK_STR) {
+          fprintf(stderr,"after onstring we got no block name at line %d!\n",lineno);
+          return 1;
+        }
+        else {
+          statement.args[1] = str.content;
+          str_init(&str);
+        }
+
+        if((type = flt_syntax_next_token(line,&pos,&str)) != FLT_SYNTAX_TOK_STR) {
+          if(tb != FLT_SYNTAX_TOK_KEY || cf_strcmp(statement.args[1],"highlight") == 0) {
+            fprintf(stderr,"after onstring we got no span class name at line %d!\n",lineno);
+            return 1;
+          }
+        }
+        else statement.args[2] = str.content;
+
+        array_push(&block.statement,&statement);
+      }
+      /* }}} */
+      /* {{{ onstringlist <listen-name> <neuer-block> <span-klasse> */
+      else if(cf_strcmp(str.content,"onstringlist") == 0) {
+        str_cleanup(&str);
+
+        statement.type = FLT_SYNTAX_ONSTRINGLIST;
+        statement.args = fo_alloc(NULL,3,sizeof(u_char **),FO_ALLOC_MALLOC);
+        statement.len  = 3;
+
+        if((type = flt_syntax_next_token(line,&pos,&str)) != FLT_SYNTAX_TOK_STR) {
+          fprintf(stderr,"after onstringlist we got no list name at line %d!\n",lineno);
+          return 1;
+        }
+        statement.args[0] = str.content;
+        str_init(&str);
+
+        type = flt_syntax_next_token(line,&pos,&str);
+        if(type == FLT_SYNTAX_TOK_KEY) {
+          statement.args[1] = str.content;
+          statement.len = 2;
+          tb = type;
+        }
+        else if(type != FLT_SYNTAX_TOK_STR) {
+          fprintf(stderr,"after onstringlist we got no block name at line %d!\n",lineno);
+          return 1;
+        }
+        else {
+          statement.args[1] = str.content;
+          str_init(&str);
+        }
+
+        if((type = flt_syntax_next_token(line,&pos,&str)) != FLT_SYNTAX_TOK_STR) {
+          if(tb != FLT_SYNTAX_TOK_KEY || cf_strcmp(statement.args[1],"highlight") == 0) {
+            fprintf(stderr,"after onstringlist we got no span class name at line %d!\n",lineno);
+            return 1;
+          }
+        }
+        else {
+          statement.args[2] = str.content;
+          str_init(&str);
+        }
+
+        array_push(&block.statement,&statement);
+      }
+      /* }}} */
+      /* {{{ onregexp <regexp> <neuer-block> <span-klasse> */
+      else if(cf_strcmp(str.content,"onregexp") == 0) {
+        str_cleanup(&str);
+
+        if((type = flt_syntax_next_token(line,&pos,&str)) != FLT_SYNTAX_TOK_STR) {
+          fprintf(stderr,"after onregexp we got no regex at line %d!\n",lineno);
+          return 1;
+        }
+
+        if((preg.re = pcre_compile((const char *)str.content,0,(const char **)&error,&offset,NULL)) == NULL) {
+          fprintf(stderr,"regex error in pattern '%s': %s (Offset %d) at line %d\n",str.content,error,offset,lineno);
+          return 1;
+        }
+        if((preg.extra = pcre_study(preg.re,0,(const char **)&error)) == NULL) {
+          if(error) {
+            fprintf(stderr,"regex error in pattern '%s': %s at line %d\n",str.content,error,lineno);
+            return 1;
+          }
+        }
+
+        str_cleanup(&str);
+        array_init(&statement.pregs,sizeof(preg),NULL);
+        array_push(&statement.pregs,&preg);
+
+        statement.args = fo_alloc(NULL,2,sizeof(u_char **),FO_ALLOC_MALLOC);
+        statement.len = 2;
+
+        type = flt_syntax_next_token(line,&pos,&str);
+        if(type == FLT_SYNTAX_TOK_KEY) {
+          statement.args[0] = str.content;
+          statement.len = 2;
+          tb = type;
+        }
+        else if(type != FLT_SYNTAX_TOK_STR) {
+          fprintf(stderr,"after onregexp we got no block name at line %d!\n",lineno);
+          return 1;
+        }
+        else {
+          statement.args[0] = str.content;
+          str_init(&str);
+        }
+
+        if((type = flt_syntax_next_token(line,&pos,&str)) != FLT_SYNTAX_TOK_STR) {
+          if(tb != FLT_SYNTAX_TOK_KEY || cf_strcmp(statement.args[1],"highlight") == 0) {
+            fprintf(stderr,"after onregexp we got no span class name at line %d!\n",lineno);
+            return 1;
+          }
+        }
+        else {
+          statement.args[1] = str.content;
+          str_init(&str);
+        }
+      }
+      /* }}} */
+      /* {{{ onregexp_backref <pattern> <block> <backreference number> <span-klasse> */
+      else if(cf_strcmp(str.content,"onregexp_backref") == 0) {
+        str_cleanup(&str);
+
+        if((type = flt_syntax_next_token(line,&pos,&str)) != FLT_SYNTAX_TOK_STR) {
+          fprintf(stderr,"after onregex_backref we got no regex at line %d!\n",lineno);
+          return 1;
+        }
+
+        if((preg.re = pcre_compile((const char *)str.content,0,(const char **)&error,&offset,NULL)) == NULL) {
+          fprintf(stderr,"error in patter '%s': %s (Offset %d) at line %d\n",str.content,error,offset,lineno);
+          return 1;
+        }
+        if((preg.extra = pcre_study(preg.re,0,(const char **)&error)) == NULL) {
+          if(error) {
+            fprintf(stderr,"error in pattern '%s': %s at line %d\n",str.content,error,lineno);
+            return 1;
+          }
+        }
+
+        str_cleanup(&str);
+        array_init(&statement.pregs,sizeof(preg),NULL);
+        array_push(&statement.pregs,&preg);
+
+        statement.args = fo_alloc(NULL,3,sizeof(u_char **),FO_ALLOC_MALLOC);
+        statement.len = 3;
+
+        if((type = flt_syntax_next_token(line,&pos,&str)) != FLT_SYNTAX_TOK_STR) {
+          fprintf(stderr,"after onregexp_backref we got no block name at line %d!\n",lineno);
+          return 1;
+        }
+        statement.args[0] = str.content;
+        str_init(&str);
+
+        if((type = flt_syntax_next_token(line,&pos,&str)) != FLT_SYNTAX_TOK_KEY) {
+          fprintf(stderr,"after onregexp_after we got no reference number at line %d!\n",lineno);
+          return 1;
+        }
+        statement.args[1] = str.content;
+        str_init(&str);
+
+        if((type = flt_syntax_next_token(line,&pos,&str)) != FLT_SYNTAX_TOK_STR) {
+          fprintf(stderr,"after onregexp_after we got no span class name at line %d!\n",lineno);
+          return 1;
+        }
+        statement.args[2] = str.content;
+        str_init(&str);
+      }
+      /* }}} */
+      /* {{{ syntax onregexpafter <vorher-regexp> <regexp-zu-matchen> <neuer-block> <span-klasse> */
+      else if(cf_strcmp(str.content,"onregexpafter") == 0) {
+        str_cleanup(&str);
+
+        if((type = flt_syntax_next_token(line,&pos,&str)) != FLT_SYNTAX_TOK_STR) {
+          fprintf(stderr,"after onregexpafter we got no regex at line %d!\n",lineno);
+          return 1;
+        }
+        if((preg.re = pcre_compile((const char *)str.content,0,(const char **)&error,&offset,NULL)) == NULL) {
+          fprintf(stderr,"error in pattern '%s': %s (offset %d) at line %d\n",str.content,error,offset,lineno);
+          return 1;
+        }
+        if((preg.extra = pcre_study(preg.re,0,(const char **)&error)) == NULL) {
+          if(error) {
+            fprintf(stderr,"error in pattern '%s': %s at line %d\n",str.content,error,lineno);
+            return 1;
+          }
+        }
+
+        str_cleanup(&str);
+        array_init(&statement.pregs,sizeof(preg),NULL);
+        array_push(&statement.pregs,&preg);
+
+        if((type = flt_syntax_next_token(line,&pos,&str)) != FLT_SYNTAX_TOK_STR) {
+          fprintf(stderr,"after onregexpafter we got no regex at line %d!\n",lineno);
+          return 1;
+        }
+        if((preg.re = pcre_compile((const char *)str.content,0,(const char **)&error,&offset,NULL)) == NULL) {
+          fprintf(stderr,"error in pattern '%s': %s (offset %d) at line %d\n",str.content,error,offset,lineno);
+          return 1;
+        }
+        if((preg.extra = pcre_study(preg.re,0,(const char **)&error)) == NULL) {
+          if(error) {
+            fprintf(stderr,"error in pattern '%s': %s at line %d\n",str.content,error,lineno);
+            return 1;
+          }
+        }
+
+        str_cleanup(&str);
+        array_push(&statement.pregs,&preg);
+
+        statement.args = fo_alloc(NULL,2,sizeof(u_char **),FO_ALLOC_MALLOC);
+        statement.len = 2;
+
+        type = flt_syntax_next_token(line,&pos,&str);
+        if(type == FLT_SYNTAX_TOK_KEY) {
+          statement.args[0] = str.content;
+          statement.len = 2;
+          tb = type;
+        }
+        else if(type != FLT_SYNTAX_TOK_STR) {
+          fprintf(stderr,"after onregexpafter we got no block name at line %d!\n",lineno);
+          return 1;
+        }
+        else {
+          statement.args[0] = str.content;
+          str_init(&str);
+        }
+
+        if((type = flt_syntax_next_token(line,&pos,&str)) != FLT_SYNTAX_TOK_STR) {
+          if(tb != FLT_SYNTAX_TOK_KEY || cf_strcmp(statement.args[1],"highlight") == 0) {
+            fprintf(stderr,"after onregexpafter we got no span class name at line %d!\n",lineno);
+            return 1;
+          }
+        }
+        else {
+          statement.args[1] = str.content;
+          str_init(&str);
+        }
+      }
+      /* }}} */
+      else {
+        fprintf(stderr,"unknown token in block state at line %d!\n",lineno);
+        return 1;
+      }
     }
 
   }
 
   fclose(fd);
 
-  return 1;
+  return 0;
 }
+/* }}} */
 
 
 int flt_syntax_execute(t_configuration *fdc,t_configuration *fvc,const u_char *directive,const u_char **parameters,size_t plen,t_string *bco,t_string *bci,t_string *content,t_string *cite,const u_char *qchars,int sig) {
@@ -357,7 +698,7 @@ int flt_syntax_execute(t_configuration *fdc,t_configuration *fvc,const u_char *d
 int flt_syntax_init(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc) {
   cf_html_register_directive("code",flt_syntax_execute,CF_HTML_DIR_TYPE_ARG|CF_HTML_DIR_TYPE_BLOCK);
 
-  array_init(&flt_syntax_files,sizeof(flt_syntax_pattern_file),NULL);
+  array_init(&flt_syntax_files,sizeof(flt_syntax_pattern_file_t),NULL);
 
   return FLT_DECLINE;
 }

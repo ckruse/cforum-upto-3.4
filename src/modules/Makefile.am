@@ -163,5 +163,6 @@ flt_latex_la_LIBADD=-lssl
 pkglib_LTLIBRARIES+=flt_syntax.la
 flt_syntax_la_SOURCES=flt_syntax.c
 flt_syntax_la_LDFLAGS=-module -export-dynamic -avoid-version
+flt_syntax_la_LIBADD=$(PCRE_LIBS)
 
 # eof
