@@ -254,10 +254,10 @@ sub message_field {
       $txt  .= recode($fdcfg,$qchar);
       $qmode = 1;
     }
-    elsif(substr($posting,$i,6) eq $break) {
+    elsif(substr($posting,$i,6) eq '<br />') {
       $txt .= $break;
 
-      if($qmode && substr($posting,$i+6,1) ne "\177") {
+      if($qmode && substr($posting,$i+6,length $qchar) ne $qchar) {
         $txt .= '</span>';
         $qmode = 0;
       }
