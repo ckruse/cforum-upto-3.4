@@ -345,7 +345,7 @@ int main(int argc,char *argv[],char *env[]) {
   }
   else {
     printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
-    str_error_message("E_VOTE_INTERNAL",NULL);
+    cf_error_message("E_VOTE_INTERNAL",NULL);
   }
 
 

@@ -1,3 +1,15 @@
+2005-01-31 Christian Kruse <ckruse@wwwtech.de>
+	* src/modules/flt_directives.c: Moved to new directive API
+	* src/modules/flt_categorycheck.c: Small bugfixes of silly errors
+	* src/modules/flt_postingassistant.c: Small bugfix, used uninitialized
+		variable
+	* src/fo_vote.c: Small bugfix, used old function name
+	* src/validate.c: Small bugfix in http link checking
+	* src/htmllib.c: Invented new directive API, wrote first version of the BB
+		code parser
+	* src/htmllib.h: Interface of the new directive parser API
+	* docs/admin.tex: Began to write an installation tutorial
+
 2005-01-28 Christian Kruse <ckruse@wwwtech.de>
 	* src/modules/flt_categorycheck.c: Added plugin to check if a valid category
 		has been posted

@@ -201,7 +201,7 @@ void flt_directives_generate_uri(const u_char *uri,const u_char *title,t_string 
 /* }}} */
 
 /* {{{ flt_directives_execute */
-int flt_directives_execute(t_configuration *fdc,t_configuration *fvc,const u_char *directive,const u_char *parameter,t_string *content,t_string *cite,const u_char *qchars,int sig) {
+int flt_directives_execute(t_configuration *fdc,t_configuration *fvc,const u_char *directive,const u_char **parameters,size_t plen,t_string *bco,t_string *bci,t_string *content,t_string *cite,const u_char *qchars,int sig) {
   u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   size_t len = 0,i,len1 = 0;
   t_name_value *xhtml = cfg_get_first_value(fdc,forum_name,"XHTMLMode");
@@ -211,6 +211,7 @@ int flt_directives_execute(t_configuration *fdc,t_configuration *fvc,const u_cha
   t_flt_directives_ref_uri *uri;
   int go = 1;
   t_string tmpstr;
+  u_char *parameter = parameters[0];
 
   while(isspace(*parameter)) ++parameter;
 
@@ -221,9 +222,7 @@ int flt_directives_execute(t_configuration *fdc,t_configuration *fvc,const u_cha
         tmp1      = strndup(parameter,ptr-parameter);
         title_alt = htmlentities(ptr + 7,1);
       }
-      else {
-        tmp1 = (u_char *)parameter;
-      }
+      else tmp1 = (u_char *)parameter;
 
       if(is_valid_link(tmp1) != 0) {
         if(cf_strncmp(tmp1,"..",2) == 0 || *tmp1 == '/' || *tmp1 == '?') {
@@ -438,6 +437,16 @@ int flt_directives_execute(t_configuration *fdc,t_configuration *fvc,const u_cha
 }
 /* }}} */
 
+int flt_directives_init(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc) {
+  cf_html_register_directive("link",flt_directives_execute,CF_HTML_DIR_TYPE_ARG|CF_HTML_DIR_TYPE_INLINE);
+  cf_html_register_directive("pref",flt_directives_execute,CF_HTML_DIR_TYPE_ARG|CF_HTML_DIR_TYPE_INLINE);
+  cf_html_register_directive("ref",flt_directives_execute,CF_HTML_DIR_TYPE_ARG|CF_HTML_DIR_TYPE_INLINE);
+  cf_html_register_directive("image",flt_directives_execute,CF_HTML_DIR_TYPE_ARG|CF_HTML_DIR_TYPE_INLINE);
+  cf_html_register_directive("iframe",flt_directives_execute,CF_HTML_DIR_TYPE_ARG|CF_HTML_DIR_TYPE_INLINE);
+
+  return FLT_DECLINE;
+}
+
 /* {{{ directive handlers */
 int flt_directives_handle_iframe(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
   flt_directives_iframesaslink = cf_strcmp(args[0],"yes") == 0;
@@ -569,7 +578,7 @@ t_conf_opt flt_directives_config[] = {
 };
 
 t_handler_config flt_directives_handlers[] = {
-  { DIRECTIVE_FILTER,    flt_directives_execute },
+  { INIT_HANDLER, flt_directives_init },
   { 0, NULL }
 };
 

@@ -3,7 +3,6 @@
 \usepackage[T1]{fontenc}
 \usepackage[latin1]{inputenc}
 \usepackage{german}
-\usepackage[dvips,pdftex]{graphicx}
 \usepackage{ae,aecompl}
 
 \begin{document}
@@ -12,12 +11,95 @@
 
 \section{Einleitung}
 Die Administration des Classic Forums gestaltet sich nach anfänglicher Konfiguration als recht
-einfach, da es weitestgehend autonom arbeitet. In dieser Dokumentation sollen die
+einfach, da es weitestgehend autonom arbeitet. In dieser Dokumentation soll die Installation und die
 Konfigurations-Variablen durchgesprochen werden. Ausserdem wird auf einige Besonderheiten aufmerksam
 gemacht, die notwendig sind, um das Forum zu verwalten.
 
 Ich habe alle Konfigurations-Optionen beschrieben. Optionen, die nicht in der Beschreibung hier
 auftauchen, sind bisher wirkunglos und noch nicht implementiert.
+
+\section{Installations-Anleitung}
+
+\subsection{System-Vorraussetzungen}
+
+\begin{itemize}
+\item Linux oder ein anderes Unix
+\item Mindestens 15MB freier RAM
+\item Genügend freier Festplattenspeicher für die Forums-Daten
+\item Die GDOME-Bibliothek (erhältlich unter http://gdome2.cs.unibo.it/)
+\item Die \texttt{iconv}-Bibliothek, unter Linux in der Regel schon installiert, bei FreeBSD muss sie nachinstalliert werden
+\item Die \texttt{libwwww} (erhältlich unter http://www.w3.org/Library/)
+\item Die \texttt{libpcre} (erhältlich unter http://www.pcre.org/)
+\item POSIX Threads-Unterstützung (bei Linux seit Kernel 2.4 implementiert)
+\item Die BerkeleyDB, mindestens Version 3 (erhältlich unter http://www.sleepycat.com/products/db.shtml)
+\item Die \texttt{libidn} (erhältlich unter http://www.gnu.org/software/libidn/)
+\item Perl in Version 5.6 oder höher
+\end{itemize}
+
+\subsection{Übersetzen des Foren-Sourcecode}
+Zuerst sollten Sie sich den Sourcecode des Forums besorgen, den Sie auf http://wwwtech.de/ finden.
+Das letzte Stable-Release ist dort immer verlinkt. Wenn Sie den Sourcecode heruntergeladen haben,
+können Sie ihn mit diesem Befehl entpacken: \texttt{tar -xzf cforum-*.tgz}. Dann wechseln Sie in
+das richtige Verzeichnis: \texttt{cd cforum-*}. Nun müssen Sie das \texttt{configure}-Script laufen
+lassen. Dieses Script kennt verschiedene Parameter. Die wichtigsten werden hier aufgezählt und
+erklärt:
+
+\begin{description}
+\item[--bindir]{
+  Mit dieser Option wird das Verzeichnis angegeben, in welches die Foren-Programme installiert werden sollen. Hier
+  sollten Sie optimalerweise ein \texttt{cgi-bin}-Verzeichnis angeben.
+}
+\item[--libdir]{
+  Mit dieser Option geben Sie an, in welches Verzeichnis die Bibliotheken, Plugins und Templates des Classic Forum
+  installiert werden sollen.
+}
+\item[--enable-shared-mem]{
+  Mit dieser Option werden die Shared Memory-Funktionen des Classic Forum aktiviert. Näheres dazu im Abschnitt
+  \textbf{Shared Memory}, Seite \pageref{shm}.
+}
+\item[--with-message-dir]{Mit dieser Option wird angegeben, in welchem Verzeichnis die Nachrichten-Dateien liegen sollen.}
+\item[--with-data-dir]{Mit dieser Option wird angegeben, in welchem Verzeichnis diverse Daten-Dateien des Forums liegen sollen.}
+\item[--with-document-root]{Mit dieser Option wird angegeben, welches Verzeichnis das Basis-Verzeichnis der Foren-Installation sein soll.}
+\item[--with-archive-dir]{Mit dieser Option wird das Verzeichnis angegeben, in welchem archivierte Threads gespeichert werden sollen.}
+\item[--with-config-dir]{Mit dieser Option wird das Verzeichnis angegeben, in das die Konfigurations-Dateien des Forums installiert werden sollen.}
+\item[--with-perl-mods]{Mit dieser Option wird das Installations-Verzeichnis für die benötigten Perl-Module angegeben.}
+\item[--with-socket-path]{Mit dieser Option wird angegeben, welchen Namen der Kommunikations-Socket tragen soll, z. B. \texttt{/tmp/cforum}.}
+\item[--with-log-dir]{Mit dieser Option wird angegeben, wo die Log-Dateien des Classic Forum liegen sollen.}
+\item[--with-proto-file]{Mit dieser Option wird eine Protokoll-Datei angegeben, die protokolliert, wann welches Foren-Programm warum abgestürzt ist.}
+\end{description}
+
+Sie sollten für jede dieser Optionen einen Wert angeben. Ein Beispiel eines Aufrufs des \texttt{configure}-Scripts:
+
+\begin{verbatim}
+CFLAGS='-O3 -fexpensive-optimizations -fomit-frame-pointer -pipe' \
+./configure \
+  --libdir=/home/ckruse/www/cforum/cgi-shared/lib/ \
+  --bindir=/home/ckruse/www/cforum/cgi-bin/ \
+  --with-message-dir=/home/ckruse/www/cforum/cgi-shared/data/messages/ \
+  --with-archive-dir=/home/ckruse/www/cforum/cgi-shared/data/archive/ \
+  --with-config-dir=/home/ckruse/www/cforum/cgi-shared/config/ \
+  --with-perl-mods=/home/ckruse/www/cforum/cgi-shared/lib/ \
+  --with-log-dir=/home/ckruse/www/cforum/cgi-shared/logs/ \
+  --with-proto-file=/home/ckruse/www/cforum/cgi-shared/logs/proto.txt \
+  --with-data-dir=/home/ckruse/www/cforum/cgi-shared/data/ \
+  --enable-shared-mem
+\end{verbatim}
+
+Nun können Sie den Kompilations-Prozess mit dem Befehl \texttt{make} in Gang setzen. \texttt{make install} installiert
+nun die Dateien an den richtigen Platz. Jetzt müssen nur noch einige Perl-Module installiert werden, damit der
+Installations-Prozess abgeschlossen ist. Dazu wechseln Sie in das Verzeichnis \texttt{src/perl/CForum-Clientlib}. Hier
+geben Sie den Befehl \texttt{perl Makefile.PL LIB=/home/ckruse/www/cforum/cgi-shared/lib/} ein. Ersetzen Sie den Pfad
+hinter \texttt{LIB=} durch den auf ihrem System entsprechenden Pfad. Nun geben Sie \texttt{make \&\& make install} ein.
+Diesen Prozess wiederholen Sie für die Module in \texttt{src/perl/CForum-Template}, \texttt{src/perl/CForum-Validator}
+und \texttt{src/perl/CForum-Configparser}.
+
+Die Installation ist nun abgeschlossen. Weiter geht es mit der \textbf{Konfiguration des Classic Forums}, Seite \pageref{config}.
+
+\section{Konfiguration des Classic Forums}
+\label{config}
+
+Das Classic Forum wird über eine Environment-Variable und mehrere Konfigurations-Variablen konfiguriert.
+
 
 \section{Konfigurationsdatei \texttt{fo\_default.conf}}
 Diese Konfigurationsdatei ist die Haupt-Konfigurationsdatei des Classic Forums. Sie wird von allem
@@ -414,6 +496,8 @@ Gültige Werte&1. Argument: Kürzel, 2. Argument: URL zum Bild, 3. Argument: alt-T
 Beschreibung&Diese Direktive definiert die \texttt{msg}-Elemente.
 \end{tabular}
 
+\section{Shared Memory-Funktionalität}
+\label{shm}
 
 
 \end{document}

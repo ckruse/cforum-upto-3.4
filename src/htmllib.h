@@ -17,9 +17,15 @@
 
 #ifndef _CF_HTMLLIB_H
 
-typedef int (*t_directive_filter)(t_configuration *dc,t_configuration *vc,const u_char *directive,const u_char *parameter,t_string *cnt,t_string *cite,const u_char *qchars,int sig);
+typedef int (*t_directive_filter)(t_configuration *dc,t_configuration *vc,const u_char *directive,const u_char **parameters,size_t plen,t_string *bcnt,t_string *bcite,t_string *content,t_string *cite,const u_char *qchars,int sig);
 typedef int (*t_content_filter)(t_configuration *dc,t_configuration *vc,t_cl_thread *thr,t_string *content,t_string *cite,const u_char *qchars);
 
+#define CF_HTML_DIR_TYPE_NOARG  1
+#define CF_HTML_DIR_TYPE_ARG    2
+#define CF_HTML_DIR_TYPE_INLINE 4
+#define CF_HTML_DIR_TYPE_BLOCK  8
+
+int cf_html_register_directive(u_char *name,t_directive_filter filter,int type);
 void msg_to_html(t_cl_thread *thread,const u_char *msg,t_string *content,t_string *cite,u_char *quote_chars,int max_sig_lines,int show_sig);
 
 #endif

@@ -181,7 +181,7 @@ float flt_poas_check_for_signs(u_char *str,int strict,int musthave) {
 /* {{{ flt_poas_check_for_cases */
 int flt_poas_check_for_cases(u_char *str) {
   register u_char *ptr;
-  int has_big = 0,has_small,big_after = 0;
+  int has_big = 0,has_small = 0,big_after = 0;
 
   for(ptr=str;*ptr;++ptr) {
     if(isupper(*ptr)) {

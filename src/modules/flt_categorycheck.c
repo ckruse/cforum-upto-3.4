@@ -40,13 +40,13 @@
 /* }}} */
 
 int flt_categorycheck_execute(t_cf_hash *head,t_configuration *dc,t_configuration *pc,t_message *p,int sock,int mode) {
-  u_char *fname = cf_hash_get(GlobalValues,"FORUM_NAME",10);
+  u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   t_name_value *v = cfg_get_first_value(&fo_default_conf,forum_name,"Categories");
   size_t i;
 
-  if(!p->category) return FLT_DECLINE;
+  if(!p->category.len) return FLT_DECLINE;
   for(i=0;i<v->valnum;++i) {
-    if(cf_strcmp(p->category,v->values[i]) == 0) return FLT_OK;
+    if(cf_strcmp(p->category.content,v->values[i]) == 0) return FLT_OK;
   }
 
   strcpy(ErrorString,"E_posting_category");
