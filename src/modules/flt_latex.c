@@ -97,7 +97,14 @@ int flt_latex_create_cache(const u_char *cnt,const u_char *our_sum) {
   n = read(fds[0],&c,1);
 
   if((!isalpha(c) || c == 'F' || c == 'S' || c == 'E') && c != '+') {
-    fprintf(stderr,"textvc returned %c\n",c);
+    if(c == 'F') {
+      str_init(&mml);
+      while((n = read(fds[0],&c,1)) > 0) str_char_append(&mml,c);
+      fprintf(stderr,"texvc returned: F%s\n",mml.content);
+      str_cleanup(&mml);
+    }
+    else fprintf(stderr,"textvc returned %c\n",c);
+
     close(fds[0]);
     waitpid(pid,NULL,0);
     return -1;

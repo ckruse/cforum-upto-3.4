@@ -9,11 +9,11 @@ list "methods" = "GET,POST,PUT,DELETE,CONNECT,OPTIONS,TRACE,PATCH,PROPFIND,PROPP
 block "default"
   lineend stay
 
+  onregexp "^&lt;/?(Directory(Match)?|Files(Match)?|IfModule|IfDefine|Location(Match)?|VirtualHost|Proxy(Match)?|Limit)" "region" "apache-region"
+
   onstringlist "directives" highlight "apache-directive"
   onstringlist "options" highlight "apache-known-option"
   onstringlist "methods" highlight "apache-method"
-
-  onregexp "^&lt;/?(Directory(Match)?|Files(Match)?|IfModule|IfDefine|Location(Match)?|VirtualHost|Proxy(Match)?)" "region" "apache-region"
 
   onstring "#" "comment" "comment"
   onstring "&quot;" "string" "string"
@@ -26,6 +26,8 @@ end
 
 block "region"
   lineend stay
+
+  onstringlist "methods" highlight "apache-method"
 
   onstring "&quot;" "string" "string"
   onstring "'" "sqstring" "string"
