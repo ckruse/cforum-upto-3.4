@@ -622,7 +622,7 @@
     <section name="Filterung nach Datum">
       <directive name="ShowFrom" arguments="1">
         <argument paramname="showfrom" type="text" parse="date" encode="plain">
-          <validate>^(?:today|yesterday|lastVisit)$</validate>
+          <validate>^\d\d?\.\s*\d\d?\.\s*\d\d\d\d$</validate>
           <question>Ab welchem Datum möchten Sie die Forumshauptdatei angezeigt bekommen? (Freilassen, wenn der Filter deaktiviert werden soll)</question>
           <error>Ab welchem Datum möchten Sie die Forumshauptdatei angezeigt bekommen? Bitte geben Sie ein valides Datum an!</error>
         </argument>
@@ -630,7 +630,7 @@
 
       <directive name="ShowUntil" arguments="1">
         <argument paramname="showuntil" type="text" parse="date" encode="plain">
-          <validate>^(?:today|yesterday|lastVisit)$</validate>
+          <validate>^\d\d?\.\s*\d\d?\.\s*\d\d\d\d$</validate>
           <question>Bis zu welchem Datum möchten Sie die Forumshauptdatei angezeigt bekommen?</question>
           <error>Bis zu welchem Datum möchten Sie die Forumshauptdatei angezeigt bekommen? Bitte geben Sie ein valides Datum an!</error>
         </argument>

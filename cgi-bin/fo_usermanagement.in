@@ -283,7 +283,7 @@ if($UserName) {
 else {
 	# {{{ register user
 	if($action eq 'register') {
-		my ($user,$passwd,$passwd1,$email) = ($cgi->param('username'),$cgi->param('Password'),$cgi->param('Password1'),$cgi->param('email'));
+		my ($user,$passwd,$passwd1,$email) = ($cgi->param('UserName'),$cgi->param('Password'),$cgi->param('Password1'),$cgi->param('email'));
 
     if(my $err = validate_parameters($fo_default_conf,$fo_usermanagement_conf,$cgi)) {
       show_register_form(

@@ -9,7 +9,9 @@
 	* src/modules/flt_handle404.c, src/fo_threadlookup.c: Fixed a bug in URL
 		generation
 	* src/clientlib.[ch]: Added a new function (gen_tpl_name)
-	* cgi-shared/config/modules.de.xml: Added flt_scoring directives
+	* cgi-shared/config/modules.de.xml: Added flt_scoring directives, changed
+		validation of ShowFrom and ShowUntil
+	* cgi-bin/fo_usermanagement.in: Bugfix, it is UserName, not username
 
 2004-08-08 Christian Kruse <ckruse@wwwtech.de>
 	* src/modules/flt_scoring.lex: Fixed bug in applying score and config parsing
