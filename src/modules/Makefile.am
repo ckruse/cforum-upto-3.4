@@ -114,11 +114,11 @@ flt_extern_la_LDFLAGS=-module -export-dynamic -avoid-version
 #pkglib_LTLIBRARIES+=flt_handle404.la
 #flt_handle404_la_SOURCES=flt_handle404.c
 #flt_handle404_la_LDFLAGS=-module -export-dynamic -avoid-version
-#
-#pkglib_LTLIBRARIES+=flt_voting.la
-#flt_voting_la_SOURCES=flt_voting.c
-#flt_voting_la_LDFLAGS=-module -export-dynamic -avoid-version
-#
+
+pkglib_LTLIBRARIES+=flt_voting.la
+flt_voting_la_SOURCES=flt_voting.c
+flt_voting_la_LDFLAGS=-module -export-dynamic -avoid-version
+
 #pkglib_LTLIBRARIES+=flt_scoring.la
 #flt_scoring_la_SOURCES=flt_scoring.c
 #flt_scoring_la_LDFLAGS=-module -export-dynamic -avoid-version
@@ -136,7 +136,7 @@ flt_failsafe_la_LDFLAGS=-module -export-dynamic -avoid-version
 #flt_directives_la_SOURCES=flt_directives.c
 #flt_directives_la_LDFLAGS=-module -export-dynamic -avoid-version
 #flt_directives_la_LIBADD=../libcfvalidate.la
-#
+
 #pkglib_LTLIBRARIES+=flt_votingvariables.la
 #flt_votingvariables_la_SOURCES=flt_votingvariables.c
 #flt_votingvariables_la_LDFLAGS=-module -export-dynamic -avoid-version

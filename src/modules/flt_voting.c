@@ -29,17 +29,22 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
+struct sockaddr_un;
+
 #include "cf_pthread.h"
 
 #include "hashlib.h"
 #include "utils.h"
 #include "configparser.h"
 #include "readline.h"
-#include "fo_server.h"
+
+#include "serverutils.h"
 #include "serverlib.h"
+#include "fo_server.h"
 /* }}} */
 
-int flt_voting_handler(int sockfd,const u_char **tokens,int tnum,rline_t *tsd) {
+/* {{{ flt_voting_handler */
+int flt_voting_handler(int sockfd,t_forum *forum,const u_char **tokens,int tnum,rline_t *tsd) {
   t_cf_hash *infos;
   u_char *ln = NULL,*tmp,*ctid,*cmid;
   u_int64_t tid,mid;
@@ -96,7 +101,7 @@ int flt_voting_handler(int sockfd,const u_char **tokens,int tnum,rline_t *tsd) {
       cf_hash_destroy(infos);
 
       /* {{{ get thread and posting */
-      if((t = cf_get_thread(tid)) == NULL) {
+      if((t = cf_get_thread(forum,tid)) == NULL) {
         writen(sockfd,"404 Thread Not Found\n",21);
         return FLT_OK;
       }
@@ -112,7 +117,7 @@ int flt_voting_handler(int sockfd,const u_char **tokens,int tnum,rline_t *tsd) {
       CF_RW_UN(&t->lock);
 
       writen(sockfd,"200 Ok\n",7);
-      cf_generate_cache(NULL);
+      cf_generate_cache(forum);
     }
     else if(cf_strcmp(tokens[1],"BAD") == 0) {
       ctid = cf_hash_get(infos,"Tid",3);
@@ -124,13 +129,13 @@ int flt_voting_handler(int sockfd,const u_char **tokens,int tnum,rline_t *tsd) {
         return FLT_OK;
       }
 
-      tid = strtoull(ctid,NULL,10);
-      mid = strtoull(cmid,NULL,10);
+      tid = str_to_u_int64(ctid);
+      mid = str_to_u_int64(cmid);
 
       cf_hash_destroy(infos);
 
       /* {{{ get thread and posting */
-      if((t = cf_get_thread(tid)) == NULL) {
+      if((t = cf_get_thread(forum,tid)) == NULL) {
         writen(sockfd,"404 Thread Not Found\n",21);
         return FLT_OK;
       }
@@ -146,7 +151,7 @@ int flt_voting_handler(int sockfd,const u_char **tokens,int tnum,rline_t *tsd) {
       CF_RW_UN(&t->lock);
 
       writen(sockfd,"200 Ok\n",7);
-      cf_generate_cache(NULL);
+      cf_generate_cache(forum);
     }
     else {
       cf_hash_destroy(infos);
@@ -159,6 +164,7 @@ int flt_voting_handler(int sockfd,const u_char **tokens,int tnum,rline_t *tsd) {
   cf_hash_destroy(infos);
   return FLT_OK;
 }
+/* }}} */
 
 int flt_voting_register_handlers(int sock) {
   cf_register_protocol_handler("VOTE",flt_voting_handler);
@@ -170,7 +176,7 @@ t_conf_opt flt_voting_config[] = {
 };
 
 t_handler_config flt_voting_handlers[] = {
-  { INIT_HANDLER,            flt_voting_register_handlers   },
+  { INIT_HANDLER, flt_voting_register_handlers },
   { 0, NULL }
 };
 
