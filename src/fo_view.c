@@ -298,6 +298,7 @@ void show_threadlist(void *shm_ptr,t_cf_hash *head)
                *fo_thread_tpl = cfg_get_first_value(&fo_view_conf,forum_name,"TemplateForumThread"),
                *cs            = cfg_get_first_value(&fo_default_conf,forum_name,"ExternCharset"),
                *fbase         = NULL,
+               *pbase         = NULL,
                *time_fmt      = cfg_get_first_value(&fo_view_conf,forum_name,"DateFormatLoadTime"),
                *time_lc       = cfg_get_first_value(&fo_default_conf,forum_name,"DateLocale");
 
@@ -379,6 +380,7 @@ void show_threadlist(void *shm_ptr,t_cf_hash *head)
   else {
     /* {{{ more initialization */
     fbase    = cfg_get_first_value(&fo_default_conf,forum_name,UserName ? "UBaseURL" : "BaseURL");
+    pbase    = cfg_get_first_value(&fo_default_conf,forum_name,UserName ? "UPostScript" : "PostScript");
 
     if(cf_tpl_init(&tpl_begin,fo_begin_tplname) != 0) {
       printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
@@ -387,6 +389,7 @@ void show_threadlist(void *shm_ptr,t_cf_hash *head)
       return;
     }
     cf_set_variable(&tpl_begin,cs,"forumbase",fbase->values[0],strlen(fbase->values[0]),1);
+    cf_set_variable(&tpl_begin,cs,"postscript",pbase->values[0],strlen(pbase->values[0]),1);
 
     if(cf_tpl_init(&tpl_end,fo_end_tplname) != 0) {
       printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
