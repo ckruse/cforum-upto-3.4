@@ -68,8 +68,8 @@ void display_finishing_screen(t_message *p) {
   t_name_value *qc = cfg_get_first_value(&fo_post_conf,forum_name,"QuotingChars");
   t_name_value *ps = cfg_get_first_value(&fo_default_conf,forum_name,uname ? "UPostScript" : "PostScript");
   t_name_value *fb = cfg_get_first_value(&fo_default_conf,forum_name,uname ? "UBaseURL" : "BaseURL");
-  t_name_value *df = cfg_get_first_value(&fo_post_conf,fn,"DateFormat");
-  t_name_value *lc = cfg_get_first_value(&fo_default_conf,fn,"DateLocale");
+  t_name_value *df = cfg_get_first_value(&fo_post_conf,forum_name,"DateFormat");
+  t_name_value *lc = cfg_get_first_value(&fo_default_conf,forum_name,"DateLocale");
 
   size_t len;
   u_char *val;
