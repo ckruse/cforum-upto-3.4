@@ -56,6 +56,8 @@ struct {
   int mark_all_visited;
 } Cfg = { 0, NULL, NULL, NULL, NULL, 0, 0, 0 };
 
+static u_char *flt_visited_fn = NULL;
+
 /* {{{ module api function, checks if message has been visited */
 void *flt_visited_is_visited(void *vmid) {
   DBT key,data;
@@ -382,6 +384,9 @@ int flt_visited_set_link(t_cf_hash *head,t_configuration *dc,t_configuration *vc
 
 /* {{{ flt_visit_handle_command */
 int flt_visit_handle_command(t_configfile *cf,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
+  if(flt_visited_fn == NULL) flt_visited_fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
+  if(!context || cf_strcmp(flt_visited_fn,context) != 0) return 0;
+
   if(cf_strcmp(opt->name,"HighlightVisitedPostings") == 0) {
     Cfg.HighlightVisitedPostings = !cf_strcmp(args[0],"yes");
   }
@@ -424,11 +429,11 @@ void flt_visited_cleanup(void) {
 /* }}} */
 
 t_conf_opt flt_visited_config[] = {
-  { "HighlightVisitedPostings", flt_visit_handle_command, CFG_OPT_USER,                NULL },
-  { "VisitedPostingsColors",    flt_visit_handle_command, CFG_OPT_USER,                NULL },
-  { "VisitedFile",              flt_visit_handle_command, CFG_OPT_USER|CFG_OPT_NEEDED, NULL },
-  { "MarkOwnPostsVisited",      flt_visit_handle_command, CFG_OPT_USER,                NULL },
-  { "MarkThreadResponse204",    flt_visit_handle_command, CFG_OPT_USER|CFG_OPT_CONFIG, NULL },
+  { "HighlightVisitedPostings", flt_visit_handle_command, CFG_OPT_USER|CFG_OPT_LOCAL,                NULL },
+  { "VisitedPostingsColors",    flt_visit_handle_command, CFG_OPT_USER|CFG_OPT_LOCAL,                NULL },
+  { "VisitedFile",              flt_visit_handle_command, CFG_OPT_USER|CFG_OPT_LOCAL|CFG_OPT_NEEDED, NULL },
+  { "MarkOwnPostsVisited",      flt_visit_handle_command, CFG_OPT_USER|CFG_OPT_LOCAL,                NULL },
+  { "MarkThreadResponse204",    flt_visit_handle_command, CFG_OPT_USER|CFG_OPT_CONFIG|CFG_OPT_LOCAL, NULL },
   { NULL, NULL, 0, NULL }
 };
 

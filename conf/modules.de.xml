@@ -733,6 +733,18 @@
       </directive>
 
       <directive name="LiveFilterOverwrite" arguments="1">
+        <argument paramname="livefilteroverwrite" type="radio" encode="plain">
+          <validate>^(yes|no)$</validate>
+          <question>Soll der Live-Filter Filter wie die Blacklist oder ausgeblendete Threads überschreiben?</question>
+          <error>Bitte geben Sie hier &quot;ja&quot; oder &quot;nein&quot; an!</error>
+          <formvalues>
+            <value val="yes">Ja</value>
+            <value val="no" default="yes">Nein</value>
+          </formvalues>
+        </argument>
+      </directive>
+
+      <directive name="LiveFilterOverwrite" arguments="1">
 	<argument paramname="livefilteroverwrite" type="radio" encode="plain">
 	  <validate>^(yes|no)$</validate>
 	  <question>Möchten Sie, dass der Live-Filter bereits ausgeblendete Postings (z. B. durch die BlackList) wieder einblendent?</question>

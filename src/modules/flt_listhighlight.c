@@ -49,6 +49,8 @@ struct {
   u_char *VIPColorB;
 } Cfg = { 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL };
 
+static u_char *flt_lh_fn = NULL;
+
 /* {{{ flt_lh_parse_list */
 void flt_lh_parse_list(u_char *vips,t_cf_hash *hash) {
   if(vips) {
@@ -187,6 +189,9 @@ int flt_lh_handle_command(t_configfile *cf,t_conf_opt *opt,const u_char *context
   int len;
   u_char *list;
 
+  if(flt_lh_fn == NULL) flt_lh_fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
+  if(!context || cf_strcmp(flt_lh_fn,context) != 0) return 0;
+
   if(cf_strcmp(opt->name,"HighlightOwnPostings") == 0) Cfg.HighlightOwnPostings = !cf_strcmp(args[0],"yes");
   else if(cf_strcmp(opt->name,"OwnPostingsColors") == 0) {
     if(Cfg.OwnPostingsColorF) free(Cfg.OwnPostingsColorF);
@@ -234,14 +239,14 @@ int flt_lh_handle_command(t_configfile *cf,t_conf_opt *opt,const u_char *context
 /* }}} */
 
 t_conf_opt flt_listhighlight_config[] = {
-  { "HighlightOwnPostings",    flt_lh_handle_command, CFG_OPT_USER,                NULL },
-  { "OwnPostingsColors",       flt_lh_handle_command, CFG_OPT_CONFIG|CFG_OPT_USER, NULL },
-  { "WhiteList",               flt_lh_handle_command, CFG_OPT_CONFIG|CFG_OPT_USER, NULL },
-  { "WhiteListColors",         flt_lh_handle_command, CFG_OPT_CONFIG|CFG_OPT_USER, NULL },
-  { "HighlightCategories",     flt_lh_handle_command, CFG_OPT_CONFIG|CFG_OPT_USER, NULL },
-  { "CategoryHighlightColors", flt_lh_handle_command, CFG_OPT_CONFIG|CFG_OPT_USER, NULL },
-  { "VIPList",                 flt_lh_handle_command, CFG_OPT_CONFIG,              NULL },
-  { "VIPColors",               flt_lh_handle_command, CFG_OPT_CONFIG,              NULL },
+  { "HighlightOwnPostings",    flt_lh_handle_command, CFG_OPT_USER|CFG_OPT_LOCAL,                NULL },
+  { "OwnPostingsColors",       flt_lh_handle_command, CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
+  { "WhiteList",               flt_lh_handle_command, CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
+  { "WhiteListColors",         flt_lh_handle_command, CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
+  { "HighlightCategories",     flt_lh_handle_command, CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
+  { "CategoryHighlightColors", flt_lh_handle_command, CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
+  { "VIPList",                 flt_lh_handle_command, CFG_OPT_CONFIG|CFG_OPT_LOCAL,              NULL },
+  { "VIPColors",               flt_lh_handle_command, CFG_OPT_CONFIG|CFG_OPT_LOCAL,              NULL },
   { NULL, NULL, 0, NULL }
 };
 

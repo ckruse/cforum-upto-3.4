@@ -44,6 +44,8 @@ struct {
   u_char *QuoteColorB;
 } Cfg = { NULL, NULL, NULL, 0, NULL, NULL, NULL };
 
+static u_char *flt_basic_fn = NULL;
+
 /* {{{ flt_basic_execute */
 int flt_basic_execute(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cf_template *begin,t_cf_template *end) {
   u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
@@ -144,6 +146,9 @@ int flt_basic_set_target(t_cf_hash *head,t_configuration *dc,t_configuration *vc
 
 /* {{{ flt_basic_handle_command */
 int flt_basic_handle_command(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
+  if(flt_basic_fn == NULL) flt_basic_fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
+  if(!context || cf_strcmp(flt_basic_fn,context) != 0) return 0;
+
   if(cf_strcmp(opt->name,"FontColor") == 0) {
     if(Cfg.FontColor) free(Cfg.FontColor);
     Cfg.FontColor = strdup(args[0]);
@@ -186,12 +191,12 @@ void flt_basic_cleanup(void) {
 /* }}} */
 
 t_conf_opt flt_basic_config[] = {
-  { "FontColor",  flt_basic_handle_command, CFG_OPT_USER|CFG_OPT_CONFIG, NULL },
-  { "FontSize",   flt_basic_handle_command, CFG_OPT_USER|CFG_OPT_CONFIG, NULL },
-  { "FontFamily", flt_basic_handle_command, CFG_OPT_USER|CFG_OPT_CONFIG, NULL },
-  { "AutoReload", flt_basic_handle_command, CFG_OPT_USER|CFG_OPT_CONFIG, NULL },
-  { "BaseTarget", flt_basic_handle_command, CFG_OPT_USER|CFG_OPT_CONFIG, NULL },
-  { "QuoteColor", flt_basic_handle_command, CFG_OPT_USER|CFG_OPT_CONFIG, NULL },
+  { "FontColor",  flt_basic_handle_command, CFG_OPT_USER|CFG_OPT_CONFIG|CFG_OPT_LOCAL, NULL },
+  { "FontSize",   flt_basic_handle_command, CFG_OPT_USER|CFG_OPT_CONFIG|CFG_OPT_LOCAL, NULL },
+  { "FontFamily", flt_basic_handle_command, CFG_OPT_USER|CFG_OPT_CONFIG|CFG_OPT_LOCAL, NULL },
+  { "AutoReload", flt_basic_handle_command, CFG_OPT_USER|CFG_OPT_CONFIG|CFG_OPT_LOCAL, NULL },
+  { "BaseTarget", flt_basic_handle_command, CFG_OPT_USER|CFG_OPT_CONFIG|CFG_OPT_LOCAL, NULL },
+  { "QuoteColor", flt_basic_handle_command, CFG_OPT_USER|CFG_OPT_CONFIG|CFG_OPT_LOCAL, NULL },
   { NULL, NULL, 0, NULL }
 };
 

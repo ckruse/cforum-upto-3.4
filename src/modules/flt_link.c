@@ -40,6 +40,8 @@
 static int SetLinks    = 0;
 static int NoVisited   = 0;
 
+static u_char *flt_link_fn = NULL;
+
 /* {{{ flt_link_get_previous */
 t_message *flt_link_get_previous(t_message *msg) {
   t_mod_api is_visited;
@@ -153,6 +155,9 @@ int flt_link_set_links_post(t_cf_hash *head,t_configuration *dc,t_configuration 
 
 /* {{{ flt_link_handle_conf */
 int flt_link_handle_conf(t_configfile *cfg,t_conf_opt *entry,const u_char *context,u_char **args,size_t argnum) {
+  if(flt_link_fn == NULL) flt_link_fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
+  if(!context || cf_strcmp(flt_link_fn,context) != 0) return 0;
+
   if(argnum == 1) {
     if(*entry->name == 'S')                              SetLinks    = cf_strcmp(args[0],"yes") == 0;
     else if(cf_strcmp(entry->name,"LinkNoVisited") == 0) NoVisited   = cf_strcmp(args[0],"yes") == 0;

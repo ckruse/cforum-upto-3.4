@@ -45,6 +45,8 @@ struct {
   int handle_last_modified_since;
 } http_config = { 0, 0, 0, 0 };
 
+static u_char *flt_http_fn = NULL;
+
 /* {{{ flt_http_gmt_diff */
 time_t flt_http_gmt_diff(void) {
   struct timeval now;
@@ -279,6 +281,9 @@ int flt_http_execute(t_cf_hash *head,t_configuration *dc,t_configuration *vc,voi
 /* {{{ flt_http_handle_command */
 int flt_http_handle_command(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
   u_char *ptr = NULL;
+
+  if(!flt_http_fn) flt_http_fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
+  if(!context || cf_strcmp(flt_http_fn,context) != 0) return 0;
 
   if(argnum == 1) {
     if(cf_strcmp(opt->name,"SendLastModified") == 0) {

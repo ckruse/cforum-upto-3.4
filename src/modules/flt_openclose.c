@@ -45,6 +45,8 @@ static int ThreadsOpenByDefault = -1;
 static int UseJavaScript = 1;
 static int OpenThreadIfNew = 0;
 
+static u_char *flt_oc_fn = NULL;
+
 /* {{{ flt_oc_parse_query_string */
 void flt_oc_parse_query_string(t_cf_hash *head,int cl) {
   u_char *val = cf_cgi_get(head,"o");
@@ -271,6 +273,9 @@ int flt_oc_set_js(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cf_t
 
 /* {{{ flt_oc_get_conf */
 int flt_oc_get_conf(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
+  if(flt_oc_fn == NULL) flt_oc_fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
+  if(!context || cf_strcmp(flt_oc_fn,context) != 0) return 0;
+
   if(*opt->name == 'T')   ThreadsOpenByDefault = cf_strcmp(args[0],"yes") == 0;
   else {
     if(*opt->name == 'O') OpenThreadIfNew = cf_strcmp(args[0],"yes") == 0;

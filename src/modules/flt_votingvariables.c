@@ -43,6 +43,8 @@ static struct {
   int show_votes;
 } flt_vv_Config = { 0, 0 };
 
+static u_char *flt_vv_fn = NULL;
+
 /* {{{ flt_votingvariables_execute_filter */
 int flt_votingvariables_execute_filter(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cl_thread *thread,t_cf_template *tpl) {
   u_char *UserName = cf_hash_get(GlobalValues,"UserName",8),*tmp,buff[512];
@@ -82,6 +84,9 @@ int flt_votingvariables_execute_filter(t_cf_hash *head,t_configuration *dc,t_con
 
 /* {{{ flt_votingvariables_handle */
 int flt_votingvariables_handle(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
+  if(!flt_vv_fn) flt_vv_fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
+  if(!context || cf_strcmp(flt_vv_fn,context) != 0) return 0;
+
   if(cf_strcmp(opt->name,"VotingActivate") == 0) flt_vv_Config.activate = cf_strcmp(args[0],"yes") == 0;
   else if(cf_strcmp(opt->name,"VotesShow") == 0) flt_vv_Config.show_votes = cf_strcmp(args[0],"yes") == 0;
 
@@ -90,8 +95,8 @@ int flt_votingvariables_handle(t_configfile *cfile,t_conf_opt *opt,const u_char 
 /* }}} */
 
 t_conf_opt flt_votingvariables_config[] = {
-  { "VotingActivate", flt_votingvariables_handle, CFG_OPT_CONFIG, NULL },
-  { "VotesShow",      flt_votingvariables_handle, CFG_OPT_CONFIG, NULL },
+  { "VotingActivate", flt_votingvariables_handle, CFG_OPT_CONFIG|CFG_OPT_LOCAL, NULL },
+  { "VotesShow",      flt_votingvariables_handle, CFG_OPT_CONFIG|CFG_OPT_LOCAL, NULL },
   { NULL, NULL, 0, NULL }
 };
 

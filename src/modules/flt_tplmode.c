@@ -36,6 +36,7 @@
 /* }}} */
 
 static u_char *TPLMode = NULL;
+static u_char *flt_tplmode_fn = NULL;
 
 /* {{{ flt_tplmode_execute */
 int flt_tplmode_execute(t_cf_hash *head,t_configuration *dc,t_configuration *vc) {
@@ -68,6 +69,9 @@ int flt_tplmode_execute(t_cf_hash *head,t_configuration *dc,t_configuration *vc)
 
 /* {{{ flt_tplmode_handle */
 int flt_tplmode_handle(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
+  if(!flt_tplmode_fn) flt_tplmode_fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
+  if(!context || cf_strcmp(flt_tplmode_fn,context) != 0) return 0;
+
   if(TPLMode) free(TPLMode);
   TPLMode = strdup(args[0]);
 
@@ -82,7 +86,7 @@ void flt_tplmode_finish(void) {
 /* }}} */
 
 t_conf_opt flt_tplmode_config[] = {
-  { "TPLMode",        flt_tplmode_handle, CFG_OPT_USER, NULL },
+  { "TPLMode",        flt_tplmode_handle, CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
   { NULL, NULL, 0, NULL }
 };
 

@@ -38,7 +38,6 @@
 #include "htmllib.h"
 /* }}} */
 
-/* {{{ struct Cfg */
 struct {
   u_char *Hi;
   u_char *Bye;
@@ -48,7 +47,8 @@ struct {
   u_char *ActiveColorF;
   u_char *ActiveColorB;
 } flt_posting_cfg = { NULL, NULL, NULL, NULL, NULL, NULL, NULL };
-/* }}} */
+
+static u_char *flt_posting_fn = NULL;
 
 /* {{{ flt_posting_replace_placeholders */
 void flt_posting_replace_placeholders(const u_char *str,t_string *appender,t_cl_thread *thread,t_name_value *cs) {
@@ -434,7 +434,12 @@ int flt_posting_pre_cnt(t_configuration *dc,t_configuration *vc,t_cl_thread *thr
 
 /* {{{ flt_posting_handle_greet */
 int flt_posting_handle_greet(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
-  u_char *tmp = strdup(args[0]);
+  u_char *tmp;
+
+  if(flt_posting_fn == NULL) flt_posting_fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
+  if(!context || cf_strcmp(flt_posting_fn,context) != 0) return 0;
+
+  tmp = strdup(args[0]);
 
   if(cf_strcmp(opt->name,"Hi") == 0) {
     if(flt_posting_cfg.Hi) free(flt_posting_cfg.Hi);
@@ -455,6 +460,9 @@ int flt_posting_handle_greet(t_configfile *cfile,t_conf_opt *opt,const u_char *c
 
 /* {{{ flt_posting_handle_box */
 int flt_posting_handle_box(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
+  if(flt_posting_fn == NULL) flt_posting_fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
+  if(!context || cf_strcmp(flt_posting_fn,context) != 0) return 0;
+
   if(flt_posting_cfg.TWidth) free(flt_posting_cfg.TWidth);
   if(flt_posting_cfg.THeight) free(flt_posting_cfg.THeight);
 
@@ -467,6 +475,9 @@ int flt_posting_handle_box(t_configfile *cfile,t_conf_opt *opt,const u_char *con
 
 /* {{{ flt_posting_handle_actpcol */
 int flt_posting_handle_actpcol(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
+  if(flt_posting_fn == NULL) flt_posting_fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
+  if(!context || cf_strcmp(flt_posting_fn,context) != 0) return 0;
+
   if(flt_posting_cfg.ActiveColorF) free(flt_posting_cfg.ActiveColorF);
   if(flt_posting_cfg.ActiveColorB) free(flt_posting_cfg.ActiveColorB);
 

@@ -54,6 +54,8 @@ struct {
   int resp_204;
 } Cfg = { NULL, 0, 0, 0, 0, NULL, 0, NULL, 1, 0 };
 
+static u_char *flt_deleted_fname = NULL;
+
 /* {{{ flt_deleted_execute */
 int flt_deleted_execute(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cl_thread *thread,int mode) {
   t_name_value *url;
@@ -289,6 +291,8 @@ int flt_del_view_init_handler(t_cf_hash *head,t_configuration *dc,t_configuratio
 /* {{{ flt_del_handle_command */
 int flt_del_handle_command(t_configfile *cf,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
   long i;
+  if(flt_deleted_fname == NULL) flt_deleted_fname = cf_hash_get(GlobalValues,"FORUM_NAME",10);
+  if(!context || cf_strcmp(flt_deleted_fname,context) != 0) return 0;
 
   if(cf_strcmp(opt->name,"BlackList") == 0) {
     if(Cfg.BLlen) {
@@ -393,13 +397,13 @@ time_t flt_deleted_lm(t_cf_hash *head,t_configuration *dc,t_configuration *vc,vo
 /* }}} */
 
 t_conf_opt flt_deleted_config[] = {
-  { "BlackList",               flt_del_handle_command, CFG_OPT_CONFIG|CFG_OPT_USER, NULL },
-  { "ShowBlacklistFollowups",  flt_del_handle_command, CFG_OPT_CONFIG|CFG_OPT_USER, NULL },
-  { "ShowFrom",                flt_del_handle_command, CFG_OPT_CONFIG|CFG_OPT_USER, NULL },
-  { "ShowUntil",               flt_del_handle_command, CFG_OPT_CONFIG|CFG_OPT_USER, NULL },
-  { "DeletedFile",             flt_del_handle_command, CFG_OPT_USER|CFG_OPT_NEEDED, NULL },
-  { "DeletedUseCheckboxes",    flt_del_handle_command, CFG_OPT_CONFIG|CFG_OPT_USER, NULL },
-  { "DelThreadResponse204",    flt_del_handle_command, CFG_OPT_CONFIG|CFG_OPT_USER, NULL },
+  { "BlackList",               flt_del_handle_command, CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
+  { "ShowBlacklistFollowups",  flt_del_handle_command, CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
+  { "ShowFrom",                flt_del_handle_command, CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
+  { "ShowUntil",               flt_del_handle_command, CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
+  { "DeletedFile",             flt_del_handle_command, CFG_OPT_USER|CFG_OPT_NEEDED|CFG_OPT_LOCAL, NULL },
+  { "DeletedUseCheckboxes",    flt_del_handle_command, CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
+  { "DelThreadResponse204",    flt_del_handle_command, CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
   { NULL, NULL, 0, NULL }
 };
 

@@ -62,6 +62,8 @@ static u_char  flt_scoring_max_col[3]  = { 255, 0, 0 };
 static u_char  flt_scoring_norm_col[3] = { 127, 0, 0 };
 static int     flt_scoring_ign         = 0;
 
+static u_char *flt_scoring_fn = NULL;
+
 #define FLT_SCORING_SUBJECT 1
 #define FLT_SCORING_AUTHOR  2
 #define FLT_SCORING_CAT     4
@@ -218,6 +220,9 @@ int flt_scoring_parse(t_configfile *cf,t_conf_opt *opt,const u_char *context,u_c
   int err_offset,ret;
   YY_BUFFER_STATE yybuff;
 
+  if(flt_scoring_fn == NULL) flt_scoring_fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
+  if(!context || cf_strcmp(flt_scoring_fn,context) != 0) return 0;
+
   array_init(&flt_scoring_ary,sizeof(filter),NULL);
   yybuff = yy_scan_string(args[0]);
 
@@ -258,11 +263,17 @@ int flt_scoring_parse(t_configfile *cf,t_conf_opt *opt,const u_char *context,u_c
 
 /* {{{ flt_scoring_cols */
 int flt_scoring_cols(t_configfile *cf,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
-  u_char *arg = args[0];
-  size_t len = strlen(args[0]);
+  u_char *arg;
+  size_t len;
   u_char *ptr, *col;
   u_char tmp[3];
   int i;
+
+  if(flt_scoring_fn == NULL) flt_scoring_fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
+  if(!context || cf_strcmp(flt_scoring_fn,context) != 0) return 0;
+
+  arg = args[0];
+  len = strlen(args[0]);
 
   if(cf_strcmp(opt->name,"ScoringMinColor") == 0) col = flt_scoring_min_col;
   else if(cf_strcmp(opt->name,"ScoringNormalColor") == 0) col = flt_scoring_norm_col;
@@ -300,6 +311,9 @@ int flt_scoring_cols(t_configfile *cf,t_conf_opt *opt,const u_char *context,u_ch
 
 /* {{{ flt_scoring_hide */
 int flt_scoring_hide(t_configfile *cf,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
+  if(flt_scoring_fn == NULL) flt_scoring_fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
+  if(!context || cf_strcmp(flt_scoring_fn,context) != 0) return 0;
+
   flt_scoring_hide_score = atoi(args[0]);
   flt_scoring_hide_score_set = 1;
   return 0;
@@ -308,6 +322,9 @@ int flt_scoring_hide(t_configfile *cf,t_conf_opt *opt,const u_char *context,u_ch
 
 /* {{{ flt_scoring_vals */
 int flt_scoring_vals(t_configfile *cf,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
+  if(flt_scoring_fn == NULL) flt_scoring_fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
+  if(!context || cf_strcmp(flt_scoring_fn,context) != 0) return 0;
+
   if(cf_strcmp(opt->name,"ScoringMaxValue") == 0) flt_scoring_max_val = strtol(args[0],NULL,10);
   else flt_scoring_min_val = strtol(args[0],NULL,10);
 
@@ -317,6 +334,9 @@ int flt_scoring_vals(t_configfile *cf,t_conf_opt *opt,const u_char *context,u_ch
 
 /* {{{ flt_scoring_ignore */
 int flt_scoring_ignore(t_configfile *cf,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
+  if(flt_scoring_fn == NULL) flt_scoring_fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
+  if(!context || cf_strcmp(flt_scoring_fn,context) != 0) return 0;
+
   flt_scoring_ign = cf_strcmp(args[0],"yes") == 0;
   return 0;
 }

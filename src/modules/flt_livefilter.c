@@ -78,6 +78,8 @@ static t_string flt_lf_str = { 0, 0, NULL };
 
 static int flt_lf_success = 1;
 
+static u_char *flt_lf_fn = NULL;
+
 /* {{{ flt_lf_case_strstr */
 u_char *flt_lf_case_strstr(const u_char *haystack,const u_char *needle) {
   size_t len1 = strlen(haystack);
@@ -608,6 +610,9 @@ int flt_lf_filter(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_mess
 
 /* {{{ flt_lf_handle_command */
 int flt_lf_handle_command(t_configfile *cf,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
+  if(!flt_lf_fn) flt_lf_fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
+  if(!context || cf_strcmp(flt_lf_fn,context) != 0) return 0;
+
   if(cf_strcmp(opt->name,"ActivateLiveFilter") == 0) flt_lf_active = cf_strcmp(args[0],"yes") == 0;
   else flt_lf_overwrite = cf_strcmp(args[0],"yes") == 0;
 
@@ -622,8 +627,8 @@ void flt_lf_cleanup(void) {
 /* }}} */
 
 t_conf_opt config[] = {
-  { "ActivateLiveFilter",  flt_lf_handle_command, CFG_OPT_CONFIG|CFG_OPT_USER, NULL },
-  { "LiveFilterOverwrite", flt_lf_handle_command, CFG_OPT_CONFIG|CFG_OPT_USER, NULL },
+  { "ActivateLiveFilter",  flt_lf_handle_command, CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
+  { "LiveFilterOverwrite", flt_lf_handle_command, CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
   { NULL, NULL, 0, NULL }
 };
 

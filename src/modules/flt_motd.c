@@ -40,6 +40,8 @@
 static int MOTD_enable = 1;
 static u_char *MOTD_File = NULL;
 
+static u_char *flt_motd_fn = NULL;
+
 /* {{{ flt_motd_execute */
 int flt_motd_execute(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cf_template *begin,t_cf_template *end) {
   FILE *fd;
@@ -68,6 +70,9 @@ int flt_motd_execute(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_c
 
 /* {{{ flt_motd_handle */
 int flt_motd_handle(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
+  if(flt_motd_fn == NULL) flt_motd_fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
+  if(!context || cf_strcmp(flt_motd_fn,context) != 0) return 0;
+
   if(cf_strcmp(opt->name,"MotdFile") == 0) MOTD_File = strdup(args[0]);
   else MOTD_enable = cf_strcmp(args[0],"yes") == 0;
 

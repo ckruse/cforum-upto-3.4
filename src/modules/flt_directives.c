@@ -68,6 +68,8 @@ static t_array flt_directives_ref_uris = { 0, 0, 0, NULL, NULL };
 static t_array flt_directives_lt_toks  = { 0, 0, 0, NULL, NULL };
 static t_array flt_directives_puris = { 0, 0, 0, NULL, NULL };
 
+static u_char *flt_directives_fname = NULL;
+
 /* {{{ flt_directives_is_valid_pref */
 int flt_directives_is_valid_pref(const u_char *parameter,u_char **tmp,u_char **tmp1) {
   u_char *ptr;
@@ -532,6 +534,9 @@ int flt_directives_handle_purl(t_configfile *cfile,t_conf_opt *opt,const u_char 
   int offset;
   flt_directives_re ar_re;
 
+  if(flt_directives_fname == NULL) flt_directives_fname = cf_hash_get(GlobalValues,"FORUM_NAME",10);
+  if(!context || cf_strcmp(context,flt_directives_fname) != 0) return 0;
+
   if(flt_directives_puris.element_size == 0) array_init(&flt_directives_puris,sizeof(ar_re),NULL);
 
   if((re = pcre_compile((const char *)args[0],PCRE_CASELESS,(const char **)&error,&offset,NULL)) == NULL) {
@@ -555,16 +560,25 @@ int flt_directives_handle_purl(t_configfile *cfile,t_conf_opt *opt,const u_char 
 }
 
 int flt_directives_handle_iframe(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
+  if(flt_directives_fname == NULL) flt_directives_fname = cf_hash_get(GlobalValues,"FORUM_NAME",10);
+  if(!context || cf_strcmp(context,flt_directives_fname) != 0) return 0;
+
   flt_directives_iframesaslink = cf_strcmp(args[0],"yes") == 0;
   return 0;
 }
 
 int flt_directives_handle_image(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
+  if(flt_directives_fname == NULL) flt_directives_fname = cf_hash_get(GlobalValues,"FORUM_NAME",10);
+  if(!context || cf_strcmp(context,flt_directives_fname) != 0) return 0;
+
   flt_directives_imagesaslink = cf_strcmp(args[0],"yes") == 0;
   return 0;
 }
 
 int flt_directives_handle_link(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
+  if(flt_directives_fname == NULL) flt_directives_fname = cf_hash_get(GlobalValues,"FORUM_NAME",10);
+  if(!context || cf_strcmp(context,flt_directives_fname) != 0) return 0;
+
   if(flt_directives_link) free(flt_directives_link);
   flt_directives_link = strdup(args[0]);
 
@@ -580,6 +594,9 @@ void flt_directives_cleanup_entry(void *e) {
 int flt_directives_handle_ref(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
   t_flt_directives_ref_uri uri;
 
+  if(flt_directives_fname == NULL) flt_directives_fname = cf_hash_get(GlobalValues,"FORUM_NAME",10);
+  if(!context || cf_strcmp(context,flt_directives_fname) != 0) return 0;
+
   uri.id  = strdup(args[0]);
   uri.uri = strdup(args[1]);
 
@@ -591,7 +608,11 @@ int flt_directives_handle_ref(t_configfile *cfile,t_conf_opt *opt,const u_char *
 }
 
 int flt_directives_handle_rel(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
+  if(flt_directives_fname == NULL) flt_directives_fname = cf_hash_get(GlobalValues,"FORUM_NAME",10);
+  if(!context || cf_strcmp(context,flt_directives_fname) != 0) return 0;
+
   flt_directives_rel_no_follow = cf_strcmp(args[0],"yes") == 0;
+
   return 0;
 }
 
@@ -599,6 +620,9 @@ int flt_directives_handle_lt(t_configfile *cfile,t_conf_opt *opt,const u_char *c
   u_char *ptr;
   t_string str;
   t_flt_directives_lt_tok tok;
+
+  if(flt_directives_fname == NULL) flt_directives_fname = cf_hash_get(GlobalValues,"FORUM_NAME",10);
+  if(!context || cf_strcmp(context,flt_directives_fname) != 0) return 0;
 
   str_init(&str);
   array_init(&flt_directives_lt_toks,sizeof(tok),NULL);

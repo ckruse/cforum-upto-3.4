@@ -34,6 +34,7 @@
 /* }}} */
 
 static int    ThreadReturnAnchor = 0;
+static u_char *flt_tra_fn = NULL;
 
 /* {{{ flt_threadreturnanchor_post */
 int flt_threadreturnanchor_post(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cl_thread *thread,t_cf_template *tpl) {
@@ -63,6 +64,9 @@ int flt_threadreturnanchor_post(t_cf_hash *head,t_configuration *dc,t_configurat
 
 /* {{{ flt_threadreturnanchor_handle */
 int flt_threadreturnanchor_handle(t_configfile *cf,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
+  if(!flt_tra_fn) flt_tra_fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
+  if(!context || cf_strcmp(flt_tra_fn,context) != 0) return 0;
+
   ThreadReturnAnchor = cf_strcmp(args[0],"yes") == 0;
 
   return 0;
@@ -70,7 +74,7 @@ int flt_threadreturnanchor_handle(t_configfile *cf,t_conf_opt *opt,const u_char 
 /* }}} */
 
 t_conf_opt config[] = {
-  { "ThreadReturnAnchor", flt_threadreturnanchor_handle, CFG_OPT_CONFIG|CFG_OPT_USER, NULL },
+  { "ThreadReturnAnchor", flt_threadreturnanchor_handle, CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
   { NULL, NULL, 0, NULL }
 };
 

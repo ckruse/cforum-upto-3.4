@@ -50,6 +50,8 @@ struct {
   int qp_must_validate;
 } flt_poas_conf = { 0, NULL, 0, 0, 5.0, 25, 0 };
 
+static u_char *flt_poas_fn = NULL;
+
 /* {{{ flt_poas_case_strstr */
 u_char *flt_poas_case_strstr(const u_char *haystack,const u_char *needle) {
   size_t len1 = strlen(haystack);
@@ -375,6 +377,9 @@ int flt_poas_execute(t_cf_hash *head,t_configuration *dc,t_configuration *pc,t_m
 
 /* {{{ flt_poas_handle */
 int flt_poas_handle(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
+  if(flt_poas_fn == NULL) flt_poas_fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
+  if(!context || cf_strcmp(flt_poas_fn,context) != 0) return 0;
+
   switch(*opt->name) {
     case 'P':
       flt_poas_conf.poas_must_validate = cf_strcmp(args[0],"yes") == 0;

@@ -38,6 +38,7 @@
 
 static t_cf_hash *flt_category_cats = NULL;
 static int flt_category_hide_in_thread = 0;
+static u_char *flt_category_fn = NULL;
 
 /* {{{ flt_category_parse_list */
 void flt_category_parse_list(u_char *vips,t_cf_hash *hash) {
@@ -74,6 +75,9 @@ int flt_category_execute_filter(t_cf_hash *head,t_configuration *dc,t_configurat
 
 /* {{{ flt_category_handle_command */
 int flt_category_handle_command(t_configfile *cf,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
+  if(flt_category_fn == NULL) flt_category_fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
+  if(!context || cf_strcmp(flt_category_fn,context) != 0) return 0;
+
   if(cf_strcmp(opt->name,"ShowCategories") == 0) {
     if(!flt_category_cats) flt_category_cats = cf_hash_new(NULL);
 
@@ -97,8 +101,8 @@ void flt_category_finish(void) {
 /* }}} */
 
 t_conf_opt flt_category_config[] = {
-  { "ShowCategories",             flt_category_handle_command, CFG_OPT_USER|CFG_OPT_CONFIG, NULL },
-  { "HideCategoriesInThreadView", flt_category_handle_command, CFG_OPT_USER|CFG_OPT_CONFIG, NULL },
+  { "ShowCategories",             flt_category_handle_command, CFG_OPT_USER|CFG_OPT_CONFIG|CFG_OPT_LOCAL, NULL },
+  { "HideCategoriesInThreadView", flt_category_handle_command, CFG_OPT_USER|CFG_OPT_CONFIG|CFG_OPT_LOCAL, NULL },
   { NULL, NULL, 0, NULL }
 };
 

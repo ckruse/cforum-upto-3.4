@@ -36,12 +36,10 @@
 #include "charconvert.h"
 /* }}} */
 
-#define CF_SORT_ASCENDING   0
-#define CF_SORT_DESCENDING  1
-#define CF_SORT_NEWESTFIRST 2
-
 static int flt_sorting_sort_threads  = -1;
 static int flt_sorting_sort_messages = -1;
+
+static u_char *flt_sorting_fn = NULL;
 
 /* {{{ flt_sorting_threads_cmp */
 int flt_sorting_threads_cmp(const void *a,const void *b) {
@@ -120,6 +118,9 @@ int flt_sorting_sort(t_cf_hash *head,t_configuration *dc,t_configuration *vc,voi
 
 /* {{{ flt_sorting_cfg */
 int flt_sorting_cfg(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
+  if(flt_sorting_fn == NULL) flt_sorting_fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
+  if(!context || cf_strcmp(flt_sorting_fn,context) != 0) return 0;
+
   if(cf_strcmp(opt->name,"SortThreads") == 0) {
     if(cf_strcmp(args[0],"ascending") == 0) flt_sorting_sort_threads = CF_SORT_ASCENDING;
     else if(cf_strcmp(args[0],"newestfirst") == 0) flt_sorting_sort_threads = CF_SORT_NEWESTFIRST;

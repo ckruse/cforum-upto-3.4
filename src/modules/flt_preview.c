@@ -45,6 +45,8 @@ static int flt_preview_gen_prev = 0;
 static int flt_preview_sw_type = 0;
 static int flt_preview_is_preview = 0;
 
+static u_char *flt_preview_fn = NULL;
+
 /* {{{ flt_preview_execute */
 int flt_preview_execute(t_cf_hash *head,t_configuration *dc,t_configuration *pc,t_message *p,int sock,int mode) {
   u_char *date;
@@ -105,6 +107,9 @@ int flt_preview_variables_posting(t_cf_hash *head,t_configuration *dc,t_configur
 
 /* {{{ flt_preview_cmd */
 int flt_preview_cmd(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
+  if(flt_preview_fn == NULL) flt_preview_fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
+  if(!context || cf_strcmp(flt_preview_fn,context) != 0) return 0;
+
   if(cf_strcmp(opt->name,"PreviewDateFormat") == 0) {
     if(flt_preview_datefmt) free(flt_preview_datefmt);
     flt_preview_datefmt = strdup(args[0]);

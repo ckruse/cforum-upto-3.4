@@ -34,22 +34,13 @@
 #include "clientlib.h"
 /* }}} */
 
-int ShallFrameset = 0;
-u_char *TplFrameset;
-u_char *TplBlank;
+static int ShallFrameset = 0;
+static u_char *TplFrameset;
+static u_char *TplBlank;
 
-/*
- * Returns: int   one of the FLT_* values
- * Parameters:
- *   - t_cf_hash *head          a pointer to the cgi paramter list
- *   - t_configuration *dc      a pointer to the default configuration
- *   - t_configuration *vc      a pointer to the fo_view configuration
- *   - t_configuration *uc      a pointer to the user config
- *
- * This function is the api function for the frameset plugin. It is a
- * t_filter_begin function
- *
- */
+static u_char *flt_frameset_fname = NULL;
+
+/* {{{ flt_frameset_execute_filter */
 int flt_frameset_execute_filter(t_cf_hash *head,t_configuration *dc,t_configuration *vc) {
   u_char buff[256];
   u_char *UserName = cf_hash_get(GlobalValues,"UserName",8);
@@ -109,7 +100,9 @@ int flt_frameset_execute_filter(t_cf_hash *head,t_configuration *dc,t_configurat
 
   return FLT_DECLINE;
 }
+/* }}} */
 
+/* {{{ flt_frameset_set_cf_variables */
 int flt_frameset_set_cf_variables(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cf_template *top,t_cf_template *end) {
   if(ShallFrameset) {
     cf_tpl_setvalue(top,"target",TPL_VARIABLE_STRING,"view",4);
@@ -122,7 +115,9 @@ int flt_frameset_set_cf_variables(t_cf_hash *head,t_configuration *dc,t_configur
 
   return FLT_DECLINE;
 }
+/* }}} */
 
+/* {{{ flt_frameset_set_posting_vars */
 int flt_frameset_set_posting_vars(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cl_thread *thr,t_cf_template *tpl) {
   if(ShallFrameset) {
     cf_tpl_setvalue(tpl,"frame",TPL_VARIABLE_STRING,"1",1);
@@ -131,7 +126,9 @@ int flt_frameset_set_posting_vars(t_cf_hash *head,t_configuration *dc,t_configur
 
   return FLT_DECLINE;
 }
+/* }}} */
 
+/* {{{ flt_frameset_set_list_vars */
 int flt_frameset_set_list_vars(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_message *msg,u_int64_t tid,int mode) {
   if(ShallFrameset) {
     cf_tpl_setvalue(&msg->tpl,"frameset",TPL_VARIABLE_STRING,"1",1);
@@ -141,18 +138,32 @@ int flt_frameset_set_list_vars(t_cf_hash *head,t_configuration *dc,t_configurati
 
   return FLT_DECLINE;
 }
+/* }}} */
 
+/* {{{ flt_frameset_get_conf */
 int flt_frameset_get_conf(t_configfile *f,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
+  if(flt_frameset_fname == NULL) flt_frameset_fname = cf_hash_get(GlobalValues,"FORUM_NAME",10);
+  if(!context || cf_strcmp(context,flt_frameset_fname) == 0) return 0;
+
   ShallFrameset = cf_strcmp(args[0],"yes") == 0 ? 1 : 0;
   return 0;
 }
+/* }}} */
 
+/* {{{ flt_frameset_get_tpls */
 int flt_frameset_get_tpls(t_configfile *f,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
+  if(flt_frameset_fname == NULL) flt_frameset_fname = cf_hash_get(GlobalValues,"FORUM_NAME",10);
+  if(!context || cf_strcmp(context,flt_frameset_fname) == 0) return 0;
+
+  if(TplFrameset) free(TplFrameset);
+  if(TplBlank) free(TplBlank);
+
   TplFrameset = strdup(args[0]);
   TplBlank    = strdup(args[1]);
 
   return 0;
 }
+/* }}} */
 
 void flt_frameset_finish(void) {
   if(TplFrameset) free(TplFrameset);

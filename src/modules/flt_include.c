@@ -38,6 +38,8 @@ static u_char *JSFile = NULL;
 static u_char **XSLTUri = NULL;
 static int    CSS_Overwrite = 0;
 
+static u_char *flt_include_fn = NULL;
+
 /* {{{ flt_include_exec_list */
 int flt_include_exec_list(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cf_template *begin,t_cf_template *end) {
   int rc = FLT_DECLINE;
@@ -80,6 +82,9 @@ int flt_include_exec_post(t_cf_hash *head,t_configuration *dc,t_configuration *v
 
 /* {{{ flt_incldue_handle */
 int flt_include_handle(t_configfile *cf,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
+  if(flt_include_fn == NULL) flt_include_fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
+  if(!context || cf_strcmp(flt_include_fn,context) != 0) return 0;
+
   if(cf_strcmp(opt->name,"OwnCSSFile") == 0) {
     if(CSSUri) free(CSSUri);
     CSSUri = strdup(args[0]);
@@ -104,10 +109,10 @@ void flt_include_finish(void) {
 }
 
 t_conf_opt config[] = {
-  { "OwnCSSFile",           flt_include_handle, CFG_OPT_USER, NULL },
-  { "OverwriteStandardCSS", flt_include_handle, CFG_OPT_USER, NULL },
-  { "OwnJSFile",            flt_include_handle, CFG_OPT_USER, NULL },
-  { "OwnXSLTFile",          flt_include_handle, CFG_OPT_USER, NULL },
+  { "OwnCSSFile",           flt_include_handle, CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
+  { "OverwriteStandardCSS", flt_include_handle, CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
+  { "OwnJSFile",            flt_include_handle, CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
+  { "OwnXSLTFile",          flt_include_handle, CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
   { NULL, NULL, 0, NULL }
 };
 

@@ -38,6 +38,8 @@ static u_char *TOTD_File = NULL;
 static u_char *TOTD_Idx  = NULL;
 static int TOTD_Activate = 0;
 
+static u_char *TOTD_fn = NULL;
+
 /* {{{ flt_tipoftheday_execute */
 int flt_tipoftheday_execute(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc,t_cf_template *top,t_cf_template *down) {
   FILE *fd;
@@ -82,6 +84,9 @@ int flt_tipoftheday_execute(t_cf_hash *cgi,t_configuration *dc,t_configuration *
 
 /* {{{ flt_tipoftheday_confighandler */
 int flt_tipoftheday_confighandler(t_configfile *cf,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
+  if(!TOTD_fn) TOTD_fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
+  if(!context || cf_strcmp(TOTD_fn,context) != 0) return 0;
+
   if(cf_strcmp(opt->name,"TipOfTheDayFile") == 0) {
     TOTD_File = strdup(args[0]);
   }
@@ -104,9 +109,9 @@ void flt_tipoftheday_cleanup(void) {
 /* }}} */
 
 t_conf_opt flt_tipoftheday_config[] = {
-  { "TipOfTheDayFile",     flt_tipoftheday_confighandler, CFG_OPT_CONFIG, NULL },
-  { "TipOfTheDayActivate", flt_tipoftheday_confighandler, CFG_OPT_CONFIG|CFG_OPT_USER, NULL },
-  { "TipOfTheDayIndex",    flt_tipoftheday_confighandler, CFG_OPT_CONFIG, NULL },
+  { "TipOfTheDayFile",     flt_tipoftheday_confighandler, CFG_OPT_CONFIG|CFG_OPT_LOCAL, NULL },
+  { "TipOfTheDayActivate", flt_tipoftheday_confighandler, CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
+  { "TipOfTheDayIndex",    flt_tipoftheday_confighandler, CFG_OPT_CONFIG|CFG_OPT_LOCAL, NULL },
   { NULL, NULL, 0, NULL }
 };
 

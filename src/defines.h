@@ -20,6 +20,7 @@
 
 #define CF_SORT_ASCENDING 1
 #define CF_SORT_DESCENDING 2
+#define CF_SORT_NEWESTFIRST 3
 
 #define CF_VERSION "3.0"
 

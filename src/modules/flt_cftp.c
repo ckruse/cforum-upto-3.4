@@ -317,8 +317,8 @@ int flt_cftp_handler(int sockfd,t_forum *forum,const u_char **tokens,int tnum,rl
 
       if(cf_read_posting(forum,p,sockfd,tsd)) {
         CF_RW_RD(&forum->threads.lock);
-        if(sort_t == 2) t1 = forum->threads.list;
-        else            t1 = forum->threads.last;
+        if(sort_t == CF_SORT_DESCENDING) t1 = forum->threads.list;
+        else                             t1 = forum->threads.last;
         CF_RW_UN(&forum->threads.lock);
 
         if(t1) {
@@ -358,6 +358,7 @@ int flt_cftp_handler(int sockfd,t_forum *forum,const u_char **tokens,int tnum,rl
             if(sort_t == CF_SORT_ASCENDING) {
               t1->next    = t;
               t->prev     = t1;
+              forum->threads.last = t;
             }
             else {
               t->next = forum->threads.list;
