@@ -81,6 +81,13 @@ typedef struct s_cf_hash {
   ub4 tablesize;
 
   /**
+   * Number of elements stored in the hash table. Used to decide when the hash
+   * table should be resized. Thanks to "Mark ter Brugge" <m.h.terbrugge@dacolian.nl>
+   * for suggestion.
+   */
+  ub4 elements;
+
+  /**
    * For element cleanups we need a callback function. This callback function
    * has to cleanup the structure we saved.
    */

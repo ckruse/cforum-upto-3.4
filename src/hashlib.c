@@ -179,6 +179,8 @@ t_cf_hash *cf_hash_new(t_cf_hash_cleanup cl) {
 
   if(!hsh) return NULL;
 
+  hsh->elements = 0;
+
   /*
    * the tablesize is 2^10 (1024 entries) since we don't blame on double
    * values. This should be moderate for normal use. If not, increase
@@ -260,7 +262,7 @@ t_cf_hash_entry *_cf_hash_save(unsigned char *key,size_t keylen,void *data,size_
 }
 /* }}} */
 
-/* {{{ _cf_hash_split
+/* {{{ _cf_hash_split()
  * Returns:                nothing
  * Parameters:
  *   - t_cf_hash *hsh      the hash object
@@ -387,7 +389,6 @@ void _cf_hash_split(t_cf_hash *hsh,unsigned char *key,size_t keylen,void *data,s
 int cf_hash_set(t_cf_hash *hsh,unsigned char *key,size_t keylen,void *data,size_t datalen) {
   ub4 hval,hval_short;
   t_cf_hash_entry *ent,*prev;
-  int doubles;
 
   /*
    * generate the hash value
@@ -403,7 +404,7 @@ int cf_hash_set(t_cf_hash *hsh,unsigned char *key,size_t keylen,void *data,size_
   ent = hsh->table[hval_short];
 
   if(ent) {
-    for(doubles=0,prev=NULL;ent;doubles++,ent=ent->next) {
+    for(prev=NULL;ent;ent=ent->next) {
       /*
        * We got a double value, so we have to free the actual value
        */
@@ -423,15 +424,15 @@ int cf_hash_set(t_cf_hash *hsh,unsigned char *key,size_t keylen,void *data,size_
       prev = ent;
     }
 
+    prev->next       = _cf_hash_save(key,keylen,data,datalen,hval);
+    prev->next->prev = prev;
+    hsh->elements++;
+
     /*
      * phew... I *really* hope this case happens not very often.
      */
-    if(doubles > CF_HASH_MAX_DOUBLES) {
+    if(hsh->elements >= hashsize(hsh->tablesize)) {
       _cf_hash_split(hsh,key,keylen,data,datalen,hval);
-    }
-    else {
-      prev->next       = _cf_hash_save(key,keylen,data,datalen,hval);
-      prev->next->prev = prev;
     }
 
     return 1;
@@ -463,7 +464,6 @@ int cf_hash_set(t_cf_hash *hsh,unsigned char *key,size_t keylen,void *data,size_
 int cf_hash_set_static(t_cf_hash *hsh,unsigned char *key,size_t keylen,void *data) {
   ub4 hval,hval_short;
   t_cf_hash_entry *ent,*prev;
-  int doubles;
 
   /*
    * generate the hash value
@@ -479,7 +479,7 @@ int cf_hash_set_static(t_cf_hash *hsh,unsigned char *key,size_t keylen,void *dat
   ent = hsh->table[hval_short];
 
   if(ent) {
-    for(doubles=0,prev=NULL;ent;doubles++,ent=ent->next) {
+    for(prev=NULL;ent;ent=ent->next) {
       /*
        * We got a double value, so we have to free the actual value
        */
@@ -498,15 +498,15 @@ int cf_hash_set_static(t_cf_hash *hsh,unsigned char *key,size_t keylen,void *dat
       prev = ent;
     }
 
+    prev->next       = _cf_hash_save(key,keylen,data,0,hval);
+    prev->next->prev = prev;
+    hsh->elements++;
+
     /*
      * phew... I *really* hope this case happens not very often.
      */
-    if(doubles > CF_HASH_MAX_DOUBLES) {
+    if(hsh->elements >= hashsize(hsh->tablesize)) {
       _cf_hash_split(hsh,key,keylen,data,0,hval);
-    }
-    else {
-      prev->next       = _cf_hash_save(key,keylen,data,0,hval);
-      prev->next->prev = prev;
     }
 
     return 1;
@@ -588,6 +588,7 @@ int cf_hash_entry_delete(t_cf_hash *hsh,unsigned char *key,size_t keylen) {
       }
 
       free(ent);
+      hsh->elements--;
 
       return 1;
     }
