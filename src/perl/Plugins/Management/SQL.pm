@@ -173,12 +173,12 @@ sub add_user {
 
   my $connstr = connstr($fuc);
   my $dbh     = DBI->connect($connstr,get_conf_val($fuc,$main::Forum,'SQLUser'),get_conf_val($fuc,$main::Forum,'SQLPass'));
-  return get_error($fdc, 'SQL', 'connect') unless defined $dbh;
+  return get_error($fdc, 'SQL', 'connect') unless $dbh;
 
   my ($table,$usercol,$passwdcol,$emailcol) = sql_data($fuc);
-  
+
   my $dbq = $dbh->prepare('INSERT INTO '.$table.' ('.$usercol.','.$passwdcol.','.$emailcol.') VALUES (?,?,?)');
-  return get_error($fdc, 'SQL', 'execute') unless defined($dbq) && $dbq;
+  return get_error($fdc, 'SQL', 'execute') unless $dbq;
   $dbq->execute($uname,$pass,$email) or return get_error($fdc, 'SQL', 'execute');
   $dbh->disconnect;
   return undef;

@@ -1,7 +1,6 @@
 SUBDIRS=Management
 
-EXTRA_DIST=CategoryCheck.pm \
-  HTTPAuth.pm \
+EXTRA_DIST=HTTPAuth.pm \
   RegisterName.pm \
 	ImportExport.pm \
   XMLRPCUserManagement.pm

@@ -22,6 +22,10 @@
 		src/swig/CForum-Clientlib/Makefile.PL.in: Added CForum::Clientlib, interface
 		to libcfclientlib and the charset converting routines
 	* scripts/fo_usermanagement.in: Moved to new SWIG modules interface
+	* conf/errormessages.de.txt: Added missing error message
+	* src/perl/Plugins/Makefile.am: Removed CategoryCheck.pm, doesn't exist any
+		longer
+	* src/perl/Plugins/Management/SQL.pm: Some small bugfixes
 
 2005-02-06 Christian Seiler <self@christian-seiler.de>
 	* conf/patterns/php.pat: Some improvements

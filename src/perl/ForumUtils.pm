@@ -469,11 +469,11 @@ sub fatal {
   }
 
   my $tpl  = new CForum::Template($ftpl);
-  $tpl->setVar('forumbase',);
-  $tpl->setVar('err',recode($dcfg,$err));
+  $tpl->setvalue('forumbase',$burl);
+  $tpl->setvalue('err',recode($dcfg,$err));
 
-  $tpl->setVar('charset',$cs);
-  $tpl->setVar('acceptcharset',$cs.', UTF-8');
+  $tpl->setvalue('charset',$cs);
+  $tpl->setvalue('acceptcharset',$cs.', UTF-8');
   print $cgi->header(-type => 'text/html; charset='.$cs) unless $hdr;
   print $tpl->parseToMem;
 

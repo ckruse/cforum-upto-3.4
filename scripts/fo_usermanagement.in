@@ -113,7 +113,7 @@ sub validate_parameters {
       foreach my $validate (@validate) {
         if($validate) {
           if($validate->[1] eq 'email') {
-            return get_error($fdc,$name,'invalid') unless is_valid_mailaddress($val);
+            return get_error($fdc,$name,'invalid') if is_valid_mailaddress($val) != 0;
           }
           else {
             return get_error($fdc,$name,'invalid') unless $val =~ m!$validate->[1]!;
@@ -147,7 +147,7 @@ foreach(@{$Plugins->{auth}}) {
 # }}}
 
 # {{{ Load management engine
-eval "use ".$fo_usermanagement_conf->{ManagementEngine}->[0]->[0] if $fo_usermanagement_conf->{ManagementEngine};
+eval "use ".$fo_usermanagement_conf->{$main::Forum}->{ManagementEngine}->[0]->[0] if $fo_usermanagement_conf->{$main::Forum}->{ManagementEngine};
 die $@ if $@;
 # }}}
 
@@ -429,7 +429,7 @@ else {
         print $cgi->header(-type => 'text/html; charset='.$cs),$tpl->parseToMem;
       }
       else {
-        my $errtpl = get_conf_val($fo_usermanagement_conf,$Forum,'ErrorTemplate');
+        my $errtpl = get_conf_val($fo_usermanagement_conf,$Forum,'FatalTemplate');
         fatal($cgi,$fo_default_conf,$user_config,get_error($fo_default_conf,'TPL_NOT_FOUND'),$fatal_template) unless defined $errtpl;
         my $tpl = new CForum::Template(get_template($fo_default_conf,$user_config,$errtpl));
         fatal($cgi,$fo_default_conf,$user_config,get_error($fo_default_conf,'TPL_NOT_FOUND'),$fatal_template) unless  defined $tpl;
@@ -437,7 +437,13 @@ else {
         $tpl->setvalue('script',recode($fo_default_conf,get_conf_val($fo_default_conf,$Forum,'UserRegister')));
         $tpl->setvalue('forumbase',recode($fo_default_conf,get_conf_val($fo_default_conf,$Forum,'BaseURL')));
         $tpl->setvalue('charset',$cs);
-        $tpl->setvalue('error',get_error($fo_default_conf,'sendpw','error'));
+
+        if($result) {
+          $tpl->setvalue('err',$result);
+        }
+        else {
+          $tpl->setvalue('err',get_error($fo_default_conf,'sendpw','error'));
+        }
 
         print $cgi->header(-type => 'text/html; charset='.$cs),$tpl->parseToMem;
       }

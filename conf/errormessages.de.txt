@@ -24,6 +24,7 @@ E_body_short: Haben Sie so wenig zu sagen?
 E_body_long: Das war jetzt etwas viel.
 E_body_missing: Haben Sie so wenig zu sagen?
 E_EMail_invalid: Ihre E-Mail-Adresse scheint ungültig zu sein.
+E_email_invalid: Ihre E-Mail-Adresse scheint ungültig zu sein.
 E_manipulated: Falsche oder fehlende Daten. Die Daten scheinen in irgendeiner Weise manipuliert worden zu sein.
 E_ImageUrl_invalid: Die Bild-URL scheint ungültig zu sein.
 E_HomepageUrl_invalid: Die Homepage-URL scheint ungültig zu sein.
