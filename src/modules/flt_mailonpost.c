@@ -350,7 +350,7 @@ void flt_mailonpost_parsestr(t_cl_thread *t,t_message *p,t_string *str,const u_c
   register u_char *ptr;
   u_char *l;
 
-  t_string str1,*str2;
+  t_string str1,*str2 = NULL;
 
   if(mode) {
     str_init(&str1);

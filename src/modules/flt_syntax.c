@@ -1386,7 +1386,7 @@ int flt_syntax_validate(t_configuration *fdc,t_configuration *fvc,const u_char *
 
   t_string str;
 
-  if(flt_syntax_active == 0 || plen != 2 || cf_strcmp(parameters[0],"lang") != 0) {
+  if(plen != 2 || cf_strcmp(parameters[0],"lang") != 0) {
     if((err = cf_get_error_message("E_CODE_NOLANG",&len)) != NULL) {
       cf_tpl_var_addvalue(var,TPL_VARIABLE_STRING,err,len);
       free(err);
