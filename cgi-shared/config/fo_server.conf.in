@@ -15,7 +15,6 @@ ModulePath "@libdir@"
 Load "flt_tid_index"
 Load "flt_cftp"
 Load "flt_registerednames"
-#Load "flt_nntp"
 Load "flt_extern"
 Load "flt_voting"
 Load "flt_xmlstorage"
@@ -36,9 +35,6 @@ PIDFile "@with_log_dir@/fo_pid"
 # external interface
 ExternPort "6666"
 # ExternInterface 192.168.50.2
-
-#NNTPPort "2048"
-#NNTPHost "teamone.de"
 
 Forums "FORUM1"
 

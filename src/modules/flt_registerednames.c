@@ -334,6 +334,8 @@ int flt_registerednames_init_module(int sock) {
       cf_log(CF_ERR,__FILE__,__LINE__,"DB->open(%s): %s\n",ndb->AuthNames,db_strerror(ret));
       return FLT_EXIT;
     }
+
+    cf_log(CF_DBG,__FILE__,__LINE__,"Created database for %s\n",forums->values[i]);
   }
 
   cf_register_protocol_handler("AUTH",flt_registerednames_handler);
@@ -374,7 +376,7 @@ void flt_registerednames_cleanup(void) {
 }
 
 t_conf_opt flt_registerednames_config[] = {
-  { "AuthNames", flt_registerednames_handle_command, CFG_OPT_CONFIG|CFG_OPT_NEEDED, NULL },
+  { "AuthNames", flt_registerednames_handle_command, CFG_OPT_CONFIG|CFG_OPT_NEEDED|CFG_OPT_LOCAL, NULL },
   { NULL, NULL, 0, NULL }
 };
 

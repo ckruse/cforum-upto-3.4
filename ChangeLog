@@ -5,6 +5,12 @@
 	* src/modules/flt_extern.c: Migrated to 3.0 API
 	* src/modules/flt_failsafe.c: Migrated to 3.0 API
 	* src/modules/flt_voting.c: Migrated to 3.0 API
+	* src/modules/flt_tid_index.c: Migrated to 3.0 API
+	* src/archiver.[ch]: Changed archiver plugin API, now the forum object is an
+		argument
+	* src/fo_server.c: Added INIT_HANDLER hook (forgot it to implement)
+	* cgi-shared/config/fo_server.conf.in: Removed NNTP directives (there is no
+		NNTP plugin, yet)
 
 2005-01-08 Christian Kruse <ckruse@wwwtech.de>
 	* src/validate.c: Fixed bug in is_valid_link() function (now it is view-source

@@ -161,7 +161,7 @@ void cf_run_archiver(void) {
           for(i=0;i<Modules[ARCHIVE_HANDLER].elements && (ret == FLT_DECLINE || ret == FLT_OK);i++) {
             handler = array_element_at(&Modules[ARCHIVE_HANDLER],i);
             fkt     = (t_archive_filter)handler->func;
-            ret     = fkt(oldest_t);
+            ret     = fkt(forum,oldest_t);
           }
         }
 

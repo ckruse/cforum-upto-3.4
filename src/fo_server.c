@@ -198,6 +198,9 @@ int main(int argc,char *argv[]) {
   struct timeval timeout;
   struct sched_param param;
 
+  t_server_init_filter fkt;
+  t_handler_config *handler;
+
   /* set signal handlers */
   signal(SIGPIPE,SIG_IGN);
   signal(SIGINT,flsh);
@@ -425,10 +428,22 @@ int main(int argc,char *argv[]) {
   sock = cf_setup_socket(&addr);
   cf_push_server(sock,(struct sockaddr *)&addr,sizeof(addr),cf_cftp_handler);
 
+  /* {{{ go through each init plugin and run it */
+  if(Modules[INIT_HANDLER].elements) {
+    ret = FLT_OK;
+
+    for(i=0;i<Modules[INIT_HANDLER].elements && (ret == FLT_DECLINE || ret == FLT_OK);++i) {
+      handler = array_element_at(&Modules[INIT_HANDLER],i);
+      fkt     = (t_server_init_filter)handler->func;
+      ret     = fkt(sock);
+    }
+  }
+  /* }}} */
+
   cf_log(CF_STD|CF_FLSH,__FILE__,__LINE__,"Read config, load data, set up socket and generated caches. Now listening...\n");
 
   /* {{{ main loop */
-  while(RUN) {
+  while(RUN && ret != FLT_EXIT) {
     /* set the fdset */
     FD_ZERO(&rfds);
 

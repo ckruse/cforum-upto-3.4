@@ -26,10 +26,12 @@
 
 #include <sys/stat.h>
 #include <sys/types.h>
-
-#include <pthread.h>
+#include <sys/file.h>
+#include <errno.h>
 
 #include <db.h>
+
+struct sockaddr_un;
 
 #include "cf_pthread.h"
 
@@ -37,13 +39,16 @@
 #include "utils.h"
 #include "configparser.h"
 #include "readline.h"
-#include "fo_server.h"
+
+#include "serverutils.h"
 #include "serverlib.h"
+#include "fo_server.h"
 #include "fo_tid_index.h"
 /* }}} */
 
-int flt_tidx_module(t_thread *thr) {
-  t_name_value *v = cfg_get_first_value(&fo_default_conf,NULL,"ThreadIndexFile");
+/* {{{ flt_tidx_module */
+int flt_tidx_module(t_forum *forum,t_thread *thr) {
+  t_name_value *v = cfg_get_first_value(&fo_default_conf,forum->name,"ThreadIndexFile");
   struct stat st;
   struct tm t;
   DB *db;
@@ -53,22 +58,30 @@ int flt_tidx_module(t_thread *thr) {
   u_char buff[256];
   u_char tid[50];
   size_t len,tlen;
+  int fd;
 
   if(!v) return FLT_DECLINE;
   if(stat(v->values[0],&st) == -1) return FLT_DECLINE;
+  if(localtime_r(&thr->postings->date,&t) == NULL) return FLT_DECLINE;
 
-  if(localtime_r(&thr->postings->date,&t) == NULL) {
-    return FLT_DECLINE;
-  }
-
-  /* {{{ open database */
+  /* {{{ open and lock database */
   if((ret = db_create(&db,NULL,0)) != 0) {
-    cf_log(LOG_ERR,__FILE__,__LINE__,"DB error: %s\n",db_strerror(ret));
+    cf_log(CF_ERR,__FILE__,__LINE__,"DB error: %s\n",db_strerror(ret));
     return FLT_DECLINE;
   }
 
   if((ret = db->open(db,NULL,v->values[0],NULL,DB_BTREE,DB_CREATE,0644)) != 0) {
-    cf_log(LOG_ERR,__FILE__,__LINE__,"DB error: %s\n",db_strerror(ret));
+    cf_log(CF_ERR,__FILE__,__LINE__,"DB error: %s\n",db_strerror(ret));
+    return FLT_DECLINE;
+  }
+
+  if((ret = db->fd(db,&fd)) != 0) {
+    cf_log(CF_ERR,__FILE__,__LINE__,"db->fd(): %s\n",db_strerror(ret));
+    return FLT_DECLINE;
+  }
+
+  if((ret = flock(fd,LOCK_EX)) == -1) {
+    cf_log(CF_ERR,__FILE__,__LINE__,"flock(): %s\n",strerror(errno));
     return FLT_DECLINE;
   }
   /* }}} */
@@ -76,12 +89,15 @@ int flt_tidx_module(t_thread *thr) {
   len  = snprintf(buff,256,"%d/%d",t.tm_year+1900,t.tm_mon+1);
   tlen = snprintf(tid,50,"%llu",thr->tid);
 
+  memset(&key,0,sizeof(key));
+  memset(&data,0,sizeof(data));
+
   key.data = tid;
   key.size = tlen;
 
   if((ret = db->get(db,NULL,&key,&data,0)) != 0) {
     if(ret != DB_NOTFOUND) {
-      cf_log(LOG_ERR,__FILE__,__LINE__,"DB error: %s\n",db_strerror(ret));
+      cf_log(CF_ERR,__FILE__,__LINE__,"DB error: %s\n",db_strerror(ret));
       db->close(db,0);
       return FLT_DECLINE;
     }
@@ -90,7 +106,7 @@ int flt_tidx_module(t_thread *thr) {
     data.size = len;
 
     if((ret = db->put(db,NULL,&key,&data,0)) != 0) {
-      cf_log(LOG_ERR,__FILE__,__LINE__,"DB error: %s\n",db_strerror(ret));
+      cf_log(CF_ERR,__FILE__,__LINE__,"DB error: %s\n",db_strerror(ret));
       db->close(db,0);
       return FLT_DECLINE;
     }
@@ -106,7 +122,7 @@ int flt_tidx_module(t_thread *thr) {
 
     db->del(db,NULL,&key,0);
     if((ret = db->put(db,NULL,&key,&data,0)) != 0) {
-      cf_log(LOG_ERR,__FILE__,__LINE__,"DB error: %s\n",db_strerror(ret));
+      cf_log(CF_ERR,__FILE__,__LINE__,"DB error: %s\n",db_strerror(ret));
       db->close(db,0);
       return FLT_DECLINE;
     }
@@ -118,14 +134,14 @@ int flt_tidx_module(t_thread *thr) {
 
   return FLT_DECLINE;
 }
-
+/* }}} */
 
 t_conf_opt flt_tid_index_config[] = {
   { NULL, NULL, 0, NULL }
 };
 
 t_handler_config flt_tid_index_handlers[] = {
-  { ARCHIVE_HANDLER,            flt_tidx_module   },
+  { ARCHIVE_HANDLER, flt_tidx_module },
   { 0, NULL }
 };
 

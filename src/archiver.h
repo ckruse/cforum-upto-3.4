@@ -23,9 +23,10 @@
 /**
  * Function type for archiver plugins.
  * \param thr The thread structure of the thread to archive
+ * \param forum The forum object
  * \return FLT_OK, FLT_DECLINE or FLT_EXIT. FLT_EXIT means, do *not* archive, so be careful!
  */
-typedef int (*t_archive_filter)(t_thread *thr);
+typedef int (*t_archive_filter)(t_forum *forum,t_thread *thr);
 
 /**
  * Function type for threadlist writer plugins
