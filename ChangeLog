@@ -1,5 +1,6 @@
 2005-03-13 Christian Kruse <ckruse@wwwtech.de>
 	* src/modules/flt_syntax.c: Added - char to word characters
+	* conf/patterns/pascal.pat: Added pascal syntax highlighting
 
 2005-03-09 Christian Kruse <ckruse@wwwtech.de>
 	* conf/patterns/javascript.pat: Added all methods and objects described in
