@@ -185,6 +185,20 @@ size_t str_str_append(t_string *str,t_string *content) {
 }
 /* }}} */
 
+/* {{{ str_cstr_append
+ * Returns: size_t   the number of chars appended
+ * Parameters:
+ *   - t_string *str         the string to append on
+ *   - const u_char *content the string to append
+ *
+ * this function is a wrapper, it calls str_chars_append
+ *
+ */
+size_t str_cstr_append(t_string *str,const u_char *content) {
+  return str_chars_append(str,content,strlen(content));
+}
+/* }}} */
+
 /* {{{ str_char_set
  * Returns: void   nothing
  * Parameters:

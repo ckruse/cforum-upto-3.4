@@ -1,3 +1,7 @@
+2005-01-25 Christian Seiler <self@christian-seiler.de>
+	* src/utils.h, src/stringutils.c: Added str_cstr_append function to
+		append NULL-terminated strings.
+
 2005-01-25 Christian Kruse <ckruse@wwwtech.de>
 	* src/swig/CForum-Configparser/CForum-Configparser.i: Several bugfixes, added
 		ENTER macro since it is not declared

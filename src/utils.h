@@ -138,6 +138,16 @@ size_t str_str_append(t_string *str,t_string *content);
 
 /**
  * \ingroup string_funcs
+ * This function appends a C-like null terminated character array to a string structure.
+ * It's just a wrapper for the str_chars_append() function.
+ * \param str A reference to the string structure to append to
+ * \param content The u_char array to append
+ * \return The number of characters appended on success or 0 on failure
+ */
+size_t str_cstr_append(t_string *str,const u_char *content);
+
+/**
+ * \ingroup string_funcs
  * This function sets the value of an string structure to a given u_char array. The old string contained
  * in the structure will be lost.
  * \param str A reference to the string to append to
