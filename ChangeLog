@@ -7,6 +7,8 @@
 	* conf/patterns/css.pat: Added a debugged version of the CSS pattern file
 	* conf/patterns/xml.pat: Added XML syntax highlighting
 	* conf/patterns/javascript.pat: Added JS highlighting
+	* conf/patterns/php.pat: Small bugfixes
+	* src/modules/flt_syntax.c: Fixed bugs in syntax highlighting
 
 2005-03-05 Christian Seiler <self@christian-seiler.de>
 	* conf/patterns/html.pat: Fixed small bug

@@ -31,7 +31,7 @@ block "string"
   lineend stay
 
   onstring "\\\\\\\\" highlight "escaped"
-  onstring "\\\\\&quot;" highlight "escaped"
+  onstring "\\\\&quot;" highlight "escaped"
 
   onregexp "^\\\\[0-7]{1,3}" highlight "escaped"
   onregexp "^\\\\x[0-9A-Fa-f]{1,2}" highlight "escaped"

@@ -186,7 +186,7 @@ int flt_syntax_read_list(const u_char *pos,flt_syntax_list_t *list) {
             str_char_append(&str,'\t');
             break;
           default:
-            str_char_append(&str,*ptr);
+            str_char_append(&str,*(ptr+1));
         }
         ++ptr;
         continue;
@@ -771,6 +771,19 @@ u_char *flt_syntax_get_token(const u_char *txt) {
 }
 /* }}} */
 
+/* {{{ flt_syntax_check_for_prev */
+int flt_syntax_check_for_prev(register u_char *ptr,const u_char *begin) {
+  if(!isalpha(*ptr) && *ptr != '-' && *ptr != '_') return 0;
+
+  if(ptr != begin) {
+    --ptr;
+    if(isalpha(*ptr) || *ptr == '-' || *ptr == '_') return -1;
+  }
+
+  return 0;
+}
+/* }}} */
+
 /* {{{ flt_syntax_doit */
 int flt_syntax_doit(flt_syntax_pattern_file_t *file,flt_syntax_block_t *block,u_char *text,size_t len,t_string *cnt,u_char **pos,const u_char *extra_arg,int xhtml,int *pops) {
   u_char *ptr,*tmpchar,*priv_extra,*begin;
@@ -917,7 +930,7 @@ int flt_syntax_doit(flt_syntax_pattern_file_t *file,flt_syntax_block_t *block,u_
 
         case FLT_SYNTAX_ONSTRINGLIST:
           /* {{{ onstringlist */
-          if(ptr != begin && !isspace(*(ptr-1)) && (ptr-begin > (xhtml?6:4) && cf_strncmp(ptr-(xhtml?6:4),"<br",3) != 0) && isalpha(*ptr)) continue;
+          if(flt_syntax_check_for_prev(ptr,begin) != 0) continue;
 
           str = array_element_at(&statement->args,0);
           if((tmplist = flt_syntax_list_by_name(file,str->content)) == NULL) {
