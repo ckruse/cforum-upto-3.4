@@ -3,6 +3,7 @@ start = "default"
 block "default"
   lineend stay
 
+  onstring "&lt;![CDATA[" "cdata" "cdata"
   onregexp "^&lt;[A-Za-z][A-Za-z_0-9:-]*\\s*/&gt;" highlight "empty-tag"
   onstring "&lt;?" "pi" "processing-instruction"
   onstring "&lt;!" "specialtag" "tag"
@@ -13,6 +14,10 @@ block "default"
   onregexp "^&amp;#x[0-9A-Fa-f]+;" highlight "entity"
   onregexp "^(&amp;|%)[A-Za-z0-9_:]+;" highlight "entity"
   onstring "&amp;" highlight "entityinvalid"
+end
+
+block "cdata"
+  onstring "]]&gt;" pop
 end
 
 block "pi"
