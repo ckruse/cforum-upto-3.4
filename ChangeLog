@@ -4,6 +4,8 @@
 	* src/fo_view.c: Small bugfix, thread-only view is not yet implemented
 	* src/modules/flt_mailonpost.c: Fixed small bug, now abo link is not generated
 		if there is no email-address in user config
+	* scripts/fo_usermanagement.in, scripts/cf-cleanup.pl.in,
+		scripts/fo_userconf.in, scripts/fo_xmlrpc.in: Added exec_prefix variable
 
 2005-02-16 Christian Kruse <ckruse@wwwtech.de>
 	* src/modules/flt_mailonpost.c: Fixed several bugs, now it seems to work

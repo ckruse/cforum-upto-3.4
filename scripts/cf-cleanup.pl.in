@@ -12,14 +12,15 @@
 
 #
 use strict;
-use vars qw($prefix $Forum);
+use vars qw($prefix $exec_prefix $Forum);
 
 BEGIN {
   # get needed environments
   die "Could not get config path, set CF_CONF_DIR!" unless $ENV{CF_CONF_DIR};
 
-  $prefix   = '@prefix@';
-  $Forum    = '';
+  $prefix      = '@prefix@';
+  $exec_prefix = '@exec_prefix@';
+  $Forum       = '';
 }
 
 use lib "@libdir@/cforum";

@@ -12,7 +12,7 @@
 
 #
 use strict;
-use vars qw($Bin $Script $Plugins $UserName $prefix $Forum);
+use vars qw($Bin $Script $Plugins $UserName $exec_prefix $prefix $Forum);
 
 BEGIN {
   my $null = $0; $null =~ tr!\\!/!; # for win :-(
@@ -26,6 +26,8 @@ BEGIN {
   $Plugins = {};
   $UserName = '';
   $prefix  = '@prefix@';
+  $exec_prefix = '@exec_prefix@';
+
   $Forum = $ENV{CF_FORUM_NAME};
 }
 

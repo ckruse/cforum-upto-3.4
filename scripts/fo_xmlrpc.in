@@ -12,7 +12,7 @@
 
 #
 use strict;
-use vars qw($Bin $Config $Script $Plugins $UserName $prefix $fo_default_conf $fo_xmlrpc_conf $methods $Forum);
+use vars qw($Bin $Config $Script $Plugins $UserName $prefix $exec_prefix $fo_default_conf $fo_xmlrpc_conf $methods $Forum);
 
 BEGIN {
   my $null = $0; $null =~ tr!\\!/!; # for win :-(
@@ -26,6 +26,7 @@ BEGIN {
   $Plugins = {};
   $UserName = '';
   $prefix  = '@prefix@';
+  $exec_prefix = '@exec_prefix@';
   
   $fo_default_conf = undef;
   $fo_xmlrpc_conf  = undef;
