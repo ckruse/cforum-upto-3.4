@@ -23,6 +23,7 @@
 #include <errno.h>
 
 #include <sys/types.h>
+#include <signal.h>
 
 /* socket includes */
 #include <sys/socket.h>

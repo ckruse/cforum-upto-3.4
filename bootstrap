@@ -43,10 +43,10 @@ AUTOMAKE_FILES="config.sub stamp-h.in ltmain.sh missing mkinstalldirs install-sh
 CONFIG_AUX_DIR="."
 CONFIG_FILES="stamp-h ltconfig"
 CONFIG_HEADER="src/config.h"
-LIBTOOLIZE="/usr/bin/libtoolize --force --copy"
+LIBTOOLIZE="libtoolize --force --copy"
 LIBTOOLIZE_FILES="config.sub ltmain.sh config.guess"
 RM="rm --verbose"
-SUBDIRS="cgi-shared/config/fo_default.conf src Doxyfile cgi-shared/config/fo_arcview.conf . cgi-shared/config/fo_post.conf cgi-shared/config/fo_server.conf cgi-shared/config/fo_userconf.conf cgi-shared/config/fo_view.conf"
+SUBDIRS="cgi-shared/config/fo_default.conf src src/modules src/templates src/templates/tpl_html4 src/templates/tpl_xhtml10 Doxyfile cgi-shared/config/fo_arcview.conf . cgi-shared/config/fo_post.conf cgi-shared/config/fo_server.conf cgi-shared/config/fo_userconf.conf cgi-shared/config/fo_view.conf"
 
 
 # These are files created by configure, so we'll always clean them
