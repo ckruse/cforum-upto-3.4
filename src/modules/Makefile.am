@@ -137,4 +137,8 @@ flt_directives_la_SOURCES=flt_directives.c
 flt_directives_la_LDFLAGS=-module -export-dynamic -avoid-version
 flt_directives_la_LIBADD=../libcfvalidate.la
 
+pkglib_LTLIBRARIES+=flt_votingvariables.la
+flt_votingvariables_la_SOURCES=flt_votingvariables.c
+flt_votingvariables_la_LDFLAGS=-module -export-dynamic -avoid-version
+
 # eof

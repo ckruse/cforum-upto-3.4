@@ -121,6 +121,8 @@ void print_thread_structure(t_cl_thread *thread,t_cf_hash *head) {
         }
       }
 
+      level = msg->level;
+
       if(msg->next && has_answers(msg)) { /* this message has at least one answer */
         printf("<li>");
         tpl_cf_parse(&msg->tpl);
@@ -511,7 +513,7 @@ int main(int argc,char *argv[],char *env[]) {
   u_char  *ucfg,*m  = NULL,*t = NULL;
   t_array *cfgfiles;
   t_cf_hash *head;
-  t_configfile conf,dconf,uconf;
+  t_configfile conf,dconf;
   t_name_value *cs = NULL;
   u_char *UserName;
   u_char *fname;
@@ -592,7 +594,6 @@ int main(int argc,char *argv[],char *env[]) {
 
         cfg_cleanup_file(&conf);
         cfg_cleanup_file(&dconf);
-        cfg_cleanup_file(&uconf);
 
         return EXIT_FAILURE;
       }

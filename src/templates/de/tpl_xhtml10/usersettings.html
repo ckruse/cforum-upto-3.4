@@ -1,95 +1,141 @@
-<?xml version="1.0" encoding="{$charset}"?>
+<?xml version="1.0" encoding="{$charset}" ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="de" lang="de">
-  <head>
-    <title>SELFHTML Forum: Benutzer-Einstellungen</title>
-    <meta http-equiv="content-type" content="text/html; charset={$charset}" />
-    <meta http-equiv="expires" content="now" />
-    <meta http-equiv="cache-control" content="no-cache" />
-    <meta name="robots" content="noindex,noarchive,nofollow" />
-    <meta name="author" content="Stefan M&uuml;nz, stefan.muenz@selfhtml.org" />
-    <meta name="DC.Publisher" content="SELFHTML Forum" />
-    <meta name="DC.Identifier" content="{$script}" />
-    <meta name="DC.Language" content="de" />
-    <meta name="DC.Rights" content="" />
-    <meta name="SELF.Pagetype" content="chapter" />{if $owncss}{if $cssoverwrite}
-    <link rel="stylesheet" title="SELFHTML Forum Stylesheet" type="text/css" href="http://src.selfhtml.org/forum_strict.css" />{endif}
-    <link rel="stylesheet" title="Benutzerdefiniertes Stylesheet" type="text/css" href="{$owncss}" />{else}
-    <link rel="stylesheet" title="SELFHTML Forum Stylesheet" type="text/css" href="http://src.selfhtml.org/forum_strict.css" />{endif}
-    <link rel="shortcut icon" title="SELFHTML Icon" type="image/x-icon" href="http://src.selfhtml.org/favicon.ico" />
-    <link rel="top" title="SELFHTML Forum" href="{$forumbase}" />
-    <link rel="help" title="Forums-FAQ" href="/faq/" />
-    <link rel="search" title="SELFHTML Suche" href="http://suche.de.selfhtml.org/" />
-  </head>
-  <body id="selfforumbody">
-    <div class="nav"><a class="an" name="top"><img src="http://src.selfhtml.org/refkap.gif" width="16" height="13" alt="Teil von" /></a>&nbsp;<a href="{$forumbase}">SELFHTML Forum</a></div>
-    <table class="header" id="selfforumheader">
-      <thead>
-        <tr>
-          <td class="hdrelse" style="width:110px;"><img src="http://src.selfhtml.org/logo.gif" width="106" height="109" alt="SELFHTML" /></td>
-          <td class="hdrelse"><h1 class="ph1">SELFHTML Forum:<br />Benutzer-Einstellungen</h1></td>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td class="info"><img src="http://src.selfhtml.org/kapx.gif" width="30" height="26" alt="Kapitelseite" /></td>
-          <td class="hdrtxt">
-            <p>
-              <img src="http://src.selfhtml.org/down.gif" width="14" height="10" alt="nach unten" />&nbsp;<a href="#verhalten"><b>Forums-Verhalten</b></a><br />
-              <img src="http://src.selfhtml.org/down.gif" width="14" height="10" alt="nach unten" />&nbsp;<a href="#filter"><b>Filter</b></a><br />
-              <img src="http://src.selfhtml.org/down.gif" width="14" height="10" alt="nach unten" />&nbsp;<a href="#formular"><b>Formular</b></a>
-            </p>
-            <p>
-              <img src="http://src.selfhtml.org/dok.gif" width="14" height="10" alt="Seite" />&nbsp;<a href="{$script}?a=edit"><b>Einstellungen bearbeiten</b></a><br />
-              <img src="http://src.selfhtml.org/dok.gif" width="14" height="10" alt="Seite" />&nbsp;<a href="{$usermanagement}?a=changepw"><b>Passwort &auml;ndern</b></a><br />
-              <img src="http://src.selfhtml.org/dok.gif" width="14" height="10" alt="Seite" />&nbsp;<a href="{$usermanagement}?a=unreg"><b>Account l&ouml;schen</b></a>
-            </p>
-          </td>
-        </tr>
-        <tr>
-          <td colspan="2" class="hdrquick"><a href="#bottom"><img src="http://src.selfhtml.org/down.gif" width="14" height="10" alt="nach unten" /></a>&nbsp;</td>
-        </tr>
-      </tbody>
-    </table>
-    <h2 class="sh2"><a class="an" name="verhalten">Forums-Verhalten</a></h2>
-    <ul>
-      <li>{if $showforumframeset == "yes"}Das Forum wird in einem <b>Frameset</b> angezeigt{else}Das Forum wird <b>nicht</b> in einem Frameset dargestellt{endif}</li>
-      <li>Die Threads sollen standardm&auml;&szlig;ig <b>{if $threadsopen == "yes"}ge&ouml;ffnet{else}geschlossen{endif}</b> dargestellt werden.</li>
-      <li>Das Antwortfeld {if $doquote == "yes"}<b>wird</b>{else}wird <b>nicht</b>{endif} mit dem vorhergehenden Posting vorbelegt.{if $doquote == "yes"} Die Zitat-Kennzeichnung ist &quot;{$qchars}&quot;.{endif}</li>{if $quoteforecol}
-      <li>{if $quoteforecol}Die Vordergrundfarbe f&uuml;r zitierte Texte ist: <span style="color:{$quoteforecol};background-color:{if $quotebackcol}{$quotebackcol}{else}inherit{endif};">{$quoteforecol}</span>.{endif}{if $quotebackcol} Die Hintergrundfarbe f&uuml;r zitierte Texte ist: <span style="background-color:{$quotebackcol};color:{if $quoteforecol}{$quoteforecol}{else}inherit{endif};">{$quotebackcol}</span>.{endif}</li>{endif}
-      <li>Der Thread-Baum in den Postings soll {if $showthread == "partitial"}<b>ab dem angezeiten Posting</b>{endif}{if $showthread == "full"}<b>vollst‰ndig</b>{endif}{if $showthread == "none"}<b>gar nicht</b>{endif} dargestellt werden.</li>
-      <li>Eigene Postings {if $highlightownpost == "yes"}<b>sollen</b>{else}sollen <b>nicht</b>{endif} farblich hervorgehoben werden.{if $highlightownpost == "yes"}<br>{if $ownforepostcol}Die gew‰hlte Vordergrundfarbe: <span style="color:{$ownforepostcol};">{$ownforepostcol}</span>.{endif}{if $ownbackpostcol} Die gew‰hlte Hintergrundfarbe: <span style="color:{$ownbackpostcol};">{$ownbackpostcol}</span>{endif}{endif}</li>
-      <li>Besuchte Postings {if $highlightvisi == "yes"}<b>sollen</b>{else}sollen <b>nicht</b>{endif} farblich hervorgehoben werden.{if $highlightvisi == "yes"}<br>{if $highlightvisiforecol}Die gew‰hlte Vordergrundfarbe: <span style="color:{$highlightvisiforecol};">{$highlightvisiforecol}</span>.{endif}{if $highlightvisibackcol} Die gew‰hlte Hintergrundfarbe: <span style="color:{$highlightvisibackcol};">{$highlightvisibackcol}</span>{endif}{endif}</li>{if $fontcol}
-      <li>Die allgemeine Schriftfarbe f&uuml;r Texte ist: {$fontcol}</li>{endif}{if $fontsize}
-      <li>Die Schriftgr&ouml;&szlig;e ist: {$fontsize}</li>{endif}{if $fontfamily}
-      <li>Die Schrift-Art ist: {$fontfamily}</li>{endif}{if $autoreload}
-      <li>Das Forum soll nach <b>{$autoreload}</b> Minuten automatisch neu geladen werden.</li>{endif}{if $BaseTarget}
-      <li>Das Zielfenster von Links innerhalb von Postings ist: {$BaseTarget}.</li>{endif}{if $SendMailOnAnswer}
-      <li>Bei Antworten auf Ihre Postings soll Ihnen eine EMail geschickt werden.</li>{endif}
-    </ul>
-    <div class="updown"><a href="#top"><img src="http://src.selfhtml.org/up.gif" width="14" height="10" alt="nach oben" /></a><a href="#bottom"><img src="http://src.selfhtml.org/down.gif" width="14" height="10" alt="nach unten" /></a></div>
-    <h2 class="sh2"><a class="an" name="filter">Filter</a></h2>
-    <ul>
-      <li>&quot;Schwarze Liste&quot;: {if $blacklist}&quot;<b>{$blacklist}</b>&quot;{else}<b>Leer</b>{endif}</li>
-      <li>&quot;Weisse Liste&quot;: {if $whitelst}&quot;<b>{$whitelst}</b>&quot;{else}<b>Leer</b>{endif}</li>{if $showfrom}
-      <li>Postings werden ab dem <b>{$showfrom}</b> angezeigt.</li>{endif}{if $showuntil}
-      <li>Postings bis zum <b>{$showuntil}</b> werden angezeigt.</li>{endif}
-      <li>{if $showcat}Nur die Kategorien &quot;<b>{$showcat}</b>&quot; werden angezeigt.{else}<b>Alle</b> Kategorien werden angezeigt.{endif}</li>{if $showcat}
-      <li>{if $highlightcats}Die Kategorien &quot;<b>{$highlightcats}</b>&quot; werden hervorgehoben.{if $highlightcatforecol} Die Farbe f&uuml;r die farbliche Hervorhebung ist: {if $highlightcatforecol}<span style="color:{$highlightcatforecol}">{$highlightcatforecol}</span> (Textfarbe){if $highlightcatbackcol}, {endif}{endif}{if $highlightcatbackcol}<span style="color:{$highlightcatbackcol}">{$highlightcatbackcol}</span> (Hintergrundfarbe).{endif}{endif}{else}Keine Kategorie wird hervorgehoben{endif}</li>{endif}
-    </ul>
-    <div class="updown"><a href="#top"><img src="http://src.selfhtml.org/up.gif" width="14" height="10" alt="nach oben" /></a><a href="#bottom"><img src="http://src.selfhtml.org/down.gif" width="14" height="10" alt="nach unten" /></a></div>
-    <h2 class="sh2"><a class="an" name="formular">Formular</a></h2>
-    <ul>
-      <li>Ihre Begr&uuml;&szlig;ungs-Formel ist{if $hi}: <b>{$hi}</b>{else} <b>Aus</b>{endif}</li>
-      <li>Ihre Abschieds-Formel ist{if $bye}: <b>{$bye}</b>{else} <b>Aus</b>{endif}</li>
-      <li>Ihre Signatur ist{if $sig}: <b>{$sig}</b>{else} <b>Aus</b>{endif}</li>
-      <li>Ihr Name ist: <b>{$name}</b></li>
-      <li>Ihre EMail-Adresse ist{if $email}: <b>{$email}</b>{else} <b>nicht eingegeben worden</b>{endif}.</li>
-      <li>Ihre Homepage-URL ist{if $hp}: <b>{$hp}</b>{else} <b>nicht eingegeben worden</b>{endif}.</li>
-      <li>Ihre Bild-URL ist{if $image}: <b>{$image}</b>{else} <b>nicht eingegeben worden</b>{endif}.</li>
-    </ul>
-    <div class="updown" id="selfforumbottom"><a href="#top"><img src="http://src.selfhtml.org/up.gif" width="14" height="10" alt="nach oben" /></a></div>
-    <div class="nav"><a class="an" name="bottom"><img src="http://src.selfhtml.org/refkap.gif" width="16" height="13" alt="Teil von" /></a>&nbsp;<a href="{$forumbase}">SELFHTML Forum</a></div>
-    <p>&copy; 1998-2004 <img src="http://src.selfhtml.org/serverdoc.gif" width="15" height="10" border="0" alt="Seite" />&nbsp;<a href="http://www.selfhtml.org/de.impressum.html">Impressum</a>, f&uuml;r das <img src="http://src.selfhtml.org/de.gif" width="16" height="10" border="0" alt="deutschsprachige Seite" />&nbsp;<a href="http://wwwtech.de/cforum/">Classic Forum</a>: <img src="http://src.selfhtml.org/mail.gif" width="15" height="10" border="0" alt="E-Mail">&nbsp;<a href="mailto:ckruse@wwwtech.de">ckruse@wwwtech.de</a></p>
-  </body>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset={$charset}" />
+<meta http-equiv="Expires" content="now" />
+<meta http-equiv="Cache-Control" content="no-cache" />
+<title>SELFHTML Forum: Benutzer-Einstellungen</title>
+<meta name="robots" content="noindex,noarchive,nofollow" />
+<meta name="author" content="Stefan M&uuml;nz, stefan.muenz@selfhtml.org" />
+<meta name="DC.Publisher" content="SELFHTML Forum" />
+<meta name="DC.Identifier" content="{$script}" />
+<meta name="DC.Language" content="de" />
+<meta name="DC.Rights" content="" />
+<meta name="SELF.Pagetype" content="chapter" />
+<link rel="top" href="{$forumbase}" title="SELFHTML Forum" />
+<link rel="help" href="/faq/" title="Forums-FAQ" />
+<link rel="search" href="http://suche.de.selfhtml.org/" title="SELFHTML Suche" />
+<link rel="bookmark" href="/archiv/" title="Forums-Archiv" />
+<link rel="bookmark" href="http://de.selfhtml.org/" title="SELFHTML" />
+<link rel="bookmark" href="http://aktuell.de.selfhtml.org/artikel/" title="Feature-Artikel" />
+<link rel="bookmark" href="http://aktuell.de.selfhtml.org/tippstricks/" title="Tipps &amp; Tricks" />
+<link rel="bookmark" href="http://aktuell.de.selfhtml.org/links/" title="Linkverzeichnis" />
+<link rel="shortcut icon" href="http://src.selfhtml.org/favicon.ico" type="image/x-icon" title="SELFHTML Icon" />
+{if $owncss}{if $cssoverwrite}<link rel="stylesheet" type="text/css" href="http://src.selfhtml.org/forum_strict.css" title="SELFHTML Forum Stylesheet" />
+{endif}<link rel="stylesheet" type="text/css" href="{$owncss}" title="SELFHTML Forum Stylesheet" />
+{else}<link rel="stylesheet" type="text/css" href="http://src.selfhtml.org/forum_strict.css" title="SELFHTML Forum Stylesheet" />
+{endif}</head>
+<body id="selfforum-benutzereinstellungen">
+
+<div id="top"><img src="http://src.selfhtml.org/refkap.gif" width="16" height="13" alt="Teil von" />&nbsp;<a href="{$forumbase}">SELFHTML Forum</a></div>
+
+<table id="kopf">
+<tr>
+<td id="kopf-logo"><img src="http://src.selfhtml.org/logo.gif" width="106" height="109" alt="SELFHTML" /></td>
+<td id="kopf-titel"><h1>SELFHTML Forum:<br />Benutzer-Einstellungen</h1></td>
+</tr>
+<tr>
+<td id="kopf-seitentyp"><img src="http://src.selfhtml.org/kapx.gif" width="30" height="26" alt="Kapitelseite" /></td>
+<td id="kopf-haupt">
+
+<ul>
+<li><img src="http://src.selfhtml.org/down.gif" width="14" height="10" alt="nach unten" />&nbsp;<a href="#verhalten">Forums-Verhalten</a></li>
+<li><img src="http://src.selfhtml.org/down.gif" width="14" height="10" alt="nach unten" />&nbsp;<a href="#filter">Filter</a></li>
+<li><img src="http://src.selfhtml.org/down.gif" width="14" height="10" alt="nach unten" />&nbsp;<a href="#formular">Formular</a></li>
+</ul>
+
+<ul>
+<li><img src="http://src.selfhtml.org/dok.gif" width="14" height="10" alt="Seite" />&nbsp;<a href="{$script}?a=edit">Einstellungen bearbeiten</a></li>
+<li><img src="http://src.selfhtml.org/dok.gif" width="14" height="10" alt="Seite" />&nbsp;<a href="{$usermanagement}?a=changepw">Passwort &auml;ndern</a></li>
+<li><img src="http://src.selfhtml.org/dok.gif" width="14" height="10" alt="Seite" />&nbsp;<a href="{$usermanagement}?a=unreg">Account l&ouml;schen</a></li>
+</ul>
+
+</td>
+</tr>
+<tr>
+<td id="kopf-down" colspan="2"><a href="#bottom"><img src="http://src.selfhtml.org/down.gif" width="14" height="10" alt="nach unten" /></a></td>
+</tr>
+</table>
+
+<h2 id="verhalten">Forums-Verhalten</h2>
+
+<ul>
+
+<li>{if $showforumframeset == "yes"}Das Forum wird in einem <strong>Frameset</strong> angezeigt{else}Das Forum wird <strong>nicht</strong> in einem Frameset dargestellt{endif}</li>
+
+<li>Die Threads sollen standardm&auml;&szlig;ig <strong>{if $threadsopen == "yes"}ge&ouml;ffnet{else}geschlossen{endif}</strong> dargestellt werden.</li>
+
+<li>Das Antwortfeld {if $doquote == "yes"}<strong>wird</strong>{else}wird <strong>nicht</strong>{endif} mit dem vorhergehenden Posting vorbelegt.{if $doquote == "yes"} Die Zitat-Kennzeichnung ist &quot;{$qchars}&quot;.{endif}</li>
+{if $quoteforecol}<li>{if $quoteforecol}Die Vordergrundfarbe f&uuml;r zitierte Texte ist: <span style="color:{$quoteforecol}; background-color:{if $quotebackcol}{$quotebackcol}{else}inherit{endif};">{$quoteforecol}</span>.{endif}{if $quotebackcol} Die Hintergrundfarbe f&uuml;r zitierte Texte ist: <span style="background-color:{$quotebackcol}; color:{if $quoteforecol}{$quoteforecol}{else}inherit{endif};">{$quotebackcol}</span>.{endif}</li>
+{endif}
+<li>Der Thread-Baum in den Postings soll {if $showthread == "partitial"}<strong>ab dem angezeiten Posting</strong>{endif}{if $showthread == "full"}<strong>vollst√§ndig</strong>{endif}{if $showthread == "none"}<strong>gar nicht</strong>{endif} dargestellt werden.</li>
+
+<li>Eigene Postings {if $highlightownpost == "yes"}<strong>sollen</strong>{else}sollen <strong>nicht</strong>{endif} farblich hervorgehoben werden.{if $highlightownpost == "yes"}<br>{if $ownforepostcol}Die gew√§hlte Vordergrundfarbe: <span style="color:{$ownforepostcol};">{$ownforepostcol}</span>.{endif}{if $ownbackpostcol} Die gew√§hlte Hintergrundfarbe: <span style="color:{$ownbackpostcol};">{$ownbackpostcol}</span>{endif}{endif}</li>
+
+<li>Besuchte Postings {if $highlightvisi == "yes"}<strong>sollen</strong>{else}sollen <strong>nicht</strong>{endif} farblich hervorgehoben werden.{if $highlightvisi == "yes"}<br>{if $highlightvisiforecol}Die gew√§hlte Vordergrundfarbe: <span style="color:{$highlightvisiforecol};">{$highlightvisiforecol}</span>.{endif}{if $highlightvisibackcol} Die gew√§hlte Hintergrundfarbe: <span style="color:{$highlightvisibackcol};">{$highlightvisibackcol}</span>{endif}{endif}</li>
+
+{if $fontcol}<li>Die allgemeine Schriftfarbe f&uuml;r Texte ist: {$fontcol}</li>
+
+{endif}{if $fontsize}<li>Die Schriftgr&ouml;&szlig;e ist: {$fontsize}</li>
+
+{endif}{if $fontfamily}<li>Die Schrift-Art ist: {$fontfamily}</li>
+
+{endif}{if $autoreload}<li>Das Forum soll nach <strong>{$autoreload}</strong> Minuten automatisch neu geladen werden.</li>
+
+{endif}{if $BaseTarget}<li>Das Zielfenster von Links innerhalb von Postings ist: {$BaseTarget}.</li>
+
+{endif}{if $SendMailOnAnswer}<li>Bei Antworten auf Ihre Postings soll Ihnen eine EMail geschickt werden.</li>
+
+{endif}</ul>
+
+<div class="updown"><a href="#top"><img src="http://src.selfhtml.org/up.gif" width="14" height="10" alt="nach oben" /></a><a href="#bottom"><img src="http://src.selfhtml.org/down.gif" width="14" height="10" alt="nach unten" /></a></div>
+
+<h2 id="filter">Filter</h2>
+
+<ul>
+
+<li>&quot;Schwarze Liste&quot;: {if $blacklist}&quot;<strong>{$blacklist}</strong>&quot;{else}<strong>Leer</strong>{endif}</li>
+
+<li>&quot;Weisse Liste&quot;: {if $whitelst}&quot;<strong>{$whitelst}</strong>&quot;{else}<strong>Leer</strong>{endif}</li>{if $showfrom}
+
+<li>Postings werden ab dem <strong>{$showfrom}</strong> angezeigt.</li>{endif}{if $showuntil}
+
+<li>Postings bis zum <strong>{$showuntil}</strong> werden angezeigt.</li>{endif}
+
+<li>{if $showcat}Nur die Kategorien &quot;<strong>{$showcat}</strong>&quot; werden angezeigt.{else}<strong>Alle</strong> Kategorien werden angezeigt.{endif}</li>
+
+{if $showcat}<li>{if $highlightcats}Die Kategorien &quot;<strong>{$highlightcats}</strong>&quot; werden hervorgehoben.{if $highlightcatforecol} Die Farbe f&uuml;r die farbliche Hervorhebung ist: {if $highlightcatforecol}<span style="color:{$highlightcatforecol}">{$highlightcatforecol}</span> (Textfarbe){if $highlightcatbackcol}, {endif}{endif}{if $highlightcatbackcol}<span style="color:{$highlightcatbackcol}">{$highlightcatbackcol}</span> (Hintergrundfarbe).{endif}{endif}{else}Keine Kategorie wird hervorgehoben{endif}</li>
+
+{endif}</ul>
+
+<div class="updown"><a href="#top"><img src="http://src.selfhtml.org/up.gif" width="14" height="10" alt="nach oben" /></a><a href="#bottom"><img src="http://src.selfhtml.org/down.gif" width="14" height="10" alt="nach unten" /></a></div>
+
+<h2 id="formular">Formular</h2>
+
+<ul>
+
+<li>Ihre Begr&uuml;&szlig;ungs-Formel ist{if $hi}: <strong>{$hi}</strong>{else} <strong>Aus</strong>{endif}</li>
+
+<li>Ihre Abschieds-Formel ist{if $bye}: <strong>{$bye}</strong>{else} <strong>Aus</strong>{endif}</li>
+
+<li>Ihre Signatur ist{if $sig}: <strong>{$sig}</strong>{else} <strong>Aus</strong>{endif}</li>
+
+<li>Ihr Name ist: <strong>{$name}</strong></li>
+
+<li>Ihre EMail-Adresse ist{if $email}: <strong>{$email}</strong>{else} <strong>nicht eingegeben worden</strong>{endif}.</li>
+
+<li>Ihre Homepage-URL ist{if $hp}: <strong>{$hp}</strong>{else} <strong>nicht eingegeben worden</strong>{endif}.</li>
+
+<li>Ihre Bild-URL ist{if $image}: <strong>{$image}</strong>{else} <strong>nicht eingegeben worden</strong>{endif}.</li>
+
+</ul>
+
+<div class="updown"><a href="#top"><img src="http://src.selfhtml.org/up.gif" width="14" height="10" alt="nach oben" /></a></div>
+
+<div id="pfadunten"><img src="http://src.selfhtml.org/refkap.gif" width="16" height="13" alt="Teil von" />&nbsp;<a href="{$forumbase}">SELFHTML Forum</a></div>
+
+<p id="bottom">&copy; 1998-2004 <img src="http://src.selfhtml.org/serverdoc.gif" width="15" height="10" alt="Seite" />&nbsp;<a href="http://www.selfhtml.org/de.impressum.html">Impressum</a>, f&uuml;r das <img src="http://src.selfhtml.org/de.gif" width="16" height="10" alt="deutschsprachige Seite" />&nbsp;<a href="http://wwwtech.de/cforum/">Classic Forum</a>: <img src="http://src.selfhtml.org/mail.gif" width="15" height="10" alt="E-Mail" />&nbsp;<a href="mailto:ckruse@wwwtech.de">ckruse@wwwtech.de</a></p>
+
+</body>
 </html>

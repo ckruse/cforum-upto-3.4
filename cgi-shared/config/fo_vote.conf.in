@@ -14,6 +14,7 @@ Load "flt_httpauth"
 
 
 Forum "FORUM1" {
-  VotingDatabase "@with_cgi_shared/data/voting.dat"
+  VotingDatabase "@DATADIR@/data/voting.dat"
+  OkTemplate "@libdir@/cforum/%s_%s_vote_ok.so"
 }
 

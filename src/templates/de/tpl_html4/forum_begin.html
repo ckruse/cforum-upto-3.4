@@ -169,7 +169,8 @@
                   <a href="http://aktuell.de.selfhtml.org/live/chat.htm" onclick="if (!window.Chat) return true; Chat(); return false;"{if $frame} target="_top"{endif}>Chat</a><br>
                 </p>
                 <p>
-                  <b>Optionen:</b><br>{if $authed}{if $delnodelete}
+                  <b>Optionen:</b><br>{if $authed}
+                  <a href="{$ubase}?mav=1">Alle Threads als gelesen markieren</a><br>{if $delnodelete}
                   <a href="{$ubase}">Threads wieder ausblenden</a>{else}<a href="{$ubase}?a=nd">Ausgeblendete Threads anzeigen</a>{endif}{endif}
                   <a href="{$userconfig}"{if $frame} target="_top"{endif}>{if $authed}Benutzer-Einstellungen{else}Benutzer-Registrierung{endif}</a><br>{if !$authed}
                   <a href="{$ubase}"{if $frame} target="_top"{endif}>Benutzerspezifische Ansicht</a><br>{endif}{if $admin}{if $aaf}
@@ -190,7 +191,7 @@
             <a name="zu_diesem_Forum" class="an">Dies</a> ist ein Forum als Erg&auml;nzung zu der Dokumentation <img src="http://src.selfhtml.org/serverkap.gif" width="15" height="13" border="0" alt="bereichs&uuml;bergreifendes Kapitel">&nbsp;<a href="http://de.selfhtml.org/"{if $frame} target="_top"{endif}><b>SELFHTML</b></a>.
           </p>
           <p>
-            Von allen hier Teilnehmenden werden HTML-Grundkenntnisse erwartet. Es wird erwartet, daﬂ bei Problemen erst einmal in SELFHTML, im <img src="http://src.selfhtml.org/kap.gif" width="15" height="13" border="0" alt="Kapitel">&nbsp;<a href="/archiv/"{if $frame} target="_top"{endif}><b>Forumsarchiv</b></a> oder in anderen Quellen nach einer L&ouml;sung gesucht wird.
+            Von allen hier Teilnehmenden werden HTML-Grundkenntnisse erwartet. Es wird erwartet, da√ü bei Problemen erst einmal in SELFHTML, im <img src="http://src.selfhtml.org/kap.gif" width="15" height="13" border="0" alt="Kapitel">&nbsp;<a href="/archiv/"{if $frame} target="_top"{endif}><b>Forumsarchiv</b></a> oder in anderen Quellen nach einer L&ouml;sung gesucht wird.
           </p>
           <p>
             Zum Mitmachen im SELFHTML Forum gibt es einige grunds&auml;tzliche Verhaltensregeln. Diese Regeln sind in der <img src="http://src.selfhtml.org/dok.gif" width="15" height="10" border="0" alt="Seite">&nbsp;<a href="/faq/"{if $frame} target="_top"{endif}><b>Forums-FAQ</b></a> nachzulesen. Es wird erwartet, da&szlig; Forumsteilnehmer die Forums-FAQ kennen und die dort genannten Regeln einhalten.
@@ -200,7 +201,7 @@
           <p>Wussten Sie, {$tipoftheday}</p>{endif}{if $motd}
           {$motd}
 {endif}{if $aaf}
-          <p style="border: 1px solid red;">Sie befinden sich im Administrationsmodus. Nachdem Sie ein Posting gelˆscht haben, sollten Sie das auch <img src="http://src.selfhtml.org/serverdok.gif" width="15" height="10" border="0" alt="bereichs¸bergreifende Seite">&nbsp;<a href="https://developer.selfhtml.org/tools/deletions/"><b>dokumentieren</b></a>!</p>
+          <p style="border: 1px solid red;">Sie befinden sich im Administrationsmodus. Nachdem Sie ein Posting gel√∂scht haben, sollten Sie das auch <img src="http://src.selfhtml.org/serverdok.gif" width="15" height="10" border="0" alt="bereichs√ºbergreifende Seite">&nbsp;<a href="https://developer.selfhtml.org/tools/deletions/"><b>dokumentieren</b></a>!</p>
 {endif}        </td>
       </tr>
       <tr>
@@ -211,7 +212,7 @@
     <p>
       Der Live-Filter filtert die Thread-Liste nach Kriterien, die Sie in diesem Text-Feld angeben k&ouml;nnen. Die Bedienungsweise wird in der <img src="http://src.selfhtml.org/dok.gif" width="15" height="10" border="0" alt="Seite">&nbsp;<a href="/live_syntax.html"{if $frame} target="_top"{endif}><b>Syntax-Beschreibung</b></a> erkl&auml;rt.
     </p>
-    <form method="get" action="{$ubase}" accept-charset="{$charset},UTF-8">
+    <form method="get" action="{$ubase}" accept-charset="UTF-8">
       <p><label for="lf">Filter-String:</label> <input type="text" name="lf" id="lf" value="{$lf}" size="50"> <input type="submit" value="Filtern!"></p>
     </form>{endif}
     <h2 class="sh2"><a class="an" name="aktuelle_nachrichten">Aktuelle Nachrichten</a></h2>

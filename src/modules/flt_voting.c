@@ -112,6 +112,7 @@ int flt_voting_handler(int sockfd,const u_char **tokens,int tnum,rline_t *tsd) {
       CF_RW_UN(&t->lock);
 
       writen(sockfd,"200 Ok\n",7);
+      cf_generate_cache(NULL);
     }
     else if(cf_strcmp(tokens[1],"BAD") == 0) {
       ctid = cf_hash_get(infos,"Tid",3);
@@ -145,6 +146,7 @@ int flt_voting_handler(int sockfd,const u_char **tokens,int tnum,rline_t *tsd) {
       CF_RW_UN(&t->lock);
 
       writen(sockfd,"200 Ok\n",7);
+      cf_generate_cache(NULL);
     }
     else {
       cf_hash_destroy(infos);

@@ -242,7 +242,7 @@ int flt_deleted_del_thread(t_cf_hash *head,t_configuration *dc,t_configuration *
 
 /* {{{ flt_del_init_handler */
 int flt_del_init_handler(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc) {
-  int ret;
+  int ret,fd;
 
   if(Cfg.DeletedFile) {
     if((ret = db_create(&Cfg.db,NULL,0)) != 0) {
@@ -251,6 +251,16 @@ int flt_del_init_handler(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc)
     }
 
     if((ret = Cfg.db->open(Cfg.db,NULL,Cfg.DeletedFile,NULL,DB_BTREE,DB_CREATE,0644)) != 0) {
+      fprintf(stderr,"DB error: %s\n",db_strerror(ret));
+      return FLT_EXIT;
+    }
+
+    if((ret = Cfg.db->fd(Cfg.db,&fd)) != 0) {
+      fprintf(stderr,"DB error: %s\n",db_strerror(ret));
+      return FLT_EXIT;
+    }
+
+    if((ret = flock(fd,LOCK_EX)) != 0) {
       fprintf(stderr,"DB error: %s\n",db_strerror(ret));
       return FLT_EXIT;
     }
@@ -315,7 +325,15 @@ int flt_del_handle_command(t_configfile *cf,t_conf_opt *opt,const u_char *contex
 
 /* {{{ flt_del_cleanup */
 void flt_del_cleanup(void) {
+  int fd;
   long i;
+
+  if(Cfg.db) {
+    Cfg.db->fd(Cfg.db,&fd);
+    flock(fd,LOCK_UN);
+    Cfg.db->close(Cfg.db,0);
+  }
+
   if(Cfg.BLlen) {
     for(i=0;i<Cfg.BLlen;i++) {
       free(Cfg.BlackList[i]);
@@ -324,8 +342,6 @@ void flt_del_cleanup(void) {
   }
 
   if(Cfg.DeletedFile) free(Cfg.DeletedFile);
-
-  if(Cfg.db) Cfg.db->close(Cfg.db,0);
 }
 /* }}} */
 

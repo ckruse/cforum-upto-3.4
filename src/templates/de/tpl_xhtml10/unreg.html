@@ -1,53 +1,63 @@
-<?xml version="1.0" encoding="{$charset}"?>
+<?xml version="1.0" encoding="{$charset}" ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="de" lang="de">
-  <head>
-    <title>SELFHTML Forum: Account l&ouml;schen</title>
-    <meta http-equiv="content-type" content="text/html; charset={$charset}" />
-    <meta name="robots" content="noindex,noarchive,nofollow" />
-    <meta name="author" content="Stefan M&uuml;nz, stefan.muenz@selfhtml.org" />
-    <meta name="DC.Publisher" content="SELFHTML Forum" />
-    <!--meta name="DC.Date" content="" /-->
-    <meta name="DC.Identifier" content="{$script}" />
-    <meta name="DC.Language" content="de" />
-    <meta name="DC.Rights" content="" />
-    <meta name="SELF.Pagetype" content="page" />{if $owncss}{if $cssoverwrite}
-    <link rel="stylesheet" title="SELFHTML Forum Stylesheet" type="text/css" href="http://src.selfhtml.org/forum_strict.css" />{endif}
-    <link rel="stylesheet" title="Benutzerdefiniertes Stylesheet" type="text/css" href="{$owncss}" />{else}
-    <link rel="stylesheet" title="SELFHTML Forum Stylesheet" type="text/css" href="http://src.selfhtml.org/forum_strict.css" />{endif}
-    <link rel="shortcut icon" title="SELFHTML Icon" type="image/x-icon" href="http://src.selfhtml.org/favicon.ico" />
-    <link rel="top" title="SELFHTML Forum" href="{$forumbase}" />
-    <link rel="up" title="Benutzer-Einstellungen" href="{$userconfig}" />
-    <link rel="help" title="Forums-FAQ" href="/faq/" />
-    <link rel="search" title="SELFHTML Suche" href="http://suche.de.selfhtml.org/" />
-  </head>
-  <body id="selfforumbody">
-    <div class="nav"><a class="an" name="top"><img src="http://src.selfhtml.org/refkap.gif" width="16" height="13" alt="Teil von" /></a>&nbsp;<a href="{$forumbase}">SELFHTML Forum</a>&nbsp;<img src="http://src.selfhtml.org/refkap.gif" width="16" height="13" alt="Teil von" />&nbsp;<a href="{$userconfig}">Benutzer-Einstellungen</a></div>
-    <table class="header" id="selfforumheader">
-      <thead>
-        <tr>
-          <td class="hdrelse" style="width:110px;"><img src="http://src.selfhtml.org/logo.gif" width="106" height="109" alt="SELFHTML" /></td>
-          <td class="hdrelse"><h1 class="ph1">SELFHTML Forum:<br />Account l&ouml;schen</h1></td>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td class="info"><img src="http://src.selfhtml.org/dokx.gif" width="30" height="20" alt="Informationsseite" /></td>
-          <td class="hdrtxt">
-            <p>
-              <img src="http://src.selfhtml.org/down.gif" width="14" height="10" alt="nach unten" />&nbsp;<a href="#bestaetigung"><b>Account l&ouml;schen</b></a>
-            </p>
-          </td>
-        </tr>
-        <tr>
-          <td colspan="2" class="hdrquick"><a href="#bottom"><img src="http://src.selfhtml.org/down.gif" width="14" height="10" alt="nach unten" /></a>&nbsp;</td>
-        </tr>
-      </tbody>
-    </table>
-    <h2 class="sh2"><a class="an" name="bestaetigung">Account l&ouml;schen</a></h2>
-    <p>Sind Sie sicher, dass Sie Ihren Account l&ouml;schen wollen? Ihre benutzerspezifischen werden unwiderruflich gel&ouml;scht! Wenn Sie sich unsicher sind, verlassen Sie diese Seite einfach wieder. Ansonsten k&ouml;nnen Sie Ihren <img src="http://src.selfhtml.org/dok.gif" width="15" height="10" alt="Seite" />&nbsp;<a href="{$script}?a=unregok"><b>Account endg&uuml;ltig l&ouml;schen</b></a>.</p>
-    <div class="updown" id="selfforumbottom"><a href="#top"><img src="http://src.selfhtml.org/up.gif" width="14" height="10" alt="nach oben" /></a></div>
-    <div class="nav"><a class="an" name="bottom"><img src="http://src.selfhtml.org/refkap.gif" width="16" height="13" alt="Teil von" /></a>&nbsp;<a href="{$forumbase}">SELFHTML Forum</a>&nbsp;<img src="http://src.selfhtml.org/refkap.gif" width="16" height="13" alt="Teil von" />&nbsp;<a href="{$userconfig}">Benutzer-Einstellungen</a></div>
-    <p>&copy; 1998-2004 <img src="http://src.selfhtml.org/serverdoc.gif" width="15" height="10" border="0" alt="Seite" />&nbsp;<a href="http://www.selfhtml.org/de.impressum.html">Impressum</a>, f&uuml;r das <img src="http://src.selfhtml.org/de.gif" width="16" height="10" border="0" alt="deutschsprachige Seite" />&nbsp;<a href="http://wwwtech.de/cforum/">Classic Forum</a>: <img src="http://src.selfhtml.org/mail.gif" width="15" height="10" border="0" alt="E-Mail">&nbsp;<a href="mailto:ckruse@wwwtech.de">ckruse@wwwtech.de</a></p>
-  </body>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset={$charset}" />
+<title>SELFHTML Forum: Account l&ouml;schen</title>
+<meta name="robots" content="noindex,noarchive,nofollow" />
+<meta name="author" content="Stefan M&uuml;nz, stefan.muenz@selfhtml.org" />
+<meta name="DC.Publisher" content="SELFHTML Forum" />
+<meta name="DC.Identifier" content="{$script}" />
+<meta name="DC.Language" content="de" />
+<meta name="DC.Rights" content="" />
+<meta name="SELF.Pagetype" content="page" />
+<link rel="top" href="{$forumbase}" title="SELFHTML Forum" />
+<link rel="up" href="{$userconfig}" title="Benutzer-Einstellungen" />
+<link rel="help" href="/faq/" title="Forums-FAQ" />
+<link rel="search" href="http://suche.de.selfhtml.org/" title="SELFHTML Suche" />
+<link rel="bookmark" href="/archiv/" title="Forums-Archiv" />
+<link rel="bookmark" href="http://de.selfhtml.org/" title="SELFHTML" />
+<link rel="bookmark" href="http://aktuell.de.selfhtml.org/artikel/" title="Feature-Artikel" />
+<link rel="bookmark" href="http://aktuell.de.selfhtml.org/tippstricks/" title="Tipps &amp; Tricks" />
+<link rel="bookmark" href="http://aktuell.de.selfhtml.org/links/" title="Linkverzeichnis" />
+<link rel="shortcut icon" href="http://src.selfhtml.org/favicon.ico" type="image/x-icon" title="SELFHTML Icon" />
+{if $owncss}{if $cssoverwrite}<link rel="stylesheet" type="text/css" href="http://src.selfhtml.org/forum_strict.css" title="SELFHTML Forum Stylesheet" />
+{endif}<link rel="stylesheet" type="text/css" href="{$owncss}" title="SELFHTML Forum Stylesheet" />
+{else}<link rel="stylesheet" type="text/css" href="http://src.selfhtml.org/forum_strict.css" title="SELFHTML Forum Stylesheet" />
+{endif}</head>
+<body id="selfforum-accountloeschen">
+
+<div id="top"><img src="http://src.selfhtml.org/refkap.gif" width="16" height="13" alt="Teil von" />&nbsp;<a href="{$forumbase}">SELFHTML Forum</a> <img src="http://src.selfhtml.org/refkap.gif" width="16" height="13" alt="Teil von" />&nbsp;<a href="{$userconfig}">Benutzer-Einstellungen</a></div>
+
+<table id="kopf">
+<tr>
+<td id="kopf-logo"><img src="http://src.selfhtml.org/logo.gif" width="106" height="109" alt="SELFHTML" /></td>
+<td id="kopf-titel"><h1>SELFHTML Forum:<br />Account l&ouml;schen</h1></td>
+</tr>
+<tr>
+<td id="kopf-seitentyp"><img src="http://src.selfhtml.org/dokx.gif" width="30" height="20" alt="Informationsseite" /></td>
+<td id="kopf-haupt">
+
+<ul>
+<li><img src="http://src.selfhtml.org/down.gif" width="14" height="10" alt="nach unten" />&nbsp;<a href="#bestaetigung">Account l&ouml;schen</a></li>
+</ul>
+
+</td>
+</tr>
+<tr>
+<td id="kopf-down" colspan="2"><a href="#bottom"><img src="http://src.selfhtml.org/down.gif" width="14" height="10" alt="nach unten" /></a></td>
+</tr>
+</table>
+
+<h2 id="bestaetigung">Account l&ouml;schen</h2>
+
+<p>Sind Sie sicher, dass Sie Ihren Account l&ouml;schen wollen? Ihre benutzerspezifischen Daten werden unwiderruflich gel&ouml;scht! Wenn Sie sich unsicher sind, verlassen Sie diese Seite einfach wieder. Ansonsten k&ouml;nnen Sie Ihren <img src="http://src.selfhtml.org/dok.gif" width="15" height="10" alt="Seite" />&nbsp;<a href="{$script}?a=unregok">Account endg&uuml;ltig l&ouml;schen</a>.</p>
+
+<div class="updown"><a href="#top"><img src="http://src.selfhtml.org/up.gif" width="14" height="10" alt="nach oben" /></a></div>
+
+<div id="pfadunten"><img src="http://src.selfhtml.org/refkap.gif" width="16" height="13" alt="Teil von" />&nbsp;<a href="{$forumbase}">SELFHTML Forum</a> <img src="http://src.selfhtml.org/refkap.gif" width="16" height="13" alt="Teil von" />&nbsp;<a href="{$userconfig}">Benutzer-Einstellungen</a></div>
+
+<p id="bottom">&copy; 1998-2004 <img src="http://src.selfhtml.org/serverdoc.gif" width="15" height="10" alt="Seite" />&nbsp;<a href="http://www.selfhtml.org/de.impressum.html">Impressum</a>, f&uuml;r das <img src="http://src.selfhtml.org/de.gif" width="16" height="10" alt="deutschsprachige Seite" />&nbsp;<a href="http://wwwtech.de/cforum/">Classic Forum</a>: <img src="http://src.selfhtml.org/mail.gif" width="15" height="10" alt="E-Mail" />&nbsp;<a href="mailto:ckruse@wwwtech.de">ckruse@wwwtech.de</a></p>
+
+</body>
 </html>

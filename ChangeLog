@@ -1,3 +1,6 @@
+2004-11-24 Christian Kruse <ckruse@wwwtech.de>
+	* *: Merged 2.1 differences back to the trunk
+
 2004-11-18 Christian Kruse <ckruse@wwwtech.de>
 	* cgi-shared/Plugins/PostingAssistant.pm: Fixed typo
 
@@ -915,3 +918,5 @@
 	* fo_view.c: replace error_message through str_error_message
 
 
+=======
+>>>>>>> .merge-right.r356

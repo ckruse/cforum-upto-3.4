@@ -70,6 +70,7 @@ t_conf_opt default_options[] = {
   { "UBaseURL",                 handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_default_conf },
   { "PostingURL",               handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_default_conf },
   { "UPostingURL",              handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_default_conf },
+  { "VoteURL",                  handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_default_conf },
   { "ArchiveURL",               handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_default_conf },
   { "ArchivePostingURL",        handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_default_conf },
   { "ErrorTemplate",            handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_default_conf },
@@ -81,7 +82,7 @@ t_conf_opt default_options[] = {
   { "UserRegister",             handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_default_conf },
   { "SharedMemIds",             handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_default_conf },
   { "Administrators",           handle_command,   CFG_OPT_CONFIG|CFG_OPT_LOCAL,                &fo_default_conf },
-  { "AuthMode",                 handle_command,   CFG_OPT_CONFIG|CFG_OPT_LOCAL,                &fo_default_conf },
+  { "AuthMode",                 handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_default_conf },
 
   { "Categories",               handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_default_conf },
 
@@ -212,7 +213,9 @@ t_conf_opt fo_arcview_options[] = {
 /* {{{ vote options */
 t_conf_opt fo_vote_options[] = {
   { "<General>", NULL, 0, NULL },
-  { "VotingDatabase",           handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_GLOBAL,   &fo_vote_conf },
+  { "VotingDatabase",  handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL,                &fo_vote_conf },
+  { "Send204",         handle_command,   CFG_OPT_UNIQUE|CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_GLOBAL,  &fo_vote_conf },
+  { "OkTemplate",      handle_command,   CFG_OPT_CONFIG|CFG_OPT_NEEDED,                              &fo_vote_conf },
   { "</General>", NULL, 0, NULL },
 
   { NULL, NULL, 0, NULL }

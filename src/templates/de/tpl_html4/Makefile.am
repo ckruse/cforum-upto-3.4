@@ -174,4 +174,10 @@ de_html4_sendpassok_la_SOURCES=sendpassok.c
 de_html4_sendpassok_la_LIBADD=../../../libcfutils.la ../../../libcftemplate.la
 de_html4_sendpassok_la_LDFLAGS=-module -export-dynamic -avoid-version
 
+pkglib_LTLIBRARIES+=de_html4_vote_ok.la
+de_html4_vote_ok_la_SOURCES=vote_ok.c
+de_html4_vote_ok_la_LIBADD=../../../libcfutils.la ../../../libcftemplate.la
+de_html4_vote_ok_la_LDFLAGS=-module -export-dynamic -avoid-version
+
+
 # eof

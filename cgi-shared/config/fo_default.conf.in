@@ -39,11 +39,11 @@ Forum "FORUM1" {
 
  SharedMemIds "10000" "10001" "10002"
 
- ExternCharset "ISO-8859-15"
+ ExternCharset "UTF-8"
 
  AuthMode "http"
 
- DateLocale "de_DE.ISO8859-1"
+ DateLocale "de_DE.UTF-8"
  Language "de"
  MessagesDatabase "@DATADIR@/messages.db"
 
