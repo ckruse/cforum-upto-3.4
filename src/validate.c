@@ -1184,7 +1184,7 @@ int is_valid_file_link(const u_char *link) {
 int is_valid_link(const u_char *link) {
   u_char *ptr = strstr(link,"://");
   u_char scheme[20];
-  int i;
+  int i,vs = 0;
 
   /*
    * no scheme found, but mailto-links are mailto:<address> and news-links are
@@ -1192,24 +1192,31 @@ int is_valid_link(const u_char *link) {
    * have to do an extra check
    */
   if(ptr == NULL) {
-    if(cf_strncmp(link,"mailto:",7) == 0) {
-      strcpy(scheme,"mailto");
-    }
-    else if(cf_strncmp(link,"news:",5) == 0) {
-      strcpy(scheme,"news");
-    }
+    if(cf_strncmp(link,"mailto:",7) == 0)    strcpy(scheme,"mailto");
+    else if(cf_strncmp(link,"news:",5) == 0) strcpy(scheme,"news");
     else return -1;
   }
   else {
+    if(cf_strncmp(link,"view-source:",12) == 0) {
+      link += 12;
+      vs = 1;
+    }
+
     if(ptr-link >= 20) return -1; /* hu, seems not to be a valid scheme */
 
     strncpy(scheme,link,ptr-link);
     scheme[ptr-link] = '\0';
+
+    /* view-source may only be used with http and https */
+    if(vs && cf_strcmp(scheme,"http") != 0 && cf_strcmp(scheme,"https") != 0) return -1;
   }
 
-  for(i=0;scheme_list[i].validator;i++) {
-    if(cf_strcmp(scheme_list[i].scheme,scheme) == 0) {
-      return scheme_list[i].validator(link);
+  if(vs) return is_valid_http_link_check(link);
+  else {
+    for(i=0;scheme_list[i].validator;i++) {
+      if(cf_strcmp(scheme_list[i].scheme,scheme) == 0) {
+	return scheme_list[i].validator(link);
+      }
     }
   }
 

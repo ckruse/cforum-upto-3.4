@@ -1,35 +1,3 @@
-2005-01-03 Christian Seiler <self@christian-seiler.de>
-	* cgi-bin/admin/Makefile.am: Added forgotten admin/ to path
-
-2005-01-03 Christian Kruse <ckruse@wwwtech.de>
-	* src/modules/flt_votingvariables.c: Ups, forgot it to add it to the
-		repository
-
-2004-12-31 Christian Seiler <self@christian-seiler.de>
-	* Created cgi-bin/admin directory with corresponding Makefile.am
-	* Added cgi-bin/admin/fo_xmlrpc.in for XMLRPC requests
-	* cgi-bin/Makefile.am: Added SUBDIRS
-	* Added cgi-shared/config/fo_xmlrpc.conf.in
-	* cgi-shared/config/Makefile.am: added reference to
-		fo_xmlrpc.conf.in
-	* cgi-shared/Plugins/XMLRPCUserManagement.pm: added user management
-		module
-	* cgi-shared/Plugins/Makefile.am: added reference to new module
-	* configure.in: added cgi-bin/admin/Makefile, fo_xmlrpc.conf
-		and fo_xmlrpc.in to output
-
-2004-12-31 Christian Kruse <ckruse@wwwtech.de>
-	* src/modules/flt_category.c: Added configuration option
-		HideCategoriesInThreadView
-	* src/modules/flt_listhighlight.c: A little bit code cleaning
-	* cgi-shared/config/modules.de.xml: Added configuration option
-		HideCategoriesInThreadView and moved several configuration options to
-		different sections
-
-2004-12-30 Christian Kruse <ckruse@wwwtech.de>
-	* src/fo_vote.c: Added variable backlink in OK output
-	* src/templates/de/tpl_*/vote_ok.html: Added link back to posting
-	* src/fo_view.c: Fixed bug in filter handling
-	* src/modules/flt_visited.c: Fixed bug in 204 response
-	* cgi-shared/config/modules.de.xml: Added 204 response options
+2004-01-08 Christian Kruse <ckruse@wwwtech.de>
+	* src/validate.c: Fixed bug in is_valid_link(), now it is view-source aware.
 
