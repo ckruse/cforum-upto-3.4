@@ -1,4 +1,5 @@
 2005-01-20 Christian Kruse <ckruse@wwwtech.de>
 	* src/modules/flt_tid_index.c: Fixed a small bug, didn't initialize some
 		variables
+	* src/clientlib.c: Added DB_RDONLY flag for database open
 
