@@ -1,37 +1,4 @@
-2005-02-20 Christian Kruse <ckruse@wwwtech.de>
-	* src/clientlib.h, src/messageutils.c: Changed prototype and behavior of
-		cf_msg_linearize(), now it expects thread as parameter and sets the ->last
-		pointer correct
-	* src/modules/flt_sorting.c, src/fo_arcview.c: Moved to new cf_msg_linearize()
-	* src/htmllib.c: Fixed performance bug, unknown directives will not get
-		parsed now
-	* src/modules/flt_deleted.c: Code cleaning
-	* src/modules/flt_xmlarc.c: Fixed a nasty bug
-	* src/modules/flt_postingassistant.c: Small bugfix because of ... handling
-	* src/fo_vote.c: Bugfix, forgot to SELECT the forum
-	* src/clientlib.h, src/modules/flt_visited.c, src/modules/flt_mailonpost.c,
-		src/handlerrunners.c: Bugfix for prototype of cf_run_after_post_handlers()
-	* src/fo_post.c: Bugfix for quoting char handling, bugfix for unicode
-		whitespace handling
-	* src/modules/flt_mailonpost.c, conf/modules.de.xml: Added support for
-		UserMail directive, now user can define mail address for abonnements of
-		threads
-
-2005-02-19 Christian Seiler <self@christian-seiler.de>
-	* src/modules/flt_syntax.c: Small bugfixes
-
-2005-02-19 Christian Kruse <ckruse@wwwtech.de>
-	* src/modules/flt_visited.c: Fixed bug in marking messages visible
-	* src/htmllib.c: Fixed bugs for str_cleanup()
-	* src/modules/flt_latex.c: Changed behavior, not yet finished
-	* conf/modules.de.xml: Fixed bug for parameter, added UserMailDB
-	* src/modules/flt_mailonpost.c: Added support for "un-abo" threads
-	* src/perl/Plugins/Pathes.pm: Added plugin to write default values
-	* scripts/fo_usermanagement.in: Invented register plugin interface
-	* conf/fo_usermanagement.conf.in: Load pathes plugin by default
-	* src/perl/Plugins/Makefile.am: Added pathes plugin
-	* src/perl/Plugins/XMLRPCUserManagement.pm: Changed behavior of registering
-		users
-	* src/modules/flt_syntax.c: Added possibility to embed code, added class
-		attributes (class="lang")
+2005-02-21 Christian Kruse <ckruse@wwwtech.de>
+	* src/modules/flt_mailonpost.c: Fixed bug, flt_mailonpost_udb has to be equal
+		NULL if FLT_DECLINE should returned, not non-NULL
 

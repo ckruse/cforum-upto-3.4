@@ -439,7 +439,7 @@ int flt_mailonpost_post_handler(t_cf_hash *head,t_configuration *dc,t_configurat
 
   DBT key,data;
 
-  if(flt_mailonpost_udb) return FLT_DECLINE;
+  if(flt_mailonpost_udb == NULL) return FLT_DECLINE;
   if(cf_hash_get(GlobalValues,"UserName",8) == NULL) return FLT_DECLINE;
   if((email = cfg_get_first_value(vc,flt_mailonpost_fn,"EMail")) == NULL && flt_mailonpost_uemail == NULL) return FLT_DECLINE;
   if(flt_mailonpost_create(&db,flt_mailonpost_udb) == -1) return FLT_DECLINE;
