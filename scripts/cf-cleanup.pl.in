@@ -15,11 +15,8 @@ use strict;
 use vars qw($prefix $exec_prefix $Forum);
 
 BEGIN {
-  # get needed environments
-  die "Could not get config path, set CF_CONF_DIR!" unless $ENV{CF_CONF_DIR};
-
-  $prefix      = '@prefix@';
-  $exec_prefix = '@exec_prefix@';
+  $prefix      = "@prefix@";
+  $exec_prefix = "@exec_prefix@";
   $Forum       = '';
 }
 
@@ -31,11 +28,25 @@ use IO::Socket;
 use BerkeleyDB;
 
 use ForumUtils qw/read_configuration get_config_files get_conf_val/;
+
+use Getopt::Long;
 # }}}
 
-$Forum = shift @ARGV;
-die "Could not get forum name!\n" unless $Forum;
+my $conf = '';
 
+GetOptions(
+  "config-directory=s" => \$conf,
+  "forum-name" => \$Forum
+);
+
+if(!$Forum || !$conf) {
+  print STDERR "You must give the forum name!\n" unless $Forum;
+  print STDERR "You must give the config directory!\n" unless $conf;
+
+  usage();
+}
+
+$ENV{CF_CONF_DIR} = $conf;
 my @fnames;
 die "could not get config files" unless @fnames = get_config_files("fo_default","fo_vote");
 
@@ -108,6 +119,23 @@ closedir DIR;
 my $db = get_conf_val($config1,$Forum,'VotingDatabase');
 
 cleanup_votes($db,\%mids);
+
+# {{{ usage
+sub usage {
+  print STDERR <<EOF;
+
+Usage:
+  $0 [options]
+
+Options:
+  --config-directory=DIR    The directory containing the configuration files
+  --forum-name=NAME         The name of the forum instance
+
+EOF
+
+  exit(-1);
+}
+# }}}
 
 # {{{ cleanup deleted files
 sub cleanup_deleted {

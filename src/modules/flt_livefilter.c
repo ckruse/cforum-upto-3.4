@@ -276,7 +276,8 @@ t_flt_lf_node *flt_lf_insert_node(t_flt_lf_node *cur,t_flt_lf_node *tok,t_flt_lf
 int flt_lf_parse_string(u_char *str,u_char **pos,t_cf_template *tpl,t_flt_lf_node *node,t_flt_lf_node *root_node,t_configuration *dc) {
   int ret = 0;
   t_flt_lf_node *current = NULL;
-  t_name_value *cs = cfg_get_first_value(dc,NULL,"ExternCharset");
+  u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
+  t_name_value *cs = cfg_get_first_value(dc,forum_name,"ExternCharset");
 
   while((ret = flt_lf_scanner(str,pos)) > 0) {
     current       = fo_alloc(NULL,1,sizeof(*current),FO_ALLOC_CALLOC);

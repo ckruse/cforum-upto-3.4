@@ -25,8 +25,8 @@ BEGIN {
 
   $Plugins = {};
   $UserName = '';
-  $prefix  = '@prefix@';
-  $exec_prefix = '@exec_prefix@';
+  $prefix  = "@prefix@";
+  $exec_prefix = "@exec_prefix@";
   
   $Management = undef;
   $Forum = $ENV{CF_FORUM_NAME};

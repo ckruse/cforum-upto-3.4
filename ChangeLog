@@ -11,4 +11,12 @@
 	* src/modules/flt_admin.c: Bugfix, forgot to SELECT the forum
 	* src/defines.h: Changed CF_VERSION symbol
 	* conf/modules.de.xml: Fixed bug, LiveFilterOverwrite was twice
+	* src/modules/flt_livefilter.c: Fixed bug, cfg_get_first_value() called
+		without forum name
+	* scripts/cf-compile_templates.pl: Added --libdir to help text
+	* scripts/fo_usermanagement.in, scripts/cf-compile_templates.pl,
+		scripts/fo_userconf.in, scripts/fo_xmlrpc.in: Changed single quotes to
+		double quotes
+	* scripts/cf-cleanup.pl.in: Changed single quotes to double quotes, invented
+		command line parameters
 
