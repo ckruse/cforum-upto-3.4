@@ -218,7 +218,11 @@ typedef int (*t_new_post_filter)(t_cf_hash *,t_configuration *,t_configuration *
  * \param tid The thread id
  * \return FLT_OK, FLT_DECLINE or FLT_EXIT. FLT_DECLINE and FLT_OK are functionless, FLT_EXIT means: run no more plugins
  */
-typedef int (*t_after_post_filter)(t_cf_hash *,t_configuration *,t_configuration *,t_message *,u_int64_t);
+#ifdef CF_SHARED_MEM
+typedef int (*t_after_post_filter)(t_cf_hash *,t_configuration *,t_configuration *,t_message *,u_int64_t,int,void *);
+#else
+typedef int (*t_after_post_filter)(t_cf_hash *,t_configuration *,t_configuration *,t_message *,u_int64_t,int);
+#endif
 
 typedef int (*t_post_display_filter)(t_cf_hash *,t_configuration *,t_configuration *,t_cf_template *);
 
@@ -479,7 +483,13 @@ int cf_run_thread_sorting_handlers(t_cf_hash *head,void *shm_ptr,t_cl_thread *th
 int cf_run_thread_sorting_handlers(t_cf_hash *head,int sock,rline_t *tsd,t_cl_thread *thread);
 #endif
 
-void cf_run_after_post_handlers(t_cf_hash *head,t_message *p,u_int64_t tid);
+#ifdef CF_SHARED_MEM
+void cf_run_after_post_handlers(t_cf_hash *head,t_message *p,u_int64_t tid,int sock,void *shm);
+#else
+void cf_run_after_post_handlers(t_cf_hash *head,t_message *p,u_int64_t tid,int sock);
+#endif
+
+
 #ifdef CF_SHARED_MEM
 int cf_run_post_filters(t_cf_hash *head,t_message *p,void *ptr,int sock);
 #else

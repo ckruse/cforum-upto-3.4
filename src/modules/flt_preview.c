@@ -1,4 +1,4 @@
-/*
+/**
  * \file flt_preview.c
  * \author Christian Kruse, <ckruse@wwwtech.de>
  * \brief Posting preview

@@ -89,6 +89,11 @@ if test ! -n "$SWIG" ; then
   AC_MSG_ERROR([cannot find swig. Be sure that SWIG is installed and it is in your PATH])
 fi
 
+AC_PATH_PROG(ESMTPCFG,libesmtp-config)
+if test ! -n "$ESMTPCFG" ; then
+  AC_MSG_ERROR([cannot find libesmtp-config. Be sure that libesmtp is installed and libesmtp-config is in your PATH])
+fi
+
 GDOME_CFLAGS=`$GDOMECFG --cflags`
 GDOME_LIBS=`$GDOMECFG --libs`
 
@@ -98,11 +103,15 @@ LIBWWW_LIBS=`$LIBWWWCFG --libs`
 PCRE_CFLAGS=`$PCRECFG --cflags`
 PCRE_LIBS=`$PCRECFG --libs`
 
-CFLAGS="$LIBWWW_CFLAGS $GDOME_CFLAGS $CFLAGS"
+ESMTP_CFLAGS=`$ESMTPCFG --cflags`
+ESMTP_LIBS=`$ESMTPCFG --libs`
+
+CFLAGS="$ESMTP_CFLAGS $LIBWWW_CFLAGS $GDOME_CFLAGS $CFLAGS"
 
 AC_SUBST(LIBWWW_LIBS)
 AC_SUBST(GDOME_LIBS)
 AC_SUBST(PCRE_LIBS)
+AC_SUBST(ESMTP_LIBS)
 AC_SUBST(SWIG)
 AC_SUBST(ICONV)
 AC_SUBST(DL)
