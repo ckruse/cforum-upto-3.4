@@ -7,9 +7,9 @@ package Plugins::HTTPAuth;
 
 # {{{ initial comments
 #
-# $LastChangedDate: 2003-11-27 01:55:17 +0100 (Thu, 27 Nov 2003) $
-# $LastChangedRevision: 5 $
-# $LastChangedBy: ckruse $
+# $LastChangedDate$
+# $LastChangedRevision$
+# $LastChangedBy$
 #
 # }}}
 

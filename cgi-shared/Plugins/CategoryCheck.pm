@@ -9,9 +9,9 @@ package Plugins::CategoryCheck;
 
 # {{{ initial comments
 #
-# $LastChangedDate: 2003-12-05 20:18:43 +0100 (Fri, 05 Dec 2003) $
-# $LastChangedRevision: 20 $
-# $LastChangedBy: ckruse $
+# $LastChangedDate$
+# $LastChangedRevision$
+# $LastChangedBy$
 #
 # }}}
 

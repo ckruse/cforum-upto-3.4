@@ -120,10 +120,10 @@ AC_TRY_LINK([ #include <pthread.h> ],
 )
 
 AC_ARG_ENABLE(debug,
-  [  --enable-debug          enable debugging mode],
-  [
-    AC_DEFINE(DEBUG,1,[Defined in debugging modus])
-  ],
+  [AC_HELP_STRING(
+    [--enable-debug],
+    [enable debugging mode])],
+  [ AC_DEFINE(DEBUG,1,[Defined in debugging modus]) ],
   [ fake=1 ]
 )
 
@@ -131,32 +131,50 @@ dnl
 dnl shared memory is something like an after burner :)
 dnl
 AC_ARG_ENABLE(shared-mem,
-  [  --enable-shared-mem     enable shared memory (*much* more performance)],
+  [AC_HELP_STRING(
+    [--enable-shared-mem],
+    [enable shared memory (*much* more performance)])],
   [ AC_DEFINE(CF_SHARED_MEM,1,[Defined if shared memory should be used]) ],
   [ fake=1 ]
 )
 
 AC_ARG_WITH(message-dir,
-  [  --with-message-dir=DIR  the directory where the message files are located],[fake=1],
+  [AC_HELP_STRING(
+    [--with-message-dir=DIR],
+    [the directory where the message files are located])],
+  [fake=1],
   [ with_message_dir="`pwd`/cgi-shared/data/messages" ]
 )
+
 AC_ARG_WITH(archive-dir,
-  [  --with-archive-dir=DIR  the directory where the archived files are located],[fake=1],
+  [AC_HELP_STRING(
+    [--with-archive-dir=DIR],
+    [the directory where the archived files are located])],
+  [fake=1],
   [ with_archive_dir="`pwd`/cgi-shared/data/archive" ]
 )
 AC_ARG_WITH(socket-path,
-  [  --with-socket-path=DIR  the path where the socket should be located],[fake=1],
+  [AC_HELP_STRING(
+     [--with-socket-path=DIR],
+     [the path where the socket should be located])],
+  [fake=1],
   [ with_socket_path="/tmp/selfforum_socket" ]
 )
 AC_ARG_WITH(log-dir,
-  [  --with-log-dir=DIR      the path where the forum log files should be located],[fake=1],
+  [AC_HELP_STRING(
+    [--with-log-dir=DIR],
+    [the path where the forum log files should be located])],
+  [fake=1],
   [ with_log_dir="`pwd`/logs" ]
 )
 AC_ARG_WITH(proto-file,
-  [  --with-proto-file       the path where the protocol file for bad signals is located (used for debugging)],[fake=1],
+  [AC_HELP_STRING(
+    [--with-proto-file=PATH],
+    [the path where the protocol file for bad signals is located (used for debugging)])],
+  [fake=1],
   [ with_proto_file="`pwd`/cgi-shared/data/sigprotocol.txt" ]
 )
-AC_DEFINE(PROTOCOL_FILE,"${with_protocol_file}",[needed to collect debugging infos])
+AC_DEFINE_UNQUOTED(PROTOCOL_FILE,"${with_proto_file}",[needed to collect debugging infos])
 
 AX_PATH_BDB([3],[
     BDB_LIB="$BDB_LIBS";

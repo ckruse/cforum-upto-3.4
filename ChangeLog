@@ -1,3 +1,8 @@
+2004-06-30 Christian Kruse <ckruse@wwwtech.de>
+	* configure.in: Bugfix in protocol file handling, AC_DEFINE() quotes so
+		replaced it AC_DEFINE_UNQUOTED(), made argument help strings nice with
+		AC_HELP_STRING()
+
 2004-06-27 Christian Kruse <ckruse@wwwtech.de>
 	* src/modules/flt_posting.c: Bugfix for wrong markup (#268)
 	* cgi-shared/ForumUtils.pm: Bugfix in pref-pattern (#266)
