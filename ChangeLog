@@ -5,6 +5,7 @@
 	* src/modules/flt_syntax.c: Now all regexes are case-insensitive
 	* conf/patterns/perl.pat, conf/patterns/c.pat, conf/patterns/javascript.pat,
 		conf/patterns/php.pat: Fixed bugs in highlighting escaped values
+	* scripts/fo_userconf.in: Bugfix, now backslashes are correctly quoted
 
 2005-03-07 Christian Kruse <ckruse@wwwtech.de>
 	* src/utils.c: Fixed nasty bug in cf_make_path()
