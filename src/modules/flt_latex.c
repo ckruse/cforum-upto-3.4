@@ -68,7 +68,7 @@ int flt_latex_create_cache(const u_char *cnt,const u_char *our_sum) {
   int fds[2];
   char c,sum[33],buff[512];
   ssize_t n;
-  t_string mml,html,path,path1,path2;
+  t_string mml,html,mml_path,png_path,html_path;
 
   FILE *fd;
   pid_t pid;
@@ -107,12 +107,13 @@ int flt_latex_create_cache(const u_char *cnt,const u_char *our_sum) {
 
   str_init(&mml);
   str_init(&html);
-  str_init(&path);
-  str_init(&path1);
-  str_init(&path2);
+  str_init(&mml_path);
+  str_init(&png_path);
+  str_init(&html_path);
 
+  /* {{{ read html */
   if(c != 'X') {
-    while((n = read(fds[0],buff,512)) > 0 && c != '\0') str_chars_append(&html,buff,n);
+    while((n = read(fds[0],buff,1)) > 0 && buff[0] != '\0') str_chars_append(&html,buff,n);
     if(n < 0) {
       str_cleanup(&html);
 
@@ -121,54 +122,65 @@ int flt_latex_create_cache(const u_char *cnt,const u_char *our_sum) {
       return -1;
     }
   }
+  /* }}} */
 
-  while((n = read(fds[0],buff,512)) > 0) str_chars_append(&mml,buff,n);
+  /* {{{ read mml */
+  if(isupper(c)) {
+    while((n = read(fds[0],buff,512)) > 0) str_chars_append(&mml,buff,n);
 
-  /* something went wrong */
-  if(n < 0) {
-    str_cleanup(&mml);
-    str_cleanup(&html);
+    /* something went wrong */
+    if(n < 0) {
+      str_cleanup(&mml);
+      str_cleanup(&html);
 
-    close(fds[0]);
-    waitpid(pid,NULL,0);
-    return -1;
+      close(fds[0]);
+      waitpid(pid,NULL,0);
+      return -1;
+    }
   }
+  /* }}} */
 
-  str_char_set(&path,flt_latex_cfg.cache_path,strlen(flt_latex_cfg.cache_path));
-  str_char_set(&path1,flt_latex_cfg.cache_path,strlen(flt_latex_cfg.cache_path));
-  str_char_set(&path2,flt_latex_cfg.cache_path,strlen(flt_latex_cfg.cache_path));
-  str_chars_append(&path,our_sum,32);
-  str_chars_append(&path1,sum,32);
-  str_chars_append(&path,".mml",4);
-  str_chars_append(&path1,".png",4);
-  str_chars_append(&path2,".html",5);
+  /* {{{ create pathes */
+  str_char_set(&mml_path,flt_latex_cfg.cache_path,strlen(flt_latex_cfg.cache_path));
+  str_char_set(&png_path,flt_latex_cfg.cache_path,strlen(flt_latex_cfg.cache_path));
+  str_char_set(&html_path,flt_latex_cfg.cache_path,strlen(flt_latex_cfg.cache_path));
 
-  if((fd = fopen(path.content,"w")) == NULL) {
-    str_cleanup(&html);
-    str_cleanup(&mml);
-    str_cleanup(&path);
-    str_cleanup(&path1);
-    str_cleanup(&path2);
+  str_chars_append(&mml_path,our_sum,32);
+  str_chars_append(&png_path,sum,32);
+  str_chars_append(&html_path,our_sum,32);
+  str_chars_append(&mml_path,".mml",4);
+  str_chars_append(&png_path,".png",4);
+  str_chars_append(&html_path,".html",5);
+  /* }}} */
 
-    close(fds[0]);
-    waitpid(pid,NULL,0);
-    return -1;
-  }
-
-  fwrite(mml.content,1,mml.len,fd);
-  fclose(fd);
-
-  path.len -= 4;
-  str_chars_append(&path,".png",4);
-  rename(path1.content,path.content);
-
-  if(c != 'X') {
-    if((fd = fopen(path2.content,"w")) == NULL) {
+  if(isupper(c)) {
+    if((fd = fopen(mml_path.content,"w")) == NULL) {
       str_cleanup(&html);
       str_cleanup(&mml);
-      str_cleanup(&path);
-      str_cleanup(&path1);
-      str_cleanup(&path2);
+      str_cleanup(&mml_path);
+      str_cleanup(&png_path);
+      str_cleanup(&html_path);
+
+      close(fds[0]);
+      waitpid(pid,NULL,0);
+      return -1;
+    }
+
+    fwrite(mml.content,1,mml.len,fd);
+    fclose(fd);
+  }
+
+  mml_path.len -= 4;
+  str_chars_append(&mml_path,".png",4);
+  rename(png_path.content,mml_path.content);
+
+  if(c != 'X') {
+    if((fd = fopen(html_path.content,"w")) == NULL) {
+      str_cleanup(&html);
+      str_cleanup(&mml);
+      str_cleanup(&mml_path);
+      str_cleanup(&png_path);
+      str_cleanup(&html_path);
 
       close(fds[0]);
       waitpid(pid,NULL,0);
@@ -181,8 +193,9 @@ int flt_latex_create_cache(const u_char *cnt,const u_char *our_sum) {
 
   str_cleanup(&html);
   str_cleanup(&mml);
-  str_cleanup(&path);
-  str_cleanup(&path1);
+  str_cleanup(&mml_path);
+  str_cleanup(&png_path);
+  str_cleanup(&html_path);
 
   close(fds[0]);
   waitpid(pid,NULL,0);
@@ -203,8 +216,8 @@ void flt_latex_create_md5_sum(u_char *str,size_t len,u_char *res) {
 }
 /* }}} */
 
-/* {{{ flt_latex_get_ml */
-int flt_latex_get_ml(t_string *which,u_char *sum,const u_char *type) {
+/* {{{ flt_latex_get_m */
+int flt_latex_get_m(t_string *which,u_char *sum,const u_char *type) {
   t_string path;
   FILE *fd;
   u_char buff[512];
@@ -228,7 +241,7 @@ int flt_latex_get_ml(t_string *which,u_char *sum,const u_char *type) {
     if(n > 0) str_chars_append(which,buff,n);
   }
 
-  if(!feof(fd)) {
+  if(ferror(fd)) {
     fclose(fd);
     return -1;
   }
@@ -239,43 +252,87 @@ int flt_latex_get_ml(t_string *which,u_char *sum,const u_char *type) {
 }
 /* }}} */
 
+/* {{{ flt_latex_check */
+int flt_latex_check(t_string *content,const u_char *sum) {
+  t_string str;
+  struct stat st;
+  int ret = 0;
+
+  str_init(&str);
+  str_char_set(&str,flt_latex_cfg.cache_path,strlen(flt_latex_cfg.cache_path));
+  str_chars_append(&str,sum,32);
+
+  str_chars_append(&str,".html",5);
+  if(stat(str.content,&st) == 0) ret |= 1;
+
+  str.len -= 5;
+  str_chars_append(&str,".mml",4);
+  if(stat(str.content,&st) == 0) ret |= 2;
+
+  str.len -= 4;
+  str_chars_append(&str,".png",4);
+  if(stat(str.content,&st) == 0) ret |= 4;
+
+  if(ret != 0) {
+    str_cleanup(&str);
+    return ret;
+  }
+
+  /* no HTML exists, neither MathML, nor PNG */
+  if(flt_latex_create_cache(content->content,sum) == -1) {
+    str_cleanup(&str);
+    return -1;
+  }
+
+  str.len -= 4;
+  str_chars_append(&str,".html",5);
+  if(stat(str.content,&st) == 0) ret |= 1;
+
+  str.len -= 5;
+  str_chars_append(&str,".mml",4);
+  if(stat(str.content,&st) == 0) ret |= 2;
+
+  str.len -= 4;
+  str_chars_append(&str,".png",4);
+  if(stat(str.content,&st) == 0) ret |= 4;
+
+  return ret > 0 ? ret : -1;
+}
+/* }}} */
+
 int flt_latex_execute(t_configuration *fdc,t_configuration *fvc,const u_char *directive,const u_char **parameters,size_t plen,t_string *bco,t_string *bci,t_string *content,t_string *cite,const u_char *qchars,int sig) {
   u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   u_char sum[33];
-  t_string str;
-  struct stat st;
-  int obj = 0;
+  int obj = 0,exist;
   t_name_value *xhtml = cfg_get_first_value(fdc,forum_name,"XHTMLMode");
-  size_t len;
+  size_t len,len1;
 
   if(sig) return FLT_DECLINE;
 
-  str_init(&str);
-
   flt_latex_create_md5_sum(content->content,content->len,sum);
+  if((exist = flt_latex_check(content,sum)) == -1) return FLT_DECLINE;
 
-  str_char_set(&str,flt_latex_cfg.cache_path,strlen(flt_latex_cfg.cache_path));
-  str_chars_append(&str,sum,32);
-  str_chars_append(&str,".html",5);
-
-  if(stat(str.content,&st) == -1) {
-    if(flt_latex_create_cache(content->content,sum) == -1) return FLT_DECLINE;
-  }
+  len1 = bco->len;
+  str_chars_append(bco,"<span class=\"math\">",19);
 
   switch(flt_latex_cfg.mode) {
     case FLT_LATEX_INLINE:
-      len = bco->len;
+      if((exist & 2) == 0) goto default_action;
+
+      len = len1;
 
       str_chars_append(bco,"<math xmlns=\"http://www.w3.org/1998/Math/MathML\">",49);
-      if(flt_latex_get_mml(bco,sum) == -1) {
+      if(flt_latex_get_m(bco,sum,"mml") == -1) {
         bco->len = len;
         bco->content[bco->len] = '\0';
         return FLT_DECLINE;
       }
-      str_chars_append(bco,"</math>",7);
-      break;
+      str_chars_append(bco,"</math></span>",14);
+      return FLT_OK;
 
     case FLT_LATEX_OBJECT:
+      if((exist & 2) == 0) goto default_action;
+
       obj = 1;
       str_chars_append(bco,"<object type=\"text/mathml\" data=\"",33);
       str_chars_append(bco,flt_latex_cfg.uri,strlen(flt_latex_cfg.uri));
@@ -283,19 +340,40 @@ int flt_latex_execute(t_configuration *fdc,t_configuration *fvc,const u_char *di
       str_chars_append(bco,".mml\">",6);
 
     case FLT_LATEX_PNG:
+      if((exist & 4) == 0) goto default_action;
+
       str_chars_append(bco,"<img src=\"",10);
       str_chars_append(bco,flt_latex_cfg.uri,strlen(flt_latex_cfg.uri));
       str_chars_append(bco,sum,32);
       str_chars_append(bco,".png\"",5);
 
       if(*xhtml->values[0] == 'y')  str_chars_append(bco," />",3);
-      else str_chars_append(bco,">",1);
+      else str_char_append(bco,'>');
 
-      if(obj) str_chars_append(bco,"</object>",9);
+      if(obj) str_chars_append(bco,"</object></span>",16);
+      else str_chars_append(bco,"</span>",7);
+      return FLT_OK;
   }
 
+  default_action:
+  if(exist & 1) {
+    if(flt_latex_get_m(bco,sum,"html") == -1) {
+      bco->len = len1;
+      bco->content[bco->len] = '\0';
+      return FLT_DECLINE;
+    }
 
-  return FLT_OK;
+    if(obj) str_chars_append(bco,"</object>",9);
+    str_chars_append(bco,"</span>",7);
+    return FLT_OK;
+  }
+
+  if(obj) {
+    str_chars_append(bco,"</object>",9);
+    return FLT_OK;
+  }
+
+  return FLT_DECLINE;
 }
 
 int flt_latex_init(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc) {

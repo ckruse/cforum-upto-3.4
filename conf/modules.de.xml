@@ -396,7 +396,7 @@
         </argument>
       </directive>
 
-      <directive name="MarkOwnPostingsVisited" arguments="1">
+      <directive name="MarkOwnPostsVisited" arguments="1">
         <argument paramname="markownvisi" type="radio" encode="plain">
           <validate>^(yes|no)$</validate>
           <question>Sollen ihre eigenen Postings auch als besucht markiert werden?</question>

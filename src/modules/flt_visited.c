@@ -87,24 +87,29 @@ void *flt_visited_mark_visited_api(void *vmid) {
   u_int64_t *mid = (u_int64_t *)vmid;
   DBT key,data;
   int ret,fd;
-  u_char one[] = "1";
   u_char buff[256];
   size_t len;
+  char one[] = "1";
 
   if(Cfg.VisitedFile) {
     memset(&key,0,sizeof(key));
     memset(&data,0,sizeof(data));
 
     len = snprintf(buff,256,"%llu",*mid);
-    key.data = buff;
-    key.size = len;
 
     data.data = one;
     data.size = sizeof(one);
 
-    if((ret = Cfg.db->put(Cfg.db,NULL,&key,&data,DB_NODUPDATA)) != 0) {
-      if(ret == DB_KEYEXIST) return vmid;
-      return NULL;
+    key.data = buff;
+    key.size = len;
+
+    if((ret = Cfg.db->put(Cfg.db,NULL,&key,&data,DB_NODUPDATA|DB_NOOVERWRITE)) != 0) {
+      if(ret != DB_KEYEXIST) {
+        fprintf(stderr,"DB error: %s\n",db_strerror(ret));
+        return NULL;
+      }
+
+      return vmid;
     }
 
     snprintf(buff,256,"%s.tm",Cfg.VisitedFile);
@@ -280,7 +285,8 @@ int flt_visited_mark_visited(t_cf_hash *head,t_configuration *dc,t_configuration
 
 /* {{{ flt_visited_mark_own */
 int flt_visited_mark_own(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_message *msg,u_int64_t tid) {
-  return flt_visited_mark_visited_api(&msg->mid) != NULL ? FLT_OK : FLT_DECLINE;
+  if(Cfg.mark_visited) return flt_visited_mark_visited_api(&msg->mid) ? FLT_OK : FLT_DECLINE;
+  return FLT_DECLINE;
 }
 /* }}} */
 

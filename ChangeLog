@@ -1,22 +1,6 @@
 2005-02-19 Christian Kruse <ckruse@wwwtech.de>
-	* src/modules/flt_deleted.c: Fixed small typo
-	* src/modules/flt_frameset.c: Fixed small typo
-	* src/modules/flt_include.c: Fixed #517
-	* conf/modules.de.xml: Added directive InlineCSS
-	* conf/patterns/html.pat: Fixed small bugs
-	* src/fo_view.c: Set variables cf_version
-	* src/modules/flt_xmlstorage.c: Fixed silly bug
-	* src/modules/flt_syntax.c: Bugfixes for highlighting parser
-	* src/modules/flt_latex.c: Several small bugfixes, not yet finished
-	* src/modules/flt_admin.c: Bugfix, forgot to SELECT the forum
-	* src/defines.h: Changed CF_VERSION symbol
-	* conf/modules.de.xml: Fixed bug, LiveFilterOverwrite was twice
-	* src/modules/flt_livefilter.c: Fixed bug, cfg_get_first_value() called
-		without forum name
-	* scripts/cf-compile_templates.pl: Added --libdir to help text
-	* scripts/fo_usermanagement.in, scripts/cf-compile_templates.pl,
-		scripts/fo_userconf.in, scripts/fo_xmlrpc.in: Changed single quotes to
-		double quotes
-	* scripts/cf-cleanup.pl.in: Changed single quotes to double quotes, invented
-		command line parameters
+	* src/modules/flt_visited.c: Fixed bug in marking messages visible
+	* src/htmllib.c: Fixed bugs for str_cleanup()
+	* src/modules/flt_latex.c: Changed behavior, not yet finished
+	* conf/modules.de.xml: Fixed bug for parameter
 

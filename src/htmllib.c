@@ -238,10 +238,10 @@ u_char *parse_message(u_char *start,t_array *stack,t_string *content,t_string *c
             /* ok, go and run directive filters */
             rc = run_block_directive_filters(directive,(const u_char **)&parameter,1,content,cite,&d_content,cite ? &d_cite : NULL,qchars,sig);
 
-            if(rc == FLT_DECLINE) {
-              str_cleanup(&d_content);
-              if(cite) str_cleanup(&d_cite);
+            str_cleanup(&d_content);
+            str_cleanup(&d_cite);
 
+            if(rc == FLT_DECLINE) {
               ptr = safe;
               goto default_action;
             }
@@ -310,17 +310,15 @@ u_char *parse_message(u_char *start,t_array *stack,t_string *content,t_string *c
             /* ok, go and run directive filters */
             rc = run_block_directive_filters(directive,(const u_char **)stack_elem.args,stack_elem.argnum,content,cite,&d_content,cite ? &d_cite : NULL,qchars,sig);
 
+            str_cleanup(&d_content);
+            str_cleanup(&d_cite);
+
             if(rc == FLT_DECLINE) {
               ptr = safe;
-              str_cleanup(&d_content);
-              if(cite) str_cleanup(&d_cite);
               goto default_action;
             }
 
             ptr = retval;
-
-            //str_str_append(content,&d_content);
-            //if(cite) str_str_append(cite,&d_cite);
           }
           else {
             ptr = safe;
