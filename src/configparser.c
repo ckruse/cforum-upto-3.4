@@ -140,6 +140,7 @@ t_conf_opt fo_post_options[] = {
   { "RedirectOnPost",            handle_command,   CFG_OPT_CONFIG|CFG_OPT_LOCAL|CFG_OPT_USER, &fo_post_conf },
   { "FieldValidate",             handle_command,   CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_post_conf },
   { "QuotingChars",              handle_command,   CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_NEEDED|CFG_OPT_UNIQUE|CFG_OPT_LOCAL, &fo_post_conf },
+  { "DateFormat",                handle_command,   CFG_OPT_CONFIG|CFG_OPT_NEEDED|CFG_OPT_LOCAL, &fo_post_conf },
 
   { "Image",                     handle_command,   CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_post_conf },
 

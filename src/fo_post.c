@@ -68,6 +68,9 @@ void display_finishing_screen(t_message *p) {
   t_name_value *qc = cfg_get_first_value(&fo_post_conf,forum_name,"QuotingChars");
   t_name_value *ps = cfg_get_first_value(&fo_default_conf,forum_name,uname ? "UPostScript" : "PostScript");
   t_name_value *fb = cfg_get_first_value(&fo_default_conf,forum_name,uname ? "UBaseURL" : "BaseURL");
+  t_name_value *df = cfg_get_first_value(&fo_post_conf,fn,"DateFormat");
+  t_name_value *lc = cfg_get_first_value(&fo_default_conf,fn,"DateLocale");
+
   size_t len;
   u_char *val;
   t_cl_thread thr;
@@ -98,6 +101,11 @@ void display_finishing_screen(t_message *p) {
 
   cf_set_variable(&tpl,cs,"Name",p->author.content,p->author.len,1);
   cf_set_variable(&tpl,cs,"subject",p->subject.content,p->subject.len,1);
+
+  if((val = cf_general_get_time(df->values[0],lc->values[0],&len,&p->date)) != NULL) {
+    cf_set_variable(&tpl,cs,"date",val,len,1);
+    free(val);
+  }
 
   /* {{{ transform body to html and set it in the template */
   msg_to_html(&thr,p->content.content,&content,NULL,qc->values[0],-1,1);

@@ -22,6 +22,9 @@
 	* src/modules/flt_cftp.c: Wah! Really nasty bug!
 	* conf/modules.de.xml: Bugfix, directive is not Category, it is Categories
 	* scripts/fo_userconf.in: Fixed bug in directive handling
+	* src/modules/flt_postingassistant.c: Now series of dots are ignored in tests
+	* src/fo_post.c: Added date variable
+	* src/configparser.c: Added DateFormat directive for fo_post
 
 2005-02-08 Christian Kruse <ckruse@wwwtech.de>
 	* configure.in: Added cf-cleanup.pl
