@@ -514,7 +514,6 @@ int process_variable_print_tag (t_token *variable,t_array *data) {
 int process_iterator_print_tag (t_token *iterator,t_array *data) {
   t_string tmp;
   t_string c_var;
-  t_token *token;
   int ret;
   
   str_init(&tmp);
