@@ -44,7 +44,7 @@ block "default"
   # vorher-regexp wird auf das zeichen davor angewandt
   onregexpafter "^[^a-zA-Z0-9]" "^0[0-7]\\.?[0-7]*" highlight "octnumber"
   onregexpafter "^[^a-zA-Z0-9]" "^0[xX][0-9A-Fa-f]\\.?[0-9A-Fa-f]*" highlight "hexnumber"
-  onregexpafter "^[^a-zA-Z0-9]" "^[0-9]\\.[0-9]*" highlight "number"
+  onregexpafter "^[^a-zA-Z0-9]" "^[0-9]\\.?[0-9]*" highlight "number"
 end
 
 block "qw("
@@ -91,7 +91,7 @@ block "string"
 
   onregexp "^\\\\[0-7]{1,3}" highlight "escaped"
   onregexp "^\\\\x[0-9A-Fa-f]{1,2}" highlight "escaped"
-  onregexp "^\\\\[nrt$]" highlight "escaped"
+  onregexp "^\\\\[btnvfr$]" highlight "escaped"
   onregexp "^\\$+[a-zA-Z_][a-zA-Z0-9_]*(\\[[a-zA-Z0-9_]*\\])*" highlight "variable"
   onregexp "^\\$\\{+[a-zA-Z_][a-zA-Z0-9_]*(\\[[a-zA-Z0-9_]*\\])*\}" highlight "variable"
 

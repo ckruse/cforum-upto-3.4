@@ -21,7 +21,7 @@ block "default"
 
   onregexpafter "^[^a-zA-Z0-9]" "^0[0-7]\\.?[0-7]*" highlight "octnumber"
   onregexpafter "^[^a-zA-Z0-9]" "^0[xX][0-9A-Fa-f]\\.?[0-9A-Fa-f]*" highlight "hexnumber"
-  onregexpafter "^[^a-zA-Z0-9]" "^[0-9]\\.[0-9]*" highlight "number"
+  onregexpafter "^[^a-zA-Z0-9]" "^[0-9]\\.?[0-9]*" highlight "number"
 end
 
 block "region"

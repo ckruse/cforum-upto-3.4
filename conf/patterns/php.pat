@@ -26,7 +26,7 @@ block "default"
   # vorher-regexp wird auf das zeichen davor angewandt
   onregexpafter "^[^a-zA-Z0-9]" "^0[0-7]\\.?[0-7]*" highlight "octnumber"
   onregexpafter "^[^a-zA-Z0-9]" "^0[xX][0-9A-Fa-f]\\.?[0-9A-Fa-f]*" highlight "hexnumber"
-  onregexpafter "^[^a-zA-Z0-9]" "^[0-9]\\.[0-9]*" highlight "number"
+  onregexpafter "^[^a-zA-Z0-9]" "^[0-9]\\.?[0-9]*" highlight "number"
 
   # syntax: onregexp <regexp> <neuer-block> <span-klasse>
   onregexp "^\\$+[a-zA-Z_][a-zA-Z0-9_]*" highlight "variable"
