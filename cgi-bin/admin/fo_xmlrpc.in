@@ -12,7 +12,7 @@
 
 #
 use strict;
-use vars qw($Bin $Config $Script $Plugins $UserName $prefix $fo_default_conf $methods);
+use vars qw($Bin $Config $Script $Plugins $UserName $prefix $fo_default_conf $fo_xmlrpc_conf $methods);
 
 BEGIN {
   my $null = $0; $null =~ tr!\\!/!; # for win :-(
