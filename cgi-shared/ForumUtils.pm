@@ -419,8 +419,8 @@ sub uniquify_params {
       foreach my $val (@values) {
         return get_error($dcfg,'posting','charset') unless $Clientlib->is_valid_utf8_string($val,length($val));
 
-        # we want non-breaking space as normal whitespaces
-        $val =~ s/\xC2\xA0/ /g;
+        # we want non-breaking space and unicode whitespaces as normal whitespaces
+        $val =~ s/\xC2\xA0|\xE2\x80[\x80-\x8B\xA8-\xAF]/ /g;
         push @nvals,$val;
       }
 
@@ -460,8 +460,8 @@ sub uniquify_params {
 
         return get_error($dcfg,'posting','charset') if !defined $nval;
 
-        # we want non-breaking space as normal whitespaces
-        $nval =~ s/\xC2\xA0/ /g;
+        # we want non-breaking space and unicode whitespaces as normal whitespaces
+        $val =~ s/\xC2\xA0|\xE2\x80[\x80-\x8B\xA8-\xAF]/ /g;
 
         push @newvals,$nval;
       }

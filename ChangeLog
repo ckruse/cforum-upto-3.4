@@ -1,3 +1,9 @@
+2004-10-12 Christian Kruse <ckruse@wwwtech.de>
+	* cgi-shared/ForumUtils.pm: Now &x2000;-&x200B;, &x2028;-&x202F; and &nbsp;
+		will be replaced by &x20;
+	* src/charconvert.c: Added routine to change unicode character codes to
+		UTF-8
+
 2004-10-11 Christian Kruse <ckruse@wwwtech.de>
 	* src/modules/Makefile.am: Added flt_directives, added libcfvalidate.la to
 		flt_directives.la

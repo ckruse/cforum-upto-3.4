@@ -78,6 +78,49 @@ int utf8_to_unicode(const u_char *s,size_t n,u_int32_t *num) {
 }
 /* }}} */
 
+/* {{{ unicode_to_utf8 */
+int unicode_to_utf8(u_int32_t num, u_char *c,size_t n) {
+  int count;
+
+  if(num < 0x80)             count = 1;
+  else if(num < 0x800)       count = 2;
+  else if(num < 0x10000)     count = 3;
+  else if(num < 0x200000)    count = 4;
+  else if(num < 0x4000000)   count = 5;
+  else if(num <= 0x7FFFFFFF) count = 6;
+  else return EINVAL;
+
+  if (n < count) return EINVAL;
+
+  switch(count) {
+    case 6:
+      c[5] = 0x80 | (num & 0x3F);
+      num = (num >> 6) | 0x4000000;
+
+    case 5:
+      c[4] = 0x80 | (num & 0x3F);
+      num = (num >> 6) | 0x200000;
+
+    case 4:
+      c[3] = 0x80 | (num & 0x3F);
+      num = (num >> 6) | 0x10000;
+
+    case 3:
+      c[2] = 0x80 | (num & 0x3F);
+      num = (num >> 6) | 0x800;
+
+    case 2:
+      c[1] = 0x80 | (num & 0x3F);
+      num = (num >> 6) | 0xC0;
+
+    case 1:
+      c[0] = num;
+  }
+
+  return count;
+}
+/* }}} */
+
 /* {{{ is_valid_utf8_string */
 int is_valid_utf8_string(const u_char *str,size_t len) {
   register u_char *ptr = (u_char *)str;
