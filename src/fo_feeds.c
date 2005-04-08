@@ -1188,7 +1188,7 @@ int main(int argc,char *argv[],char *env[]) {
 
   /* {{{ get readmode information */
   memset(&rm_infos,0,sizeof(rm_infos));
-  if((ret = cf_run_readmode_collectors(head,&rm_infos)) != FLT_OK) {
+  if((ret = cf_run_readmode_collectors(head,&fo_view_conf,&rm_infos)) != FLT_OK) {
     printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
     fprintf(stderr,"cf_run_readmode_collectors() returned %d!\n",ret);
     cf_error_message("E_CONFIG_ERR",NULL);
