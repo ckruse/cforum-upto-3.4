@@ -418,7 +418,7 @@ void cf_msg_linearize(t_cl_thread *thr,t_hierarchical_node *h);
  * \param rm_infos The readmode information struct
  * \return FLT_OK, FLT_EXIT or FLT_DECLINE
  */
-int cf_run_readmode_collectors(t_cf_hash *head,cf_readmode_t *rm_infos);
+int cf_run_readmode_collectors(t_cf_hash *head,t_configuration *vc,cf_readmode_t *rm_infos);
 
 /**
  * Run VIEW_LIST_HANDLER handlers.

@@ -351,7 +351,7 @@ int cf_run_perpost_var_handlers(t_cf_hash *head,t_cl_thread *thread,t_message *m
 /* }}} */
 
 /* {{{ cf_run_readmode_collectors */
-int cf_run_readmode_collectors(t_cf_hash *head,cf_readmode_t *rm_infos) {
+int cf_run_readmode_collectors(t_cf_hash *head,t_configuration *vc,cf_readmode_t *rm_infos) {
   int ret = FLT_DECLINE,ext = FLT_EXIT;
   t_handler_config *handler;
   size_t i;
@@ -361,7 +361,7 @@ int cf_run_readmode_collectors(t_cf_hash *head,cf_readmode_t *rm_infos) {
     for(i=0;i<Modules[RM_COLLECTORS_HANDLER].elements && ret == FLT_DECLINE;i++) {
       handler   = array_element_at(&Modules[RM_COLLECTORS_HANDLER],i);
       fkt       = (cf_readmode_collector_t)handler->func;
-      ext = ret = fkt(head,&fo_default_conf,&fo_view_conf,rm_infos);
+      ext = ret = fkt(head,&fo_default_conf,vc,rm_infos);
     }
   }
 
