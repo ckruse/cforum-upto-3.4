@@ -41,7 +41,8 @@
 static struct {
   int activate;
   int show_votes;
-} flt_vv_Config = { 0, 0 };
+  int use_js;
+} flt_vv_Config = { 0, 0, 0 };
 
 static u_char *flt_vv_fn = NULL;
 
@@ -55,6 +56,7 @@ int flt_votingvariables_execute_filter(t_cf_hash *head,t_configuration *dc,t_con
     if(UserName) cf_tpl_setvalue(tpl,"votes_link",TPL_VARIABLE_STRING,"1",1);
 
     if(flt_vv_Config.show_votes) cf_tpl_setvalue(tpl,"show_votes",TPL_VARIABLE_STRING,"1",1);
+    if(flt_vv_Config.use_js) cf_tpl_setvalue(tpl,"VotingUseJS",TPL_VARIABLE_INT,1);
 
     return FLT_OK;
   }
@@ -73,7 +75,15 @@ int flt_votingvariables_setvars(t_cf_hash *head,t_configuration *dc,t_configurat
   size_t len;
 
   if(flt_vv_Config.activate) {
+    len = snprintf(buff,512,"%llu",msg->mid);
+    cf_tpl_hashvar_setvalue(hash,"mid",TPL_VARIABLE_STRING,buff,len);
+
+    len = snprintf(buff,512,"%llu",thread->tid);
+    cf_tpl_hashvar_setvalue(hash,"tid",TPL_VARIABLE_STRING,buff,len);
+
     if(UserName) {
+      if(flt_vv_Config.use_js) cf_tpl_hashvar_setvalue(hash,"VotingUseJS",TPL_VARIABLE_INT,1);
+
       tmp = cf_advanced_get_link(v->values[0],thread->tid,msg->mid,NULL,1,&len,"a","good");
       cf_set_variable_hash(hash,cs,"vote_link_good",tmp,len,1);
 
@@ -103,6 +113,7 @@ int flt_votingvariables_handle(t_configfile *cfile,t_conf_opt *opt,const u_char 
 
   if(cf_strcmp(opt->name,"VotingActivate") == 0) flt_vv_Config.activate = cf_strcmp(args[0],"yes") == 0;
   else if(cf_strcmp(opt->name,"VotesShow") == 0) flt_vv_Config.show_votes = cf_strcmp(args[0],"yes") == 0;
+  else if(cf_strcmp(opt->name,"VotingUseJS") == 0) flt_vv_Config.use_js = cf_strcmp(args[0],"yes") == 0;
 
   return 0;
 }
@@ -111,6 +122,7 @@ int flt_votingvariables_handle(t_configfile *cfile,t_conf_opt *opt,const u_char 
 t_conf_opt flt_votingvariables_config[] = {
   { "VotingActivate", flt_votingvariables_handle, CFG_OPT_CONFIG|CFG_OPT_LOCAL, NULL },
   { "VotesShow",      flt_votingvariables_handle, CFG_OPT_CONFIG|CFG_OPT_LOCAL, NULL },
+  { "VotingUseJS",    flt_votingvariables_handle, CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
   { NULL, NULL, 0, NULL }
 };
 

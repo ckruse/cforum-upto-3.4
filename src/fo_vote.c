@@ -157,7 +157,7 @@ int main(int argc,char *argv[],char *env[]) {
   int sock,ret;
   t_array *cfgfiles;
   t_configfile dconf,conf;
-  u_char *fname,*ctid,*cmid,*a,buff[512],*uname,*ucfg;
+  u_char *fname,*ctid,*cmid,*a,buff[512],*uname,*ucfg,*mode,*line;
   t_cf_hash *head;
   size_t len;
   DB_ENV *dbenv;
@@ -166,6 +166,7 @@ int main(int argc,char *argv[],char *env[]) {
   t_name_value *dbname,*cs,*send204;
   int fd;
   u_char *forum_name;
+  rline_t rsd;
 
   size_t i;
   t_filter_begin exec;
@@ -235,6 +236,7 @@ int main(int argc,char *argv[],char *env[]) {
     ctid = cf_cgi_get(head,"t");
     cmid = cf_cgi_get(head,"m");
     a    = cf_cgi_get(head,"a");
+    mode = cf_cgi_get(head,"mode");
 
     /* {{{ read user config */
     ucfg = cf_get_uconf_name(uname);
@@ -315,7 +317,7 @@ int main(int argc,char *argv[],char *env[]) {
         data.data = "1";
         data.size = 1;
 
-        if((ret = db->put(db,NULL,&key,&data,DB_NODUPDATA|DB_NOOVERWRITE)) != 0) {
+        if((ret = db->put(db,NULL,&key,&data,0)) != 0) {
           printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
           cf_error_message("E_VOTE_INTERNAL",NULL);
           fprintf(stderr,"db->put() error: %s\n",db_strerror(ret));
@@ -327,10 +329,50 @@ int main(int argc,char *argv[],char *env[]) {
 
         len = snprintf(buff,512,"SELECT %s\nVOTE %s\nTid: %s\nMid: %s\n\nQUIT\n",forum_name,*a=='g'?"GOOD":"BAD",ctid,cmid);
         writen(sock,buff,len);
-        close(sock);
 
-        if(send204 && cf_strcmp(send204->values[0],"yes") == 0) printf("Status: 204 No Content\015\012\015\012");
-        else send_ok_output(head,cs);
+        if(mode && cf_strcmp(mode,"xmlhttp") == 0) {
+          memset(&rsd,0,sizeof(rsd));
+
+          printf("Content-Type: text/html\015\012\015\012");
+
+          if((line = readline(sock,&rsd)) != NULL) {
+            if(cf_strncmp(line,"200 Ok",6) == 0) {
+              free(line);
+              if((line = readline(sock,&rsd)) != NULL) {
+                if(cf_strncmp(line,"200 Ok",6) == 0) {
+                  free(line);
+
+                  if((line = readline(sock,&rsd)) != NULL) {
+                    fprintf(stderr,"second line is: %s\n",line);
+                    printf("%d",atoi(line+5));
+                    free(line);
+                  }
+                  else printf("0");
+                }
+                else {
+                  free(line);
+                  printf("0");
+                }
+              }
+              else printf("0");
+            }
+            else {
+              free(line);
+              printf("0");
+            }
+          }
+          else printf("0");
+
+          close(sock);
+        }
+        if(send204 && cf_strcmp(send204->values[0],"yes") == 0) {
+          close(sock);
+          printf("Status: 204 No Content\015\012\015\012");
+        }
+        else {
+          close(sock);
+          send_ok_output(head,cs);
+        }
       }
       else {
         printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);

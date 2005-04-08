@@ -281,6 +281,19 @@
         </argument>
       </directive>
 
+      <directive name="VotingUseJS" arguments="1">
+        <argument paramname="votingusejs" type="radio" encode="plain">
+          <validate>^(yes|no)$</validate>
+          <question>Soll JavaScript für das Voting-Programm genutzt werden? Der Nachteil ist, dass sie eventuell auftretende Fehler nicht mitbekommen.</question>
+          <error>Soll JavaScript für das Voting-Programm genutzt werden? Bitte geben Sie &quot;ja&quot; oder &quot;nein&quot; an!</error>
+          <formvalues>
+            <value val="yes">Ja</value>
+            <value val="no" default="yes">Nein</value>
+          </formvalues>
+        </argument>
+      </directive>
+
+
       <directive name="MarkThreadResponse204" arguments="1">
         <argument paramname="markthreadresponse204" type="radio" encode="plain">
           <validate>^(yes|no)$</validate>

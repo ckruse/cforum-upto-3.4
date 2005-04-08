@@ -46,12 +46,13 @@ struct sockaddr_un;
 /* {{{ flt_voting_handler */
 int flt_voting_handler(int sockfd,t_forum *forum,const u_char **tokens,int tnum,rline_t *tsd) {
   t_cf_hash *infos;
-  u_char *ln = NULL,*tmp,*ctid,*cmid;
+  u_char *ln = NULL,*tmp,*ctid,*cmid,buff[512];
   u_int64_t tid,mid;
   int err = 0;
   t_thread *t;
   t_posting *p;
   long llen;
+  size_t s;
 
   if(tnum != 2) return FLT_DECLINE;
 
@@ -113,10 +114,10 @@ int flt_voting_handler(int sockfd,t_forum *forum,const u_char **tokens,int tnum,
       /* }}} */
 
       CF_RW_WR(&t->lock);
-      p->votes_good++;
+      s = snprintf(buff,512,"200 Ok\nNum: %ld\n",++p->votes_good);
       CF_RW_UN(&t->lock);
 
-      writen(sockfd,"200 Ok\n",7);
+      writen(sockfd,buff,s);
       cf_generate_cache(forum);
     }
     else if(cf_strcmp(tokens[1],"BAD") == 0) {
@@ -147,10 +148,10 @@ int flt_voting_handler(int sockfd,t_forum *forum,const u_char **tokens,int tnum,
       /* }}} */
 
       CF_RW_WR(&t->lock);
-      p->votes_bad++;
+      s = snprintf(buff,512,"200 Ok\nNum: %ld\n",++p->votes_bad);
       CF_RW_UN(&t->lock);
 
-      writen(sockfd,"200 Ok\n",7);
+      writen(sockfd,buff,s);
       cf_generate_cache(forum);
     }
     else {

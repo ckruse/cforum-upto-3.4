@@ -1,3 +1,10 @@
+2005-03-08 Christian Kruse <ckruse@wwwtech.de>
+	* conf/modules.de.xml: Added VotingUseJS directive
+	* src/modules/flt_voting.c: Voting now returns the number of votes in answer
+	* src/modules/flt_votingvariables.c: Added support for JavaScript
+	* src/modules/flt_nested.c: Small bugfixes
+	* src/fo_vote.c: Added support for xmlhttp mode
+
 2005-03-04 Christian Kruse <ckruse@wwwtech.de>
 	* : Invented readmode info struct
 	* src/clientlib.c, src/modules/flt_directives.c, src/modules/flt_rot13.c,

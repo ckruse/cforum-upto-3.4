@@ -119,6 +119,9 @@ int flt_nested_execute_filter(t_cf_hash *head,t_configuration *dc,t_configuratio
   cf_set_variable(&pt_tpl,cs,"postscript",ps->values[0],strlen(ps->values[0]),1);
   cf_set_variable(&pt_tpl,cs,"regscript",reg->values[0],strlen(reg->values[0]),1);
 
+  free(rm->values[0]);
+  rm->values[0] = strdup("_NONE_");
+
   for(msg=thread->messages;msg;msg=msg->next) {
     if((msg->may_show && msg->invisible == 0) || ShowInvisible == 1) {
       if(slvl == -1) slvl = msg->level;
@@ -176,6 +179,7 @@ int flt_nested_execute_filter(t_cf_hash *head,t_configuration *dc,t_configuratio
       cf_set_variable_hash(&hash,cs,"mid",buff,len,0);
 
       cf_run_perpost_var_handlers(head,thread,msg,&hash);
+      cf_run_posting_handlers(head,thread,&pt_tpl,vc);
 
       cf_tpl_setvar(&pt_tpl,"thread",&hash);
       if(thread->last == thread->messages) cf_tpl_setvalue(&pt_tpl,"last",TPL_VARIABLE_INT,1);
@@ -205,6 +209,9 @@ int flt_nested_execute_filter(t_cf_hash *head,t_configuration *dc,t_configuratio
       pt_tpl.parsed.len = 0;
     }
   }
+
+  free(rm->values[0]);
+  rm->values[0] = strdup("nested");
 
   cf_tpl_finish(&pt_tpl);
 
