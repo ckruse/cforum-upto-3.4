@@ -157,21 +157,25 @@ int flt_list_rm_collector(t_cf_hash *head,t_configuration *dc,t_configuration *v
     v = cfg_get_first_value(dc,fn,"UPostingURL_List");
     rm_infos->posting_uri[1] = v->values[0];
 
-    v = cfg_get_first_value(vc,fn,"TemplateForumBegin");
-    cf_gen_tpl_name(buff,256,v->values[0]);
-    rm_infos->pre_threadlist_tpl = strdup(buff);
+    if((v = cfg_get_first_value(vc,fn,"TemplateForumBegin")) != NULL) {
+      cf_gen_tpl_name(buff,256,v->values[0]);
+      rm_infos->pre_threadlist_tpl = strdup(buff);
+    }
 
-    v = cfg_get_first_value(vc,fn,"TemplateForumThread");
-    cf_gen_tpl_name(buff,256,v->values[0]);
-    rm_infos->thread_posting_tpl = rm_infos->threadlist_thread_tpl = strdup(buff);
+    if((v = cfg_get_first_value(vc,fn,"TemplateForumThread")) != NULL) {
+      cf_gen_tpl_name(buff,256,v->values[0]);
+      rm_infos->thread_posting_tpl = rm_infos->threadlist_thread_tpl = strdup(buff);
+    }
 
-    v = cfg_get_first_value(vc,fn,"TemplateForumEnd");
-    cf_gen_tpl_name(buff,256,v->values[0]);
-    rm_infos->post_threadlist_tpl = strdup(buff);
+    if((v = cfg_get_first_value(vc,fn,"TemplateForumEnd")) != NULL) {
+      cf_gen_tpl_name(buff,256,v->values[0]);
+      rm_infos->post_threadlist_tpl = strdup(buff);
+    }
 
-    v = cfg_get_first_value(vc,fn,"TemplateForumList");
-    cf_gen_tpl_name(buff,256,v->values[0]);
-    rm_infos->thread_tpl = strdup(buff);
+    if((v = cfg_get_first_value(vc,fn,"TemplateForumList")) != NULL) {
+      cf_gen_tpl_name(buff,256,v->values[0]);
+      rm_infos->thread_tpl = strdup(buff);
+    }
 
     return FLT_OK;
   }
