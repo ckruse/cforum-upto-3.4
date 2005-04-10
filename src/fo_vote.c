@@ -151,12 +151,12 @@ int ignre(t_configfile *cf,const u_char *context,u_char *name,u_char **args,size
 int main(int argc,char *argv[],char *env[]) {
   /* {{{ initialization */
   static const u_char *wanted[] = {
-    "fo_default", "fo_vote"
+    "fo_default", "fo_view", "fo_vote"
   };
 
   int sock,ret;
   t_array *cfgfiles;
-  t_configfile dconf,conf;
+  t_configfile dconf,conf,vconf;
   u_char *fname,*ctid,*cmid,*a,buff[512],*uname,*ucfg,*mode,*line;
   t_cf_hash *head;
   size_t len;
@@ -171,6 +171,8 @@ int main(int argc,char *argv[],char *env[]) {
   size_t i;
   t_filter_begin exec;
   t_handler_config *handler;
+  
+  cf_readmode_t rm_infos;
 
   /* set signal handler for SIGSEGV (for error reporting) */
   signal(SIGSEGV,sighandler);
@@ -178,7 +180,7 @@ int main(int argc,char *argv[],char *env[]) {
   signal(SIGFPE,sighandler);
   signal(SIGBUS,sighandler);
 
-  if((cfgfiles = get_conf_file(wanted,2)) == NULL) {
+  if((cfgfiles = get_conf_file(wanted,3)) == NULL) {
     fprintf(stderr,"Could not find config files!\n");
     return EXIT_FAILURE;
   }
@@ -195,13 +197,18 @@ int main(int argc,char *argv[],char *env[]) {
   free(fname);
 
   fname = *((u_char **)array_element_at(cfgfiles,1));
+  cfg_init_file(&vconf,fname);
+  free(fname);
+
+  fname = *((u_char **)array_element_at(cfgfiles,2));
   cfg_init_file(&conf,fname);
   free(fname);
 
   cfg_register_options(&dconf,default_options);
+  cfg_register_options(&vconf,fo_view_options);
   cfg_register_options(&conf,fo_vote_options);
 
-  if(read_config(&dconf,NULL,CFG_MODE_CONFIG) != 0 || read_config(&conf,NULL,CFG_MODE_CONFIG) != 0) {
+  if(read_config(&dconf,NULL,CFG_MODE_CONFIG) != 0 || read_config(&conf,NULL,CFG_MODE_CONFIG) != 0 || read_config(&vconf,NULL,CFG_MODE_CONFIG) != 0) {
     fprintf(stderr,"config file error!\n");
     cfg_cleanup_file(&dconf);
     cfg_cleanup_file(&conf);
@@ -257,6 +264,17 @@ int main(int argc,char *argv[],char *env[]) {
       }
     }
     /* }}} */
+
+    /* {{{ get readmode information */
+    memset(&rm_infos,0,sizeof(rm_infos));
+    if((ret = cf_run_readmode_collectors(head,&fo_view_conf,&rm_infos)) != FLT_OK) {
+      printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
+      fprintf(stderr,"cf_run_readmode_collectors() returned %d!\n",ret);
+      cf_error_message("E_CONFIG_ERR",NULL);
+      ret = FLT_EXIT;
+    }
+    else cf_hash_set(GlobalValues,"RM",2,&rm_infos,sizeof(rm_infos));
+  /* }}} */
 
     send204 = cfg_get_first_value(&fo_vote_conf,forum_name,"Send204");
 

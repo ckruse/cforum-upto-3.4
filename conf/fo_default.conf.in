@@ -15,7 +15,7 @@ Forum FORUM1 {
  TemplateMode "html4"
  XHTMLMode "no"
 
- ErrorTemplate "@sysconfdir@/cforum/templates/forum1/%s_%s_errortpl.so"
+ ErrorTemplate "@sysconfdir@/cforum/templates/forum1/%s_%s_fatal.so"
 
  ThreadIndexFile "@localstatedir@/cforum/forum1_tididx.dat"
 

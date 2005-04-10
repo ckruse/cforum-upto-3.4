@@ -1,3 +1,9 @@
+2005-03-10 Christian Kruse <ckruse@wwwtech.de>
+	* AUTHORS: Changed copyright to 2005
+	* conf/fo_default.conf.in: Got rid of this **** errortpl template
+	* src/fo_view.c, src/fo_post.c: Changed call to cf_run_readmode_collectors()
+	* src/fo_vote.c: Fixed bug which caused fo_vote to crash
+
 2005-03-08 Christian Kruse <ckruse@wwwtech.de>
 	* conf/modules.de.xml: Added VotingUseJS directive
 	* src/modules/flt_voting.c: Voting now returns the number of votes in answer

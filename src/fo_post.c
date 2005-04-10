@@ -857,6 +857,8 @@ int main(int argc,char *argv[],char *env[]) {
   /* first state: let the begin-filters run! :-) */
   if(ret != FLT_EXIT) ret = cf_run_init_handlers(head);
 
+  cs = cfg_get_first_value(&fo_default_conf,forum_name,"ExternCharset");
+
   /* {{{ get readmode information */
   memset(&rm_infos,0,sizeof(rm_infos));
   if(cf_run_readmode_collectors(head,&fo_post_conf,&rm_infos) != FLT_OK) {
@@ -867,7 +869,6 @@ int main(int argc,char *argv[],char *env[]) {
   else cf_hash_set(GlobalValues,"RM",2,&rm_infos,sizeof(rm_infos));
   /* }}} */
 
-  cs = cfg_get_first_value(&fo_default_conf,forum_name,"ExternCharset");
   ShowInvisible = cf_hash_get(GlobalValues,"ShowInvisible",13) != NULL;
 
   if(ret != FLT_EXIT) {
