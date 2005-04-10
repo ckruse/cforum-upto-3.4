@@ -27,7 +27,7 @@ BEGIN {
   $UserName = '';
   $prefix  = "@prefix@";
   $exec_prefix = "@exec_prefix@";
-  
+
   $Management = undef;
   $Forum = $ENV{CF_FORUM_NAME};
 }
@@ -90,22 +90,22 @@ sub validate_parameters {
 
     if(exists $cfg->{$Forum}->{MinVal}) {
       my ($minval) = grep { $_->[0] eq $name } @{$cfg->{$Forum}->{MinVal}};
-      return get_error($fdc,$name,'short') if defined $minval && $minval->[1] > $val;
+      return sprintf(get_error($fdc,$name,'short'),$minval->[1]) if defined $minval && $minval->[1] > $val;
     }
 
     if(exists $cfg->{$Forum}->{MaxVal}) {
       my ($maxval) = grep { $_->[0] eq $name } @{$cfg->{$Forum}->{MaxVal}};
-      return get_error($fdc,$name,'long') if defined $maxval && $maxval->[1] < $val;
+      return sprintf(get_error($fdc,$name,'long'),$maxval->[1]) if defined $maxval && $maxval->[1] < $val;
     }
 
     if(exists $cfg->{$Forum}->{MinLength}) {
       my ($minlen) = grep { $_->[0] eq $name } @{$cfg->{$Forum}->{MinLength}};
-      return get_error($fdc,$name,'short') if defined $minlen && $minlen->[1] > length($val);
+      return sprintf(get_error($fdc,$name,'short'),$minlen->[1]) if defined $minlen && $minlen->[1] > length($val);
     }
 
     if(exists $cfg->{$Forum}->{MaxLength}) {
       my ($maxlen) = grep { $_->[0] eq $name } @{$cfg->{$Forum}->{MaxLength}};
-      return get_error($fdc,$name,'long') if defined $maxlen && $maxlen->[1] < length($val);
+      return sprintf(get_error($fdc,$name,'long'),$maxlen->[1]) if defined $maxlen && $maxlen->[1] < length($val);
     }
 
     if(exists $cfg->{$Forum}->{Validate}) {
@@ -287,7 +287,7 @@ if($UserName) {
       fatal($cgi,$fo_default_conf,$user_config,get_error($fo_default_conf,'TPL_NOT_FOUND'),$fatal_template) unless defined $chpassok;
       my $tpl = new CForum::Template(get_template($fo_default_conf,$user_config,$chpassok));
       fatal($cgi,$fo_default_conf,$user_config,get_error($fo_default_conf,'TPL_NOT_FOUND'),$fatal_template) unless defined $tpl;
-      
+
       $tpl->setvalue('script',recode($fo_default_conf,get_conf_val($fo_default_conf,$Forum,'UserManagement')));
       $tpl->setvalue('forumbase',recode($fo_default_conf,get_conf_val($fo_default_conf,$Forum,'UBaseURL')));
       $tpl->setvalue('userconfig',recode($fo_default_conf,get_conf_val($fo_default_conf,$Forum,'UserConfig')));

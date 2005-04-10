@@ -363,17 +363,17 @@ int flt_lf_parse_string(u_char *str,u_char **pos,t_cf_template *tpl,t_flt_lf_nod
 int flt_lf_form(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cf_template *begin,t_cf_template *end) {
   u_char *filter_str,*pos;
 
+  if(head) {
+    if((filter_str = cf_cgi_get(head,"lf")) != NULL) {
+      cf_hash_set(GlobalValues,"openclose",9,"0",1);
+      pos = filter_str;
+      flt_lf_parse_string(filter_str,&pos,begin,NULL,NULL,dc);
+      cf_tpl_setvalue(begin,"lf",TPL_VARIABLE_STRING,filter_str,strlen(filter_str));
+    }
+  }
+
   if(flt_lf_active) {
     cf_tpl_setvalue(begin,"livefilter",TPL_VARIABLE_STRING,"1",1);
-
-    if(head) {
-      if((filter_str = cf_cgi_get(head,"lf")) != NULL) {
-        cf_hash_set(GlobalValues,"openclose",9,"0",1);
-        pos = filter_str;
-        flt_lf_parse_string(filter_str,&pos,begin,NULL,NULL,dc);
-        cf_tpl_setvalue(begin,"lf",TPL_VARIABLE_STRING,filter_str,strlen(filter_str));
-      }
-    }
 
     return FLT_OK;
   }
@@ -725,18 +725,16 @@ int flt_lf_filter(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_mess
   if(mode & CF_MODE_THREADVIEW) return FLT_DECLINE;
   t_flt_lf_result *res;
 
-  if(flt_lf_active) {
-    if(flt_lf_first && flt_lf_success) {
-      res = flt_lf_evaluate(flt_lf_first,msg,tid) ;
-      flt_lf_to_bool(res);
+  if(flt_lf_first && flt_lf_success) {
+    res = flt_lf_evaluate(flt_lf_first,msg,tid);
+    flt_lf_to_bool(res);
 
-      if(res->val == NULL) msg->may_show = 0;
-      else {
-        if(flt_lf_overwrite) msg->may_show = 1;
-      }
-
-      free(res);
+    if(res->val == NULL) msg->may_show = 0;
+    else {
+      if(flt_lf_overwrite) msg->may_show = 1;
     }
+
+    free(res);
 
     return FLT_OK;
   }
