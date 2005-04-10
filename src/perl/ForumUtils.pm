@@ -42,8 +42,6 @@ sub VERSION {(q$Revision$ =~ /([\d.]+)\s*$/)[0] or '0.0'}
 use BerkeleyDB;
 use POSIX qw/setlocale strftime LC_ALL/;
 
-use HTML::Entities;
-
 use CForum::Template;
 use CForum::Clientlib qw/htmlentities charset_convert_entities charset_convert htmlentities_charset_convert is_valid_utf8_string/;
 use CForum::Validator;
