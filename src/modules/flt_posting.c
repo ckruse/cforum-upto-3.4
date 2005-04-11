@@ -48,6 +48,8 @@ struct {
   u_char *ActiveColorB;
 } flt_posting_cfg = { NULL, NULL, NULL, NULL, NULL, NULL, NULL };
 
+
+static u_char *flt_posting_tpl = NULL;
 static u_char *flt_posting_fn = NULL;
 
 /* {{{ flt_posting_replace_placeholders */
@@ -399,8 +401,8 @@ int flt_posting_rm_collector(t_cf_hash *head,t_configuration *dc,t_configuration
       rm_infos->post_threadlist_tpl = strdup(buff);
     }
 
-    if((v = cfg_get_first_value(vc,flt_posting_fn,"TemplatePosting")) != NULL) {
-      cf_gen_tpl_name(buff,256,v->values[0]);
+    if(flt_posting_tpl) {
+      cf_gen_tpl_name(buff,256,flt_posting_tpl);
       rm_infos->thread_tpl = strdup(buff);
     }
 
@@ -467,6 +469,16 @@ int flt_posting_handle_actpcol(t_configfile *cfile,t_conf_opt *opt,const u_char 
 }
 /* }}} */
 
+int flt_posting_handle_tpl(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
+  if(flt_posting_fn == NULL) flt_posting_fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
+  if(!context || cf_strcmp(flt_posting_fn,context) != 0) return 0;
+
+  if(flt_posting_tpl) free(flt_posting_tpl),
+  flt_posting_tpl = strdup(args[0]);
+
+  return 0;
+}
+
 /* {{{ flt_posting_cleanup */
 void flt_posting_cleanup(void) {
   if(flt_posting_cfg.Hi)           free(flt_posting_cfg.Hi);
@@ -483,6 +495,7 @@ t_conf_opt flt_posting_config[] = {
   { "Signature",          flt_posting_handle_greet,    CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
   { "TextBox",            flt_posting_handle_box,      CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
   { "ActivePostingColor", flt_posting_handle_actpcol,  CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
+  { "TemplatePosting",    flt_posting_handle_tpl,      CFG_OPT_CONFIG|CFG_OPT_LOCAL,              NULL },
   { NULL, NULL, 0, NULL }
 };
 

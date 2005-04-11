@@ -107,7 +107,7 @@ void sighandler(int segnum) {
     pi    = getenv("PATH_INFO");
 
     if(GlobalValues) uname = cf_hash_get(GlobalValues,"UserName",8);
-    
+
     switch(segnum) {
       case SIGSEGV:
         snprintf(buff,10,"SIGSEGV");
@@ -428,6 +428,8 @@ void show_month_content(const u_char *year,const u_char *month) {
   for(i=0;i<ary->elements;++i) {
     ent = array_element_at(ary,i);
 
+    if(ent->invisible && show_invisible == 0) continue;
+
     cf_tpl_var_init(&array1,TPL_VARIABLE_ARRAY);
 
     len = prep_var(ent->author,ent->alen,&tmp,cs,1);
@@ -447,6 +449,8 @@ void show_month_content(const u_char *year,const u_char *month) {
       free(tmp1);
       if(tmp) free(tmp);
     }
+
+    cf_tpl_var_addvalue(&array1,TPL_VARIABLE_INT,ent->invisible);
 
     if(ent->cat) {
       len = prep_var(ent->cat,ent->clen,&tmp,cs,1);
@@ -539,6 +543,7 @@ void generate_thread_output(t_cl_thread *thread,t_hierarchical_node *msg,t_cf_tp
   cf_set_variable(tl_tpl,cs,"mid",strbuffer.content,strbuffer.len,1);
   cf_set_variable(tl_tpl,cs,"subject",msg->msg->subject.content,msg->msg->subject.len,1);
   cf_set_variable(tl_tpl,cs,"author",msg->msg->author.content,msg->msg->author.len,1);
+  if(msg->msg->invisible) cf_tpl_setvalue(tl_tpl,"deleted",TPL_VARIABLE_INT,1);
 
   cf_tpl_var_addvalue(&ary,TPL_VARIABLE_STRING,strbuffer.content,strbuffer.len);
 
@@ -693,7 +698,7 @@ void print_thread(t_cl_thread *thr,const u_char *year,const u_char *month,const 
   cf_tpl_setvalue(&main_tpl,"threadlist",TPL_VARIABLE_STRING,threadlist.content,threadlist.len);
 
   cf_tpl_parse_to_mem(&main_tpl);
- 
+
   printf("Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
   fwrite(main_tpl.parsed.content,1,main_tpl.parsed.len,stdout);
 
@@ -892,11 +897,13 @@ int main(int argc,char *argv[],char *env[]) {
   }
   /* }}} */
 
-
   cs = cfg_get_first_value(&fo_default_conf,forum_name,"ExternCharset");
 
+  /* first action: authorization modules */
+  ret = cf_run_auth_handlers(head);
+
   /* {{{ check if URI ends with a slash */
-  if((pi = getenv("PATH_INFO")) != NULL) {
+  if((pi = getenv("PATH_INFO")) != NULL && ret != FLT_EXIT) {
     if(*pi && pi[strlen(pi)-1] != '/') {
       str_init(&tmp);
 

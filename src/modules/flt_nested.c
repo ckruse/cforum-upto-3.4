@@ -37,6 +37,7 @@
 #include "htmllib.h"
 /* }}} */
 
+static u_char *flt_nested_tpl = NULL;
 static u_char *flt_nested_pt_tpl = NULL;
 static u_char *flt_nested_fn = NULL;
 
@@ -268,8 +269,8 @@ int flt_nested_rm_collector(t_cf_hash *head,t_configuration *dc,t_configuration 
       rm_infos->post_threadlist_tpl = strdup(buff);
     }
 
-    if((v = cfg_get_first_value(vc,fn,"TemplateForumNested")) != NULL) {
-      cf_gen_tpl_name(buff,256,v->values[0]);
+    if(flt_nested_tpl) {
+      cf_gen_tpl_name(buff,256,flt_nested_tpl);
       rm_infos->thread_tpl = strdup(buff);
     }
 
@@ -285,15 +286,22 @@ int flt_nested_handle(t_configfile *cfile,t_conf_opt *opt,const u_char *context,
   if(flt_nested_fn == NULL) flt_nested_fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   if(!context || cf_strcmp(flt_nested_fn,context) != 0) return 0;
 
-  if(flt_nested_pt_tpl) free(flt_nested_pt_tpl);
-  flt_nested_pt_tpl = strdup(args[0]);
+  if(cf_strcmp(opt->name,"TemplateForumNested") == 0) {
+    if(flt_nested_tpl) free(flt_nested_tpl);
+    flt_nested_tpl = strdup(args[0]);
+  }
+  else if(cf_strcmp(opt->name,"PerThreadTemplate")) {
+    if(flt_nested_pt_tpl) free(flt_nested_pt_tpl);
+    flt_nested_pt_tpl = strdup(args[0]);
+  }
 
   return 0;
 }
 /* }}} */
 
 t_conf_opt flt_nested_config[] = {
-  { "PerThreadTemplate", flt_nested_handle,  CFG_OPT_CONFIG|CFG_OPT_LOCAL|CFG_OPT_NEEDED, NULL },
+  { "TemplateForumNested", flt_nested_handle,  CFG_OPT_CONFIG|CFG_OPT_LOCAL, NULL },
+  { "PerThreadTemplate",   flt_nested_handle,  CFG_OPT_CONFIG|CFG_OPT_LOCAL, NULL },
   { NULL, NULL, 0, NULL }
 };
 

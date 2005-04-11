@@ -37,6 +37,9 @@
 #include "htmllib.h"
 /* }}} */
 
+static u_char *flt_list_fn = NULL;
+static u_char *flt_list_tpl = NULL;
+
 /* {{{ flt_list_execute_filter */
 int flt_list_execute_filter(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cl_thread *thread,t_cf_template *tpl) {
   t_cf_tpl_variable array,hash;
@@ -172,8 +175,8 @@ int flt_list_rm_collector(t_cf_hash *head,t_configuration *dc,t_configuration *v
       rm_infos->post_threadlist_tpl = strdup(buff);
     }
 
-    if((v = cfg_get_first_value(vc,fn,"TemplateForumList")) != NULL) {
-      cf_gen_tpl_name(buff,256,v->values[0]);
+    if(flt_list_tpl) {
+      cf_gen_tpl_name(buff,256,flt_list_tpl);
       rm_infos->thread_tpl = strdup(buff);
     }
 
@@ -184,7 +187,18 @@ int flt_list_rm_collector(t_cf_hash *head,t_configuration *dc,t_configuration *v
 }
 /* }}} */
 
+int flt_list_handle(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
+  if(flt_list_fn == NULL) flt_list_fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
+  if(!context || cf_strcmp(flt_list_fn,context) != 0) return 0;
+
+  if(flt_list_tpl) free(flt_list_tpl);
+  flt_list_tpl = strdup(args[0]);
+
+  return 0;
+}
+
 t_conf_opt flt_list_config[] = {
+  { "TemplateForumList", flt_list_handle, CFG_OPT_CONFIG|CFG_OPT_LOCAL, NULL },
   { NULL, NULL, 0, NULL }
 };
 

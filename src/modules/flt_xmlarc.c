@@ -491,7 +491,6 @@ t_array *flt_xmlarc_getthreadlist(const u_char *year,const u_char *month) {
   t_arc_tl_ent ent;
 
   int fd,is_invisible;
-  int show_invisible = cf_hash_get(GlobalValues,"ShowInvisible",13) != NULL;
   u_int64_t tid;
 
   register u_char *ptr;
@@ -534,7 +533,6 @@ t_array *flt_xmlarc_getthreadlist(const u_char *year,const u_char *month) {
     if((ptr = flt_xmlarc_gnt(ptr,file,st.st_size,"<Thread",7)) == NULL) break;
 
     tid          = flt_xmlarc_gi(ptr,file,st.st_size);
-    is_invisible = 0;
 
     str_init(&strbuff);
     str_char_append(&strbuff,'t');
@@ -577,18 +575,12 @@ t_array *flt_xmlarc_getthreadlist(const u_char *year,const u_char *month) {
       }
       else if(*ptr == 'i') {
         if(cf_strncmp(ptr,"invisible",9) == 0) {
-          is_invisible = *(ptr+11) - '0';
+          ent.invisible = *(ptr+11) - '0';
         }
       }
     }
 
-    if(is_invisible == 0 || show_invisible == 1) array_push(ary,&ent);
-    else {
-      if(ent.author) free(ent.author);
-      if(ent.cat) free(ent.cat);
-      if(ent.subject) free(ent.subject);
-      if(ent.tid) free(ent.tid);
-    }
+    array_push(ary,&ent);
   }
 
   munmap(file,st.st_size);

@@ -31,6 +31,8 @@ typedef time_t (*t_month_last_modified)(const u_char *,const u_char *);
 typedef time_t (*t_thread_last_modified)(const u_char *,const u_char *,const u_char *);
 
 typedef struct {
+  int invisible;
+
   u_char *author;
   size_t alen;
 
