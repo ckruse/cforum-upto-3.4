@@ -473,7 +473,7 @@ int flt_posting_handle_tpl(t_configfile *cfile,t_conf_opt *opt,const u_char *con
   if(flt_posting_fn == NULL) flt_posting_fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   if(!context || cf_strcmp(flt_posting_fn,context) != 0) return 0;
 
-  if(flt_posting_tpl) free(flt_posting_tpl),
+  if(flt_posting_tpl) free(flt_posting_tpl);
   flt_posting_tpl = strdup(args[0]);
 
   return 0;

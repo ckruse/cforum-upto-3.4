@@ -6,6 +6,9 @@
 	* src/fo_arcview.c: Added handling for deleted threads in threadlist
 	* src/fo_arcview.h: Changed datatype t_arc_tl_ent, added invisible information
 	* src/configparser.c: Removed some module-dependent config options
+	* src/modules/flt_nested.c: Bugfix in thread generation
+	* src/modules/flt_posting.c: Fixed typo
+	* src/htmllib.c: Bugfix in threadlist generation
 
 2005-03-10 Christian Kruse <ckruse@wwwtech.de>
 	* AUTHORS: Changed copyright to 2005
