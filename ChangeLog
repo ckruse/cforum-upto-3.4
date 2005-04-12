@@ -1,3 +1,6 @@
+2005-03-12 Christian Kruse <ckruse@wwwtech.de>
+	* src/fo_arcview.c: Fixed bug #745
+
 2005-03-11 Christian Kruse <ckruse@wwwtech.de>
 	* src/modules/flt_list.c, src/modules/flt_nested.c, src/modules/flt_posting.c:
 		Moved configuration options from configparser.c to the modules itself

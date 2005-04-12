@@ -814,6 +814,8 @@ int main(int argc,char *argv[],char *env[]) {
   t_cf_hash *head;
   t_string tmp;
 
+  cf_readmode_t rm_infos;
+
   size_t len;
   int ret = 0;
 
@@ -919,6 +921,16 @@ int main(int argc,char *argv[],char *env[]) {
     }
   }
   /* }}} */
+
+  if(ret != FLT_EXIT) {
+    memset(&rm_infos,0,sizeof(rm_infos));
+    v = cfg_get_first_value(&fo_default_conf,forum_name,"PostingURL");
+    rm_infos.posting_uri[0] = v->values[0];
+
+    v = cfg_get_first_value(&fo_default_conf,forum_name,"UPostingURL");
+    rm_infos.posting_uri[1] = v->values[0];
+    cf_hash_set(GlobalValues,"RM",2,&rm_infos,sizeof(rm_infos));
+  }
 
   if(ret != FLT_EXIT && (ret = cf_run_init_handlers(head)) != FLT_EXIT) {
     switch(len) {
