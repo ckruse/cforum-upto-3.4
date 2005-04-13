@@ -553,7 +553,6 @@ int flt_directives_validate(t_configuration *fdc,t_configuration *fvc,const u_ch
         }
       }
       else {
-        printf("Content-Type: text/html\n\nLink: %s\n",tmp1);
         for(i=0;i<flt_directives_bdl_len;++i) {
           if(cf_strcmp(tmp1,flt_directives_badlinks[i]) == 0) {
             if((err = cf_get_error_message("E_unwanted_link",&len)) != NULL) {
