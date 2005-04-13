@@ -701,7 +701,7 @@ void sighandler(int segnum) {
   if(fd) {
     qs    = getenv("QUERY_STRING");
     if(GlobalValues) uname = cf_hash_get(GlobalValues,"UserName",8);
-    
+
     switch(segnum) {
       case SIGSEGV:
         snprintf(buff,10,"SIGSEGV");
@@ -860,13 +860,15 @@ int main(int argc,char *argv[],char *env[]) {
   cs = cfg_get_first_value(&fo_default_conf,forum_name,"ExternCharset");
 
   /* {{{ get readmode information */
-  memset(&rm_infos,0,sizeof(rm_infos));
-  if(cf_run_readmode_collectors(head,&fo_post_conf,&rm_infos) != FLT_OK) {
-    printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
-    cf_error_message("E_CONFIG_ERR",NULL);
-    ret = FLT_EXIT;
+  if(ret != FLT_EXIT) {
+    memset(&rm_infos,0,sizeof(rm_infos));
+    if(cf_run_readmode_collectors(head,&fo_post_conf,&rm_infos) != FLT_OK) {
+      printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
+      cf_error_message("E_CONFIG_ERR",NULL);
+      ret = FLT_EXIT;
+    }
+    else cf_hash_set(GlobalValues,"RM",2,&rm_infos,sizeof(rm_infos));
   }
-  else cf_hash_set(GlobalValues,"RM",2,&rm_infos,sizeof(rm_infos));
   /* }}} */
 
   ShowInvisible = cf_hash_get(GlobalValues,"ShowInvisible",13) != NULL;

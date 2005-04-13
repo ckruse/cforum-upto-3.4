@@ -42,6 +42,8 @@
 
 static u_char *flt_directives_link      = NULL;
 static u_char *flt_directives_icons     = NULL;
+static u_char **flt_directives_badlinks = NULL;
+static size_t flt_directives_bdl_len    = 0;
 static int flt_directives_lit           = 0;
 static int flt_directives_imagesaslink  = 0;
 static int flt_directives_iframesaslink = 0;
@@ -360,7 +362,7 @@ int flt_directives_execute(t_configuration *fdc,t_configuration *fvc,t_cl_thread
       }
     }
     /* }}} */
-    /* {{{ [iframe:] */ 
+    /* {{{ [iframe:] */
     else if(cf_strcmp(directive,"iframe") == 0) {
       if(is_valid_link(parameter) != 0) {
         if(cf_strncmp(parameter,"..",2) == 0 || *parameter == '/' || *parameter == '?') {
@@ -504,8 +506,6 @@ int flt_directives_validate(t_configuration *fdc,t_configuration *fvc,const u_ch
   size_t len,i;
   u_int64_t tid,mid;
 
-  if(flt_directives_wbl == 0) return FLT_DECLINE;
-
   while(isspace(*parameter)) ++parameter;
 
   if(*directive == 'l') {
@@ -519,6 +519,8 @@ int flt_directives_validate(t_configuration *fdc,t_configuration *fvc,const u_ch
       if(is_valid_link(tmp1) != 0) {
         if(cf_strncmp(tmp1,"..",2) == 0 || *tmp1 == '/' || *tmp1 == '?') {
           if(!flt_directives_is_relative_uri(tmp1,len)) {
+            if(flt_directives_wbl == 0) return FLT_DECLINE;
+
             if((err = cf_get_error_message("E_posting_links",&len)) != NULL) {
               cf_tpl_var_addvalue(var,TPL_VARIABLE_STRING,err,len);
               free(err);
@@ -526,13 +528,42 @@ int flt_directives_validate(t_configuration *fdc,t_configuration *fvc,const u_ch
 
             return FLT_ERROR;
           }
+          else {
+            for(i=0;i<flt_directives_bdl_len;++i) {
+              if(cf_strcmp(tmp1,flt_directives_badlinks[i]) == 0) {
+                if((err = cf_get_error_message("E_unwanted_link",&len)) != NULL) {
+                  cf_tpl_var_addvalue(var,TPL_VARIABLE_STRING,err,len);
+                  free(err);
+                }
+                else fprintf(stderr,"Unwanted link but could not find error message!\n");
+
+                return FLT_ERROR;
+              }
+            }
+          }
         }
         else {
+          if(flt_directives_wbl == 0) return FLT_DECLINE;
+
           if((err = cf_get_error_message("E_posting_links",&len)) != NULL) {
             cf_tpl_var_addvalue(var,TPL_VARIABLE_STRING,err,len);
             free(err);
           }
           return FLT_ERROR;
+        }
+      }
+      else {
+        printf("Content-Type: text/html\n\nLink: %s\n",tmp1);
+        for(i=0;i<flt_directives_bdl_len;++i) {
+          if(cf_strcmp(tmp1,flt_directives_badlinks[i]) == 0) {
+            if((err = cf_get_error_message("E_unwanted_link",&len)) != NULL) {
+              cf_tpl_var_addvalue(var,TPL_VARIABLE_STRING,err,len);
+              free(err);
+            }
+            else fprintf(stderr,"Unwanted link but could not find error message!\n");
+
+            return FLT_ERROR;
+          }
         }
       }
 
@@ -541,6 +572,8 @@ int flt_directives_validate(t_configuration *fdc,t_configuration *fvc,const u_ch
     /* }}} */
   }
   else if(*directive == 'i') {
+    if(flt_directives_wbl == 0) return FLT_DECLINE;
+
     /* {{{ [image:] */
     if(cf_strcmp(directive,"image") == 0) {
       if((ptr = strstr(parameter,"@alt=")) != NULL) tmp1      = strndup(parameter,ptr-parameter);
@@ -570,8 +603,10 @@ int flt_directives_validate(t_configuration *fdc,t_configuration *fvc,const u_ch
       return FLT_OK;
     }
     /* }}} */
-    /* {{{ [iframe:] */ 
+    /* {{{ [iframe:] */
     else if(cf_strcmp(directive,"iframe") == 0) {
+      if(flt_directives_wbl == 0) return FLT_DECLINE;
+
       if(is_valid_link(parameter) != 0) {
         if(cf_strncmp(parameter,"..",2) == 0 || *parameter == '/' || *parameter == '?') {
           len = strlen(parameter);
@@ -596,6 +631,8 @@ int flt_directives_validate(t_configuration *fdc,t_configuration *fvc,const u_ch
     /* }}} */
   }
   else {
+    if(flt_directives_wbl == 0) return FLT_DECLINE;
+
     /* {{{ [pref:] */
     if(cf_strcmp(directive,"pref") == 0) {
       tid = mid = 0;
@@ -751,6 +788,23 @@ int flt_directives_init(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc) 
 }
 
 /* {{{ directive handlers */
+int flt_directives_handle_uwl(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
+  size_t i;
+
+  if(flt_directives_fname == NULL) flt_directives_fname = cf_hash_get(GlobalValues,"FORUM_NAME",10);
+  if(!context || cf_strcmp(context,flt_directives_fname) != 0) return 0;
+
+  if(flt_directives_badlinks) {
+    for(i=0;i<flt_directives_bdl_len;++i) free(flt_directives_badlinks[i]);
+    free(flt_directives_badlinks);
+  }
+
+  flt_directives_bdl_len  = argnum;
+  flt_directives_badlinks = args;
+
+  return -1;
+}
+
 int flt_directives_handle_lit(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
   if(flt_directives_fname == NULL) flt_directives_fname = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   if(!context || cf_strcmp(context,flt_directives_fname) != 0) return 0;
@@ -775,7 +829,7 @@ int flt_directives_handle_suial(t_configfile *cfile,t_conf_opt *opt,const u_char
   if(!context || cf_strcmp(context,flt_directives_fname) != 0) return 0;
 
   flt_directives_suial = cf_strcmp(args[0],"yes") == 0;
-  
+
   return 0;
 }
 
@@ -970,6 +1024,7 @@ t_conf_opt flt_directives_config[] = {
   { "ShowUserImageAsLink",  flt_directives_handle_suial,    CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL,  NULL },
   { "LinkIcons",            flt_directives_handle_icons,    CFG_OPT_CONFIG|CFG_OPT_LOCAL, NULL },
   { "LinkShowIcons",        flt_directives_handle_lit,      CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL,  NULL },
+  { "UnwantedLinks",        flt_directives_handle_uwl,      CFG_OPT_CONFIG|CFG_OPT_LOCAL,               NULL },
   { NULL, NULL, 0, NULL }
 };
 

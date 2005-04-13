@@ -85,3 +85,4 @@ Send_Answer_Subject: Antwort auf Posting %%bs
 Send_Answer_Body: Hallo\n\nes wurde eine Antwort auf die Nachricht %%bs gepostet.\nNeues Subject: %%s\nAutor: %%a\nURL: %%u\nMy-URL: %%m\nOrginal-Autor: %%oa\nOrginal-Subject: %%os\nOrginal-URL: %%ou\nOrginal-My-URL: %%om\n\nViele Grüsse,\n das Forum\n
 E_CODE_NOLANG: Sie haben in einem [code]-Block keine Sprache angegeben. Die richtige Syntax ist [code lang=sprache]. Sind Sie sicher, dass Sie das Posting so abschicken möchten?
 E_CODE_LANG: Sie haben in einem [code]-Block eine nicht-existierende Sprache angegeben. Sind Sie sicher, dass sie das Posting so abschicken möchten?
+E_unwanted_link: Sie haben einen General-Verweis gepostet. Das ist hier unerwünscht. Sind Sie sicher, dass sie das Posting so abschicken möchten?
