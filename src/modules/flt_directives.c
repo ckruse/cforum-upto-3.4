@@ -768,6 +768,7 @@ int flt_directives_rewrite(t_cf_hash *head,t_configuration *dc,t_configuration *
 
 int flt_directives_suial_set(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cl_thread *thread,t_message *msg,t_cf_tpl_variable *hash) {
   if(flt_directives_suial == 0) cf_tpl_hashvar_setvalue(hash,"showimage",TPL_VARIABLE_INT,1);
+  if(flt_directives_link) cf_tpl_hashvar_setvalue(hash,"target",TPL_VARIABLE_STRING,flt_directives_link,strlen(flt_directives_link));
   return FLT_OK;
 }
 
