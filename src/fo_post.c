@@ -668,23 +668,25 @@ int get_thread(t_cl_thread *thr,t_cf_hash *head) {
     memset(&rl,0,sizeof(rl));
     #endif
 
-    val = strstr(tidmid,",");
-    tid = str_to_u_int64(tidmid);
-    mid = str_to_u_int64(val+1);
+    if((val = cf_cgi_get(head,"a")) != NULL && cf_strcmp(val,"answer") == 0) {
+      val = strstr(tidmid,",");
+      tid = str_to_u_int64(tidmid);
+      mid = str_to_u_int64(val+1);
 
-    if(tid && mid) {
-     #ifdef CF_SHARED_MEM
-      if((shm = cf_get_shm_ptr()) == NULL) return -1;
-      #else
-      if((sock = cf_socket_setup()) == -1) return -1;
-      #endif
-      else {
+      if(tid && mid) {
         #ifdef CF_SHARED_MEM
-        if(cf_get_message_through_shm(shm,thr,NULL,tid,mid,CF_KILL_DELETED) == -1) return -1;
+        if((shm = cf_get_shm_ptr()) == NULL) return -1;
         #else
-        if(cf_get_message_through_sock(sock,&rl,thr,NULL,tid,mid,CF_KILL_DELETED) == -1) return -1;
+        if((sock = cf_socket_setup()) == -1) return -1;
         #endif
-        else return 0;
+        else {
+          #ifdef CF_SHARED_MEM
+          if(cf_get_message_through_shm(shm,thr,NULL,tid,mid,CF_KILL_DELETED) == -1) return -1;
+          #else
+          if(cf_get_message_through_sock(sock,&rl,thr,NULL,tid,mid,CF_KILL_DELETED) == -1) return -1;
+          #endif
+          else return 0;
+        }
       }
     }
   }
