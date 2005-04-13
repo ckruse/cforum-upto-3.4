@@ -52,6 +52,7 @@ static u_char *flt_mailonpost_fn     = NULL;
 static u_char *flt_mailonpost_rvrs   = NULL;
 static u_char *flt_mailonpost_udb    = NULL;
 static u_char *flt_mailonpost_uemail = NULL;
+static u_char *flt_mailonpost_amail  = NULL;
 
 struct s_smtp {
   t_string *msg;
@@ -557,7 +558,7 @@ int flt_mailonpost_execute(t_cf_hash *head,t_configuration *dc,t_configuration *
   key.data = buff;
   key.size = n;
 
-  if(db->get(db,NULL,&key,&data,0) == 0) {
+  if((ret = db->get(db,NULL,&key,&data,0)) == 0 || flt_mailonpost_amail) {
     memset(&thr,0,sizeof(thr));
     memset(&rl,0,sizeof(rl));
 
@@ -566,17 +567,21 @@ int flt_mailonpost_execute(t_cf_hash *head,t_configuration *dc,t_configuration *
       return FLT_DECLINE;
     }
 
-    /* send mails... */
-    str_init(&str);
-    str_char_set(&str,data.data,data.size);
+    if(ret == 0) {
+      /* send mails... */
+      str_init(&str);
+      str_char_set(&str,data.data,data.size);
 
-    n = split(str.content,"\x7F",&list);
-    if(n > 0) {
-      flt_mailonpost_mail(list,n,p,&thr);
+      n = split(str.content,"\x7F",&list);
+      if(n > 0) {
+        flt_mailonpost_mail(list,n,p,&thr);
 
-      for(i=0;i<n;++i) free(list[i]);
-      free(list);
+        for(i=0;i<n;++i) free(list[i]);
+        free(list);
+      }
     }
+
+    if(flt_mailonpost_amail) flt_mailonpost_mail(&flt_mailonpost_amail,1,p,&thr);
   }
 
   flt_mailonpost_destroy(db);
@@ -586,6 +591,7 @@ int flt_mailonpost_execute(t_cf_hash *head,t_configuration *dc,t_configuration *
 /* }}} */
 
 /* {{{ flt_mailonpost_post_handler */
+
 int flt_mailonpost_post_handler(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cl_thread *thread,t_cf_template *tpl) {
   u_char *link,buff[256];
   t_name_value *uri,*cs,*email;
@@ -635,6 +641,7 @@ int flt_mailonpost_post_handler(t_cf_hash *head,t_configuration *dc,t_configurat
 
   return FLT_OK;
 }
+
 /* }}} */
 
 /* {{{ flt_mailonpost_cmd */
@@ -662,6 +669,10 @@ int flt_mailonpost_cmd(t_configfile *cfile,t_conf_opt *opt,const u_char *context
     if(flt_mailonpost_uemail) free(flt_mailonpost_uemail);
     flt_mailonpost_uemail = strdup(args[0]);
   }
+  else if(cf_strcmp(opt->name,"AlwaysMail") == 0) {
+    if(flt_mailonpost_amail) free(flt_mailonpost_amail);
+    flt_mailonpost_amail = strdup(args[0]);
+  }
   else {
     if(flt_mailonpost_from) free(flt_mailonpost_from);
     flt_mailonpost_from = strdup(args[0]);
@@ -685,6 +696,7 @@ t_conf_opt flt_mailonpost_config[] = {
   { "MailDatabase", flt_mailonpost_cmd, CFG_OPT_CONFIG|CFG_OPT_LOCAL|CFG_OPT_NEEDED, NULL },
   { "MailUserDB",   flt_mailonpost_cmd, CFG_OPT_USER|CFG_OPT_LOCAL,   NULL },
   { "UserMail",     flt_mailonpost_cmd, CFG_OPT_USER|CFG_OPT_LOCAL,   NULL },
+  { "AlwaysMail",   flt_mailonpost_cmd, CFG_OPT_CONFIG|CFG_OPT_LOCAL, NULL },
   { NULL, NULL, 0, NULL }
 };
 

@@ -11,6 +11,7 @@
 #define TPL_VARIABLE_INVALID      0
 #define TPL_VARIABLE_STRING       1
 #define TPL_VARIABLE_ARRAY        3
+#define TPL_VARIABLE_HASH         4
 
 typedef struct s_cf_tpl_variable {
   %immutable;
@@ -24,6 +25,8 @@ typedef struct s_cf_tpl_variable {
   t_cf_tpl_variable *clone();
   void add(t_cf_tpl_variable *element);
   void addvalue(const char *value);
+  void h_set(const char *key,t_cf_tpl_variable *value);
+  void h_setvalue(const char *key,const char *value);
 }
 
 /* {{{ t_cf_tpl_variable */
@@ -49,6 +52,14 @@ void t_cf_tpl_variable_add(t_cf_tpl_variable *var,t_cf_tpl_variable *element) {
 
 void t_cf_tpl_variable_addvalue(t_cf_tpl_variable *var,const char *value) {
   cf_tpl_var_addvalue(var,TPL_VARIABLE_STRING,value,(int)strlen(value));
+}
+
+void t_cf_tpl_variable_h_set(t_cf_tpl_variable *var,const char *key,t_cf_tpl_variable *val) {
+  cf_tpl_hashvar_set(var,key,val);
+}
+
+void t_cf_tpl_variable_h_setvalue(t_cf_tpl_variable *var,const char *key,const char *val) {
+  cf_tpl_hashvar_setvalue(var,key,TPL_VARIABLE_STRING,val,strlen(val));
 }
 %}
 /* }}} */

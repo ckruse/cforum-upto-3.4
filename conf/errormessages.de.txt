@@ -24,7 +24,8 @@ E_body_short: Haben Sie so wenig zu sagen?
 E_body_long: Das war jetzt etwas viel.
 E_body_missing: Haben Sie so wenig zu sagen?
 E_EMail_invalid: Ihre E-Mail-Adresse scheint ungültig zu sein.
-E_email_invalid: Ihre E-Mail-Adresse scheint ungültig zu sein.
+E_email_missing: Sie müssen eine E-Mail-Adresse angeben!
+E_EMail_missing: Sie müssen eine E-Mail-Adresse angeben!
 E_manipulated: Falsche oder fehlende Daten. Die Daten scheinen in irgendeiner Weise manipuliert worden zu sein.
 E_ImageUrl_invalid: Die Bild-URL scheint ungültig zu sein.
 E_HomepageUrl_invalid: Die Homepage-URL scheint ungültig zu sein.
@@ -86,3 +87,5 @@ Send_Answer_Body: Hallo\n\nes wurde eine Antwort auf die Nachricht %%bs gepostet
 E_CODE_NOLANG: Sie haben in einem [code]-Block keine Sprache angegeben. Die richtige Syntax ist [code lang=sprache]. Sind Sie sicher, dass Sie das Posting so abschicken möchten?
 E_CODE_LANG: Sie haben in einem [code]-Block eine nicht-existierende Sprache angegeben. Sind Sie sicher, dass sie das Posting so abschicken möchten?
 E_unwanted_link: Sie haben einen General-Verweis gepostet. Das ist hier unerwünscht. Sind Sie sicher, dass sie das Posting so abschicken möchten?
+E_noanonymous_read: Sie müssen angemeldet sein, um hier lesen und posten zu können.
+E_noanonymous_post: Sie müssen angemeldet sein, um hier posten zu können.

@@ -1,3 +1,15 @@
 2005-04-13 Christian Kruse <ckruse@wwwtech.de>
 	* src/modules/flt_directives.c: Fixed #526
+	* conf/errormessages.de.txt: added error message for missing email address,
+		added error messages for anonymous posting and reading
+	* src/modules/flt_mailonpost.c: Implemented AlwaysMail feature. Sends a mail
+		if a posting in a forum has been posted
+	* conf/fo_view.conf.in: Removed double TemplateForumList directive
+	* conf/fo_userconf.conf.in: Removed now unecessary templates
+	* src/swig/CForum-Template/CForum-Template.i: Added support for hash variables
+	* scripts/fo_userconf.in: Now we don't use snippet templates any longer
+	* src/modules/Makefile.am: Added flt_noanonymous
+	* src/modules/flt_noanonymous.c: Added plugin to forbid anonymous reading and
+		writing
+	* src/fo_post.c: Fixed bug which caused the error messages not to be displayed
 

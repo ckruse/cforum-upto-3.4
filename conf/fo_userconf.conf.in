@@ -35,11 +35,7 @@ Forum FORUM1 {
   FromUntilFormat "%d. %m. %Y, %H:%M"
 
   Edit "@sysconfdir@/cforum/templates/forum1/%s_%s_useredit.so"
-  EditEntry "@sysconfdir@/cforum/templates/forum1/%s_%s_setting.so"
-  SectEntry "@sysconfdir@/cforum/templates/forum1/%s_%s_section.so"
-  PageEntry "@sysconfdir@/cforum/templates/forum1/%s_%s_pageentry.so"
   EditOk "@sysconfdir@/cforum/templates/forum1/%s_%s_usereditok.so"
-  UpDown "@sysconfdir@/cforum/templates/forum1/%s_%s_updown.so"
   ImportForm "@sysconfdir@/cforum/templates/forum1/%s_%s_importform.so"
   ImportOk "@sysconfdir@/cforum/templates/forum1/%s_%s_importok.so"
 

@@ -75,8 +75,6 @@ Forum FORUM1 {
 
  TemplatePosting        "@sysconfdir@/cforum/templates/forum1/%s_%s_forum_posting.so"
 
- TemplateForumList      "@sysconfdir@/cforum/templates/forum1/%s_%s_forum_posting_list.so"
-
  # Date format
  #
  # see 'man strftime` for more informations to the
