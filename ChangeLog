@@ -1,7 +1,7 @@
 2005-04-13 Christian Kruse <ckruse@wwwtech.de>
 	* conf/errormessages.de.txt: Added error message for unwanted links
 	* src/fo_view.c, src/fo_post.c, src/fo_feeds.c: Fixed bug #733
-	* src/modules/flt_directives.c: Fixed #715
+	* src/modules/flt_directives.c: Fixed #715, #526
 
 2005-04-12 Christian Kruse <ckruse@wwwtech.de>
 	* src/fo_arcview.c: Fixed bug #745
