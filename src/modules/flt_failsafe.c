@@ -9,9 +9,9 @@
 
 /* {{{ Initial comments */
 /*
- * $LastChangedDate: 2004-08-09 15:10:05 +0200 (Mon, 09 Aug 2004) $
+ * $LastChangedDate$
  * $LastChangedRevision$
- * $LastChangedBy: ckruse $
+ * $LastChangedBy$
  *
  */
 /* }}} */
