@@ -264,17 +264,16 @@ sub generate_edit_output {
 
         my $i        = 0;
         my $ud       = 0;
-        my $setting  = new CForum::Template(get_template($fo_default_conf,$user_config,get_conf_val($fo_userconf_conf,$Forum,'EditEntry')));
-        my $section  = new CForum::Template(get_template($fo_default_conf,$user_config,get_conf_val($fo_userconf_conf,$Forum,'SectEntry')));
-        my $updown   = new CForum::Template(get_template($fo_default_conf,$user_config,get_conf_val($fo_userconf_conf,$Forum,'UpDown')));
         my @sections = $node->findnodes('./section');
 
-        my $pageinfo = new CForum::Template::t_cf_tpl_variable(3);
+        my $v_sections = new CForum::Template::t_cf_tpl_variable($CForum::Template::TPL_VARIABLE_ARRAY);
+        my $pageinfo = new CForum::Template::t_cf_tpl_variable($CForum::Template::TPL_VARIABLE_ARRAY);
+
         $pageinfo->addvalue($page);
         $pageinfo->addvalue($node->getAttribute('title'));
         $tpl->setvar('current_page',$pageinfo);
 
-        my $sectinfos = new CForum::Template::t_cf_tpl_variable(3);
+        my $sectinfos = new CForum::Template::t_cf_tpl_variable($CForum::Template::TPL_VARIABLE_ARRAY);
         foreach my $sect (@sections) {
           my $for = $sect->getAttribute('for') || '';
           next if $for eq 'admin' && !$is_admin;
@@ -283,15 +282,8 @@ sub generate_edit_output {
           my $tmptxt = '';
           ++$i;
 
-          if($ud) {
-            $txt .= $updown->parseToMem;
-            $ud = 0;
-          }
-
-          my $sectinfo = new CForum::Template::t_cf_tpl_variable(3);
-          $sectinfo->addvalue('a'.$i);
-          $sectinfo->addvalue($sect->getAttribute('name'));
-          $sectinfos->add($sectinfo);
+          my $section = new CForum::Template::t_cf_tpl_variable($CForum::Template::TPL_VARIABLE_HASH);
+          my $directives = new CForum::Template::t_cf_tpl_variable($CForum::Template::TPL_VARIABLE_ARRAY);
 
           foreach my $directive (@nodes) {
             my $dname     = $directive->getAttribute('name');
@@ -301,29 +293,38 @@ sub generate_edit_output {
 
             next if $for eq 'admin' && !$is_admin;
 
+            my $dhash = new CForum::Template::t_cf_tpl_variable($CForum::Template::TPL_VARIABLE_HASH);
+            $dhash->h_setvalue('name',$dname);
+            $dhash->h_setvalue('for',$for) if $for;
+
+            my $arguments = new CForum::Template::t_cf_tpl_variable($CForum::Template::TPL_VARIABLE_ARRAY);
+
             foreach my $arg (@arguments) {
+              my $argument = new CForum::Template::t_cf_tpl_variable($CForum::Template::TPL_VARIABLE_HASH);
+
               my $pname = $arg->getAttribute('paramname');
               my ($question,$arg) = htmlize($dname,$arg,$cgi,$user_config->{global}->{$dname}->[0]->[$i++],$fo_default_conf,$fo_view_conf,$fo_userconf_conf,$user_config);
 
-              $setting->setvalue('empty','no');
-              $setting->setvalue('formentry',$arg);
-              $setting->setvalue('question',$question);
-              $tmptxt .= $setting->parseToMem;
+              $argument->h_setvalue('empty','no');
+              $argument->h_setvalue('formentry',$arg);
+              $argument->h_setvalue('question',$question);
 
-              $setting->setvalue('empty','yes');
-              $tmptxt .= $setting->parseToMem;
+              $arguments->add($argument);
             }
+
+            $dhash->h_set('arguments',$arguments);
+            $directives->add($dhash);
           }
 
-          $section->setvalue('title',recode($fo_default_conf,$sect->getAttribute('name')));
-          $section->setvalue('anchor','a'.$i);
-          $section->setvalue('content',$tmptxt);
+          $section->h_setvalue('title',recode($fo_default_conf,$sect->getAttribute('name')));
+          $section->h_setvalue('anchor','a'.$i);
+          $section->h_setvalue('content',$tmptxt);
+          $section->h_set('directives',$directives);
 
-          $txt .= $section->parseToMem;
-          $ud = 1;
+          $v_sections->add($section);
         }
 
-        $tpl->setvar('sections',$sectinfos);
+        $tpl->setvar('sections',$v_sections);
       }
     }
   }
@@ -332,19 +333,22 @@ sub generate_edit_output {
   if($doit) {
     my @nodes = $doc->findnodes('/config/page');
 
-    my $pagetpl = new CForum::Template(get_template($fo_default_conf,$user_config,get_conf_val($fo_userconf_conf,$Forum,'PageEntry')));
+    my $pages   = new CForum::Template::t_cf_tpl_variable($CForum::Template::TPL_VARIABLE_ARRAY);
 
     foreach my $page (@nodes) {
       my $for = $page->getAttribute('for') || '';
       next if $for eq 'admin' && !$is_admin;
 
-      $pagetpl->setvalue('title' => recode($fo_default_conf,$page->getAttribute('title')));
-      $pagetpl->setvalue('id' => $page->getAttribute('id'));
+      my $perpage = new CForum::Template::t_cf_tpl_variable($CForum::Template::TPL_VARIABLE_HASH);
 
-      $txt .= $pagetpl->parseToMem;
+      $perpage->h_setvalue('title' => recode($fo_default_conf,$page->getAttribute('title')));
+      $perpage->h_setvalue('id' => $page->getAttribute('id'));
+
+      $pages->add($perpage);
     }
 
     $tpl->setvalue('page','1');
+    $tpl->setvar('pages',$pages);
   }
 
   $tpl->setvalue('p',$page) if $page;
