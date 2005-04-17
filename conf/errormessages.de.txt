@@ -89,3 +89,4 @@ E_CODE_LANG: Sie haben in einem [code]-Block eine nicht-existierende Sprache ang
 E_unwanted_link: Sie haben einen General-Verweis gepostet. Das ist hier unerwünscht. Sind Sie sicher, dass sie das Posting so abschicken möchten?
 E_noanonymous_read: Sie müssen angemeldet sein, um hier lesen und posten zu können.
 E_noanonymous_post: Sie müssen angemeldet sein, um hier posten zu können.
+E_noanswer: Sie dürfen auf dieses Posting nicht antworten!

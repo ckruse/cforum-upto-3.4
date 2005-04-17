@@ -713,7 +713,7 @@ int flt_directives_parse_link_for_pref(const u_char *link,u_int64_t *tid,u_int64
 /* }}} */
 
 /* {{{ flt_directives_rewrite */
-int flt_directives_rewrite(t_cf_hash *head,t_configuration *dc,t_configuration *pc,t_message *p,int sock,int mode) {
+int flt_directives_rewrite(t_cf_hash *head,t_configuration *dc,t_configuration *pc,t_message *p,t_cl_thread *thr,int sock,int mode) {
   t_string new_content;
   register u_char *ptr;
   u_char *safe,*link,*title;

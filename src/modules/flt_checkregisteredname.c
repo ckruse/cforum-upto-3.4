@@ -44,9 +44,9 @@
 
 /* {{{ flt_checkregisteredname_execute */
 #ifdef CF_SHARED_MEM
-int flt_checkregisteredname_execute(t_cf_hash *head,t_configuration *dc,t_configuration *pc,t_message *p,void *ptr,int sock,int mode)
+int flt_checkregisteredname_execute(t_cf_hash *head,t_configuration *dc,t_configuration *pc,t_message *p,t_cl_thread *thr,void *ptr,int sock,int mode)
 #else
-int flt_checkregisteredname_execute(t_cf_hash *head,t_configuration *dc,t_configuration *pc,t_message *p,int sock,int mode)
+int flt_checkregisteredname_execute(t_cf_hash *head,t_configuration *dc,t_configuration *pc,t_message *p,t_cl_thread *thr,int sock,int mode)
 #endif
 {
   u_char *username = cf_hash_get(GlobalValues,"UserName",8);

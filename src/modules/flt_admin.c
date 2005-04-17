@@ -77,7 +77,7 @@ int flt_admin_gogogo(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc,void
   u_char *action = NULL,*tid,*mid,buff[512],*answer,*mode;
   size_t len;
   rline_t rl;
-  int x,ret;
+  int x = 0,ret;
 
   u_int64_t itid;
 
@@ -110,25 +110,34 @@ int flt_admin_gogogo(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc,void
     len = snprintf(buff,512,"SELECT %s\n",forum_name);
     writen(sock,buff,len);
 
-    if(cf_strcmp(action,"del") == 0) {
-      len = snprintf(buff,512,"DELETE t%s m%s\nUser-Name: %s\n",tid,mid,UserName);
-      writen(sock,buff,len);
-    }
-    else if(cf_strcmp(action,"undel") == 0) {
-      len = snprintf(buff,512,"UNDELETE t%s m%s\nUser-Name: %s\n",tid,mid,UserName);
-      writen(sock,buff,len);
-    }
-    else if(cf_strcmp(action,"archive") == 0) {
-      len = snprintf(buff,512,"ARCHIVE THREAD t%s\nUser-Name: %s\n",tid,UserName);
-      writen(sock,buff,len);
-    }
-
     answer = readline(sock,&rl);
     if(!answer || ((x = atoi(answer)) != 200)) {
       if(!answer) my_errno = 500;
       else my_errno = x;
     }
     if(answer) free(answer);
+
+    if(x == 0 || x == 200) {
+      if(cf_strcmp(action,"del") == 0) {
+        len = snprintf(buff,512,"DELETE t%s m%s\nUser-Name: %s\n",tid,mid,UserName);
+        writen(sock,buff,len);
+      }
+      else if(cf_strcmp(action,"undel") == 0) {
+        len = snprintf(buff,512,"UNDELETE t%s m%s\nUser-Name: %s\n",tid,mid,UserName);
+        writen(sock,buff,len);
+      }
+      else if(cf_strcmp(action,"archive") == 0) {
+        len = snprintf(buff,512,"ARCHIVE THREAD t%s\nUser-Name: %s\n",tid,UserName);
+        writen(sock,buff,len);
+      }
+
+      answer = readline(sock,&rl);
+      if(!answer || ((x = atoi(answer)) != 200)) {
+        if(!answer) my_errno = 500;
+        else my_errno = x;
+      }
+      if(answer) free(answer);
+    }
 
     #ifdef CF_SHARED_MEM
     ptr = cf_reget_shm_ptr();
@@ -254,20 +263,11 @@ int flt_admin_setvars_thread(t_cf_hash *head,t_configuration *dc,t_configuration
   u_char *UserName = cf_hash_get(GlobalValues,"UserName",8);
   int si = cf_hash_get(GlobalValues,"ShowInvisible",13) != NULL;
 
-  t_cf_list_element *elem;
   t_cf_post_flag *flag;
 
   if(flt_admin_is_admin(UserName) && si) {
     cf_tpl_hashvar_setvalue(hash,"ip",TPL_VARIABLE_STRING,msg->remote_addr.content,msg->remote_addr.len);
-
-    for(elem=msg->flags.elements;elem;elem=elem->next) {
-      flag = (t_cf_post_flag *)elem->data;
-      if(cf_strcmp(flag->name,"UserName") == 0) {
-        cf_tpl_hashvar_setvalue(hash,"uname",TPL_VARIABLE_STRING,flag->val,strlen(flag->val));
-        break;
-      }
-    }
-
+    if((flag = cf_flag_by_name(&msg->flags,"UserName")) != NULL) cf_tpl_hashvar_setvalue(hash,"uname",TPL_VARIABLE_STRING,flag->val,strlen(flag->val));
     return FLT_OK;
   }
 
@@ -317,25 +317,23 @@ int flt_admin_posthandler(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc
   if(flt_admin_is_admin(UserName) && ShowInvisible) {
     cf_tpl_setvalue(&msg->tpl,"admin",TPL_VARIABLE_INT,1);
 
-    if(ShowInvisible) {
-      cf_tpl_setvalue(&msg->tpl,"aaf",TPL_VARIABLE_INT,1);
-      if(flt_admin_js && (mode & CF_MODE_THREADLIST)) cf_tpl_setvalue(&msg->tpl,"AdminJS",TPL_VARIABLE_INT,1);
+    cf_tpl_setvalue(&msg->tpl,"aaf",TPL_VARIABLE_INT,1);
+    if(flt_admin_js && (mode & CF_MODE_THREADLIST)) cf_tpl_setvalue(&msg->tpl,"AdminJS",TPL_VARIABLE_INT,1);
 
-      link = cf_advanced_get_link(rm->posting_uri[1],tid,msg->mid,NULL,1,&l,"faa","archive");
-      cf_tpl_setvalue(&msg->tpl,"archive_link",TPL_VARIABLE_STRING,link,l);
+    link = cf_advanced_get_link(rm->posting_uri[1],tid,msg->mid,NULL,1,&l,"faa","archive");
+    cf_tpl_setvalue(&msg->tpl,"archive_link",TPL_VARIABLE_STRING,link,l);
+    free(link);
+
+    if(msg->invisible == 0) {
+      link = cf_advanced_get_link(rm->posting_uri[1],tid,msg->mid,NULL,1,&l,"faa","del");
+      cf_tpl_setvalue(&msg->tpl,"visible",TPL_VARIABLE_STRING,"1",1);
+      cf_tpl_setvalue(&msg->tpl,"del_link",TPL_VARIABLE_STRING,link,l);
       free(link);
-
-      if(msg->invisible == 0) {
-        link = cf_advanced_get_link(rm->posting_uri[1],tid,msg->mid,NULL,1,&l,"faa","del");
-        cf_tpl_setvalue(&msg->tpl,"visible",TPL_VARIABLE_STRING,"1",1);
-        cf_tpl_setvalue(&msg->tpl,"del_link",TPL_VARIABLE_STRING,link,l);
-        free(link);
-      }
-      else {
-        link = cf_advanced_get_link(rm->posting_uri[1],tid,msg->mid,NULL,1,&l,"faa","undel");
-        cf_tpl_setvalue(&msg->tpl,"undel_link",TPL_VARIABLE_STRING,link,l);
-        free(link);
-      }
+    }
+    else {
+      link = cf_advanced_get_link(rm->posting_uri[1],tid,msg->mid,NULL,1,&l,"faa","undel");
+      cf_tpl_setvalue(&msg->tpl,"undel_link",TPL_VARIABLE_STRING,link,l);
+      free(link);
     }
 
     return FLT_OK;

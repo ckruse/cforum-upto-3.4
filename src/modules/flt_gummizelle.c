@@ -313,9 +313,9 @@ int flt_gummizelle_execute(t_cf_hash *head,t_configuration *dc,t_configuration *
 
 /* {{{ flt_gummizelle_newpost */
 #ifdef CF_SHARED_MEM
-int flt_gummizelle_newpost(t_cf_hash *head,t_configuration *dc,t_configuration *pc,t_message *p,void *ptr,int sock,int mode)
+int flt_gummizelle_newpost(t_cf_hash *head,t_configuration *dc,t_configuration *pc,t_message *p,t_cl_thread *thr,void *ptr,int sock,int mode)
 #else
-int flt_gummizelle_newpost(t_cf_hash *head,t_configuration *dc,t_configuration *pc,t_message *p,int sock,int mode)
+int flt_gummizelle_newpost(t_cf_hash *head,t_configuration *dc,t_configuration *pc,t_message *p,t_cl_thread *thr,int sock,int mode)
 #endif
 {
   int restore = 0;

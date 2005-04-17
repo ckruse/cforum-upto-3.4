@@ -144,7 +144,7 @@ void cf_list_delete(t_cf_list_head *head,t_cf_list_element *elem) {
   if(elem->next) elem->next->prev = elem->prev;
   
   if(head->elements == elem) head->elements = elem->next;
-  if(head->last == elem) head->elements = elem->next;
+  if(head->last == elem) head->last = elem->next;
 }
 /* }}} */
 

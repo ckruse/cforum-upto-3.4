@@ -209,4 +209,8 @@ void cf_io_worker(void);
 void cf_send_posting(t_forum *forum,int sock,u_int64_t tid,u_int64_t mid,int invisible);
 int cf_read_posting(t_forum *forum,t_posting *p,int sock,rline_t *tsd);
 
+int cf_remove_flags(int sockfd,rline_t *tsd,t_posting *p1);
+int cf_read_flags(int sockfd,rline_t *tsd,t_posting *p);
+t_posting_flag *cf_get_flag_by_name(t_cf_list_head *flags,const u_char *name);
+
 /* eof */

@@ -1,3 +1,21 @@
+2005-04-17 Christian Kruse <ckruse@wwwtech.de>
+	* src/clientlib.[ch]: Added cf_flag_by_name() function, fixed
+		cf_general_get_link()
+	* src/modules/flt_cftp.c: Added FLAG REMOVE and FLAG SET
+	* src/modules/Makefile.am: Added flt_noanswer
+	* src/modules/flt_admin.c: Now it uses cf_flag_by_name()
+	* src/modules/flt_noanswer.c: Added NA flag plugin
+	* src/serverlib.[ch]: Added cf_read_flags() and cf_remove_flags()
+	* src/listutils.c: Fixed a really nasty bug in cf_list_delete()
+	* conf/errormessages.de.txt: Added E_noanswer
+	* src/modules/flt_directives.c, src/modules/flt_categorycheck.c,
+		src/modules/flt_checkregisteredname.c, src/modules/flt_gummizelle.c,
+		src/modules/flt_postingassistant.c, src/modules/flt_remotesignature.c,
+		src/modules/flt_spellcheck.c, src/modules/flt_preview.c: Changed to new API,
+		there was a bug in the API
+	* src/fo_post.c, src/handlerrunners.c: Added thread parameter to
+		NEW_POST_HANDLER
+
 2005-04-16 Christian Kruse <ckruse@wwwtech.de>
 	* conf/modules.de.xml: Added administrator options
 	* src/modules/flt_admin.c: Added XMLHttp mode

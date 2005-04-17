@@ -1019,9 +1019,9 @@ int main(int argc,char *argv[],char *env[]) {
 
       /* ok, we did everything we had to do, let filters run */
       #ifndef CF_SHARED_MEM
-      if(cf_run_post_filters(head,p,sock) != FLT_EXIT)
+      if(cf_run_post_filters(head,p,new_thread?NULL:&thr,sock) != FLT_EXIT)
       #else
-      if(cf_run_post_filters(head,p,shm,sock) != FLT_EXIT)
+      if(cf_run_post_filters(head,p,new_thread?NULL:&thr,shm,sock) != FLT_EXIT)
       #endif
       {
         /* {{{ submit posting */

@@ -570,14 +570,15 @@ u_char *cf_get_link(const u_char *link,u_int64_t tid,u_int64_t mid) {
 u_char *cf_advanced_get_link(const u_char *link,u_int64_t tid,u_int64_t mid,u_char *anchor,size_t plen,size_t *l,...) {
   register const u_char *ptr;
   t_string buff;
-  int qm = 0;
+  u_char *my_anchor;
+  int qm = 0,run = 1;
   u_char *si = cf_hash_get(GlobalValues,"ShowInvisible",13),*name,*value,*tmp;
   size_t i;
   va_list ap;
 
   str_init(&buff);
 
-  for(ptr=link;*ptr;++ptr) {
+  for(ptr=link;*ptr && run;++ptr) {
     switch(*ptr) {
       case '%':
         if(*(ptr+1) == 't') {
@@ -591,6 +592,12 @@ u_char *cf_advanced_get_link(const u_char *link,u_int64_t tid,u_int64_t mid,u_ch
         else str_char_append(&buff,*ptr);
 
         break;
+      case '#':
+        /* uh! Anchor in link template */
+        ptr -= 1;
+        run = 0;
+        break;
+
       case '?':
         qm = 1;
       default:
@@ -627,6 +634,29 @@ u_char *cf_advanced_get_link(const u_char *link,u_int64_t tid,u_int64_t mid,u_ch
     str_chars_append(&buff,anchor,strlen(anchor));
   }
 
+  /* we got an anchor, perhaps, append it to the _end_ of the uri */
+  if(*ptr) {
+    for(;*ptr;++ptr) {
+      switch(*ptr) {
+        case '%':
+          if(*(ptr+1) == 't') {
+            u_int64_to_str(&buff,tid);
+            ptr += 1;
+          }
+          else if(*(ptr+1) == 'm') {
+            u_int64_to_str(&buff,mid);
+            ptr += 1;
+          }
+          else str_char_append(&buff,*ptr);
+
+          break;
+
+        default:
+          str_char_append(&buff,*ptr);
+      }
+    }
+  }
+
   if(l) *l = buff.len;
   return buff.content;
 }
@@ -650,6 +680,20 @@ u_char *cf_general_get_time(u_char *fmt,u_char *locale,int *len,time_t *date) {
 }
 /* }}} */
 
+
+/* {{{ cf_flag_by_name */
+t_cf_post_flag *cf_flag_by_name(t_cf_list_head *flags,const u_char *name) {
+  t_cf_list_element *elem;
+  t_cf_post_flag *flag;
+
+  for(elem=flags->elements;elem;elem=elem->next) {
+    flag = (t_cf_post_flag *)elem->data;
+    if(cf_strcmp(flag->name,name) == 0) return flag;
+  }
+
+  return NULL;
+}
+/* }}} */
 
 
 /* {{{ cf_register_mod_api_ent */

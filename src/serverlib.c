@@ -934,6 +934,20 @@ t_thread *cf_get_thread(t_forum *forum,u_int64_t tid) {
 }
 /* }}} */
 
+/* {{{ cf_get_flag_by_name */
+t_posting_flag *cf_get_flag_by_name(t_cf_list_head *flags,const u_char *name) {
+  t_cf_list_element *elem;
+  t_posting_flag *flag;
+
+  for(elem=flags->elements;elem;elem=elem->next) {
+    flag = (t_posting_flag *)elem->data;
+    if(cf_strcmp(flag->name,name) == 0) return flag;
+  }
+
+  return NULL;
+}
+/* }}} */
+
 /* {{{ cf_send_posting */
 void cf_send_posting(t_forum *forum,int sock,u_int64_t tid,u_int64_t mid,int invisible) {
   int n;
@@ -1142,6 +1156,91 @@ int cf_read_posting(t_forum *forum,t_posting *p,int sock,rline_t *tsd) {
   CF_RW_UN(&forum->threads.lock);
 
   return 1;
+}
+/* }}} */
+
+/* {{{ cf_remove_flags */
+int cf_remove_flags(int sockfd,rline_t *tsd,t_posting *p1) {
+  size_t len,i;
+  u_char *line,**list,*name;
+  t_posting_flag *flagp;
+  t_cf_list_element *elem;
+
+  if((line = readline(sockfd,tsd)) != NULL) {
+    line[tsd->rl_len-1] = '\0';
+
+    if(cf_strncmp(line,"Flags:",6) == 0) {
+      len = split(line+7,",",&list);
+      for(i=0;i<len;++i) {
+        cf_log(CF_DBG,__FILE__,__LINE__,"removing flag %s\n",list[i]);
+
+        for(elem=p1->flags.elements;elem;elem=elem->next) {
+          flagp = (t_posting_flag *)elem->data;
+          if(cf_strcmp(flagp->name,list[i]) == 0) {
+            cf_list_delete(&p1->flags,elem);
+
+            free(elem);
+            free(flagp->name);
+            free(flagp->val);
+            free(flagp);
+            break;
+          }
+        }
+
+        free(list[i]);
+      }
+
+      free(list);
+    }
+
+    free(line);
+  }
+
+  return 0;
+}
+/* }}} */
+
+/* {{{ cf_read_flags */
+int cf_read_flags(int sockfd,rline_t *tsd,t_posting *p) {
+  u_char *line,*ptr;
+  t_posting_flag flag,*flagp;
+  t_cf_list_element *elem;
+
+  while((line = readline(sockfd,tsd)) != NULL) {
+    line[tsd->rl_len-1] = '\0';
+
+    if(cf_strncmp(line,"Flag:",5) == 0) {
+      if((ptr = strstr(line+6,"=")) == NULL) {
+        writen(sockfd,"500 Sorry\n",10);
+        cf_log(CF_ERR,__FILE__,__LINE__,"Bad request in flag reading phase\n");
+        return -1;
+      }
+
+      flag.name = strndup(line+6,ptr-line-6);
+      flag.val  = strdup(ptr+1);
+
+      cf_log(CF_DBG,__FILE__,__LINE__,"Setting flag %s=%s\n",flag.name,flag.val);
+
+      if((flagp = cf_get_flag_by_name(&p->flags,flag.name)) == NULL) {
+        cf_log(CF_DBG,__FILE__,__LINE__,"Having it not, calling cf_list_append()\n");
+        cf_list_append(&p->flags,&flag,sizeof(flag));
+      }
+      else {
+        cf_log(CF_DBG,__FILE__,__LINE__,"Already have it\n");
+        free(flagp->val);
+        free(flag.name);
+        flagp->val = flag.val;
+      }
+    }
+    else {
+      free(line);
+      return 0;
+    }
+
+    free(line);
+  }
+
+  return 0;
 }
 /* }}} */
 

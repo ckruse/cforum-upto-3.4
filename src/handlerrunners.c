@@ -283,9 +283,9 @@ void cf_run_after_post_handlers(t_cf_hash *head,t_message *p,u_int64_t tid,int s
 
 /* {{{ cf_run_post_filters */
 #ifdef CF_SHARED_MEM
-int cf_run_post_filters(t_cf_hash *head,t_message *p,void *ptr,int sock)
+int cf_run_post_filters(t_cf_hash *head,t_message *p,t_cl_thread *thr,void *ptr,int sock)
 #else
-int cf_run_post_filters(t_cf_hash *head,t_message *p,int sock)
+int cf_run_post_filters(t_cf_hash *head,t_message *p,t_cl_thread *thr,int sock)
 #endif
 {
   int ret = FLT_OK;
@@ -301,9 +301,9 @@ int cf_run_post_filters(t_cf_hash *head,t_message *p,int sock)
       handler = array_element_at(&Modules[NEW_POST_HANDLER],i);
       fkt     = (t_new_post_filter)handler->func;
       #ifdef CF_SHARED_MEM
-      ret     = fkt(head,&fo_default_conf,&fo_post_conf,p,ptr,sock,fupto);
+      ret     = fkt(head,&fo_default_conf,&fo_post_conf,p,thr,ptr,sock,fupto);
       #else
-      ret     = fkt(head,&fo_default_conf,&fo_post_conf,p,sock,fupto);
+      ret     = fkt(head,&fo_default_conf,&fo_post_conf,p,thr,sock,fupto);
       #endif
     }
   }

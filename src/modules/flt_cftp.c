@@ -407,6 +407,93 @@ int flt_cftp_handler(int sockfd,t_forum *forum,const u_char **tokens,int tnum,rl
     /* }}} */
   }
   /* }}} */
+  /* {{{ flags */
+  else if(cf_strcmp(tokens[0],"FLAG") == 0) {
+    if(tnum < 2) return FLT_DECLINE;
+
+    /* {{{ set */
+    if(cf_strcmp(tokens[1],"SET") == 0) {
+      if(tnum != 4) {
+        writen(sockfd,"500 Sorry\n",10);
+        cf_log(CF_ERR,__FILE__,__LINE__,"Bad request\n");
+        return FLT_OK;
+      }
+
+      tid = strtoull(tokens[2]+1,NULL,10);
+      mid = strtoull(tokens[3]+1,NULL,10);
+
+      t  = cf_get_thread(forum,tid);
+
+      if(!t) {
+        writen(sockfd,"404 Thread Not Found\n",21);
+        cf_log(CF_ERR,__FILE__,__LINE__,"Thread not found\n");
+        return FLT_OK;
+      }
+
+      p1 = cf_get_posting(t,mid);
+
+      if(!p1) {
+        writen(sockfd,"404 Posting Not Found\n",22);
+        cf_log(CF_ERR,__FILE__,__LINE__,"Posting not found\n");
+        return FLT_OK;
+      }
+
+      CF_RW_RD(&t->lock);
+      ret = cf_read_flags(sockfd,tsd,p1);
+      CF_RW_UN(&t->lock);
+
+      if(ret == 0) writen(sockfd,"200 Ok\n",7);
+
+      cf_generate_cache(forum);
+
+      return FLT_OK;
+    }
+    /* }}} */
+    /* {{{ remove */
+    else if(cf_strcmp(tokens[1],"REMOVE") == 0) {
+      if(tnum != 4) {
+        writen(sockfd,"500 Sorry\n",10);
+        cf_log(CF_ERR,__FILE__,__LINE__,"Bad request\n");
+        return FLT_OK;
+      }
+
+      tid = strtoull(tokens[2]+1,NULL,10);
+      mid = strtoull(tokens[3]+1,NULL,10);
+
+      t  = cf_get_thread(forum,tid);
+
+      if(!t) {
+        writen(sockfd,"404 Thread Not Found\n",21);
+        cf_log(CF_ERR,__FILE__,__LINE__,"Thread not found\n");
+        return FLT_OK;
+      }
+
+      p1 = cf_get_posting(t,mid);
+
+      if(!p1) {
+        writen(sockfd,"404 Posting Not Found\n",22);
+        cf_log(CF_ERR,__FILE__,__LINE__,"Posting not found\n");
+        return FLT_OK;
+      }
+
+      CF_RW_RD(&t->lock);
+      ret = cf_remove_flags(sockfd,tsd,p1);
+      CF_RW_UN(&t->lock);
+
+      if(ret == 0) writen(sockfd,"200 Ok\n",7);
+
+      cf_generate_cache(forum);
+
+      return FLT_OK;
+    }
+    /* }}} */
+    else {
+      writen(sockfd,"500 Sorry\n",10);
+      cf_log(CF_ERR,__FILE__,__LINE__,"Bad request\n");
+      return FLT_OK;
+    }
+  }
+  /* }}} */
   else if(cf_strcmp(tokens[0],"PING") == 0) {
     writen(sockfd,"200 PONG!\n",10);
   }
@@ -423,6 +510,7 @@ int flt_cftp_register_handlers(int sock) {
   cf_register_protocol_handler("POST",flt_cftp_handler);
   cf_register_protocol_handler("PING",flt_cftp_handler);
   cf_register_protocol_handler("STAT",flt_cftp_handler);
+  cf_register_protocol_handler("FLAG",flt_cftp_handler);
 
   return FLT_OK;
 }

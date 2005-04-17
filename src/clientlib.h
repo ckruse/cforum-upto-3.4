@@ -219,9 +219,9 @@ typedef int (*t_filter_init_view)(t_cf_hash *,t_configuration *,t_configuration 
  * \return FLT_OK, FLT_DECLINE or FLT_EXIT. FLT_DECLINE and FLT_OK are functionless, FLT_EXIT means: do nothing else, just cleanup and exit
  */
 #ifndef CF_SHARED_MEM
-typedef int (*t_new_post_filter)(t_cf_hash *,t_configuration *,t_configuration *,t_message *,int,int);
+typedef int (*t_new_post_filter)(t_cf_hash *,t_configuration *,t_configuration *,t_message *,t_cl_thread *,int,int);
 #else
-typedef int (*t_new_post_filter)(t_cf_hash *,t_configuration *,t_configuration *,t_message *,void *,int,int);
+typedef int (*t_new_post_filter)(t_cf_hash *,t_configuration *,t_configuration *,t_message *,t_cl_thread *,void *,int,int);
 #endif
 
 /**
@@ -517,11 +517,10 @@ void cf_run_after_post_handlers(t_cf_hash *head,t_message *p,u_int64_t tid,void 
 void cf_run_after_post_handlers(t_cf_hash *head,t_message *p,u_int64_t tid,int sock);
 #endif
 
-
 #ifdef CF_SHARED_MEM
-int cf_run_post_filters(t_cf_hash *head,t_message *p,void *ptr,int sock);
+int cf_run_post_filters(t_cf_hash *head,t_message *p,t_cl_thread *thr,void *ptr,int sock);
 #else
-int cf_run_post_filters(t_cf_hash *head,t_message *p,int sock);
+int cf_run_post_filters(t_cf_hash *head,t_message *p,t_cl_thread *thr,int sock);
 #endif
 
 /**
@@ -640,6 +639,14 @@ int cf_get_message_through_shm(void *shm_ptr,t_cl_thread *thr,const u_char *tpln
 void *cf_get_next_thread_through_shm(void *shm_ptr,t_cl_thread *thr,const u_char *tplname);
 #endif
 
+
+/**
+ * This Function gets a posting flag by its name.
+ * \param flags The flags list head
+ * \param name The name of the flag
+ * \return NULL or the flag if found.
+ */
+t_cf_post_flag *cf_flag_by_name(t_cf_list_head *flags,const u_char *name);
 
 
 /**
