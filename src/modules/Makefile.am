@@ -211,4 +211,9 @@ pkglib_LTLIBRARIES+=flt_noanswer.la
 flt_noanswer_la_SOURCES=flt_noanswer.c
 flt_noanswer_la_LDFLAGS=-module -export-dynamic -avoid-version
 
+pkglib_LTLIBRARIES+=flt_chooser.la
+flt_chooser_la_SOURCES=flt_chooser.c
+flt_chooser_la_LDFLAGS=-module -export-dynamic -avoid-version
+
+
 # eof
