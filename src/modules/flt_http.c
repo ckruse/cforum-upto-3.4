@@ -92,7 +92,7 @@ long flt_http_get_lm(int sock) {
   long ret = 0;
 
   if(writen(sock,"GET LASTMODIFIED 0\n",19) > 0) {
-    memset(&tsd,0,sizeof(rline_t));
+    memset(&tsd,0,sizeof(tsd));
 
     if((line = readline(sock,&tsd)) != NULL) {
       ret = strtol(line,NULL,0);

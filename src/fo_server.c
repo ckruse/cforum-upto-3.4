@@ -540,7 +540,7 @@ int main(int argc,char *argv[]) {
      * the timeout struct of select(), we have to re-initialize
      * it in each loop
      */
-    memset(&timeout,0,sizeof(struct timeval));
+    memset(&timeout,0,sizeof(timeout));
 
     /* check every 10 seconds if we shall exit */
     timeout.tv_sec = 10;

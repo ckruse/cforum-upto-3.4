@@ -134,13 +134,14 @@ int cf_cache(const u_char *base,const u_char *uri,const u_char *content,size_t l
   FILE *fd;
   gzFile gzfd;
   t_string fname;
-  char buff[5];
+  char buff[5] = "wb";
 
   cf_cache_genname(base,uri,&fname);
 
   if(cf_cache_create_path(fname.content) == 0) {
     if(gzip) {
-      snprintf(buff,5,"wb%d",gzip);
+      buff[3] = gzip + '0';
+      buff[4] = '\0';
 
       if((gzfd = gzopen(fname.content,buff)) != NULL) {
         gzwrite(gzfd,(void *)content,len);

@@ -111,12 +111,8 @@ int flt_cftp_handler(int sockfd,t_forum *forum,const u_char **tokens,int tnum,rl
       else if(cf_strcmp(tokens[1],"LASTMODIFIED") == 0) {
         CF_RW_RD(&head.lock);
 
-        if(tnum == 3 && *tokens[2] == '1') {
-          l = snprintf(buff,50,"%ld\n",forum->date.invisible);
-        }
-        else {
-          l = snprintf(buff,50,"%ld\n",forum->date.visible);
-        }
+        if(tnum == 3 && *tokens[2] == '1') l = snprintf(buff,50,"%ld\n",forum->date.invisible);
+        else l = snprintf(buff,50,"%ld\n",forum->date.visible);
 
         CF_RW_UN(&head.lock);
 
@@ -137,8 +133,9 @@ int flt_cftp_handler(int sockfd,t_forum *forum,const u_char **tokens,int tnum,rl
           CF_RW_RD(&t->lock);
 
           for(p=t->postings;p;p=p->next) {
-            len = snprintf(buff,256,"m%lld\n",p->mid);
-            str_chars_append(&str,buff,len);
+            str_char_append(&str,'m');
+            u_int64_to_str(&str,p->mid);
+            str_char_append(&str,'\n');
           }
 
           t1 = t->next;
@@ -281,8 +278,16 @@ int flt_cftp_handler(int sockfd,t_forum *forum,const u_char **tokens,int tnum,rl
                 cf_hash_set(forum->uniques.ids,p->unid.content,p->unid.len,&one,sizeof(one));
                 CF_UM(&forum->uniques.lock);
 
-                len = snprintf(buff,512,"200 Ok\nTid: %llu\nMid: %llu\n\n",t->tid,p->mid);
-                writen(sockfd,buff,len);
+                /* {{{ create answer */
+                str_init_growth(&str,128);
+                str_chars_append(&str,"200 Ok\nTid: ",12);
+                u_int64_to_str(&str,t->tid);
+                str_chars_append(&str,"\nMid: ",6);
+                u_int64_to_str(&str,p->mid);
+                str_chars_append(&str,"\n\n",2);
+                writen(sockfd,str.content,str.len);
+                str_cleanup(&str);
+                /* }}} */
 
                 if(Modules[NEW_POST_HANDLER].elements) {
                   for(i=0;i<Modules[NEW_POST_HANDLER].elements;i++) {
@@ -336,7 +341,7 @@ int flt_cftp_handler(int sockfd,t_forum *forum,const u_char **tokens,int tnum,rl
         if(err == 0) {
           CF_RW_WR(&forum->threads.lock);
 
-          snprintf(buff,50,"t%lld",forum->threads.last_tid+1);
+          snprintf(buff,50,"t%llu",forum->threads.last_tid+1);
           cf_rwlock_init(buff,&t->lock);
           CF_RW_WR(&t->lock);
 
@@ -387,8 +392,16 @@ int flt_cftp_handler(int sockfd,t_forum *forum,const u_char **tokens,int tnum,rl
           cf_register_thread(forum,t);
           CF_RW_UN(&t->lock);
 
-          len = snprintf(buff,512,"200 Ok\nTid: %llu\nMid: %llu\n\n",t->tid,p->mid);
-          writen(sockfd,buff,len);
+          /* {{{ create answer */
+          str_init_growth(&str,128);
+          str_chars_append(&str,"200 Ok\nTid: ",12);
+          u_int64_to_str(&str,t->tid);
+          str_chars_append(&str,"\nMid: ",6);
+          u_int64_to_str(&str,p->mid);
+          str_chars_append(&str,"\n\n",2);
+          writen(sockfd,str.content,str.len);
+          str_cleanup(&str);
+          /* }}} */
 
           cf_generate_cache(forum);
         }

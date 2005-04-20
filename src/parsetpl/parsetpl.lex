@@ -3,7 +3,10 @@
  * The temaplte parser
  */
 %{
-#include "../utils.h"
+#include "config.h"
+#include "defines.h"
+
+#include "utils.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -57,12 +60,12 @@ typedef struct s_token {
 #define PARSETPL_ERR_NOTINLOOP             -6
 
 static long lineno                   = 0;
-static t_string  string              = { 0, 0, NULL };
-static t_string  content             = { 0, 0, NULL };
-static t_string  content_backup      = { 0, 0, NULL };
-static t_string  output              = { 0, 0, NULL };
-static t_string  output_mem          = { 0, 0, NULL };
-static t_string  current_file        = { 0, 0, NULL };
+static t_string  string              = { 0, 0, CF_BUFSIZ, NULL };
+static t_string  content             = { 0, 0, CF_BUFSIZ, NULL };
+static t_string  content_backup      = { 0, 0, CF_BUFSIZ, NULL };
+static t_string  output              = { 0, 0, CF_BUFSIZ, NULL };
+static t_string  output_mem          = { 0, 0, CF_BUFSIZ, NULL };
+static t_string  current_file        = { 0, 0, CF_BUFSIZ, NULL };
 static t_array   foreach_var_stack;
 static t_array   if_level_stack;
 static long n_assign_vars            = 0;

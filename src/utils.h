@@ -36,6 +36,7 @@
 typedef struct s_mem_pool {
   unsigned long len; /**< length of the memory used */
   unsigned long reserved; /**< length of the memory area itself */
+  unsigned growth; /**< The growth factor */
   void *content; /**< The memory area itself */
 } t_mem_pool;
 
@@ -45,6 +46,14 @@ typedef struct s_mem_pool {
  * \param pool The memory pool object pointer
  */
 void mem_init(t_mem_pool *pool);
+
+/**
+ * \ingroup memory_funcs
+ * This function initializes a memory pool
+ * \param pool The memory pool object pointer
+ * \param growth The growth factor
+ */
+void mem_init_growth(t_mem_pool *pool,unsigned growth);
 
 /**
  * \ingroup memory_funcs
@@ -91,8 +100,18 @@ void *mem_append(t_mem_pool *pool,const void *src,size_t len);
 typedef struct s_string {
   unsigned long len; /**< length of the memory used */
   unsigned long reserved; /**< length of the memory area itself */
+  unsigned growth;
   u_char *content; /**< The memory area itself */
 } t_string;
+
+
+/**
+ * \ingroup string_funcs
+ * This function initializes a string structure with specified growth factor.
+ * \param str A reference to a string structure
+ * \param growth The growth factor
+ */
+void str_init_growth(t_string *str,unsigned growth);
 
 /**
  * \ingroup string_funcs
@@ -773,6 +792,19 @@ void cf_cache_destroy(t_cache_entry *ent);
  */
 void u_int64_to_str(t_string *str, u_int64_t num);
 
+/**
+ * This function converts an u_int16_t to a t_string (using str_char_append calls).
+ * \param str The string to use
+ * \param num The u_int16_t to convert
+ */
+void u_int16_to_str(t_string *str, u_int16_t num);
+
+/**
+ * This function converts an u_int32_t to a t_string (using str_char_append calls).
+ * \param str The string to use
+ * \param num The u_int32_t to convert
+ */
+void u_int32_to_str(t_string *str, u_int32_t num);
 
 /**
  * This function converts an u_char * to an u_int64_t
@@ -780,6 +812,8 @@ void u_int64_to_str(t_string *str, u_int64_t num);
  * \return The converted number
  */
 u_int64_t str_to_u_int64(register const u_char *ptr);
+
+
 /* }}} */
 
 void redirect_with_nice_uri(const u_char *ruri,int perm);

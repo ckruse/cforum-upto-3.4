@@ -64,7 +64,7 @@ int flt_noanswer_gogogo(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc,v
     if(!tid || !mid) return FLT_DECLINE;
     if(str_to_u_int64(tid) == 0 || str_to_u_int64(mid) == 0) return FLT_DECLINE;
 
-    memset(&rl,0,sizeof(rline_t));
+    memset(&rl,0,sizeof(rl));
 
     #ifdef CF_SHARED_MEM
     /* if in shared memory mode, the sock parameter is a pointer to the shared mem segment */
@@ -153,6 +153,7 @@ int flt_noanswer_setvars(t_cf_hash *head,t_configuration *dc,t_configuration *vc
 }
 /* }}} */
 
+/* {{{ flt_noanswer_post */
 #ifdef CF_SHARED_MEM
 int flt_noanswer_post(t_cf_hash *head,t_configuration *dc,t_configuration *pc,t_message *p,t_cl_thread *thr,void *ptr,int sock,int mode)
 #else
@@ -173,6 +174,7 @@ int flt_noanswer_post(t_cf_hash *head,t_configuration *dc,t_configuration *pc,t_
 
   return FLT_EXIT;
 }
+/* }}} */
 
 t_conf_opt flt_noanswer_config[] = {
   { NULL, NULL, 0, NULL }

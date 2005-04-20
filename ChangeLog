@@ -1,3 +1,28 @@
+2005-04-20 Christian Kruse <ckruse@wwwtech.de>
+	* src/utils.h: Added u_int16_to_str() and u_int32_to_str()
+	* src/cacheutils.c: Removed totally unecessary snprintf() call
+	* src/modules/flt_cftp.c: Removed snprintf() and sprintf() calls and replaced
+		them by str_chars_append() and u_int16_to_str() and u_int32_to_str()
+	* src/modules/flt_noanswer.c: Fixed memset() call, added folding markers
+	* src/modules/flt_xmlstorage.c: Removed lots of silly snprintf() calls
+	* src/modules/flt_extern.c: Removed some snprintf() calls
+	* src/modules/flt_http.c: Fixed memset() call
+	* src/modules/flt_admin.c: Fixed memset() call
+	* src/datautils.c: Added u_int16_to_str() and u_int32_to_str()
+	* src/serverlib.c: Removed lots of snprintf() and sprintf() calls
+	* src/parsetpl/parsetpl.lex: Moved to new t_string datatype
+	* src/fo_post.c: Fixed small bug (didn't call str_init())
+	* src/stringutils.c: Added possibility to define the growth factor of strings.
+		Normally it was BUFSIZ, but this is 8KB (sic!) on linux systems and it is a
+		whole bunch of memory. For small exercises, e.g. u_int16_to_str(), you
+		should now use strings with an defined growth factor, e.g. 16 or 32. This
+		means, that everytime a string must be resized, it grows by 16 respectively
+		32 bytes. This is very good for small strings. Therefore you must call
+		str_init_growth(), str_init() applys a growth factor of BUFSIZ (which means
+		8KB on linux systems, as mentioned above)
+	* src/memoryutils.c: Did the same thing for the mempool abstraction layer.
+	* src/fo_server.c: Fixed memset() call
+
 2005-04-17 Christian Kruse <ckruse@wwwtech.de>
 	* src/clientlib.[ch]: Added cf_flag_by_name() function, fixed
 		cf_general_get_link()

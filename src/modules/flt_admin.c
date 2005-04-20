@@ -100,7 +100,7 @@ int flt_admin_gogogo(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc,void
     if(!tid || !mid) return FLT_DECLINE;
     if(str_to_u_int64(tid) == 0 || str_to_u_int64(mid) == 0) return FLT_DECLINE;
 
-    memset(&rl,0,sizeof(rline_t));
+    memset(&rl,0,sizeof(rl));
 
     #ifdef CF_SHARED_MEM
     /* if in shared memory mode, the sock parameter is a pointer to the shared mem segment */

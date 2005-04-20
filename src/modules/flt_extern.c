@@ -133,9 +133,17 @@ void flt_extern_send_list(t_forum *forum,int sock,time_t date) {
         /* thread/posting header */
         if(first) {
           first = 0;
-          n = snprintf(buff,256,"THREAD t%llu m%llu\n",t->tid,p->mid);
+          str_chars_append(&str,"THREAD t",8);
+          u_int64_to_str(&str,t->tid);
+          str_chars_append(&str," m",2);
+          u_int64_to_str(&str,p->mid);
+          str_char_append(&str,'\n');
         }
-        else n = snprintf(buff,256,"MSG m%llu\n",p->mid);
+        else {
+          str_chars_append(&str,"MSG m",5);
+          u_int64_to_str(&str,p->mid);
+          str_char_append(&str,'\n');
+        }
 
         str_chars_append(&str,buff,n);
 
@@ -154,12 +162,14 @@ void flt_extern_send_list(t_forum *forum,int sock,time_t date) {
         }
 
         /* date */
-        n = snprintf(buff,256,"\nDate:%ld\n",p->date);
-        str_chars_append(&str,buff,n);
+        str_chars_append(&str,"\nDate:",6);
+        u_int32_to_str(&str,(u_int32_t)p->date);
+        str_char_append(&str,'\n');
 
         /* level */
-        n = snprintf(buff,256,"Level:%d\n",p->level);
-        str_chars_append(&str,buff,n);
+        str_chars_append(&str,"Level:",6);
+        u_int16_to_str(&str,p->level);
+        str_char_append(&str,'\n');
 
         str_chars_append(&str,"END\n",4);
       }
@@ -258,12 +268,8 @@ void flt_extern_handle_request(int sock) {
 
           /* {{{ GET POSTING */
           else if(cf_strcmp(tokens[1],"POSTING") == 0) {
-            if(tnum < 3) {
-              writen(sock,"501 Thread id or message id missing\n",36);
-            }
-            else if(tnum > 4) {
-              writen(sock,"500 Syntax error\n",17);
-            }
+            if(tnum < 3) writen(sock,"501 Thread id or message id missing\n",36);
+            else if(tnum > 4) writen(sock,"500 Syntax error\n",17);
             else {
               tid = str_to_u_int64(tokens[2]+1);
               mid = 0;
@@ -303,8 +309,9 @@ void flt_extern_handle_request(int sock) {
               CF_RW_RD(&t->lock);
 
               for(p=t->postings;p;p=p->next) {
-                len = snprintf(buff,256,"m%llu\n",p->mid);
-                str_chars_append(&str,buff,len);
+                str_char_append(&str,'m');
+                u_int64_to_str(&str,p->mid);
+                str_char_append(&str,'\n');
               }
 
               t1 = t->next;

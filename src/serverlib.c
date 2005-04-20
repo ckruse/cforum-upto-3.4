@@ -185,6 +185,8 @@ void cf_log(int mode,const u_char *file,unsigned int line,const u_char *format, 
   if(mode & CF_DBG) return;
   #endif
 
+  str_init_growth(&str,128);
+
   for(ptr1=ptr=(u_char *)file;*ptr;ptr++) {
     if(*ptr == '/') ptr1 = ptr + 1;
   }
@@ -951,7 +953,6 @@ t_posting_flag *cf_get_flag_by_name(t_cf_list_head *flags,const u_char *name) {
 /* {{{ cf_send_posting */
 void cf_send_posting(t_forum *forum,int sock,u_int64_t tid,u_int64_t mid,int invisible) {
   int n;
-  u_char buff[512];
   t_thread *t = cf_get_thread(forum,tid);
   t_posting *p = NULL;
   t_string bff;
@@ -989,8 +990,11 @@ void cf_send_posting(t_forum *forum,int sock,u_int64_t tid,u_int64_t mid,int inv
   }
 
   p = t->postings;
-  n = snprintf(buff,512,"THREAD t%lld m%lld\n",t->tid,p->mid);
-  str_chars_append(&bff,buff,n);
+  str_chars_append(&bff,"THREAD t",8);
+  u_int64_to_str(&bff,t->tid);
+  str_chars_append(&bff," m",2);
+  u_int64_to_str(&bff,p->mid);
+  str_char_append(&bff,'\n');
 
   for(;p;p=p->next) {
     if(p->invisible && !invisible) {
@@ -999,8 +1003,9 @@ void cf_send_posting(t_forum *forum,int sock,u_int64_t tid,u_int64_t mid,int inv
     }
 
     if(!first) {
-      n = snprintf(buff,512,"MSG m%lld\n",p->mid);
-      str_chars_append(&bff,buff,n);
+      str_chars_append(&bff,"MSG m",5);
+      u_int64_to_str(&bff,p->mid);
+      str_char_append(&bff,'\n');
     }
 
     first = 0;
@@ -1045,20 +1050,25 @@ void cf_send_posting(t_forum *forum,int sock,u_int64_t tid,u_int64_t mid,int inv
     str_chars_append(&bff,"\nRemote-Addr:",13);
     str_str_append(&bff,&p->user.ip);
 
-    n = snprintf(buff,512,"\nDate:%ld\n",p->date);
-    str_chars_append(&bff,buff,n);
+    str_chars_append(&bff,"\nDate:",6);
+    u_int32_to_str(&bff,p->date);
+    str_char_append(&bff,'\n');
 
-    n = snprintf(buff,512,"Level:%d\n",p->level);
-    str_chars_append(&bff,buff,n);
+    str_chars_append(&bff,"Level:",6);
+    u_int16_to_str(&bff,p->level);
+    str_char_append(&bff,'\n');
 
-    n = snprintf(buff,512,"Visible:%d\n",p->invisible == 0);
-    str_chars_append(&bff,buff,n);
+    str_chars_append(&bff,"Visible:",8);
+    u_int16_to_str(&bff,(u_int16_t)(p->invisible == 0));
+    str_char_append(&bff,'\n');
 
-    n = snprintf(buff,512,"Votes-Good:%u\n",p->votes_good);
-    str_chars_append(&bff,buff,n);
+    str_chars_append(&bff,"Votes-Good:",11);
+    u_int32_to_str(&bff,p->votes_good);
+    str_char_append(&bff,'\n');
 
-    n = snprintf(buff,512,"Votes-Bad:%u\n",p->votes_bad);
-    str_chars_append(&bff,buff,n);
+    str_chars_append(&bff,"Votes-Bad:",10);
+    u_int32_to_str(&bff,p->votes_bad);
+    str_char_append(&bff,'\n');
 
     str_chars_append(&bff,"Content:",8);
     str_chars_append(&bff,p->content.content,p->content.len);
@@ -1407,15 +1417,18 @@ void cf_generate_list(t_forum *forum,t_string *str,int del) {
       str_str_append(str,&p->user.ip);
 
       /* date */
-      n = snprintf(buff,256,"\nDate:%ld\n",p->date);
-      str_chars_append(str,buff,n);
+      str_chars_append(str,"\nDate:",6);
+      u_int32_to_str(str,(u_int32_t)p->date);
+      str_char_append(str,'\n');
 
       /* level */
-      n = snprintf(buff,256,"Level:%d\n",p->level);
-      str_chars_append(str,buff,n);
+      str_chars_append(str,"Level:",6);
+      u_int16_to_str(str,p->level);
+      str_char_append(str,'\n');
 
-      n = snprintf(buff,256,"Visible:%d\n",p->invisible == 0);
-      str_chars_append(str,buff,n);
+      str_chars_append(str,"Visible:",8);
+      u_int16_to_str(str,(u_int16_t)(p->invisible == 0));
+      str_char_append(str,'\n');
     }
 
     if(did) str_chars_append(str,"END\n",4);

@@ -83,10 +83,20 @@ void *memdup(void *inptr,size_t size) {
 }
 /* }}} */
 
+/* {{{ mem_init_growth */
+void mem_init_growth(t_mem_pool *pool,unsigned growth) {
+  pool->len      = 0;
+  pool->reserved = 0;
+  pool->growth   = growth;
+  pool->content  = NULL;
+}
+/* }}} */
+
 /* {{{ mem_init */
 void mem_init(t_mem_pool *pool) {
   pool->len      = 0;
   pool->reserved = 0;
+  pool->growth   = CF_BUFSIZ;
   pool->content  = NULL;
 }
 /* }}} */
@@ -104,15 +114,13 @@ void mem_cleanup(t_mem_pool *pool) {
 
 /* {{{ mem_append */
 void *mem_append(t_mem_pool *pool,const void *src,size_t length) {
-  size_t len = BUFSIZ;
+  size_t len = pool->growth;
 
   if(pool->len + length >= pool->reserved) {
-    if(length >= len) {
-      len += length;
-    }
+    if(length >= len) len += length;
 
-    pool->content   = fo_alloc(pool->content,(size_t)(pool->reserved + len),1,FO_ALLOC_REALLOC);
     pool->reserved += len;
+    pool->content   = fo_alloc(pool->content,(size_t)pool->reserved,1,FO_ALLOC_REALLOC);
   }
 
   memcpy(pool->content + pool->len,src,length);
@@ -124,12 +132,10 @@ void *mem_append(t_mem_pool *pool,const void *src,size_t length) {
 
 /* {{{ mem_set */
 size_t mem_set(t_mem_pool *pool,const void *src,size_t length) {
-  size_t len = MAXLINE;
+  size_t len = pool->growth;
 
   if(pool->len + length >= pool->reserved) {
-    if(length >= len) {
-      len += length;
-    }
+    if(length >= len) len += length;
 
     pool->content   = fo_alloc(pool->content,pool->reserved + len,1,FO_ALLOC_REALLOC);
     pool->reserved += len;

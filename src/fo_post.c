@@ -517,6 +517,8 @@ t_string *body_plain2coded(const u_char *text) {
   t_name_value *v;
   size_t len;
 
+  str_init(str);
+
   v = cfg_get_first_value(&fo_post_conf,forum_name,"QuotingChars");
 
   qchars = htmlentities(v->values[0],0);
