@@ -294,6 +294,11 @@ int flt_modated_handle(t_configfile *cfile,t_conf_opt *opt,const u_char *context
 }
 /* }}} */
 
+void flt_moderated_cleanup(void) {
+  if(flt_moderated_db) flt_moderated_db->close(flt_moderated_db,0);
+  if(flt_moderated_dbname) free(flt_moderated_dbname);
+}
+
 t_conf_opt flt_moderated_config[] = {
   { "Moderation",   flt_modated_handle, CFG_OPT_CONFIG|CFG_OPT_LOCAL, NULL },
   { "ModerationDB", flt_modated_handle, CFG_OPT_CONFIG|CFG_OPT_LOCAL, NULL },
@@ -313,7 +318,7 @@ t_module_config flt_moderated = {
   NULL,
   NULL,
   NULL,
-  NULL
+  flt_moderated_cleanup
 };
 
 /* eof */

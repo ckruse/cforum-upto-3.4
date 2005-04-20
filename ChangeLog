@@ -31,6 +31,8 @@
 		src/modules/flt_mailonpost.c, src/modules/flt_openclose.c: Fixed a bug that
 		could cause race conditions; now it should not.
 	* src/modules/flt_noanonymous.c: Added folding markers
+	* src/modules/flt_cookieauth.c: Added plugin to authenticate users with
+		cookies
 
 2005-04-17 Christian Kruse <ckruse@wwwtech.de>
 	* src/clientlib.[ch]: Added cf_flag_by_name() function, fixed

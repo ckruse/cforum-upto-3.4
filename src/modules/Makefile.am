@@ -219,4 +219,8 @@ pkglib_LTLIBRARIES+=flt_moderated.la
 flt_moderated_la_SOURCES=flt_moderated.c
 flt_moderated_la_LDFLAGS=-module -export-dynamic -avoid-version
 
+pkglib_LTLIBRARIES+=flt_cookieauth.la
+flt_cookieauth_la_SOURCES=flt_cookieauth.c
+flt_cookieauth_la_LDFLAGS=-module -export-dynamic -avoid-version
+
 # eof
