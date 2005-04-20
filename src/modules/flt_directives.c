@@ -40,6 +40,7 @@
 #include "htmllib.h"
 /* }}} */
 
+static u_char *flt_directives_extlink   = NULL;
 static u_char *flt_directives_link      = NULL;
 static u_char *flt_directives_icons     = NULL;
 static u_char **flt_directives_badlinks = NULL;
@@ -162,7 +163,7 @@ void flt_directives_replace(t_string *content,const u_char *str,const u_char *ur
 /* {{{ flt_directives_generate_uri */
 void flt_directives_generate_uri(const u_char *uri,const u_char *title,t_string *content,t_string *cite,int sig,t_configuration *dc,t_configuration *vc,int icons) {
   register u_char *ptr;
-  u_char *tmp1,*tmp2 = NULL,*tmp3;
+  u_char *tmp1,*tmp2 = NULL,*tmp3,*hostname;
   size_t len = 0,len1 = 0,len2,i;
   t_flt_directives_lt_tok *tok;
   u_char *new_uri = NULL;
@@ -192,9 +193,28 @@ void flt_directives_generate_uri(const u_char *uri,const u_char *title,t_string 
 
   if(flt_directives_rel_no_follow) str_chars_append(content,"\" rel=\"nofollow",15);
 
-  if(flt_directives_link) {
-    str_chars_append(content,"\" target=\"",10);
-    str_chars_append(content,flt_directives_link,strlen(flt_directives_link));
+  if(flt_directives_link || flt_directives_extlink) {
+    if((hostname = getenv("SERVER_NAME")) != NULL) {
+      if(cf_strncmp(uri+7,hostname,strlen(hostname)) == 0) {
+        if(flt_directives_link) {
+          str_chars_append(content,"\" target=\"",10);
+          str_chars_append(content,flt_directives_link,strlen(flt_directives_link));
+        }
+      }
+      else {
+        if(flt_directives_extlink) {
+          str_chars_append(content,"\" target=\"",10);
+          str_chars_append(content,flt_directives_extlink,strlen(flt_directives_extlink));
+        }
+      }
+    }
+    /* fallback: SERVER_NAME is not set. Just append default target, if exists */
+    else {
+      if(flt_directives_link) {
+        str_chars_append(content,"\" target=\"",10);
+        str_chars_append(content,flt_directives_link,strlen(flt_directives_link));
+      }
+    }
   }
 
   str_chars_append(content,"\">",2);
@@ -765,12 +785,15 @@ int flt_directives_rewrite(t_cf_hash *head,t_configuration *dc,t_configuration *
 }
 /* }}} */
 
+/* {{{ flt_directives_suial_set */
 int flt_directives_suial_set(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cl_thread *thread,t_message *msg,t_cf_tpl_variable *hash) {
   if(flt_directives_suial == 0) cf_tpl_hashvar_setvalue(hash,"showimage",TPL_VARIABLE_INT,1);
   if(flt_directives_link) cf_tpl_hashvar_setvalue(hash,"target",TPL_VARIABLE_STRING,flt_directives_link,strlen(flt_directives_link));
   return FLT_OK;
 }
+/* }}} */
 
+/* {{{ flt_directives_init */
 int flt_directives_init(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc) {
   cf_html_register_directive("link",flt_directives_execute,CF_HTML_DIR_TYPE_ARG|CF_HTML_DIR_TYPE_INLINE);
   cf_html_register_directive("pref",flt_directives_execute,CF_HTML_DIR_TYPE_ARG|CF_HTML_DIR_TYPE_INLINE);
@@ -786,6 +809,7 @@ int flt_directives_init(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc) 
 
   return FLT_DECLINE;
 }
+/* }}} */
 
 /* {{{ directive handlers */
 int flt_directives_handle_uwl(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
@@ -894,8 +918,14 @@ int flt_directives_handle_link(t_configfile *cfile,t_conf_opt *opt,const u_char 
   if(flt_directives_fname == NULL) flt_directives_fname = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   if(!context || cf_strcmp(context,flt_directives_fname) != 0) return 0;
 
-  if(flt_directives_link) free(flt_directives_link);
-  flt_directives_link = strdup(args[0]);
+  if(cf_strcmp(opt->name,"PostingLinkExtTarget") == 0) {
+    if(flt_directives_extlink) free(flt_directives_extlink);
+    flt_directives_extlink = strdup(args[0]);
+  }
+  else {
+    if(flt_directives_link) free(flt_directives_link);
+    flt_directives_link = strdup(args[0]);
+  }
 
   return 0;
 }
@@ -1017,6 +1047,7 @@ t_conf_opt flt_directives_config[] = {
   { "ShowIframeAsLink",     flt_directives_handle_iframe,   CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL,  NULL },
   { "ShowImageAsLink",      flt_directives_handle_image,    CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL,  NULL },
   { "PostingLinkTarget",    flt_directives_handle_link,     CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL,  NULL },
+  { "PostingLinkExtTarget", flt_directives_handle_link,     CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL,  NULL },
   { "SetRelNoFollow",       flt_directives_handle_rel,      CFG_OPT_CONFIG|CFG_OPT_LOCAL, NULL },
   { "ReferenceURI",         flt_directives_handle_ref,      CFG_OPT_CONFIG|CFG_OPT_LOCAL, NULL },
   { "LinkTemplate",         flt_directives_handle_lt,       CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL,  NULL },

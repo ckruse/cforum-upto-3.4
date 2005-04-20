@@ -407,7 +407,15 @@
       <directive name="PostingLinkTarget" arguments="1">
         <argument paramname="plinktarget" type="text" encode="plain">
           <validate>^\w+$</validate>
-          <question>Links in einer Nachricht können in einem neuen Fenster geöffnet werden. Geben Sie bei Bedarf das Zielfenster an (beispielsweise _blank). Dieser Wert wird als target-Attribut jedem Link innerhalb einer Nachricht hinzugefügt.</question>
+          <question>Interne Links in einer Nachricht können in einem neuen Fenster geöffnet werden. Geben Sie bei Bedarf das Zielfenster an (beispielsweise _blank). Dieser Wert wird als target-Attribut jedem internen Link innerhalb einer Nachricht hinzugefügt.</question>
+          <error>Bitte geben sie ein valides Target-Ziel an! (Nur a-zA-Z0-9_)</error>
+        </argument>
+      </directive>
+
+      <directive name="PostingLinkExtTarget" arguments="1">
+        <argument paramname="plinktarget" type="text" encode="plain">
+          <validate>^\w+$</validate>
+          <question>Externe Links in einer Nachricht können in einem neuen Fenster geöffnet werden. Geben Sie bei Bedarf das Zielfenster an (beispielsweise _blank). Dieser Wert wird als target-Attribut jedem externen Link innerhalb einer Nachricht hinzugefügt.</question>
           <error>Bitte geben sie ein valides Target-Ziel an! (Nur a-zA-Z0-9_)</error>
         </argument>
       </directive>

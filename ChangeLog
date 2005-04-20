@@ -24,6 +24,8 @@
 	* src/fo_server.c: Fixed memset() call
 	* src/modules/flt_chooser.c: Added plugin for a board-like category chooser
 	* src/fo_arcview.c: Fixed #758
+	* src/modules/flt_directives.c: Fixed #752
+	* conf/modules.de.xml: Added PostingLinkExtTarget
 
 2005-04-17 Christian Kruse <ckruse@wwwtech.de>
 	* src/clientlib.[ch]: Added cf_flag_by_name() function, fixed
