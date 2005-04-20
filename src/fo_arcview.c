@@ -165,7 +165,7 @@ void show_years() {
   t_get_years gy;
 
   u_char *fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
-  u_char *username = cf_hash_get(GlobalValues,"UserName",8);
+  u_char *username = cf_hash_get(GlobalValues,"UserName",8),*script;
   t_name_value *cs = cfg_get_first_value(&fo_default_conf,fn,"ExternCharset");
   t_name_value *sy = cfg_get_first_value(&fo_arcview_conf,fn,"SortYearList");
   t_name_value *yt = cfg_get_first_value(&fo_arcview_conf,fn,"YearsTemplate");
@@ -209,6 +209,9 @@ void show_years() {
   cf_tpl_setvar(&tpl,"years",&array);
   cf_set_variable(&tpl,cs,"forumbase",forumpath->values[0],strlen(forumpath->values[0]),1);
 
+  cf_set_variable(&tpl,"charset",cs->values[0],strlen(cs->values[0]),1);
+  if((script = getenv("SCRIPT_NAME")) != NULL) cf_set_variable(&tpl,"script",script,strlen(script),1);
+
   printf("Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
   cf_tpl_parse(&tpl);
 
@@ -227,7 +230,7 @@ void show_year_content(const u_char *year) {
   t_get_monthlist ml;
 
   u_char *fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
-  u_char *username = cf_hash_get(GlobalValues,"UserName",8);
+  u_char *username = cf_hash_get(GlobalValues,"UserName",8),*script;
   u_char mt_name[256],*mname;
 
   t_name_value *mt = cfg_get_first_value(&fo_arcview_conf,fn,"MonthsTemplate");
@@ -280,6 +283,9 @@ void show_year_content(const u_char *year) {
   cf_tpl_setvar(&mt_tpl,"months",&array);
   cf_set_variable(&mt_tpl,cs,"forumbase",forumpath->values[0],strlen(forumpath->values[0]),1);
   cf_set_variable(&mt_tpl,cs,"year",year,strlen(year),1);
+
+  cf_set_variable(&mt_tpl,"charset",cs->values[0],strlen(cs->values[0]),1);
+  if((script = getenv("SCRIPT_NAME")) != NULL) cf_set_variable(&mt_tpl,"script",script,strlen(script),1);
 
   printf("Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
   cf_tpl_parse(&mt_tpl);
@@ -354,7 +360,7 @@ void show_month_content(const u_char *year,const u_char *month) {
   time_t last_modified;
 
   u_char *fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
-  u_char mt_name[256],pi[256],*tmp,*tmp1;
+  u_char mt_name[256],pi[256],*tmp,*tmp1,*script;
 
   t_name_value *cs = cfg_get_first_value(&fo_default_conf,fn,"ExternCharset");
   t_name_value *stl = cfg_get_first_value(&fo_arcview_conf,fn,"SortThreadList");
@@ -468,6 +474,9 @@ void show_month_content(const u_char *year,const u_char *month) {
   cf_set_variable(&m_tpl,cs,"forumbase",forumpath->values[0],strlen(forumpath->values[0]),1);
 
   cf_tpl_setvar(&m_tpl,"threads",&array);
+
+  cf_set_variable(&m_tpl,"charset",cs->values[0],strlen(cs->values[0]),1);
+  if((script = getenv("SCRIPT_NAME")) != NULL) cf_set_variable(&m_tpl,"script",script,strlen(script),1);
 
   printf("Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
   cf_tpl_parse_to_mem(&m_tpl);
@@ -662,7 +671,7 @@ void print_thread(t_cl_thread *thr,const u_char *year,const u_char *month,const 
   u_char main_tpl_name[256],threadlist_tpl_name[256];
   t_cf_template main_tpl,threadlist_tpl;
 
-  u_char *tmp;
+  u_char *tmp,*script;
   int len,cache_level;
 
   t_string threadlist;
@@ -696,6 +705,9 @@ void print_thread(t_cl_thread *thr,const u_char *year,const u_char *month,const 
 
   cf_tpl_setvar(&main_tpl,"threads",&ary);
   cf_tpl_setvalue(&main_tpl,"threadlist",TPL_VARIABLE_STRING,threadlist.content,threadlist.len);
+
+  cf_set_variable(&main_tpl,"charset",cs->values[0],strlen(cs->values[0]),1);
+  if((script = getenv("SCRIPT_NAME")) != NULL) cf_set_variable(&main_tpl,"script",script,strlen(script),1);
 
   cf_tpl_parse_to_mem(&main_tpl);
 
