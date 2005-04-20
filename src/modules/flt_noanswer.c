@@ -54,7 +54,7 @@ int flt_noanswer_gogogo(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc,v
 
   if(si == 0 || cgi == NULL) return FLT_DECLINE;
 
-  if((action = cf_cgi_get(cgi,"a")) != NULL) {
+  if((action = cf_cgi_get(cgi,"a")) != NULL && (cf_strcmp(action,"set-na") == 0 || cf_strcmp(action,"remove-na") == 0)) {
     uname = cf_hash_get(GlobalValues,"UserName",8);
     fn    = cf_hash_get(GlobalValues,"FORUM_NAME",10);
 

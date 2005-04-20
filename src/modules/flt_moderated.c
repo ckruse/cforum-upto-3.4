@@ -101,6 +101,23 @@ int flt_mod_closedb(void) {
 }
 /* }}} */
 
+void flt_mod_setlinks(t_cf_template *tpl,int ret,u_int64_t tid,u_int64_t mid) {
+  cf_readmode_t *rm = cf_hash_get(GlobalValues,"RM",2);
+  u_char *link;
+  size_t l;
+
+  if(ret == 0) {
+    link = cf_advanced_get_link(rm->posting_uri[1],tid,mid,NULL,1,&l,"a","unapprove");
+    cf_tpl_setvalue(tpl,"unapprove_link",TPL_VARIABLE_STRING,link,l);
+    free(link);
+  }
+  else {
+    link = cf_advanced_get_link(rm->posting_uri[1],tid,mid,NULL,1,&l,"a","approve");
+    cf_tpl_setvalue(tpl,"approve_link",TPL_VARIABLE_STRING,link,l);
+    free(link);
+  }
+}
+
 /* {{{ flt_moderated_thread */
 int flt_moderated_thread(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cl_thread *thread,int mode) {
   int si = cf_hash_get(GlobalValues,"ShowInvisible",13) != NULL,ret;
@@ -114,6 +131,7 @@ int flt_moderated_thread(t_cf_hash *head,t_configuration *dc,t_configuration *vc
   if(flt_moderated_cfg != FLT_MOD_THREAD || (mode & CF_MODE_POST) == 0) return FLT_DECLINE;
   if(flt_moderated_db == NULL) {
     if(flt_mod_getdb(1) != FLT_OK) {
+      if(si) flt_mod_setlinks(&thread->messages->tpl,1,thread->tid,thread->messages->mid);
       thread->messages->may_show = 0;
       cf_msg_delete_subtree(thread->messages);
       return FLT_DECLINE;
@@ -133,19 +151,7 @@ int flt_moderated_thread(t_cf_hash *head,t_configuration *dc,t_configuration *vc
   key.size = str.len;
 
   ret = flt_moderated_db->get(flt_moderated_db,NULL,&key,&data,0);
-
-  if(si) {
-    if(ret == 0) {
-      link = cf_advanced_get_link(rm->posting_uri[1],thread->tid,thread->messages->mid,NULL,1,&l,"a","unapprove");
-      cf_tpl_setvalue(&thread->messages->tpl,"unapprove_link",TPL_VARIABLE_STRING,link,l);
-      free(link);
-    }
-    else {
-      link = cf_advanced_get_link(rm->posting_uri[1],thread->tid,thread->messages->mid,NULL,1,&l,"a","approve");
-      cf_tpl_setvalue(&thread->messages->tpl,"approve_link",TPL_VARIABLE_STRING,link,l);
-      free(link);
-    }
-  }
+  if(si) flt_mod_setlinks(&thread->messages->tpl,ret,thread->tid,thread->messages->mid);
 
   if(ret != 0) {
     thread->messages->may_show = 0;
@@ -159,9 +165,6 @@ int flt_moderated_thread(t_cf_hash *head,t_configuration *dc,t_configuration *vc
 /* {{{ flt_moderated_posthandler */
 int flt_moderated_posthandler(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc,t_message *msg,u_int64_t tid,int mode) {
   int si = cf_hash_get(GlobalValues,"ShowInvisible",13) != NULL,ret;
-  cf_readmode_t *rm = cf_hash_get(GlobalValues,"RM",2);
-  u_char *link;
-  size_t l;
 
   DBT key,data;
   t_string str;
@@ -170,6 +173,7 @@ int flt_moderated_posthandler(t_cf_hash *cgi,t_configuration *dc,t_configuration
 
   if(flt_moderated_db == NULL) {
     if(flt_mod_getdb(1) != FLT_OK) {
+      if(si) flt_mod_setlinks(&msg->tpl,1,tid,msg->mid);
       msg->may_show = 0;
       return FLT_DECLINE;
     }
@@ -189,18 +193,7 @@ int flt_moderated_posthandler(t_cf_hash *cgi,t_configuration *dc,t_configuration
 
   ret = flt_moderated_db->get(flt_moderated_db,NULL,&key,&data,0);
 
-  if(si) {
-    if(ret == 0) {
-      link = cf_advanced_get_link(rm->posting_uri[1],tid,msg->mid,NULL,1,&l,"a","unapprove");
-      cf_tpl_setvalue(&msg->tpl,"unapprove_link",TPL_VARIABLE_STRING,link,l);
-      free(link);
-    }
-    else {
-      link = cf_advanced_get_link(rm->posting_uri[1],tid,msg->mid,NULL,1,&l,"a","approve");
-      cf_tpl_setvalue(&msg->tpl,"approve_link",TPL_VARIABLE_STRING,link,l);
-      free(link);
-    }
-  }
+  if(si) flt_mod_setlinks(&msg->tpl,ret,tid,msg->mid);
 
   if(ret != 0) msg->may_show = 0;
 
