@@ -40,6 +40,7 @@
 static u_char *flt_noanonymous_fn = NULL;
 static int flt_noanonymous_cfg = 0;
 
+/* {{{ flt_noanonymous_run */
 int flt_noanonymous_run(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc) {
   t_name_value *cs;
   if(flt_noanonymous_cfg == 0 || flt_noanonymous_cfg == FLT_NA_POST) return FLT_DECLINE;
@@ -52,7 +53,9 @@ int flt_noanonymous_run(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc) 
 
   return FLT_EXIT;
 }
+/* }}} */
 
+/* {{{ flt_noanonymous_post */
 #ifdef CF_SHARED_MEM
 int flt_noanonymous_post(t_cf_hash *head,t_configuration *dc,t_configuration *pc,t_message *p,void *ptr,int sock,int mode)
 #else
@@ -71,7 +74,9 @@ int flt_noanonymous_post(t_cf_hash *head,t_configuration *dc,t_configuration *pc
 
   return FLT_EXIT;
 }
+/* }}} */
 
+/* {{{ flt_noanonymous_handle */
 int flt_noanonymous_handle(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
   if(flt_noanonymous_fn == NULL) flt_noanonymous_fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   if(!context || cf_strcmp(flt_noanonymous_fn,context) != 0) return 0;
@@ -80,6 +85,7 @@ int flt_noanonymous_handle(t_configfile *cfile,t_conf_opt *opt,const u_char *con
   else if(cf_strcmp(args[0],"read") == 0) flt_noanonymous_cfg = FLT_NA_READ;
   return 0;
 }
+/* }}} */
 
 t_conf_opt flt_noanonymous_config[] = {
   { "NoAnonymous",  flt_noanonymous_handle,  CFG_OPT_CONFIG|CFG_OPT_LOCAL, NULL },

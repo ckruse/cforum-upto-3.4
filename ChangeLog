@@ -26,6 +26,11 @@
 	* src/fo_arcview.c: Fixed #758
 	* src/modules/flt_directives.c: Fixed #752
 	* conf/modules.de.xml: Added PostingLinkExtTarget
+	* src/modules/flt_moderated.c: Added plugin to run moderated forums
+	* src/modules/flt_deleted.c, src/modules/flt_visited.c,
+		src/modules/flt_mailonpost.c, src/modules/flt_openclose.c: Fixed a bug that
+		could cause race conditions; now it should not.
+	* src/modules/flt_noanonymous.c: Added folding markers
 
 2005-04-17 Christian Kruse <ckruse@wwwtech.de>
 	* src/clientlib.[ch]: Added cf_flag_by_name() function, fixed

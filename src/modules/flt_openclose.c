@@ -317,15 +317,7 @@ int flt_oc_get_conf(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_
 
 /* {{{ flt_oc_cleanup */
 void flt_oc_cleanup(void) {
-  int fd;
-  long i;
-
-  if(flt_oc_db) {
-    flt_oc_db->fd(flt_oc_db,&fd);
-    flock(fd,LOCK_UN);
-    flt_oc_db->close(flt_oc_db,0);
-  }
-
+  if(flt_oc_db) flt_oc_db->close(flt_oc_db,0);
   if(flt_oc_dbfile) free(flt_oc_dbfile);
 }
 /* }}} */

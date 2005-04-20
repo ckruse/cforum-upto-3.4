@@ -209,8 +209,8 @@ void show_years() {
   cf_tpl_setvar(&tpl,"years",&array);
   cf_set_variable(&tpl,cs,"forumbase",forumpath->values[0],strlen(forumpath->values[0]),1);
 
-  cf_set_variable(&tpl,"charset",cs->values[0],strlen(cs->values[0]),1);
-  if((script = getenv("SCRIPT_NAME")) != NULL) cf_set_variable(&tpl,"script",script,strlen(script),1);
+  cf_set_variable(&tpl,cs,"charset",cs->values[0],strlen(cs->values[0]),1);
+  if((script = getenv("SCRIPT_NAME")) != NULL) cf_set_variable(&tpl,cs,"script",script,strlen(script),1);
 
   printf("Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
   cf_tpl_parse(&tpl);
@@ -284,8 +284,8 @@ void show_year_content(const u_char *year) {
   cf_set_variable(&mt_tpl,cs,"forumbase",forumpath->values[0],strlen(forumpath->values[0]),1);
   cf_set_variable(&mt_tpl,cs,"year",year,strlen(year),1);
 
-  cf_set_variable(&mt_tpl,"charset",cs->values[0],strlen(cs->values[0]),1);
-  if((script = getenv("SCRIPT_NAME")) != NULL) cf_set_variable(&mt_tpl,"script",script,strlen(script),1);
+  cf_set_variable(&mt_tpl,cs,"charset",cs->values[0],strlen(cs->values[0]),1);
+  if((script = getenv("SCRIPT_NAME")) != NULL) cf_set_variable(&mt_tpl,cs,"script",script,strlen(script),1);
 
   printf("Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
   cf_tpl_parse(&mt_tpl);
@@ -475,8 +475,8 @@ void show_month_content(const u_char *year,const u_char *month) {
 
   cf_tpl_setvar(&m_tpl,"threads",&array);
 
-  cf_set_variable(&m_tpl,"charset",cs->values[0],strlen(cs->values[0]),1);
-  if((script = getenv("SCRIPT_NAME")) != NULL) cf_set_variable(&m_tpl,"script",script,strlen(script),1);
+  cf_set_variable(&m_tpl,cs,"charset",cs->values[0],strlen(cs->values[0]),1);
+  if((script = getenv("SCRIPT_NAME")) != NULL) cf_set_variable(&m_tpl,cs,"script",script,strlen(script),1);
 
   printf("Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
   cf_tpl_parse_to_mem(&m_tpl);
@@ -706,8 +706,8 @@ void print_thread(t_cl_thread *thr,const u_char *year,const u_char *month,const 
   cf_tpl_setvar(&main_tpl,"threads",&ary);
   cf_tpl_setvalue(&main_tpl,"threadlist",TPL_VARIABLE_STRING,threadlist.content,threadlist.len);
 
-  cf_set_variable(&main_tpl,"charset",cs->values[0],strlen(cs->values[0]),1);
-  if((script = getenv("SCRIPT_NAME")) != NULL) cf_set_variable(&main_tpl,"script",script,strlen(script),1);
+  cf_set_variable(&main_tpl,cs,"charset",cs->values[0],strlen(cs->values[0]),1);
+  if((script = getenv("SCRIPT_NAME")) != NULL) cf_set_variable(&main_tpl,cs,"script",script,strlen(script),1);
 
   cf_tpl_parse_to_mem(&main_tpl);
 

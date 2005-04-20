@@ -482,18 +482,11 @@ int flt_visit_handle_command(t_configfile *cf,t_conf_opt *opt,const u_char *cont
 
 /* {{{ flt_visited_cleanup */
 void flt_visited_cleanup(void) {
-  int fd;
-
   if(Cfg.VisitedPostingsColorF) free(Cfg.VisitedPostingsColorF);
   if(Cfg.VisitedPostingsColorB) free(Cfg.VisitedPostingsColorB);
   if(Cfg.VisitedFile)      free(Cfg.VisitedFile);
 
-  if(Cfg.db) {
-    Cfg.db->fd(Cfg.db,&fd);
-    flock(fd,LOCK_UN);
-
-    Cfg.db->close(Cfg.db,0);
-  }
+  if(Cfg.db) Cfg.db->close(Cfg.db,0);
 }
 /* }}} */
 

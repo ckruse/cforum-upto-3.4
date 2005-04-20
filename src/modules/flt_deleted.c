@@ -361,14 +361,9 @@ int flt_del_handle_command(t_configfile *cf,t_conf_opt *opt,const u_char *contex
 
 /* {{{ flt_del_cleanup */
 void flt_del_cleanup(void) {
-  int fd;
   long i;
 
-  if(Cfg.db) {
-    Cfg.db->fd(Cfg.db,&fd);
-    flock(fd,LOCK_UN);
-    Cfg.db->close(Cfg.db,0);
-  }
+  if(Cfg.db) Cfg.db->close(Cfg.db,0);
 
   if(Cfg.BLlen) {
     for(i=0;i<Cfg.BLlen;i++) {

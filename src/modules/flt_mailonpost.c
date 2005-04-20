@@ -89,20 +89,6 @@ int flt_mailonpost_create(DB **db,u_char *path) {
 
 /* {{{ flt_mailonpost_destroy */
 void flt_mailonpost_destroy(DB *db) {
-  int fd,ret;
-
-  if((ret = db->fd(db,&fd)) != 0) {
-    db->close(db,0);
-    fprintf(stderr,"DB error: %s\n",db_strerror(ret));
-    return;
-  }
-
-  if((ret = flock(fd,LOCK_UN)) != 0) {
-    db->close(db,0);
-    fprintf(stderr,"DB error: %s\n",strerror(ret));
-    return;
-  }
-
   db->close(db,0);
 }
 /* }}} */
