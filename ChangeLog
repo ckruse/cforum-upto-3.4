@@ -4,3 +4,5 @@
 	* src/modules/flt_noarchive_server.c: Added plugin that avoids archiving if
 		no-archive flag is set
 	* conf/modules.de.xml: Two small bugfixes
+	* src/modules/flt_directives.c: Moved UnwantedLinks to regexes
+
