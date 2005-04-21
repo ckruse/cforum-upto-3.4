@@ -101,6 +101,7 @@ int flt_mod_closedb(void) {
 }
 /* }}} */
 
+/* {{{ flt_mod_setlinks */
 void flt_mod_setlinks(t_cf_template *tpl,int ret,u_int64_t tid,u_int64_t mid) {
   cf_readmode_t *rm = cf_hash_get(GlobalValues,"RM",2);
   u_char *link;
@@ -117,6 +118,7 @@ void flt_mod_setlinks(t_cf_template *tpl,int ret,u_int64_t tid,u_int64_t mid) {
     free(link);
   }
 }
+/* }}} */
 
 /* {{{ flt_moderated_thread */
 int flt_moderated_thread(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cl_thread *thread,int mode) {
@@ -219,7 +221,7 @@ int flt_moderated_gogogo(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc,
 
   if(si == 0 || cgi == NULL) return FLT_DECLINE;
 
-  if((action = cf_cgi_get(cgi,"a")) != NULL) {
+  if((action = cf_cgi_get(cgi,"a")) != NULL && (cf_strcmp(action,"approve") == 0 || cf_strcmp(action,"unapprove") == 0)) {
     tid = cf_cgi_get(cgi,"t");
     mid = cf_cgi_get(cgi,"m");
 
@@ -264,6 +266,9 @@ int flt_moderated_gogogo(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc,
     /* }}} */
 
     str_cleanup(&str);
+
+    cf_hash_entry_delete(cgi,"t",1);
+    cf_hash_entry_delete(cgi,"m",1);
 
     return FLT_OK;
   }
