@@ -22,7 +22,7 @@
 #define CF_SORT_DESCENDING 2
 #define CF_SORT_NEWESTFIRST 3
 
-#define CF_VERSION "3.3.1"
+#define CF_VERSION "3.3.2"
 
 #define CF_BUFSIZ 2048
 

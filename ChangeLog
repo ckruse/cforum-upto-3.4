@@ -1,6 +1,3 @@
 2005-04-21 Christian Kruse <ckruse@wwwtech.de>
-	* src/modules/flt_moderated.c: Fixed a small bug
-	* src/modules/flt_noarchive.c: Added plugin to set no-archive flag
-	* src/modules/flt_noarchive_server.c: Added plugin that avoids archiving if
-		no-archive flag is set
-	* conf/modules.de.xml: Two small bugfixes
+	* src/modules/flt_directives.c: Moved UnwantedLinks to regexes
+

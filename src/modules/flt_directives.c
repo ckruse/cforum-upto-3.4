@@ -514,6 +514,30 @@ int flt_directives_execute(t_configuration *fdc,t_configuration *fvc,t_cl_thread
 }
 /* }}} */
 
+/* {{{ flt_directives_is_unwanted */
+int flt_directives_is_unwanted(const u_char *link,size_t len) {
+  int i,erroffset;
+  pcre *regexp;
+  char *error;
+
+  for(i=0;i<flt_directives_bdl_len;++i) {
+    if((regexp = pcre_compile(flt_directives_badlinks[i], 0, (const char **)&error, &erroffset, NULL)) == NULL) {
+      fprintf(stderr,"error in pattern '%s' (offset %d): %s\n",flt_directives_badlinks[i],erroffset,error);
+      continue;
+    }
+
+    if(pcre_exec(regexp,NULL,link,len,0,0,NULL,0) >= 0) {
+      pcre_free(regexp);
+      return -1;
+    }
+
+    pcre_free(regexp);
+  }
+
+  return 0;
+}
+/* }}} */
+
 /* {{{ flt_directives_validate */
 int flt_directives_validate(t_configuration *fdc,t_configuration *fvc,const u_char *directive,const u_char **parameters,size_t plen,t_cf_tpl_variable *var) {
   u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
@@ -549,16 +573,14 @@ int flt_directives_validate(t_configuration *fdc,t_configuration *fvc,const u_ch
             return FLT_ERROR;
           }
           else {
-            for(i=0;i<flt_directives_bdl_len;++i) {
-              if(cf_strcmp(tmp1,flt_directives_badlinks[i]) == 0) {
-                if((err = cf_get_error_message("E_unwanted_link",&len)) != NULL) {
-                  cf_tpl_var_addvalue(var,TPL_VARIABLE_STRING,err,len);
-                  free(err);
-                }
-                else fprintf(stderr,"Unwanted link but could not find error message!\n");
-
-                return FLT_ERROR;
+            if(flt_directives_is_unwanted(tmp1,len) == -1) {
+              if((err = cf_get_error_message("E_unwanted_link",&len)) != NULL) {
+                cf_tpl_var_addvalue(var,TPL_VARIABLE_STRING,err,len);
+                free(err);
               }
+              else fprintf(stderr,"Unwanted link but could not find error message!\n");
+
+              return FLT_ERROR;
             }
           }
         }
@@ -573,16 +595,14 @@ int flt_directives_validate(t_configuration *fdc,t_configuration *fvc,const u_ch
         }
       }
       else {
-        for(i=0;i<flt_directives_bdl_len;++i) {
-          if(cf_strcmp(tmp1,flt_directives_badlinks[i]) == 0) {
-            if((err = cf_get_error_message("E_unwanted_link",&len)) != NULL) {
-              cf_tpl_var_addvalue(var,TPL_VARIABLE_STRING,err,len);
-              free(err);
-            }
-            else fprintf(stderr,"Unwanted link but could not find error message!\n");
-
-            return FLT_ERROR;
+        if(flt_directives_is_unwanted(tmp1,len) == -1) {
+          if((err = cf_get_error_message("E_unwanted_link",&len)) != NULL) {
+            cf_tpl_var_addvalue(var,TPL_VARIABLE_STRING,err,len);
+            free(err);
           }
+          else fprintf(stderr,"Unwanted link but could not find error message!\n");
+
+          return FLT_ERROR;
         }
       }
 
