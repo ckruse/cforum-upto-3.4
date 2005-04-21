@@ -223,4 +223,12 @@ pkglib_LTLIBRARIES+=flt_cookieauth.la
 flt_cookieauth_la_SOURCES=flt_cookieauth.c
 flt_cookieauth_la_LDFLAGS=-module -export-dynamic -avoid-version
 
+pkglib_LTLIBRARIES+=flt_noarchive.la
+flt_noarchive_la_SOURCES=flt_noarchive.c
+flt_noarchive_la_LDFLAGS=-module -export-dynamic -avoid-version
+
+pkglib_LTLIBRARIES+=flt_noarchive_server.la
+flt_noarchive_server_la_SOURCES=flt_noarchive_server.c
+flt_noarchive_server_la_LDFLAGS=-module -export-dynamic -avoid-version
+
 # eof
