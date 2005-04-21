@@ -413,7 +413,7 @@
       </directive>
 
       <directive name="PostingLinkExtTarget" arguments="1">
-        <argument paramname="plinktarget" type="text" encode="plain">
+        <argument paramname="plinktargetextern" type="text" encode="plain">
           <validate>^\w+$</validate>
           <question>Externe Links in einer Nachricht können in einem neuen Fenster geöffnet werden. Geben Sie bei Bedarf das Zielfenster an (beispielsweise _blank). Dieser Wert wird als target-Attribut jedem externen Link innerhalb einer Nachricht hinzugefügt.</question>
           <error>Bitte geben sie ein valides Target-Ziel an! (Nur a-zA-Z0-9_)</error>
@@ -957,7 +957,7 @@
   <page title="Administrator-Optionen" id="admin" for="admin">
     <section name="Administrator-Optionen" for="admin">
       <directive name="AdminSend204" arguments="1" for="admin">
-        <argument paramname="adminsend204" type="text" encode="plain">
+        <argument paramname="adminsend204" type="radio" encode="plain">
           <validate>^(yes|no)$</validate>
           <question>Soll &quot;204 No Content&quot; als Antwort auf Administrator-Aktionen geschickt werden?</question>
           <error>Soll &quot;204 No Content&quot; als Antwort auf Administrator-Aktionen geschickt werden? Bitte geben Sie &quot;Ja&quot; oder &quot;Nein&quot; an!</error>
@@ -969,7 +969,7 @@
       </directive>
 
       <directive name="AdminUseJS" arguments="1" for="admin">
-        <argument paramname="adminusejs" type="text" encode="plain">
+        <argument paramname="adminusejs" type="radio" encode="plain">
           <validate>^(yes|no)$</validate>
           <question>Soll JavaScript genutzt werden, um Administrator-Aktionen auszuführen?</question>
           <error>Soll JavaScript genutzt werden, um Administrator-Aktionen auszuführen? Bitte geben Sie &quot;Ja&quot; oder &quot;Nein&quot; an!</error>
