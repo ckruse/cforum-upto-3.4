@@ -46,7 +46,7 @@
 int flt_cgiconfig_post(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cl_thread *thread,t_cf_template *tpl) {
   u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   u_char *UserName = cf_hash_get(GlobalValues,"UserName",8);
-  u_char *link;
+  u_char *link,*tmp = NULL;
 
   size_t l;
 
@@ -54,6 +54,8 @@ int flt_cgiconfig_post(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t
   cf_readmode_t *rm = cf_hash_get(GlobalValues,"RM",2);
 
   /* {{{ ShowThread links */
+  if((tmp = cf_cgi_get(head,"showthread")) != NULL) cf_remove_static_uri_flag("showthread");
+
   link = cf_advanced_get_link(rm->posting_uri[UserName?1:0],thread->tid,thread->threadmsg->mid,NULL,1,&l,"showthread","part");
   cf_set_variable(tpl,cs,"showthread_part",link,l,1);
   free(link);
@@ -65,9 +67,13 @@ int flt_cgiconfig_post(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t
   link = cf_advanced_get_link(rm->posting_uri[UserName?1:0],thread->tid,thread->threadmsg->mid,NULL,1,&l,"showthread","full");
   cf_set_variable(tpl,cs,"showthread_full",link,l,1);
   free(link);
+
+  if(tmp) cf_add_static_uri_flag("showthread",tmp,0);
   /* }}} */
 
   /* {{{ ReadMode links */
+  if((tmp = cf_cgi_get(head,"readmode")) != NULL) cf_remove_static_uri_flag("readmode");
+
   link = cf_advanced_get_link(rm->posting_uri[UserName?1:0],thread->tid,thread->threadmsg->mid,NULL,1,&l,"readmode","list");
   cf_set_variable(tpl,cs,"readmode_list",link,l,1);
   free(link);
@@ -79,6 +85,8 @@ int flt_cgiconfig_post(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t
   link = cf_advanced_get_link(rm->posting_uri[UserName?1:0],thread->tid,thread->threadmsg->mid,NULL,1,&l,"readmode","thread");
   cf_set_variable(tpl,cs,"readmode_thread",link,l,1);
   free(link);
+
+  if(tmp) cf_add_static_uri_flag("readmode",tmp,0);
   /* }}} */
 
   return FLT_OK;
