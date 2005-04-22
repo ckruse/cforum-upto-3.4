@@ -8,6 +8,8 @@
 	* src/modules/flt_livefilter.c: Fixed #594
 	* src/modules/flt_noanswer.c: Added 204 support
 	* src/modules/flt_noarchive.c: Added 204 support
+	* src/perl/Plugins/ImportExport.pm: Added support for submitting a string
+		rather than a file
 
 2005-04-21 Christian Kruse <ckruse@wwwtech.de>
 	* src/modules/flt_moderated.c: Fixed a small bug
