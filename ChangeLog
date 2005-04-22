@@ -4,6 +4,7 @@
 	* src/modules/flt_directives.c: Added support for replacing %t in link
 		templates by URI if no link title was given (bug #493)
 	* src/modules/flt_frameset.c: Fixed #775
+	* src/modules/flt_livefilter.c: Fixed #594
 
 2005-04-21 Christian Kruse <ckruse@wwwtech.de>
 	* src/modules/flt_moderated.c: Fixed a small bug
