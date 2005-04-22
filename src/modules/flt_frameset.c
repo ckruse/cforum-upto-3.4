@@ -59,7 +59,9 @@ int flt_frameset_execute_filter(t_cf_hash *head,t_configuration *dc,t_configurat
       printf("Content-Type: text/html; charset=%s\n\n",cs->values[0]);
 
       cf_tpl_setvalue(&tpl,"script",TPL_VARIABLE_STRING,x->values[0],strlen(x->values[0]));
+      cf_tpl_setvalue(&tpl,"forumbase",TPL_VARIABLE_STRING,x->values[0],strlen(x->values[0]));
       cf_tpl_setvalue(&tpl,"charset",TPL_VARIABLE_STRING,cs->values[0],strlen(cs->values[0]));
+      cf_tpl_setvalue(&tpl,"frame",TPL_VARIABLE_INT,1);
       cf_tpl_parse(&tpl);
 
       cf_tpl_finish(&tpl);
@@ -81,6 +83,9 @@ int flt_frameset_execute_filter(t_cf_hash *head,t_configuration *dc,t_configurat
         printf("Content-Type: text/html; charset=%s\n\n",cs->values[0]);
         if(cf_tpl_init(&tpl,buff) == 0) {
           cf_tpl_setvalue(&tpl,"charset",TPL_VARIABLE_STRING,cs->values[0],strlen(cs->values[0]));
+          cf_tpl_setvalue(&tpl,"script",TPL_VARIABLE_STRING,x->values[0],strlen(x->values[0]));
+          cf_tpl_setvalue(&tpl,"forumbase",TPL_VARIABLE_STRING,x->values[0],strlen(x->values[0]));
+          cf_tpl_setvalue(&tpl,"frame",TPL_VARIABLE_INT,1);
 
           cf_tpl_parse(&tpl);
           cf_tpl_finish(&tpl);
