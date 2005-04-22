@@ -45,6 +45,11 @@ typedef struct s_flag {
   u_char *val;
 } t_cf_post_flag;
 
+typedef struct s_uri_flag {
+  u_char *name;
+  u_char *val;
+  int encode;
+} cf_uri_flag_t;
 
 /** This struct is used to store and handle a posting */
 typedef struct s_message {
@@ -533,6 +538,9 @@ int cf_run_post_display_handlers(t_cf_hash *head,t_cf_template *tpl,t_message *p
 
 int cf_run_perpost_var_handlers(t_cf_hash *head,t_cl_thread *thread,t_message *msg,t_cf_tpl_variable *hash);
 
+
+void cf_add_static_uri_flag(const u_char *name,const u_char *value,int encode);
+void cf_remove_static_uri_flag(const u_char *name);
 
 /**
  * This function generates a link to a thread

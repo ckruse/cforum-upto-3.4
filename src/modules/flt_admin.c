@@ -296,7 +296,10 @@ int flt_admin_init(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc) {
   if(!v) return FLT_DECLINE;
 
   /* ShowInvisible is imported from the client library */
-  if(flt_admin_is_admin(UserName) && *val == '1') cf_hash_set(GlobalValues,"ShowInvisible",13,"1",1);
+  if(flt_admin_is_admin(UserName) && *val == '1') {
+    cf_hash_set(GlobalValues,"ShowInvisible",13,"1",1);
+    cf_add_static_uri_flag("aaf","1",0);
+  }
 
   return FLT_OK;
 }

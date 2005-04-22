@@ -108,6 +108,8 @@ int flt_cgiconfig_init_handler(t_cf_hash *head,t_configuration *dc,t_configurati
         free(v->values[0]);
         v->values[0] = strdup("full");
       }
+
+      cf_add_static_uri_flag("showthread",val,0);
     }
 
     if((val = cf_cgi_get(head,"readmode")) != NULL) {
@@ -125,6 +127,8 @@ int flt_cgiconfig_init_handler(t_cf_hash *head,t_configuration *dc,t_configurati
         free(v->values[0]);
         v->values[0] = strdup("thread");
       }
+
+      cf_add_static_uri_flag("readmode",val,0);
     }
   }
 
