@@ -37,8 +37,9 @@
 #define LINK_OLDEST_FIRST 0
 #define LINK_NEWEST_FIRST 1
 
-static int SetLinks    = 0;
-static int NoVisited   = 0;
+static int SetLinks      = 0;
+static int NoVisited     = 0;
+static int LinkInvisible = 0;
 
 static u_char *flt_link_fn = NULL;
 
@@ -46,16 +47,17 @@ static u_char *flt_link_fn = NULL;
 t_message *flt_link_get_previous(t_message *msg) {
   t_mod_api is_visited;
   t_message *tmp = NULL;
+  int si = cf_hash_get(GlobalValues,"ShowInvisible",13) != NULL;
 
   if(msg->prev) {
     is_visited = cf_get_mod_api_ent("is_visited");
     if(is_visited && NoVisited) {
-      for(tmp=msg->prev;tmp && (tmp->invisible == 1 || tmp->may_show == 0 || is_visited(&(tmp->mid)) != NULL);tmp=tmp->prev);
+      for(tmp=msg->prev;tmp && (((tmp->invisible == 1 || tmp->may_show == 0) && si == 0) || is_visited(&(tmp->mid)) != NULL);tmp=tmp->prev);
     }
 
     /* either user wants also unvisited or API failure or no unvisited message could be found */
     if(!is_visited || !NoVisited || !tmp) {
-      for(tmp=msg->prev;tmp && (tmp->invisible == 1 || tmp->may_show == 0);tmp=tmp->prev);
+      for(tmp=msg->prev;tmp && ((tmp->invisible == 1 || tmp->may_show == 0) && si == 0);tmp=tmp->prev);
     }
 
     return tmp;
@@ -69,14 +71,15 @@ t_message *flt_link_get_previous(t_message *msg) {
 t_message *flt_link_get_next(t_message *msg) {
   t_message *tmp;
   t_mod_api is_visited = cf_get_mod_api_ent("is_visited");
+  int si = cf_hash_get(GlobalValues,"ShowInvisible",13) != NULL;
 
   if(msg->next) {
     if(is_visited && NoVisited) {
-      for(tmp=msg->next;tmp && (tmp->invisible == 1 || tmp->may_show == 0 || is_visited(&(tmp->mid)) != NULL);tmp=tmp->next);
+      for(tmp=msg->next;tmp && (((tmp->invisible == 1 || tmp->may_show == 0) && si == 0) || is_visited(&(tmp->mid)) != NULL);tmp=tmp->next);
       if(tmp) return tmp;
     }
 
-    for(tmp=msg->next;tmp && (tmp->invisible == 1 || tmp->may_show == 0);tmp=tmp->next);
+    for(tmp=msg->next;tmp && ((tmp->invisible == 1 || tmp->may_show == 0) && si == 0);tmp=tmp->next);
     return tmp;
   }
 
@@ -88,8 +91,9 @@ t_message *flt_link_get_next(t_message *msg) {
 t_message *flt_link_get_last(t_cl_thread *thread) {
   t_message *msg = NULL;
   thread->messages->prev = NULL;
+  int si = cf_hash_get(GlobalValues,"ShowInvisible",13) != NULL;
 
-  for(msg=thread->last;msg && (msg->invisible == 1 || msg->may_show == 0);msg=msg->prev);
+  for(msg=thread->last;msg && ((msg->invisible == 1 || msg->may_show == 0) && si == 0);msg=msg->prev);
   return msg;
 }
 /* }}} */
@@ -161,8 +165,9 @@ int flt_link_handle_conf(t_configfile *cfg,t_conf_opt *entry,const u_char *conte
   if(!context || cf_strcmp(flt_link_fn,context) != 0) return 0;
 
   if(argnum == 1) {
-    if(*entry->name == 'S')                              SetLinks    = cf_strcmp(args[0],"yes") == 0;
-    else if(cf_strcmp(entry->name,"LinkNoVisited") == 0) NoVisited   = cf_strcmp(args[0],"yes") == 0;
+    if(*entry->name == 'S')                              SetLinks       = cf_strcmp(args[0],"yes") == 0;
+    else if(cf_strcmp(entry->name,"LinkInvisible") == 0) LinkInvisible  = cf_strcmp(args[0],"yes") == 0;
+    else if(cf_strcmp(entry->name,"LinkNoVisited") == 0) NoVisited      = cf_strcmp(args[0],"yes") == 0;
   }
   else {
     fprintf(stderr,"Error: expecting 1 argument for directive SetLinkTags!\n");
@@ -176,6 +181,7 @@ int flt_link_handle_conf(t_configfile *cfg,t_conf_opt *entry,const u_char *conte
 t_conf_opt flt_link_config[] = {
   { "SetLinkTags",     flt_link_handle_conf,  CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL,  NULL },
   { "LinkNoVisited",   flt_link_handle_conf,  CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL,  NULL },
+  { "LinkInvisible",   flt_link_handle_conf,  CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL,  NULL },
   { NULL, NULL, 0, NULL }
 };
 

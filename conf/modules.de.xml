@@ -1015,6 +1015,19 @@
           </formvalues>
         </argument>
       </directive>
+
+      <directive name="LinkInvisible" arguments="1">
+        <argument paramname="fltlinkinvisible" type="radio" encode="plain">
+          <validate>^(yes|no)$</validate>
+          <question>Sollen Link-Tags im Administrator-Modus auf gelöschte/unsichtbare Postings zeigen?</question>
+          <error>Sollen Link-Tags im Administrator-Modus auf gelöschte/unsichtbare Postings zeigen? Bitte geben Sie &quo;ja&quot; oder &quot;nein&quot; an!</error>
+          <formvalues>
+            <value val="yes">Ja</value>
+            <value val="no" default="yes">Nein</value>
+          </formvalues>
+        </argument>
+      </directive>
+
     </section>
   </page>
 

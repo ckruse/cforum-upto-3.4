@@ -1,7 +1,7 @@
 2005-04-22 Christian Kruse <ckruse@wwwtech.de>
 	* src/modules/flt_remotesignature.c: Fixed #774
 	* conf/modules.de.xml: Added ReplaceNormal directive, NASend204,
-		NoArchiveSend204
+		NoArchiveSend204, LinkInvisible
 	* src/modules/flt_directives.c: Added support for replacing %t in link
 		templates by URI if no link title was given (bug #493)
 	* src/modules/flt_frameset.c: Fixed #775
@@ -14,6 +14,8 @@
 	* src/modules/flt_cgiconfig.c: Now sets readmode=value and showthread=value to
 		static uri flags if set
 	* src/modules/flt_admin.c: Now sets aaf=1 to static uri flags
+	* src/modules/flt_link.c: Added support to link to invisible postings in admin
+		mode
 
 2005-04-21 Christian Kruse <ckruse@wwwtech.de>
 	* src/modules/flt_moderated.c: Fixed a small bug
