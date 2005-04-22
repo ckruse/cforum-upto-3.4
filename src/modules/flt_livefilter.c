@@ -68,8 +68,11 @@ static const u_char *symbols[] = {
 #define T_DATE   0x02
 #define T_BOOL   0x04
 
+#define FLT_LF_FLAG_HOURMIN 0x1
+#define FLT_LF_FLAG_SEC     0x2
+
 typedef struct {
-  int type;
+  int type,flags;
   void *val;
 } t_flt_lf_result;
 
@@ -84,7 +87,7 @@ static t_flt_lf_node *flt_lf_first = NULL;
 static int flt_lf_active = 0;
 static int flt_lf_overwrite = 0;
 
-static t_string flt_lf_str = { 0, 0, NULL };
+static t_string flt_lf_str = { 0, 0, 128, NULL };
 
 static int flt_lf_success = 1;
 
@@ -462,6 +465,100 @@ void flt_lf_to_int(t_flt_lf_result *v) {
 }
 /* }}} */
 
+/* {{{ flt_lf_transform_date */
+time_t flt_lf_transform_date(const u_char *datestr,t_flt_lf_result *v) {
+  struct tm t;
+  u_char *ptr,*before;
+  u_char *str = fo_alloc(NULL,strlen(datestr)+1,1,FO_ALLOC_MALLOC);
+
+  strcpy(str,datestr);
+  ptr = before = str;
+
+  memset(&t,0,sizeof(t));
+
+  for(;*ptr && *ptr != '.';ptr++);
+  if(*ptr == '.') {
+    *ptr = '\0';
+    t.tm_mday = atoi(before);
+    *ptr = '.';
+  }
+  else {
+    free(str);
+    return (time_t)0;
+  }
+
+  for(before= ++ptr;*ptr && *ptr != '.';ptr++);
+  if(*ptr == '.') {
+    *ptr = '\0';
+    t.tm_mon = atoi(before)-1;
+    *ptr = '.';
+  }
+  else {
+    free(str);
+    return (time_t)0;
+  }
+
+  for(before= ++ptr;*ptr && !isspace(*ptr);ptr++);     /* search the '\0' or a whitespace; if a whitespace
+                                                        * follows, there are also hours and mins and perhaps seconds */
+  if(isspace(*ptr) || *ptr == '\0') {                  /* Is this a a valid entry? */
+    t.tm_year = atoi(before) - 1900;                   /* tm_year contains the year - 1900 */
+  }
+  else {
+    free(str);
+    return (time_t)0;                                  /* not a valid entry */
+  }
+
+  if(*ptr == ' ') {                                    /* follows an hour and a minute? */
+    v->flags = FLT_LF_FLAG_HOURMIN;
+
+    for(;*ptr && *ptr == ' ';ptr++);                   /* skip trailing whitespaces */
+
+    if(*ptr) {                                         /* have we got a string like "1.1.2001 "? */
+      for(before= ++ptr;*ptr && *ptr != ':';ptr++);    /* search the next colon (Hours are seperated from minutes by
+                                                        * colons */
+      if(*ptr == ':') {
+        *ptr = '\0';
+        t.tm_hour = atoi(before);                      /* get the hour */
+        *ptr = ':';
+      }
+      else {
+        free(str);
+        return (time_t)0;
+      }
+
+      for(before= ++ptr;*ptr && *ptr != ':';ptr++);    /* search for the end of the string or another colon */
+      if(*ptr == ':' || *ptr == '\0') {
+        if(*ptr == ':') {
+          *ptr = '\0';
+          t.tm_min = atoi(before);                       /* get the minutes */
+          *ptr = ':';
+        }
+        else {
+          t.tm_min = atoi(before);
+        }
+      }
+      else {
+        free(str);
+        return (time_t)0;
+      }
+
+      if(*ptr == ':') {                                /* seconds following */
+        v->flags |= FLT_LF_FLAG_SEC;
+
+        before= ptr + 1;                               /* after the seconds, there can only follow the end of
+                                                        * the string
+                                                        */
+        if(!*ptr) return (time_t)0;
+        t.tm_sec = atoi(before);
+      }
+    }
+  }
+
+  free(str);
+  return mktime(&t);                                   /* finally, try to generate the timestamp */
+}
+/* }}} */
+
 /* {{{ flt_lf_to_date */
 void flt_lf_to_date(t_flt_lf_result *v) {
   u_char *tmp;
@@ -469,7 +566,7 @@ void flt_lf_to_date(t_flt_lf_result *v) {
   switch(v->type) {
     case T_STRING:
       tmp = v->val;
-      v->val = (void *)transform_date(v->val);
+      v->val = (void *)flt_lf_transform_date(v->val,v);
       free(tmp);
       break;
     case T_BOOL:
@@ -522,6 +619,8 @@ t_flt_lf_result *flt_lf_evaluate(t_flt_lf_node *n,t_message *msg,u_int64_t tid) 
   t_mod_api is_visited = cf_get_mod_api_ent("is_visited");
   t_flt_lf_result *result = fo_alloc(NULL,1,sizeof(*result),FO_ALLOC_CALLOC);
   t_flt_lf_result *l = NULL,*r = NULL,*tmp;
+  struct tm tm;
+  time_t t;
 
   if(!n) return NULL;
 
@@ -581,8 +680,50 @@ t_flt_lf_result *flt_lf_evaluate(t_flt_lf_node *n,t_message *msg,u_int64_t tid) 
         else result->val = (void *)0;
       }
       else {
-        if(l->val == r->val) result->val = (void *)1;
-        else result->val = (void *)0;
+        if(l->type == T_DATE) {
+          if(r->flags & FLT_LF_FLAG_HOURMIN) {
+            if(r->flags & FLT_LF_FLAG_SEC) {
+              if(l->val == r->val) result->val = (void *)1;
+              else result->val = (void *)0;
+            }
+            /* we got year, month, day, hours and minutes */
+            else {
+              memset(&tm,0,sizeof(tm));
+              localtime_r((const time_t *)&l->val,&tm);
+
+              tm.tm_sec   = 0;
+              tm.tm_wday  = 0;
+              tm.tm_yday  = 0;
+              tm.tm_isdst = 0;
+
+              t = mktime(&tm);
+
+              if(t == (int)r->val) result->val = (void *)1;
+              else result->val = (void *)0;
+            }
+          }
+          /* we got only year, month and day */
+          else {
+            memset(&tm,0,sizeof(tm));
+            localtime_r((const time_t *)&l->val,&tm);
+
+            tm.tm_hour  = 0;
+            tm.tm_min   = 0;
+            tm.tm_sec   = 0;
+            tm.tm_wday  = 0;
+            tm.tm_yday  = 0;
+            tm.tm_isdst = 0;
+
+            t = mktime(&tm);
+
+            if(t == (int)r->val) result->val = (void *)1;
+            else result->val = (void *)0;
+          }
+        }
+        else {
+          if(l->val == r->val) result->val = (void *)1;
+          else result->val = (void *)0;
+        }
       }
 
       if(l->type == T_STRING) free(l->val);

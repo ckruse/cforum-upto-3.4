@@ -968,10 +968,34 @@
 
   <page title="Administrator-Optionen" id="admin" for="admin">
     <section name="Administrator-Optionen" for="admin">
+      <directive name="NASend204" arguments="1" for="admin">
+        <argument paramname="na204" type="radio" encode="plain">
+          <validate>^(yes|no)$</validate>
+          <question>Soll &quot;204 No Content&quot; als Antwort auf &quot;NA-Flag setzen/entfernen&quot; geschickt werden?</question>
+          <error>Soll &quot;204 No Content&quot; als Antwort auf &quot;NA-Flag setzen/entfernen&quot; geschickt werden? Bitte geben Sie &quot;Ja&quot; oder &quot;Nein&quot; an!</error>
+          <formvalues>
+            <value val="yes">Ja</value>
+            <value val="no" default="yes">Nein</value>
+          </formvalues>
+        </argument>
+      </directive>
+
+      <directive name="NoArchiveSend204" arguments="1" for="admin">
+        <argument paramname="noarchive204" type="radio" encode="plain">
+          <validate>^(yes|no)$</validate>
+          <question>Soll &quot;204 No Content&quot; als Antwort auf &quot;Nicht/Doch Archivieren&quot; geschickt werden?</question>
+          <error>Soll &quot;204 No Content&quot; als Antwort auf &quot;Nicht/Doch Archivieren&quot; geschickt werden? Bitte geben Sie &quot;Ja&quot; oder &quot;Nein&quot; an!</error>
+          <formvalues>
+            <value val="yes">Ja</value>
+            <value val="no" default="yes">Nein</value>
+          </formvalues>
+        </argument>
+      </directive>
+
       <directive name="AdminSend204" arguments="1" for="admin">
         <argument paramname="adminsend204" type="radio" encode="plain">
           <validate>^(yes|no)$</validate>
-          <question>Soll &quot;204 No Content&quot; als Antwort auf Administrator-Aktionen geschickt werden?</question>
+          <question>Soll &quot;204 No Content&quot; als Antwort auf Administrator-Aktionen (Löschen, Wiederherstellen, Archivieren) geschickt werden?</question>
           <error>Soll &quot;204 No Content&quot; als Antwort auf Administrator-Aktionen geschickt werden? Bitte geben Sie &quot;Ja&quot; oder &quot;Nein&quot; an!</error>
           <formvalues>
             <value val="yes">Ja</value>
