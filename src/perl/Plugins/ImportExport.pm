@@ -74,9 +74,12 @@ sub imprt {
   my $fh = $cgi->upload('import');
   my $str = '';
 
-  fatal($cgi,$fo_default_conf,$user_config,get_error($fo_default_conf,'IMPORT_DATAFAILURE'),get_conf_val($fo_userconf_conf,$main::Forum,'FatalTemplate')) unless $fh;
-
-  $str .= $_ while(<$fh>);
+  if(!$fh) {
+    fatal($cgi,$fo_default_conf,$user_config,get_error($fo_default_conf,'IMPORT_DATAFAILURE'),get_conf_val($fo_userconf_conf,$main::Forum,'FatalTemplate')) unless $str = $cgi->param('importstr'); 
+  }
+  else {
+    $str .= $_ while(<$fh>);
+  }
 
   my $idoc = XML::GDOME->createDocFromString($str,0) or fatal($cgi,$fo_default_conf,$user_config,sprintf(get_error($fo_default_conf,'XML_PARSE'),"$!"),get_conf_val($fo_userconf_conf,$main::Forum,'FatalTemplate'));
   my $moddoc = XML::GDOME->createDocFromURI(sprintf(get_conf_val($fo_userconf_conf,$main::Forum,'ModuleConfig'),get_conf_val($fo_default_conf,$main::Forum,'Language'))) or fatal($cgi,$fo_default_conf,$user_config,sprintf(get_error($fo_default_conf,'XML_PARSE'),"$!"),get_conf_val($fo_userconf_conf,$main::Forum,'FatalTemplate'));

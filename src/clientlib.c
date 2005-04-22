@@ -67,6 +67,8 @@ t_cf_hash *GlobalValues = NULL;
 
 t_cf_hash *APIEntries = NULL;
 
+static t_cf_list_head uri_flags;
+
 /* error string */
 u_char ErrorString[50];
 
@@ -516,16 +518,49 @@ u_char *cf_get_error_message(const u_char *err,size_t *len, ...) {
 /* }}} */
 
 
+/* {{{ cf_add_static_uri_flag */
+void cf_add_static_uri_flag(const u_char *name,const u_char *value,int encode) {
+  cf_uri_flag_t flag;
+
+  flag.name   = strdup(name);
+  flag.val    = strdup(value);
+  flag.encode = encode;
+
+  cf_list_append(&uri_flags,&flag,sizeof(flag));
+}
+/* }}} */
+
+/* {{{ cf_remove_static_uri_flag */
+void cf_remove_static_uri_flag(const u_char *name) {
+  cf_uri_flag_t *flag;
+  t_cf_list_element *elem;
+
+  for(elem=uri_flags.elements;elem;elem=elem->next) {
+    flag = (cf_uri_flag_t *)elem->data;
+
+    if(cf_strcmp(flag->name,name) == 0) {
+      cf_list_delete(&uri_flags,elem);
+
+      free(flag->name);
+      free(flag->val);
+      free(flag);
+    }
+  }
+
+}
+/* }}} */
 
 /* {{{ cf_get_link */
 u_char *cf_get_link(const u_char *link,u_int64_t tid,u_int64_t mid) {
   register const u_char *ptr;
-  u_char *si = cf_hash_get(GlobalValues,"ShowInvisible",13);
   t_string buff;
+  u_char *tmp;
   int qm = 0;
   cf_readmode_t *rm;
+  cf_uri_flag_t *flag;
+  t_cf_list_element *elem;
 
-  str_init(&buff);
+  str_init_growth(&buff,128);
 
   if(link == NULL)  {
     rm = cf_hash_get(GlobalValues,"RM",2);
@@ -556,11 +591,33 @@ u_char *cf_get_link(const u_char *link,u_int64_t tid,u_int64_t mid) {
     }
   }
 
-  if(si) {
-    if(qm) str_chars_append(&buff,"&aaf=",5);
-    else str_chars_append(&buff,"?aaf=",5);
-    str_char_append(&buff,'1');
+  for(elem=uri_flags.elements;elem;elem=elem->next) {
+    flag = (cf_uri_flag_t *)elem->data;
+
+    if(qm) str_char_append(&buff,'&');
+    else {
+      str_char_append(&buff,'?');
+      qm = 1;
+    }
+
+    if(flag->encode) {
+      tmp = cf_cgi_url_encode(flag->name,strlen(flag->name));
+      str_chars_append(&buff,tmp,strlen(tmp));
+      free(tmp);
+
+      str_char_append(&buff,'=');
+
+      tmp = cf_cgi_url_encode(flag->val,strlen(flag->val));
+      str_chars_append(&buff,tmp,strlen(tmp));
+      free(tmp);
+    }
+    else {
+      str_chars_append(&buff,flag->name,strlen(flag->name));
+      str_char_append(&buff,'=');
+      str_chars_append(&buff,flag->val,strlen(flag->val));
+    }
   }
+
 
   return buff.content;
 }
@@ -572,12 +629,15 @@ u_char *cf_advanced_get_link(const u_char *link,u_int64_t tid,u_int64_t mid,u_ch
   t_string buff;
   u_char *my_anchor;
   int qm = 0,run = 1;
-  u_char *si = cf_hash_get(GlobalValues,"ShowInvisible",13),*name,*value,*tmp;
+  u_char *name,*value,*tmp;
   size_t i;
   va_list ap;
+  cf_uri_flag_t *flag;
+  t_cf_list_element *elem;
 
-  str_init(&buff);
+  str_init_growth(&buff,128);
 
+  /* {{{ work on link template */
   for(ptr=link;*ptr && run;++ptr) {
     switch(*ptr) {
       case '%':
@@ -604,7 +664,9 @@ u_char *cf_advanced_get_link(const u_char *link,u_int64_t tid,u_int64_t mid,u_ch
         str_char_append(&buff,*ptr);
     }
   }
+  /* }}} */
 
+  /* {{{ append uri arguments */
   va_start(ap,l);
   for(i=0;i<plen;++i) {
     tmp = va_arg(ap,u_char *);
@@ -627,14 +689,41 @@ u_char *cf_advanced_get_link(const u_char *link,u_int64_t tid,u_int64_t mid,u_ch
     free(value);
   }
   va_end(ap);
+  /* }}} */
 
-  if(si) str_chars_append(&buff,"&aaf=1",6);
+  /* {{{ append static uri flags */
+  for(elem=uri_flags.elements;elem;elem=elem->next) {
+    flag = (cf_uri_flag_t *)elem->data;
+
+    str_char_append(&buff,'&');
+
+    if(flag->encode) {
+      tmp = cf_cgi_url_encode(flag->name,strlen(flag->name));
+      str_chars_append(&buff,tmp,strlen(tmp));
+      free(tmp);
+
+      str_char_append(&buff,'=');
+
+      tmp = cf_cgi_url_encode(flag->val,strlen(flag->val));
+      str_chars_append(&buff,tmp,strlen(tmp));
+      free(tmp);
+    }
+    else {
+      str_chars_append(&buff,flag->name,strlen(flag->name));
+      str_char_append(&buff,'=');
+      str_chars_append(&buff,flag->val,strlen(flag->val));
+    }
+  }
+  /* }}} */
+
+  /* {{{ append anchor */
   if(anchor) {
     str_char_append(&buff,'#');
     str_chars_append(&buff,anchor,strlen(anchor));
   }
+  /* }}} */
 
-  /* we got an anchor, perhaps, append it to the _end_ of the uri */
+  /* {{{ we got an anchor, perhaps, append it to the _end_ of the uri */
   if(*ptr) {
     for(;*ptr;++ptr) {
       switch(*ptr) {
@@ -656,6 +745,7 @@ u_char *cf_advanced_get_link(const u_char *link,u_int64_t tid,u_int64_t mid,u_ch
       }
     }
   }
+  /* }}} */
 
   if(l) *l = buff.len;
   return buff.content;
@@ -774,6 +864,8 @@ void cf_init(void) {
   GlobalValues = cf_hash_new(NULL);
   APIEntries = cf_hash_new(cf_api_destroy_entry);
   memset(ErrorString,0,sizeof(ErrorString));
+
+  cf_list_init(&uri_flags);
 
   if(val) cf_hash_set(GlobalValues,"FORUM_NAME",10,val,strlen(val)+1);
 }
