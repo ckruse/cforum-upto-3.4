@@ -51,6 +51,7 @@ static int flt_directives_iframesaslink = 0;
 static int flt_directives_rel_no_follow = 0;
 static int flt_directives_wbl           = 0;
 static int flt_directives_suial         = 0;
+static int flt_directives_rpl           = 0;
 
 typedef struct {
   u_char *id;
@@ -186,6 +187,11 @@ void flt_directives_generate_uri(const u_char *uri,const u_char *title,t_string 
 
   tmp1 = cf_cgi_url_encode(tmp2,len);
   len2 = strlen(tmp1);
+
+  if(flt_directives_rpl && title == NULL) {
+    title = strdup(tmp2);
+    len1  = len;
+  }
 
   /* {{{ generate <a href */
   str_chars_append(content,"<a href=\"",9);
@@ -832,6 +838,15 @@ int flt_directives_init(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc) 
 /* }}} */
 
 /* {{{ directive handlers */
+int flt_directives_handle_rpl(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
+  if(flt_directives_fname == NULL) flt_directives_fname = cf_hash_get(GlobalValues,"FORUM_NAME",10);
+  if(!context || cf_strcmp(context,flt_directives_fname) != 0) return 0;
+
+  flt_directives_rpl = cf_strcmp(args[0],"yes") == 0;
+
+  return 0;
+}
+
 int flt_directives_handle_uwl(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
   size_t i;
 
@@ -1076,6 +1091,7 @@ t_conf_opt flt_directives_config[] = {
   { "LinkIcons",            flt_directives_handle_icons,    CFG_OPT_CONFIG|CFG_OPT_LOCAL, NULL },
   { "LinkShowIcons",        flt_directives_handle_lit,      CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL,  NULL },
   { "UnwantedLinks",        flt_directives_handle_uwl,      CFG_OPT_CONFIG|CFG_OPT_LOCAL,               NULL },
+  { "ReplaceNormal",        flt_directives_handle_rpl,      CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL,  NULL },
   { NULL, NULL, 0, NULL }
 };
 
