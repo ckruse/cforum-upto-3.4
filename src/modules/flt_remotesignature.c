@@ -123,7 +123,7 @@ int flt_remotesignature_execute(t_cf_hash *head,t_configuration *dc,t_configurat
 int flt_remotesignature_execute(t_cf_hash *head,t_configuration *dc,t_configuration *pc,t_message *p,t_cl_thread *thr,int sock,int mode)
 #endif
 {
-  u_char *rs = strstr(p->content.content,"[remote-signature:"),*url,*cnt;
+  u_char *rs = strstr(p->content.content,"[remote-signature:"),*tmp,*url,*cnt;
   register u_char *ptr;
   t_string *str;
 
@@ -131,7 +131,9 @@ int flt_remotesignature_execute(t_cf_hash *head,t_configuration *dc,t_configurat
     for(ptr=rs+18;*ptr && *ptr != ']' && !isspace(*ptr);ptr++);
 
     if(*ptr == ']') {
-      url = strndup(rs+18,ptr-(rs+18));
+      tmp = strndup(rs+18,ptr-(rs+18));
+      url = htmlentities_decode(tmp,NULL);
+      free(tmp);
 
       /* we only accept strict URLs */
       if(is_valid_http_link(url,1) == 0) {

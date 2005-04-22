@@ -1,3 +1,6 @@
+2005-04-22 Christian Kruse <ckruse@wwwtech.de>
+	* src/modules/flt_remotesignature.c: Fixed #774
+
 2005-04-21 Christian Kruse <ckruse@wwwtech.de>
 	* src/modules/flt_moderated.c: Fixed a small bug
 	* src/modules/flt_noarchive.c: Added plugin to set no-archive flag
