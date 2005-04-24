@@ -1,3 +1,6 @@
+2005-04-24 Christian Seiler <self@christian-seiler.de>
+	* src/parsetpl/parsetpl.lex: Added {iws} and {endiws} tags.
+
 2005-04-22 Christian Kruse <ckruse@wwwtech.de>
 	* src/modules/flt_remotesignature.c: Fixed #774
 	* conf/modules.de.xml: Added ReplaceNormal directive, NASend204,
