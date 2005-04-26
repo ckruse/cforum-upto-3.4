@@ -155,7 +155,7 @@ int flt_noanswer_setvars(t_cf_hash *head,t_configuration *dc,t_configuration *vc
   int si = cf_hash_get(GlobalValues,"ShowInvisible",13) != NULL;
   t_cf_post_flag *flag;
 
-  if((flag = cf_flag_by_name(&msg->flags,"no-answer")) != NULL) cf_tpl_hashvar_setvalue(hash,"na",TPL_VARIABLE_INT,1);
+  if((flag = cf_flag_by_name(&msg->flags,"no-answer")) != NULL && si == 0) cf_tpl_hashvar_setvalue(hash,"na",TPL_VARIABLE_INT,1);
 
   return FLT_OK;
 }

@@ -48,6 +48,8 @@ typedef struct s_token {
 #define PARSETPL_TOK_LOOPVAR             0x22
 #define PARSETPL_TOK_HASHASSIGNMENT      0x23
 #define PARSETPL_TOK_CONCAT              0x24
+#define PARSETPL_TOK_IWS_START           0x25
+#define PARSETPL_TOK_IWS_END             0x26
 
 #define PARSETPL_INCLUDE_EXT     ".html"
 
@@ -82,6 +84,7 @@ static int  uses_iter_print          = 0;
 static int  uses_clonevar            = 0;
 static int  uses_loopassign          = 0;
 static int  uses_tmpstring           = 0;
+static int  iws                      = 0;
 
 /*
 
@@ -103,7 +106,9 @@ t_cf_tpl-variable  *vi0;          variables dynamically generated for if
 
 \n   {
   ++lineno; /* count line numbers */
-  str_char_append(&content,'\n');
+  if (!iws) {
+    str_char_append(&content,'\n');
+  }
 }
 
 \{      {
@@ -221,6 +226,14 @@ t_cf_tpl-variable  *vi0;          variables dynamically generated for if
     str_chars_append(&content_backup,yytext,yyleng);
     return PARSETPL_TOK_ENDFOREACH;
   }
+  iws                 {
+    str_chars_append(&content_backup,yytext,yyleng);
+    return PARSETPL_TOK_IWS_START;
+  }
+  endiws              {
+    str_chars_append(&content_backup,yytext,yyleng);
+    return PARSETPL_TOK_IWS_END;
+  }
   <<EOF>>        {
     str_chars_append(&content_backup,yytext,yyleng);
     return PARSETPL_ERR_UNTERMINATEDTAG;
@@ -278,6 +291,12 @@ t_cf_tpl-variable  *vi0;          variables dynamically generated for if
   .                   {
     str_chars_append(&content_backup,yytext,yyleng);
     str_char_append(&string,*yytext);
+  }
+}
+
+[ \r\t] {
+  if (!iws) {
+    str_char_append(&content,*yytext);
   }
 }
 
@@ -2199,7 +2218,15 @@ int process_tag(t_array *data) {
   
   rtype = ((t_token*)array_element_at(data,0))->type;
   
-  if(rtype == PARSETPL_TOK_VARIABLE) {
+  if(rtype == PARSETPL_TOK_IWS_START && data->elements == 1) {
+    iws = 1;
+    return 0;
+  }
+  else if(rtype == PARSETPL_TOK_IWS_END && data->elements == 1) {
+    iws = 0;
+    return 0;
+  }
+  else if(rtype == PARSETPL_TOK_VARIABLE) {
     variable = (t_token *)array_shift(data);
     // 2 possibilities:
     //   a) print $variable ($variable,$variable[0][2],$variable->escaped,$variable[0]->escaped)
@@ -2317,7 +2344,10 @@ int parse_file(const u_char *filename) {
   str_char_set(&output_name,basename,strlen(basename));
   str_chars_append(&output_name,".c",2);
   p = strrchr(basename,'/');
-  if(!p) p = basename;
+  if(!p)
+    p = basename;
+  else
+    p++;
   str_char_set(&current_file,p,strlen(p));
   free(basename);
   

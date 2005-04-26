@@ -537,6 +537,8 @@ t_string *body_plain2coded(const u_char *text) {
     switch(*ptr) {
       case '\015':
         if(*(ptr+1) == '\012') ++ptr;
+
+      case '\012':
         str_char_append(str,'\012');
 
         if(cf_strncmp(ptr+1,qchars,len) == 0) {
