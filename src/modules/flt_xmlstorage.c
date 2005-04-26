@@ -1055,7 +1055,7 @@ int flt_xmlstorage_archive_threads(t_forum *forum,t_thread **threads,size_t len)
     u_int16_to_str(&str,(u_int16_t)(t.tm_mon+1));
 
     if(stat(str.content,&st) == -1) {
-      if(cf_make_path(buff,0755) != 0) {
+      if(cf_make_path(str.content,0755) != 0) {
         cf_log(CF_ERR|CF_FLSH,__FILE__,__LINE__,"Error creating path %s! (%s)\n",buff,strerror(errno));
         exit(-1);
       }
@@ -1074,8 +1074,8 @@ int flt_xmlstorage_archive_threads(t_forum *forum,t_thread **threads,size_t len)
     doc_thread = flt_xmlstorage_thread2xml(impl,doc,threads[i]);
 
     olen = str.len;
-    str_char_append(&str,'/');
-    u_int16_to_str(&str,(u_int16_t)(t.tm_mon+1));
+    str_chars_append(&str,"/t",2);
+    u_int64_to_str(&str,threads[i]->tid);
     str_chars_append(&str,".xml",4);
 
     if(!gdome_di_saveDocToFile(impl,doc_thread,str.content,0,&e)) {

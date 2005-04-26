@@ -2,6 +2,7 @@
 	* src/fo_post.c: Fixed #787
 	* src/defines.h: Changed CF_BUFSIZ to BUFSIZ (#define CF_BUFSIZ BUFSIZ),
 		changed version number
+	* src/modules/flt_xmlstorage.c: Really nasty bugfix in archiver part
 
 2005-04-24 Christian Seiler <self@christian-seiler.de>
 	* src/parsetpl/parsetpl.lex: Added {iws} and {endiws} tags.
