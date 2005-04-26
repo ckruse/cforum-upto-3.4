@@ -22,9 +22,9 @@
 #define CF_SORT_DESCENDING 2
 #define CF_SORT_NEWESTFIRST 3
 
-#define CF_VERSION "3.3 Beta 1"
+#define CF_VERSION "3.3.5 Beta 1"
 
-#define CF_BUFSIZ 2048
+#define CF_BUFSIZ BUFSIZ
 
 #define CF_ERR (1<<1) /**< Used by the logging function. Log an error. */
 #define CF_STD (1<<2) /**< Used by the logging function. Log a standard message. */

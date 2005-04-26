@@ -1,3 +1,8 @@
+2005-04-26 Christian Kruse <ckruse@wwwtech.de>
+	* src/fo_post.c: Fixed #787
+	* src/defines.h: Changed CF_BUFSIZ to BUFSIZ (#define CF_BUFSIZ BUFSIZ),
+		changed version number
+
 2005-04-24 Christian Seiler <self@christian-seiler.de>
 	* src/parsetpl/parsetpl.lex: Added {iws} and {endiws} tags.
 
