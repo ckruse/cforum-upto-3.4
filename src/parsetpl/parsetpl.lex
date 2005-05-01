@@ -833,6 +833,22 @@ int process_array_assignment(t_array *data,t_string *tmp) {
         --n_cur_assign_vars;
         return PARSETPL_ERR_INVALIDTAG;
       }
+      else if(is_hval) {
+        str_cstr_append(tmp,"vc = cf_tpl_var_clone(vc);\n");
+        str_cstr_append(tmp,"if(!vc) {\n");
+        str_cstr_append(tmp,"vc = (t_cf_tpl_variable *)fo_alloc(NULL,sizeof(t_cf_tpl_variable),1,FO_ALLOC_MALLOC);\n");
+        str_cstr_append(tmp,"cf_tpl_var_init(vc,TPL_VARIABLE_INVALID);\n");
+        str_cstr_append(tmp,"}\n");
+        str_cstr_append(tmp,"cf_tpl_hashvar_set(va");
+        str_cstr_append(tmp,v1nb);
+        str_cstr_append(tmp,",\"");
+        append_escaped_string(tmp,hkey);
+        str_cstr_append(tmp,"\",vc);\n");
+        str_cstr_append(tmp,"free(vc);\n");
+        is_hval = 0;
+        str_cleanup(hkey);
+        free(hkey);
+      }
       else {
         str_cstr_append(tmp,"vc = cf_tpl_var_clone(vc);\n");
         str_cstr_append(tmp,"if(!vc) {\n");
@@ -1372,7 +1388,7 @@ int process_foreach_tag(t_array *data) {
   return 0;
 }
 
-int process_if_tag(t_array *data) {
+int process_if_tag(t_array *data, int is_elseif) {
   t_string tmp;
   t_string *compop;
   t_token *token;
@@ -1418,7 +1434,7 @@ int process_if_tag(t_array *data) {
     array_unshift(data,token);
     str_cstr_append(&output,"} else {\n");
     str_cstr_append(&output_mem,"} else {\n");
-    ret = process_if_tag(data);
+    ret = process_if_tag(data, 1);
     if(ret < 0) {
       // length of } else {\n is 9 chars
       // remove the else again
@@ -1428,7 +1444,8 @@ int process_if_tag(t_array *data) {
       output_mem.content[output_mem.len] = '\0';
       return ret;
     }
-    (*((int *)array_element_at(&if_level_stack,if_level_stack.elements-1)))++;
+    ilevel = array_element_at(&if_level_stack,if_level_stack.elements-1);
+    (*ilevel)++;
     return 0;
   } else if(token->type == PARSETPL_TOK_IF) {
     destroy_token(token); free(token);
@@ -1567,8 +1584,10 @@ int process_if_tag(t_array *data) {
       str_str_append(&output,&tmp);
       str_str_append(&output_mem,&tmp);
       str_cleanup(&tmp);
-      level = 0;
-      array_push(&if_level_stack,&level);
+      if (!is_elseif) {
+        level = 0;
+        array_push(&if_level_stack,&level);
+      }
       return 0;
     }
     token = (t_token*)array_shift(data);
@@ -2198,8 +2217,10 @@ int process_if_tag(t_array *data) {
     if(tok2) {
       destroy_token(tok2); free(tok2);
     }
-    level = 0;
-    array_push(&if_level_stack,&level);
+    if (!is_elseif) {
+      level = 0;
+      array_push(&if_level_stack,&level);
+    }
     return 0;
   } else { // elseif is not supported currently!
     destroy_token(token); free(token);
@@ -2282,7 +2303,7 @@ int process_tag(t_array *data) {
     }
     return 0;
   } else if(rtype == PARSETPL_TOK_IF || rtype == PARSETPL_TOK_ELSE || rtype == PARSETPL_TOK_ELSIF || rtype == PARSETPL_TOK_ENDIF) {
-    return process_if_tag(data);
+    return process_if_tag(data, 0);
   } else if(rtype == PARSETPL_TOK_INCLUDE) {
     token = (t_token*)array_shift(data);
     destroy_token(token); free(token);

@@ -1,3 +1,7 @@
+2005-05-01 Christian Seiler <self@christian-seiler.de>
+	* src/parsetpl/parsetpl.lex: Fixed several severe bugs in the template
+		parser
+
 2005-04-26 Christian Kruse <ckruse@wwwtech.de>
 	* src/fo_post.c: Fixed #787
 	* src/defines.h: Changed CF_BUFSIZ to BUFSIZ (#define CF_BUFSIZ BUFSIZ),
