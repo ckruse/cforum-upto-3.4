@@ -192,7 +192,6 @@ t_conf_opt fo_arcview_options[] = {
   { "CacheDir",                handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL,   &fo_arcview_conf },
   { "QuotingChars",            handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL,   &fo_arcview_conf },
 
-  { "FatalTemplate",           handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL,   &fo_arcview_conf },
   { "YearsTemplate",           handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL,   &fo_arcview_conf },
   { "MonthsTemplate",          handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL,   &fo_arcview_conf },
   { "ThreadTemplate",          handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL,   &fo_arcview_conf },

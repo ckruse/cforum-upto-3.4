@@ -1,0 +1,113 @@
+#!/usr/bin/perl -w
+
+# {{{ initial comments
+#
+# $LastChangedDate$
+# $LastChangedRevision$
+# $LastChangedBy$
+#
+# }}}
+
+# {{{ program header
+
+#
+use strict;
+use vars qw($Bin $Script $Plugins $UserName $exec_prefix $prefix $Forum);
+
+BEGIN {
+  my $null = $0; $null =~ tr!\\!/!; # for win :-(
+  $Bin     = ($null =~ /^(.*)\/.*$/)? $1 : '.';
+  $Script  = ($null =~ /^.*\/(.*)$/)? $1 : $null;
+
+  # get needed environments
+  die "Could not get config path, set CF_CONF_DIR!" unless $ENV{CF_CONF_DIR};
+  die "Could not get forum name, set CF_FORUM_NAME!" unless $ENV{CF_FORUM_NAME};
+
+  $Plugins = {};
+  $UserName = '';
+  $prefix  = "@prefix@";
+  $exec_prefix = "@exec_prefix@";
+
+  $Forum = $ENV{CF_FORUM_NAME};
+}
+
+use lib "@libdir@/cforum";
+
+sub VERSION {(q$Revision$ =~ /([\d.]+)\s*$/)[0] or '0.0'}
+
+use CGI;
+use CGI::Carp qw/fatalsToBrowser/;
+
+use XML::GDOME;
+
+use CForum::Template;
+
+use ForumUtils qw(
+  read_configuration get_node_data get_template
+  get_error recode uniquify_params
+  get_config_files get_user_config_file create_directory_structure
+  get_conf_val fatal is_admin
+);
+# }}}
+
+my @fnames;
+die "could not get config files" unless @fnames = get_config_files(
+  "fo_default","fo_admin",
+  "fo_arcview","fo_feeds","fo_post",
+  "fo_server","fo_userconf","fo_usermanagement",
+  "fo_view","fo_xmlrpc"
+);
+
+my $fo_default_conf  = read_configuration(shift @fnames) or die "$!";
+my $fo_admin_conf    = read_configuration(shift @fnames) or die "$!";
+my @conffiles = ();
+
+foreach my $fname (@fnames) {
+  my $file = read_configuration($fname) or die "$!";
+  push @conffiles,$file;
+}
+
+my $user_config      = {};
+
+my $cgi              = new CGI;
+my $action           = $cgi->param('a') || '';
+
+# {{{ load plugins and authenticate
+foreach(@{$fo_admin_conf->{global}->{AddModule}}) {
+  eval "use $_->[0];";
+  fatal($cgi,$fo_default_conf,$user_config,sprintf(get_error($fo_default_conf,'PLUGIN_ERR'),"$@"),get_conf_val($fo_default_conf,$Forum,'ErrorTemplate')) if $@;
+}
+
+foreach(@{$Plugins->{auth}}) {
+  last if &$_($fo_default_conf,undef,$fo_admin_conf);
+}
+
+if($UserName) {
+  if(is_admin($fo_default_conf,$UserName)) {
+    my $cfile = get_user_config_file($fo_default_conf,$UserName);
+    $user_config = read_configuration($cfile) or die "$!";
+  }
+  else {
+    fatal($cgi,$fo_default_conf,$user_config,get_error($fo_default_conf,'MUST_ADMIN'),get_conf_val($fo_default_conf,$Forum,'ErrorTemplate'));
+    exit;
+  }
+}
+else {
+  fatal($cgi,$fo_default_conf,$user_config,get_error($fo_default_conf,'MUST_AUTH'),get_conf_val($fo_default_conf,$Forum,'ErrorTemplate'));
+  exit;
+}
+# }}}
+
+if($action eq 'blub') {
+}
+else {
+  my $tpln = get_conf_val($fo_admin_conf,$Forum,'MainTemplate');
+  my $tpl = new CForum::Template(get_template($fo_default_conf,$user_config,$tpln)) or die "$!";
+
+  $tpl->setvalue('charset',get_conf_val($fo_default_conf,$Forum,'ExternCharset'));
+  $tpl->setvalue('script',$ENV{SCRIPT_NAME});
+
+  print $cgi->header(-type => 'text/html; charset='.get_conf_val($fo_default_conf,$Forum,'ExternCharset')),$tpl->parseToMem;
+}
+
+# eof

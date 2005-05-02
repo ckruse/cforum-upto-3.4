@@ -473,7 +473,12 @@ sub fatal {
 
   $tpl->setvalue('charset',$cs);
   $tpl->setvalue('acceptcharset',$cs.', UTF-8');
-  print $cgi->header(-type => 'text/html; charset='.$cs) unless $hdr;
+
+  unless($hdr) {
+    print "Status: 500 Internal Server Error\015\012";
+    print $cgi->header(-type => 'text/html; charset='.$cs);
+  }
+
   print $tpl->parseToMem;
 
   exit;

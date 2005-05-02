@@ -1,0 +1,19 @@
+#
+# \file fo_xmlrpc.conf
+# \author Christian Seiler, <self@christian-seiler.de>
+#
+# The configuration for the user management program
+#
+# $LastChangedDate$
+# $LastChangedRevision$
+# $LastChangedBy$
+#
+
+AddModule "Plugins::HTTPAuth"
+
+Forum FORUM1 {
+  Umask "0022"
+
+  MainTemplate "@sysconfdir@/cforum/templates/forum1/%s_%s_admin_main.so"
+}
+

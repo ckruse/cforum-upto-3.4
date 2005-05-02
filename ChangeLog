@@ -1,5 +1,17 @@
 2005-05-02 Christian Kruse <ckruse@wwwtech.de>
 	* scripts/fo_userconf.in: Fixed #13
+	* conf/errormessages.de.txt: Added E_MUST_ADMIN error message
+	* conf/Makefile.am: Added fo_admin.conf, config.de.xml
+	* conf/fo_arcview.conf.in: Removed uneccessary directives
+	* configure.in: Added scripts/fo_admin and conf/fo_admin.conf to output
+	* src/perl/ForumUtils.pm: Added status header to fatal() routine
+	* src/configparser.c: Removed uneccessary FatalTemplate directive from
+		fo_arcview.conf
+	* scripts/Makefile.am: Added fo_admin
+	* conf/config.dtd: Added configuration description dtd
+	* conf/config.de.xml: Added first revision of the config description file
+	* conf/fo_admin.conf.in: Added fo_admin config file
+	* scripts/fo_admin.in: Added fo_admin script
 
 2005-05-01 Christian Seiler <self@christian-seiler.de>
 	* src/parsetpl/parsetpl.lex: Fixed several severe bugs in the template

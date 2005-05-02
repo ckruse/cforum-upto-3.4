@@ -1,0 +1,48 @@
+
+<!ELEMENT config (modules,file+)>
+
+  <!ELEMENT file (description,modules,directives)>
+  <!ATTLIST file
+    name CDATA   #REQUIRED
+    id   NMTOKEN #REQUIRED
+  >
+
+  <!ELEMENT description (#PCDATA)>
+
+    <!ELEMENT modules (module*)>
+    <!ATTLIST modules
+      list  CDATA  #IMPLIED
+    >
+
+      <!ELEMENT module (description,directives)>
+      <!ATTLIST module
+        name CDATA #REQUIRED
+      >
+
+    <!ELEMENT directives (directive*)>
+
+      <!ELEMENT directive (argument+)>
+      <!ATTLIST directive
+        name      CDATA  #REQUIRED
+        type      CDATA  #REQUIRED
+        multiple  CDATA  #IMPLIED
+      >
+
+        <!ELEMENT argument (description,validate,error,values?)>
+        <!ATTLIST argument
+          encode    CDATA  #IMPLIED
+          multiple  CDATA  #IMPLIED
+        >
+
+          <!ELEMENT validate (#PCDATA)>
+          <!ELEMENT error (#PCDATA)>
+          <!ELEMENT values (value+)>
+
+            <!ELEMENT value (#PCDATA)>
+            <!ATTLIST value
+              default CDATA #IMPLIED
+              value   CDATA #REQUIRED
+            >
+
+
+<!-- eof -->

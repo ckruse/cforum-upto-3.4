@@ -251,6 +251,7 @@ conf/Makefile
 conf/patterns/Makefile
 docs/Makefile
 scripts/Makefile
+scripts/fo_admin
 scripts/fo_userconf
 scripts/fo_usermanagement
 scripts/fo_xmlrpc
@@ -267,6 +268,7 @@ src/swig/CForum-Clientlib/Makefile.PL
 src/Makefile
 src/modules/Makefile
 src/parsetpl/Makefile
+conf/fo_admin.conf
 conf/fo_arcview.conf
 conf/fo_default.conf
 conf/fo_post.conf

@@ -1,6 +1,7 @@
 SUBDIRS=patterns
 
-EXTRA_DIST=fo_arcview.conf \
+EXTRA_DIST=fo_admin.conf \
+	fo_arcview.conf \
   fo_default.conf \
   fo_post.conf \
   fo_server.conf \
@@ -15,7 +16,8 @@ EXTRA_DIST=fo_arcview.conf \
 	tipoftheday.txt \
   modules.de.xml \
   modules.en.xml \
-  modules.fr.xml
+  modules.fr.xml \
+	config.de.xml
 
 
 install-data-local:

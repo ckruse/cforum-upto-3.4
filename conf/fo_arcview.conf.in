@@ -38,10 +38,6 @@ Forum FORUM1 {
  CacheLevel "6"
  CacheDir "@localstatedir@/cforum/cache/forum1/"
 
- TemplatesFrameset "@sysconfdir@/cforum/templates/forum1/%s_%s_frameset.so" "@sysconfdir@/cforum/templates/forum1/%s_%s_blank.so"
-
- FatalTemplate "@sysconfdir@/cforum/templates/forum1/%s_%s_fatal.so"
-
  YearsTemplate "@sysconfdir@/cforum/templates/forum1/%s_%s_arcyears.so"
  MonthsTemplate "@sysconfdir@/cforum/templates/forum1/%s_%s_arcmonths.so"
 

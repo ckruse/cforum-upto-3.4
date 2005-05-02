@@ -1,0 +1,767 @@
+<?xml version="1.0" encoding="ISO-8859-15"?>
+<!DOCTYPE config SYSTEM "config.dtd">
+
+<config>
+  <modules><!-- {{{ global modules -->
+    <module name="flt_httpauth">
+      <description>Modul zur HTTP-Authentifizierung</description>
+      <directives/>
+    </module>
+
+    <module name="flt_cookieauth">
+      <description>Modul zur Cookie-Authentifzierung</description>
+      <directives/>
+    </module>
+
+    <module name="flt_http">
+      <description>Modul für bessere HTTP-Header</description>
+      <directives/>
+    </module>
+
+    <module name="flt_admin">
+      <description>Modul um als Administrator gelöschte Postings zu sehen</description>
+      <directives/>
+    </module>
+
+    <module name="flt_directives">
+      <description>Modul um die Standard-Direktiven ([link:], [image:], etc) umzusetzen in HTML</description>
+      <directives>
+        <directive name="PostingUrl" type="local" multiple="yes">
+          <argument encode="plain">
+            <description>Hiermit können Sie definieren, welche URLs als Links zu Postings gewertet werden.</description>
+            <validate/>
+            <error/>
+          </argument>
+        </directive>
+        <directive name="SetRelNoFollow" type="local">
+          <argument encode="radio">
+            <description>Hiermit können Sie angeben, dass Links in Posting-Texten mit dem Attribut rel=&quot;nofollow&quot; versehen werden sollen. Das kann sinnvoll sein, wenn Sie mit Link-Spam zu kämpfen haben. In dem Fall folgt ein Suchmaschinen-Robot dem Link nicht.</description>
+            <validate>^(?:yes|no)$</validate>
+            <error>Sollen Links mit rel=&quot;nofollow&quot; versehen werden? Geben Sie ja oder nein an!</error>
+            <values>
+              <value value="yes">Ja</value>
+              <value value="no" default="yes">Nein</value>
+            </values>
+          </argument>
+        </directive>
+        <directive name="ReferenceURI" type="local" multiple="yes">
+          <argument encode="plain">
+            <description>Hiermit können Sie den Namen einer Referenz-URL definieren. Das kann sinnvoll sein, wenn häufig auf URLs verlinkt wird, die nicht permanent sind. Sie können dann später die Basis-URL ändern und es wirkt sich nachträglich auf die Referenzen in den Posting-Texten aus. [ref:name;Teil-URI] ist die Syntax für den Nutzer.</description>
+            <validate>^\w+$</validate>
+            <error>Geben sie einen gültigen Namen für die Referenz-URL an! Gültige Zeichen sind: a-zA-Z0-9_</error>
+          </argument>
+          <argument encode="plain">
+            <description>Hiermit geben Sie die Basis-URL zu einer Referenz-URL an.</description>
+            <validate/>
+            <error/>
+          </argument>
+        </directive>
+        <directive name="LinkIcons" type="local" multiple="yes">
+          <argument encode="plain">
+            <description>Hiermit können Sie die Link-Icons definieren.</description>
+            <validate/>
+            <error/>
+          </argument>
+        </directive>
+
+        <directive name="UnwantedLinks" type="local" multiple="yes">
+          <argument encode="plain" multiple="yes">
+            <description>Hiermit können Sie ungern gesehene Links definieren. Es wird PCRE-Syntax erwartet.</description>
+            <validate/>
+            <error/>
+          </argument>
+        </directive>
+      </directives>
+    </module>
+
+    <module name="flt_syntax">
+      <description>Modul um Syntax-Hervorhebung zu aktivieren</description>
+      <directives>
+        <directive name="PatternsDirectory" type="global">
+          <argument encode="plain">
+            <description>Hiermit wird der Pfad zu den Pattern-Files für die Syntax-Hervorhebung an.</description>
+            <validate>^.+</validate>
+            <error>Sie müssen einen Pfad zu den Pattern-Files für die Syntax-Hervorhebung angeben!</error>
+          </argument>
+        </directive>
+        <directive name="ActivateSyntax" type="local">
+          <argument encode="plain">
+            <description>Soll die Syntax-Hervorhebung global aktiviert werden?</description>
+            <validate>^(?:yes|no)$</validate>
+            <error>Soll die Syntax-Hervorhebung global aktiviert werden? Geben Sie ja oder nein an!</error>
+            <values>
+              <value value="yes">Ja</value>
+              <value value="no" default="yes">Nein</value>
+            </values>
+          </argument>
+        </directive>
+      </directives>
+    </module>
+
+    <module name="flt_posting">
+      <description>Modul für die Posting-Anzeige im Thread-Modus</description>
+      <directives/>
+    </module>
+
+    <module name="flt_tplmode">
+      <description>Modul, dass es dem User ermöglicht, alternative Templates zu wählen.</description>
+      <directives/>
+    </module>
+
+    <module name="flt_visited">
+      <description>Modul, dass es dem User ermöglicht, Postings serverseitig als gelesen zu markieren.</description>
+      <directives/>
+    </module>
+
+    <module name="flt_include">
+      <description>Modul, dass es dem User ermöglicht, eigene CSS-, JS- oder XSLT-Dateien einzubinden.</description>
+      <directives/>
+    </module>
+
+    <module name="flt_preview">
+      <description>Modul, dass es dem User ermöglicht, eine Vorschau seines Postings zu erstellen.</description>
+      <directives>
+      </directives>
+    </module>
+  <!-- }}} --></modules>
+
+  <file name="fo_default.conf" id="fo_default">
+    <description>Die Haupt-Konfiguration regelt einige grundlegende Dinge des Foren-Betriebs. Diese betreffen unter Umständen nicht ausschliesslich diese Foren-Instanz, sondern auch andere Instanzen, die auf demselben Server laufen. Für einige Einstellungen wird ein Restart des Foren-Servers notwendig sein.</description>
+
+    <modules/>
+
+    <directives><!-- {{{ directives -->
+      <directive name="SocketName" type="global">
+        <argument encode="text">
+          <description>Hiermit wird der Pfad zum Socket des Forums angegeben.</description>
+          <validate>^.+</validate>
+          <error>Sie müssen einen Socket-Pfad angeben!</error>
+        </argument>
+      </directive>
+
+      <directive name="TemplateMode" type="local">
+        <argument encode="text">
+          <description>Hiermit geben Sie die Default-Templates des Forums an.</description>
+          <validate>^.+</validate>
+          <error>Sie müssen Default-Templates angeben!</error>
+        </argument>
+      </directive>
+
+      <directive name="XHTMLMode" type="local">
+        <argument encode="radio">
+          <description>Hiermit geben Sie an, ob die Default-Templates des Forums XHTML sind oder nicht.</description>
+          <validate>^(?:yes|no)$</validate>
+          <error>Sie müssen angeben, ob die Default-Templates des Forums XHTML sind oder nicht!</error>
+          <values>
+            <value value="yes">Ja</value>
+            <value value="no" default="yes">Nein</value>
+          </values>
+        </argument>
+      </directive>
+
+      <directive name="ErrorTemplate" type="local">
+        <argument encode="plain">
+          <description>Hiermit geben Sie das Fehler-Template des Forums an.</description>
+          <validate>^.+</validate>
+          <error>Sie müssen ein Fehler-Template angeben!</error>
+        </argument>
+      </directive>
+
+      <directive name="ThreadIndexFile" type="local">
+        <argument encode="plain">
+          <description>Hiermit geben Sie die Index-Datei an, in der die Thread-IDs indiziert werden.</description>
+          <validate>^.+</validate>
+          <error>Sie müssen eine Thread-Index-Datei angeben!</error>
+        </argument>
+      </directive>
+
+      <!-- {{{ URIs for anonymous users -->
+      <directive name="BaseURL" type="local">
+        <argument encode="plain">
+          <description>Hiermit geben Sie die Basis-URL des Forums für unregistrierte Benutzer an.</description>
+          <validate>^.+</validate>
+          <error>Sie müssen eine Basis-URL für unregistrierte Benutzer angeben!</error>
+        </argument>
+      </directive>
+
+      <directive name="PostingURL" type="local">
+        <argument encode="plain">
+          <description>Hiermit geben Sie ein URL-Template für URLs zu Postings für unregistrierte Benutzer im Thread-Modus an. %t wird durch die Thread-ID ersetzt, %m durch die Message-ID. Die URL muss absolut sein!</description>
+          <validate>^https?://.+</validate>
+          <error>Sie müssen eine absolute Posting-URL für unregistrierte Benutzer im Thread-Modus angeben!</error>
+        </argument>
+      </directive>
+
+      <directive name="PostingURL_List" type="local">
+        <argument encode="plain">
+          <description>Hiermit geben Sie ein URL-Template für URLs zu Postings für unregistrierte Benutzer im Listen-Modus an. %t wird durch die Thread-ID ersetzt, %m durch die Message-ID. Die URL muss absolut sein!</description>
+          <validate>^https?://.+</validate>
+          <error>Sie müssen eine absolute Posting-URL für unregistrierte Benutzer im Listen-Modus angeben!</error>
+        </argument>
+      </directive>
+
+      <directive name="PostingURL_Nested" type="local">
+        <argument encode="plain">
+          <description>Hiermit geben Sie ein URL-Template für URLs zu Postings für unregistrierte Benutzer im Nested-Modus an. %t wird durch die Thread-ID ersetzt, %m durch die Message-ID. Die URL muss absolut sein!</description>
+          <validate>^https?://.+</validate>
+          <error>Sie müssen eine absolute Posting-URL für unregistrierte Benutzer im Nested-Modus angeben!</error>
+        </argument>
+      </directive>
+      <!-- }}} -->
+
+      <!-- {{{ URIs for registered users -->
+      <directive name="UBaseURL" type="local">
+        <argument encode="plain">
+          <description>Hiermit geben Sie die Basis-URL des Forums für registrierte Benutzer an.</description>
+          <validate>^.+</validate>
+          <error>Sie müssen eine Basis-URL für registrierte Benutzer angeben!</error>
+        </argument>
+      </directive>
+
+      <directive name="UPostingURL" type="local">
+        <argument encode="plain">
+          <description>Hiermit geben Sie ein URL-Template für URLs zu Postings für registrierte Benutzer im Thread-Modus an. %t wird durch die Thread-ID ersetzt, %m durch die Message-ID. Die URL muss absolut sein!</description>
+          <validate>^https?://.+</validate>
+          <error>Sie müssen eine absolute Posting-URL für registrierte Benutzer im Thread-Modus angeben!</error>
+        </argument>
+      </directive>
+
+      <directive name="UPostingURL_List" type="local">
+        <argument encode="plain">
+          <description>Hiermit geben Sie ein URL-Template für URLs zu Postings für registrierte Benutzer im Listen-Modus an. %t wird durch die Thread-ID ersetzt, %m durch die Message-ID. Die URL muss absolut sein!</description>
+          <validate>^https?://.+</validate>
+          <error>Sie müssen eine absolute Posting-URL für registrierte Benutzer im Listen-Modus angeben!</error>
+        </argument>
+      </directive>
+
+      <directive name="UPostingURL_Nested" type="local">
+        <argument encode="plain">
+          <description>Hiermit geben Sie ein URL-Template für URLs zu Postings für registrierte Benutzer im Nested-Modus an. %t wird durch die Thread-ID ersetzt, %m durch die Message-ID. Die URL muss absolut sein!</description>
+          <validate>^https?://.+</validate>
+          <error>Sie müssen eine absolute Posting-URL für registrierte Benutzer im Nested-Modus angeben!</error>
+        </argument>
+      </directive>
+      <!-- }}} -->
+
+      <directive name="VoteURL" type="local">
+        <argument encode="plain">
+          <description>Hiermit geben Sie die URL zum Voting-Programm an.</description>
+          <validate>^.+</validate>
+          <error>Sie müssen eine Voting-URL angeben!</error>
+        </argument>
+      </directive>
+
+      <directive name="ArchiveURL" type="local">
+        <argument encode="plain">
+          <description>Hiermit geben Sie die URL zum Archiv an.</description>
+          <validate>^.+</validate>
+          <error>Sie müssen eine Archiv-URL angeben!</error>
+        </argument>
+      </directive>
+
+      <directive name="PostScript" type="local">
+        <argument encode="plain">
+          <description>Hiermit geben Sie die URL zum Posting-Programm für unregistrierte Nutzer an.</description>
+          <validate>^.+</validate>
+          <error>Sie müssen eine URL zum Posting-Programm für unregistrierte Nutzer angeben!</error>
+        </argument>
+      </directive>
+
+      <directive name="UPostScript" type="local">
+        <argument encode="plain">
+          <description>Hiermit geben Sie die URL zum Posting-Programm für registrierte Nutzer an.</description>
+          <validate>^.+</validate>
+          <error>Sie müssen eine URL zum Posting-Programm für registrierte Nutzer angeben!</error>
+        </argument>
+      </directive>
+
+      <directive name="UserConfig" type="local">
+        <argument encode="plain">
+          <description>Hiermit geben Sie die URL zum Konfigurations-Programm für die Nutzer-Konfiguration an.</description>
+          <validate>^.+</validate>
+          <error>Sie müssen eine URL zum Konfigurations-Programm für die Nutzer-Konfiguration angeben!</error>
+        </argument>
+      </directive>
+
+      <directive name="UserRegister" type="local">
+        <argument encode="plain">
+          <description>Hiermit geben Sie die URL zum Registrierungs-Programm für Nutzer an.</description>
+          <validate>^.+</validate>
+          <error>Sie müssen eine URL zum Registrierungs-Programm für Nutzer angeben!</error>
+        </argument>
+      </directive>
+
+      <directive name="UserManagement" type="local">
+        <argument encode="plain">
+          <description>Hiermit geben Sie die URL zum Nutzer-Management-Programm (Passwort ändern, Account, löschen, etc, pp) an.</description>
+          <validate>^.+</validate>
+          <error>Sie müssen eine URL zum Nutzer-Management-Programm angeben!</error>
+        </argument>
+      </directive>
+
+      <directive name="SharedMemIds" type="local">
+        <argument encode="plain">
+          <description>Hiermit geben Sie, wenn sie Shared-Memory nutzen, die ID des ersten Shared-Memory-Segments an. Wichtig ist, dass diese ID eindeutig ist! Die ID darf nur aus Ziffern bestehen.</description>
+          <validate>^\d+$</validate>
+          <error>Sie müssen eine korrekte ID für das erste Shared-Memory-Segment angeben!</error>
+        </argument>
+        <argument encode="plain">
+          <description>Hiermit geben Sie, wenn sie Shared-Memory nutzen, die ID des zweiten Shared-Memory-Segments an. Wichtig ist, dass diese ID eindeutig ist! Die ID darf nur aus Ziffern bestehen.</description>
+          <validate>^\d+$</validate>
+          <error>Sie müssen eine korrekte ID für das zweite Shared-Memory-Segment angeben!</error>
+        </argument>
+        <argument encode="plain">
+          <description>Hiermit geben Sie, wenn sie Shared-Memory nutzen, die ID der Semaphore an. Wichtig ist, dass diese ID eindeutig ist! Die ID darf nur aus Ziffern bestehen.</description>
+          <validate>^\d+$</validate>
+          <error>Sie müssen eine korrekte ID für die Semaphore angeben!</error>
+        </argument>
+      </directive>
+
+      <directive name="ExternCharset" type="local">
+        <argument encode="plain">
+          <description>Hiermit geben Sie den Charset an, der vom Benutzer erwartet wird und in dem die Templates kodiert sind. Es wird UTF-8 empfohlen!</description>
+          <validate>^.+</validate>
+          <error>Sie müssen einen Charset angeben!</error>
+        </argument>
+      </directive>
+
+      <directive name="AuthMode" type="local">
+        <argument encode="radio">
+          <description>Hiermit geben Sie die Authentifizierungsmethode an, die benutzt werden soll, um Benutzer zu authentifizieren!</description>
+          <validate>^(?:cookie|http)$</validate>
+          <error>Sie müssen eine Authentifizierungs-Methode angeben!</error>
+          <values>
+            <value value="http" default="yes">HTTP-Authentifizierung</value>
+            <value value="cookie">Cookie-Authentifizierung</value>
+          </values>
+        </argument>
+      </directive>
+
+      <directive name="DateLocale" type="local">
+        <argument encode="plain">
+          <description>Hiermit geben Sie das Locale an, in dem Daten generiert werden sollen. Es muss ein UTF-8-codiertes Locale sein!</description>
+          <validate>^.+</validate>
+          <error>Sie müssen ein Locale angeben!</error>
+        </argument>
+      </directive>
+
+      <directive name="MessagesDatabase" type="local">
+        <argument encode="plain">
+          <description>Hiermit geben Sie den Pfad zur Nachrichten-Datenbankdatei an, in dem die Fehlermeldungen und Benutzer-Rückmeldungen gespeichert sind!</description>
+          <validate>^.+</validate>
+          <error>Sie müssen den Pfad zur Nachrichten-Datenbankdatei angeben!</error>
+        </argument>
+      </directive>
+
+      <directive name="Categories" type="local">
+        <argument encode="commaseperated">
+          <description>Hiermit geben Sie die Kategorien des Forums an. Die Kategorien müssen Komma-separiert angegeben werden!</description>
+          <validate/>
+          <error/>
+        </argument>
+      </directive>
+
+      <directive name="ConfigDirectory" type="local">
+        <argument encode="plain">
+          <description>Hiermit geben Sie den Pfad zum Basis-Verzeichnis für die Nutzer-Konfigurationen an.</description>
+          <validate>^.+</validate>
+          <error>Sie müssen einen Basis-Pfad für Benutzer-Konfigurationen angeben!</error>
+        </argument>
+      </directive>
+    <!-- }}} --></directives>
+  </file>
+  <file name="fo_arcview.conf" id="fo_arcview">
+    <description>Die Archiv-Viewer-Konfiguration behandelt das Verhalten des Archiv-Viewers.</description>
+    <modules list="flt_httpauth,flt_cookieauth,flt_http,flt_admin,flt_directives,flt_syntax,flt_posting"><!-- {{{ modules -->
+      <module name="flt_xmlarc">
+        <description>Modul zum Anzeigen eines XML-Archivs</description>
+        <directives>
+          <directive name="ArchivePath" type="local">
+            <argument encode="plain">
+              <description>Hiermit wird der Pfad zum Archiv des Forums angegeben.</description>
+              <validate>^.+</validate>
+              <error>Sie müssen einen Archiv-Pfad angeben!</error>
+            </argument>
+          </directive>
+        </directives>
+      </module>
+    <!-- }}} --></modules>
+    <directives><!-- {{{ directives -->
+      <directive name="SortYearList" type="local">
+        <argument encode="radio">
+          <description>Soll die Jahres-Liste aufsteigend oder absteigend sortiert werden?</description>
+          <validate>^(?:ascending|descending)</validate>
+          <error/>
+          <values>
+            <value value="ascending">Aufsteigend</value>
+            <value value="descending" default="yes">Absteigend</value>
+          </values>
+        </argument>
+      </directive>
+
+      <directive name="SortMonthList" type="local">
+        <argument encode="radio">
+          <description>Soll die Monats-Liste aufsteigend oder absteigend sortiert werden?</description>
+          <validate>^(?:ascending|descending)</validate>
+          <error/>
+          <values>
+            <value value="ascending">Aufsteigend</value>
+            <value value="descending" default="yes">Absteigend</value>
+          </values>
+        </argument>
+      </directive>
+
+      <directive name="SortThreadList" type="local">
+        <argument encode="radio">
+          <description>Soll die Thread-Liste aufsteigend oder absteigend sortiert werden?</description>
+          <validate>^(?:ascending|descending)</validate>
+          <error/>
+          <values>
+            <value value="ascending">Aufsteigend</value>
+            <value value="descending" default="yes">Absteigend</value>
+          </values>
+        </argument>
+      </directive>
+
+      <directive name="SortMessages" type="local">
+        <argument encode="radio">
+          <description>Sollen die Nachrichten aufsteigend oder absteigend sortiert werden?</description>
+          <validate>^(?:ascending|descending)</validate>
+          <error/>
+          <values>
+            <value value="ascending">Aufsteigend</value>
+            <value value="descending" default="yes">Absteigend</value>
+          </values>
+        </argument>
+      </directive>
+
+      <directive name="QuotingChars" type="local">
+        <argument encode="plain">
+          <description>Welche Zeichen sollen zur Kennzeichnung von Zitaten dienen?</description>
+          <validate>\S</validate>
+          <error>Sie müssen Zeichen zur Zitat-Kennzeichnung angeben!</error>
+        </argument>
+      </directive>
+
+      <directive name="DateFormatList" type="local">
+        <argument encode="plain">
+          <description>Geben Sie ein Datums-Format für die Thread-Liste an. Nähere Informationen dazu finden Sie in der Manpage zu strftime(3)</description>
+          <validate>\S</validate>
+          <error>Sie müssen ein Datums-Format für die Thread-Liste angeben!</error>
+        </argument>
+      </directive>
+
+      <directive name="DateFormatViewList" type="local">
+        <argument encode="plain">
+          <description>Geben Sie ein Datums-Format für die Thread-Liste in den Postings an. Nähere Informationen dazu finden Sie in der Manpage zu strftime(3)</description>
+          <validate>\S</validate>
+          <error>Sie müssen ein Datums-Format für die Thread-Liste in den Postings angeben!</error>
+        </argument>
+      </directive>
+
+      <directive name="EnableCache" type="local">
+        <argument encode="radio">
+          <description>Soll der Cache aktiviert werden?</description>
+          <validate>^(?:yes|no)$</validate>
+          <error>Soll der Cache aktiviert werden? Geben Sie ja oder nein an!</error>
+          <values>
+            <value value="yes" default="yes">Ja</value>
+            <value value="no">Nein</value>
+          </values>
+        </argument>
+      </directive>
+
+      <directive name="CacheLevel" type="local">
+        <argument encode="radio">
+          <description>Wie stark soll der Cache komprimiert werden?</description>
+          <validate>^[0-9]$</validate>
+          <error>Wie stark soll der Cache komprimiert? Geben Sie ja oder nein an!</error>
+          <values>
+            <value value="0">Gar nicht</value>
+            <value value="1">Sehr Gering</value>
+            <value value="3">Gering</value>
+            <value value="6" default="yes">Mittel</value>
+            <value value="9">Stark</value>
+          </values>
+        </argument>
+      </directive>
+
+      <directive name="CacheDir" type="local">
+        <argument encode="plain">
+          <description>Wo soll der Cache gespeichert werden?</description>
+          <validate>^.+</validate>
+          <error>Wo soll der Cache gespeichert werden? Geben Sie einen Pfad an!</error>
+        </argument>
+      </directive>
+
+      <directive name="YearsTemplate" type="local">
+        <argument encode="plain">
+          <description>Hiermit geben Sie das Template für die Jahres-Liste an.</description>
+          <validate>^.+</validate>
+          <error>Geben Sie ein Jahres-Template an!</error>
+        </argument>
+      </directive>
+
+      <directive name="MonthsTemplate" type="local">
+        <argument encode="plain">
+          <description>Hiermit geben Sie das Template für die Monats- und die Thread-Liste pro Monat an.</description>
+          <validate>^.+</validate>
+          <error>Geben Sie ein Monats-Template an!</error>
+        </argument>
+      </directive>
+
+      <directive name="ThreadTemplate" type="local">
+        <argument encode="plain">
+          <description>Hiermit geben Sie das Template zur Darstellung eines Threads an.</description>
+          <validate>^.+</validate>
+          <error>Geben Sie ein Thread-Template an!</error>
+        </argument>
+      </directive>
+
+      <directive name="ThreadListTemplate" type="local">
+        <argument encode="plain">
+          <description>Hiermit geben Sie das Template zur Darstellung eines Threads in der Thread-Liste an.</description>
+          <validate>^.+</validate>
+          <error>Geben Sie ein Threadlisten-Template an!</error>
+        </argument>
+      </directive>
+
+    <!-- }}} --></directives>
+  </file>
+
+  <file name="fo_feeds.conf" id="fo_feeds">
+    <description>Mit der Feed-Konfiguration lassen sich einige Einstellungen zu den RSS- und Atom-Feeds machen.</description>
+    <modules/>
+    <directives><!-- {{{ directives -->
+      <directive name="DateLocaleEn" type="local">
+        <argument encode="plain">
+          <description>Geben Sie hier ein englisches UTF-8-Locale an.</description>
+          <validate>\S</validate>
+          <error>Sie müssen ein englisches UTF-8-Locale angeben!</error>
+        </argument>
+      </directive>
+
+      <directive name="FeedLang" type="local">
+        <argument encode="plain">
+          <description>Hiermit geben Sie die Sprache des Feeds an. Gültige Werte sind die ISO-Ländercodes, z. B. de, en, fr, ...</description>
+          <validate>\w+</validate>
+          <error>Sie müssen eine Feed-Sprache angeben!</error>
+        </argument>
+      </directive>
+
+      <directive name="AtomTitle" type="local">
+        <argument encode="plain">
+          <description>Hiermit geben Sie den Titel des Atom-Feeds an.</description>
+          <validate>\w+</validate>
+          <error>Sie müssen einen Titel für den Atom-Feed angeben!</error>
+        </argument>
+      </directive>
+
+      <directive name="AtomTagline" type="local">
+        <argument encode="plain">
+          <description>Hiermit geben Sie die Tagline des Atom-Feeds an.</description>
+          <validate>\w+</validate>
+          <error>Sie müssen eine Tagline für den Atom-Feed angeben!</error>
+        </argument>
+      </directive>
+
+      <directive name="RSSTitle" type="local">
+        <argument encode="plain">
+          <description>Hiermit geben Sie den Titel des RSS-Feeds an.</description>
+          <validate>\w+</validate>
+          <error>Sie müssen einen Titel für den RSS-Feed angeben!</error>
+        </argument>
+      </directive>
+
+      <directive name="RSSDescription" type="local">
+        <argument encode="plain">
+          <description>Hiermit geben Sie den Beschreibungstext des RSS-Feeds an.</description>
+          <validate>\w+</validate>
+          <error>Sie müssen einen Beschreibungstext für den RSS-Feed angeben!</error>
+        </argument>
+      </directive>
+
+      <directive name="RSSDescriptionThread" type="local">
+        <argument encode="plain">
+          <description>Hiermit geben Sie den Beschreibungstext des RSS-Feeds für Threads an.</description>
+          <validate>\w+</validate>
+          <error>Sie müssen einen Beschreibungstext für den RSS-Feed für Threads angeben!</error>
+        </argument>
+      </directive>
+
+      <directive name="RSSCopyright" type="local">
+        <argument encode="plain">
+          <description>Hiermit geben Sie den Copyright-Inhaber des RSS-Feeds an.</description>
+          <validate/>
+          <error/>
+        </argument>
+      </directive>
+
+      <directive name="RSSWebMaster" type="local">
+        <argument encode="plain">
+          <description>Hiermit geben Sie den verantwortlichen Webmaster des RSS-Feeds an.</description>
+          <validate/>
+          <error/>
+        </argument>
+      </directive>
+
+      <directive name="RSSCategory" type="local">
+        <argument encode="plain">
+          <description>Hiermit geben Sie die Kategorie des RSS-Feeds an.</description>
+          <validate/>
+          <error/>
+        </argument>
+      </directive>
+    <!-- }}} --></directives>
+  </file>
+
+  <file name="fo_post.conf" id="fo_post">
+    <description>Mit der Posting-Konfiguration ist es möglich, das Verhalten des fo_post-Programms anzupassen.</description>
+
+    <modules list="flt_tplmode,flt_http,flt_httpauth,flt_cookieauth,flt_directives,flt_visited,flt_include,flt_posting,flt_syntax,flt_preview"><!-- {{{ modules -->
+      <module name="flt_remotsignature">
+        <description>Modul, dass es dem User ermöglicht, eine Signatur von einem entfernten Server holen zu lassen.</description>
+        <directives/>
+      </module>
+
+      <module name="flt_postingassistant">
+        <description>Modul, dass versucht, dem User klarzumachen, dass sein Posting eventuell nicht sonderlich sauber ist.</description>
+        <directives><!-- {{{ directives -->
+          <directive name="PostingAssistantMustValidate" type="local">
+            <argument encode="plain">
+              <description>Hiermit geben Sie an, ob der Posting-Assistent erfolgreich abschliessen muss. Wenn Sie hier nein angeben, wird lediglich eine Warnung ausgegeben. Wenn Sie hier ja angeben, kann der Benutzer kein Posting mehr absetzen, dass nicht den Richtlinien entspricht.</description>
+              <validate>^(?:yes|no)$</validate>
+              <error/>
+              <values>
+                <value value="yes">Ja</value>
+                <value value="no" default="yes">Nein</value>
+              </values>
+            </argument>
+          </directive>
+
+          <directive name="BadWords" type="local">
+            <argument encode="plain">
+              <description>Hiermit geben Sie sog. Badwords an, Wörter, die nicht gepostet werden sollen. Geben Sie eine Komma-separierte Liste an.</description>
+              <validate/>
+              <error/>
+            </argument>
+          </directive>
+
+          <directive name="BadwordsAllowed" type="local">
+            <argument encode="plain">
+              <description>Hiermit geben Sie an, wieviele Badwords erlaubt sind.</description>
+              <validate>^\d*$</validate>
+              <error>Hiermit geben Sie an, wieviele Badwords erlaubt sind. Geben Sie eine Zahl oder nichts an!</error>
+            </argument>
+          </directive>
+
+          <directive name="FormateDeficitesAllowed" type="local">
+            <argument encode="plain">
+              <description>Hiermit geben Sie an, wieviele Defizite bei der Überprüfung des Postings auf Sauberkeit erlaubt sind.</description>
+              <validate>^\d*$</validate>
+              <error>Hiermit geben Sie an, wieviele Defizite bei der Überprüfung des Postings auf Sauberkeit erlaubt sind. Geben Sie eine Zahl oder nichts an!</error>
+            </argument>
+          </directive>
+
+          <directive name="QuotingPercent" type="local">
+            <argument encode="plain">
+              <description>Hiermit geben Sie an, wieviel Text zitiert werden darf, bis eine Warnung ausgegeben wird.</description>
+              <validate>^\d*$</validate>
+              <error>Hiermit geben Sie an, wieviele Text zitiert werden darf, bis eine Warnung ausgegeben wird. Geben Sie eine Zahl oder nichts an!</error>
+            </argument>
+          </directive>
+
+          <directive name="QuotingMustValidate" type="local">
+            <argument encode="plain">
+              <description>Hiermit geben Sie an, ob gepostet werden darf, wenn zuviel zitiert wurde. Wenn Sie hier ja angeben, darf der Benutzer keine Postings absetzen, die mehr zitieren, als Sie vorgegeben haben. Wenn Sie hier nein angeben, wird lediglich eine Warnung ausgegeben.</description>
+              <validate>^\d*$</validate>
+              <error>Hiermit geben Sie an, ob die Zitat-Prüfung erfolgreich ausfallen muss. Geben Sie eine Zahl oder nichts an!</error>
+            </argument>
+          </directive>
+        <!-- }}} --></directives>
+      </module>
+
+      <module name="flt_spellcheck">
+        <description>Modul, dass es dem User ermöglicht, sein Posting auf Rechtschreibung überprüfen zu lassen.</description>
+        <directives>
+          <directive name="SpellCheckerEnabled" type="local">
+            <argument encode="plain">
+              <description>Hiermit geben Sie an, ob die Rechtschreibprüfung aktiviert werden soll.</description>
+              <validate>^(?:yes|no)$</validate>
+              <error/>
+              <values>
+                <value value="yes">Ja</value>
+                <value value="no" default="yes">Nein</value>
+              </values>
+            </argument>
+          </directive>
+
+          <directive name="SpellCheckerPath" type="local">
+            <argument encode="plain">
+              <description>Hiermit geben Sie den Pfad an, wo ISpell oder ASpell zu finden sind.</description>
+              <validate>\w</validate>
+              <error>Geben Sie den Pfad an, unter dem ISpell oder ASpell zu finden sind!</error>
+            </argument>
+          </directive>
+
+          <directive name="SpellCheckerDictionary" type="local">
+            <argument encode="plain">
+              <description>Hiermit geben Sie das Wörterbuch an, das verwendet werden soll.</description>
+              <validate>\w</validate>
+              <error>Geben Sie das Wörterbuch an, das verwendet werden soll!</error>
+            </argument>
+          </directive>
+        </directives>
+      </module>
+
+    <!-- }}} --></modules>
+
+    <directives>
+      <directive name="FieldConfig" type="local" multiple="yes">
+        <argument encode="plain">
+          <description>Geben Sie hier den zu validierenden Feldnamen an.</description>
+          <validate>\S</validate>
+          <error>Sie müssen einen Feldnamen angeben!</error>
+        </argument>
+        <argument encode="plain">
+          <description>Geben Sie hier die maximale Länge des Feldes an.</description>
+          <validate>^\d+$</validate>
+          <error>Die maximale Länge des Feldes muss eine Zahl sein!</error>
+        </argument>
+        <argument encode="plain">
+          <description>Geben Sie hier die Mindext-Länge des Feldes an.</description>
+          <validate>^\d+$</validate>
+          <error>Die minimale Länge des Feldes muss eine Zahl sein!</error>
+        </argument>
+      </directive>
+
+      <directive name="FieldNeeded" type="local" multiple="yes">
+        <argument encode="plain">
+          <description>Geben Sie hier den Feldnamen an, der erzwungen werden soll.</description>
+          <validate>\S</validate>
+          <error>Sie müssen einen Feldnamen angeben, der erzwungen werden soll!</error>
+        </argument>
+        <argument encode="plain">
+          <description>Hiermit geben Sie an, ob das Feld erzwungen werden soll, wenn ein neuer Thread eröffnet werden soll.</description>
+          <validate>^(?:yes|no)$</validate>
+          <error/>
+          <values>
+            <value value="yes">Ja</value>
+            <value value="no" default="yes">Nein</value>
+          </values>
+        </argument>
+        <argument encode="plain">
+          <description>Hiermit geben Sie an, ob das Feld erzwungen werden soll, wenn eine Antwort geschrieben wird.</description>
+          <validate>^(?:yes|no)$</validate>
+          <error/>
+          <values>
+            <value value="yes">Ja</value>
+            <value value="no" default="yes">Nein</value>
+          </values>
+        </argument>
+      </directive>
+    </directives>
+  </file>
+
+</config>
+<!-- eof -->
