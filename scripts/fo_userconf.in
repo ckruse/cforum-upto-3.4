@@ -308,6 +308,7 @@ sub generate_edit_output {
               $argument->h_setvalue('empty','no');
               $argument->h_setvalue('formentry',$arg);
               $argument->h_setvalue('question',$question);
+              $argument->h_setvalue('param',$pname);
 
               $arguments->add($argument);
             }
