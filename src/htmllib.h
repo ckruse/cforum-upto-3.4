@@ -27,8 +27,11 @@ typedef int (*t_directive_validator)(t_configuration *dc,t_configuration *vc,con
 #define CF_HTML_DIR_TYPE_INLINE 4
 #define CF_HTML_DIR_TYPE_BLOCK  8
 
+void cf_htmllib_init(void);
+
 int cf_html_register_directive(u_char *name,t_directive_filter filter,int type);
 int cf_html_register_validator(u_char *name,t_directive_validator filter,int type);
+int cf_html_register_textfilter(u_char *text,t_directive_filter filter);
 void msg_to_html(t_cl_thread *thread,const u_char *msg,t_string *content,t_string *cite,u_char *quote_chars,int max_sig_lines,int show_sig);
 int cf_validate_msg(t_cl_thread *thread,const u_char *msg,t_cf_tpl_variable *var);
 

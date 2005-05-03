@@ -231,4 +231,9 @@ pkglib_LTLIBRARIES+=flt_noarchive_server.la
 flt_noarchive_server_la_SOURCES=flt_noarchive_server.c
 flt_noarchive_server_la_LDFLAGS=-module -export-dynamic -avoid-version
 
+pkglib_LTLIBRARIES+=flt_stdreplacements.la
+flt_stdreplacements_la_SOURCES=flt_stdreplacements.c
+flt_stdreplacements_la_LDFLAGS=-module -export-dynamic -avoid-version
+
+
 # eof

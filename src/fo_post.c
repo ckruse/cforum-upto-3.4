@@ -787,6 +787,7 @@ int main(int argc,char *argv[],char *env[]) {
   init_modules();
   cf_init();
   cfg_init();
+  cf_htmllib_init();
 
   if((forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10)) == NULL) {
     fprintf(stderr,"Could not get forum name!");

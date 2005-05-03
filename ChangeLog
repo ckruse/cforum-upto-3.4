@@ -1,3 +1,10 @@
+2005-05-03 Christian Kruse <ckruse@wwwtech.de>
+	* src/fo_view.c, src/fo_arcview.c, src/fo_post.c, src/fo_feeds.c: Added init
+		call for html lib
+	* src/modules/Makefile.am: Added standard replacements module
+	* src/htmllib.[ch]: Added text replacements parser (O(1))
+	* src/modules/flt_stdreplacements.c: Added plugin for standard replacements
+
 2005-05-02 Christian Kruse <ckruse@wwwtech.de>
 	* scripts/fo_userconf.in: Fixed #13
 	* conf/errormessages.de.txt: Added E_MUST_ADMIN error message

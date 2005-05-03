@@ -50,8 +50,15 @@ typedef struct s_html_stack {
   size_t argnum;
 } t_html_stack_elem;
 
+typedef struct s_html_tree {
+  u_char c;
+  struct s_html_tree **nodes;
+  t_directive_filter cb;
+} t_html_tree;
+
 static t_cf_hash *registered_directives = NULL;
 static t_cf_hash *registered_validators = NULL;
+static t_html_tree *parser_tree[256];
 
 
 /* {{{ run_content_filters */
@@ -145,10 +152,11 @@ static int run_validate_block_directive(const u_char *directive,const u_char **p
 /* {{{ parse_message */
 static u_char *parse_message(t_cl_thread *thread,u_char *start,t_array *stack,t_string *content,t_string *cite,const u_char *qchars,size_t qclen,int utf8,int xml,int max_sig_lines,int show_sig,int linebrk,int sig,int quotemode,int line) {
   const u_char *ptr,*tmp,*ptr1;
-  int rc,run = 1,sb = 0,fail,ending;
+  int rc,run = 1,sb = 0,fail,ending,doit;
   u_char *directive,*parameter,*safe,*buff,*retval;
   t_string d_content,d_cite,strtmp;
   t_html_stack_elem stack_elem,*stack_tmp;
+  t_html_tree *telem1,*telem2;
 
   for(ptr=start;*ptr && run;++ptr) {
     switch(*ptr) {
@@ -452,8 +460,40 @@ static u_char *parse_message(t_cl_thread *thread,u_char *start,t_array *stack,t_
 
       default:
         default_action:
-        str_chars_append(content,ptr,1);
-        if(sig == 0 && cite) str_chars_append(cite,ptr,1);
+        doit = 1;
+        safe = (u_char *)ptr;
+
+        if(parser_tree[*ptr]) {
+          telem2 = telem1 = parser_tree[*ptr];
+
+          while(telem1) {
+            ++ptr;
+            if(telem1->nodes && telem1->nodes[*ptr]) {
+              telem2 = telem1;
+              telem1 = telem1->nodes[*ptr];
+            }
+            else {
+              telem2 = telem1;
+              telem1 = NULL;
+            }
+          }
+
+          if(telem2 && telem2->cb) {
+            directive = strndup(safe,ptr-safe);
+            rc        = telem2->cb(&fo_default_conf,&fo_view_conf,thread,directive,NULL,0,NULL,NULL,content,cite,qchars,sig);
+
+            if(rc == FLT_OK) {
+              doit = 0;
+              ptr -= 1;
+            }
+          }
+        }
+
+        if(doit) {
+          ptr = safe;
+          str_chars_append(content,ptr,1);
+          if(sig == 0 && cite) str_chars_append(cite,ptr,1);
+        }
     }
   }
 
@@ -769,6 +809,62 @@ int cf_html_register_directive(u_char *name,t_directive_filter filter,int type) 
 }
 /* }}} */
 
+/* {{{ cf_html_register_textfilter */
+int cf_html_register_textfilter(u_char *text,t_directive_filter filter) {
+  u_char *ptr;
+  t_html_tree *elem,*elem1;
+
+  /* there isn't an entry starting with *text */
+  if(parser_tree[*text] == NULL) {
+    elem     = fo_alloc(NULL,1,sizeof(*elem),FO_ALLOC_CALLOC);
+    elem->c  = *text;
+    parser_tree[*text] = elem;
+    elem1    = elem;
+
+    for(ptr=text+1;*ptr;++ptr) {
+      if(!elem1->nodes) elem1->nodes = fo_alloc(NULL,256,sizeof(*elem->nodes),FO_ALLOC_CALLOC);
+
+      elem        = fo_alloc(NULL,1,sizeof(*elem),FO_ALLOC_CALLOC);
+      elem->c     = *ptr;
+      elem1->nodes[*ptr] = elem;
+      elem1       = elem;
+    }
+
+    elem1->cb = filter;
+    return 0;
+  }
+  else {
+    elem1 = parser_tree[*text];
+
+    for(ptr=text+1;*ptr;++ptr) {
+      if(!elem1->nodes) {
+        elem1->nodes = fo_alloc(NULL,256,sizeof(*elem->nodes),FO_ALLOC_CALLOC);
+        elem = fo_alloc(NULL,1,sizeof(*elem),FO_ALLOC_CALLOC);
+        elem->c = *ptr;
+        elem1->nodes[*ptr] = elem;
+        elem1 = elem;
+      }
+      else {
+        if(elem1->nodes[*ptr]) elem1 = elem1->nodes[*ptr];
+        else {
+          elem = fo_alloc(NULL,1,sizeof(*elem),FO_ALLOC_CALLOC);
+          elem->c = *ptr;
+          elem1->nodes[*ptr] = elem;
+          elem1 = elem;
+        }
+      }
+    }
+
+    if(!elem1->cb) {
+      elem1->cb = filter;
+      return 0;
+    }
+  }
+
+  return -1;
+}
+/* }}} */
+
 /* {{{ msg_to_html */
 void msg_to_html(t_cl_thread *thread,const u_char *msg,t_string *content,t_string *cite,u_char *quote_chars,int max_sig_lines,int show_sig) {
   u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
@@ -946,5 +1042,9 @@ int cf_gen_threadlist(t_cl_thread *thread,t_cf_hash *head,t_string *threadlist,c
   return FLT_OK;
 }
 /* }}} */
+
+void cf_htmllib_init(void) {
+  memset(parser_tree,0,sizeof(parser_tree));
+}
 
 /* eof */

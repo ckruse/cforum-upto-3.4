@@ -496,6 +496,7 @@ int main(int argc,char *argv[],char *env[]) {
   cfg_init();
   init_modules();
   cf_init();
+  cf_htmllib_init();
 
   #ifndef CF_SHARED_MEM
   sock = 0;

@@ -850,6 +850,7 @@ int main(int argc,char *argv[],char *env[]) {
   cfg_init();
   init_modules();
   cf_init();
+  cf_htmllib_init();
 
   /* {{{ read configuration */
   fname = *((u_char **)array_element_at(cfgfiles,0));
