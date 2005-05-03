@@ -92,6 +92,8 @@ static const u_char *flt_stdrepl_smiles[] = {
     /* angry */
     "&gt;:-|",":-[",
 
+    "*lol*",
+
     NULL
 };
 /* }}} */
@@ -144,6 +146,8 @@ static u_char *flt_stdrepl_smiley_replacements[] = {
 
     /* angry */
     "angry","angry",
+
+    "lol",
 
     NULL
 };
