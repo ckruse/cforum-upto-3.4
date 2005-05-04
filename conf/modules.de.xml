@@ -9,6 +9,19 @@
 
   <page title="Anzeige-Funktionen" id="viewfuncs">
     <section name="Design-Ändernde Anzeige-Funktionen">
+      <directive name="ReplaceSmileys" arguments="1">
+        <argument paramname="replacesmileys" type="radio" encode="plain">
+          <validate>^(?:yes|no)$</validate>
+          <question>Sollen Text-Smileys durch grafische ersetzt werden?</question>
+          <error>Sollen Text-Smileys durch grafische ersetzt werden? Geben Sie &quot;ja&quot; oder &quot;nein&quot; an!</error>
+          <formvalues>
+            <value val="yes">Ja</value>
+            <value val="no" default="yes">Nein</value>
+          </formvalues>
+        </argument>
+      </directive>
+
+
       <directive name="TPLMode" arguments="1">
         <argument paramname="tplmode" type="radio" encode="plain">
           <validate>^\S+$</validate>

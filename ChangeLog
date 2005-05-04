@@ -10,6 +10,7 @@
 	* src/defines.h: Added handler hook for thread removing, changed version
 		number
 	* src/archiver.[ch]: Fixed bug in archiver
+	* conf/modules.de.xml: Added option to replace smileys
 
 2005-05-03 Christian Kruse <ckruse@wwwtech.de>
 	* src/fo_view.c, src/fo_arcview.c, src/fo_post.c, src/fo_feeds.c: Added init
