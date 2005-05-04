@@ -54,6 +54,9 @@ Forum FORUM1 {
   ChangePass "@sysconfdir@/cforum/templates/forum1/%s_%s_chpass.so"
   ChangePassOk "@sysconfdir@/cforum/templates/forum1/%s_%s_chpassok.so"
 
+  ChangeMail "@sysconfdir@/cforum/templates/forum1/%s_%s_chmail.so"
+  ChangeMailOk "@sysconfdir@/cforum/templates/forum1/%s_%s_chmailok.so"
+
   Unregister "@sysconfdir@/cforum/templates/forum1/%s_%s_unreg.so"
   UnregisterOk "@sysconfdir@/cforum/templates/forum1/%s_%s_unregok.so"
 

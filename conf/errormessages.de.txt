@@ -91,3 +91,4 @@ E_unwanted_link: Sie haben einen General-Verweis gepostet. Das ist hier unerwün
 E_noanonymous_read: Sie müssen angemeldet sein, um hier lesen und posten zu können.
 E_noanonymous_post: Sie müssen angemeldet sein, um hier posten zu können.
 E_noanswer: Sie dürfen auf dieses Posting nicht antworten!
+E_dontknow: Es ist ein Fehler aufgetreten. Leider ist unklar, was das Problem ist.

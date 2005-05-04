@@ -70,6 +70,30 @@ sub change_pass {
 }
 # }}}
 
+# {{{ change email
+sub change_email {
+  my $self  = shift;
+  my $fdc   = shift;
+  my $fuc   = shift;
+  my $uname = shift;
+  my $pass  = shift;
+
+  my ($table,$usercol,$passwdcol,$emailcol) = sql_data($fuc);
+
+  my $connstr = connstr($fuc);
+  my $dbh     = DBI->connect($connstr,get_conf_val($fuc,$main::Forum,'SQLUser'),get_conf_val($fuc,$main::Forum,'SQLPass'));
+  return get_error($fdc, 'SQL', 'connect') unless defined $dbh;
+
+  # the password and the username are only ASCII, so it doesn't need a recode
+  # to another charset
+  my $dbq = $dbh->prepare('UPDATE '.$table.' SET '.$emailcol.' = ? WHERE '.$usercol.' = ?');
+  return get_error($fdc, 'SQL', 'execute') unless $dbq;
+  $dbq->execute($pass,$uname) or return get_error($fdc, 'SQL', 'execute');
+  $dbh->disconnect;
+  return undef;
+}
+# }}}
+
 # {{{ remove user
 sub remove_user {
   my $self  = shift;

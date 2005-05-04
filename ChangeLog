@@ -1,3 +1,10 @@
+2005-05-04 Christian Kruse <ckruse@wwwtech.de>
+	* conf/errormessages.de.txt: Added error message for unknown errors
+	* conf/fo_usermanagement.conf.in: Added templates for changing email address
+	* src/perl/Plugins/Management/SQL.pm: Added method for changing email address
+	* scripts/fo_usermanagement.in: Added support for changing email address and
+		fixed some trivial bugs
+
 2005-05-03 Christian Kruse <ckruse@wwwtech.de>
 	* src/fo_view.c, src/fo_arcview.c, src/fo_post.c, src/fo_feeds.c: Added init
 		call for html lib

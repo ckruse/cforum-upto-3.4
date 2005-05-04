@@ -191,10 +191,9 @@ elsif($action eq 'register' || !$action) {
 }
 # }}}
 
-# action is not activated (or registered), redirect user to forum
+# action is not activated (or registered), give error
 if($action eq 'redirect') {
-  print $cgi->redirect(get_conf_val($fo_default_conf,$Forum,$UserName?'BaseURL':'UBaseURL'));
-  exit;
+  fatal($cgi,$fo_default_conf,$user_config,get_error($fo_default_conf,'E_dontknow'),$fatal_template);
 }
 
 if($UserName) {
@@ -269,9 +268,9 @@ if($UserName) {
 
     if($form) {
       my $chpass = get_conf_val($fo_usermanagement_conf,$Forum,'ChangePass');
-      fatal($cgi,$fo_default_conf,$user_config,get_error($fo_default_conf,'TPL_NOT_FOUND'),$fatal_template) unless defined $chpass;
+      fatal($cgi,$fo_default_conf,$user_config,get_error($fo_default_conf,'TPL_NOT_FOUND'),$fatal_template) unless $chpass;
       my $tpl = new CForum::Template(get_template($fo_default_conf,$user_config,$chpass));
-      fatal($cgi,$fo_default_conf,$user_config,get_error($fo_default_conf,'TPL_NOT_FOUND'),$fatal_template) unless defined $tpl;
+      fatal($cgi,$fo_default_conf,$user_config,get_error($fo_default_conf,'TPL_NOT_FOUND'),$fatal_template) unless $tpl;
 
       $tpl->setvalue('script',recode($fo_default_conf,get_conf_val($fo_default_conf,$Forum,'UserManagement')));
       $tpl->setvalue('forumbase',recode($fo_default_conf,get_conf_val($fo_default_conf,$Forum,'UBaseURL')));
@@ -284,9 +283,9 @@ if($UserName) {
     }
     else {
       my $chpassok = get_conf_val($fo_usermanagement_conf,$Forum,'ChangePassOk');
-      fatal($cgi,$fo_default_conf,$user_config,get_error($fo_default_conf,'TPL_NOT_FOUND'),$fatal_template) unless defined $chpassok;
+      fatal($cgi,$fo_default_conf,$user_config,get_error($fo_default_conf,'TPL_NOT_FOUND'),$fatal_template) unless $chpassok;
       my $tpl = new CForum::Template(get_template($fo_default_conf,$user_config,$chpassok));
-      fatal($cgi,$fo_default_conf,$user_config,get_error($fo_default_conf,'TPL_NOT_FOUND'),$fatal_template) unless defined $tpl;
+      fatal($cgi,$fo_default_conf,$user_config,get_error($fo_default_conf,'TPL_NOT_FOUND'),$fatal_template) unless $tpl;
 
       $tpl->setvalue('script',recode($fo_default_conf,get_conf_val($fo_default_conf,$Forum,'UserManagement')));
       $tpl->setvalue('forumbase',recode($fo_default_conf,get_conf_val($fo_default_conf,$Forum,'UBaseURL')));
@@ -298,6 +297,56 @@ if($UserName) {
     }
   }
   # }}}
+  # {{{ change email
+  elsif($action eq 'changemail') {
+    my $form = 1;
+    my $err  = undef;
+
+    if($cgi->param('email')) {
+      my $mail = $cgi->param('email');
+
+      $form = 0;
+
+      fatal($cgi,$fo_default_conf,$user_config,get_error($fo_default_conf,'E_EMail_invalid'),$fatal_template) if is_valid_mailaddress($mail) != 0;
+      $err = $Management->change_email($fo_default_conf,$fo_usermanagement_conf,$UserName,$mail) if $Management;
+      fatal($cgi,$fo_default_conf,$user_config,$err,$fatal_template) if $err;
+    }
+
+    if($form) {
+      my $chmail = get_conf_val($fo_usermanagement_conf,$Forum,'ChangeMail');
+      fatal($cgi,$fo_default_conf,$user_config,get_error($fo_default_conf,'TPL_NOT_FOUND'),$fatal_template) unless $chmail;
+      my $tpl = new CForum::Template(get_template($fo_default_conf,$user_config,$chmail));
+      fatal($cgi,$fo_default_conf,$user_config,get_error($fo_default_conf,'TPL_NOT_FOUND'),$fatal_template) unless $tpl;
+
+      $tpl->setvalue('script',recode($fo_default_conf,get_conf_val($fo_default_conf,$Forum,'UserManagement')));
+      $tpl->setvalue('forumbase',recode($fo_default_conf,get_conf_val($fo_default_conf,$Forum,'UBaseURL')));
+      $tpl->setvalue('userconfig',recode($fo_default_conf,get_conf_val($fo_default_conf,$Forum,'UserConfig')));
+      $tpl->setvalue('charset',$cs);
+      $tpl->setvalue('acceptcharset',$cs.', UTF-8');
+
+      print $cgi->header(-type => 'text/html; charset='.$cs),$tpl->parseToMem;
+
+    }
+    else {
+      my $chmailok = get_conf_val($fo_usermanagement_conf,$Forum,'ChangeMailOk');
+      fatal($cgi,$fo_default_conf,$user_config,get_error($fo_default_conf,'TPL_NOT_FOUND'),$fatal_template) unless $chmailok;
+      my $tpl = new CForum::Template(get_template($fo_default_conf,$user_config,$chmailok));
+      fatal($cgi,$fo_default_conf,$user_config,get_error($fo_default_conf,'TPL_NOT_FOUND'),$fatal_template) unless $tpl;
+
+      $tpl->setvalue('script',recode($fo_default_conf,get_conf_val($fo_default_conf,$Forum,'UserManagement')));
+      $tpl->setvalue('forumbase',recode($fo_default_conf,get_conf_val($fo_default_conf,$Forum,'UBaseURL')));
+      $tpl->setvalue('userconfig',recode($fo_default_conf,get_conf_val($fo_default_conf,$Forum,'UserConfig')));
+      $tpl->setvalue('charset',$cs);
+      $tpl->setvalue('acceptcharset',$cs.', UTF-8');
+
+      print $cgi->header(-type => 'text/html; charset='.$cs),$tpl->parseToMem;
+    }
+  }
+  # }}}
+  else {
+    # no action given
+    fatal($cgi,$fo_default_conf,$user_config,get_error($fo_default_conf,'E_dontknow'),$fatal_template);
+  }
 }
 else {
   # {{{ register user
