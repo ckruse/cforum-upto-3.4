@@ -28,6 +28,8 @@
  */
 typedef int (*t_archive_filter)(t_forum *forum,t_thread *thr);
 
+typedef int (*t_remove_thread)(t_forum *forum,t_thread *thr);
+
 /**
  * Function type for threadlist writer plugins
  * \param forum The forum object to write the threadlist of
@@ -71,6 +73,8 @@ int cf_archive_thread(t_forum *forum,u_int64_t tid);
  * \param forum The forum object
  */
 void cf_write_threadlist(t_forum *forum);
+
+void cf_ar_remove_thread(t_forum *forum,t_thread *thr);
 
 #endif
 /* eof */

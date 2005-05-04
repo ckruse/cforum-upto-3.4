@@ -628,7 +628,6 @@ void flt_xmlstorage_handle_header(t_posting *p,GdomeNode *n) {
 /* {{{ flt_xmlstorage_stringify_posting */
 t_posting *flt_xmlstorage_stringify_posting(GdomeDocument *doc1,GdomeElement *t1,GdomeDocument *doc2,GdomeElement *t2,t_posting *p) {
   int lvl = p->level;
-  u_char buff[50];
   GdomeException e;
   t_string mstr;
 
@@ -1106,6 +1105,18 @@ int flt_xmlstorage_archive_threads(t_forum *forum,t_thread **threads,size_t len)
 }
 /* }}} */
 
+/* {{{ flt_xmlstorage_remove_thread */
+int flt_xmlstorage_remove_thread(t_forum *forum,t_thread *thr) {
+  t_name_value *mpath = cfg_get_first_value(&fo_default_conf,forum->name,"MessagePath");
+  u_char buff[512];
+
+  snprintf(buff,512,"%s/t%llu.xml",mpath->values[0],thr->tid);
+  unlink(buff);
+
+  return FLT_OK;
+}
+/* }}} */
+
 t_conf_opt flt_xmlstorage_config[] = {
   { "MessagePath", handle_command, CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_default_conf },
   { "ArchivePath", handle_command, CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_default_conf },
@@ -1116,6 +1127,7 @@ t_handler_config flt_xmlstorage_handlers[] = {
   { DATA_LOADING_HANDLER,   flt_xmlstorage_make_forumtree },
   { THRDLST_WRITE_HANDLER,  flt_xmlstorage_threadlist_writer },
   { ARCHIVE_THREAD_HANDLER, flt_xmlstorage_archive_threads },
+  { REMOVE_THREAD_HANDLER,  flt_xmlstorage_remove_thread },
   { 0, NULL }
 };
 

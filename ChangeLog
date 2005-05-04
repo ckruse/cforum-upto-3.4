@@ -4,6 +4,12 @@
 	* src/perl/Plugins/Management/SQL.pm: Added method for changing email address
 	* scripts/fo_usermanagement.in: Added support for changing email address and
 		fixed some trivial bugs
+	* src/modules/flt_stdreplacements.c: Fixed small bug in config handler
+		function
+	* src/modules/flt_xmlstorage.c: Added thread removing callback function
+	* src/defines.h: Added handler hook for thread removing, changed version
+		number
+	* src/archiver.[ch]: Fixed bug in archiver
 
 2005-05-03 Christian Kruse <ckruse@wwwtech.de>
 	* src/fo_view.c, src/fo_arcview.c, src/fo_post.c, src/fo_feeds.c: Added init

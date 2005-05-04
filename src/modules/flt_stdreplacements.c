@@ -43,6 +43,8 @@
 static int flt_stdrepl_smileys   = 0;
 static u_char *flt_stdrepl_theme = NULL;
 
+static u_char *flt_stdrepl_fname = NULL;
+
 /* {{{ smileys */
 static const u_char *flt_stdrepl_smiles[] = {
     ":)",":-)",":o)",
@@ -208,8 +210,14 @@ int flt_stdreplacements_init(t_cf_hash *cgi,t_configuration *dc,t_configuration 
 
 /* {{{ flt_stdreplacements_handle */
 int flt_stdreplacements_handle(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
+  if(flt_stdrepl_fname == NULL) flt_stdrepl_fname = cf_hash_get(GlobalValues,"FORUM_NAME",10);
+  if(!context || cf_strcmp(context,flt_stdrepl_fname) != 0) return 0;
+
   if(cf_strcmp(opt->name,"ReplaceSmileys") == 0) flt_stdrepl_smileys = cf_strcmp(args[0],"yes") == 0;
-  else flt_stdrepl_theme = strdup(args[0]);
+  else {
+    if(flt_stdrepl_theme) free(flt_stdrepl_theme);
+    flt_stdrepl_theme = strdup(args[0]);
+  }
 
   return 0;
 }

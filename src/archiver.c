@@ -168,10 +168,18 @@ void cf_run_archiver(void) {
         }
 
         if(ret == FLT_EXIT) {
+          /* remove thread 'cause it wont be archived */
+          cf_ar_remove_thread(forum,to_archive[len-1]);
+
           cf_cleanup_thread(to_archive[len-1]);
           free(to_archive[len-1]);
 
-          to_archive = fo_alloc(to_archive,--len,sizeof(t_thread *),FO_ALLOC_REALLOC);
+          if(len-1 == 0) {
+            len = 0;
+            free(to_archive);
+            to_archive = NULL;
+          }
+          else to_archive = fo_alloc(to_archive,--len,sizeof(t_thread *),FO_ALLOC_REALLOC);
         }
       }
 
@@ -298,6 +306,25 @@ int cf_archive_thread(t_forum *forum,u_int64_t tid) {
   }
 
   return 0;
+}
+/* }}} */
+
+/* {{{ cf_remove_thread */
+void cf_ar_remove_thread(t_forum *forum,t_thread *thr) {
+  int ret;
+  size_t j;
+  t_handler_config *handler;
+  t_remove_thread fkt;
+
+  if(Modules[REMOVE_THREAD_HANDLER].elements) {
+    ret = FLT_DECLINE;
+
+    for(j=0;j<Modules[REMOVE_THREAD_HANDLER].elements && ret == FLT_DECLINE;j++) {
+      handler = array_element_at(&Modules[REMOVE_THREAD_HANDLER],j);
+      fkt     = (t_remove_thread)handler->func;
+      ret     = fkt(forum,thr);
+    }
+  }
 }
 /* }}} */
 
