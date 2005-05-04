@@ -59,7 +59,7 @@ static const u_char *flt_stdrepl_smiles[] = {
     ":-P",":P",":-p",":p",
     
     /* broad grinning */
-    ":D",":-D",
+    ":D",":-D",":-))",";-))",
 
     /* crying */
     ":'-(",":'(",";-(",";(",
@@ -114,7 +114,7 @@ static u_char *flt_stdrepl_smiley_replacements[] = {
     "tongue","tongue","tongue","tongue",
     
     /* broad grinning */
-    "biggrin","biggrin",
+    "biggrin","biggrin","biggrin","biggrin",
 
     /* crying */
     "cry","cry","cry","cry",
