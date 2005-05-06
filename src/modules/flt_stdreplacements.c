@@ -159,8 +159,11 @@ static u_char *flt_stdrepl_smiley_replacements[] = {
 /* {{{ flt_stdreplacements_smileys */
 int flt_stdreplacements_smileys(t_configuration *fdc,t_configuration *fvc,t_cl_thread *thread,const u_char *directive,const u_char **parameters,size_t plen,t_string *bco,t_string *bci,t_string *content,t_string *cite,const u_char *qchars,int sig) {
   int i;
+  t_name_value *xhtml;
 
   if(!flt_stdrepl_theme) return FLT_DECLINE;
+  if(flt_stdrepl_fname == NULL) flt_stdrepl_fname = cf_hash_get(GlobalValues,"FORUM_NAME",10);
+  xhtml = cfg_get_first_value(fdc,flt_stdrepl_fname,"XHTMLMode");
 
   for(i=0;flt_stdrepl_smiles[i];++i) {
     if(cf_strcmp(directive,flt_stdrepl_smiles[i]) == 0) {
@@ -169,9 +172,11 @@ int flt_stdreplacements_smileys(t_configuration *fdc,t_configuration *fvc,t_cl_t
       str_chars_append(content,flt_stdrepl_smiley_replacements[i],strlen(flt_stdrepl_smiley_replacements[i]));
       str_chars_append(content,".png\" alt=\"",11);
       str_chars_append(content,flt_stdrepl_smiley_replacements[i],strlen(flt_stdrepl_smiley_replacements[i]));
-      str_chars_append(content,"\">",2);
+      str_char_append(content,'"');
+      if(xhtml && cf_strcmp(xhtml->values[0],"yes") == 0) str_chars_append(content," /",2);
+      str_char_append(content,'>');
 
-      if(cite) str_chars_append(cite,directive,strlen(directive));
+      if(cite && sig == 0) str_chars_append(cite,directive,strlen(directive));
       return FLT_OK;
     }
   }
@@ -184,7 +189,7 @@ int flt_stdreplacements_smileys(t_configuration *fdc,t_configuration *fvc,t_cl_t
 int flt_stdreplacements_filter(t_configuration *fdc,t_configuration *fvc,t_cl_thread *thread,const u_char *directive,const u_char **parameters,size_t plen,t_string *bco,t_string *bci,t_string *content,t_string *cite,const u_char *qchars,int sig) {
   if(cf_strcmp(directive,"...") == 0) {
     str_chars_append(content,"&#8230;",7);
-    if(cite) str_chars_append(cite,"...",3);
+    if(cite && sig == 0) str_chars_append(cite,"...",3);
     return FLT_OK;
   }
 
