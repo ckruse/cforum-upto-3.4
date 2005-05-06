@@ -295,7 +295,7 @@ int flt_posting_post_display(t_cf_hash *head,t_configuration *dc,t_configuration
   else {
     if((v = cfg_get_first_value(pc,forum_name,"Name")) != NULL) cf_set_variable(tpl,cs,"Name",v->values[0],strlen(v->values[0]),1);
     if((v = cfg_get_first_value(pc,forum_name,"EMail")) != NULL) cf_set_variable(tpl,cs,"EMail",v->values[0],strlen(v->values[0]),1);
-    if((v = cfg_get_first_value(pc,forum_name,"HomepageUrl")) != NULL) cf_set_variable(tpl,cs,"HomageUrl",v->values[0],strlen(v->values[0]),1);
+    if((v = cfg_get_first_value(pc,forum_name,"HomepageUrl")) != NULL) cf_set_variable(tpl,cs,"HomepageUrl",v->values[0],strlen(v->values[0]),1);
     if((v = cfg_get_first_value(pc,forum_name,"ImageUrl")) != NULL) cf_set_variable(tpl,cs,"ImageUrl",v->values[0],strlen(v->values[0]),1);
 
     str_init(&body);
