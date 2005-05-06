@@ -325,7 +325,7 @@ int flt_visited_mark_visited(t_cf_hash *head,t_configuration *dc,t_configuration
       memset(&data,0,sizeof(data));
     }
 
-    if(Cfg.db->get(Cfg.db,NULL,&key,&data,0) == 0) cf_tpl_setvalue(&msg->tpl,"visited",TPL_VARIABLE_INT,1);
+    if(Cfg.mark_all_visited || Cfg.db->get(Cfg.db,NULL,&key,&data,0) == 0) cf_tpl_setvalue(&msg->tpl,"visited",TPL_VARIABLE_INT,1);
 
     return FLT_OK;
   }
