@@ -516,6 +516,7 @@ t_string *body_plain2coded(const u_char *text) {
   u_char *ptr,*end,*tmp,*qchars;
   t_name_value *v;
   size_t len;
+  int sig = 0;
 
   str_init(str);
 
@@ -591,7 +592,8 @@ t_string *body_plain2coded(const u_char *text) {
   str_init(str);
 
   for(ptr=body;*ptr;ptr++) {
-    if(cf_strncmp(ptr,"\012-- \012",5) == 0) {
+    if(cf_strncmp(ptr,"\012-- \012",5) == 0 && sig == 0) {
+      sig = 1;
       str_chars_append(str,"_/_SIG_/_",9);
       ptr += 4;
     }
