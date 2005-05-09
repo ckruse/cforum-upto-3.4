@@ -12,12 +12,13 @@
 
 #
 use strict;
-use vars qw($prefix $exec_prefix $Forum);
+use vars qw($prefix $exec_prefix $Forum $conffiles);
 
 BEGIN {
   $prefix      = "@prefix@";
   $exec_prefix = "@exec_prefix@";
   $Forum       = '';
+  $conffiles   = {};
 }
 
 use lib "@libdir@/cforum";
@@ -48,7 +49,7 @@ if(!$Forum || !$conf) {
 
 $ENV{CF_CONF_DIR} = $conf;
 my @fnames;
-die "could not get config files" unless @fnames = get_config_files("fo_default","fo_vote");
+die "could not get config files" unless @fnames = get_config_files("fo_default","fo_cleanup");
 
 my $config  = read_configuration($fnames[0]) or die "Could not read $fnames[0]: $!";
 my $config1 = read_configuration($fnames[1]) or die "Could not read $fnames[1]: $!";
@@ -58,6 +59,7 @@ my $sock = new IO::Socket::UNIX(
   Peer => get_conf_val($config,'global','SocketName')
 ) or die 'Could not connect to forum on '.get_conf_val($config,'global','SocketName').": $!\n";
 
+# {{{ get mids
 my %mids = ();
 
 print $sock "SELECT $Forum\nGET MIDLIST\n";
@@ -69,6 +71,29 @@ while(<$sock>) {
   chop;
   $mids{$_}++;
 }
+
+print $sock "GET TIDLIST\n";
+<$sock>;
+# }}}
+
+# {{{ get tids
+my %tids = ();
+
+while(<$sock>) {
+  last if m/^\s*$/;
+  chop;
+  $tids{$_}++;
+}
+
+print $sock "QUIT\n";
+close $sock;
+# }}}
+
+my $tidfiles = $config1->{$Forum}->{TidFile};
+my $midfiles = $config1->{$Forum}->{MidFile};
+
+my $global_midfiles = $config1->{$Forum}->{GlobalMidFile};
+my $global_tidfiles = $config1->{$Forum}->{GlobalTidFile};
 
 # {{{ walk through user configurations
 my $userconfigdir = get_conf_val($config,$Forum,'ConfigDirectory');
@@ -96,11 +121,28 @@ while(my $ent = readdir DIR) {
       while(my $ent3 = readdir DIR3) {
         next unless $ent3 =~ /\.conf$/;
 
-        my $dir = "$dir3/$ent3";
-        $dir =~ s!\.conf$!!;
+        my $uname = $ent3;
+        $uname =~ s!\.conf$!!; #!
 
-        cleanup_deleted("$dir/dt.dat",$sock);
-        cleanup_visited("$dir/vt.dat",\%mids);
+        my $uconf_file = "$dir3/$ent3";
+        my $cfg        = read_configuration($uconf_file) or do {
+          print STDERR "Could not read $uconf_file: $!\n";
+          next;
+        };
+
+        foreach my $file (@$tidfiles) {
+          my $cfg_name;
+          next unless $cfg_name = get_conf_val($cfg,'global',$file->[0]);
+
+          cleanup_tid_file(\%tids,$cfg_name,$uname,$file->[1]);
+        }
+
+        foreach my $file (@$midfiles) {
+          my $cfg_name;
+          next unless $cfg_name = get_conf_val($cfg,'global',$file->[0]);
+
+          cleanup_mid_file(\%mids,$cfg_name,$uname,$file->[1]);
+        }
       }
 
       closedir DIR3;
@@ -116,9 +158,32 @@ while(my $ent = readdir DIR) {
 closedir DIR;
 # }}}
 
-my $db = get_conf_val($config1,$Forum,'VotingDatabase');
+foreach my $file (@$global_midfiles) {
+  if(!$conffiles->{$file->[1]}) {
+    my ($fname) = get_config_files($file->[1]);
+    $conffiles->{$file->[1]} = read_configuration($fname) or do {
+      print STDERR "could not read configfile $fname: $!\n";
+      next;
+    };
+  }
 
-cleanup_votes($db,\%mids);
+  my $cfg_fname = get_conf_val($conffiles->{$file->[1]},$Forum,$file->[0]);
+  cleanup_mid_file(\%mids,$cfg_fname,'',$file->[2]);
+}
+
+foreach my $file (@$global_tidfiles) {
+  if(!$conffiles->{$file->[1]}) {
+    my ($fname) = get_config_files($file->[1]);
+    $conffiles->{$file->[1]} = read_configuration($fname) or do {
+      print STDERR "could not read configfile $fname: $!\n";
+      next;
+    };
+  }
+
+  my $cfg_fname = get_conf_val($conffiles->{$file->[1]},$Forum,$file->[0]);
+  cleanup_tid_file(\%tids,$cfg_fname,'',$file->[2]);
+}
+
 
 # {{{ usage
 sub usage {
@@ -137,116 +202,102 @@ EOF
 }
 # }}}
 
-# {{{ cleanup deleted files
-sub cleanup_deleted {
-  my $file = shift;
-  my $sock = shift;
+# {{{ cleanup_tid_file
+sub cleanup_tid_file {
+  my $tidlist = shift;
+  my $file    = shift;
+  my $uname   = shift;
+  my $pattern = shift;
+
   my @deleted = ();
 
-  my $key = '';
+  my $key   = '';
   my $value = '';
 
-  unless(-f $file) {
-    #print STDERR "Could not find $file!\n";
-    return;
-  }
+  my $regex = '';
+
+  return unless -f $file;
 
   my $dbfile = new BerkeleyDB::Btree(
     Filename => $file,
     Flags => DB_CREATE
   ) or return;
 
+  if($pattern) {
+    $regex = $pattern;
+    $regex =~ s!\%t!(\\d+)!g;
+    $regex =~ s!\%u!(\\s+)!g;
+  }
+  else {
+    $regex = '^(\d+)$';
+  }
+
   my $cursor = $dbfile->db_cursor();
 
   while($cursor->c_get($key,$value,DB_NEXT) == 0) {
-    print $sock "STAT THREAD t$key\n";
-    my $line = <$sock>;
+    if($key =~ /$regex/) {
+      my $tid = $1;
 
-    push @deleted,$key if $line =~ /^404/;
+      push @deleted,[$tid,$key] unless $tidlist->{"t$tid"};
+    }
   }
 
   $cursor->c_close;
 
   foreach my $del (@deleted) {
-    $dbfile->db_del($del);
+    $dbfile->db_del($del->[1]);
   }
 
   $dbfile->db_close();
 }
 # }}}
 
-# {{{ cleanup visited files
-sub cleanup_visited {
-  my $file = shift;
-  my $mids = shift;
+# {{{ cleanup_mid_file
+sub cleanup_mid_file {
+  my $midlist = shift;
+  my $file    = shift;
+  my $uname   = shift;
+  my $pattern = shift;
+
   my @deleted = ();
 
-  my $key = '';
+  my $key   = '';
   my $value = '';
 
-  unless(-f $file) {
-    #print STDERR "Could not find $file!\n";
-    return;
-  }
+  my $regex = '';
+
+  return unless -f $file;
 
   my $dbfile = new BerkeleyDB::Btree(
     Filename => $file,
     Flags => DB_CREATE
   ) or return;
 
+  if($pattern) {
+    $regex = $pattern;
+    $regex =~ s!\%m!(\\d+)!g;
+  }
+  else {
+    $regex = '^(\d+)$';
+  }
+
   my $cursor = $dbfile->db_cursor();
 
   while($cursor->c_get($key,$value,DB_NEXT) == 0) {
-    push @deleted,$key unless $mids->{"m$key"};
+    if($key =~ /$regex/) {
+      my $mid = $1;
+
+      push @deleted,[$mid,$key] unless $midlist->{"m$mid"};
+    }
   }
 
   $cursor->c_close;
 
   foreach my $del (@deleted) {
-    $dbfile->db_del($del);
+    $dbfile->db_del($del->[1]);
   }
 
   $dbfile->db_close();
-}
-# }}}
-
-# {{{ cleanup votes
-sub cleanup_votes {
-  my $file = shift;
-  my $mids = shift;
-
-  my @deleted = ();
-
-  my $key = '';
-  my $value = '';
-
-  unless(-f $file) {
-    #print STDERR "Could not find $file!\n";
-    return;
-  }
-
-  my $dbfile = new BerkeleyDB::Btree(
-    Filename => $file,
-    Flags => DB_CREATE
-  ) or return;
-
-  my $cursor = $dbfile->db_cursor();
-
-  while($cursor->c_get($key,$value,DB_NEXT) == 0) {
-    next unless $key =~ /^[a-z0-9]+_(\d+)$/;
-    my $id = $1;
-
-    push @deleted,$key unless $mids->{"m$id"};
-  }
-
-  $cursor->c_close;
-
-  foreach my $del (@deleted) {
-    $dbfile->db_del($del);
-  }
-
-  $dbfile->db_close();
-
 }
 # }}}
 

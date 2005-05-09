@@ -6,6 +6,12 @@
 	* src/modules/Makefile.am: Added flt_interesting
 	* src/perl/Plugins/Pathes.pm: Added InterestingFile
 	* src/swig/Makefile.in: replaced make by $(MAKE)
+	* conf/fo_cleanup.conf.in: Added cleanup configuration file
+	* conf/Makefile.am: Added fo_cleanup.conf
+	* configure.in: Added fo_cleanup.conf in AC_OUTPUT()
+	* scripts/cf-cleanup.pl.in: Made cf-cleanup more general so that I don't need
+		to write a lot of code for each new database file
+	* src/modules/flt_cftp.c: Added GET TIDLIST
 
 2005-05-08 Christian Kruse <ckruse@wwwtech.de>
 	* src/fo_post.c: Fixed bug (double signatures)

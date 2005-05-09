@@ -149,6 +149,33 @@ int flt_cftp_handler(int sockfd,t_forum *forum,const u_char **tokens,int tnum,rl
       }
       /* }}} */
 
+      /* {{{ GET TIDLIST */
+      else if(cf_strcmp(tokens[1],"TIDLIST") == 0) {
+        str_init(&str);
+        str_chars_append(&str,"200 List Follows\n",17);
+
+        CF_RW_RD(&forum->threads.lock);
+        t = forum->threads.list;
+        CF_RW_UN(&forum->threads.lock);
+
+        for(;t;t=t1) {
+          CF_RW_RD(&t->lock);
+
+          str_char_append(&str,'t');
+          u_int64_to_str(&str,t->tid);
+          str_char_append(&str,'\n');
+
+          t1 = t->next;
+          CF_RW_UN(&t->lock);
+        }
+
+        str_char_append(&str,'\n');
+
+        writen(sockfd,str.content,str.len);
+        str_cleanup(&str);
+      }
+      /* }}} */
+
       else {
         return FLT_DECLINE;
       }

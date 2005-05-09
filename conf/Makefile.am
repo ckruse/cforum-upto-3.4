@@ -11,6 +11,7 @@ EXTRA_DIST=fo_admin.conf \
   fo_xmlrpc.conf \
 	fo_feeds.conf \
   fo_usermanagement.conf \
+	fo_cleanup.conf \
   errormessages.de.txt \
   errormessages.fr.txt \
 	tipoftheday.txt \
