@@ -235,5 +235,9 @@ pkglib_LTLIBRARIES+=flt_stdreplacements.la
 flt_stdreplacements_la_SOURCES=flt_stdreplacements.c
 flt_stdreplacements_la_LDFLAGS=-module -export-dynamic -avoid-version
 
+pkglib_LTLIBRARIES+=flt_interesting.la
+flt_interesting_la_SOURCES=flt_interesting.c
+flt_interesting_la_LDFLAGS=-module -export-dynamic -avoid-version
+
 
 # eof

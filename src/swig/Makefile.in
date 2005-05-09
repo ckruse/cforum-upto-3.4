@@ -10,18 +10,18 @@ SUBDIRS=CForum-Clientlib CForum-Configparser CForum-Template CForum-Validator
 
 all:
 	for dir in $(SUBDIRS); do cd $$dir; $(PERL) Makefile.PL LIB=$(libdir)/cforum; cd ..; done;
-	for dir in $(SUBDIRS); do cd $$dir; make; cd ..; done;
+	for dir in $(SUBDIRS); do cd $$dir; $(MAKE); cd ..; done;
 
 install:
-	for dir in $(SUBDIRS); do cd $$dir; make install; cd ..; done;
+	for dir in $(SUBDIRS); do cd $$dir; $(MAKE) install; cd ..; done;
 
 clean:
-	for dir in $(SUBDIRS); do cd $$dir; make clean; cd ..; done;
+	for dir in $(SUBDIRS); do cd $$dir; $(MAKE) clean; cd ..; done;
 
 distclean:
-	for dir in $(SUBDIRS); do cd $$dir; make distclean; cd ..; done;
+	for dir in $(SUBDIRS); do cd $$dir; $(MAKE) distclean; cd ..; done;
 
 maintainer-clean:
-	for dir in $(SUBDIRS); do cd $$dir; make maintainer-clean; cd ..; done;
+	for dir in $(SUBDIRS); do cd $$dir; $(MAKE) maintainer-clean; cd ..; done;
 
 # eof

@@ -67,10 +67,10 @@ int flt_deleted_execute(t_cf_hash *head,t_configuration *dc,t_configuration *vc,
   size_t len;
   u_char buff[256];
   u_char one[] = "1";
-  url = cfg_get_first_value(dc,forum_name,"UBaseURL");
   t_message *msg;
 
   if(UserName) {
+    url = cfg_get_first_value(dc,forum_name,"UBaseURL");
     msg = cf_msg_get_first_visible(thread->messages);
 
     /* run only in threadlist mode and only in pre mode */

@@ -2,10 +2,11 @@
 <!DOCTYPE config SYSTEM "modconf.dtd">
 
 <config>
-  <directive name="DeletedFile" invisible="yes"/>
-  <directive name="VisitedFile" invisible="yes"/>
-  <directive name="MailUserDB"  invisible="yes"/>
-  <directive name="OcDbFile"    invisible="yes"/>
+  <directive name="DeletedFile"     invisible="yes"/>
+  <directive name="VisitedFile"     invisible="yes"/>
+  <directive name="MailUserDB"      invisible="yes"/>
+  <directive name="OcDbFile"        invisible="yes"/>
+  <directive name="InterestingFile" invisible="yes"/>
 
   <page title="Anzeige-Funktionen" id="viewfuncs">
     <section name="Design-Ändernde Anzeige-Funktionen">
@@ -299,6 +300,18 @@
           <validate>^(yes|no)$</validate>
           <question>Soll das Voting-Programm &quot;204 No Content&quot; als Antwort auf eine erfolgreiche Abstimmung liefern?</question>
           <error>Soll das Voting-Programm &quot;204 No Content&quot; als Antwort auf eine erfolgreiche Abstimmung liefern? Bitte geben Sie &quot;ja&quot; oder &quot;nein&quot; an!</error>
+          <formvalues>
+            <value val="yes">Ja</value>
+            <value val="no" default="yes">Nein</value>
+          </formvalues>
+        </argument>
+      </directive>
+
+      <directive name="Interesting204" arguments="1">
+        <argument paramname="interesting_send204" type="radio" encode="plain">
+          <validate>^(?:yes|no)$</validate>
+          <question>Soll die Interessant-Markierung &quot;204 No Content&quot; als Antwort liefern?</question>
+          <error>Soll die Interessant-Markierung &quot;204 No Content&quot; als Antwort liefern? Bitte geben Sie &quot;ja&quot; oder &quot;nein&quot; an!</error>
           <formvalues>
             <value val="yes">Ja</value>
             <value val="no" default="yes">Nein</value>

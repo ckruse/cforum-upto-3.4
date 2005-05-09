@@ -37,6 +37,7 @@ sub execute {
   print $fh 'VisitedFile "',$uconf_dir,"/vt.dat\"\n";
   print $fh 'MailUserDB "',$uconf_dir,"/ml.dat\"\n";
   print $fh 'OcDbFile "',$uconf_dir,"/oc.dat\"\n";
+  print $fh 'InterestingFile "',$uconf_dir,"/it.dat\"\n";
 }
 
 

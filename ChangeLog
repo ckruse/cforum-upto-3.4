@@ -1,3 +1,12 @@
+2005-05-09 Christian Kruse <ckruse@wwwtech.de>
+	* conf/modules.de.xml: Added Interesting204 and InterestingFile directives
+	* src/modules/flt_interesting.c: Added plugin to mark threads as interesting
+	* src/modules/flt_deleted.c: Small bugfix which could cause some compilers to
+		whine
+	* src/modules/Makefile.am: Added flt_interesting
+	* src/perl/Plugins/Pathes.pm: Added InterestingFile
+	* src/swig/Makefile.in: replaced make by $(MAKE)
+
 2005-05-08 Christian Kruse <ckruse@wwwtech.de>
 	* src/fo_post.c: Fixed bug (double signatures)
 
