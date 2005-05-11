@@ -1,3 +1,11 @@
+2005-05-11 Christian Kruse <ckruse@wwwtech.de>
+	* src/utils.[ch]: Added cf_remove_recursive() function; it removes a path
+		and its content recursively
+	* src/modules/flt_latex.c: Changed behavior; we no longer use texvc and we
+		cannot generate MathML (yet).
+	* conf/modules.de.xml: Removed LatexMode directive (currently there is only
+		PNG supported)
+
 2005-05-09 Christian Kruse <ckruse@wwwtech.de>
 	* conf/modules.de.xml: Added Interesting204 and InterestingFile directives
 	* src/modules/flt_interesting.c: Added plugin to mark threads as interesting

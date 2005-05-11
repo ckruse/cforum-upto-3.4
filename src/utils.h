@@ -211,6 +211,13 @@ int str_equal_chars(const t_string *str1,const u_char *str2, size_t len);
 /* {{{ Utility functions */
 
 /**
+ * This function tries to remove a directory recursively
+ * \param path The path to remove
+ * \return 0 on success, -1 on error
+ */
+int cf_remove_recursive(const u_char *path);
+
+/**
  * This function tries to create the whole path from the beginning of the
  * parameter given, e.g. cf_make_path("/abc/def/",0755) tries to create /abc
  * and after that /abc/def

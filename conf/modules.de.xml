@@ -238,7 +238,8 @@
         </argument>
       </directive>
 
-      <directive name="LatexMode" arguments="1">
+      <!-- MathML actually not supported -->
+      <!-- directive name="LatexMode" arguments="1">
         <argument paramname="latexmode" type="radio" encode="plain">
           <validate>^(INLINE|OBJECT|PNG)$</validate>
           <question>Wie sollen LaTeX-Formeln eingebunden werden?</question>
@@ -249,7 +250,7 @@
             <value val="OBJECT">MathML per object-Tag</value>
           </formvalues>
         </argument>
-      </directive>
+      </directive -->
 
       <directive name="HideCategoriesInThreadView" arguments="1">
         <argument paramname="hidecategoriesinthreadview" type="radio" encode="plain">

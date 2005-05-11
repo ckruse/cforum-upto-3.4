@@ -30,6 +30,8 @@
 
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <dirent.h>
+#include <unistd.h>
 
 #include "charconvert.h"
 #include "utils.h"
@@ -157,6 +159,50 @@ int gen_unid(u_char *buff,int maxlen) {
   buff[i] = '\0';
 
   return i - 1;
+}
+/* }}} */
+
+/* {{{ cf_remove_recursive */
+int cf_remove_recursive(const u_char *path) {
+  DIR *dir;
+  struct dirent *ent;
+  char buff[PATH_MAX];
+  struct stat st;
+
+  if(lstat(path, &st) < 0) {
+    perror("stat");
+    return -1;
+  }
+
+  if(S_ISDIR(st.st_mode)) {
+    if((dir = opendir(path)) == NULL) {
+      perror("opendir");
+      return -1;
+    }
+
+    while((ent = readdir(dir)) != NULL) {
+      /* take care of . and .. */
+      if(cf_strcmp(ent->d_name,".") == 0 || cf_strcmp(ent->d_name,"..") == 0) continue;
+
+      /* Recursively call to remove the current entry */
+      snprintf(buff,PATH_MAX, "%s/%s",path,ent->d_name);
+      if(cf_remove_recursive(buff) != 0) return -1;
+    }
+
+    if(rmdir(path) < 0) {
+      perror("rmdir");
+      return -1;
+    }
+  }
+  else {
+    /* path is not a directory; just unlink() it */
+    if(unlink(path) < 0) {
+      perror("unlink");
+      return -1;
+    }
+  }
+
+  return 0;
 }
 /* }}} */
 
