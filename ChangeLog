@@ -7,6 +7,12 @@
 		PNG supported)
 	* src/modules/flt_remotesignature.c: Fixed a bug in remote-signature handling
 		(everything below [remote-signature:...] has been removed)
+	* configure.in: Added possibility to enable and disable plugins
+	* src/modules/flt_admin_mysql.c: This plugin should set is_admin to true if
+		user is marked as an admin in the database
+	* src/modules/Makefile.am: Moved lots of modules to EXTRA_LTLIBRARIES to
+		support optional libraries
+	* src/modules/flt_admin.c: Added check for is_admin value in GlobalValues
 
 2005-05-09 Christian Kruse <ckruse@wwwtech.de>
 	* conf/modules.de.xml: Added Interesting204 and InterestingFile directives

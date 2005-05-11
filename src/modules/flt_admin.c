@@ -59,6 +59,11 @@ int flt_admin_is_admin(const u_char *name) {
     }
   }
 
+  if(cf_hash_get(GlobalValues,"is_admin",8) != NULL) {
+    is_admin = 1;
+    return 1;
+  }
+
   is_admin = 0;
   return 0;
 }
