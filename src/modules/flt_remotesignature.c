@@ -123,7 +123,7 @@ int flt_remotesignature_execute(t_cf_hash *head,t_configuration *dc,t_configurat
 int flt_remotesignature_execute(t_cf_hash *head,t_configuration *dc,t_configuration *pc,t_message *p,t_cl_thread *thr,int sock,int mode)
 #endif
 {
-  u_char *rs = strstr(p->content.content,"[remote-signature:"),*tmp,*url,*cnt;
+  u_char *rs = strstr(p->content.content,"[remote-signature:"),*tmp,*url,*cnt,*bottom;
   register u_char *ptr;
   t_string *str;
 
@@ -131,8 +131,9 @@ int flt_remotesignature_execute(t_cf_hash *head,t_configuration *dc,t_configurat
     for(ptr=rs+18;*ptr && *ptr != ']' && !isspace(*ptr);ptr++);
 
     if(*ptr == ']') {
-      tmp = strndup(rs+18,ptr-(rs+18));
-      url = htmlentities_decode(tmp,NULL);
+      tmp    = strndup(rs+18,ptr-(rs+18));
+      url    = htmlentities_decode(tmp,NULL);
+      bottom = strdup(ptr+1);
       free(tmp);
 
       /* we only accept strict URLs */
@@ -145,6 +146,7 @@ int flt_remotesignature_execute(t_cf_hash *head,t_configuration *dc,t_configurat
             if(is_valid_utf8_string(str->content,str->len) == 0) {
               p->content.len = rs-p->content.content;
               str_str_append(&p->content,str);
+              str_chars_append(&p->content,bottom,strlen(bottom));
             }
 
             str_cleanup(str);
@@ -156,6 +158,7 @@ int flt_remotesignature_execute(t_cf_hash *head,t_configuration *dc,t_configurat
       }
 
       free(url);
+      free(bottom);
     }
   }
   

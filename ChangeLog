@@ -5,6 +5,8 @@
 		cannot generate MathML (yet).
 	* conf/modules.de.xml: Removed LatexMode directive (currently there is only
 		PNG supported)
+	* src/modules/flt_remotesignature.c: Fixed a bug in remote-signature handling
+		(everything below [remote-signature:...] has been removed)
 
 2005-05-09 Christian Kruse <ckruse@wwwtech.de>
 	* conf/modules.de.xml: Added Interesting204 and InterestingFile directives
