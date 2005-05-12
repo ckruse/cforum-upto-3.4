@@ -3,6 +3,10 @@
 	* src/modules/Makefile.am: Added -rpath flag (libtool wants it)
 	* src/modules/flt_admin.c: Small bugfix, if Administrators is empty (or not
 		present) the plugin should not return FLT_DECLINE
+	* src/modules/flt_httpauth.c: Added folding markers
+	* src/modules/flt_cookieauth.c: Fixed small typo
+	* src/modules/flt_phpsessauth.c: Implemented authentification over PHP
+		sessions (be careful, objects are not yet implemented)
 
 2005-05-11 Christian Kruse <ckruse@wwwtech.de>
 	* src/utils.[ch]: Added cf_remove_recursive() function; it removes a path

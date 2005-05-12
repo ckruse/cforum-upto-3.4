@@ -34,7 +34,7 @@
 #include "clientlib.h"
 /* }}} */
 
-
+/* {{{ flt_httpauth_run */
 int flt_httpauth_run(t_cf_hash *head,t_configuration *dc,t_configuration *vc) {
   u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   t_name_value *v = cfg_get_first_value(dc,forum_name,"AuthMode");
@@ -54,7 +54,7 @@ int flt_httpauth_run(t_cf_hash *head,t_configuration *dc,t_configuration *vc) {
 
   return FLT_OK;
 }
-
+/* }}} */
 
 t_conf_opt flt_httpauth_config[] = {
   { NULL, NULL, 0, NULL }

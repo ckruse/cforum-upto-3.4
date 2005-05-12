@@ -62,7 +62,7 @@ int flt_cookieauth_run(t_cf_hash *head,t_configuration *dc,t_configuration *vc) 
 }
 /* }}} */
 
-/* {{{ flt_moderated_handle */
+/* {{{ flt_cookieauth_handle */
 int flt_cookieauth_handle(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
   if(flt_cookieauth_fn == NULL) flt_cookieauth_fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   if(!context || cf_strcmp(flt_cookieauth_fn,context) != 0) return 0;

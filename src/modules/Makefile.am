@@ -246,6 +246,10 @@ flt_admin_mysql_la_SOURCES=flt_admin_mysql.c
 flt_admin_mysql_la_LDFLAGS=-module -export-dynamic -avoid-version -rpath '$(pkglibdir)'
 flt_admin_mysql_la_LIBADD=${MYSQL_LIBS}
 
+EXTRA_LTLIBRARIES+=flt_phpsessauth.la
+flt_phpsessauth_la_SOURCES=flt_phpsessauth.c
+flt_phpsessauth_la_LDFLAGS=-module -export-dynamic -avoid-version -rpath '$(pkglibdir)'
+
 pkglib_LTLIBRARIES+=${OPTIONAL_MODULES}
 
 # eof
