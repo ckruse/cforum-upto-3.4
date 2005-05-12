@@ -290,15 +290,12 @@ int flt_admin_init(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc) {
   cf_register_mod_api_ent("flt_admin","is_admin",(t_mod_api)flt_admin_is_admin);
 
   if(!UserName) return FLT_DECLINE;
-  if(!v) return FLT_DECLINE;
-
-  flt_admin_AdminNum = split(v->values[0],",",&flt_admin_Admins);
+  if(v) flt_admin_AdminNum = split(v->values[0],",",&flt_admin_Admins);
 
   if(!cgi)      return FLT_DECLINE;
 
   val = cf_cgi_get(cgi,"aaf");
   if(!val) return FLT_DECLINE;
-  if(!v) return FLT_DECLINE;
 
   /* ShowInvisible is imported from the client library */
   if(flt_admin_is_admin(UserName) && *val == '1') {

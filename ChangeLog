@@ -1,3 +1,9 @@
+2005-05-12 Christian Kruse <ckruse@wwwtech.de>
+	* src/modules/flt_admin_mysql.c: Implemented basic functionallity
+	* src/modules/Makefile.am: Added -rpath flag (libtool wants it)
+	* src/modules/flt_admin.c: Small bugfix, if Administrators is empty (or not
+		present) the plugin should not return FLT_DECLINE
+
 2005-05-11 Christian Kruse <ckruse@wwwtech.de>
 	* src/utils.[ch]: Added cf_remove_recursive() function; it removes a path
 		and its content recursively
