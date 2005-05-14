@@ -34,13 +34,9 @@ Forum FORUM1 {
 
   FromUntilFormat "%d. %m. %Y, %H:%M"
 
-  Edit "@sysconfdir@/cforum/templates/forum1/%s_%s_useredit.so"
+  Edit "@sysconfdir@/cforum/templates/forum1/%s_%s_usersettings.so"
   EditOk "@sysconfdir@/cforum/templates/forum1/%s_%s_usereditok.so"
   ImportForm "@sysconfdir@/cforum/templates/forum1/%s_%s_importform.so"
   ImportOk "@sysconfdir@/cforum/templates/forum1/%s_%s_importok.so"
-
-  ViewSettings "@sysconfdir@/cforum/templates/forum1/%s_%s_usersettings.so"
-
-  FatalTemplate "@sysconfdir@/cforum/templates/forum1/%s_%s_fatal.so"
 }
 

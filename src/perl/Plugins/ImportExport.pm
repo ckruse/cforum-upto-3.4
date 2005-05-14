@@ -62,7 +62,7 @@ sub exprt {
     }
   }
 
-  print $cgi->header(-type => "text/xml; charset=UTF-8"),$doc->toString;
+  print $cgi->header(-type => "text/xml; charset=UTF-8",-content_disposition => 'attachment; filename='.$main::UserName.'.xml'),$doc->toString;
 }
 
 sub imprt {

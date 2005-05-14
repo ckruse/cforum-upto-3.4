@@ -1,3 +1,19 @@
+2005-05-14 Christian Kruse <ckruse@wwwtech.de>
+	* conf/modules.de.xml: Stripped a lot of unneccessary stuff
+	* conf/fo_userconf.conf.in: Removed unneccessary templates, added
+		Plugins::UserconfCategories
+	* scripts/fo_userconf.in: Did a nearly rewrite of fo_userconf, now it's
+		possible to make the interface much more compfortable
+	* src/modules/flt_phpsessauth.c: Small bugfix, sess id should only be set as
+		static flag if it was transmitted via URI
+	* src/perl/Plugins/UserconfCategories.pm: Added plugin for nicer interface of
+		fo_userconf
+	* src/perl/Plugins/ImportExport.pm: Added Content-Disposition header so that
+		most browsers will open a download dialouge
+	* src/perl/Plugins/Makefile.am: Added plugin UserconfCategories.pm
+	* src/parsetpl/parsetpl.lex: small patch to support whitespaces in arrays in
+		{iws} tags
+
 2005-05-12 Christian Kruse <ckruse@wwwtech.de>
 	* src/modules/flt_admin_mysql.c: Implemented basic functionallity
 	* src/modules/Makefile.am: Added -rpath flag (libtool wants it)

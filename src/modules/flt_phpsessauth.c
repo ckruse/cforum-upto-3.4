@@ -222,8 +222,7 @@ int flt_phpsessauth_run(t_cf_hash *head,t_configuration *dc,t_configuration *vc)
 
     cf_hash_destroy(cookies);
   }
-
-  cf_add_static_uri_flag(flt_phpsessauth_sessname,flt_phpsessauth_sid,0);
+  else cf_add_static_uri_flag(flt_phpsessauth_sessname,flt_phpsessauth_sid,0);
 
   if((name = flt_phpsessauth_getvar(flt_phpsessauth_vname)) != NULL) {
     path = cf_get_uconf_name(name);

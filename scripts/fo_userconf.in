@@ -67,299 +67,72 @@ use CForum::Validator qw/is_valid_http_link is_valid_link is_valid_mailaddress/;
 
 # }}}
 
-# {{{ get_argument_values
-sub get_argument_values {
-  my $arg     = shift;
-  my $default = shift;
-  my ($fo_default_conf,$fo_view_conf,$fo_userconf_conf,$user_config) = @_;
-
-  my $fvalues = ($arg->getElementsByTagName('formvalues'))[0];
-
-  if($fvalues) {
-    if($fvalues->hasChildNodes) {
-      my @values = $fvalues->getElementsByTagName('value');
-      my @ret    = ();
-
-      foreach(@values) {
-        my $val = $_->getAttribute('val');
-        my $txt = get_node_data($_) || $val;
-        push @ret,[$val,$txt];
-
-        if($_->getAttribute('default') eq 'yes') {
-          $$default = $val;
-        }
-      }
-
-      return @ret;
-    }
-    else {
-      my $loc = $fvalues->getAttribute('location');
-      my $dir = $fvalues->getAttribute('directive');
-
-      if($loc eq 'fo_default.conf') {
-        return exists $fo_default_conf->{$Forum}->{$dir} ? @{$fo_default_conf->{$Forum}->{$dir}->[0]} : ();
-      }
-      elsif($loc eq 'fo_view.conf') {
-        return exists $fo_view_conf->{$Forum}->{$dir} ? @{$fo_view_conf->{$Forum}->{$dir}->[0]} : ();
-      }
-      elsif($loc eq 'fo_userconf.conf') {
-        return exists $fo_userconf_conf->{$Forum}->{$dir} ? @{$fo_userconf_conf->{$Forum}->{$dir}->[0]} : ();
-      }
-      else {
-        return exists $user_config->{$Forum}->{$dir} ? @{$user_config->{$Forum}->{$dir}->[0]} : ();
-      }
-    }
-  }
-
-  return ();
-}
-# }}}
-
-# {{{ htmlize
-sub htmlize {
-  my $dname    = shift;
-  my $arg      = shift;
-  my $cgi      = shift;
-  my $cfgval   = shift;
-
-  my ($fo_default_conf,$fo_view_conf,$fo_userconf_conf,$user_config) = @_;
-
-  my $xhtml    = get_conf_val($fo_default_conf,$Forum,'XHMLMode');
-
-  if($xhtml) { $xhtml = $xhtml eq 'yes'; }
-  else { $xhtml = 0; }
-
-  my $default  = '';
-  my $fname    = $arg->getAttribute('paramname');
-  my $type     = uc $arg->getAttribute('type');
-  my $question = recode($fo_default_conf,get_node_data(($arg->getElementsByTagName('question'))[0]));
-  my $element  = '';
-  my $multiple = lc($arg->getAttribute('multiple') || 'no');
-  my @fvals    = get_argument_values($arg,\$default,$fo_default_conf,$fo_view_conf,$fo_userconf_conf,$user_config);
-
-  my @vals     = $cgi->param($fname);
-  my %vals     = ();
-  my $val      = '';
-
-  unless(@vals) {
-    @vals = ($default) if $default;
-    @vals = ($cfgval) if $cfgval;
-  }
-
-  if($multiple eq 'yes' || $type eq 'CHECKBOX') {
-    @vals = split /,/,$vals[0] unless $#vals;
-    $vals{$_} = 1 foreach @vals;
-  }
-  else {
-    $val      = $vals[0];
-  }
-
-  if($val) {
-    $val   =~ s/\\n/\n/g;
-    $val   =~ s/\\"/"/g;
-  }
-  if(@vals) {
-    foreach(@vals) {
-      s/\\n/\n/g;
-      s/\\"/"/g;
-    }
-  }
-
-  if($arg->getAttribute('parse') eq 'date' && $val) {
-    my ($sec,$min,$hour,$day,$mon,$year) = localtime $val;
-
-    $mon  += 1;
-    $year += 1900;
-
-    $val = sprintf('%02d. %02d. %4d %02d:%02d:%02d',$day,$mon,$year,$hour,$min,$sec);
-  }
-
-  if($type eq 'TEXT') {
-    $element = '<input type="text" name="'.$fname.'" value="'.recode($fo_default_conf,$val||'').'"'.($xhtml?' /':'').'>';
-  }
-  elsif($type eq 'RADIO') {
-    foreach my $v (@fvals) {
-      my $lval = ref($v) ? $v->[0] : $v;
-      my $ttl = ref($v) ? $v->[1] : $v;
-
-      $element .= '<input type="radio" name="'.$fname.'" value="'.recode($fo_default_conf,$lval).'" '.($lval eq $val ? ' checked'.($xhtml?'="checked"':'') : '').($xhtml?' /':'').'> '.recode($fo_default_conf,$ttl || $lval).'<br'.($xhtml?' /':'').'>';
-    }
-
-  }
-  elsif($type eq 'CHECKBOX') {
-    foreach my $v (@fvals) {
-      my $lval = ref($v) ? $v->[0] : $v;
-      my $ttl = ref($v) ? $v->[1] : $v;
-
-      $element .= '<input type="checkbox" name="'.$fname.'" value="'.recode($fo_default_conf,$lval).'"'.($vals{$lval} ? ' checked'.($xhtml?'="checked"':'') : '').($xhtml?' /':'').'> '.recode($fo_default_conf,$ttl || $lval).'<br'.($xhtml?' /':'').'>';
-    }
-  }
-  elsif($type eq 'SELECT') {
-    $element = '<select name="'.$fname.'"';
-    $element .= ' size="5" multiple="yes"' if $multiple eq 'yes';
-    $element .= '>';
-
-    if($multiple eq 'no') {
-      foreach my $v (@fvals) {
-        my $lval = ref($v) ? $v->[0] : $v;
-        my $ttl = ref($v) ? $v->[1] : $v;
-
-        $element .= '<option value="'.recode($fo_default_conf,$lval).'"'.($lval eq $val ? ' selected'.($xhtml?'="selected"':'') : '').($xhtml?' /':'').'>'.recode($fo_default_conf,$ttl || $lval).'</option>';
-      }
-    }
-    else {
-      foreach my $v (@fvals) {
-        my $lval = ref($v) ? $v->[0] : $v;
-        my $ttl = ref($v) ? $v->[1] : $v;
-
-        $element .= '<option value="'.recode($fo_default_conf,$lval).'"'.($vals{$lval} ? ' selected'.($xhtml?'="selected"':'') : '').($xhtml?' /':'').'>'.recode($fo_default_conf,$ttl || $lval).'</option>';
-      }
-    }
-
-    $element .= '</select>';
-  }
-  elsif($type eq 'TEXTAREA') {
-    $element = '<textarea name="'.$fname.'">'.recode($fo_default_conf,$val).'</textarea>';
-  }
-  else {
-    fatal($cgi,$fo_default_conf,$user_config,get_error($fo_default_conf,'UNKNOWN_DIRECTIVE_TYPE'),get_conf_val($fo_userconf_conf,$Forum,'FatalTemplate'));
-  }
-
-  return ($question,$element);
-}
-# }}}
-
 # {{{ generate_edit_output
 sub generate_edit_output {
-  my $cgi              = shift;
-  my $fo_default_conf  = shift;
-  my $fo_view_conf     = shift;
-  my $fo_userconf_conf = shift;
-  my $user_config      = shift;
+  my ($cgi,$fo_default_conf,$fo_view_conf,$fo_userconf_conf,$user_config,$err) = @_;
+  my $tpl = new CForum::Template(get_template($fo_default_conf,$user_config,get_conf_val($fo_userconf_conf,$Forum,'Edit'))) or die $@;
 
-  my $err              = shift;
+  foreach my $modconf (@{$fo_userconf_conf->{$Forum}->{ModuleConfig}}) {
+    my $doc   = XML::GDOME->createDocFromURI(sprintf($modconf->[0],get_conf_val($fo_default_conf,$Forum,'Language'))) or die $!;
+    my @nodes = $doc->findnodes('/config/*');
+
+    foreach my $directive (@nodes) {
+      my $dname     = $directive->getAttribute('name');
+      my @arguments = $directive->getElementsByTagName('argument');
+      my $i         = 0;
+
+      foreach my $arg (@arguments) {
+        my $pname = $arg->getAttribute('paramname');
+        my $val   = $user_config->{global}->{$dname}->[0]->[$i++];
+        $val = join ',',$cgi->param($pname) if $cgi->param($pname);
+
+        next if !defined($val) || !length($val);
+
+        if($arg->getAttribute('parse') eq 'date') {
+          my ($sec,$min,$hour,$day,$mon,$year) = localtime $val;
+
+          $mon  += 1;
+          $year += 1900;
+
+          $val = sprintf('%02d. %02d. %4d %02d:%02d:%02d',$day,$mon,$year,$hour,$min,$sec);
+        }
+        else {
+          $val =~ s/\"/"/g;
+          if($fo_default_conf->{$Forum}->{XHTMLMode} eq 'yes') {
+            $val =~ s!\\n!<br />\n!g;
+          }
+          else {
+            $val =~ s!\\n!<br>\n!g;
+          }
+        }
+
+        $tpl->setvalue($pname,recode($fo_default_conf,$val||''));
+      }
+    }
+  }
 
   my $is_admin         = is_admin($fo_default_conf,$UserName) || 0;
 
-  my $page             = $cgi->param('p');
-  my $doit             = 1;
+  my $categories = new CForum::Template::t_cf_tpl_variable($CForum::Template::TPL_VARIABLE_ARRAY);
+  my @cats = get_conf_val($fo_default_conf,$Forum,'Categories');
 
-  my $tpl              = new CForum::Template(get_template($fo_default_conf,$user_config,get_conf_val($fo_userconf_conf,$Forum,'Edit')));
-  my $txt              = '';
+  $categories->addvalue($_) foreach @cats;
 
-  my $doc              = XML::GDOME->createDocFromURI(sprintf(get_conf_val($fo_userconf_conf,$Forum,'ModuleConfig'),get_conf_val($fo_default_conf,$Forum,'Language'))) or fatal($cgi,$fo_default_conf,$user_config,sprintf(get_error($fo_default_conf,'XML_PARSE'),"$!"),get_conf_val($fo_userconf_conf,$Forum,'FatalTemplate'));
-
-  # {{{ page is given
-  if($page) {
-    # hmpf, findnodes doesn't work properly for /config/page@id="$page", nor for /config/page/@id="$page", neither
-    # for both versions without quotations
-    my ($node) = grep { $_->getAttribute('id') eq $page } $doc->findnodes('/config/page');
-
-    if($node) {
-      my $for = $node->getAttribute('for') || '';
-
-      if($for eq 'admin' && $is_admin || $for ne 'admin') {
-        # Ooookey, we don't want to bother the user
-        $doit = 0;
-
-        my $i        = 0;
-        my $ud       = 0;
-        my @sections = $node->findnodes('./section');
-
-        my $v_sections = new CForum::Template::t_cf_tpl_variable($CForum::Template::TPL_VARIABLE_ARRAY);
-        my $pageinfo = new CForum::Template::t_cf_tpl_variable($CForum::Template::TPL_VARIABLE_ARRAY);
-
-        $pageinfo->addvalue($page);
-        $pageinfo->addvalue($node->getAttribute('title'));
-        $tpl->setvar('current_page',$pageinfo);
-
-        my $sectinfos = new CForum::Template::t_cf_tpl_variable($CForum::Template::TPL_VARIABLE_ARRAY);
-        foreach my $sect (@sections) {
-          my $for = $sect->getAttribute('for') || '';
-          next if $for eq 'admin' && !$is_admin;
-
-          my @nodes  = $sect->findnodes('./directive');
-          my $tmptxt = '';
-          ++$i;
-
-          my $section = new CForum::Template::t_cf_tpl_variable($CForum::Template::TPL_VARIABLE_HASH);
-          my $directives = new CForum::Template::t_cf_tpl_variable($CForum::Template::TPL_VARIABLE_ARRAY);
-
-          foreach my $directive (@nodes) {
-            my $dname     = $directive->getAttribute('name');
-            my @arguments = $directive->getElementsByTagName('argument');
-            my $i         = 0;
-            my $for       = $directive->getAttribute('for') || '';
-
-            next if $for eq 'admin' && !$is_admin;
-
-            my $dhash = new CForum::Template::t_cf_tpl_variable($CForum::Template::TPL_VARIABLE_HASH);
-            $dhash->h_setvalue('name',$dname);
-            $dhash->h_setvalue('for',$for) if $for;
-
-            my $arguments = new CForum::Template::t_cf_tpl_variable($CForum::Template::TPL_VARIABLE_ARRAY);
-
-            foreach my $arg (@arguments) {
-              my $argument = new CForum::Template::t_cf_tpl_variable($CForum::Template::TPL_VARIABLE_HASH);
-
-              my $pname = $arg->getAttribute('paramname');
-              my ($question,$arg) = htmlize($dname,$arg,$cgi,$user_config->{global}->{$dname}->[0]->[$i++],$fo_default_conf,$fo_view_conf,$fo_userconf_conf,$user_config);
-
-              $argument->h_setvalue('empty','no');
-              $argument->h_setvalue('formentry',$arg);
-              $argument->h_setvalue('question',$question);
-              $argument->h_setvalue('param',$pname);
-
-              $arguments->add($argument);
-            }
-
-            $dhash->h_set('arguments',$arguments);
-            $directives->add($dhash);
-          }
-
-          $section->h_setvalue('title',recode($fo_default_conf,$sect->getAttribute('name')));
-          $section->h_setvalue('anchor','a'.$i);
-          $section->h_setvalue('content',$tmptxt);
-          $section->h_set('directives',$directives);
-
-          $v_sections->add($section);
-        }
-
-        $tpl->setvar('sections',$v_sections);
-      }
-    }
-  }
-  # }}}
-
-  if($doit) {
-    my @nodes = $doc->findnodes('/config/page');
-
-    my $pages   = new CForum::Template::t_cf_tpl_variable($CForum::Template::TPL_VARIABLE_ARRAY);
-
-    foreach my $page (@nodes) {
-      my $for = $page->getAttribute('for') || '';
-      next if $for eq 'admin' && !$is_admin;
-
-      my $perpage = new CForum::Template::t_cf_tpl_variable($CForum::Template::TPL_VARIABLE_HASH);
-
-      $perpage->h_setvalue('title' => recode($fo_default_conf,$page->getAttribute('title')));
-      $perpage->h_setvalue('id' => $page->getAttribute('id'));
-
-      $pages->add($perpage);
-    }
-
-    $tpl->setvalue('page','1');
-    $tpl->setvar('pages',$pages);
-  }
-
-  $tpl->setvalue('p',$page) if $page;
+  $tpl->setvar('categories',$categories);
+  $tpl->setvalue('err',$err) if $err;
+  $tpl->setvalue('is_admin','yes') if $is_admin;
   $tpl->setvalue('forumbase',recode($fo_default_conf,get_conf_val($fo_default_conf,$Forum,'UBaseURL')));
   $tpl->setvalue('userconfig',recode($fo_default_conf,get_conf_val($fo_default_conf,$Forum,'UserConfig')));
   $tpl->setvalue('script',recode($fo_default_conf,get_conf_val($fo_default_conf,$Forum,'UserConfig')));
-  $tpl->setvalue('editcontent',$txt);
-  $tpl->setvalue('error',recode($fo_default_conf,$err)) if defined $err;
+  $tpl->setvalue('usermanagement',get_conf_val($fo_default_conf,$Forum,'UserManagement'));
   $tpl->setvalue('charset',get_conf_val($fo_default_conf,$Forum,'ExternCharset'));
-  $tpl->setvalue('acceptcharset',get_conf_val($fo_default_conf,$Forum,'ExternCharset').', UTF-8');
+
+  #
+  # display plugins
+  #
+  foreach(@{$Plugins->{display}}) {
+    &$_($fo_default_conf,$fo_userconf_conf,$user_config,$cgi,$tpl);
+  }
 
   print $cgi->header(-type => 'text/html; charset='.get_conf_val($fo_default_conf,$Forum,'ExternCharset')),$tpl->parseToMem;
 }
@@ -392,29 +165,6 @@ sub validate_input {
   }
 
   return 1;
-}
-# }}}
-
-# {{{ show_register_form
-sub show_register_form {
-  my $cgi              = shift;
-  my $fo_default_conf  = shift;
-  my $fo_view_conf     = shift;
-  my $fo_userconf_conf = shift;
-  my $user_config      = shift;
-  my $err              = shift;
-
-  my $tpl = new CForum::Template(get_template($fo_default_conf,$user_config,get_conf_val($fo_userconf_conf,$Forum,'Register'))) or die $@;
-
-  $tpl->setvalue('forumbase',recode($fo_default_conf,get_conf_val($fo_default_conf,$Forum,'BaseURL')));
-  $tpl->setvalue('script',recode($fo_default_conf,get_conf_val($fo_default_conf,$Forum,'UserRegister')));
-  $tpl->setvalue('error',recode($fo_default_conf,$err)) if defined $err;
-  $tpl->setvalue('charset',get_conf_val($fo_default_conf,$Forum,'ExternCharset'));
-  $tpl->setvalue('acceptcharset',get_conf_val($fo_default_conf,$Forum,'ExternCharset').', UTF-8');
-
-  $tpl->setvalue($_,recode($fo_default_conf,$cgi->param($_))) foreach $cgi->param;
-
-  print $cgi->header(-type => 'text/html; charset='.get_conf_val($fo_default_conf,$Forum,'ExternCharset')),$tpl->parseToMem;
 }
 # }}}
 
@@ -465,137 +215,94 @@ else {
 }
 # }}}
 
-# edit user configuration
-if($action eq 'edit') {
-  generate_edit_output($cgi,$fo_default_conf,$fo_view_conf,$fo_userconf_conf,$user_config);
-}
-#
 # {{{ save user configuration
-elsif($action eq 'save') {
+if($action eq 'save') {
   my $own_ucfg = dclone($user_config);
 
-  my $page  = $cgi->param('p');
-  my $is_admin = is_admin($fo_default_conf,$UserName);
+  foreach my $modconf (@{$fo_userconf_conf->{$Forum}->{ModuleConfig}}) {
+    my $doc   = XML::GDOME->createDocFromURI(sprintf($modconf->[0],get_conf_val($fo_default_conf,$Forum,'Language'))) or die $!;
+    my @nodes = $doc->findnodes('/config/*');
 
-  unless($page) {
-    generate_edit_output($cgi,$fo_default_conf,$fo_view_conf,$fo_userconf_conf,$user_config);
-    exit;
-  }
+    foreach my $directive (@nodes) {
+      my $dname     = $directive->getAttribute('name');
+      my @arguments = $directive->getElementsByTagName('argument');
+      my $i         = 0;
 
-  my $doc      = XML::GDOME->createDocFromURI(sprintf(get_conf_val($fo_userconf_conf,$Forum,'ModuleConfig'),get_conf_val($fo_default_conf,$Forum,'Language'))) or fatal($cgi,$fo_default_conf,$user_config,sprintf(get_error($fo_default_conf,'PLUGIN_ERR'),"$!"),get_conf_val($fo_userconf_conf,$Forum,'FatalTemplate'));
-  my ($pgnode) = grep { $_->getAttribute('id') eq $page } $doc->findnodes('/config/page');
-  my @nodes    = $pgnode->findnodes('./section/directive');
+      foreach my $arg (@arguments) {
+        my $pname    = $arg->getAttribute('paramname');
+        my $vali     = ($arg->getElementsByTagName('validate'))[0];
+        my $validate = get_node_data($vali);
+        my $val      = join ',',$cgi->param($pname);
+        my $enc      = $arg->getAttribute('encode');
 
-  my @tmp      = $doc->findnodes('/config/directive');
+        # {{{ argument value may be empty, delete it or set list value empty
+        if(!$val || $val eq 'default') {
+          if($i == 0) {
+            delete $own_ucfg->{global}->{$dname} if exists $own_ucfg->{global}->{$dname};
+          }
+          else {
+            $own_ucfg->{global}->{$dname}->[0]->[$i] = '' if exists $own_ucfg->{global}->{$dname};
+          }
 
-  push @nodes,@tmp if @tmp;
-
-  foreach my $directive (@nodes) {
-    next if $directive->getAttribute('invisible') eq 'yes';
-
-    my $dname     = $directive->getAttribute('name');
-    my @arguments = $directive->getElementsByTagName('argument');
-    my $i         = 0;
-
-    my $for = $directive->getAttribute('for') || '';
-    if($for eq 'admin' && !$is_admin) {
-      delete $own_ucfg->{global}->{$dname} if exists $own_ucfg->{global}->{$dname};
-      next;
-    }
-
-    foreach my $arg (@arguments) {
-      my $pname    = $arg->getAttribute('paramname');
-      my $vali     = ($arg->getElementsByTagName('validate'))[0];
-      my $validate = get_node_data($vali);
-      my $val      = join ',',$cgi->param($pname);
-      my $enc      = $arg->getAttribute('encode');
-
-      if(!$val || $val eq 'default') {
-        if($i == 0) {
-          delete $own_ucfg->{global}->{$dname} if exists $own_ucfg->{global}->{$dname};
+          $i++;
+          next;
         }
-        else {
-          $own_ucfg->{global}->{$dname}->[0]->[$i] = '' if exists $own_ucfg->{global}->{$dname};
-        }
+        # }}}
 
-        $i++;
-        next;
-      }
-
-      # we deleted the first value
-      unless(exists $own_ucfg->{global}->{$dname}) {
-        $own_ucfg->{$dname} = [ [ ] ];
-        if($enc eq 'html') {
-          $own_ucfg->{global}->{$dname}->[0]->[$i] = encode_entities($val);
-        }
-        else {
-          $own_ucfg->{global}->{$dname}->[0]->[$i] = $val;
-        }
-      }
-
-      # {{{ directive value validation
-      # lets validate the input; if no validate content is given, we look for the
-      # 'type' attribute and use a predefined validation
-      if($validate) {
-        if($val !~ /$validate/ || !validate_input($val,$dname,$fo_userconf_conf)) {
-          my $err = get_node_data(($arg->getElementsByTagName('error'))[0]);
-          generate_edit_output($cgi,$fo_default_conf,$fo_view_conf,$fo_userconf_conf,$user_config,$err);
-          exit;
-        }
-      }
-      else {
-        my $type = $vali->getAttribute('type');
-
-        # http-url is a specialization for 'url'
-        if($type eq 'http-url') {
-          if(is_valid_http_link($val) || !validate_input($val,$dname,$fo_userconf_conf)) {
-            my $err = get_node_data(($arg->getElementsByTagName('error'))[0]);
-            generate_edit_output($cgi,$fo_default_conf,$fo_view_conf,$fo_userconf_conf,$user_config,$err);
-            exit;
+        # {{{ we deleted the first value
+        unless(exists $own_ucfg->{global}->{$dname}) {
+          $own_ucfg->{$dname} = [ [ ] ];
+          if($enc eq 'html') {
+            $own_ucfg->{global}->{$dname}->[0]->[$i] = encode_entities($val);
+          }
+          else {
+            $own_ucfg->{global}->{$dname}->[0]->[$i] = $val;
           }
         }
-        # url means, *all* urls, inkl. gopher and so on
-        elsif($type eq 'url') {
-          if(is_valid_link($val) || !validate_input($val,$dname,$fo_userconf_conf)) {
-            my $err = get_node_data(($arg->getElementsByTagName('error'))[0]);
-            generate_edit_output($cgi,$fo_default_conf,$fo_view_conf,$fo_userconf_conf,$user_config,$err);
-            exit;
-          }
-        }
-        # email means, input is a mail address
-        elsif($type eq 'email') {
-          if(is_valid_mailaddress($val) || !validate_input($val,$dname,$fo_userconf_conf)) {
+        # }}}
+
+        # {{{ directive value validation
+        # everything's prepared, lets validate the input; if no validate content is given,
+        # we look for the 'type' attribute and use a predefined validation
+        if($validate) {
+          if($val !~ /$validate/ || !validate_input($val,$dname,$fo_userconf_conf)) {
             my $err = get_node_data(($arg->getElementsByTagName('error'))[0]);
             generate_edit_output($cgi,$fo_default_conf,$fo_view_conf,$fo_userconf_conf,$user_config,$err);
             exit;
           }
         }
         else {
-          fatal($cgi,$fo_default_conf,$user_config,get_error($fo_default_conf,'UNKNOWN_DIRECTIVE_TYPE'),get_conf_val($fo_userconf_conf,$Forum,'FatalTemplate'));
+          my $type = $vali->getAttribute('type');
+
+          # http-url is a specialization for 'url'
+          if($type eq 'http-url') {
+            if(is_valid_http_link($val) || !validate_input($val,$dname,$fo_userconf_conf)) {
+              my $err = get_node_data(($arg->getElementsByTagName('error'))[0]);
+              generate_edit_output($cgi,$fo_default_conf,$fo_view_conf,$fo_userconf_conf,$user_config,$err);
+              exit;
+            }
+          }
+          # url means, *all* urls, inkl. gopher and so on
+          elsif($type eq 'url') {
+            if(is_valid_link($val) || !validate_input($val,$dname,$fo_userconf_conf)) {
+              my $err = get_node_data(($arg->getElementsByTagName('error'))[0]);
+              generate_edit_output($cgi,$fo_default_conf,$fo_view_conf,$fo_userconf_conf,$user_config,$err);
+              exit;
+            }
+          }
+          # email means, input is a mail address
+          elsif($type eq 'email') {
+            if(is_valid_mailaddress($val) || !validate_input($val,$dname,$fo_userconf_conf)) {
+              my $err = get_node_data(($arg->getElementsByTagName('error'))[0]);
+              generate_edit_output($cgi,$fo_default_conf,$fo_view_conf,$fo_userconf_conf,$user_config,$err);
+              exit;
+            }
+          }
+          else {
+            fatal($cgi,$fo_default_conf,$user_config,get_error($fo_default_conf,'UNKNOWN_DIRECTIVE_TYPE'),get_conf_val($fo_userconf_conf,$Forum,'FatalTemplate'));
+          }
         }
-      }
-      # }}}
-
-      if($arg->getAttribute('parse') eq 'date') {
-        unless($val =~ /^(\d+)\.\s*(\d+)\.\s*(\d{2,4})(?:\s*(\d+):(\d+)(?::(\d+))?)?$/) {
-          my $err = get_node_data(($arg->getElementsByTagName('error'))[0]);
-          generate_edit_output($cgi,$fo_default_conf,$fo_view_conf,$fo_userconf_conf,$user_config,$err);
-          exit;
-        }
-
-        my ($day,$month,$year,$hour,$min,$sec) = ($1,$2,$3,$4||0,$5||0,$6||0);
-
-        $year  -= 1900 if $year > 1900;
-        $month -= 1;
-
-        $val   = mktime($sec,$min,$hour,$day,$month,$year);
-      }
-
-      if($enc eq 'html') {
-        $own_ucfg->{global}->{$dname}->[0]->[$i++] = recode($fo_default_conf,$val);
-      }
-      else {
-        $own_ucfg->{global}->{$dname}->[0]->[$i++] = $val;
+        # }}}
       }
     }
   }
@@ -632,7 +339,6 @@ elsif($action eq 'save') {
 
   close DAT;
 
-
   my $tpl = new CForum::Template(get_template($fo_default_conf,$user_config,get_conf_val($fo_userconf_conf,$Forum,'EditOk'))) or die $!;
 
   $tpl->setvalue('forumbase',recode($fo_default_conf,get_conf_val($fo_default_conf,$Forum,'UBaseURL')));
@@ -646,54 +352,11 @@ elsif($action eq 'save') {
 # }}}
 # {{{ show options
 else {
-  if($Plugins->{$action}) {
+  if($action && $Plugins->{$action}) {
     &{$Plugins->{$action}}($fo_default_conf,$fo_view_conf,$fo_userconf_conf,$user_config,$cgi);
   }
   else {
-    my $tpl = new CForum::Template(get_template($fo_default_conf,$user_config,get_conf_val($fo_userconf_conf,$Forum,'ViewSettings'))) or die $@;
-
-    $tpl->setvalue('forumbase',recode($fo_default_conf,get_conf_val($fo_default_conf,$Forum,'UBaseURL')));
-    $tpl->setvalue('userconfig',recode($fo_default_conf,get_conf_val($fo_default_conf,$Forum,'UserConfig')));
-    $tpl->setvalue('script',recode($fo_default_conf,get_conf_val($fo_default_conf,$Forum,'UserConfig')));
-
-    foreach my $modconf (@{$fo_userconf_conf->{$Forum}->{ModuleConfig}}) {
-      my $doc   = XML::GDOME->createDocFromURI(sprintf($modconf->[0],get_conf_val($fo_default_conf,$Forum,'Language'))) or die $!;
-      my @nodes = $doc->findnodes('/config/page/section/*');
-
-      foreach my $directive (@nodes) {
-        my $dname     = $directive->getAttribute('name');
-        my @arguments = $directive->getElementsByTagName('argument');
-        my $i         = 0;
-
-        foreach my $arg (@arguments) {
-          my $pname = $arg->getAttribute('paramname');
-          my $val   = $user_config->{global}->{$dname}->[0]->[$i++];
-
-          next if !defined($val) || !length($val);
-
-          if($arg->getAttribute('parse') eq 'date') {
-            my ($sec,$min,$hour,$day,$mon,$year) = localtime $val;
-
-            $mon  += 1;
-            $year += 1900;
-
-            $val = sprintf('%02d. %02d. %4d %02d:%02d:%02d',$day,$mon,$year,$hour,$min,$sec);
-          }
-          else {
-            $val =~ s/\"/"/g; #";
-            $val =~ s/\\n/<br>\n/g;
-          }
-
-          $tpl->setvalue($pname,recode($fo_default_conf,$val||''));
-        }
-      }
-    }
-
-    $tpl->setvalue('usermanagement',get_conf_val($fo_default_conf,$Forum,'UserManagement'));
-    $tpl->setvalue('charset',get_conf_val($fo_default_conf,$Forum,'ExternCharset'));
-    $tpl->setvalue('acceptcharset',get_conf_val($fo_default_conf,$Forum,'ExternCharset').', UTF-8');
-
-    print $cgi->header(-type => 'text/html; charset='.get_conf_val($fo_default_conf,$Forum,'ExternCharset')),$tpl->parseToMem;
+    generate_edit_output($cgi,$fo_default_conf,$fo_view_conf,$fo_userconf_conf,$user_config)
   }
 }
 # }}}

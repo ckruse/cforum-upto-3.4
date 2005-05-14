@@ -121,9 +121,11 @@ t_cf_tpl-variable  *vi0;          variables dynamically generated for if
 
 <TAG>{
   \n                  {
-    str_chars_append(&content_backup,yytext,yyleng);
-    ++lineno;
-    return PARSETPL_ERR_UNRECOGNIZEDCHARACTER;
+    if(!iws) {
+      str_chars_append(&content_backup,yytext,yyleng);
+      ++lineno;
+      return PARSETPL_ERR_UNRECOGNIZEDCHARACTER;
+    }
   }
   [\t\r ]             {
     str_chars_append(&content_backup,yytext,yyleng);

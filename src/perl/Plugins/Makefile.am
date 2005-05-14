@@ -4,7 +4,8 @@ EXTRA_DIST=HTTPAuth.pm \
   RegisterName.pm \
 	ImportExport.pm \
   XMLRPCUserManagement.pm \
-	Pathes.pm
+	Pathes.pm \
+	UserconfCategories.pm
 
 install-data-local:
 	if test ! -d $(libdir)/cforum/Plugins; then \
