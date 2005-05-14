@@ -12,6 +12,7 @@
 AddModule "Plugins::RegisterName"
 AddModule "Plugins::HTTPAuth"
 AddModule "Plugins::ImportExport"
+AddModule "Plugins::UserconfCategories"
 
 Forum FORUM1 {
 
