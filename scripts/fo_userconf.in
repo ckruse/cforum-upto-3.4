@@ -182,7 +182,7 @@ my $action           = $cgi->param('a') || 'view';
 # {{{ load plugins and authenticate
 foreach(@{$fo_userconf_conf->{global}->{AddModule}}) {
   eval "use $_->[0];";
-  fatal($cgi,$fo_default_conf,$user_config,sprintf(get_error($fo_default_conf,'PLUGIN_ERR'),"$@"),get_conf_val($fo_userconf_conf,$Forum,'FatalTemplate')) if $@;
+  fatal($cgi,$fo_default_conf,$user_config,sprintf(get_error($fo_default_conf,'PLUGIN_ERR'),"$@"),get_conf_val($fo_default_conf,$Forum,'ErrorTemplate')) if $@;
 }
 
 foreach(@{$Plugins->{auth}}) {
@@ -192,7 +192,7 @@ foreach(@{$Plugins->{auth}}) {
 
 if($cgi->param('cs')) {
   my $err = uniquify_params($fo_default_conf,$cgi,'cs');
-  fatal($cgi,$fo_default_conf,$user_config,recode($fo_default_conf,$err),get_conf_val($fo_userconf_conf,$Forum,'FatalTemplate')) if $err;
+  fatal($cgi,$fo_default_conf,$user_config,recode($fo_default_conf,$err),get_conf_val($fo_default_conf,$Forum,'ErrorTemplate')) if $err;
 }
 
 # {{{ read user configuration
@@ -299,7 +299,7 @@ if($action eq 'save') {
             }
           }
           else {
-            fatal($cgi,$fo_default_conf,$user_config,get_error($fo_default_conf,'UNKNOWN_DIRECTIVE_TYPE'),get_conf_val($fo_userconf_conf,$Forum,'FatalTemplate'));
+            fatal($cgi,$fo_default_conf,$user_config,get_error($fo_default_conf,'UNKNOWN_DIRECTIVE_TYPE'),get_conf_val($fo_default_conf,$Forum,'ErrorTemplate'));
           }
         }
         # }}}
@@ -316,7 +316,7 @@ if($action eq 'save') {
 
   # all checks are ok, lets write the config file
   my $cfile = get_user_config_file($fo_default_conf,$UserName);
-  open DAT,'>'.$cfile or fatal($cgi,$fo_default_conf,$user_config,sprintf(get_error($fo_default_conf,'IO_ERR'),"$!"),get_conf_val($fo_userconf_conf,$Forum,'FatalTemplate'));
+  open DAT,'>'.$cfile or fatal($cgi,$fo_default_conf,$user_config,sprintf(get_error($fo_default_conf,'IO_ERR'),"$!"),get_conf_val($fo_default_conf,$Forum,'ErrorTemplate'));
 
   foreach my $dir (keys %{$own_ucfg->{global}}) {
     next if !$own_ucfg->{global}->{$dir} || !@{$own_ucfg->{global}->{$dir}};
