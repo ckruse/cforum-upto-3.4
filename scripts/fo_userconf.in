@@ -267,15 +267,15 @@ if($action eq 'save') {
         unless(exists $own_ucfg->{global}->{$dname}) {
           $own_ucfg->{$dname} = [ [ ] ];
           if($enc eq 'html') {
-            $own_ucfg->{global}->{$dname}->[0]->[$i] = encode_entities($val);
+            $own_ucfg->{global}->{$dname}->[0]->[$i++] = encode_entities($val);
           }
           else {
-            $own_ucfg->{global}->{$dname}->[0]->[$i] = $val;
+            $own_ucfg->{global}->{$dname}->[0]->[$i++] = $val;
           }
         }
         # }}}
         else {
-          $own_ucfg->{global}->{$dname}->[0]->[$i] = $val;
+          $own_ucfg->{global}->{$dname}->[0]->[$i++] = $val;
         }
 
         # {{{ directive value validation
