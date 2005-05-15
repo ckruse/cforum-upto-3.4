@@ -274,6 +274,9 @@ if($action eq 'save') {
           }
         }
         # }}}
+        else {
+          $own_ucfg->{global}->{$dname}->[0]->[$i] = $val;
+        }
 
         # {{{ directive value validation
         # everything's prepared, lets validate the input; if no validate content is given,

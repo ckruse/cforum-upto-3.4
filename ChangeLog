@@ -1,3 +1,8 @@
+2005-05-15 Christian Kruse <ckruse@wwwtech.de>
+	* scripts/fo_userconf.in: Fixed bug, new values will now be written to
+		configuration
+	* conf/modules.de.xml: Removed uneccessary attributes
+
 2005-05-14 Christian Kruse <ckruse@wwwtech.de>
 	* conf/modules.de.xml: Stripped a lot of unneccessary stuff
 	* conf/fo_userconf.conf.in: Removed unneccessary templates, added
