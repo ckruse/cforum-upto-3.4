@@ -69,7 +69,7 @@ use CForum::Validator qw/is_valid_http_link is_valid_link is_valid_mailaddress/;
 
 # {{{ generate_edit_output
 sub generate_edit_output {
-  my ($cgi,$fo_default_conf,$fo_view_conf,$fo_userconf_conf,$user_config,$err) = @_;
+  my ($cgi,$fo_default_conf,$fo_view_conf,$fo_userconf_conf,$user_config,$source,$save,$err) = @_;
   my $tpl = new CForum::Template(get_template($fo_default_conf,$user_config,get_conf_val($fo_userconf_conf,$Forum,'Edit'))) or die $@;
 
   foreach my $modconf (@{$fo_userconf_conf->{$Forum}->{ModuleConfig}}) {
@@ -83,8 +83,21 @@ sub generate_edit_output {
 
       foreach my $arg (@arguments) {
         my $pname = $arg->getAttribute('paramname');
-        my $val   = $user_config->{global}->{$dname}->[0]->[$i++];
-        $val = join ',',$cgi->param($pname) if $cgi->param($pname);
+        my $val;
+        # {{{ get value from correct source
+        if($source) {
+          if($source eq 'cgi') {
+            $val = join ',',$cgi->param($pname) if $cgi->param($pname);
+          }
+          else {
+            $val = $user_config->{global}->{$dname}->[0]->[$i++];
+          }
+        }
+        else {
+          $val = $user_config->{global}->{$dname}->[0]->[$i++];
+          $val = join ',',$cgi->param($pname) if $cgi->param($pname);
+        }
+        # }}}
 
         next if !defined($val) || !length($val);
 
@@ -120,6 +133,7 @@ sub generate_edit_output {
 
   $tpl->setvar('categories',$categories);
   $tpl->setvalue('err',$err) if $err;
+  $tpl->setvalue('save','yes') if $save;
   $tpl->setvalue('is_admin','yes') if $is_admin;
   $tpl->setvalue('forumbase',recode($fo_default_conf,get_conf_val($fo_default_conf,$Forum,'UBaseURL')));
   $tpl->setvalue('userconfig',recode($fo_default_conf,get_conf_val($fo_default_conf,$Forum,'UserConfig')));
@@ -267,7 +281,7 @@ if($action eq 'save') {
         if($validate) {
           if($val !~ /$validate/ || !validate_input($val,$dname,$fo_userconf_conf)) {
             my $err = get_node_data(($arg->getElementsByTagName('error'))[0]);
-            generate_edit_output($cgi,$fo_default_conf,$fo_view_conf,$fo_userconf_conf,$user_config,$err);
+            generate_edit_output($cgi,$fo_default_conf,$fo_view_conf,$fo_userconf_conf,$user_config,'cgi',undef,$err);
             exit;
           }
         }
@@ -278,7 +292,7 @@ if($action eq 'save') {
           if($type eq 'http-url') {
             if(is_valid_http_link($val) || !validate_input($val,$dname,$fo_userconf_conf)) {
               my $err = get_node_data(($arg->getElementsByTagName('error'))[0]);
-              generate_edit_output($cgi,$fo_default_conf,$fo_view_conf,$fo_userconf_conf,$user_config,$err);
+              generate_edit_output($cgi,$fo_default_conf,$fo_view_conf,$fo_userconf_conf,$user_config,'cgi',undef,$err);
               exit;
             }
           }
@@ -286,7 +300,7 @@ if($action eq 'save') {
           elsif($type eq 'url') {
             if(is_valid_link($val) || !validate_input($val,$dname,$fo_userconf_conf)) {
               my $err = get_node_data(($arg->getElementsByTagName('error'))[0]);
-              generate_edit_output($cgi,$fo_default_conf,$fo_view_conf,$fo_userconf_conf,$user_config,$err);
+              generate_edit_output($cgi,$fo_default_conf,$fo_view_conf,$fo_userconf_conf,$user_config,'cgi',undef,$err);
               exit;
             }
           }
@@ -294,7 +308,7 @@ if($action eq 'save') {
           elsif($type eq 'email') {
             if(is_valid_mailaddress($val) || !validate_input($val,$dname,$fo_userconf_conf)) {
               my $err = get_node_data(($arg->getElementsByTagName('error'))[0]);
-              generate_edit_output($cgi,$fo_default_conf,$fo_view_conf,$fo_userconf_conf,$user_config,$err);
+              generate_edit_output($cgi,$fo_default_conf,$fo_view_conf,$fo_userconf_conf,$user_config,'cgi',undef,$err);
               exit;
             }
           }
@@ -339,15 +353,7 @@ if($action eq 'save') {
 
   close DAT;
 
-  my $tpl = new CForum::Template(get_template($fo_default_conf,$user_config,get_conf_val($fo_userconf_conf,$Forum,'EditOk'))) or die $!;
-
-  $tpl->setvalue('forumbase',recode($fo_default_conf,get_conf_val($fo_default_conf,$Forum,'UBaseURL')));
-  $tpl->setvalue('userconfig',recode($fo_default_conf,get_conf_val($fo_default_conf,$Forum,'UserConfig')));
-  $tpl->setvalue('script',recode($fo_default_conf,get_conf_val($fo_default_conf,$Forum,'UserConfig')));
-  $tpl->setvalue('charset',get_conf_val($fo_default_conf,$Forum,'ExternCharset'));
-  $tpl->setvalue('acceptcharset',get_conf_val($fo_default_conf,$Forum,'ExternCharset').', UTF-8');
-
-  print $cgi->header(-type => 'text/html; charset='.get_conf_val($fo_default_conf,$Forum,'ExternCharset')),$tpl->parseToMem;
+  generate_edit_output($cgi,$fo_default_conf,$fo_view_conf,$fo_userconf_conf,$user_config,'cgi','yes');
 }
 # }}}
 # {{{ show options
@@ -356,7 +362,7 @@ else {
     &{$Plugins->{$action}}($fo_default_conf,$fo_view_conf,$fo_userconf_conf,$user_config,$cgi);
   }
   else {
-    generate_edit_output($cgi,$fo_default_conf,$fo_view_conf,$fo_userconf_conf,$user_config)
+    generate_edit_output($cgi,$fo_default_conf,$fo_view_conf,$fo_userconf_conf,$user_config);
   }
 }
 # }}}
