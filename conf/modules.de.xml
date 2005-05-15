@@ -401,7 +401,7 @@
   <directive name="RegisteredName" arguments="1">
     <argument paramname="registeredname" type="radio" encode="plain">
       <validate>^(?:yes|no)$</validate>
-      <error>Bitte geben Sie &quot;ja&quot; oder &quot;nein&quot; an!</error>
+      <error>Soll Ihr Name registriert werden? Bitte geben Sie &quot;ja&quot; oder &quot;nein&quot; an!</error>
     </argument>
   </directive>
 
