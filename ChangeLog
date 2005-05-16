@@ -1,3 +1,8 @@
+2005-05-16 Christian Kruse <ckruse@wwwtech.de>
+	* src/serverlib.c: Fixed smaller bug (str_init_growth() call to u_char *
+		variable)
+	* src/archiver.c: Fixed really bad bug with counting variables
+
 2005-05-15 Christian Kruse <ckruse@wwwtech.de>
 	* scripts/fo_userconf.in: Fixed bug, new values will now be written to
 		configuration

@@ -185,8 +185,6 @@ void cf_log(int mode,const u_char *file,unsigned int line,const u_char *format, 
   if(mode & CF_DBG) return;
   #endif
 
-  str_init_growth(&str,128);
-
   for(ptr1=ptr=(u_char *)file;*ptr;ptr++) {
     if(*ptr == '/') ptr1 = ptr + 1;
   }
