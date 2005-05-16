@@ -210,10 +210,12 @@ void cf_log(int mode,const u_char *file,unsigned int line,const u_char *format, 
 
   va_start(ap, format);
   if(mode & CF_ERR) {
+    #ifndef DEBUG
     fwrite(str,sz,1,head.log.err);
     vfprintf(head.log.err,format,ap);
 
     if(mode & CF_FLSH) fflush(head.log.err);
+    #endif
 
     #ifdef DEBUG
     fwrite(str,sz,1,stderr);
@@ -222,10 +224,12 @@ void cf_log(int mode,const u_char *file,unsigned int line,const u_char *format, 
     #endif
   }
   else if(mode & CF_STD) {
+    #ifndef DEBUG
     fwrite(str,sz,1,head.log.std);
     vfprintf(head.log.std,format,ap);
 
     if(mode & CF_FLSH) fflush(head.log.std);
+    #endif
 
     #ifdef DEBUG
     fwrite(str,sz,1,stdout);
@@ -235,13 +239,9 @@ void cf_log(int mode,const u_char *file,unsigned int line,const u_char *format, 
   }
   #ifdef DEBUG
   else {
-    fwrite(str,sz,1,head.log.std);
     fwrite(str,sz,1,stdout);
-    fwrite("DEBUG: ",7,1,head.log.std);
     fwrite("DEBUG: ",7,1,stdout);
-    vfprintf(head.log.std,format,ap);
     vfprintf(stdout,format,ap);
-    if(mode & CF_FLSH) fflush(head.log.std);
     fflush(stdout);
   }
   #endif
