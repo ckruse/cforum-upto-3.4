@@ -1,4 +1,3 @@
-2005-04-26 Christian Kruse <ckruse@wwwtech.de>
-	* src/modules/flt_xmlstorage.c: Fixed a _very_ nasty and bad bug in the
-		archiving functions
+2005-05-16 Christian Kruse <ckruse@wwwtech.de>
+	* src/archiver.c: Fixed a really bad bug in archiver.c
 

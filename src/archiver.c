@@ -267,8 +267,8 @@ void cf_write_threadlist(t_forum *forum) {
           cf_log(CF_DBG|CF_FLSH,__FILE__,__LINE__,"Discwriter ended\n");
 
           if(ret == FLT_OK && Modules[THRDLST_WRITTEN_HANDLER].elements) {
-            for(j=0;j<Modules[THRDLST_WRITTEN_HANDLER].elements;++j) {
-              handler = array_element_at(&Modules[THRDLST_WRITTEN_HANDLER],j);
+            for(k=0;k<Modules[THRDLST_WRITTEN_HANDLER].elements;++k) {
+              handler = array_element_at(&Modules[THRDLST_WRITTEN_HANDLER],k);
               fkt     = (t_archive_thrdlst_writer)handler->func;
 
               fkt(forum);
