@@ -1,9 +1,9 @@
 package Plugins::UserconfCategories;
 
-# \file ImportExport.pm
+# \file UserconfCategories.pm
 # \author Christian Kruse, <ckruse@wwwtech.de>
 #
-# a plugin to import or export configuration data
+# a plugin to make whitelist and blacklist in fo_userconf nicer
 
 # {{{ initial comments
 #
@@ -25,6 +25,14 @@ use ForumUtils qw/get_conf_val/;
 # }}}
 
 push @{$main::Plugins->{display}},\&execute;
+push @{$main::Plugins->{writeconf}},\&transform;
+
+sub transform {
+  my ($fo_default_conf,$fo_view_conf,$fo_userconf_conf,$user_config,$own_ucfg,$cgi) = @_;
+
+  $own_ucfg->{global}->{WhiteList}->[0]->[0] =~ s!\015\012|\015|\012!,!sg;
+  $own_ucfg->{global}->{BlackList}->[0]->[0] =~ s!\015\012|\015|\012!,!sg;
+}
 
 sub execute {
   my ($fo_default_conf,$fo_userconf_conf,$user_config,$cgi,$tpl) = @_;

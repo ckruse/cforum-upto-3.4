@@ -2,6 +2,9 @@
 	* src/serverlib.c: Fixed smaller bug (str_init_growth() call to u_char *
 		variable)
 	* src/archiver.c: Fixed really bad bug with counting variables
+	* src/perl/Plugins/UserconfCategories.pm: Added hook to re-transform blacklist
+		and whitelist
+	* src/perl/Plugins/ImportExport.pm: Moved to new modules.xml format
 
 2005-05-15 Christian Kruse <ckruse@wwwtech.de>
 	* scripts/fo_userconf.in: Fixed bug, new values will now be written to

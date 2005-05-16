@@ -47,8 +47,10 @@ sub exprt {
 
   $root->setAttribute('version',CF_VER);
 
-  my @directives = $uconf->findnodes('/config/page/section/directive');
+  my @directives = $uconf->findnodes('/config/directive');
   foreach my $directive (@directives) {
+    next if $directive->getAttribute('invisible');
+
     if(my @vals = get_conf_val($user_config,'global',$directive->getAttribute('name'))) {
       my $dir_el = $doc->createElement('Directive');
       $dir_el->setAttribute('name',$directive->getAttribute('name'));
@@ -85,9 +87,10 @@ sub imprt {
   my $moddoc = XML::GDOME->createDocFromURI(sprintf(get_conf_val($fo_userconf_conf,$main::Forum,'ModuleConfig'),get_conf_val($fo_default_conf,$main::Forum,'Language'))) or fatal($cgi,$fo_default_conf,$user_config,sprintf(get_error($fo_default_conf,'XML_PARSE'),"$!"),get_conf_val($fo_userconf_conf,$main::Forum,'FatalTemplate'));
 
   my $dhash = {};
-  my @directives = $moddoc->findnodes('/config/page/section/directive');
+  my @directives = $moddoc->findnodes('/config/directive');
 
   foreach my $directive (@directives) {
+    next if $directive->getAttribute('invisible');
     my $name = $directive->getAttribute('name');
     $dhash->{$name} = $directive;
   }
