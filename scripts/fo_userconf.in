@@ -251,15 +251,19 @@ if($action eq 'save') {
 
         # {{{ argument value may be empty, delete it or set list value empty
         if(!$val || $val eq 'default') {
-          if($i == 0) {
-            delete $own_ucfg->{global}->{$dname} if exists $own_ucfg->{global}->{$dname};
-          }
-          else {
-            $own_ucfg->{global}->{$dname}->[0]->[$i] = '' if exists $own_ucfg->{global}->{$dname};
+          # if we have a ifNotCommitted attribute, we get the default value from there
+          unless($val = $arg->getAttribute('ifNotCommitted')) {
+            if($i == 0) {
+              delete $own_ucfg->{global}->{$dname} if exists $own_ucfg->{global}->{$dname};
+            }
+            else {
+              $own_ucfg->{global}->{$dname}->[0]->[$i] = '' if exists $own_ucfg->{global}->{$dname};
+            }
+
+            $i++;
+            next;
           }
 
-          $i++;
-          next;
         }
         # }}}
 
