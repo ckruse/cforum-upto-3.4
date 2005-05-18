@@ -1,5 +1,6 @@
 2005-05-18 Christian Kruse <ckruse@wwwtech.de>
 	* src/fo_feeds.c: Small bugfix in no-shm-mode
+	* src/modules/flt_openclose.c: Fixed bug in no-shm-mode
 
 2005-05-17 Christian Kruse <ckruse@wwwtech.de>
 	* conf/modules.de.xml: Added ifNotCommitted attribute on some directives

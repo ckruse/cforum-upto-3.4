@@ -138,7 +138,7 @@ int flt_oc_exec_xmlhttp(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc,v
         /* }}} */
 
         #ifndef CF_SHARED_MEM
-        if(cf_get_message_through_sock(sock,&tsd,&thread,fo_thread_tplname,tid,0,CF_KILL_DELETED) == -1)
+        if(cf_get_message_through_sock(sock,&rl,&thread,fo_thread_tplname,tid,0,CF_KILL_DELETED) == -1)
         #else
         if(cf_get_message_through_shm(shm,&thread,fo_thread_tplname,tid,0,CF_KILL_DELETED) == -1)
         #endif
