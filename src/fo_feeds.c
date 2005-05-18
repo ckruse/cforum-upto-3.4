@@ -756,6 +756,7 @@ void show_threadlist(void *shm_ptr,t_cf_hash *head)
   #ifndef CF_SHARED_MEM
   rline_t tsd;
   u_char *line;
+  size_t len;
   #else
   void *ptr,*ptr1;
   #endif
