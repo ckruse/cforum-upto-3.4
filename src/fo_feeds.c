@@ -757,6 +757,7 @@ void show_threadlist(void *shm_ptr,t_cf_hash *head)
   rline_t tsd;
   u_char *line;
   size_t len;
+  u_char buff[512];
   #else
   void *ptr,*ptr1;
   #endif
