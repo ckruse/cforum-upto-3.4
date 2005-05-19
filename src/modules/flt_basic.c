@@ -63,12 +63,15 @@ int flt_basic_execute(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_
   u_char *time;
 
   cf_set_variable(begin,cs,"ubase",ubase->values[0],strlen(ubase->values[0]),1);
+  cf_set_variable(end,cs,"ubase",ubase->values[0],strlen(ubase->values[0]),1);
 
   if(UserName) {
     ucfg = cfg_get_first_value(dc,forum_name,"UserConfig");
 
     cf_tpl_setvalue(begin,"authed",TPL_VARIABLE_STRING,"1",1);
+    cf_tpl_setvalue(end,"authed",TPL_VARIABLE_STRING,"1",1);
     cf_set_variable(begin,cs,"userconfig",ucfg->values[0],strlen(ucfg->values[0]),1);
+    cf_set_variable(end,cs,"userconfig",ucfg->values[0],strlen(ucfg->values[0]),1);
 
     if((Cfg.FontColor && *Cfg.FontColor) || (Cfg.FontSize && *Cfg.FontSize) || (Cfg.FontFamily && *Cfg.FontFamily)) {
       cf_tpl_setvalue(begin,"font",TPL_VARIABLE_STRING,"1",1);
@@ -100,6 +103,7 @@ int flt_basic_execute(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_
   else {
     ucfg = cfg_get_first_value(dc,forum_name,"UserRegister");
     cf_set_variable(begin,cs,"userconfig",ucfg->values[0],strlen(ucfg->values[0]),1);
+    cf_set_variable(end,cs,"userconfig",ucfg->values[0],strlen(ucfg->values[0]),1);
   }
 
   return FLT_DECLINE;

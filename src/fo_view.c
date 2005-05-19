@@ -300,9 +300,6 @@ void show_threadlist(void *shm_ptr,t_cf_hash *head)
       cf_error_message("E_TPL_NOT_FOUND",NULL);
       return;
     }
-    cf_set_variable(&tpl_begin,cs,"forumbase",fbase->values[0],strlen(fbase->values[0]),1);
-    cf_set_variable(&tpl_begin,cs,"postscript",pbase->values[0],strlen(pbase->values[0]),1);
-
     if(cf_tpl_init(&tpl_end,rm->post_threadlist_tpl) != 0) {
       printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
 
@@ -310,10 +307,14 @@ void show_threadlist(void *shm_ptr,t_cf_hash *head)
       return;
     }
 
+    cf_set_variable(&tpl_begin,cs,"forumbase",fbase->values[0],strlen(fbase->values[0]),1);
     cf_set_variable(&tpl_end,cs,"forumbase",fbase->values[0],strlen(fbase->values[0]),1);
+    cf_set_variable(&tpl_begin,cs,"postscript",pbase->values[0],strlen(pbase->values[0]),1);
+    cf_set_variable(&tpl_end,cs,"postscript",pbase->values[0],strlen(pbase->values[0]),1);
     cf_tpl_setvalue(&tpl_begin,"charset",TPL_VARIABLE_STRING,cs->values[0],strlen(cs->values[0]));
-    cf_tpl_setvalue(&tpl_end,"cf_version",TPL_VARIABLE_STRING,CF_VERSION,strlen(CF_VERSION),1);
+    cf_tpl_setvalue(&tpl_end,"charset",TPL_VARIABLE_STRING,cs->values[0],strlen(cs->values[0]));
     cf_tpl_setvalue(&tpl_begin,"cf_version",TPL_VARIABLE_STRING,CF_VERSION,strlen(CF_VERSION),1);
+    cf_tpl_setvalue(&tpl_end,"cf_version",TPL_VARIABLE_STRING,CF_VERSION,strlen(CF_VERSION),1);
     /* }}} */
 
     /* run some plugins */

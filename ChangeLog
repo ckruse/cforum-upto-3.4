@@ -1,3 +1,7 @@
+2005-05-19 Christian Kruse <ckruse@wwwtech.de>
+	* src/fo_view.c: Changed order of variable setting
+	* src/modules/flt_basic.c: Added some variables to end template
+
 2005-05-18 Christian Kruse <ckruse@wwwtech.de>
 	* src/fo_feeds.c: Small bugfix in no-shm-mode
 	* src/modules/flt_openclose.c: Fixed bug in no-shm-mode
