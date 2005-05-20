@@ -110,8 +110,6 @@ sub generate_edit_output {
               $val = $user_config->{global}->{$dname}->[0]->[$i];
             }
             # }}}
-
-            ++$i;
           }
         }
         else {
@@ -136,12 +134,11 @@ sub generate_edit_output {
           }
           # }}}
 
-          ++$i;
-
           $val = join ',',$cgi->param($pname) if $cgi->param($pname);
         }
         # }}}
 
+        ++$i;
         next if !defined($val) || !length($val);
 
         if($arg->getAttribute('parse') eq 'date') {
