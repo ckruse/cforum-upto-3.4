@@ -3,4 +3,5 @@
 		as minlength
 	* src/stringutils.c: Fixed a bug in cf_strlen_utf8(), forgot to initialize a
 		variable and returned the wrong value
+	* src/fo_vote.c: Fixed silly bug, forgot an else before an if
 
