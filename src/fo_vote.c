@@ -361,7 +361,6 @@ int main(int argc,char *argv[],char *env[]) {
                   free(line);
 
                   if((line = readline(sock,&rsd)) != NULL) {
-                    fprintf(stderr,"second line is: %s\n",line);
                     printf("%d",atoi(line+5));
                     free(line);
                   }
@@ -383,7 +382,7 @@ int main(int argc,char *argv[],char *env[]) {
 
           close(sock);
         }
-        if(send204 && cf_strcmp(send204->values[0],"yes") == 0) {
+        else if(send204 && cf_strcmp(send204->values[0],"yes") == 0) {
           close(sock);
           printf("Status: 204 No Content\015\012\015\012");
         }

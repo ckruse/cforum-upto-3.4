@@ -1,3 +1,11 @@
+2005-05-20 Christian Kruse <ckruse@wwwtech.de>
+	* conf/errormessages.de.txt: Made an error message more amusing
+	* src/fo_vote.c: Fixed a small bug, forgot an else before an if
+	* src/perl/Plugins/ImportExport.pm: Changed fatal template to the one of
+		fo_default.conf
+	* src/fo_post.c: Fixed a small bug in length validation
+	* src/stringutils.c: Fixed a silly bug in cf_strlen_utf8()
+
 2005-05-19 Christian Kruse <ckruse@wwwtech.de>
 	* src/fo_view.c: Changed order of variable setting
 	* src/modules/flt_basic.c: Added some variables to end template

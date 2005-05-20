@@ -21,7 +21,7 @@ E_subject_long: Sie haben ein zu langes Thema angegeben.
 E_subject_invalid: Sind Sie sicher, dass Sie mit diesem Titel posten möchten?
 E_subject_missing: Bitte geben Sie einen Titel an!
 E_body_short: Haben Sie so wenig zu sagen?
-E_body_long: Das war jetzt etwas viel.
+E_body_long: Sie sind wohl etwas geschwätzig?
 E_body_missing: Haben Sie so wenig zu sagen?
 E_EMail_invalid: Ihre E-Mail-Adresse scheint ungültig zu sein.
 E_email_missing: Sie müssen eine E-Mail-Adresse angeben!
