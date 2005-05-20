@@ -25,7 +25,7 @@ use CGI::Carp qw(fatalsToBrowser);
 use XML::GDOME;
 use Storable qw(dclone);
 
-use ForumUtils qw/get_conf_val fatal get_template get_user_config_file get_error recode get_node_data/;
+use ForumUtils qw/get_conf_val fatal get_template get_user_config_file get_error recode get_node_data write_userconf/;
 use CForum::Validator qw/is_valid_http_link is_valid_link is_valid_mailaddress/;
 use CForum::Template;
 
@@ -35,6 +35,7 @@ $main::Plugins->{exprt} = \&exprt;
 $main::Plugins->{imprt} = \&imprt;
 $main::Plugins->{imprtform} = \&imprtform;
 
+# {{{ export
 sub exprt {
   my ($fo_default_conf,$fo_view_conf,$fo_userconf_conf,$user_config,$cgi) = @_;
 
@@ -66,13 +67,15 @@ sub exprt {
 
   print $cgi->header(-type => "text/xml; charset=UTF-8",-content_disposition => 'attachment; filename='.$main::UserName.'.xml'),$doc->toString;
 }
+# }}}
 
+# {{{ import
 sub imprt {
   my ($fo_default_conf,$fo_view_conf,$fo_userconf_conf,$user_config,$cgi) = @_;
 
   fatal($cgi,$fo_default_conf,$user_config,sprintf(get_error($fo_default_conf,'MUST_AUTH'),"$!"),get_conf_val($fo_userconf_conf,$main::Forum,'FatalTemplate')) unless $main::UserName;
 
-  my $own_conf = dclone($user_config->{global});
+  my $own_conf = dclone($user_config);
   my $fh = $cgi->upload('import');
   my $str = '';
 
@@ -141,32 +144,13 @@ sub imprt {
     }
 
 
-    $own_conf->{$name} = [[@directive_values]];
+    $own_conf->{global}->{$name} = [[@directive_values]];
   }
 
   my $file = get_user_config_file($fo_default_conf,$main::UserName);
-  open DAT,'>',$file or fatal($cgi,$fo_default_conf,$user_config,sprintf(get_error($fo_default_conf,'IO_ERR'),"$!"),get_conf_val($fo_userconf_conf,$main::Forum,'FatalTemplate'));
-
-  foreach my $dir (keys %{$own_conf}) {
-    next if !$own_conf->{$dir} || !@{$own_conf->{$dir}};
-
-    print DAT $dir;
-    foreach my $entry (@{$own_conf->{$dir}}) {
-      foreach(@{$entry}) {
-        my $val = $_ || '';
-
-        $val =~ s!\\!\\\\!g;
-        $val =~ s/\015\012|\015|\012/\\n/sg;
-        $val =~ s/"/\\"/g;
-
-        print DAT ' "'.$val.'"';
-      }
-    }
-
-    print DAT "\n";
+  if(my $ret = write_userconf($fo_default_conf,$file,$own_conf)) {
+    fatal($cgi,$fo_default_conf,$user_config,$ret,get_conf_val($fo_default_conf,$main::Forum,'ErrorTemplate'));
   }
-
-  close DAT;
 
   my $tpl = new CForum::Template(get_template($fo_default_conf,$user_config,get_conf_val($fo_userconf_conf,$main::Forum,'ImportOk')));
 
@@ -177,6 +161,7 @@ sub imprt {
 
   print $cgi->header(-type => "text/html; charset=".get_conf_val($fo_default_conf,$main::Forum,'ExternCharset')),$tpl->parseToMem;
 }
+# }}}
 
 sub imprtform {
   my ($fo_default_conf,$fo_view_conf,$fo_userconf_conf,$user_config,$cgi) = @_;

@@ -34,6 +34,10 @@ BEGIN {
     get_conf_val
     create_directory_structure
     is_admin
+    validate_input
+    merge_config
+    write_userconf
+    config_to_template
   );
 }
 
@@ -42,9 +46,11 @@ sub VERSION {(q$Revision$ =~ /([\d.]+)\s*$/)[0] or '0.0'}
 use BerkeleyDB;
 use POSIX qw/setlocale strftime LC_ALL/;
 
+use Storable qw/dclone/;
+
 use CForum::Template;
 use CForum::Clientlib qw/htmlentities charset_convert_entities charset_convert htmlentities_charset_convert is_valid_utf8_string/;
-use CForum::Validator;
+use CForum::Validator qw/is_valid_http_link is_valid_link is_valid_mailaddress/;
 
 my $Msgs = undef;
 # }}}
@@ -498,6 +504,225 @@ sub is_admin {
   return;
 }
 # }}}
+
+# {{{ validate_input
+sub validate_input {
+  my $val   = shift;
+  my $dname = shift;
+  my $cfg   = shift;
+
+  if(exists $cfg->{$main::Forum}->{MinVal}) {
+    my ($minval) = grep { $_->[0] eq $dname } @{$cfg->{$main::Forum}->{MinVal}};
+    return if defined $minval && $minval->[1] > $val;
+  }
+
+  if(exists $cfg->{$main::Forum}->{MaxVal}) {
+    my ($maxval) = grep { $_->[0] eq $dname } @{$cfg->{$main::Forum}->{MaxVal}};
+    return if defined $maxval && $maxval->[1] < $val;
+  }
+
+  if(exists $cfg->{$main::Forum}->{MinLength}) {
+    my ($minlen) = grep { $_->[0] eq $dname } @{$cfg->{$main::Forum}->{MinLength}};
+    return if defined $minlen && $minlen->[1] > length($val);
+  }
+
+  if(exists $cfg->{$main::Forum}->{MaxVal}) {
+    my ($maxlen) = grep { $_->[0] eq $dname } @{$cfg->{$main::Forum}->{MaxLength}};
+    return if defined $maxlen && $maxlen->[1] < length($val);
+  }
+
+  return 1;
+}
+# }}}
+
+# {{{ merge_config
+sub merge_config {
+  my $fo_default_conf  = shift;
+  my $fo_userconf_conf = shift;
+  my $user_config      = shift;
+  my $cgi              = shift;
+  my $dont_touch       = shift;
+
+  my $own_ucfg = dclone($user_config);
+
+  foreach my $modconf (@{$fo_userconf_conf->{$main::Forum}->{ModuleConfig}}) {
+    my $doc   = XML::GDOME->createDocFromURI(sprintf($modconf->[0],get_conf_val($fo_default_conf,$main::Forum,'Language'))) or die $!;
+    my @nodes = $doc->findnodes('/config/*');
+
+    foreach my $directive (@nodes) {
+      my $dname     = $directive->getAttribute('name');
+      my @arguments = $directive->getElementsByTagName('argument');
+      my $i         = 0;
+
+      foreach my $arg (@arguments) {
+        my $pname    = $arg->getAttribute('paramname');
+        my $vali     = ($arg->getElementsByTagName('validate'))[0];
+        my $validate = get_node_data($vali);
+        my $enc      = $arg->getAttribute('encode');
+        my $val;
+
+        $val = join ',',$cgi->param($pname) if defined $cgi->param($pname);
+
+        # {{{ argument value may be empty, delete it or set list value empty
+        if(!$val || $val eq 'default') {
+          # {{{ we may not touch the value if it has not been committed
+          if(!defined $val && $dont_touch) {
+            $i++;
+            next;
+          }
+          # }}}
+
+          # {{{ if we have a ifNotCommitted attribute, we get the default value from there
+          unless($val = $arg->getAttribute('ifNotCommitted')) {
+            if($i == 0) {
+              delete $own_ucfg->{global}->{$dname} if exists $own_ucfg->{global}->{$dname};
+            }
+            else {
+              $own_ucfg->{global}->{$dname}->[0]->[$i] = '' if exists $own_ucfg->{global}->{$dname};
+            }
+
+            $i++;
+            next;
+          }
+          # }}}
+
+        }
+        # }}}
+
+        # {{{ we deleted the first value
+        unless(exists $own_ucfg->{global}->{$dname}) {
+          $own_ucfg->{global}->{$dname} = [ [ ] ];
+          if($enc eq 'html') {
+            $own_ucfg->{global}->{$dname}->[0]->[$i++] = encode_entities($val);
+          }
+          else {
+            $own_ucfg->{global}->{$dname}->[0]->[$i++] = $val;
+          }
+        }
+        # }}}
+        else {
+          $own_ucfg->{global}->{$dname}->[0]->[$i++] = $val;
+        }
+
+        # {{{ directive value validation
+        # everything's prepared, lets validate the input; if no validate content is given,
+        # we look for the 'type' attribute and use a predefined validation
+        if($validate) {
+          return get_node_data(($arg->getElementsByTagName('error'))[0]) if $val !~ /$validate/ || !validate_input($val,$dname,$fo_userconf_conf);
+        }
+        else {
+          my $type = $vali->getAttribute('type');
+
+          # http-url is a specialization for 'url'
+          if($type eq 'http-url') {
+            return get_node_data(($arg->getElementsByTagName('error'))[0]) if is_valid_http_link($val) || !validate_input($val,$dname,$fo_userconf_conf);
+          }
+          # url means, *all* urls, inkl. gopher and so on
+          elsif($type eq 'url') {
+            return get_node_data(($arg->getElementsByTagName('error'))[0]) if is_valid_link($val) || !validate_input($val,$dname,$fo_userconf_conf);
+          }
+          # email means, input is a mail address
+          elsif($type eq 'email') {
+            return get_node_data(($arg->getElementsByTagName('error'))[0]) if is_valid_mailaddress($val) || !validate_input($val,$dname,$fo_userconf_conf);
+          }
+          else {
+            fatal($cgi,$fo_default_conf,$user_config,get_error($fo_default_conf,'UNKNOWN_DIRECTIVE_TYPE'),get_conf_val($fo_default_conf,$main::Forum,'ErrorTemplate'));
+          }
+        }
+        # }}}
+      }
+    }
+  }
+
+  return $own_ucfg;
+}
+# }}}
+
+# {{{ write_userconf
+sub write_userconf {
+  my $fo_default_conf = shift;
+  my $cfile           = shift;
+  my $ucfg            = shift;
+
+  open DAT,'>'.$cfile or return sprintf get_error($fo_default_conf,'IO_ERR'),"$!";
+
+  foreach my $dir (keys %{$ucfg->{global}}) {
+    next if !$ucfg->{global}->{$dir} || !@{$ucfg->{global}->{$dir}};
+
+    print DAT $dir;
+    foreach my $entry (@{$ucfg->{global}->{$dir}}) {
+      foreach(@{$entry}) {
+        my $val = $_ || '';
+
+        $val =~ s!\\!\\\\!g;
+        $val =~ s/\015\012|\015|\012/\\n/sg;
+        $val =~ s/"/\\"/g;
+
+        print DAT ' "'.$val.'"';
+      }
+    }
+
+    print DAT "\n";
+  }
+
+  close DAT;
+  return;
+}
+# }}}
+
+sub config_to_template {
+  my $fo_default_conf  = shift;
+  my $fo_userconf_conf = shift;
+  my $fo_view_conf     = shift;
+  my $user_config      = shift;
+  my $tpl              = shift;
+  my $cgi              = shift;
+
+  foreach my $modconf (@{$fo_userconf_conf->{$main::Forum}->{ModuleConfig}}) {
+    my $doc   = XML::GDOME->createDocFromURI(sprintf($modconf->[0],get_conf_val($fo_default_conf,$main::Forum,'Language'))) or die $!;
+    my @nodes = $doc->findnodes('/config/*');
+
+    foreach my $directive (@nodes) {
+      my $dname     = $directive->getAttribute('name');
+      my @arguments = $directive->getElementsByTagName('argument');
+      my $i         = 0;
+
+      foreach my $arg (@arguments) {
+        my $val;
+
+        # {{{ get value cascading down from config
+        unless(exists $user_config->{global}->{$dname}) {
+          unless(exists $fo_default_conf->{$main::Forum}->{$dname}) {
+            unless(exists $fo_userconf_conf->{$main::Forum}->{$dname}) {
+              unless(exists $fo_view_conf->{$main::Forum}->{$dname}) {
+                ++$i;
+                next;
+              }
+              else {
+                $val = $fo_view_conf->{$main::Forum}->{$dname}->[0]->[$i];
+              }
+            }
+            else {
+              $val = $fo_userconf_conf->{$main::Forum}->{$dname}->[0]->[$i];
+            }
+          }
+          else {
+            $val = $fo_default_conf->{$main::Forum}->{$dname}->[0]->[$i];
+          }
+        }
+        else {
+          $val = $user_config->{global}->{$dname}->[0]->[$i];
+        }
+        # }}}
+
+        $tpl->setvalue($arg->getAttribute('paramname'),recode($fo_default_conf,$val)) if $val;
+
+        ++$i;
+      }
+    }
+  }
+
+}
 
 # require
 1;

@@ -45,7 +45,6 @@ use XML::GDOME;
 use HTML::Entities;
 use CForum::Template;
 
-use Storable qw/dclone/;
 use POSIX qw/mktime/;
 use File::Path;
 
@@ -152,36 +151,6 @@ sub generate_edit_output {
 }
 # }}}
 
-# {{{ validate_input
-sub validate_input {
-  my $val   = shift;
-  my $dname = shift;
-  my $cfg   = shift;
-
-  if(exists $cfg->{$Forum}->{MinVal}) {
-    my ($minval) = grep { $_->[0] eq $dname } @{$cfg->{$Forum}->{MinVal}};
-    return if defined $minval && $minval->[1] > $val;
-  }
-
-  if(exists $cfg->{$Forum}->{MaxVal}) {
-    my ($maxval) = grep { $_->[0] eq $dname } @{$cfg->{$Forum}->{MaxVal}};
-    return if defined $maxval && $maxval->[1] < $val;
-  }
-
-  if(exists $cfg->{$Forum}->{MinLength}) {
-    my ($minlen) = grep { $_->[0] eq $dname } @{$cfg->{$Forum}->{MinLength}};
-    return if defined $minlen && $minlen->[1] > length($val);
-  }
-
-  if(exists $cfg->{$Forum}->{MaxVal}) {
-    my ($maxlen) = grep { $_->[0] eq $dname } @{$cfg->{$Forum}->{MaxLength}};
-    return if defined $maxlen && $maxlen->[1] < length($val);
-  }
-
-  return 1;
-}
-# }}}
-
 my @fnames;
 die "could not get config files" unless @fnames = get_config_files("fo_default","fo_view","fo_userconf");
 
@@ -231,134 +200,27 @@ else {
 
 # {{{ save user configuration
 if($action eq 'save') {
-  my $own_ucfg = dclone($user_config);
+  # {{{ merge config
+  my $own_ucfg = merge_config($fo_default_conf,$fo_userconf_conf,$user_config,$cgi);
 
-  foreach my $modconf (@{$fo_userconf_conf->{$Forum}->{ModuleConfig}}) {
-    my $doc   = XML::GDOME->createDocFromURI(sprintf($modconf->[0],get_conf_val($fo_default_conf,$Forum,'Language'))) or die $!;
-    my @nodes = $doc->findnodes('/config/*');
-
-    foreach my $directive (@nodes) {
-      my $dname     = $directive->getAttribute('name');
-      my @arguments = $directive->getElementsByTagName('argument');
-      my $i         = 0;
-
-      foreach my $arg (@arguments) {
-        my $pname    = $arg->getAttribute('paramname');
-        my $vali     = ($arg->getElementsByTagName('validate'))[0];
-        my $validate = get_node_data($vali);
-        my $val      = join ',',$cgi->param($pname);
-        my $enc      = $arg->getAttribute('encode');
-
-        # {{{ argument value may be empty, delete it or set list value empty
-        if(!$val || $val eq 'default') {
-          # if we have a ifNotCommitted attribute, we get the default value from there
-          unless($val = $arg->getAttribute('ifNotCommitted')) {
-            if($i == 0) {
-              delete $own_ucfg->{global}->{$dname} if exists $own_ucfg->{global}->{$dname};
-            }
-            else {
-              $own_ucfg->{global}->{$dname}->[0]->[$i] = '' if exists $own_ucfg->{global}->{$dname};
-            }
-
-            $i++;
-            next;
-          }
-
-        }
-        # }}}
-
-        # {{{ we deleted the first value
-        unless(exists $own_ucfg->{global}->{$dname}) {
-          $own_ucfg->{$dname} = [ [ ] ];
-          if($enc eq 'html') {
-            $own_ucfg->{global}->{$dname}->[0]->[$i++] = encode_entities($val);
-          }
-          else {
-            $own_ucfg->{global}->{$dname}->[0]->[$i++] = $val;
-          }
-        }
-        # }}}
-        else {
-          $own_ucfg->{global}->{$dname}->[0]->[$i++] = $val;
-        }
-
-        # {{{ directive value validation
-        # everything's prepared, lets validate the input; if no validate content is given,
-        # we look for the 'type' attribute and use a predefined validation
-        if($validate) {
-          if($val !~ /$validate/ || !validate_input($val,$dname,$fo_userconf_conf)) {
-            my $err = get_node_data(($arg->getElementsByTagName('error'))[0]);
-            generate_edit_output($cgi,$fo_default_conf,$fo_view_conf,$fo_userconf_conf,$user_config,'cgi',undef,$err);
-            exit;
-          }
-        }
-        else {
-          my $type = $vali->getAttribute('type');
-
-          # http-url is a specialization for 'url'
-          if($type eq 'http-url') {
-            if(is_valid_http_link($val) || !validate_input($val,$dname,$fo_userconf_conf)) {
-              my $err = get_node_data(($arg->getElementsByTagName('error'))[0]);
-              generate_edit_output($cgi,$fo_default_conf,$fo_view_conf,$fo_userconf_conf,$user_config,'cgi',undef,$err);
-              exit;
-            }
-          }
-          # url means, *all* urls, inkl. gopher and so on
-          elsif($type eq 'url') {
-            if(is_valid_link($val) || !validate_input($val,$dname,$fo_userconf_conf)) {
-              my $err = get_node_data(($arg->getElementsByTagName('error'))[0]);
-              generate_edit_output($cgi,$fo_default_conf,$fo_view_conf,$fo_userconf_conf,$user_config,'cgi',undef,$err);
-              exit;
-            }
-          }
-          # email means, input is a mail address
-          elsif($type eq 'email') {
-            if(is_valid_mailaddress($val) || !validate_input($val,$dname,$fo_userconf_conf)) {
-              my $err = get_node_data(($arg->getElementsByTagName('error'))[0]);
-              generate_edit_output($cgi,$fo_default_conf,$fo_view_conf,$fo_userconf_conf,$user_config,'cgi',undef,$err);
-              exit;
-            }
-          }
-          else {
-            fatal($cgi,$fo_default_conf,$user_config,get_error($fo_default_conf,'UNKNOWN_DIRECTIVE_TYPE'),get_conf_val($fo_default_conf,$Forum,'ErrorTemplate'));
-          }
-        }
-        # }}}
-      }
-    }
+  if(!$own_ucfg || !ref($own_ucfg)) {
+    generate_edit_output($cgi,$fo_default_conf,$fo_view_conf,$fo_userconf_conf,$user_config,'cgi',undef,$own_ucfg);
+    exit;
   }
+  # }}}
 
-  #
-  # run config plugins
-  #
+  # {{{ run config plugins
   foreach(@{$Plugins->{writeconf}}) {
     &$_($fo_default_conf,$fo_view_conf,$fo_userconf_conf,$user_config,$own_ucfg,$cgi);
   }
+  # }}}
 
-  # all checks are ok, lets write the config file
+  # {{{ all checks are ok, lets write the config file
   my $cfile = get_user_config_file($fo_default_conf,$UserName);
-  open DAT,'>'.$cfile or fatal($cgi,$fo_default_conf,$user_config,sprintf(get_error($fo_default_conf,'IO_ERR'),"$!"),get_conf_val($fo_default_conf,$Forum,'ErrorTemplate'));
-
-  foreach my $dir (keys %{$own_ucfg->{global}}) {
-    next if !$own_ucfg->{global}->{$dir} || !@{$own_ucfg->{global}->{$dir}};
-
-    print DAT $dir;
-    foreach my $entry (@{$own_ucfg->{global}->{$dir}}) {
-      foreach(@{$entry}) {
-        my $val = $_ || '';
-
-        $val =~ s!\\!\\\\!g;
-        $val =~ s/\015\012|\015|\012/\\n/sg;
-        $val =~ s/"/\\"/g;
-
-        print DAT ' "'.$val.'"';
-      }
-    }
-
-    print DAT "\n";
+  if(my $ret = write_userconf($fo_default_conf,$cfile,$own_ucfg)) {
+    fatal($cgi,$fo_default_conf,$user_config,$ret,get_conf_val($fo_default_conf,$Forum,'ErrorTemplate'));
   }
-
-  close DAT;
+  # }}}
 
   generate_edit_output($cgi,$fo_default_conf,$fo_view_conf,$fo_userconf_conf,$user_config,'cgi','yes');
 }
