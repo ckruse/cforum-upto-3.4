@@ -60,6 +60,8 @@ use ForumUtils qw(
   get_conf_val
   fatal
   is_admin
+  merge_config
+  write_userconf
 );
 
 use CForum::Validator qw/is_valid_http_link is_valid_link is_valid_mailaddress/;
