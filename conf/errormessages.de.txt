@@ -4,7 +4,6 @@ E_TPL_NOT_FOUND: Leider konnte das Template nicht gefunden werden. Bitte wenden 
 E_NO_THREADLIST: Leider konnte die Threadliste nicht angefordert werden. Bitte wenden Sie sich an den System-Administrator.
 E_COMMUNICATION: Es ist ein Fehler in der Kommunikation mit dem Server aufgetreten. Bitte wenden Sie sich an den System-Administrator.
 E_DATA_FAILURE: Die Daten, die der Server geliefert hat, sind in irgendeiner Weise fehlerhaft.
-E_DATA_FAILURE: Fehlende oder fehlerhafte Daten.
 E_UNAME_INVALID: Der Username ist ungültig.
 E_PW_TOO_SHORT: Das Passwort ist zu kurz.
 E_PW_DISACCORD: Die Passwörter stimmen nicht überein.

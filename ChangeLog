@@ -1,3 +1,6 @@
+2005-05-21 Christian Kruse <ckruse@wwwtech.de>
+	* src/perl/Plugins/Setvalue.pm: Added plugin to set config values remotely
+
 2005-05-20 Christian Kruse <ckruse@wwwtech.de>
 	* conf/errormessages.de.txt: Made an error message more amusing
 	* src/fo_vote.c: Fixed a small bug, forgot an else before an if
