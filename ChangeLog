@@ -12,6 +12,7 @@
 	* src/perl/Plugins/Wizard.pm: Added wizard plugin
 	* src/perl/ForumUtils.pm: Added code to merge and validate user config
 	* scripts/fo_userconf.in: Removed a lot of code to ForumUtils.pm
+	* conf/fo_post.conf.in: Corrected value of FieldConfig entry for unid field
 
 2005-05-19 Christian Kruse <ckruse@wwwtech.de>
 	* src/fo_view.c: Changed order of variable setting

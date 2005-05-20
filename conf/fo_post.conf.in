@@ -39,7 +39,7 @@ Forum FORUM1 {
  FieldConfig "subject"  "64"     "4"
  FieldConfig "body"     "12288"  "10"
  FieldConfig "EMail"    "60"     "2"
- FieldConfig "unid"     "26"     "5"
+ FieldConfig "unid"     "50"     "5"
  FieldConfig "qchar"    "10"     "1"
  FieldConfig "cat"      "18"     "3"
 
