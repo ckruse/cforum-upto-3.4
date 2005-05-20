@@ -83,17 +83,61 @@ sub generate_edit_output {
       foreach my $arg (@arguments) {
         my $pname = $arg->getAttribute('paramname');
         my $val;
+
         # {{{ get value from correct source
         if($source) {
           if($source eq 'cgi') {
             $val = join ',',$cgi->param($pname) if $cgi->param($pname);
           }
           else {
-            $val = $user_config->{global}->{$dname}->[0]->[$i++];
+            # {{{ get value cascading down from config
+            unless(exists $user_config->{global}->{$dname}) {
+              unless(exists $fo_default_conf->{$main::Forum}->{$dname}) {
+                unless(exists $fo_userconf_conf->{$main::Forum}->{$dname}) {
+                  if(exists $fo_view_conf->{$main::Forum}->{$dname}) {
+                    $val = $fo_view_conf->{$main::Forum}->{$dname}->[0]->[$i];
+                  }
+                }
+                else {
+                  $val = $fo_userconf_conf->{$main::Forum}->{$dname}->[0]->[$i];
+                }
+              }
+              else {
+                $val = $fo_default_conf->{$main::Forum}->{$dname}->[0]->[$i];
+              }
+            }
+            else {
+              $val = $user_config->{global}->{$dname}->[0]->[$i];
+            }
+            # }}}
+
+            ++$i;
           }
         }
         else {
-          $val = $user_config->{global}->{$dname}->[0]->[$i++];
+          # {{{ get value cascading down from config
+          unless(exists $user_config->{global}->{$dname}) {
+            unless(exists $fo_default_conf->{$main::Forum}->{$dname}) {
+              unless(exists $fo_userconf_conf->{$main::Forum}->{$dname}) {
+                if(exists $fo_view_conf->{$main::Forum}->{$dname}) {
+                  $val = $fo_view_conf->{$main::Forum}->{$dname}->[0]->[$i];
+                }
+              }
+              else {
+                $val = $fo_userconf_conf->{$main::Forum}->{$dname}->[0]->[$i];
+              }
+            }
+            else {
+              $val = $fo_default_conf->{$main::Forum}->{$dname}->[0]->[$i];
+            }
+          }
+          else {
+            $val = $user_config->{global}->{$dname}->[0]->[$i];
+          }
+          # }}}
+
+          ++$i;
+
           $val = join ',',$cgi->param($pname) if $cgi->param($pname);
         }
         # }}}

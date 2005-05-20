@@ -670,6 +670,7 @@ sub write_userconf {
 }
 # }}}
 
+# {{{ config_to_template
 sub config_to_template {
   my $fo_default_conf  = shift;
   my $fo_userconf_conf = shift;
@@ -721,8 +722,8 @@ sub config_to_template {
       }
     }
   }
-
 }
+# }}}
 
 # require
 1;
