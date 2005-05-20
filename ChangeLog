@@ -4,7 +4,9 @@
 	* src/perl/Plugins/ImportExport.pm: Changed fatal template to the one of
 		fo_default.conf
 	* src/fo_post.c: Fixed a small bug in length validation
-	* src/stringutils.c: Fixed a silly bug in cf_strlen_utf8()
+	* src/stringutils.c: Fixed a silly bug in cf_strlen_utf8(), added
+		cf_strlen_utf8_wo_space()
+	* src/fo_post.c: Changed to cf_strlen_utf8_wo_space()
 
 2005-05-19 Christian Kruse <ckruse@wwwtech.de>
 	* src/fo_view.c: Changed order of variable setting

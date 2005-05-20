@@ -417,7 +417,8 @@ int validate_cgi_variables(t_cf_hash *head) {
         if(cfg->values[1]) maxlen = atoi(cfg->values[1]);
         if(cfg->values[2]) minlen = atoi(cfg->values[2]);
 
-        len = cf_strlen_utf8(value,strlen(value));
+        len = cf_strlen_utf8_wo_space(value,strlen(value));
+        //len = cf_strlen_utf8(value,strlen(value));
         if(maxlen && len > maxlen) {
           snprintf(ErrorString,50,"E_%s_long",cfg->values[0]);
           return -1;

@@ -732,6 +732,14 @@ int cf_strncasecmp(const u_char *str1,const u_char *str2,size_t n);
  */
 size_t cf_strlen_utf8(const u_char *str,size_t rlen);
 
+/**
+ * Counts characters (not bytes!!) in an utf8 string but without spaces
+ * \param str The string to count
+ * \param rlen The real length of the memory area
+ * \return -1 on failure (e.g. EILSEQ), length on success
+ */
+size_t cf_strlen_utf8_wo_space(const u_char *str,size_t rlen);
+
 /* }}} */
 
 /* {{{ caching functions */

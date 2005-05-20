@@ -251,6 +251,28 @@ int cf_strncasecmp(const u_char *str1,const u_char *str2,size_t n) {
 }
 /* }}} */
 
+/* {{{ cf_strlen_utf8_wo_space */
+size_t cf_strlen_utf8_wo_space(const u_char *str,size_t rlen) {
+  register size_t len = 0;
+  register u_char *ptr;
+  u_char *end;
+  int bytes;
+  u_int32_t num;
+
+  for(ptr=(u_char *)str;*ptr && isspace(*ptr);++ptr);
+  for(end=str+rlen-1;*end && isspace(*end) && end > str;--end);
+
+  for(;*ptr && ptr <= end;++len) {
+    if((bytes = utf8_to_unicode(ptr,rlen,&num)) < 0) return -1;
+
+    ptr  += bytes;
+    rlen -= bytes;
+  }
+
+  return len;
+}
+/* }}} */
+
 /* {{{ cf_strlen_utf8 */
 size_t cf_strlen_utf8(const u_char *str,size_t rlen) {
   register size_t len = 0;
