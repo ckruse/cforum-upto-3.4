@@ -253,19 +253,19 @@ int cf_strncasecmp(const u_char *str1,const u_char *str2,size_t n) {
 
 /* {{{ cf_strlen_utf8 */
 size_t cf_strlen_utf8(const u_char *str,size_t rlen) {
-  register size_t len;
+  register size_t len = 0;
   register u_char *ptr;
   int bytes;
   u_int32_t num;
 
-  for(ptr=(u_char *)str;*ptr;len++) {
+  for(ptr=(u_char *)str;*ptr;++len) {
     if((bytes = utf8_to_unicode(ptr,rlen,&num)) < 0) return -1;
 
     ptr  += bytes;
     rlen -= bytes;
   }
 
-  return rlen;
+  return len;
 }
 /* }}} */
 

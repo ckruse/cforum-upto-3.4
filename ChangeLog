@@ -1,3 +1,6 @@
-2005-05-16 Christian Kruse <ckruse@wwwtech.de>
-	* src/archiver.c: Fixed a really bad bug in archiver.c
+2005-05-20 Christian Kruse <ckruse@wwwtech.de>
+	* src/fo_post.c: Fixed a bug in length validation. maxlength was interpreted
+		as minlength
+	* src/stringutils.c: Fixed a bug in cf_strlen_utf8(), forgot to initialize a
+		variable and returned the wrong value
 
