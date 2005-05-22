@@ -47,111 +47,111 @@ static u_char *flt_stdrepl_fname = NULL;
 
 /* {{{ smileys */
 static const u_char *flt_stdrepl_smiles[] = {
-    ":)",":-)",":o)",
+  ":)",":-)",":o)","*g*",
 
-    /* ironic */
-    ";)",";-)",
+  /* ironic */
+  ";)",";-)",
 
-    /* unhappy */
-    ":(",":-(",
+  /* unhappy */
+  ":(",":-(",
 
-    /* tounge grin */
-    ":-P",":P",":-p",":p",
+  /* tounge grin */
+  ":-P",":P",":-p",":p",
     
-    /* broad grinning */
-    ":D",":-D",":-))",";-))",
+  /* broad grinning */
+  ":D",":-D",":-))",";-))",
 
-    /* crying */
-    ":'-(",":'(",";-(",";(",
+  /* crying */
+  ":'-(",":'(",";-(",";(",
 
-    /* surprised */
-    ":-O",":O",":-o",":o",
+  /* surprised */
+  ":-O",":O",":-o",":o",
 
-    /* sleeping */
-    ":-Z",":Z",":-z",":z",
+  /* sleeping */
+  ":-Z",":Z",":-z",":z",
 
-    /* confused */
-    ":-S",":S",":-s",":s",
+  /* confused */
+  ":-S",":S",":-s",":s",
 
-    /* kiss */
-    ":-X",":X",":-x",":x",
+  /* kiss */
+  ":-X",":X",":-x",":x",
 
-    /* devil */
-    "&gt;:-)","&gt;:)","}:-&gt;","}:&gt;",":-&gt;", "&gt;;-)",
+  /* devil */
+  "&gt;:-)","&gt;:)","}:-&gt;","}:&gt;",":-&gt;", "&gt;;-)","*fg*",
 
-    /* angel */
-    "O:-)","O:)","o:-)","o:)",
+  /* angel */
+  "O:-)","O:)","o:-)","o:)",
 
-    /* sunglasses */
-    "8-)","8)",
+  /* sunglasses */
+  "8-)","8)",
 
-    /* scream */
-    ":-@",":@",
+  /* scream */
+  ":-@",":@",
 
-    /* smoking */
-    ":-Q",":Q",":-q",":q",
+  /* smoking */
+  ":-Q",":Q",":-q",":q",
 
-    /* angry */
-    "&gt;:-|",":-[",
+  /* angry */
+  "&gt;:-|",":-[",
 
-    "*lol*",
+  "*lol*","lol","*rotfl*","rotfl"
 
-    NULL
+  NULL
 };
 /* }}} */
 
 /* {{{ smiley replacements */
 static u_char *flt_stdrepl_smiley_replacements[] = {
-    "smile","smile","smile",
+  "smile","smile","smile","smile",
 
-    /* ironic */
-    "ironic","ironic",
+  /* ironic */
+  "ironic","ironic",
 
-    /* unhappy */
-    "unhappy","unhappy",
+  /* unhappy */
+  "unhappy","unhappy",
 
-    /* tounge grin */
-    "tongue","tongue","tongue","tongue",
+  /* tounge grin */
+  "tongue","tongue","tongue","tongue",
     
-    /* broad grinning */
-    "biggrin","biggrin","biggrin","biggrin",
+  /* broad grinning */
+  "biggrin","biggrin","biggrin","biggrin",
 
-    /* crying */
-    "cry","cry","cry","cry",
+  /* crying */
+  "cry","cry","cry","cry",
 
-    /* surprised */
-    "oh","oh","oh","oh",
+  /* surprised */
+  "oh","oh","oh","oh",
 
-    /* sleeping */
-    "sleep","sleep","sleep","sleep",
+  /* sleeping */
+  "sleep","sleep","sleep","sleep",
 
-    /* confused */
-    "confused","confused","confused","confused",
+  /* confused */
+  "confused","confused","confused","confused",
 
-    /* kiss */
-    "kiss","kiss","kiss","kiss",
+  /* kiss */
+  "kiss","kiss","kiss","kiss",
 
-    /* devil */
-    "devil","devil","devil","devil","devil","devil",
+  /* devil */
+  "devil","devil","devil","devil","devil","devil","devil",
 
-    /* angel */
-    "angel","angel","angel","angel",
+  /* angel */
+  "angel","angel","angel","angel",
 
-    /* sunglasses */
-    "sunglasses","sunglasses",
+  /* sunglasses */
+  "sunglasses","sunglasses",
 
-    /* scream */
-    "scream","scream",
+  /* scream */
+  "scream","scream",
 
-    /* smoking */
-    "smoke","smoke","smoke","smoke",
+  /* smoking */
+  "smoke","smoke","smoke","smoke",
 
-    /* angry */
-    "angry","angry",
+  /* angry */
+  "angry","angry",
 
-    "lol",
+  "lol","lol","lol","lol"
 
-    NULL
+  NULL
 };
 /* }}} */
 

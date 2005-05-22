@@ -1,6 +1,7 @@
 2005-05-22 Christian Kruse <ckruse@wwwtech.de>
 	* src/modules/flt_frameset.c: Fixed bug, now setting $frame also in bottom
 		template
+	* src/modules/flt_stdreplacements.c: Added rotfl, g and fg
 
 2005-05-21 Christian Kruse <ckruse@wwwtech.de>
 	* src/perl/Plugins/Setvalue.pm: Added plugin to set config values remotely
