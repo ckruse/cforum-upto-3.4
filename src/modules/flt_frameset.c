@@ -111,9 +111,10 @@ int flt_frameset_execute_filter(t_cf_hash *head,t_configuration *dc,t_configurat
 int flt_frameset_set_cf_variables(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cf_template *top,t_cf_template *end) {
   if(ShallFrameset) {
     cf_tpl_setvalue(top,"target",TPL_VARIABLE_STRING,"view",4);
-    cf_tpl_setvalue(top,"frame",TPL_VARIABLE_STRING,"1",1);
+    cf_tpl_setvalue(top,"frame",TPL_VARIABLE_INT,1);
 
     cf_tpl_setvalue(end,"target",TPL_VARIABLE_STRING,"view",4);
+    cf_tpl_setvalue(top,"frame",TPL_VARIABLE_INT,1);
 
     return FLT_OK;
   }
@@ -125,7 +126,7 @@ int flt_frameset_set_cf_variables(t_cf_hash *head,t_configuration *dc,t_configur
 /* {{{ flt_frameset_set_posting_vars */
 int flt_frameset_set_posting_vars(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cl_thread *thr,t_cf_template *tpl) {
   if(ShallFrameset) {
-    cf_tpl_setvalue(tpl,"frame",TPL_VARIABLE_STRING,"1",1);
+    cf_tpl_setvalue(tpl,"frame",TPL_VARIABLE_INT,1);
     return FLT_OK;
   }
 
@@ -136,7 +137,7 @@ int flt_frameset_set_posting_vars(t_cf_hash *head,t_configuration *dc,t_configur
 /* {{{ flt_frameset_set_list_vars */
 int flt_frameset_set_list_vars(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_message *msg,u_int64_t tid,int mode) {
   if(ShallFrameset) {
-    cf_tpl_setvalue(&msg->tpl,"frameset",TPL_VARIABLE_STRING,"1",1);
+    cf_tpl_setvalue(&msg->tpl,"frame",TPL_VARIABLE_INT,1);
     if(mode & CF_MODE_THREADLIST) cf_tpl_setvalue(&msg->tpl,"target",TPL_VARIABLE_STRING,"view",4);
     return FLT_OK;
   }
