@@ -4,6 +4,7 @@
 	* conf/modules.de.xml: Added shortcuts sections
 	* scripts/fo_userconf.in: Added possibillity to define default values from
 		modules.*.xml
+	* src/perl/ForumUtils.pm: Added support for "emptyIfNotSubmitted" attribute
 
 2005-05-22 Christian Kruse <ckruse@wwwtech.de>
 	* src/modules/flt_frameset.c: Fixed bug, now setting $frame also in bottom

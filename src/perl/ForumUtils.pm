@@ -574,11 +574,16 @@ sub merge_config {
 
           # {{{ if we have a ifNotCommitted attribute, we get the default value from there
           unless($val = $arg->getAttribute('ifNotCommitted')) {
-            if($i == 0) {
-              delete $own_ucfg->{global}->{$dname} if exists $own_ucfg->{global}->{$dname};
+            if($arg->getAttribute('emptyIfNotCommitted')) {
+              $own_ucfg->{global}->{$dname}->[0]->[$i] = '';
             }
             else {
-              $own_ucfg->{global}->{$dname}->[0]->[$i] = '' if exists $own_ucfg->{global}->{$dname};
+              if($i == 0) {
+                delete $own_ucfg->{global}->{$dname} if exists $own_ucfg->{global}->{$dname};
+              }
+              else {
+                $own_ucfg->{global}->{$dname}->[0]->[$i] = '' if exists $own_ucfg->{global}->{$dname};
+              }
             }
 
             $i++;

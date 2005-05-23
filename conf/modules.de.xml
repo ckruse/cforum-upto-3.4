@@ -687,64 +687,64 @@
   </directive>
 
   <directive name="ShortcutsThreadlist" arguments="1">
-    <argument paramname="shortcutsthreadlist1" encode="plain" default="b">
+    <argument paramname="shortcutsthreadlist1" encode="plain" default="b" emptyIfNotCommitted="yes">
       <validate>^(?:\\[CAS]-){0,3}[a-zA-Z]$</validate>
       <error>Shortcut &quot;Zur Blacklist hinzufügen&quot; ist ungültig!</error>
     </argument>
 
-    <argument paramname="shortcutsthreadlist2" encode="plain" default="\S-b">
+    <argument paramname="shortcutsthreadlist2" encode="plain" default="\S-b" emptyIfNotCommitted="yes">
       <validate>^(?:\\[CAS]-){0,3}[a-zA-Z]$</validate>
       <error>Shortcut &quot;Von der Blacklist entfernen&quot; ist ungültig!</error>
     </argument>
 
-    <argument paramname="shortcutsthreadlist3" encode="plain" default="w">
+    <argument paramname="shortcutsthreadlist3" encode="plain" default="w" emptyIfNotCommitted="yes">
       <validate>^(?:\\[CAS]-){0,3}[a-zA-Z]$</validate>
       <error>Shortcut &quot;Zur Whitelist hinzufügen&quot; ist ungültig!</error>
     </argument>
 
-    <argument paramname="shortcutsthreadlist4" encode="plain" default="\s-w">
+    <argument paramname="shortcutsthreadlist4" encode="plain" default="\s-w" emptyIfNotCommitted="yes">
       <validate>^(?:\\[CAS]-){0,3}[a-zA-Z]$</validate>
       <error>Shortcut &quot;Von der Whitelist entfernen&quot; ist ungültig!</error>
     </argument>
 
-    <argument paramname="shortcutsthreadlist5" encode="plain" default="k">
+    <argument paramname="shortcutsthreadlist5" encode="plain" default="k" emptyIfNotCommitted="yes">
       <validate>^(?:\\[CAS]-){0,3}[a-zA-Z]$</validate>
       <error>Shortcut &quot;Kategorie hervorheben&quot; ist ungültig!</error>
     </argument>
 
-    <argument paramname="shortcutsthreadlist6" encode="plain" default="\S-k">
+    <argument paramname="shortcutsthreadlist6" encode="plain" default="\S-k" emptyIfNotCommitted="yes">
       <validate>^(?:\\[CAS]-){0,3}[a-zA-Z]$</validate>
       <error>Shortcut &quot;Kategorie nicht länger hervorheben&quot; ist ungültig!</error>
     </argument>
   </directive>
 
   <directive name="ShortcutsPosting" arguments="1">
-    <argument paramname="shortcutsposting1" encode="plain" default="n">
+    <argument paramname="shortcutsposting1" encode="plain" default="n" emptyIfNotCommitted="yes">
       <validate>^(?:\\[CAS]-){0,3}[a-zA-Z]$</validate>
       <error>Shortcut &quot;Nächstes Posting&quot; ist ungültig!</error>
     </argument>
 
-    <argument paramname="shortcutsposting2" encode="plain" default="p">
+    <argument paramname="shortcutsposting2" encode="plain" default="p" emptyIfNotCommitted="yes">
       <validate>^(?:\\[CAS]-){0,3}[a-zA-Z]$</validate>
       <error>Shortcut &quot;Vorheriges Posting&quot; ist ungültig!</error>
     </argument>
 
-    <argument paramname="shortcutsposting3" encode="plain" default="h">
+    <argument paramname="shortcutsposting3" encode="plain" default="h" emptyIfNotCommitted="yes">
       <validate>^(?:\\[CAS]-){0,3}[a-zA-Z]$</validate>
       <error>Shortcut &quot;Zurück zur Forums-Hauptseite&quot; ist ungültig!</error>
     </argument>
 
-    <argument paramname="shortcutsposting4" encode="plain" default="r">
+    <argument paramname="shortcutsposting4" encode="plain" default="r" emptyIfNotCommitted="yes">
       <validate>^(?:\\[CAS]-){0,3}[a-zA-Z]$</validate>
       <error>Shortcut &quot;Fokussiere die Textarea&quot; ist ungültig!</error>
     </argument>
 
-    <argument paramname="shortcutsposting5" encode="plain" default="g">
+    <argument paramname="shortcutsposting5" encode="plain" default="g" emptyIfNotCommitted="yes">
       <validate>^(?:\\[CAS]-){0,3}[a-zA-Z]$</validate>
       <error>Shortcut &quot;Als hilfreich bewerten&quot; ist ungültig!</error>
     </argument>
 
-    <argument paramname="shortcutsposting6" encode="plain" default="b">
+    <argument paramname="shortcutsposting6" encode="plain" default="b" emptyIfNotCommitted="yes">
       <validate>^(?:\\[CAS]-){0,3}[a-zA-Z]$</validate>
       <error>Shortcut &quot;Als nicht hilfreich bewerten&quot; ist ungültig!</error>
     </argument>
