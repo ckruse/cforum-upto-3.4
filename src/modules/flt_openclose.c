@@ -52,22 +52,22 @@ int flt_oc_opendb(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc) {
 
   if(flt_oc_dbfile) {
     if((ret = db_create(&flt_oc_db,NULL,0)) != 0) {
-      fprintf(stderr,"DB error: %s\n",db_strerror(ret));
+      fprintf(stderr,"flt_openclose: db_create() error: %s\n",db_strerror(ret));
       return FLT_EXIT;
     }
 
     if((ret = flt_oc_db->open(flt_oc_db,NULL,flt_oc_dbfile,NULL,DB_BTREE,DB_CREATE,0644)) != 0) {
-      fprintf(stderr,"DB error: %s\n",db_strerror(ret));
+      fprintf(stderr,"flt_openclose: db->open(%s) error: %s\n",flt_oc_dbfile,db_strerror(ret));
       return FLT_EXIT;
     }
 
     if((ret = flt_oc_db->fd(flt_oc_db,&fd)) != 0) {
-      fprintf(stderr,"DB error: %s\n",db_strerror(ret));
+      fprintf(stderr,"flt_openclose: db->fd() error: %s\n",db_strerror(ret));
       return FLT_EXIT;
     }
 
     if((ret = flock(fd,LOCK_EX)) != 0) {
-      fprintf(stderr,"DB error: %s\n",db_strerror(ret));
+      fprintf(stderr,"flt_openclose: flock() error: %s\n",strerror(ret));
       return FLT_EXIT;
     }
 
@@ -117,7 +117,7 @@ int flt_oc_exec_xmlhttp(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc,v
           data.data = one;
           data.size = sizeof(one);
 
-          if((ret = flt_oc_db->put(flt_oc_db,NULL,&key,&data,0)) != 0) fprintf(stderr,"db->put(): %s\n",db_strerror(ret));
+          if((ret = flt_oc_db->put(flt_oc_db,NULL,&key,&data,0)) != 0) fprintf(stderr,"flt_openclose: db->put() error: %s\n",db_strerror(ret));
         }
       }
       else flt_oc_db->del(flt_oc_db,NULL,&key,0);
@@ -142,7 +142,10 @@ int flt_oc_exec_xmlhttp(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc,v
         #else
         if(cf_get_message_through_shm(shm,&thread,fo_thread_tplname,tid,0,CF_KILL_DELETED) == -1)
         #endif
-          fprintf(stderr,"500 Internal Server Error\015\012\015\012");
+          {
+            printf("500 Internal Server Error\015\012\015\012");
+            return FLT_EXIT;
+          }
 
         thread.threadmsg = thread.messages;
         #ifndef CF_NO_SORTING

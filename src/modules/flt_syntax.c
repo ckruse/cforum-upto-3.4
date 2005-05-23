@@ -193,7 +193,7 @@ int flt_syntax_read_list(const u_char *pos,flt_syntax_list_t *list) {
 
       case ',':
         if(!str.content) {
-          fprintf(stderr,"Error reading list, str.content is NULL! ptr: %s\n",ptr);
+          fprintf(stderr,"flt_syntax: Error reading list, str.content is NULL! ptr: %s\n",ptr);
           return -1;
         }
         array_push(&list->list,&str);
@@ -206,7 +206,7 @@ int flt_syntax_read_list(const u_char *pos,flt_syntax_list_t *list) {
   }
 
   if(!str.content) {
-    fprintf(stderr,"Error reading list, str.content is NULL at end of list!\n");
+    fprintf(stderr,"flt_syntax: Error reading list, str.content is NULL at end of list!\n");
     return -1;
   }
   array_push(&list->list,&str);
@@ -239,7 +239,7 @@ int flt_syntax_load(const u_char *path,const u_char *lang) {
   flt_syntax_statement_t statement;
 
   if((fd = fopen(path,"r")) == NULL) {
-    fprintf(stderr,"I/O error opening file %s: %s\n",path,strerror(errno));
+    fprintf(stderr,"flt_syntax: I/O error opening file %s: %s\n",path,strerror(errno));
     return 1;
   }
 
@@ -259,7 +259,7 @@ int flt_syntax_load(const u_char *path,const u_char *lang) {
       if(type != FLT_SYNTAX_TOK_KEY) {
         if(type == FLT_SYNTAX_EOF) continue;
 
-        fprintf(stderr,"unknown token at line %d!\n",lineno);
+        fprintf(stderr,"flt_syntax: unknown token at line %d!\n",lineno);
         return 1;
       }
       /* {{{ start = "key" */
@@ -267,11 +267,11 @@ int flt_syntax_load(const u_char *path,const u_char *lang) {
         str_cleanup(&str);
 
         if((type = flt_syntax_next_token(line,&pos,&str)) != FLT_SYNTAX_TOK_EQ) {
-          fprintf(stderr,"after start we got no eqal at line %d!\n",lineno);
+          fprintf(stderr,"flt_syntax: after start we got no eqal at line %d!\n",lineno);
           return 1;
         }
         if((type = flt_syntax_next_token(line,&pos,&str)) != FLT_SYNTAX_TOK_STR) {
-          fprintf(stderr,"after start we got no string at line %d!\n",lineno);
+          fprintf(stderr,"flt_syntax: after start we got no string at line %d!\n",lineno);
           return 1;
         }
 
@@ -285,7 +285,7 @@ int flt_syntax_load(const u_char *path,const u_char *lang) {
 
         str_cleanup(&str);
         if((type = flt_syntax_next_token(line,&pos,&str)) != FLT_SYNTAX_TOK_STR) {
-          fprintf(stderr,"after list we got no list name at line %d!\n",lineno);
+          fprintf(stderr,"flt_syntax: after list we got no list name at line %d!\n",lineno);
           return 1;
         }
 
@@ -293,11 +293,11 @@ int flt_syntax_load(const u_char *path,const u_char *lang) {
         str_init(&str);
 
         if((type = flt_syntax_next_token(line,&pos,&str)) != FLT_SYNTAX_TOK_EQ) {
-          fprintf(stderr,"after list we got no eqal at line %d!\n",lineno);
+          fprintf(stderr,"flt_syntax: after list we got no eqal at line %d!\n",lineno);
           return 1;
         }
         if(flt_syntax_read_list(pos,&list) != 0) {
-          fprintf(stderr,"syntax error in list %s at line %d!\n",list.name,lineno);
+          fprintf(stderr,"flt_syntax: syntax error in list %s at line %d!\n",list.name,lineno);
           return 1;
         }
 
@@ -312,7 +312,7 @@ int flt_syntax_load(const u_char *path,const u_char *lang) {
         str_cleanup(&str);
 
         if((type = flt_syntax_next_token(line,&pos,&str)) != FLT_SYNTAX_TOK_STR) {
-          fprintf(stderr,"after block we got no block name at line %d!\n",lineno);
+          fprintf(stderr,"flt_syntax: after block we got no block name at line %d!\n",lineno);
           return 1;
         }
 
@@ -323,14 +323,14 @@ int flt_syntax_load(const u_char *path,const u_char *lang) {
       }
       /* }}} */
       else {
-        fprintf(stderr,"unknown token in global state at line %d!\n",lineno);
+        fprintf(stderr,"flt_syntax: unknown token in global state at line %d!\n",lineno);
         return 1;
       }
     }
     else {
       if(type != FLT_SYNTAX_TOK_KEY) {
         if(type == FLT_SYNTAX_EOF) continue;
-        fprintf(stderr,"unknown token at line %d!\n",lineno);
+        fprintf(stderr,"flt_syntax: unknown token at line %d!\n",lineno);
         return 1;
       }
       memset(&statement,0,sizeof(statement));
@@ -339,7 +339,7 @@ int flt_syntax_load(const u_char *path,const u_char *lang) {
         str_cleanup(&str);
 
         if((type = flt_syntax_next_token(line,&pos,&str)) != FLT_SYNTAX_TOK_KEY) {
-          fprintf(stderr,"after lineend we got no keyword at line %d!\n",lineno);
+          fprintf(stderr,"flt_syntax: after lineend we got no keyword at line %d!\n",lineno);
           return 1;
         }
         block.le_behavior = cf_strcmp(str.content,"stay") == 0 ? FLT_SYNTAX_STAY : FLT_SYNTAX_POP;
@@ -358,7 +358,7 @@ int flt_syntax_load(const u_char *path,const u_char *lang) {
         str_cleanup(&str);
 
         if((type = flt_syntax_next_token(line,&pos,&str)) != FLT_SYNTAX_TOK_STR) {
-          fprintf(stderr,"after onstring we got no string at line %d!\n",lineno);
+          fprintf(stderr,"flt_syntax: after onstring we got no string at line %d!\n",lineno);
           return 1;
         }
 
@@ -374,7 +374,7 @@ int flt_syntax_load(const u_char *path,const u_char *lang) {
           tb = type;
         }
         else if(type != FLT_SYNTAX_TOK_STR) {
-          fprintf(stderr,"after onstring we got no block name at line %d!\n",lineno);
+          fprintf(stderr,"flt_syntax: after onstring we got no block name at line %d!\n",lineno);
           return 1;
         }
         else array_push(&statement.args,&str);
@@ -383,7 +383,7 @@ int flt_syntax_load(const u_char *path,const u_char *lang) {
         if((type = flt_syntax_next_token(line,&pos,&str)) != FLT_SYNTAX_TOK_STR) {
           tmpstr = array_element_at(&statement.args,1);
           if(tb != FLT_SYNTAX_TOK_KEY || cf_strcmp(tmpstr->content,"highlight") == 0) {
-            fprintf(stderr,"after onstring we got no span class name at line %d!\n",lineno);
+            fprintf(stderr,"flt_syntax: after onstring we got no span class name at line %d!\n",lineno);
             return 1;
           }
         }
@@ -404,7 +404,7 @@ int flt_syntax_load(const u_char *path,const u_char *lang) {
         array_init(&statement.args,sizeof(t_string),NULL);
 
         if((type = flt_syntax_next_token(line,&pos,&str)) != FLT_SYNTAX_TOK_STR) {
-          fprintf(stderr,"after onstringlist we got no list name at line %d!\n",lineno);
+          fprintf(stderr,"flt_syntax: after onstringlist we got no list name at line %d!\n",lineno);
           return 1;
         }
 
@@ -417,7 +417,7 @@ int flt_syntax_load(const u_char *path,const u_char *lang) {
           tb = type;
         }
         else if(type != FLT_SYNTAX_TOK_STR) {
-          fprintf(stderr,"after onstringlist we got no block name at line %d!\n",lineno);
+          fprintf(stderr,"flt_syntax: after onstringlist we got no block name at line %d!\n",lineno);
           return 1;
         }
         else array_push(&statement.args,&str);
@@ -426,7 +426,7 @@ int flt_syntax_load(const u_char *path,const u_char *lang) {
         if((type = flt_syntax_next_token(line,&pos,&str)) != FLT_SYNTAX_TOK_STR) {
           tmpstr = array_element_at(&statement.args,1);
           if(tb != FLT_SYNTAX_TOK_KEY || cf_strcmp(tmpstr->content,"highlight") == 0) {
-            fprintf(stderr,"after onstringlist we got no span class name at line %d!\n",lineno);
+            fprintf(stderr,"flt_syntax: after onstringlist we got no span class name at line %d!\n",lineno);
             return 1;
           }
         }
@@ -445,17 +445,17 @@ int flt_syntax_load(const u_char *path,const u_char *lang) {
         statement.type = FLT_SYNTAX_ONREGEXP;
 
         if((type = flt_syntax_next_token(line,&pos,&str)) != FLT_SYNTAX_TOK_STR) {
-          fprintf(stderr,"after onregexp we got no regex at line %d!\n",lineno);
+          fprintf(stderr,"flt_syntax: after onregexp we got no regex at line %d!\n",lineno);
           return 1;
         }
 
         if((preg.re = pcre_compile((const char *)str.content,PCRE_CASELESS,(const char **)&error,&offset,NULL)) == NULL) {
-          fprintf(stderr,"regex error in pattern '%s': %s (Offset %d) at line %d\n",str.content,error,offset,lineno);
+          fprintf(stderr,"flt_syntax: regex error in pattern '%s': %s (Offset %d) at line %d\n",str.content,error,offset,lineno);
           return 1;
         }
         if((preg.extra = pcre_study(preg.re,0,(const char **)&error)) == NULL) {
           if(error) {
-            fprintf(stderr,"regex error in pattern '%s': %s at line %d\n",str.content,error,lineno);
+            fprintf(stderr,"flt_syntax: regex error in pattern '%s': %s at line %d\n",str.content,error,lineno);
             return 1;
           }
         }
@@ -472,7 +472,7 @@ int flt_syntax_load(const u_char *path,const u_char *lang) {
           tb = type;
         }
         else if(type != FLT_SYNTAX_TOK_STR) {
-          fprintf(stderr,"after onregexp we got no block name at line %d!\n",lineno);
+          fprintf(stderr,"flt_syntax: after onregexp we got no block name at line %d!\n",lineno);
           return 1;
         }
         else array_push(&statement.args,&str);
@@ -481,7 +481,7 @@ int flt_syntax_load(const u_char *path,const u_char *lang) {
         if((type = flt_syntax_next_token(line,&pos,&str)) != FLT_SYNTAX_TOK_STR) {
           tmpstr = array_element_at(&statement.args,0);
           if(tb != FLT_SYNTAX_TOK_KEY || cf_strcmp(tmpstr->content,"highlight") == 0) {
-            fprintf(stderr,"after onregexp we got no span class name at line %d!\n",lineno);
+            fprintf(stderr,"flt_syntax: after onregexp we got no span class name at line %d!\n",lineno);
             return 1;
           }
         }
@@ -501,17 +501,17 @@ int flt_syntax_load(const u_char *path,const u_char *lang) {
         statement.type = FLT_SYNTAX_ONREGEXP_BACKREF;
 
         if((type = flt_syntax_next_token(line,&pos,&str)) != FLT_SYNTAX_TOK_STR) {
-          fprintf(stderr,"after onregex_backref we got no regex at line %d!\n",lineno);
+          fprintf(stderr,"flt_syntax: after onregex_backref we got no regex at line %d!\n",lineno);
           return 1;
         }
 
         if((preg.re = pcre_compile((const char *)str.content,PCRE_CASELESS,(const char **)&error,&offset,NULL)) == NULL) {
-          fprintf(stderr,"error in patter '%s': %s (Offset %d) at line %d\n",str.content,error,offset,lineno);
+          fprintf(stderr,"flt_syntax: error in patter '%s': %s (Offset %d) at line %d\n",str.content,error,offset,lineno);
           return 1;
         }
         if((preg.extra = pcre_study(preg.re,0,(const char **)&error)) == NULL) {
           if(error) {
-            fprintf(stderr,"error in pattern '%s': %s at line %d\n",str.content,error,lineno);
+            fprintf(stderr,"flt_syntax: error in pattern '%s': %s at line %d\n",str.content,error,lineno);
             return 1;
           }
         }
@@ -523,21 +523,21 @@ int flt_syntax_load(const u_char *path,const u_char *lang) {
         array_init(&statement.args,sizeof(t_string),NULL);
 
         if((type = flt_syntax_next_token(line,&pos,&str)) != FLT_SYNTAX_TOK_STR) {
-          fprintf(stderr,"after onregexp_backref we got no block name at line %d!\n",lineno);
+          fprintf(stderr,"flt_syntax: after onregexp_backref we got no block name at line %d!\n",lineno);
           return 1;
         }
         array_push(&statement.args,&str),
         str_init(&str);
 
         if((type = flt_syntax_next_token(line,&pos,&str)) != FLT_SYNTAX_TOK_KEY) {
-          fprintf(stderr,"after onregexp_after we got no reference number at line %d!\n",lineno);
+          fprintf(stderr,"flt_syntax: after onregexp_after we got no reference number at line %d!\n",lineno);
           return 1;
         }
         array_push(&statement.args,&str);
         str_init(&str);
 
         if((type = flt_syntax_next_token(line,&pos,&str)) != FLT_SYNTAX_TOK_STR) {
-          fprintf(stderr,"after onregexp_after we got no span class name at line %d!\n",lineno);
+          fprintf(stderr,"flt_syntax: after onregexp_after we got no span class name at line %d!\n",lineno);
           return 1;
         }
         array_push(&statement.args,&str);
@@ -555,16 +555,16 @@ int flt_syntax_load(const u_char *path,const u_char *lang) {
         statement.type = FLT_SYNTAX_ONREGEXP_AFTER;
 
         if((type = flt_syntax_next_token(line,&pos,&str)) != FLT_SYNTAX_TOK_STR) {
-          fprintf(stderr,"after onregexpafter we got no regex at line %d!\n",lineno);
+          fprintf(stderr,"flt_syntax: after onregexpafter we got no regex at line %d!\n",lineno);
           return 1;
         }
         if((preg.re = pcre_compile((const char *)str.content,PCRE_CASELESS,(const char **)&error,&offset,NULL)) == NULL) {
-          fprintf(stderr,"error in pattern '%s': %s (offset %d) at line %d\n",str.content,error,offset,lineno);
+          fprintf(stderr,"flt_syntax: error in pattern '%s': %s (offset %d) at line %d\n",str.content,error,offset,lineno);
           return 1;
         }
         if((preg.extra = pcre_study(preg.re,0,(const char **)&error)) == NULL) {
           if(error) {
-            fprintf(stderr,"error in pattern '%s': %s at line %d\n",str.content,error,lineno);
+            fprintf(stderr,"flt_syntax: error in pattern '%s': %s at line %d\n",str.content,error,lineno);
             return 1;
           }
         }
@@ -574,16 +574,16 @@ int flt_syntax_load(const u_char *path,const u_char *lang) {
         array_push(&statement.pregs,&preg);
 
         if((type = flt_syntax_next_token(line,&pos,&str)) != FLT_SYNTAX_TOK_STR) {
-          fprintf(stderr,"after onregexpafter we got no regex at line %d!\n",lineno);
+          fprintf(stderr,"flt_syntax: after onregexpafter we got no regex at line %d!\n",lineno);
           return 1;
         }
         if((preg.re = pcre_compile((const char *)str.content,PCRE_CASELESS,(const char **)&error,&offset,NULL)) == NULL) {
-          fprintf(stderr,"error in pattern '%s': %s (offset %d) at line %d\n",str.content,error,offset,lineno);
+          fprintf(stderr,"flt_syntax: error in pattern '%s': %s (offset %d) at line %d\n",str.content,error,offset,lineno);
           return 1;
         }
         if((preg.extra = pcre_study(preg.re,0,(const char **)&error)) == NULL) {
           if(error) {
-            fprintf(stderr,"error in pattern '%s': %s at line %d\n",str.content,error,lineno);
+            fprintf(stderr,"flt_syntax: error in pattern '%s': %s at line %d\n",str.content,error,lineno);
             return 1;
           }
         }
@@ -599,7 +599,7 @@ int flt_syntax_load(const u_char *path,const u_char *lang) {
           tb = type;
         }
         else if(type != FLT_SYNTAX_TOK_STR) {
-          fprintf(stderr,"after onregexpafter we got no block name at line %d!\n",lineno);
+          fprintf(stderr,"flt_syntax: after onregexpafter we got no block name at line %d!\n",lineno);
           return 1;
         }
         else array_push(&statement.args,&str);
@@ -608,7 +608,7 @@ int flt_syntax_load(const u_char *path,const u_char *lang) {
         if((type = flt_syntax_next_token(line,&pos,&str)) != FLT_SYNTAX_TOK_STR) {
           tmpstr = array_element_at(&statement.args,1);
           if(tb != FLT_SYNTAX_TOK_KEY || cf_strcmp(tmpstr->content,"highlight") == 0) {
-            fprintf(stderr,"after onregexpafter we got no span class name at line %d!\n",lineno);
+            fprintf(stderr,"flt_syntax: after onregexpafter we got no span class name at line %d!\n",lineno);
             return 1;
           }
         }
@@ -627,16 +627,16 @@ int flt_syntax_load(const u_char *path,const u_char *lang) {
         statement.type = FLT_SYNTAX_ONREGEXP_AFTER_BACKREF;
 
         if((type = flt_syntax_next_token(line,&pos,&str)) != FLT_SYNTAX_TOK_STR) {
-          fprintf(stderr,"after onregexpafter_backref we got no regex at line %d!\n",lineno);
+          fprintf(stderr,"flt_syntax: after onregexpafter_backref we got no regex at line %d!\n",lineno);
           return 1;
         }
         if((preg.re = pcre_compile((const char *)str.content,PCRE_CASELESS,(const char **)&error,&offset,NULL)) == NULL) {
-          fprintf(stderr,"error in pattern '%s': %s (offset %d) at line %d\n",str.content,error,offset,lineno);
+          fprintf(stderr,"flt_syntax: error in pattern '%s': %s (offset %d) at line %d\n",str.content,error,offset,lineno);
           return 1;
         }
         if((preg.extra = pcre_study(preg.re,0,(const char **)&error)) == NULL) {
           if(error) {
-            fprintf(stderr,"error in pattern '%s': %s at line %d\n",str.content,error,lineno);
+            fprintf(stderr,"flt_syntax: error in pattern '%s': %s at line %d\n",str.content,error,lineno);
             return 1;
           }
         }
@@ -646,16 +646,16 @@ int flt_syntax_load(const u_char *path,const u_char *lang) {
         array_push(&statement.pregs,&preg);
 
         if((type = flt_syntax_next_token(line,&pos,&str)) != FLT_SYNTAX_TOK_STR) {
-          fprintf(stderr,"after onregexpafter_backref we got no regex at line %d!\n",lineno);
+          fprintf(stderr,"flt_syntax: after onregexpafter_backref we got no regex at line %d!\n",lineno);
           return 1;
         }
         if((preg.re = pcre_compile((const char *)str.content,PCRE_CASELESS,(const char **)&error,&offset,NULL)) == NULL) {
-          fprintf(stderr,"error in pattern '%s': %s (offset %d) at line %d\n",str.content,error,offset,lineno);
+          fprintf(stderr,"flt_syntax: error in pattern '%s': %s (offset %d) at line %d\n",str.content,error,offset,lineno);
           return 1;
         }
         if((preg.extra = pcre_study(preg.re,0,(const char **)&error)) == NULL) {
           if(error) {
-            fprintf(stderr,"error in pattern '%s': %s at line %d\n",str.content,error,lineno);
+            fprintf(stderr,"flt_syntax: error in pattern '%s': %s at line %d\n",str.content,error,lineno);
             return 1;
           }
         }
@@ -667,7 +667,7 @@ int flt_syntax_load(const u_char *path,const u_char *lang) {
 
         type = flt_syntax_next_token(line,&pos,&str);
         if(type != FLT_SYNTAX_TOK_STR) {
-          fprintf(stderr,"after onregexpafter_backref we got no block name at line %d!\n",lineno);
+          fprintf(stderr,"flt_syntax: after onregexpafter_backref we got no block name at line %d!\n",lineno);
           return 1;
         }
 
@@ -676,7 +676,7 @@ int flt_syntax_load(const u_char *path,const u_char *lang) {
 
         
         if((type = flt_syntax_next_token(line,&pos,&str)) != FLT_SYNTAX_TOK_KEY) {
-          fprintf(stderr,"after onregexpafter_backref we got no backref number at line %d!\n",lineno);
+          fprintf(stderr,"flt_syntax: after onregexpafter_backref we got no backref number at line %d!\n",lineno);
           return 1;
         }
 
@@ -684,7 +684,7 @@ int flt_syntax_load(const u_char *path,const u_char *lang) {
         str_init(&str);
 
         if((type = flt_syntax_next_token(line,&pos,&str)) != FLT_SYNTAX_TOK_STR) {
-          fprintf(stderr,"after onregexpafter_backref we got no span class name at line %d!\n",lineno);
+          fprintf(stderr,"flt_syntax: after onregexpafter_backref we got no span class name at line %d!\n",lineno);
           return 1;
         }
 
@@ -695,7 +695,7 @@ int flt_syntax_load(const u_char *path,const u_char *lang) {
       }
       /* }}} */
       else {
-        fprintf(stderr,"unknown token in block state at line %d!\n",lineno);
+        fprintf(stderr,"flt_syntax: unknown token in block state at line %d!\n",lineno);
         return 1;
       }
     }
@@ -705,7 +705,7 @@ int flt_syntax_load(const u_char *path,const u_char *lang) {
   fclose(fd);
 
   if(!file.start) {
-    fprintf(stderr,"got no default block name!\n");
+    fprintf(stderr,"flt_syntax: got no default block name!\n");
     return 1;
   }
 
@@ -807,12 +807,12 @@ int flt_syntax_doit(flt_syntax_pattern_file_t *file,flt_syntax_block_t *block,u_
 
   if(!block) {
     if((block = flt_syntax_block_by_name(file,file->start)) == NULL) {
-      fprintf(stderr,"could not get start block %s (language: %s)!\n",file->start,file->lang);
+      fprintf(stderr,"flt_syntax: could not get start block %s (language: %s)!\n",file->start,file->lang);
       return 1;
     }
 
     if(block->le_behavior != FLT_SYNTAX_STAY) {
-      fprintf(stderr,"line end behavior of default block is not stay!\n");
+      fprintf(stderr,"flt_syntax: line end behavior of default block is not stay!\n");
       return 1;
     }
 
@@ -908,7 +908,7 @@ int flt_syntax_doit(flt_syntax_pattern_file_t *file,flt_syntax_block_t *block,u_
 
               str = array_element_at(&statement->args,1);
               if((tmpblock = flt_syntax_block_by_name(file,str->content)) == NULL) {
-                fprintf(stderr,"Could not find block %s!\n",str->content);
+                fprintf(stderr,"flt_syntax: Could not find block %s!\n",str->content);
                 return 1;
               }
 
@@ -942,7 +942,7 @@ int flt_syntax_doit(flt_syntax_pattern_file_t *file,flt_syntax_block_t *block,u_
 
           str = array_element_at(&statement->args,0);
           if((tmplist = flt_syntax_list_by_name(file,str->content)) == NULL) {
-            fprintf(stderr,"could not find list %s!\n",str->content);
+            fprintf(stderr,"flt_syntax: could not find list %s!\n",str->content);
             return 1;
           }
 
@@ -987,7 +987,7 @@ int flt_syntax_doit(flt_syntax_pattern_file_t *file,flt_syntax_block_t *block,u_
               
               str = array_element_at(&statement->args,1);
               if((tmpblock = flt_syntax_block_by_name(file,str->content)) == NULL) {
-                fprintf(stderr,"Could not find block %s!\n",str->content);
+                fprintf(stderr,"flt_syntax: Could not find block %s!\n",str->content);
                 return 1;
               }
 
@@ -1054,7 +1054,7 @@ int flt_syntax_doit(flt_syntax_pattern_file_t *file,flt_syntax_block_t *block,u_
 
               str = array_element_at(&statement->args,0);
               if((tmpblock = flt_syntax_block_by_name(file,str->content)) == NULL) {
-                fprintf(stderr,"Could not find block %s!\n",str->content);
+                fprintf(stderr,"flt_syntax: Could not find block %s!\n",str->content);
                 return 1;
               }
 
@@ -1089,7 +1089,7 @@ int flt_syntax_doit(flt_syntax_pattern_file_t *file,flt_syntax_block_t *block,u_
 
             str = array_element_at(&statement->args,0);
             if((tmpblock = flt_syntax_block_by_name(file,str->content)) == NULL) {
-              fprintf(stderr,"Could not find block %s!\n",str->content);
+              fprintf(stderr,"flt_syntax: Could not find block %s!\n",str->content);
               return 1;
             }
 
@@ -1162,7 +1162,7 @@ int flt_syntax_doit(flt_syntax_pattern_file_t *file,flt_syntax_block_t *block,u_
 
                 str = array_element_at(&statement->args,0);
                 if((tmpblock = flt_syntax_block_by_name(file,str->content)) == NULL) {
-                  fprintf(stderr,"Could not find block %s!\n",str->content);
+                  fprintf(stderr,"flt_syntax: Could not find block %s!\n",str->content);
                   return 1;
                 }
 
@@ -1206,7 +1206,7 @@ int flt_syntax_doit(flt_syntax_pattern_file_t *file,flt_syntax_block_t *block,u_
 
               str = array_element_at(&statement->args,0);
               if((tmpblock = flt_syntax_block_by_name(file,str->content)) == NULL) {
-                fprintf(stderr,"Could not find block %s!\n",str->content);
+                fprintf(stderr,"flt_syntax: Could not find block %s!\n",str->content);
                 return 1;
               }
 

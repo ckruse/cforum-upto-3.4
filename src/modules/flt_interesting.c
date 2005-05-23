@@ -53,22 +53,22 @@ int flt_interesting_init_handler(t_cf_hash *cgi,t_configuration *dc,t_configurat
 
   if(flt_interesting_file) {
     if((ret = db_create(&flt_interesting_db,NULL,0)) != 0) {
-      fprintf(stderr,"DB error: %s\n",db_strerror(ret));
+      fprintf(stderr,"flt_interesting: db_create() error: %s\n",db_strerror(ret));
       return FLT_EXIT;
     }
 
     if((ret = flt_interesting_db->open(flt_interesting_db,NULL,flt_interesting_file,NULL,DB_BTREE,DB_CREATE,0644)) != 0) {
-      fprintf(stderr,"DB error: %s\n",db_strerror(ret));
+      fprintf(stderr,"flt_interesting: db->open(%s) error: %s\n",flt_interesting_file,db_strerror(ret));
       return FLT_EXIT;
     }
 
     if((ret = flt_interesting_db->fd(flt_interesting_db,&fd)) != 0) {
-      fprintf(stderr,"DB error: %s\n",db_strerror(ret));
+      fprintf(stderr,"flt_interesting: db->fd() error: %s\n",db_strerror(ret));
       return FLT_EXIT;
     }
 
     if((ret = flock(fd,LOCK_EX)) != 0) {
-      fprintf(stderr,"DB error: %s\n",db_strerror(ret));
+      fprintf(stderr,"flt_interesting: error: %s\n",strerror(ret));
       return FLT_EXIT;
     }
 
@@ -116,7 +116,7 @@ int flt_interesting_mark_thread(t_cf_hash *head,t_configuration *dc,t_configurat
             key.data = buff;
             key.size = len;
 
-            if((ret = flt_interesting_db->put(flt_interesting_db,NULL,&key,&data,0)) != 0) fprintf(stderr,"db->put(): %s\n",db_strerror(ret));
+            if((ret = flt_interesting_db->put(flt_interesting_db,NULL,&key,&data,0)) != 0) fprintf(stderr,"flt_interesting: db->put(): %s\n",db_strerror(ret));
           }
         }
         /* }}} */

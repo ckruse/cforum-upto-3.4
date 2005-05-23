@@ -211,14 +211,14 @@ int main(int argc,char *argv[],char *envp[]) {
   if((ret = db_create(&Tdb,NULL,0)) != 0) {
     printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]),
     cf_error_message("E_FO_500",NULL);
-    fprintf(stderr,"DB ewrror: %s\n",db_strerror(ret));
+    fprintf(stderr,"db_create() error: %s\n",db_strerror(ret));
     return EXIT_FAILURE;
   }
 
   if((ret = Tdb->open(Tdb,NULL,v->values[0],NULL,DB_BTREE,DB_RDONLY,0)) != 0) {
     printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]),
     cf_error_message("E_FO_500",NULL);
-    fprintf(stderr,"DB error: %s\n",db_strerror(ret));
+    fprintf(stderr,"db->open(%s) error: %s\n",v->values[0],db_strerror(ret));
     return EXIT_FAILURE;
   }
   /* }}} */

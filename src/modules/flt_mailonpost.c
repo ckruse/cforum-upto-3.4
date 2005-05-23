@@ -64,22 +64,22 @@ int flt_mailonpost_create(DB **db,u_char *path) {
   int ret,fd;
 
   if((ret = db_create(db,NULL,0)) != 0) {
-    fprintf(stderr,"DB error: %s\n",db_strerror(ret));
+    fprintf(stderr,"flt_mailonpost: db_create() error: %s\n",db_strerror(ret));
     return -1;
   }
 
   if((ret = (*db)->open(*db,NULL,path,NULL,DB_BTREE,DB_CREATE,0644)) != 0) {
-    fprintf(stderr,"DB error: %s\n",db_strerror(ret));
+    fprintf(stderr,"flt_mailonpost: db->open(%s) error: %s\n",path,db_strerror(ret));
     return -1;
   }
 
   if((ret = (*db)->fd(*db,&fd)) != 0) {
-    fprintf(stderr,"DB error: %s\n",db_strerror(ret));
+    fprintf(stderr,"flt_mailonpost: db->fd() error: %s\n",db_strerror(ret));
     return -1;
   }
 
   if((ret = flock(fd,LOCK_EX)) != 0) {
-    fprintf(stderr,"DB error: %s\n",strerror(ret));
+    fprintf(stderr,"flt_mailonpost: flock() error: %s\n",strerror(ret));
     return -1;
   }
 
@@ -145,7 +145,7 @@ int flt_mailonpost_init_handler(t_cf_hash *head,t_configuration *dc,t_configurat
         if(udb) flt_mailonpost_destroy(udb);
         flt_mailonpost_destroy(db);
 
-        fprintf(stderr,"DB error: %s\n",db_strerror(ret));
+        fprintf(stderr,"flt_mailonpost: db->get() error: %s\n",db_strerror(ret));
         return FLT_DECLINE;
       }
       else {
@@ -159,7 +159,7 @@ int flt_mailonpost_init_handler(t_cf_hash *head,t_configuration *dc,t_configurat
             if(ret != DB_KEYEXIST) {
               flt_mailonpost_destroy(udb);
               flt_mailonpost_destroy(db);
-              fprintf(stderr,"DB error: %s\n",db_strerror(ret));
+              fprintf(stderr,"flt_mailonpost: db->put() error: %s\n",db_strerror(ret));
               return FLT_DECLINE;
             }
           }
@@ -195,7 +195,7 @@ int flt_mailonpost_init_handler(t_cf_hash *head,t_configuration *dc,t_configurat
           if(ret != DB_KEYEXIST) {
             flt_mailonpost_destroy(udb);
             flt_mailonpost_destroy(db);
-            fprintf(stderr,"DB error: %s\n",db_strerror(ret));
+            fprintf(stderr,"flt_mailonpost: db->put() error: %s\n",db_strerror(ret));
             return FLT_DECLINE;
           }
         }
@@ -219,7 +219,7 @@ int flt_mailonpost_init_handler(t_cf_hash *head,t_configuration *dc,t_configurat
           if(ret != DB_NOTFOUND) {
             flt_mailonpost_destroy(udb);
             flt_mailonpost_destroy(db);
-            fprintf(stderr,"DB error: %s\n",db_strerror(ret));
+            fprintf(stderr,"flt_mailonpost: db->del() error: %s\n",db_strerror(ret));
             return FLT_DECLINE;
           }
         }
@@ -229,7 +229,7 @@ int flt_mailonpost_init_handler(t_cf_hash *head,t_configuration *dc,t_configurat
             if(ret != DB_NOTFOUND) {
               if(udb) flt_mailonpost_destroy(udb);
               flt_mailonpost_destroy(db);
-              fprintf(stderr,"DB error: %s\n",db_strerror(ret));
+              fprintf(stderr,"flt_mailonpost: db->del() error: %s\n",db_strerror(ret));
               return FLT_DECLINE;
             }
           }
@@ -246,7 +246,7 @@ int flt_mailonpost_init_handler(t_cf_hash *head,t_configuration *dc,t_configurat
         flt_mailonpost_destroy(db);
         if(udb) flt_mailonpost_destroy(udb);
 
-        fprintf(stderr,"DB error: %s\n",db_strerror(ret));
+        fprintf(stderr,"flt_mailonpost: db->put() error: %s\n",db_strerror(ret));
         return FLT_DECLINE;
       }
 
@@ -549,7 +549,7 @@ int flt_mailonpost_execute(t_cf_hash *head,t_configuration *dc,t_configuration *
     memset(&rl,0,sizeof(rl));
 
     if(cf_get_message_through_sock(sock,&rl,&thr,NULL,tid,p->mid,CF_KILL_DELETED) == -1) {
-      fprintf(stderr,"Error getting thread: %s\n",ErrorString);
+      fprintf(stderr,"flt_mailonpost: Error getting thread: %s\n",ErrorString);
       return FLT_DECLINE;
     }
 
@@ -604,7 +604,7 @@ int flt_mailonpost_post_handler(t_cf_hash *head,t_configuration *dc,t_configurat
 
   if((ret = db->get(db,NULL,&key,&data,0)) != 0) {
     if(ret != DB_NOTFOUND) {
-      fprintf(stderr,"db error: %s\n",db_strerror(ret));
+      fprintf(stderr,"flt_mailonpost: db->get() error: %s\n",db_strerror(ret));
       flt_mailonpost_destroy(db);
       return FLT_DECLINE;
     }

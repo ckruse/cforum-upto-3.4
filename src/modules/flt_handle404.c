@@ -116,12 +116,12 @@ int flt_handle404_execute(t_cf_hash *head,t_configuration *dc,t_configuration *v
 
   /* {{{ open database */
   if((ret = db_create(&db,NULL,0)) != 0) {
-    fprintf(stderr,"db_create() error: %s\n",db_strerror(ret));
+    fprintf(stderr,"flt_handle404: db_create() error: %s\n",db_strerror(ret));
     return FLT_DECLINE;
   }
 
   if((ret = db->open(db,NULL,v->values[0],NULL,DB_BTREE,DB_RDONLY,0)) != 0) {
-    fprintf(stderr,"db->open(%s) error: %s\n",v->values[0],db_strerror(ret));
+    fprintf(stderr,"flt_handle404: db->open(%s) error: %s\n",v->values[0],db_strerror(ret));
     return FLT_DECLINE;
   }
   /* }}} */
@@ -134,7 +134,7 @@ int flt_handle404_execute(t_cf_hash *head,t_configuration *dc,t_configuration *v
   key.size = len;
 
   if((ret = db->get(db,NULL,&key,&data,0)) != 0) {
-    if(ret != DB_NOTFOUND) fprintf(stderr,"db->get() error: %s\n",db_strerror(ret));
+    if(ret != DB_NOTFOUND) fprintf(stderr,"flt_handle404: db->get() error: %s\n",db_strerror(ret));
 
     db->close(db,0);
     return FLT_DECLINE;

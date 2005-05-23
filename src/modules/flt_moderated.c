@@ -59,28 +59,28 @@ int flt_mod_getdb(int read) {
 
   if(flt_moderated_dbname) {
     if((ret = db_create(&flt_moderated_db,NULL,0)) != 0) {
-      fprintf(stderr,"DB error: %s\n",db_strerror(ret));
+      fprintf(stderr,"flt_moderated: db_create() error: %s\n",db_strerror(ret));
       return FLT_EXIT;
     }
 
     if((ret = flt_moderated_db->open(flt_moderated_db,NULL,flt_moderated_dbname,NULL,DB_BTREE,read?DB_RDONLY:DB_CREATE,0644)) != 0) {
       flt_moderated_db->close(flt_moderated_db,0);
       flt_moderated_db = NULL;
-      fprintf(stderr,"DB error: %s\n",db_strerror(ret));
+      fprintf(stderr,"flt_moderated: db->open(%s) error: %s\n",flt_moderated_dbname,db_strerror(ret));
       return FLT_EXIT;
     }
 
     if((ret = flt_moderated_db->fd(flt_moderated_db,&fd)) != 0) {
       flt_moderated_db->close(flt_moderated_db,0);
       flt_moderated_db = NULL;
-      fprintf(stderr,"DB error: %s\n",db_strerror(ret));
+      fprintf(stderr,"flt_moderated: db->fd() error: %s\n",db_strerror(ret));
       return FLT_EXIT;
     }
 
     if((ret = flock(fd,read?LOCK_SH:LOCK_EX)) != 0) {
       flt_moderated_db->close(flt_moderated_db,0);
       flt_moderated_db = NULL;
-      fprintf(stderr,"DB error: %s\n",db_strerror(ret));
+      fprintf(stderr,"flt_moderated: flock() error: %s\n",strerror(ret));
       return FLT_EXIT;
     }
 
@@ -247,7 +247,7 @@ int flt_moderated_gogogo(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc,
       data.data = one;
       data.size = sizeof(one);
 
-      if((ret = flt_moderated_db->put(flt_moderated_db,NULL,&key,&data,0)) != 0) fprintf(stderr,"db->put(): %s\n",db_strerror(ret));
+      if((ret = flt_moderated_db->put(flt_moderated_db,NULL,&key,&data,0)) != 0) fprintf(stderr,"flt_moderated: db->put() error: %s\n",db_strerror(ret));
 
       flt_mod_closedb();
     }

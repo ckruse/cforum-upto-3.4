@@ -285,28 +285,28 @@ int main(int argc,char *argv[],char *env[]) {
         if((ret = db_create(&db,NULL,0)) != 0) {
           printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
           cf_error_message("E_FO_500",NULL);
-          fprintf(stderr,"db_create() error: %s\n",db_strerror(ret));
+          fprintf(stderr,"fo_vote: db_create() error: %s\n",db_strerror(ret));
           return EXIT_FAILURE;
         }
 
         if((ret = db->open(db,NULL,dbname->values[0],NULL,DB_BTREE,DB_CREATE,0644)) != 0) {
           printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
           cf_error_message("E_FO_500",NULL);
-          fprintf(stderr,"db->open() error: %s\n",db_strerror(ret));
+          fprintf(stderr,"fo_vote: db->open() error: %s\n",db_strerror(ret));
           return EXIT_FAILURE;
         }
 
         if((ret = db->fd(db,&fd)) != 0) {
           printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
           cf_error_message("E_FO_500",NULL);
-          fprintf(stderr,"db->fd() error: %s\n",db_strerror(ret));
+          fprintf(stderr,"fo_vote: db->fd() error: %s\n",db_strerror(ret));
           return EXIT_FAILURE;
         }
 
         if((ret = flock(fd,LOCK_EX)) != 0) {
           printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
           cf_error_message("E_FO_500",NULL);
-          fprintf(stderr,"db->fd() error: %s\n",strerror(errno));
+          fprintf(stderr,"fo_vote: db->fd() error: %s\n",strerror(errno));
           return EXIT_FAILURE;
         }
         /* }}} */
@@ -328,7 +328,7 @@ int main(int argc,char *argv[],char *env[]) {
         if(ret != DB_NOTFOUND) {
           printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
           cf_error_message("E_VOTE_INTERNAL",NULL);
-          fprintf(stderr,"db->get() error: %s\n",db_strerror(ret));
+          fprintf(stderr,"fo_vote: db->get() error: %s\n",db_strerror(ret));
           return EXIT_FAILURE;
         }
 
@@ -338,7 +338,7 @@ int main(int argc,char *argv[],char *env[]) {
         if((ret = db->put(db,NULL,&key,&data,0)) != 0) {
           printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
           cf_error_message("E_VOTE_INTERNAL",NULL);
-          fprintf(stderr,"db->put() error: %s\n",db_strerror(ret));
+          fprintf(stderr,"fo_vote: db->put() error: %s\n",db_strerror(ret));
           return EXIT_FAILURE;
         }
 

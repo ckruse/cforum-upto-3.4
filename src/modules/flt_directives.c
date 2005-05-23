@@ -528,7 +528,7 @@ int flt_directives_is_unwanted(const u_char *link,size_t len) {
 
   for(i=0;i<flt_directives_bdl_len;++i) {
     if((regexp = pcre_compile(flt_directives_badlinks[i], 0, (const char **)&error, &erroffset, NULL)) == NULL) {
-      fprintf(stderr,"error in pattern '%s' (offset %d): %s\n",flt_directives_badlinks[i],erroffset,error);
+      fprintf(stderr,"flt_directives: error in pattern '%s' (offset %d): %s\n",flt_directives_badlinks[i],erroffset,error);
       continue;
     }
 
@@ -584,7 +584,7 @@ int flt_directives_validate(t_configuration *fdc,t_configuration *fvc,const u_ch
                 cf_tpl_var_addvalue(var,TPL_VARIABLE_STRING,err,len);
                 free(err);
               }
-              else fprintf(stderr,"Unwanted link but could not find error message!\n");
+              else fprintf(stderr,"flt_directives: Unwanted link but could not find error message!\n");
 
               return FLT_ERROR;
             }
@@ -606,7 +606,7 @@ int flt_directives_validate(t_configuration *fdc,t_configuration *fvc,const u_ch
             cf_tpl_var_addvalue(var,TPL_VARIABLE_STRING,err,len);
             free(err);
           }
-          else fprintf(stderr,"Unwanted link but could not find error message!\n");
+          else fprintf(stderr,"flt_directives: Unwanted link but could not find error message!\n");
 
           return FLT_ERROR;
         }
@@ -914,13 +914,13 @@ int flt_directives_handle_purl(t_configfile *cfile,t_conf_opt *opt,const u_char 
   if(flt_directives_puris.element_size == 0) array_init(&flt_directives_puris,sizeof(ar_re),NULL);
 
   if((re = pcre_compile((const char *)args[0],PCRE_CASELESS,(const char **)&error,&offset,NULL)) == NULL) {
-    fprintf(stderr,"error in pattern '%s': %s (Offset %d)\n",args[0],error,offset);
+    fprintf(stderr,"flt_directives: error in pattern '%s': %s (Offset %d)\n",args[0],error,offset);
     return 1;
   }
 
   if((extra = pcre_study(re,0,(const char **)&error)) == NULL) {
     if(error) {
-      fprintf(stderr,"error in pattern '%s': %s\n",args[0],error);
+      fprintf(stderr,"flt_directives: error in pattern '%s': %s\n",args[0],error);
       return 1;
     }
   }

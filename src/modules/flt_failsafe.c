@@ -221,13 +221,13 @@ int flt_failsafe_init(int main_socket) {
     fl = cf_hash_get(flt_failsafe_hsh,forums->values[i],strlen(forums->values[i]));
 
     if(stat(fl->BackupFile,&st) == 0) {
-      fprintf(stderr,"There is a backup file, perhaps you should run fo_recovery!\n");
+      fprintf(stderr,"flt_failsafe: There is a backup file, perhaps you should run fo_recovery!\n");
       flt_failsafe_error = 1;
       return FLT_EXIT;
     }
 
     if((fd = fopen(fl->BackupFile,"wb")) == NULL) {
-      fprintf(stderr,"Could not open BackupFile %s: %s\n",fl->BackupFile,strerror(errno));
+      fprintf(stderr,"flt_failsafe: Could not open BackupFile %s: %s\n",fl->BackupFile,strerror(errno));
       flt_failsafe_error = 1;
       return FLT_EXIT;
     }

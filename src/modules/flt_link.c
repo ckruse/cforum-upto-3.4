@@ -170,7 +170,7 @@ int flt_link_handle_conf(t_configfile *cfg,t_conf_opt *entry,const u_char *conte
     else if(cf_strcmp(entry->name,"LinkNoVisited") == 0) NoVisited      = cf_strcmp(args[0],"yes") == 0;
   }
   else {
-    fprintf(stderr,"Error: expecting 1 argument for directive SetLinkTags!\n");
+    fprintf(stderr,"flt_link: Error: expecting 1 argument for directive SetLinkTags!\n");
     return 1;
   }
 

@@ -204,7 +204,7 @@ int flt_deleted_del_thread(t_cf_hash *head,t_configuration *dc,t_configuration *
               key.data = buff;
               key.size = len;
 
-              if((ret = Cfg.db->put(Cfg.db,NULL,&key,&data,0)) != 0) fprintf(stderr,"db->put(): %s\n",db_strerror(ret));
+              if((ret = Cfg.db->put(Cfg.db,NULL,&key,&data,0)) != 0) fprintf(stderr,"flt_deleted: db->put(): %s\n",db_strerror(ret));
             }
           }
           /* }}} */
@@ -271,22 +271,22 @@ int flt_del_init_handler(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc)
 
   if(Cfg.DeletedFile) {
     if((ret = db_create(&Cfg.db,NULL,0)) != 0) {
-      fprintf(stderr,"DB error: %s\n",db_strerror(ret));
+      fprintf(stderr,"flt_deleted: db_create() error: %s\n",db_strerror(ret));
       return FLT_EXIT;
     }
 
     if((ret = Cfg.db->open(Cfg.db,NULL,Cfg.DeletedFile,NULL,DB_BTREE,DB_CREATE,0644)) != 0) {
-      fprintf(stderr,"DB error: %s\n",db_strerror(ret));
+      fprintf(stderr,"flt_deleted: db->open(%s) error: %s\n",Cfg.DeletedFile,db_strerror(ret));
       return FLT_EXIT;
     }
 
     if((ret = Cfg.db->fd(Cfg.db,&fd)) != 0) {
-      fprintf(stderr,"DB error: %s\n",db_strerror(ret));
+      fprintf(stderr,"flt_deleted: db->fd() error: %s\n",db_strerror(ret));
       return FLT_EXIT;
     }
 
     if((ret = flock(fd,LOCK_EX)) != 0) {
-      fprintf(stderr,"DB error: %s\n",db_strerror(ret));
+      fprintf(stderr,"flt_deleted: flock() error: %s\n",strerror(ret));
       return FLT_EXIT;
     }
 

@@ -108,7 +108,7 @@ void *flt_visited_mark_visited_api(void *vmid) {
 
     if((ret = Cfg.db->put(Cfg.db,NULL,&key,&data,0)) != 0) {
       if(ret != DB_KEYEXIST) {
-        fprintf(stderr,"DB error: %s\n",db_strerror(ret));
+        fprintf(stderr,"flt_visited: db->put() error: %s\n",db_strerror(ret));
         return NULL;
       }
 
@@ -393,22 +393,22 @@ int flt_visited_init_handler(t_cf_hash *cgi,t_configuration *dc,t_configuration 
 
   if(Cfg.VisitedFile) {
     if((ret = db_create(&Cfg.db,NULL,0)) != 0) {
-      fprintf(stderr,"DB error: %s\n",db_strerror(ret));
+      fprintf(stderr,"flt_visited: db_create() error: %s\n",db_strerror(ret));
       return FLT_EXIT;
     }
 
     if((ret = Cfg.db->open(Cfg.db,NULL,Cfg.VisitedFile,NULL,DB_BTREE,DB_CREATE,0644)) != 0) {
-      fprintf(stderr,"DB error: %s\n",db_strerror(ret));
+      fprintf(stderr,"flt_visited: db->open(%s) error: %s\n",Cfg.VisitedFile,db_strerror(ret));
       return FLT_EXIT;
     }
 
     if((ret = Cfg.db->fd(Cfg.db,&fd)) != 0) {
-      fprintf(stderr,"DB error: %s\n",db_strerror(ret));
+      fprintf(stderr,"flt_visited: db->fd() error: %s\n",db_strerror(ret));
       return FLT_EXIT;
     }
 
     if((ret = flock(fd,LOCK_EX)) != 0) {
-      fprintf(stderr,"DB error: %s\n",db_strerror(ret));
+      fprintf(stderr,"flt_visited: flock() error: %s\n",strerror(ret));
       return FLT_EXIT;
     }
 

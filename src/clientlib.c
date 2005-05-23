@@ -173,7 +173,7 @@ u_char *cf_get_uconf_name(const u_char *uname) {
   sprintf(path,"%s%c/%c/%c/%s.conf",confpath->values[0],name[0],name[1],name[2],name);
 
   if(stat(path,&sb) == -1) {
-    fprintf(stderr,"user config file '%s' not found!\n",path);
+    fprintf(stderr,"clientlib: user config file '%s' not found!\n",path);
     free(path);
     free(name);
     return NULL;
@@ -357,10 +357,10 @@ void cf_error_message(const u_char *err,FILE *out, ...) {
       if(Msgs == NULL) {
         if((ret = db_create(&Msgs,NULL,0)) == 0) {
           if((ret = Msgs->open(Msgs,NULL,db->values[0],NULL,DB_BTREE,DB_RDONLY,0)) != 0) {
-            fprintf(stderr,"DB->open(%s) error: %s\n",db->values[0],db_strerror(ret));
+            fprintf(stderr,"clientlib: DB->open(%s) error: %s\n",db->values[0],db_strerror(ret));
           }
         }
-        else fprintf(stderr,"db_create() error: %s\n",db_strerror(ret));
+        else fprintf(stderr,"clientlib: db_create() error: %s\n",db_strerror(ret));
       }
 
       if(Msgs) {
@@ -457,12 +457,12 @@ u_char *cf_get_error_message(const u_char *err,size_t *len, ...) {
   if(Msgs == NULL) {
     if((ret = db_create(&Msgs,NULL,0)) == 0) {
       if((ret = Msgs->open(Msgs,NULL,db->values[0],NULL,DB_BTREE,DB_RDONLY,0)) != 0) {
-        fprintf(stderr,"DB->open(%s) error: %s\n",db->values[0],db_strerror(ret));
+        fprintf(stderr,"clientlib: DB->open(%s) error: %s\n",db->values[0],db_strerror(ret));
         return NULL;
       }
     }
     else {
-      fprintf(stderr,"db_create() error: %s\n",db_strerror(ret));
+      fprintf(stderr,"clientlib: db_create() error: %s\n",db_strerror(ret));
       return NULL;
     }
   }

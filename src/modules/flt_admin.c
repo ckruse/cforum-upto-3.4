@@ -169,7 +169,10 @@ int flt_admin_gogogo(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc,void
         memset(&rl,0,sizeof(rl));
         /* }}} */
 
-        if(cf_get_message_through_sock(sock,&rl,&thread,rm->threadlist_thread_tpl,itid,0,CF_KEEP_DELETED) == -1) fprintf(stderr,"500 Internal Server Error\015\012\015\012Error");
+        if(cf_get_message_through_sock(sock,&rl,&thread,rm->threadlist_thread_tpl,itid,0,CF_KEEP_DELETED) == -1) {
+          printf("500 Internal Server Error\015\012\015\012Error");
+          return FLT_EXIT;
+        }
 
         thread.threadmsg = thread.messages;
 

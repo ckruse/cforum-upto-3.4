@@ -310,7 +310,7 @@ int flt_http_handle_command(t_configfile *cfile,t_conf_opt *opt,const u_char *co
     }
   }
   else {
-    fprintf(stderr,"Expecting one argument for directive %s!\n",opt->name);
+    fprintf(stderr,"flt_http: Expecting one argument for directive %s!\n",opt->name);
     return 1;
   }
 

@@ -240,7 +240,7 @@ int flt_scoring_parse(t_configfile *cf,t_conf_opt *opt,const u_char *context,u_c
         break;
       case FLT_SCORING_REGEX:
         if((filter.regex = pcre_compile(flt_scoring_str.content,PCRE_UTF8|PCRE_CASELESS,(const char **)&error,&err_offset,NULL)) == NULL) {
-          fprintf(stderr,"regex error in regex '%s': %s\n",flt_scoring_str.content,error);
+          fprintf(stderr,"flt_scoring: regex error in regex '%s': %s\n",flt_scoring_str.content,error);
           return -10;
         }
         filter.regex_extra = pcre_study(filter.regex, 0, (const char **)&error);

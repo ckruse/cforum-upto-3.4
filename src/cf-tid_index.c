@@ -122,7 +122,7 @@ void index_month(char *year,char *month) {
   if(stat(path1,&st) == 0) return;
 
   if((m = opendir(path)) == NULL) {
-    fprintf(stderr,"opendir(%s): %s\n",path,strerror(errno));
+    fprintf(stderr,"cf-tid_index: opendir(%s): %s\n",path,strerror(errno));
     exit(EXIT_FAILURE);
   }
 
@@ -149,7 +149,7 @@ void index_month(char *year,char *month) {
 
       Tdb->del(Tdb,NULL,&key,0);
       if((ret = Tdb->put(Tdb,NULL,&key,&data,0)) != 0) {
-        fprintf(stderr,"DB error: %s\n",db_strerror(ret));
+        fprintf(stderr,"cf-tid_index: db->put(%s,%s) error: %s\n",y,str.content,db_strerror(ret));
         exit(-1);
       }
 
@@ -160,7 +160,7 @@ void index_month(char *year,char *month) {
       data.size = ym_len;
 
       if((ret = Tdb->put(Tdb,NULL,&key,&data,0)) != 0) {
-        fprintf(stderr,"DB error: %s\n",db_strerror(ret));
+        fprintf(stderr,"cf-tid_index: db->put(%s,%s) error: %s\n",y,data.data,db_strerror(ret));
         exit(-1);
       }
     }
@@ -185,7 +185,7 @@ void do_year(char *year) {
   (void)snprintf(path,256,"%s/%s",apath->values[0],year);
 
   if((months = opendir(path)) == NULL) {
-    fprintf(stderr,"opendir(%s): %s\n",path,strerror(errno));
+    fprintf(stderr,"cf-tid_index: opendir(%s): %s\n",path,strerror(errno));
     exit(EXIT_FAILURE);
   }
 
@@ -317,18 +317,18 @@ int main(int argc,char *argv[],char *envp[]) {
 
   /* {{{ open database */
   if((ret = db_create(&Tdb,NULL,0)) != 0) {
-    fprintf(stderr,"DB error: %s\n",db_strerror(ret));
+    fprintf(stderr,"cf-tid_index: db_create() error: %s\n",db_strerror(ret));
     return EXIT_FAILURE;
   }
 
   if((ret = Tdb->open(Tdb,NULL,idxfile->values[0],NULL,DB_BTREE,DB_CREATE,0644)) != 0) {
-    fprintf(stderr,"DB error: %s\n",db_strerror(ret));
+    fprintf(stderr,"cf-tid_index: db->open(%s) error: %s\n",idxfile->values[0],db_strerror(ret));
     return EXIT_FAILURE;
   }
   /* }}} */
 
   if((years = opendir(ent->values[0])) == NULL) {
-    fprintf(stderr,"opendir(%s): %s\n",ent->values[0],strerror(errno));
+    fprintf(stderr,"cf-tid_index: opendir(%s): %s\n",ent->values[0],strerror(errno));
     return EXIT_FAILURE;
   }
 
