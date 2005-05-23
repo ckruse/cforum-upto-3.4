@@ -96,7 +96,10 @@ sub generate_edit_output {
             unless(exists $user_config->{global}->{$dname}) {
               unless(exists $fo_default_conf->{$main::Forum}->{$dname}) {
                 unless(exists $fo_userconf_conf->{$main::Forum}->{$dname}) {
-                  if(exists $fo_view_conf->{$main::Forum}->{$dname}) {
+                  unless(exists $fo_view_conf->{$main::Forum}->{$dname}) {
+                    $val = $arg->getAttribute('default');
+                  }
+                  else {
                     $val = $fo_view_conf->{$main::Forum}->{$dname}->[0]->[$i];
                   }
                 }
@@ -119,7 +122,10 @@ sub generate_edit_output {
           unless(exists $user_config->{global}->{$dname}) {
             unless(exists $fo_default_conf->{$main::Forum}->{$dname}) {
               unless(exists $fo_userconf_conf->{$main::Forum}->{$dname}) {
-                if(exists $fo_view_conf->{$main::Forum}->{$dname}) {
+                unless(exists $fo_view_conf->{$main::Forum}->{$dname}) {
+                  $val = $arg->getAttribute('default');
+                }
+                else {
                   $val = $fo_view_conf->{$main::Forum}->{$dname}->[0]->[$i];
                 }
               }

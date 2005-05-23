@@ -678,6 +678,77 @@
       <error>Sollen Link-Tags im Administrator-Modus auf gelöschte/unsichtbare Postings zeigen? Bitte geben Sie &quot;ja&quot; oder &quot;nein&quot; an!</error>
     </argument>
   </directive>
+
+  <directive name="ShortcutsActivate" arguments="1">
+    <argument paramname="shortcutsactivate" encode="plain" ifNotCommitted="no">
+      <validate>^(yes|no)$</validate>
+      <error>Sollen die Shortcuts aktiviert werden? Geben Sie &quot;ja&quot; oder &quot;nein&quot; an!</error>
+    </argument>
+  </directive>
+
+  <directive name="ShortcutsThreadlist" arguments="1">
+    <argument paramname="shortcutsthreadlist1" encode="plain" default="b">
+      <validate>^(?:\\[CAS]-){0,3}[a-zA-Z]$</validate>
+      <error>Shortcut &quot;Zur Blacklist hinzufügen&quot; ist ungültig!</error>
+    </argument>
+
+    <argument paramname="shortcutsthreadlist2" encode="plain" default="\S-b">
+      <validate>^(?:\\[CAS]-){0,3}[a-zA-Z]$</validate>
+      <error>Shortcut &quot;Von der Blacklist entfernen&quot; ist ungültig!</error>
+    </argument>
+
+    <argument paramname="shortcutsthreadlist3" encode="plain" default="w">
+      <validate>^(?:\\[CAS]-){0,3}[a-zA-Z]$</validate>
+      <error>Shortcut &quot;Zur Whitelist hinzufügen&quot; ist ungültig!</error>
+    </argument>
+
+    <argument paramname="shortcutsthreadlist4" encode="plain" default="\s-w">
+      <validate>^(?:\\[CAS]-){0,3}[a-zA-Z]$</validate>
+      <error>Shortcut &quot;Von der Whitelist entfernen&quot; ist ungültig!</error>
+    </argument>
+
+    <argument paramname="shortcutsthreadlist5" encode="plain" default="k">
+      <validate>^(?:\\[CAS]-){0,3}[a-zA-Z]$</validate>
+      <error>Shortcut &quot;Kategorie hervorheben&quot; ist ungültig!</error>
+    </argument>
+
+    <argument paramname="shortcutsthreadlist6" encode="plain" default="\S-k">
+      <validate>^(?:\\[CAS]-){0,3}[a-zA-Z]$</validate>
+      <error>Shortcut &quot;Kategorie nicht länger hervorheben&quot; ist ungültig!</error>
+    </argument>
+  </directive>
+
+  <directive name="ShortcutsPosting" arguments="1">
+    <argument paramname="shortcutsposting1" encode="plain" default="n">
+      <validate>^(?:\\[CAS]-){0,3}[a-zA-Z]$</validate>
+      <error>Shortcut &quot;Nächstes Posting&quot; ist ungültig!</error>
+    </argument>
+
+    <argument paramname="shortcutsposting2" encode="plain" default="p">
+      <validate>^(?:\\[CAS]-){0,3}[a-zA-Z]$</validate>
+      <error>Shortcut &quot;Vorheriges Posting&quot; ist ungültig!</error>
+    </argument>
+
+    <argument paramname="shortcutsposting3" encode="plain" default="h">
+      <validate>^(?:\\[CAS]-){0,3}[a-zA-Z]$</validate>
+      <error>Shortcut &quot;Zurück zur Forums-Hauptseite&quot; ist ungültig!</error>
+    </argument>
+
+    <argument paramname="shortcutsposting4" encode="plain" default="r">
+      <validate>^(?:\\[CAS]-){0,3}[a-zA-Z]$</validate>
+      <error>Shortcut &quot;Fokussiere die Textarea&quot; ist ungültig!</error>
+    </argument>
+
+    <argument paramname="shortcutsposting5" encode="plain" default="g">
+      <validate>^(?:\\[CAS]-){0,3}[a-zA-Z]$</validate>
+      <error>Shortcut &quot;Als hilfreich bewerten&quot; ist ungültig!</error>
+    </argument>
+
+    <argument paramname="shortcutsposting6" encode="plain" default="b">
+      <validate>^(?:\\[CAS]-){0,3}[a-zA-Z]$</validate>
+      <error>Shortcut &quot;Als nicht hilfreich bewerten&quot; ist ungültig!</error>
+    </argument>
+  </directive>
 </config>
 
 <!-- eof -->
