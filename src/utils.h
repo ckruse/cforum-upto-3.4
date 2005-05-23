@@ -168,6 +168,16 @@ size_t str_cstr_append(t_string *str,const u_char *content);
 /**
  * \ingroup string_funcs
  * This function sets the value of an string structure to a given u_char array. The old string contained
+ * in the structure will be lost. It gets the length of the u_char array by strlen().
+ * \param str A reference to the string to append to
+ * \param content The string to set
+ * \return The number of characters set on success or 0 on failure
+ */
+int str_cstr_set(t_string *str,const u_char *content);
+
+/**
+ * \ingroup string_funcs
+ * This function sets the value of an string structure to a given u_char array. The old string contained
  * in the structure will be lost.
  * \param str A reference to the string to append to
  * \param content The string to set

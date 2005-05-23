@@ -1,3 +1,7 @@
+2005-05-23 Christian Kruse <ckruse@wwwtech.de>
+	* src/utils.h, src/stringutils.c: Added str_cstr_set() function
+	* src/modules/flt_shortcuts.c: Added plugin to handle shortcuts
+
 2005-05-22 Christian Kruse <ckruse@wwwtech.de>
 	* src/modules/flt_frameset.c: Fixed bug, now setting $frame also in bottom
 		template

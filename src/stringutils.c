@@ -142,6 +142,12 @@ size_t str_cstr_append(t_string *str,const u_char *content) {
 }
 /* }}} */
 
+/* {{{ str_cstr_set */
+int str_cstr_set(t_string *str,const u_char *content) {
+  return str_char_set(str,content,strlen(content));
+}
+/* }}} */
+
 /* {{{ str_char_set */
 size_t str_char_set(t_string *str,const u_char *content,size_t length) {
   size_t len;

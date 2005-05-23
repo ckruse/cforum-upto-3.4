@@ -250,6 +250,10 @@ EXTRA_LTLIBRARIES+=flt_phpsessauth.la
 flt_phpsessauth_la_SOURCES=flt_phpsessauth.c
 flt_phpsessauth_la_LDFLAGS=-module -export-dynamic -avoid-version -rpath '$(pkglibdir)'
 
+EXTRA_LTLIBRARIES+=flt_shortcuts.la
+flt_shortcuts_la_SOURCES=flt_shortcuts.c
+flt_shortcuts_la_LDFLAGS=-module -export-dynamic -avoid-version -rpath '$(pkglibdir)'
+
 pkglib_LTLIBRARIES+=${OPTIONAL_MODULES}
 
 # eof
