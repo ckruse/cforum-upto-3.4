@@ -14,6 +14,7 @@
 		src/modules/flt_openclose.c, src/modules/flt_admin.c, src/fo_vote.c,
 		src/cf-tid_index.c: Made better error messages
 	* src/perl/Plugins/Setvalue.pm: Small bugfix
+	* src/modules/flt_syntax.c: Now it shows the error message just once.
 
 2005-05-22 Christian Kruse <ckruse@wwwtech.de>
 	* src/modules/flt_frameset.c: Fixed bug, now setting $frame also in bottom

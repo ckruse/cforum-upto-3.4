@@ -82,6 +82,7 @@ typedef struct {
 
 static t_array flt_syntax_files;
 static int flt_syntax_active = 0;
+static int flt_syntax_alreadyerr = 0;
 
 #define FLT_SYNTAX_GLOBAL 0
 #define FLT_SYNTAX_BLOCK  1
@@ -1394,10 +1395,13 @@ int flt_syntax_validate(t_configuration *fdc,t_configuration *fvc,const u_char *
 
   t_string str;
 
+  if(flt_syntax_alreadyerr) return FLT_DECLINE;
+
   if(plen != 2 || cf_strcmp(parameters[0],"lang") != 0) {
     if((err = cf_get_error_message("E_CODE_NOLANG",&len)) != NULL) {
       cf_tpl_var_addvalue(var,TPL_VARIABLE_STRING,err,len);
       free(err);
+      flt_syntax_alreadyerr = 1;
       return FLT_ERROR;
     }
   }
@@ -1420,6 +1424,7 @@ int flt_syntax_validate(t_configuration *fdc,t_configuration *fvc,const u_char *
 
     if((err = cf_get_error_message("E_CODE_LANG",&len)) != NULL) {
       cf_tpl_var_addvalue(var,TPL_VARIABLE_STRING,err,len);
+      flt_syntax_alreadyerr = 1;
       free(err);
       return FLT_ERROR;
     }
