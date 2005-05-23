@@ -160,7 +160,7 @@ void index_month(char *year,char *month) {
       data.size = ym_len;
 
       if((ret = Tdb->put(Tdb,NULL,&key,&data,0)) != 0) {
-        fprintf(stderr,"cf-tid_index: db->put(%s,%s) error: %s\n",y,data.data,db_strerror(ret));
+        fprintf(stderr,"cf-tid_index: db->put(%s,%s) error: %s\n",y,(u_char *)data.data,db_strerror(ret));
         exit(-1);
       }
     }

@@ -32,6 +32,7 @@
 #include "template.h"
 #include "readline.h"
 #include "clientlib.h"
+#include "htmllib.h"
 /* }}} */
 
 u_char **flt_admin_Admins = NULL;

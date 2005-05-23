@@ -49,7 +49,7 @@ struct s_scoring_filter {
   pcre_extra *regex_extra;
 };
 
-static t_string flt_scoring_str        = { 0, 0, NULL };
+static t_string flt_scoring_str        = { 0, 0, 0, NULL };
 static int      flt_scoring_number     = 0;
 
 static t_array flt_scoring_ary         = { 0, 0, 0, NULL, NULL };

@@ -490,7 +490,7 @@ t_array *flt_xmlarc_getthreadlist(const u_char *year,const u_char *month) {
   t_array *ary = fo_alloc(NULL,1,sizeof(*ary),FO_ALLOC_MALLOC);
   t_arc_tl_ent ent;
 
-  int fd,is_invisible;
+  int fd;
   u_int64_t tid;
 
   register u_char *ptr;

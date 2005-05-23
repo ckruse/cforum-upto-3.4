@@ -522,7 +522,8 @@ int flt_directives_execute(t_configuration *fdc,t_configuration *fvc,t_cl_thread
 
 /* {{{ flt_directives_is_unwanted */
 int flt_directives_is_unwanted(const u_char *link,size_t len) {
-  int i,erroffset;
+  size_t i;
+  int erroffset;
   pcre *regexp;
   char *error;
 

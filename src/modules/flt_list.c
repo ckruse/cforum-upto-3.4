@@ -49,7 +49,7 @@ int flt_list_execute_filter(t_cf_hash *head,t_configuration *dc,t_configuration 
   size_t len,qclen,msgcntlen;
   t_string content,threadlist;
   int utf8,ShowInvisible;
-  t_message *msg,*msg1;
+  t_message *msg;
 
   /* are we in the right read mode? */
   if(cf_strcmp(rm->values[0],"list") != 0) return FLT_DECLINE;

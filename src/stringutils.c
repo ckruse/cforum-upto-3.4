@@ -266,7 +266,7 @@ size_t cf_strlen_utf8_wo_space(const u_char *str,size_t rlen) {
   u_int32_t num;
 
   for(ptr=(u_char *)str;*ptr && isspace(*ptr);++ptr);
-  for(end=str+rlen-1;*end && isspace(*end) && end > str;--end);
+  for(end=(u_char *)(str+rlen-1);*end && isspace(*end) && end > str;--end);
 
   for(;*ptr && ptr <= end;++len) {
     if((bytes = utf8_to_unicode(ptr,rlen,&num)) < 0) return -1;

@@ -48,7 +48,6 @@ int cf_get_threadlist(t_array *ary,void *ptr,const u_char *tplname)
 {
   t_cl_thread thread;
   array_init(ary,sizeof(thread),cf_cleanup_thread);
-  size_t i = 0;
 
   #ifndef CF_SHARED_MEM
   while(cf_get_next_thread_through_sock(sock,tsd,&thread,tplname) == 0)
