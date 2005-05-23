@@ -702,7 +702,7 @@
       <error>Shortcut &quot;Zur Whitelist hinzufügen&quot; ist ungültig!</error>
     </argument>
 
-    <argument paramname="shortcutsthreadlist4" encode="plain" default="\s-w" emptyIfNotCommitted="yes">
+    <argument paramname="shortcutsthreadlist4" encode="plain" default="\S-w" emptyIfNotCommitted="yes">
       <validate>^(?:\\[CAS]-){0,3}[a-zA-Z]$</validate>
       <error>Shortcut &quot;Von der Whitelist entfernen&quot; ist ungültig!</error>
     </argument>
