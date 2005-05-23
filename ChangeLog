@@ -13,6 +13,7 @@
 		src/modules/flt_http.c, src/modules/flt_mailonpost.c,
 		src/modules/flt_openclose.c, src/modules/flt_admin.c, src/fo_vote.c,
 		src/cf-tid_index.c: Made better error messages
+	* src/perl/Plugins/Setvalue.pm: Small bugfix
 
 2005-05-22 Christian Kruse <ckruse@wwwtech.de>
 	* src/modules/flt_frameset.c: Fixed bug, now setting $frame also in bottom

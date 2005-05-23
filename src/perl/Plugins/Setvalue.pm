@@ -199,6 +199,8 @@ sub remove_execute {
     # }}}
   }
 
+  delete $user_config->{global}->{$directive} unless $user_config->{global}->{$directive};
+
   my $file = get_user_config_file($fo_default_conf,$main::UserName);
   if(my $ret = write_userconf($fo_default_conf,$file,$user_config)) {
     print "Status: 500 Internal Server Error\n\n";
