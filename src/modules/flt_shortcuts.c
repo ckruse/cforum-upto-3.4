@@ -161,7 +161,7 @@ void flt_shortcuts_parser(const u_char *text,flt_shortcuts_t *shortcut) {
   for(ptr=(u_char *)text;*ptr;++ptr) {
     switch(*ptr) {
       case '\\':
-        switch(*ptr+1) {
+        switch(*(ptr+1)) {
           case 'c':
           case 'C':
             shortcut->modifiers |= FLT_SHORTCUTS_MOD_CTL;
@@ -172,7 +172,7 @@ void flt_shortcuts_parser(const u_char *text,flt_shortcuts_t *shortcut) {
             break;
           case 's':
           case 'S':
-          shortcut->modifiers |= FLT_SHORTCUTS_MOD_SHIFT;
+            shortcut->modifiers |= FLT_SHORTCUTS_MOD_SHIFT;
             break;
         }
 
