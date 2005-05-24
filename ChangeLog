@@ -5,6 +5,7 @@
 		type-safe str_to_u_int64()
 	* src/modules/flt_visited.c: Now you can use checkboxes to mark threads
 		visited
+	* conf/modules.de.xml, src/modules/flt_shortcuts.c: Added some more shortcuts
 
 2005-05-23 Christian Kruse <ckruse@wwwtech.de>
 	* src/utils.h, src/stringutils.c: Added str_cstr_set() function

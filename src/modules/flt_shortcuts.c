@@ -47,24 +47,28 @@ typedef struct {
 
 static int flt_shortcuts_activate = 0;
 
-#define FLT_SHORTCUTS_THREADLISTTABLE_LENGTH 6
+#define FLT_SHORTCUTS_THREADLISTTABLE_LENGTH 7
 static flt_shortcuts_t flt_shortcuts_threadlisttable[] = {
   { 'b', FLT_SHORTCUTS_MOD_NONE,  "add_to_blacklist" }, /* add to blacklist */
   { 'b', FLT_SHORTCUTS_MOD_SHIFT, "remove_from_blacklist" }, /* remove from blacklist */
   { 'w', FLT_SHORTCUTS_MOD_NONE, "add_to_whitelist" }, /* add to whitelist */
   { 'w', FLT_SHORTCUTS_MOD_SHIFT, "remove_from_whitelist" }, /* remove from whitelist */
   { 'k', FLT_SHORTCUTS_MOD_NONE, "add_to_highlightcats"  }, /* add to highlightcats */
-  { 'k', FLT_SHORTCUTS_MOD_SHIFT, "remove_from_highlightcats" }  /* remove from highlightcats */
+  { 'k', FLT_SHORTCUTS_MOD_SHIFT, "remove_from_highlightcats" },  /* remove from highlightcats */
+  { 'a', FLT_SHORTCUTS_MOD_NONE,  "mark_all_visited" } /* mark all postings visited */
 };
 
-#define FLT_SHORTCUTS_POSTINGTABLE_LENGTH 6 /* 6 */
+#define FLT_SHORTCUTS_POSTINGTABLE_LENGTH 9
 static flt_shortcuts_t flt_shortcuts_postingtable[] = {
-  { 'n', FLT_SHORTCUTS_MOD_NONE, "next_posting" }, /* next posting */
-  { 'p', FLT_SHORTCUTS_MOD_NONE, "prev_posting" }, /* previous posting */
-  { 'h', FLT_SHORTCUTS_MOD_NONE, "back_to_threadlist" }, /* back to threadlist */
-  { 'r', FLT_SHORTCUTS_MOD_NONE, "focus_reply" }, /* scroll to textarea and focus */
-  { 'g', FLT_SHORTCUTS_MOD_NONE, "vote_good" }, /* vote good */
-  { 'b', FLT_SHORTCUTS_MOD_NONE, "vote_bad" }  /* vote bad */
+  { 'n', FLT_SHORTCUTS_MOD_NONE,  "next_posting" }, /* next posting */
+  { 'p', FLT_SHORTCUTS_MOD_NONE,  "prev_posting" }, /* previous posting */
+  { 'h', FLT_SHORTCUTS_MOD_NONE,  "back_to_threadlist" }, /* back to threadlist */
+  { 'r', FLT_SHORTCUTS_MOD_NONE,  "focus_reply" }, /* scroll to textarea and focus */
+  { 'g', FLT_SHORTCUTS_MOD_NONE,  "vote_good" }, /* vote good */
+  { 'b', FLT_SHORTCUTS_MOD_NONE,  "vote_bad" },  /* vote bad */
+  { 'a', FLT_SHORTCUTS_MOD_NONE,  "focus_active" }, /* mark active posting */
+  { 'k', FLT_SHORTCUTS_MOD_NONE,  "kill_post" }, /* mark thread as deleted */
+  { 'r', FLT_SHORTCUTS_MOD_SHIFT, "mark_visited" } /* mark thread visited */
 };
 
 
