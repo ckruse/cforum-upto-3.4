@@ -264,7 +264,7 @@ int flt_latex_execute(t_configuration *fdc,t_configuration *fvc,t_cl_thread *thr
   str_chars_append(bco,"<img src=\"",10);
   str_chars_append(bco,flt_latex_cfg.uri,strlen(flt_latex_cfg.uri));
   str_chars_append(bco,sum,32);
-  str_chars_append(bco,".png\" alt=\"",10);
+  str_chars_append(bco,".png\" alt=\"",11);
   str_str_append(bco,content);
   str_chars_append(bco,"\" title=\"",9);
   str_str_append(bco,content);
