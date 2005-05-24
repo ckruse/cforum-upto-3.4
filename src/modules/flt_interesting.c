@@ -101,7 +101,7 @@ int flt_interesting_mark_thread(t_cf_hash *head,t_configuration *dc,t_configurat
       if((parm = cf_cgi_get_multiple(head,"mit")) != NULL) {
         /* {{{ put tids to database */
         for(;parm;parm=parm->next) {
-          tid = strtoull(parm->value,NULL,10);
+          tid = str_to_u_int64(parm->value);
 
           if(tid) {
             memset(&key,0,sizeof(key));

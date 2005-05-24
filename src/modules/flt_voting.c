@@ -96,8 +96,8 @@ int flt_voting_handler(int sockfd,t_forum *forum,const u_char **tokens,int tnum,
         return FLT_OK;
       }
 
-      tid = strtoull(ctid,NULL,10);
-      mid = strtoull(cmid,NULL,10);
+      tid = str_to_u_int64(ctid);
+      mid = str_to_u_int64(cmid);
 
       cf_hash_destroy(infos);
 

@@ -224,8 +224,8 @@ int main(int argc,char *argv[],char *envp[]) {
   /* }}} */
 
   /* {{{ get URLs */
-  tid = strtoull(ctid,NULL,10);
-  if(infos.elements == 4) mid = strtoull(*((u_char **)array_element_at(&infos,3)),NULL,10);
+  tid = str_to_u_int64(ctid);
+  if(infos.elements == 4) mid = str_to_u_int64(*((u_char **)array_element_at(&infos,3)));
 
   memset(&key,0,sizeof(key));
   memset(&data,0,sizeof(data));

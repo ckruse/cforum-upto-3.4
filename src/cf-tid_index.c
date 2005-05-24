@@ -133,7 +133,7 @@ void index_month(char *year,char *month) {
   while((ent = readdir(m)) != NULL) {
     if(is_thread(ent->d_name) == -1) continue;
 
-    x   = strtoull(ent->d_name+1,NULL,10);
+    x   = str_to_u_int64(ent->d_name+1);
     len = snprintf(y,50,"%llu",x);
 
     key.data = y;

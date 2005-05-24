@@ -143,7 +143,8 @@ int flt_visited_execute_filter(t_cf_hash *head,t_configuration *dc,t_configurati
   t_message *msg;
   t_cl_thread thread;
   DBT key,data;
-  char buff[256],*mav;
+  u_char buff[256],*mav,*a;
+  t_cf_cgi_param *parm;
   size_t len;
   t_string str;
   t_name_value *rm = cfg_get_first_value(vc,fn,"ReadMode");
@@ -171,8 +172,45 @@ int flt_visited_execute_filter(t_cf_hash *head,t_configuration *dc,t_configurati
       cmid = cf_cgi_get(head,"m");
       ctid = cf_cgi_get(head,"mv");
       mode = cf_cgi_get(head,"mode");
+      a    = cf_cgi_get(head,"a");
 
       if(mode) xmlhttp = cf_strcmp(mode,"xmlhttp") == 0;
+
+      /* {{{ mark marked threads visited */
+      if(a && cf_strcmp(a,"mv") == 0) {
+        if((parm = cf_cgi_get_multiple(head,"dt")) != NULL) {
+          for(;parm;parm=parm->next) {
+            tid = str_to_u_int64(parm->value);
+
+            if(tid) {
+              #ifdef CF_SHARED_MEM
+              ret = cf_get_message_through_shm(sock,&thread,NULL,tid,0,CF_KILL_DELETED);
+              #else
+              ret = cf_get_message_through_sock(sock,&tsd,&thread,NULL,tid,0,CF_KILL_DELETED);
+              #endif
+
+              if(ret == -1) return FLT_DECLINE;
+
+              for(msg=thread.messages;msg;msg=msg->next) {
+                len = snprintf(buff,256,"%llu",msg->mid);
+                key.data = buff;
+                key.size = len;
+
+                Cfg.db->put(Cfg.db,NULL,&key,&data,0);
+              }
+
+              cf_cleanup_thread(&thread);
+            }
+          }
+
+          snprintf(buff,256,"%s.tm",Cfg.VisitedFile);
+          remove(buff);
+          if((fd = open(buff,O_CREAT|O_TRUNC|O_WRONLY)) != -1) close(fd);
+
+          return FLT_OK;
+        }
+      }
+      /* }}} */
 
       if((cf_strcmp(rm->values[0],"list") == 0 || cf_strcmp(rm->values[0],"nested") == 0) && ctid == NULL) {
         ctid = cf_cgi_get(head,"t");
@@ -253,7 +291,7 @@ int flt_visited_execute_filter(t_cf_hash *head,t_configuration *dc,t_configurati
 
       /* we shall only mark a message visited */
       else if(cmid) {
-        mid = strtoull(cmid,NULL,10);
+        mid = str_to_u_int64(cmid);
 
         if(mid) {
           len = snprintf(buff,256,"%llu",mid);

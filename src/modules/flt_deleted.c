@@ -189,7 +189,7 @@ int flt_deleted_del_thread(t_cf_hash *head,t_configuration *dc,t_configuration *
         if((parm = cf_cgi_get_multiple(head,"dt")) != NULL) {
           /* {{{ put tids to database */
           for(;parm;parm=parm->next) {
-            tid = strtoull(parm->value,NULL,10);
+            tid = str_to_u_int64(parm->value);
 
             if(tid) {
               memset(&key,0,sizeof(key));
@@ -239,7 +239,7 @@ int flt_deleted_del_thread(t_cf_hash *head,t_configuration *dc,t_configuration *
       else if(cf_strcmp(a,"u") == 0) {
         if((tmp = cf_cgi_get(head,"dt")) != NULL) {
           /* {{{ remove tid from database */
-          if((tid = strtoull(tmp,NULL,10)) > 0) {
+          if((tid = str_to_u_int64(tmp)) > 0) {
             memset(&key,0,sizeof(key));
 
             /* we transform the value again to a string because there could be trash in it... */

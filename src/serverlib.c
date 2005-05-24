@@ -710,7 +710,7 @@ void cf_cftp_handler(int sockfd) {
               cf_log(CF_ERR,__FILE__,__LINE__,"Bad request\n");
             }
             else {
-              tid      = strtoull(tokens[2]+1,NULL,10);
+              tid      = str_to_u_int64(tokens[2]+1);
               cf_log(CF_ERR,__FILE__,__LINE__,"archiving thread %lld by user %s",tid,ln);
 
               writen(sockfd,"200 Ok\n",7);
@@ -738,8 +738,8 @@ void cf_cftp_handler(int sockfd) {
               writen(sockfd,"501 Thread id or message id missing\n",36);
             }
             else {
-              tid = strtoull(tokens[1]+1,NULL,10);
-              mid = strtoull(tokens[2]+1,NULL,10);
+              tid = str_to_u_int64(tokens[1]+1);
+              mid = str_to_u_int64(tokens[2]+1);
 
               t = cf_get_thread(forum,tid);
 
@@ -795,8 +795,8 @@ void cf_cftp_handler(int sockfd) {
               writen(sockfd,"501 Thread id or message id missing\n",36);
             }
             else {
-              tid = strtoull(tokens[1]+1,NULL,10);
-              mid = strtoull(tokens[2]+1,NULL,10);
+              tid = str_to_u_int64(tokens[1]+1);
+              mid = str_to_u_int64(tokens[2]+1);
 
               t = cf_get_thread(forum,tid);
 

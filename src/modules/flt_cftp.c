@@ -99,8 +99,8 @@ int flt_cftp_handler(int sockfd,t_forum *forum,const u_char **tokens,int tnum,rl
           writen(sockfd,"500 Syntax error\n",17);
         }
         else {
-          tid = strtoull(tokens[2]+1,NULL,10),
-          mid = strtoull(tokens[3]+1,NULL,10);
+          tid = str_to_u_int64(tokens[2]+1),
+          mid = str_to_u_int64(tokens[3]+1);
 
           cf_send_posting(forum,sockfd,tid,mid,tnum == 5 && cf_strcmp(tokens[4],"invisible=1") == 0);
         }
@@ -186,7 +186,7 @@ int flt_cftp_handler(int sockfd,t_forum *forum,const u_char **tokens,int tnum,rl
   else if(cf_strcmp(tokens[0],"STAT") == 0) {
     /* {{{ STAT THREAD */
     if(tnum == 3 && cf_strcmp(tokens[1],"THREAD") == 0) {
-      tid = strtoull(tokens[2]+1,NULL,10);
+      tid = str_to_u_int64(tokens[2]+1);
 
       if(cf_get_thread(forum,tid)) {
         writen(sockfd,"200 Exists\n",11);
@@ -199,8 +199,8 @@ int flt_cftp_handler(int sockfd,t_forum *forum,const u_char **tokens,int tnum,rl
 
     /* {{{ STAT POST */
     else if(tnum == 4 && cf_strcmp(tokens[1],"POST") == 0) {
-      tid = strtoull(tokens[2]+1,NULL,10);
-      mid = strtoull(tokens[3]+1,NULL,10);
+      tid = str_to_u_int64(tokens[2]+1);
+      mid = str_to_u_int64(tokens[3]+1);
 
       if((t = cf_get_thread(forum,tid)) != NULL) {
         if(cf_get_posting(t,mid)) writen(sockfd,"200 Posting exists\n",19);
@@ -229,8 +229,8 @@ int flt_cftp_handler(int sockfd,t_forum *forum,const u_char **tokens,int tnum,rl
         cf_log(CF_ERR,__FILE__,__LINE__,"Bad request\n");
       }
       else {
-        tid = strtoull(tokens[2]+2,NULL,10);
-        mid = strtoull(tokens[3]+2,NULL,10);
+        tid = str_to_u_int64(tokens[2]+2);
+        mid = str_to_u_int64(tokens[3]+2);
 
         t  = cf_get_thread(forum,tid);
 
@@ -459,8 +459,8 @@ int flt_cftp_handler(int sockfd,t_forum *forum,const u_char **tokens,int tnum,rl
         return FLT_OK;
       }
 
-      tid = strtoull(tokens[2]+1,NULL,10);
-      mid = strtoull(tokens[3]+1,NULL,10);
+      tid = str_to_u_int64(tokens[2]+1);
+      mid = str_to_u_int64(tokens[3]+1);
 
       t  = cf_get_thread(forum,tid);
 
@@ -497,8 +497,8 @@ int flt_cftp_handler(int sockfd,t_forum *forum,const u_char **tokens,int tnum,rl
         return FLT_OK;
       }
 
-      tid = strtoull(tokens[2]+1,NULL,10);
-      mid = strtoull(tokens[3]+1,NULL,10);
+      tid = str_to_u_int64(tokens[2]+1);
+      mid = str_to_u_int64(tokens[3]+1);
 
       t  = cf_get_thread(forum,tid);
 
