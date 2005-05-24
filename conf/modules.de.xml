@@ -759,12 +759,12 @@
       <error>Shortcut &quot;Das erste Unterposting in der Posting-Liste fokussieren&quot; ist ungültig!</error>
     </argument>
 
-    <argument paramname="shortcutsposting8" encode="plain" default="a" emptyIfNotCommitted="yes">
+    <argument paramname="shortcutsposting8" encode="plain" default="k" emptyIfNotCommitted="yes">
       <validate>^(?:\\[CAS]-){0,3}[a-zA-Z]$</validate>
       <error>Shortcut &quot;Thread ausblenden&quot; ist ungültig!</error>
     </argument>
 
-    <argument paramname="shortcutsposting9" encode="plain" default="a" emptyIfNotCommitted="yes">
+    <argument paramname="shortcutsposting9" encode="plain" default="\S-r" emptyIfNotCommitted="yes">
       <validate>^(?:\\[CAS]-){0,3}[a-zA-Z]$</validate>
       <error>Shortcut &quot;Thread als gelesen markieren&quot; ist ungültig!</error>
     </argument>
