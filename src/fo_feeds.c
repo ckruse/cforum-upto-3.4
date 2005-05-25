@@ -91,7 +91,7 @@ void rfc822_date(t_string *str,time_t date) {
 
   if((tm = localtime(&date)) == NULL) return;
 
-  len = strftime(buff,512,"%a, %m %b %Y %H:%M:%S %z",tm);
+  len = strftime(buff,512,"%a, %d %b %Y %H:%M:%S %z",tm);
   str_chars_append(str,buff,len);
 }
 /* }}} */
