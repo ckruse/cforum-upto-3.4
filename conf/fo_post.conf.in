@@ -31,6 +31,8 @@ Load "flt_mailonpost"
 PatternsDirectory "@sysconfdir@/cforum/patterns/"
 
 Forum FORUM1 {
+ ReadMode "thread"
+
  PostingUrl "^http://wwwtech.de/cforum/forum/\\?"
  PostingUrl "^http://wwwtech.de/cforum/forum/my/\\?"
  PostingUrl "^/cforum/forum/\\?"
