@@ -1,7 +1,3 @@
-2005-05-20 Christian Kruse <ckruse@wwwtech.de>
-	* src/fo_post.c: Fixed a bug in length validation. maxlength was interpreted
-		as minlength
-	* src/stringutils.c: Fixed a bug in cf_strlen_utf8(), forgot to initialize a
-		variable and returned the wrong value
-	* src/fo_vote.c: Fixed silly bug, forgot an else before an if
+2005-05-25 Christian Kruse <ckruse@wwwtech.de>
+	* src/fo_feeds.c: Bugfix in date generation for RSS feeds
 
