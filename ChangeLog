@@ -1,5 +1,6 @@
 2005-05-25 Christian Kruse <ckruse@wwwtech.de>
 	* src/fo_feeds.c: Fixed a bug in date generation for RSS.
+	* conf/modules.de.xml: Small bugfix for GeneratePreview directive
 
 2005-05-24 Christian Kruse <ckruse@wwwtech.de>
 	* src/fo_threadlookup.c, src/modules/flt_interesting.c,
