@@ -1,3 +1,6 @@
+2005-05-25 Christian Seiler <self@christian-seiler.de>
+	* conf/modules.de.xml: Fixed typo
+
 2005-05-25 Christian Kruse <ckruse@wwwtech.de>
 	* src/fo_feeds.c: Fixed a bug in date generation for RSS.
 	* conf/modules.de.xml: Small bugfix for GeneratePreview directive

@@ -617,7 +617,7 @@
   </directive>
 
   <directive name="ShowCategories" arguments="1">
-    <argument paramname="showcat" multiple="yes" encode="plain">
+    <argument paramname="showcats" multiple="yes" encode="plain">
       <validate>.</validate>
       <error>Bitte geben Sie (eine) valide Kategorie(n) an, die Sie nur angezeigt bekommen wollen!</error>
     </argument>
