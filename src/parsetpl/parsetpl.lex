@@ -114,6 +114,14 @@ t_cf_tpl-variable  *vi0;          variables dynamically generated for if
   }
 }
 
+"{*"    { /* comment */
+  register int c;
+
+  while((c = input()) != '}' && c != EOF) ;    /* eat up text of comment */
+
+  if(c != '}') return PARSETPL_ERR_UNRECOGNIZEDCHARACTER;
+}
+
 \{      {
   yy_push_state(TAG);
   if(content_backup.content) free(content_backup.content);
