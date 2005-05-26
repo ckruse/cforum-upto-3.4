@@ -1,3 +1,9 @@
+2005-05-26 Christian Seiler <self@christian-seiler.de>
+	* configure.in, src/modules/Makefile.am: Reactivated
+		flt_urlrewrite.la
+	* src/modules/flt_urlrewrite.la: Ported to new API, a lot of
+		code-cleanup
+
 2005-05-25 Christian Seiler <self@christian-seiler.de>
 	* conf/modules.de.xml: Fixed typo
 

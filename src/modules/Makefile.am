@@ -110,10 +110,10 @@ EXTRA_LTLIBRARIES+=flt_tplmode.la
 flt_tplmode_la_SOURCES=flt_tplmode.c
 flt_tplmode_la_LDFLAGS=-module -export-dynamic -avoid-version -rpath '$(pkglibdir)'
 
-#EXTRA_LTLIBRARIES+=flt_urlrewrite.la
-#flt_urlrewrite_la_SOURCES=flt_urlrewrite.c
-#flt_urlrewrite_la_LDFLAGS=-module -export-dynamic -avoid-version
-#flt_urlrewrite_la_LIBADD=$(PCRE_LIBS)
+EXTRA_LTLIBRARIES+=flt_urlrewrite.la
+flt_urlrewrite_la_SOURCES=flt_urlrewrite.c
+flt_urlrewrite_la_LDFLAGS=-module -export-dynamic -avoid-version -rpath '$(pkglibdir)'
+flt_urlrewrite_la_LIBADD=$(PCRE_LIBS)
 
 EXTRA_LTLIBRARIES+=flt_visited.la
 flt_visited_la_SOURCES=flt_visited.c

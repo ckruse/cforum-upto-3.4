@@ -45,33 +45,31 @@
 #define MACRO_OP_AND             1
 #define MACRO_OP_OR              2
 
-typedef struct s_macro_node {
+typedef struct s_flt_urlrewrite_macro_node {
    int type;
    union {
      void *ptr_data;
      int int_data;
    } data;
 
-   struct s_macro_node *left,
-                       *right,
-                       *parent;
+   struct s_flt_urlrewrite_macro_node *left,
+                                      *right,
+                                      *parent;
 
-} t_macro_node;
+} t_flt_urlrewrite_macro_node;
 
-typedef struct s_urlrewrite {
+typedef struct s_flt_urlrewrite_rule {
   pcre *regexp;
   pcre_extra *regexp_extra;
-  t_macro_node *macro_tree;
+  t_flt_urlrewrite_macro_node *macro_tree;
   const u_char *replacement;
   unsigned long int match_count;
   int *match_arr;
-} t_urlrewrite;
+} t_flt_urlrewrite_rule;
 
-t_urlrewrite **UrlRewrites = NULL;
-int UrlRewriteCount = 0;
-int UrlRewriteSize = 0;
+t_array *flt_urlrewrite_rules = NULL;
 
-int is_macro_true(t_macro_node *tree) {
+int flt_urlrewrite_is_macro_true(t_flt_urlrewrite_macro_node *tree) {
   t_string *data;
   int op_type;
   int *bool_value;
@@ -102,11 +100,11 @@ int is_macro_true(t_macro_node *tree) {
       op_type = tree->data.int_data;
       switch(op_type) {
         case MACRO_OP_NOT:
-          return !is_macro_true(tree->right);
+          return !flt_urlrewrite_is_macro_true(tree->right);
         case MACRO_OP_AND:
-          return is_macro_true(tree->left) && is_macro_true(tree->right);
+          return flt_urlrewrite_is_macro_true(tree->left) && flt_urlrewrite_is_macro_true(tree->right);
         case MACRO_OP_OR:
-          return is_macro_true(tree->left) || is_macro_true(tree->right);
+          return flt_urlrewrite_is_macro_true(tree->left) || flt_urlrewrite_is_macro_true(tree->right);
         default:
           return 0;
       }
@@ -117,13 +115,13 @@ int is_macro_true(t_macro_node *tree) {
   }
 }
 
-void free_macro_tree(t_macro_node *tree) {
+void flt_urlrewrite_free_macro_tree(t_flt_urlrewrite_macro_node *tree) {
   if(!tree)
     return;
   if(tree->left)
-    free_macro_tree(tree->left);
+    flt_urlrewrite_free_macro_tree(tree->left);
   if(tree->right)
-    free_macro_tree(tree->right);
+    flt_urlrewrite_free_macro_tree(tree->right);
   switch(tree->type) {
     case MACRO_NODE_VALUE:
       str_cleanup((t_string *)tree->data.ptr_data);
@@ -135,8 +133,8 @@ void free_macro_tree(t_macro_node *tree) {
   free(tree);
 }
 
-t_macro_node *parse_macro(const u_char *str) {
-  t_macro_node *cur_node;
+t_flt_urlrewrite_macro_node *flt_urlrewrite_parse_macro(const u_char *str) {
+  t_flt_urlrewrite_macro_node *cur_node;
   t_string left_side;
   int n_braces;
   int had_zero_brace;
@@ -174,7 +172,7 @@ t_macro_node *parse_macro(const u_char *str) {
     nstr[strlen(nstr)-1] = 0;
   }
 
-  cur_node = (t_macro_node *)fo_alloc(NULL,1,sizeof(t_macro_node),FO_ALLOC_MALLOC);
+  cur_node = (t_flt_urlrewrite_macro_node *)fo_alloc(NULL,1,sizeof(t_flt_urlrewrite_macro_node),FO_ALLOC_MALLOC);
   if(!cur_node) {
     free(nstr);
     return NULL;
@@ -272,7 +270,7 @@ t_macro_node *parse_macro(const u_char *str) {
       str_cleanup(&left_side);
       cur_node->data.int_data = MACRO_OP_NOT;
       cur_node->left = NULL;
-      cur_node->right = parse_macro((const u_char *)ptr);
+      cur_node->right = flt_urlrewrite_parse_macro((const u_char *)ptr);
       if(!cur_node->right) {
         free(nstr);
         free(cur_node);
@@ -282,7 +280,7 @@ t_macro_node *parse_macro(const u_char *str) {
       break;
     case '&':
       cur_node->data.int_data = MACRO_OP_AND;
-      cur_node->left = parse_macro((const u_char *)left_side.content);
+      cur_node->left = flt_urlrewrite_parse_macro((const u_char *)left_side.content);
       str_cleanup(&left_side);
       if(!cur_node->left) {
         free(nstr);
@@ -290,7 +288,7 @@ t_macro_node *parse_macro(const u_char *str) {
         return NULL;
       }
       cur_node->left->parent = cur_node;
-      cur_node->right = parse_macro((const u_char *)ptr);
+      cur_node->right = flt_urlrewrite_parse_macro((const u_char *)ptr);
       if(!cur_node->right) {
       free(cur_node->left);
         free(nstr);
@@ -301,7 +299,7 @@ t_macro_node *parse_macro(const u_char *str) {
       break;
     case '|':
       cur_node->data.int_data = MACRO_OP_OR;
-      cur_node->left = parse_macro((const u_char *)left_side.content);
+      cur_node->left = flt_urlrewrite_parse_macro((const u_char *)left_side.content);
       str_cleanup(&left_side);
       if(!cur_node->left) {
         free(nstr);
@@ -309,7 +307,7 @@ t_macro_node *parse_macro(const u_char *str) {
         return NULL;
       }
       cur_node->left->parent = cur_node;
-      cur_node->right = parse_macro((const u_char *)ptr);
+      cur_node->right = flt_urlrewrite_parse_macro((const u_char *)ptr);
       if(!cur_node->right) {
         free(cur_node->left);
         free(nstr);
@@ -327,225 +325,167 @@ t_macro_node *parse_macro(const u_char *str) {
   return cur_node;
 }
 
-int treat_link(t_string *dest, u_char *src) {
-  int i, j;
+int flt_urlrewrite_execute(t_configuration *fdc,t_configuration *fvc,const u_char *uri,u_char **new_uri) {
+  unsigned int i, j, f;
   int res;
   int nbr;
   u_char buf[3];
   u_char *ptr;
-  size_t len;
+  t_string dest;
+  size_t len = 0;
+  t_flt_urlrewrite_rule *current_rule = NULL;
 
-  for(i = 0; i < UrlRewriteCount; i++) {
-    if(!is_macro_true(UrlRewrites[i]->macro_tree)) {
+  for(i = 0; i < flt_urlrewrite_rules->elements; i++) {
+    current_rule = array_element_at(flt_urlrewrite_rules,i);
+    if(!flt_urlrewrite_is_macro_true(current_rule->macro_tree)) {
       continue;
     }
-    res = pcre_exec(UrlRewrites[i]->regexp, UrlRewrites[i]->regexp_extra, src, strlen(src), 0, 0, UrlRewrites[i]->match_arr,(UrlRewrites[i]->match_count + 1) * 3);
+    res = pcre_exec(current_rule->regexp, current_rule->regexp_extra, uri, strlen(uri), 0, 0, current_rule->match_arr,(current_rule->match_count + 1) * 3);
     if(res >= 0) { // didn't match
       break; // matched
     }
   }
 
-  if(i == UrlRewriteCount) { // nothing matched
-    str_char_set(dest, src, strlen(src));
-    return 0;
+  if(i == flt_urlrewrite_rules->elements) { // nothing matched
+    return FLT_OK;
   }
-
-  len = strlen(UrlRewrites[i]->replacement);
+  
+  str_init (&dest);
+  len = strlen(current_rule->replacement);
   for(j = 0; j < len; j++) {
-    if(UrlRewrites[i]->replacement[j] == '$') { // replacement varialbe
-      if(isdigit(UrlRewrites[i]->replacement[j+1])) {
-        if(isdigit(UrlRewrites[i]->replacement[j+2])) {
-          strncpy(buf, &UrlRewrites[i]->replacement[j+1], 2);
-          buf[2] = 0;
-        } else {
-          strncpy(buf, &UrlRewrites[i]->replacement[j+1], 1);
-          buf[1] = 0;
+    f = 0;
+    if(current_rule->replacement[j] == '$') { // replacement varialbe
+      if(current_rule->replacement[j+1] == '{') {
+        if(isdigit(current_rule->replacement[j+2])) {
+          if(isdigit(current_rule->replacement[j+3]) && current_rule->replacement[j+4] == '}') {
+            strncpy(buf, &current_rule->replacement[j+2], 2);
+            buf[2] = 0;
+            f = 4;
+          }
+          else if(current_rule->replacement[j+3] == '}') {
+            strncpy(buf, &current_rule->replacement[j+2], 1);
+            buf[1] = 0;
+            f = 3;
+          }
         }
+      }
+      else if(isdigit(current_rule->replacement[j+1])) {
+        if(isdigit(current_rule->replacement[j+2])) {
+          strncpy(buf, &current_rule->replacement[j+1], 2);
+          buf[2] = 0;
+          f = 2;
+        } else {
+          strncpy(buf, &current_rule->replacement[j+1], 1);
+          buf[1] = 0;
+          f = 1;
+        }
+      }
+      if(f) {
         nbr = atoi(buf);
-        res = pcre_get_substring(src, UrlRewrites[i]->match_arr,(UrlRewrites[i]->match_count + 1) * 3, nbr,(const char **)&ptr);
+        res = pcre_get_substring(uri,current_rule->match_arr,(current_rule->match_count + 1) * 3,nbr,(const char **)&ptr);
         // error => ignore
         if(res < 0) {
-          str_char_append(dest, UrlRewrites[i]->replacement[j]);
+          str_char_append(&dest, current_rule->replacement[j]);
           continue;
         }
-        str_chars_append(dest, ptr, res);
+        str_chars_append(&dest, ptr, res);
         pcre_free_substring(ptr);
-        if(isdigit(UrlRewrites[i]->replacement[j+2])) {
-          j += 2;
-        } else {
-          j++;
-        }
+        j += f;
         continue;
       }
     }
-    str_char_append(dest, UrlRewrites[i]->replacement[j]);
+    str_char_append(&dest, current_rule->replacement[j]);
   }
-
-  return 0;
-}
-
-int execute_filter(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cl_thread *thread,t_cf_template *tpl) {
-  const t_cf_tpl_variable *msg_content;
-  t_string content, link;
-  u_char *ptr, *ptr_end_attr, *ptr_end_tag, *ptr_end_elem, *ptr_link;
-  int res;
-
-  str_init(&content);
-
-  // get old message(this plugin has to be called *after* flt_posting!
-  msg_content = tpl_cf_getvar(tpl, "message");
-
-  if(!msg_content) // is not set? do nothing.
-    return FLT_OK;
-
-  ptr = msg_content->data->content;
-
-  for(; *ptr; ptr++) {
-    if(!cf_strncmp(ptr, "<a href=\"", 9)) {
-      str_init(&link);
-
-      ptr += 9;
-      ptr_end_attr = strchr(ptr, '"');
-      ptr_end_tag = strchr(ptr_end_attr, '>');
-      ptr_end_elem = strchr(ptr_end_tag, '<');
-
-      // not found?
-      if(!ptr_end_attr || !ptr_end_tag || !ptr_end_elem) {
-        // ignore
-        str_cleanup(&link);
-        str_chars_append(&content, "<a href=\"", 9);
-        continue;
-      }
-
-      ptr_link = strndup(ptr,(int)(ptr_end_attr - ptr));
-      if(!ptr_link) {
-        str_cleanup(&link);
-        str_chars_append(&content, "<a href=\"", 9);
-        continue;
-      }
-
-      res = treat_link(&link, ptr_link);
-      free(ptr_link);
-
-      if(res < 0) {
-        str_cleanup(&link);
-        str_chars_append(&content, "<a href=\"", 9);
-        continue;
-      }
-
-      str_chars_append(&content, "<a href=\"", 9);
-      str_str_append(&content, &link);
-      str_chars_append(&content, ptr_end_attr,(int)(ptr_end_tag - ptr_end_attr + 1));
-      str_str_append(&content, &link);
-
-      ptr = ptr_end_elem - 1;
-
-      str_cleanup(&link);
-    } else {
-      str_char_append(&content, *ptr);
-    }
+  
+  // if the new string has not got a length
+  if(!dest.len) {
+    // make sure there's a buffer
+    str_char_append(&dest, '\0');
   }
-
-  tpl_cf_setvar(tpl,"message", content.content, content.len, 0);
-  str_cleanup(&content);
+  
+  *new_uri = dest.content;
+  free(uri);
 
   return FLT_OK;
 }
 
+void flt_urlrewrite_destroy(t_flt_urlrewrite_rule *rule) {
+  pcre_free(rule->regexp_extra);
+  pcre_free(rule->regexp);
+  flt_urlrewrite_free_macro_tree(rule->macro_tree);
+  free((void *)rule->replacement);
+  free(rule->match_arr);
+}
 
-int add_rewriterule(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
-  t_urlrewrite **n_rewrites;
-  t_urlrewrite *n_rewrite;
-  int alloc_type;
+int flt_urlrewrite_handle(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
+  t_flt_urlrewrite_rule n_rewrite;
   const u_char *error;
   int err_offset;
-
-  if(UrlRewriteCount + 1 > UrlRewriteSize) {
-    if(!UrlRewriteSize) {
-      alloc_type = FO_ALLOC_MALLOC;
-    } else {
-      alloc_type = FO_ALLOC_REALLOC;
-    }
-    UrlRewriteSize += DEFAULT_URLREWRITE_SIZE;
-    n_rewrites = fo_alloc(UrlRewrites, sizeof(t_urlrewrite *), UrlRewriteSize, alloc_type);
-    if(!n_rewrites) {
-      return 1;
-    }
-    UrlRewrites = n_rewrites;
+  
+  if(argnum != 3) {
+    return -1;
   }
-  n_rewrite = fo_alloc(NULL, sizeof(t_urlrewrite), 1, FO_ALLOC_MALLOC);
-  if(!n_rewrite)
-    return 1;
-
-  n_rewrite->macro_tree = parse_macro(args[2]);
-  if(!n_rewrite->macro_tree) {
-    free(n_rewrite);
-    return 1;
+  
+  if(!flt_urlrewrite_rules) {
+    flt_urlrewrite_rules = fo_alloc(NULL,sizeof(t_array),1,FO_ALLOC_MALLOC);
+    array_init(flt_urlrewrite_rules,sizeof(t_flt_urlrewrite_rule),(void(*)(void *))flt_urlrewrite_destroy);
+  }
+  
+  n_rewrite.macro_tree = flt_urlrewrite_parse_macro(args[2]);
+  if(!n_rewrite.macro_tree) {
+    return -1;
   }
 
-  n_rewrite->replacement = strdup(args[1]);
-  if(!n_rewrite->replacement) {
-    free_macro_tree(n_rewrite->macro_tree);
-    free(n_rewrite);
+  n_rewrite.replacement = strdup(args[1]);
+  if(!n_rewrite.replacement) {
+    flt_urlrewrite_free_macro_tree(n_rewrite.macro_tree);
   }
 
-  n_rewrite->regexp = pcre_compile(args[0], 0, (const char **)&error, &err_offset, NULL);
-  if(!n_rewrite->regexp) {
+  n_rewrite.regexp = pcre_compile(args[0], 0, (const char **)&error, &err_offset, NULL);
+  if(!n_rewrite.regexp) {
     fprintf(stderr,"flt_urlrewrite: Regexp error with \"%s\": %s\n", args[0], error);
-    free_macro_tree(n_rewrite->macro_tree);
-    free((void *)n_rewrite->replacement);
-    free(n_rewrite);
-    return 1;
+    flt_urlrewrite_free_macro_tree(n_rewrite.macro_tree);
+    free((void *)n_rewrite.replacement);
+    return -1;
   }
-  n_rewrite->regexp_extra = pcre_study(n_rewrite->regexp, 0, (const char **)&error);
+  n_rewrite.regexp_extra = pcre_study(n_rewrite.regexp, 0, (const char **)&error);
   if(error) {
-    printf("Regexp study error with \"%s\": %s\n", args[0], error);
-    pcre_free(n_rewrite->regexp);
-    free_macro_tree(n_rewrite->macro_tree);
-    free((void *)n_rewrite->replacement);
-    free(n_rewrite);
-    return 1;
+    fprintf(stderr,"Regexp study error with \"%s\": %s\n", args[0], error);
+    pcre_free(n_rewrite.regexp);
+    flt_urlrewrite_free_macro_tree(n_rewrite.macro_tree);
+    free((void *)n_rewrite.replacement);
+    return -1;
   }
-  n_rewrite->match_count = 0;
-  pcre_fullinfo(n_rewrite->regexp, n_rewrite->regexp_extra, PCRE_INFO_CAPTURECOUNT, &(n_rewrite->match_count));
-  n_rewrite->match_arr = (int *)fo_alloc(NULL, sizeof(int),(n_rewrite->match_count + 1) * 3, FO_ALLOC_MALLOC);
-  if(!n_rewrite->match_arr) {
-    pcre_free(n_rewrite->regexp_extra);
-    pcre_free(n_rewrite->regexp);
-    free_macro_tree(n_rewrite->macro_tree);
-    free((void *)n_rewrite->replacement);
-    free(n_rewrite);
+  n_rewrite.match_count = 0;
+  pcre_fullinfo(n_rewrite.regexp, n_rewrite.regexp_extra, PCRE_INFO_CAPTURECOUNT, &(n_rewrite.match_count));
+  n_rewrite.match_arr = (int *)fo_alloc(NULL, sizeof(int),(n_rewrite.match_count + 1) * 3, FO_ALLOC_MALLOC);
+  if(!n_rewrite.match_arr) {
+    pcre_free(n_rewrite.regexp_extra);
+    pcre_free(n_rewrite.regexp);
+    flt_urlrewrite_free_macro_tree(n_rewrite.macro_tree);
+    free((void *)n_rewrite.replacement);
+    return -1;
   }
 
-  UrlRewrites[UrlRewriteCount++] = n_rewrite;
+  array_push(flt_urlrewrite_rules,&n_rewrite);
 
   return 0;
 }
 
 void flt_urlrewrite_cleanup(void) {
-  // cleanup stuff
-  int i;
-
-  for(i = 0; i < UrlRewriteCount; i++) {
-    pcre_free(UrlRewrites[i]->regexp_extra);
-    pcre_free(UrlRewrites[i]->regexp);
-    free_macro_tree(UrlRewrites[i]->macro_tree);
-    free((void *)UrlRewrites[i]->replacement);
-    free(UrlRewrites[i]->match_arr);
-    free(UrlRewrites[i]);
+  if(flt_urlrewrite_rules) {
+    array_destroy(flt_urlrewrite_rules);
+    free(flt_urlrewrite_rules);
   }
-
-  if(UrlRewrites)
-    free(UrlRewrites);
 }
 
 t_conf_opt flt_urlrewrite_config[] = {
-  { "URLRewrite",  add_rewriterule, CFG_OPT_CONFIG, NULL },
+  { "URLRewrite",  flt_urlrewrite_handle, CFG_OPT_CONFIG|CFG_OPT_LOCAL, NULL },
   { NULL, NULL, 0, NULL }
 };
 
 t_handler_config flt_urlrewrite_handlers[] = {
-  { POSTING_HANDLER, execute_filter },
+  { URL_REWRITE_HANDLER, flt_urlrewrite_execute },
   { 0, NULL }
 };
 
