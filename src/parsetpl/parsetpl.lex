@@ -50,6 +50,8 @@ typedef struct s_token {
 #define PARSETPL_TOK_CONCAT              0x24
 #define PARSETPL_TOK_IWS_START           0x25
 #define PARSETPL_TOK_IWS_END             0x26
+#define PARSETPL_TOK_NLE_START           0x27
+#define PARSETPL_TOK_NLE_END             0x28
 
 #define PARSETPL_INCLUDE_EXT     ".html"
 
@@ -85,6 +87,7 @@ static int  uses_clonevar            = 0;
 static int  uses_loopassign          = 0;
 static int  uses_tmpstring           = 0;
 static int  iws                      = 0;
+static int  nle                      = 0;
 
 /*
 
@@ -106,7 +109,7 @@ t_cf_tpl-variable  *vi0;          variables dynamically generated for if
 
 \n   {
   ++lineno; /* count line numbers */
-  if (!iws) {
+  if (!iws && !nle) {
     str_char_append(&content,'\n');
   }
 }
@@ -121,7 +124,7 @@ t_cf_tpl-variable  *vi0;          variables dynamically generated for if
 
 <TAG>{
   \n                  {
-    if(!iws) {
+    if(!iws && !nle) {
       str_chars_append(&content_backup,yytext,yyleng);
       ++lineno;
       return PARSETPL_ERR_UNRECOGNIZEDCHARACTER;
@@ -236,6 +239,15 @@ t_cf_tpl-variable  *vi0;          variables dynamically generated for if
     str_chars_append(&content_backup,yytext,yyleng);
     return PARSETPL_TOK_IWS_END;
   }
+  nle                 {
+    str_chars_append(&content_backup,yytext,yyleng);
+    return PARSETPL_TOK_NLE_START;
+  }
+  endnle              {
+    str_chars_append(&content_backup,yytext,yyleng);
+    return PARSETPL_TOK_NLE_END;
+  }
+
   <<EOF>>        {
     str_chars_append(&content_backup,yytext,yyleng);
     return PARSETPL_ERR_UNTERMINATEDTAG;
@@ -2247,6 +2259,14 @@ int process_tag(t_array *data) {
   }
   else if(rtype == PARSETPL_TOK_IWS_END && data->elements == 1) {
     iws = 0;
+    return 0;
+  }
+  else if(rtype == PARSETPL_TOK_NLE_START && data->elements == 1) {
+    nle = 1;
+    return 0;
+  }
+  else if(rtype == PARSETPL_TOK_NLE_END && data->elements == 1) {
+    nle = 0;
     return 0;
   }
   else if(rtype == PARSETPL_TOK_VARIABLE) {

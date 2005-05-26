@@ -1,3 +1,8 @@
+2005-05-27 Christian Kruse <ckruse@wwwtech.de>
+	* src/modules/flt_livefilter.c: Changed possibility of accuracies. Now you can
+		leave out minutes as well
+	* src/parsetpl/parsetpl.lex: Added {nle} tag, ignores line endings
+
 2005-05-26 Christian Seiler <self@christian-seiler.de>
 	* configure.in, src/modules/Makefile.am: Reactivated
 		flt_urlrewrite.la

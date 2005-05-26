@@ -68,8 +68,9 @@ static const u_char *symbols[] = {
 #define T_DATE   0x02
 #define T_BOOL   0x04
 
-#define FLT_LF_FLAG_HOURMIN 0x1
-#define FLT_LF_FLAG_SEC     0x2
+#define FLT_LF_FLAG_HOUR 0x1
+#define FLT_LF_FLAG_MIN  0x2
+#define FLT_LF_FLAG_SEC  0x4
 
 typedef struct {
   int type,flags;
@@ -509,14 +510,13 @@ time_t flt_lf_transform_date(const u_char *datestr,t_flt_lf_result *v) {
   }
 
   if(*ptr == ' ') {                                    /* follows an hour and a minute? */
-    v->flags = FLT_LF_FLAG_HOURMIN;
-
     for(;*ptr && *ptr == ' ';ptr++);                   /* skip trailing whitespaces */
 
     if(*ptr) {                                         /* have we got a string like "1.1.2001 "? */
       for(before= ++ptr;*ptr && *ptr != ':';ptr++);    /* search the next colon (Hours are seperated from minutes by
                                                         * colons */
       if(*ptr == ':') {
+        v->flags = FLT_LF_FLAG_HOUR;
         *ptr = '\0';
         t.tm_hour = atoi(before);                      /* get the hour */
         *ptr = ':';
@@ -526,30 +526,33 @@ time_t flt_lf_transform_date(const u_char *datestr,t_flt_lf_result *v) {
         return (time_t)0;
       }
 
-      for(before= ++ptr;*ptr && *ptr != ':';ptr++);    /* search for the end of the string or another colon */
-      if(*ptr == ':' || *ptr == '\0') {
-        if(*ptr == ':') {
-          *ptr = '\0';
-          t.tm_min = atoi(before);                       /* get the minutes */
-          *ptr = ':';
+      if(*ptr) {
+        for(before= ++ptr;*ptr && *ptr != ':';ptr++);    /* search for the end of the string or another colon */
+        if(*ptr == ':' || *ptr == '\0') {
+          if(*ptr == ':') {
+            v->flags |= FLT_LF_FLAG_MIN;
+            *ptr = '\0';
+            t.tm_min = atoi(before);                       /* get the minutes */
+            *ptr = ':';
+          }
+          else {
+            t.tm_min = atoi(before);
+          }
         }
         else {
-          t.tm_min = atoi(before);
+          free(str);
+          return (time_t)0;
         }
-      }
-      else {
-        free(str);
-        return (time_t)0;
-      }
 
-      if(*ptr == ':') {                                /* seconds following */
-        v->flags |= FLT_LF_FLAG_SEC;
+        if(*ptr == ':') {                                /* seconds following */
+          v->flags |= FLT_LF_FLAG_SEC;
 
-        before= ptr + 1;                               /* after the seconds, there can only follow the end of
+          before= ptr + 1;                               /* after the seconds, there can only follow the end of
                                                         * the string
                                                         */
-        if(!*ptr) return (time_t)0;
-        t.tm_sec = atoi(before);
+          if(!*ptr) return (time_t)0;
+          t.tm_sec = atoi(before);
+        }
       }
     }
   }
@@ -686,20 +689,37 @@ t_flt_lf_result *flt_lf_evaluate(t_flt_lf_node *n,t_message *msg,u_int64_t tid) 
               if(l->val == r->val) result->val = (void *)1;
               else result->val = (void *)0;
             }
-            /* we got year, month, day, hours and minutes */
+            /* we got year, month, day, hours and perhaps minutes */
             else {
-              memset(&tm,0,sizeof(tm));
-              localtime_r((const time_t *)&l->val,&tm);
+              if(r->flags & FLT_LF_FLAG_MIN) {
+                memset(&tm,0,sizeof(tm));
+                localtime_r((const time_t *)&l->val,&tm);
 
-              tm.tm_sec   = 0;
-              tm.tm_wday  = 0;
-              tm.tm_yday  = 0;
-              tm.tm_isdst = 0;
+                tm.tm_sec   = 0;
+                tm.tm_wday  = 0;
+                tm.tm_yday  = 0;
+                tm.tm_isdst = 0;
 
-              t = mktime(&tm);
+                t = mktime(&tm);
 
-              if(t == (int)r->val) result->val = (void *)1;
-              else result->val = (void *)0;
+                if(t == (int)r->val) result->val = (void *)1;
+                else result->val = (void *)0;
+              }
+              else {
+                memset(&tm,0,sizeof(tm));
+                localtime_r((const time_t *)&l->val,&tm);
+
+                tm.tm_min   = 0;
+                tm.tm_sec   = 0;
+                tm.tm_wday  = 0;
+                tm.tm_yday  = 0;
+                tm.tm_isdst = 0;
+
+                t = mktime(&tm);
+
+                if(t == (int)r->val) result->val = (void *)1;
+                else result->val = (void *)0;
+              }
             }
           }
           /* we got only year, month and day */
