@@ -338,7 +338,7 @@ int flt_urlrewrite_execute(t_configuration *fdc,t_configuration *fvc,const u_cha
   t_flt_urlrewrite_rule *current_rule = NULL;
 
   if(!flt_urlrewrite_rules || !flt_urlrewrite_rules->elements) {
-    return FLT_OK;
+    return FLT_DECLINE;
   }
   
   for(i = 0; i < flt_urlrewrite_rules->elements; i++) {
@@ -353,7 +353,7 @@ int flt_urlrewrite_execute(t_configuration *fdc,t_configuration *fvc,const u_cha
   }
 
   if(i == flt_urlrewrite_rules->elements) { // nothing matched
-    return FLT_OK;
+    return FLT_DECLINE;
   }
   
   str_init (&dest);
@@ -412,7 +412,7 @@ int flt_urlrewrite_execute(t_configuration *fdc,t_configuration *fvc,const u_cha
   *new_uri = dest.content;
   free(uri);
 
-  return FLT_OK;
+  return FLT_EXIT;
 }
 
 void flt_urlrewrite_destroy(t_flt_urlrewrite_rule *rule) {
