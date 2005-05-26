@@ -172,6 +172,7 @@ void flt_directives_generate_uri(const u_char *uri,const u_char *title,t_string 
   t_filter_urlrewrite fkt;
   int ret = FLT_DECLINE;
 
+  uri = strdup(uri);
   if(Modules[URL_REWRITE_HANDLER].elements) {
     for(i=0;i<Modules[URL_REWRITE_HANDLER].elements && ret == FLT_DECLINE;++i) {
       handler = array_element_at(&Modules[URL_REWRITE_HANDLER],i);
@@ -279,6 +280,7 @@ void flt_directives_generate_uri(const u_char *uri,const u_char *title,t_string 
 
   free(tmp1);
   free(tmp2);
+  free(uri);
 }
 /* }}} */
 

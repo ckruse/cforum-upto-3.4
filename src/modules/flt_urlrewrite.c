@@ -69,6 +69,8 @@ typedef struct s_flt_urlrewrite_rule {
 
 t_array *flt_urlrewrite_rules = NULL;
 
+static u_char *flt_urlrewrite_fname = NULL;
+
 int flt_urlrewrite_is_macro_true(t_flt_urlrewrite_macro_node *tree) {
   t_string *data;
   int op_type;
@@ -335,6 +337,10 @@ int flt_urlrewrite_execute(t_configuration *fdc,t_configuration *fvc,const u_cha
   size_t len = 0;
   t_flt_urlrewrite_rule *current_rule = NULL;
 
+  if(!flt_urlrewrite_rules || !flt_urlrewrite_rules->elements) {
+    return FLT_OK;
+  }
+  
   for(i = 0; i < flt_urlrewrite_rules->elements; i++) {
     current_rule = array_element_at(flt_urlrewrite_rules,i);
     if(!flt_urlrewrite_is_macro_true(current_rule->macro_tree)) {
@@ -421,6 +427,9 @@ int flt_urlrewrite_handle(t_configfile *cfile,t_conf_opt *opt,const u_char *cont
   t_flt_urlrewrite_rule n_rewrite;
   const u_char *error;
   int err_offset;
+  
+  if(flt_urlrewrite_fname == NULL) flt_urlrewrite_fname = cf_hash_get(GlobalValues,"FORUM_NAME",10);
+  if(!context || cf_strcmp(context,flt_urlrewrite_fname) != 0) return 0;
   
   if(argnum != 3) {
     return -1;
