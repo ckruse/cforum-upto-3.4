@@ -97,45 +97,84 @@ int flt_interesting_mark_thread(t_cf_hash *head,t_configuration *dc,t_configurat
   u_char *tmp;
 
   if(head && flt_interesting_file) {
-    if((a = cf_cgi_get(head,"a")) != NULL && cf_strcmp(a,"mi") == 0) {
-      if((parm = cf_cgi_get_multiple(head,"mit")) != NULL) {
-        /* {{{ put tids to database */
-        for(;parm;parm=parm->next) {
-          tid = str_to_u_int64(parm->value);
+    if((a = cf_cgi_get(head,"a")) != NULL) {
+      if(cf_strcmp(a,"mi") == 0) {
+        if((parm = cf_cgi_get_multiple(head,"mit")) != NULL) {
+          /* {{{ put tids to database */
+          for(;parm;parm=parm->next) {
+            tid = str_to_u_int64(parm->value);
 
-          if(tid) {
-            memset(&key,0,sizeof(key));
+            if(tid) {
+              memset(&key,0,sizeof(key));
 
-            memset(&data,0,sizeof(data));
-            data.data = one;
-            data.size = sizeof(one);
+              memset(&data,0,sizeof(data));
+              data.data = one;
+              data.size = sizeof(one);
 
-            /* we transform the value again to a string because there could be trash in it... */
-            len = snprintf(buff,256,"%llu",tid);
+              /* we transform the value again to a string because there could be trash in it... */
+              len = snprintf(buff,256,"%llu",tid);
 
-            key.data = buff;
-            key.size = len;
+              key.data = buff;
+              key.size = len;
 
-            if((ret = flt_interesting_db->put(flt_interesting_db,NULL,&key,&data,0)) != 0) fprintf(stderr,"flt_interesting: db->put(): %s\n",db_strerror(ret));
+              if((ret = flt_interesting_db->put(flt_interesting_db,NULL,&key,&data,0)) != 0) fprintf(stderr,"flt_interesting: db->put(): %s\n",db_strerror(ret));
+            }
           }
+          /* }}} */
+
+          /* {{{ set timestamp on file */
+          snprintf(buff,256,"%s.tm",flt_interesting_file);
+          remove(buff);
+          if((fd = open(buff,O_CREAT|O_TRUNC|O_WRONLY)) != -1) close(fd);
+
+          cf_hash_entry_delete(head,"mit",1);
+          cf_hash_entry_delete(head,"a",1);
+          /* }}} */
+
+          /* {{{ 204 Response */
+          if(flt_interesting_resp_204) {
+            printf("Status: 204 No Content\015\012\015\012");
+            return FLT_EXIT;
+          }
+          /* }}} */
         }
-        /* }}} */
+      }
+      else if(cf_strcmp(a,"rmi") == 0) {
+        if((parm = cf_cgi_get_multiple(head,"mit")) != NULL) {
+          /* {{{ put tids to database */
+          for(;parm;parm=parm->next) {
+            tid = str_to_u_int64(parm->value);
 
-        /* {{{ set timestamp on file */
-        snprintf(buff,256,"%s.tm",flt_interesting_file);
-        remove(buff);
-        if((fd = open(buff,O_CREAT|O_TRUNC|O_WRONLY)) != -1) close(fd);
+            if(tid) {
+              memset(&key,0,sizeof(key));
 
-        cf_hash_entry_delete(head,"mit",1);
-        cf_hash_entry_delete(head,"a",1);
-        /* }}} */
+              /* we transform the value again to a string because there could be trash in it... */
+              len = snprintf(buff,256,"%llu",tid);
 
-        /* {{{ 204 Response */
-        if(flt_interesting_resp_204) {
-          printf("Status: 204 No Content\015\012\015\012");
-          return FLT_EXIT;
+              key.data = buff;
+              key.size = len;
+
+              if((ret = flt_interesting_db->del(flt_interesting_db,NULL,&key,0)) != 0) fprintf(stderr,"flt_interesting: db->del(): %s\n",db_strerror(ret));
+            }
+          }
+          /* }}} */
+
+          /* {{{ set timestamp on file */
+          snprintf(buff,256,"%s.tm",flt_interesting_file);
+          remove(buff);
+          if((fd = open(buff,O_CREAT|O_TRUNC|O_WRONLY)) != -1) close(fd);
+
+          cf_hash_entry_delete(head,"mit",1);
+          cf_hash_entry_delete(head,"a",1);
+          /* }}} */
+
+          /* {{{ 204 Response */
+          if(flt_interesting_resp_204) {
+            printf("Status: 204 No Content\015\012\015\012");
+            return FLT_EXIT;
+          }
+          /* }}} */
         }
-        /* }}} */
       }
 
       return FLT_OK;
@@ -171,9 +210,14 @@ int flt_interesting_mark_interesting(t_cf_hash *head,t_configuration *dc,t_confi
         key.data = buff;
         key.size = len;
 
-        if(flt_interesting_db->get(flt_interesting_db,NULL,&key,&data,0) == 0) cf_tpl_setvalue(&msg->tpl,"mi",TPL_VARIABLE_INT,1);
+        if(flt_interesting_db->get(flt_interesting_db,NULL,&key,&data,0) == 0) {
+          cf_tpl_setvalue(&msg->tpl,"mi",TPL_VARIABLE_INT,1);
+
+          len = snprintf(buff,150,"%s?a=rmi&mit=%llu",url->values[0],thread->tid);
+          cf_tpl_setvalue(&msg->tpl,"rmilink",TPL_VARIABLE_STRING,buff,len);
+        }
         else {
-          len = snprintf(buff,150,"%s?a=mi&mit=%lld",url->values[0],thread->tid);
+          len = snprintf(buff,150,"%s?a=mi&mit=%llu",url->values[0],thread->tid);
           cf_tpl_setvalue(&msg->tpl,"milink",TPL_VARIABLE_STRING,buff,len);
         }
       }

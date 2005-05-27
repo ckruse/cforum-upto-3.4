@@ -278,6 +278,22 @@ ssize_t getdelim(char **lineptr,size_t *n,int delim,FILE *stream) {
 /* }}} */
 #endif
 
+/* {{{ cf_timegm, from timegm(3) of glibc */
+time_t cf_timegm (struct tm *tm) {
+  time_t ret;
+  char *tz;
+
+  tz = getenv("TZ");
+  setenv("TZ", "", 1);
+  tzset();
+  ret = mktime(tm);
+  if(tz) setenv("TZ", tz, 1);
+  else unsetenv("TZ");
+  tzset();
+  return ret;
+}
+/* }}} */
+
 /* {{{ redirect_nice_uri */
 void redirect_with_nice_uri(const u_char *ruri,int perm) {
   u_char *tmp;

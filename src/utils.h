@@ -841,6 +841,8 @@ u_int64_t str_to_u_int64(register const u_char *ptr);
 
 /* }}} */
 
+time_t cf_timegm (struct tm *tm);
+
 void redirect_with_nice_uri(const u_char *ruri,int perm);
 
 #endif
