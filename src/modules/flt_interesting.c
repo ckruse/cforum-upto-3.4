@@ -44,6 +44,7 @@
 static u_char *flt_interesting_file     = NULL;
 static int     flt_interesting_resp_204 = 0;
 static int     flt_interesting_mop      = 0;
+static u_char *flt_interesting_cols[2]  = { NULL, NULL };
 
 static u_char *flt_interesting_fname    = NULL;
 static DB     *flt_interesting_db       = NULL;
@@ -234,7 +235,7 @@ int flt_interesting_mark_interesting(t_cf_hash *head,t_configuration *dc,t_confi
     msg = cf_msg_get_first_visible(thread->messages);
 
     /* run only in threadlist mode and only in pre mode */
-    if((mode & CF_MODE_THREADLIST) && (mode & CF_MODE_PRE)) {
+    if(mode & CF_MODE_PRE) {
       if(flt_interesting_file) {
         memset(&key,0,sizeof(key));
         memset(&data,0,sizeof(data));
@@ -264,6 +265,26 @@ int flt_interesting_mark_interesting(t_cf_hash *head,t_configuration *dc,t_confi
 }
 /* }}} */
 
+/* {{{ flt_interesting_colors */
+int flt_interesting_colors(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cf_template *begin,t_cf_template *end) {
+  if(flt_interesting_cols[0] || flt_interesting_cols[1]) {
+    cf_tpl_setvalue(begin,"interesting_cols",TPL_VARIABLE_INT,1);
+
+    if(flt_interesting_cols[0]) cf_tpl_setvalue(begin,"interesting_fgcol",TPL_VARIABLE_STRING,flt_interesting_cols[0],strlen(flt_interesting_cols[0]));
+    if(flt_interesting_cols[1]) cf_tpl_setvalue(begin,"interesting_bgcol",TPL_VARIABLE_STRING,flt_interesting_cols[1],strlen(flt_interesting_cols[1]));
+
+    return FLT_OK;
+  }
+
+  return FLT_DECLINE;
+}
+/* }}} */
+
+/* {{{ flt_interesting_colors_post */
+int flt_interesting_colors_post(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cl_thread *thread,t_cf_template *tpl) {
+  return flt_interesting_colors(head,dc,vc,tpl,NULL);
+}
+/* }}} */
 
 /* {{{ flt_interesting_validate */
 #ifndef CF_SHARED_MEM
@@ -322,6 +343,13 @@ int flt_interesting_handle(t_configfile *cf,t_conf_opt *opt,const u_char *contex
   }
   else if(cf_strcmp(opt->name,"Interesting204") == 0) flt_interesting_resp_204 = cf_strcmp(args[0],"yes") == 0;
   else if(cf_strcmp(opt->name,"InterestingMarkOwnPosts") == 0) flt_interesting_mop = cf_strcmp(args[0],"yes") == 0;
+  else if(cf_strcmp(opt->name,"InterestingColors") == 0) {
+    if(flt_interesting_cols[0]) free(flt_interesting_cols[0]);
+    if(flt_interesting_cols[1]) free(flt_interesting_cols[1]);
+
+    if(args[0] && *args[0]) flt_interesting_cols[0] = strdup(args[0]);
+    if(args[1] && *args[1]) flt_interesting_cols[1] = strdup(args[1]);
+  }
 
   return 0;
 }
@@ -338,14 +366,17 @@ t_conf_opt flt_interesting_config[] = {
   { "InterestingFile",         flt_interesting_handle, CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
   { "Interesting204",          flt_interesting_handle, CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
   { "InterestingMarkOwnPosts", flt_interesting_handle, CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
+  { "InterestingColors",       flt_interesting_handle, CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
   { NULL, NULL, 0, NULL }
 };
 
 t_handler_config flt_interesting_handlers[] = {
-  { INIT_HANDLER,         flt_interesting_init_handler     },
-  { CONNECT_INIT_HANDLER, flt_interesting_mark_thread      },
+  { INIT_HANDLER,         flt_interesting_init_handler },
+  { CONNECT_INIT_HANDLER, flt_interesting_mark_thread },
+  { VIEW_INIT_HANDLER,    flt_interesting_colors },
   { VIEW_HANDLER,         flt_interesting_mark_interesting },
   { AFTER_POST_HANDLER,   flt_interesting_mark_thread_on_post },
+  { POSTING_HANDLER,      flt_interesting_colors_post },
   { 0, NULL }
 };
 
