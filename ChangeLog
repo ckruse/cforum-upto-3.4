@@ -7,6 +7,7 @@
 		marks, added possibility to add interesting-mark automatically on own new
 		posts
 	* src/utils.[ch]: Added cf_timegm()
+	* src/fo_vote.c: Fixed bug in xmlhttp mode
 
 2005-05-26 Christian Seiler <self@christian-seiler.de>
 	* configure.in, src/modules/Makefile.am: Reactivated
