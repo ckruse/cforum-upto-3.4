@@ -88,12 +88,26 @@ int flt_http_get_month(const u_char *m) {
 #ifndef CF_SHARED_MEM
 long flt_http_get_lm(int sock) {
   rline_t tsd;
-  u_char *line;
+  u_char *line,buff[512];
   long ret = 0;
+  size_t len;
+  u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
+
+  memset(&tsd,0,sizeof(tsd));
+
+  len = snprintf(buff,512,"SELECT %s\n",forum_name);
+  writen(sock,buff,len);
+
+  line = readline(sock,&tsd);
+  if(!line || ((ret = atoi(line)) != 200)) {
+    if(line) free(line);
+    return 0;
+  }
+
+  ret = 0;
+  free(line);
 
   if(writen(sock,"GET LASTMODIFIED 0\n",19) > 0) {
-    memset(&tsd,0,sizeof(tsd));
-
     if((line = readline(sock,&tsd)) != NULL) {
       ret = strtol(line,NULL,0);
       free(line);
