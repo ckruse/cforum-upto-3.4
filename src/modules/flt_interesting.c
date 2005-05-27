@@ -43,6 +43,7 @@
 
 static u_char *flt_interesting_file     = NULL;
 static int     flt_interesting_resp_204 = 0;
+static int     flt_interesting_mop      = 0;
 
 static u_char *flt_interesting_fname    = NULL;
 static DB     *flt_interesting_db       = NULL;
@@ -186,6 +187,38 @@ int flt_interesting_mark_thread(t_cf_hash *head,t_configuration *dc,t_configurat
 }
 /* }}} */
 
+/* {{{ flt_interesting_mark_thread_on_post */
+#ifdef CF_SHARED_MEM
+int flt_interesting_mark_thread_on_post(t_cf_hash *head,t_configuration *dc,t_configuration *pc,t_message *p,u_int64_t tid,int sock,void *shm)
+#else
+int flt_interesting_mark_thread_on_post(t_cf_hash *head,t_configuration *dc,t_configuration *pc,t_message *p,u_int64_t tid,int sock)
+#endif
+{
+  t_string buff;
+  DBT key,data;
+  char one[] = "1";
+  int ret;
+
+  if(!flt_interesting_mop || !tid || !flt_interesting_db || !flt_interesting_file || cf_hash_get(GlobalValues,"UserName",8) == NULL) return FLT_DECLINE;
+
+  str_init_growth(&buff,120);
+  u_int64_to_str(&buff,tid);
+
+  memset(&key,0,sizeof(key));
+  memset(&data,0,sizeof(data));
+
+  data.data = one;
+  data.size = sizeof(one);
+
+  key.data = buff.content;
+  key.size = buff.len;
+
+  if((ret = flt_interesting_db->put(flt_interesting_db,NULL,&key,&data,0)) != 0) fprintf(stderr,"flt_interesting: db->put(): %s\n",db_strerror(ret));
+
+  return FLT_OK;
+}
+/* }}} */
+
 /* {{{ flt_interesting_mark_interesting */
 int flt_interesting_mark_interesting(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cl_thread *thread,int mode) {
   t_name_value *url;
@@ -288,6 +321,7 @@ int flt_interesting_handle(t_configfile *cf,t_conf_opt *opt,const u_char *contex
     flt_interesting_file = strdup(args[0]);
   }
   else if(cf_strcmp(opt->name,"Interesting204") == 0) flt_interesting_resp_204 = cf_strcmp(args[0],"yes") == 0;
+  else if(cf_strcmp(opt->name,"InterestingMarkOwnPosts") == 0) flt_interesting_mop = cf_strcmp(args[0],"yes") == 0;
 
   return 0;
 }
@@ -301,8 +335,9 @@ void flt_interesting_cleanup(void) {
 /* }}} */
 
 t_conf_opt flt_interesting_config[] = {
-  { "InterestingFile", flt_interesting_handle, CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
-  { "Interesting204",  flt_interesting_handle, CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
+  { "InterestingFile",         flt_interesting_handle, CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
+  { "Interesting204",          flt_interesting_handle, CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
+  { "InterestingMarkOwnPosts", flt_interesting_handle, CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
   { NULL, NULL, 0, NULL }
 };
 
@@ -310,6 +345,7 @@ t_handler_config flt_interesting_handlers[] = {
   { INIT_HANDLER,         flt_interesting_init_handler     },
   { CONNECT_INIT_HANDLER, flt_interesting_mark_thread      },
   { VIEW_HANDLER,         flt_interesting_mark_interesting },
+  { AFTER_POST_HANDLER,   flt_interesting_mark_thread_on_post },
   { 0, NULL }
 };
 

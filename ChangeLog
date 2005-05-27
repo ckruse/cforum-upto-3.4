@@ -1,11 +1,12 @@
 2005-05-27 Christian Kruse <ckruse@wwwtech.de>
 	* src/modules/flt_livefilter.c: Changed possibility of accuracies. Now you can
-		leave out minutes as well
+		leave out minutes as well, fixed a bug in date equation
 	* src/parsetpl/parsetpl.lex: Added {nle} tag, ignores line endings; also added
 		comments, {* this is a comment *}
-	* src/modules/flt_interesting.c: Added possibility to remove interesting marks
+	* src/modules/flt_interesting.c: Added possibility to remove interesting
+		marks, added possibility to add interesting-mark automatically on own new
+		posts
 	* src/utils.[ch]: Added cf_timegm()
-	* src/modules/flt_livefilter.c: Fixed bug in date equation
 
 2005-05-26 Christian Seiler <self@christian-seiler.de>
 	* configure.in, src/modules/Makefile.am: Reactivated
