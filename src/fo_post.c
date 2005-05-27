@@ -97,6 +97,7 @@ void display_finishing_screen(t_message *p) {
   thr.messages = thr.threadmsg = p;
   str_init(&content);
 
+  cf_set_variable(&tpl,cs,"charset",cs->values[0],strlen(cs->values[0]),1);
   cf_set_variable(&tpl,cs,"script",ps->values[0],strlen(ps->values[0]),1);
   cf_set_variable(&tpl,cs,"forumbase",fb->values[0],strlen(fb->values[0]),1);
 
@@ -231,6 +232,7 @@ void display_posting_form(t_cf_hash *head,t_message *p,t_cf_tpl_variable *var) {
 
   len = gen_unid(buff,50);
 
+  cf_set_variable(&tpl,cs,"charset",cs->values[0],strlen(cs->values[0]),1);
   cf_set_variable(&tpl,cs,"script",ps->values[0],strlen(ps->values[0]),1);
   cf_set_variable(&tpl,cs,"forumbase",fb->values[0],strlen(fb->values[0]),1);
   cf_set_variable(&tpl,cs,"unid",buff,len,1);
