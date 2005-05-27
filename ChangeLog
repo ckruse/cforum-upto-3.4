@@ -11,6 +11,8 @@
 	* conf/modules.de.xml: Added new directives for flt_interesting
 	* src/modules/flt_interesting.c: Added support for colors, added support for
 		setting interesting marks automatically at posting time
+	* src/modules/flt_http.c: Fixed a nasty bug in socket mode, thanks to Fabian
+		Steiner <selfforum@fabis-site.net> for help
 
 2005-05-26 Christian Seiler <self@christian-seiler.de>
 	* configure.in, src/modules/Makefile.am: Reactivated
