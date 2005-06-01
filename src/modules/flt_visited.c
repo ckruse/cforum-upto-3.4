@@ -196,7 +196,7 @@ int flt_visited_execute_filter(t_cf_hash *head,t_configuration *dc,t_configurati
                 key.data = buff;
                 key.size = len;
 
-                Cfg.db->put(Cfg.db,NULL,&key,&data,0);
+                if((ret = Cfg.db->put(Cfg.db,NULL,&key,&data,0)) != 0) fprintf(stderr,"flt_visited: db->put(): %s\n",db_strerror(ret));
               }
 
               cf_cleanup_thread(&thread);
@@ -242,11 +242,12 @@ int flt_visited_execute_filter(t_cf_hash *head,t_configuration *dc,t_configurati
             key.data = buff;
             key.size = len;
 
-            if(Cfg.db->put(Cfg.db,NULL,&key,&data,0) == 0) {
+            if((ret = Cfg.db->put(Cfg.db,NULL,&key,&data,0)) == 0) {
               snprintf(buff,256,"%s.tm",Cfg.VisitedFile);
               remove(buff);
               if((fd = open(buff,O_CREAT|O_TRUNC|O_WRONLY)) != -1) close(fd);
             }
+            else fprintf(stderr,"flt_visited: db->put(): %s\n",db_strerror(ret));
 
           }
 
@@ -298,7 +299,7 @@ int flt_visited_execute_filter(t_cf_hash *head,t_configuration *dc,t_configurati
           key.data = buff;
           key.size = len;
 
-          Cfg.db->put(Cfg.db,NULL,&key,&data,0);
+          if((ret = Cfg.db->put(Cfg.db,NULL,&key,&data,0)) != 0) fprintf(stderr,"flt_visited: db->put(): %s\n",db_strerror(ret));
           snprintf(buff,256,"%s.tm",Cfg.VisitedFile);
           remove(buff);
           if((fd = open(buff,O_CREAT|O_TRUNC|O_WRONLY)) != -1) close(fd);
@@ -343,7 +344,7 @@ int flt_visited_mark_visited(t_cf_hash *head,t_configuration *dc,t_configuration
   DBT key,data;
   u_char buff[256];
   size_t len;
-  int fd;
+  int fd,ret;
 
   if(uname && Cfg.VisitedFile && Cfg.HighlightVisitedPostings) {
     memset(&key,0,sizeof(key));
@@ -354,11 +355,12 @@ int flt_visited_mark_visited(t_cf_hash *head,t_configuration *dc,t_configuration
     key.size = len;
 
     if(Cfg.mark_all_visited) {
-      if(Cfg.db->put(Cfg.db,NULL,&key,&data,0) == 0) {
+      if((ret = Cfg.db->put(Cfg.db,NULL,&key,&data,0)) == 0) {
         snprintf(buff,256,"%s.tm",Cfg.VisitedFile);
         remove(buff);
         if((fd = open(buff,O_CREAT|O_TRUNC|O_WRONLY)) != -1) close(fd);
       }
+      else fprintf(stderr,"flt_visited: db->put(): %s\n",db_strerror(ret));
 
       memset(&data,0,sizeof(data));
     }
