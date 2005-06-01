@@ -553,6 +553,7 @@ void generate_thread_output(t_cl_thread *thread,t_hierarchical_node *msg,t_cf_tp
   cf_set_variable(tl_tpl,cs,"subject",msg->msg->subject.content,msg->msg->subject.len,1);
   cf_set_variable(tl_tpl,cs,"author",msg->msg->author.content,msg->msg->author.len,1);
   if(msg->msg->invisible) cf_tpl_setvalue(tl_tpl,"deleted",TPL_VARIABLE_INT,1);
+  else cf_tpl_freevar(tl_tpl,"deleted");
 
   cf_tpl_var_addvalue(&ary,TPL_VARIABLE_STRING,strbuffer.content,strbuffer.len);
 

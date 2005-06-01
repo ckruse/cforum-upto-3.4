@@ -7,6 +7,7 @@
 		src/modules/flt_xmlarc.c, src/fo_vote.c, src/configparser.c,
 		src/memoryutils.c, src/fo_server.c: Made error messages better
 	* src/htmllib.c: Fixed a nasty bug
+	* src/fo_arcview.c: Fixed a bug caused by variable setting
 
 2005-05-27 Christian Kruse <ckruse@wwwtech.de>
 	* src/modules/flt_livefilter.c: Changed possibility of accuracies. Now you can
