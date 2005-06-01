@@ -25,6 +25,8 @@
 #include <string.h>
 #include <ctype.h>
 
+#include <errno.h>
+
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -138,7 +140,7 @@ int flt_latex_create_cache(const u_char *cnt,size_t len,const u_char *our_sum) {
       chdir(path.content);
 
       if(execlp(flt_latex_cfg.tex,flt_latex_cfg.tex,"file.tex",NULL) == -1) {
-        perror("execlp");
+        fprintf(stderr,"flt_latex: execlp: could not execlp '%s': %s\n",flt_latex_cfg.tex,strerror(errno));
         exit(-1);
       }
       /* should never be reached, but who knows what could happen on obscure systems */
@@ -180,7 +182,7 @@ int flt_latex_create_cache(const u_char *cnt,size_t len,const u_char *our_sum) {
           str_chars_append(&path,".png",4);
 
           if(execlp(flt_latex_cfg.convert,flt_latex_cfg.convert,"-quality","100","-density","120","ps:-",path.content,NULL) == -1) {
-            perror("execlp");
+            fprintf(stderr,"flt_latex: execlp: could not execlp '%s': %s\n",flt_latex_cfg.convert,strerror(errno));
             exit(-1);
           }
 
@@ -196,7 +198,7 @@ int flt_latex_create_cache(const u_char *cnt,size_t len,const u_char *our_sum) {
           close(STDERR_FILENO);
 
           if(execlp(flt_latex_cfg.dvips,flt_latex_cfg.dvips,"-R","-E","file.dvi","-f",NULL) == -1) {
-            perror("execlp");
+            fprintf(stderr,"flt_latex: execlp: could not execlp '%s': %s\n",flt_latex_cfg.dvips,strerror(errno));
             exit(-1);
           }
 

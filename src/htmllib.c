@@ -578,6 +578,13 @@ int validate_message(t_array *stack,t_cl_thread *thread,const u_char *msg,u_char
           if(*ptr1 == ']') {
             directive = strndup(ptr+1,tmp-ptr-1);
             buff      = strtmp.content;
+
+            if(!buff) {
+              free(directive);
+              ptr = safe;
+              goto default_action;
+            }
+
             parameter = htmlentities_decode(buff,NULL);
             free(buff);
 

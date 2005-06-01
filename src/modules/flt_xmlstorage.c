@@ -1030,7 +1030,7 @@ int flt_xmlstorage_archive_threads(t_forum *forum,t_thread **threads,size_t len)
   pid = fork();
   switch(pid) {
     case -1:
-      perror("fork");
+      fprintf(stderr,"flt_xmlstorage: fork(): could not fork: %s\n",strerror(errno));
       exit(-1);
     case 0:
       break;

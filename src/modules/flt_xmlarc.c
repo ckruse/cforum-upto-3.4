@@ -25,6 +25,8 @@
 #include <string.h>
 #include <ctype.h>
 
+#include <errno.h>
+
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <dirent.h>
@@ -512,17 +514,17 @@ t_array *flt_xmlarc_getthreadlist(const u_char *year,const u_char *month) {
 
   /* {{{ map file into memory */
   if(stat(str.content,&st) == -1) {
-    perror("stat");
+    fprintf(stderr,"flt_xmlarc: stat: could not stat '%s': %s\n",str.content,strerror(errno));
     return NULL;
   }
 
   if((fd = open(str.content,O_RDONLY)) == -1) {
-    perror("open");
+    fprintf(stderr,"flt_xmlarc: open: could not open '%s': %s\n",str.content,strerror(errno));
     return NULL;
   }
 
   if((caddr_t)(file = ptr = mmap(0,st.st_size,PROT_READ,MAP_FILE|MAP_SHARED,fd,0)) == (caddr_t)-1) {
-    perror("mmap");
+    fprintf(stderr,"flt_xmlarc: mmap: could not map '%s': %s\n",str.content,strerror(errno));
     return NULL;
   }
   /* }}} */

@@ -396,7 +396,7 @@ int main(int argc,char *argv[],char *env[]) {
       }
       else {
         printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
-        perror("socket");
+        fprintf(stderr,"fo_vote: could not socket: %s\n",strerror(errno));
         if(mode && cf_strcmp(mode,"xmlhttp") == 0) cf_error_message("E_VOTE_INTERNAL",NULL);
         else printf("0\n");
       }

@@ -592,7 +592,7 @@
   </directive>
 
   <directive name="BlacklistInThreadview" arguments="1">
-    <argument paramname="blacklistthreadview" encode="plain" ifNotCommitted="yes">
+    <argument paramname="blacklistthreadview" encode="plain" ifNotCommitted="no">
       <validate>^(?:yes|no)$</validate>
       <error>Soll die Blacklist auch in der Thread-Anzeige wirken? Bitte geben Sie &quot;ja&quot; oder &quot;nein&quot; an!</error>
     </argument>

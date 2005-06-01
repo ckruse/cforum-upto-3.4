@@ -348,10 +348,10 @@ void cf_error_message(const u_char *err,FILE *out, ...) {
 
   if(v && db && lang) {
     cf_gen_tpl_name(tplname,256,v->values[0]);
-    cf_tpl_init(&tpl,tplname);
-    cf_set_variable(&tpl,cs,"forumbase",vs->values[0],strlen(vs->values[0]),1);
 
-    if(tpl.tpl) {
+    if(cf_tpl_init(&tpl,tplname) == 0) {
+      cf_set_variable(&tpl,cs,"forumbase",vs->values[0],strlen(vs->values[0]),1);
+
       str_init(&msg);
 
       if(Msgs == NULL) {

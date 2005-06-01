@@ -1412,6 +1412,8 @@ int flt_syntax_validate(t_configuration *fdc,t_configuration *fvc,const u_char *
   }
   lang = str.content;
 
+  if(!lang) return FLT_DECLINE;
+
   /* we got a language, check if it exists */
   str_init(&str);
   str_char_set(&str,flt_syntax_patterns_dir,strlen(flt_syntax_patterns_dir));

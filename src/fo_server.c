@@ -376,7 +376,7 @@ int main(int argc,char *argv[]) {
     /* we daemonize... */
     switch(pid = fork()) {
       case -1:
-        perror("fork");
+        fprintf(stderr,"fo_server: could not fork: %s\n",strerror(errno));
         exit(-1);
 
       case 0:

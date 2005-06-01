@@ -272,7 +272,7 @@ t_array *get_conf_file(const u_char **which,size_t llen) {
     memset(&st,0,sizeof(st));
     if(stat(file.content,&st) == -1) {
       str_cleanup(&file);
-      perror("stat");
+      fprintf(stderr,"could not find config file '%s': %s\n",file.content,strerror(errno));
       return NULL;
     }
 
@@ -394,19 +394,25 @@ int read_config(t_configfile *conf,t_take_default deflt,int mode) {
    * open() could fail :)
    */
   if(fd == -1) {
-    perror("open");
+    fprintf(stderr,"configparser: open: could not open configfile '%s': %s\n",conf->filename,strerror(errno));
     return 1;
   }
 
   if(stat(conf->filename,&st) == -1) {
     close(fd);
-    perror("stat");
+    fprintf(stderr,"configparser: stat: could not stat configfile '%s': %s\n",conf->filename,strerror(errno));
+    return 1;
+  }
+
+  if(st.st_size == 0) {
+    close(fd);
+    fprintf(stderr,"configparser: configfile %s is empty!\n",conf->filename);
     return 1;
   }
 
   if(((void *)(buff = mmap(0,st.st_size+1,PROT_READ,MAP_FILE|MAP_SHARED,fd,0))) == (caddr_t)-1) {
     close(fd);
-    perror("mmap");
+    fprintf(stderr,"configparser: mmap: could not map file '%s' to memory: %s\n",conf->filename,strerror(errno));
     return 1;
   }
   /* }}} */

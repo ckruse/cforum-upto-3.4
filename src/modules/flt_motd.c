@@ -28,6 +28,8 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
+#include <errno.h>
+
 #include "readline.h"
 #include "hashlib.h"
 #include "utils.h"
@@ -59,9 +61,9 @@ int flt_motd_execute(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_c
         free(txt);
         fclose(fd);
       }
-      else perror("fopen");
+      else fprintf(stderr,"flt_motd: fopen: could not open file '%s': %s\n",MOTD_File,strerror(errno));
     }
-    else perror("stat");
+    else fprintf(stderr,"flt_motd: stat: could not stat file '%s': %s\n",MOTD_File,strerror(errno));
   }
 
   return FLT_DECLINE;

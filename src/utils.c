@@ -170,13 +170,13 @@ int cf_remove_recursive(const u_char *path) {
   struct stat st;
 
   if(lstat(path, &st) < 0) {
-    perror("stat");
+    fprintf(stderr,"utils: cf_remove_recursive: could not lstat '%s': %s\n",path,strerror(errno));
     return -1;
   }
 
   if(S_ISDIR(st.st_mode)) {
     if((dir = opendir(path)) == NULL) {
-      perror("opendir");
+      fprintf(stderr,"utils: cf_remove_recursive: could not opendir '%s': %s\n",path,strerror(errno));
       return -1;
     }
 
@@ -190,14 +190,14 @@ int cf_remove_recursive(const u_char *path) {
     }
 
     if(rmdir(path) < 0) {
-      perror("rmdir");
+      fprintf(stderr,"utils: cf_remove_recursive: could not rmdir '%s': %s\n",path,strerror(errno));
       return -1;
     }
   }
   else {
     /* path is not a directory; just unlink() it */
     if(unlink(path) < 0) {
-      perror("unlink");
+      fprintf(stderr,"utils: cf_remove_recursive: could not unlink '%s': %s\n",path,strerror(errno));
       return -1;
     }
   }

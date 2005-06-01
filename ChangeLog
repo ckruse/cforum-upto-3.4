@@ -1,3 +1,13 @@
+2005-06-01 Christian Kruse <ckruse@wwwtech.de>
+	* conf/modules.de.xml: Fixed bug, ifNotCommitted attribute was wrong
+	* src/utils.c, src/clientlib.c, src/modules/flt_motd.c,
+		src/modules/flt_xmlstorage.c, src/modules/flt_syntax.c,
+		src/modules/flt_phpsessauth.c, src/modules/flt_gummizelle.c,
+		src/modules/flt_latex.c, src/modules/flt_mailonpost.c,
+		src/modules/flt_xmlarc.c, src/fo_vote.c, src/configparser.c,
+		src/memoryutils.c, src/fo_server.c: Made error messages better
+	* src/htmllib.c: Fixed a nasty bug
+
 2005-05-27 Christian Kruse <ckruse@wwwtech.de>
 	* src/modules/flt_livefilter.c: Changed possibility of accuracies. Now you can
 		leave out minutes as well, fixed a bug in date equation

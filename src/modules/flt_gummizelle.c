@@ -25,6 +25,8 @@
 #include <time.h>
 #include <ctype.h>
 
+#include <errno.h>
+
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/mman.h>
@@ -174,18 +176,23 @@ int flt_gummizelle_init(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc) 
 
   if(!flt_gummizelle_db) return FLT_DECLINE;
   if(stat(flt_gummizelle_db,&st) == -1) {
-    perror("stat");
+    fprintf(stderr,"flt_gummizelle: stat: could not stat file '%s': %s\n",flt_gummizelle_db,strerror(errno));
+    return FLT_DECLINE;
+  }
+
+  if(st.st_size == 0) {
+    fprintf(stderr,"flt_gummizelle: stat: file '%s' is empty!\n",flt_gummizelle_db,strerror(errno));
     return FLT_DECLINE;
   }
 
   if((fd = open(flt_gummizelle_db,O_RDONLY)) < 0) {
-    perror("open");
+    fprintf(stderr,"flt_gummizelle: open: could not open file '%s': %s\n",flt_gummizelle_db,strerror(errno));
     return FLT_DECLINE;
   }
 
   if(((void *)(f_ptr = mmap(0,st.st_size+1,PROT_READ,MAP_FILE|MAP_SHARED,fd,0))) == (caddr_t)-1) {
     close(fd);
-    perror("mmap");
+    fprintf(stderr,"flt_gummizelle: mmap: could not map file '%s': %s\n",flt_gummizelle_db,strerror(errno));
     return FLT_DECLINE;
   }
 

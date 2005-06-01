@@ -25,6 +25,8 @@
 #include <time.h>
 #include <sys/types.h>
 
+#include <errno.h>
+
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <sys/mman.h>
@@ -163,20 +165,28 @@ u_char *flt_phpsessauth_getvar(const u_char *vname) {
 
   /* {{{ open file and map it into our memory */
   if((fd = open(path.content,O_RDONLY)) == -1) {
+    fprintf(stderr,"flt_phpsessauth: open: could not open file '%s': %s\n",path.content,strerror(errno));
     str_cleanup(&path);
-    perror("open");
     return NULL;
   }
 
   if(stat(path.content,&st) == -1) {
+    fprintf(stderr,"flt_phpsessauth: stat: could not stat file '%s': %s\n",path.content,strerror(errno));
     close(fd);
-    perror("stat");
+    str_cleanup(&path);
+    return NULL;
+  }
+
+  if(st.st_size == 0) {
+    fprintf(stderror,"flt_phpsessauth: file '%s' is empty!\n",path.content);
+    close(fd);
+    str_cleanup(&path);
     return NULL;
   }
 
   if((caddr_t)(ptr = start = mmap(0,st.st_size+1,PROT_READ,MAP_FILE|MAP_SHARED,fd,0)) == (caddr_t)-1) {
+    fprintf(stderr,"flt_phpsessauth: mmap: could not map file '%s': %s\n",path.content,strerror(errno));
     close(fd);
-    perror("mmap");
     str_cleanup(&path);
     return NULL;
   }

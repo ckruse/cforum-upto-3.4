@@ -28,6 +28,8 @@
 #include <sys/types.h>
 #include <sys/file.h>
 
+#include <errno.h>
+
 #include <time.h>
 #include <db.h>
 
@@ -508,7 +510,7 @@ void flt_mailonpost_mail(u_char **emails,u_int64_t len,t_message *p,t_cl_thread 
     smtp_set_messagecb(msg,flt_mailonpost_msgcb,inf);
   }
 
-  if(smtp_start_session(sess) == 0) perror("smtp_start_session");
+  if(smtp_start_session(sess) == 0) fprintf(stderr,"flt_mailonpost: smtp_start: could not initiate smtp session: %s\n",strerror(errno));
   smtp_destroy_session(sess);
 
   str_cleanup(&str);

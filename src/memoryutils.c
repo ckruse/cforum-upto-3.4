@@ -58,7 +58,7 @@ void *fo_alloc(void *ptr,size_t nmemb,size_t size,int type) {
   }
 
   if(!l_ptr) {
-    perror("error allocating memory");
+    fprintf(stderr,"memory utils: error allocating memory: %s\n",strerror(errno));
     exit(EXIT_FAILURE);
   }
 
