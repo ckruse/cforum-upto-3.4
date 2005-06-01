@@ -8,6 +8,8 @@
 		src/memoryutils.c, src/fo_server.c: Made error messages better
 	* src/htmllib.c: Fixed a nasty bug
 	* src/fo_arcview.c: Fixed a bug caused by variable setting
+	* src/fo_post.c: Fixed bug in body_plain2coded(), now transforming _all_
+		spaces to \xC2\xA0 (non-breaking space)
 
 2005-05-27 Christian Kruse <ckruse@wwwtech.de>
 	* src/modules/flt_livefilter.c: Changed possibility of accuracies. Now you can

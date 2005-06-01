@@ -610,11 +610,13 @@ t_string *body_plain2coded(const u_char *text) {
         continue;
       }
 
-      /* transform spaces after newlines to &nbsp; */
-      for(len=0;len<(size_t)(end-ptr-1);len++) str_chars_append(str,"\xC2\xA0",2);
+      if(end-ptr == 1 && (ptr - 1 >= body && *(ptr-1) != '\012')) {
+        str_char_append(str,' ');
+        continue;
+      }
 
-      /* but leave exact one character */
-      str_char_append(str,' ');
+      /* transform spaces after newlines to &nbsp; */
+      for(len=0;len<(size_t)(end-ptr);++len) str_chars_append(str,"\xC2\xA0",2);
 
       ptr = end - 1;
     }
