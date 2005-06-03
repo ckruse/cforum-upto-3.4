@@ -133,8 +133,10 @@ t_handler_config flt_votingvariables_handlers[] = {
 };
 
 t_module_config flt_votingvariables = {
+  MODULE_MAGIC_COOKIE,
   flt_votingvariables_config,
   flt_votingvariables_handlers,
+  NULL,
   NULL,
   NULL,
   NULL,

@@ -917,8 +917,10 @@ t_handler_config handlers[] = {
 };
 
 t_module_config flt_livefilter = {
+  MODULE_MAGIC_COOKIE,
   config,
   handlers,
+  NULL,
   NULL,
   NULL,
   NULL,

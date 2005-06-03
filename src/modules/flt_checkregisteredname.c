@@ -107,8 +107,10 @@ t_handler_config flt_checkregisteredname_handlers[] = {
 };
 
 t_module_config flt_checkregisteredname = {
+  MODULE_MAGIC_COOKIE,
   flt_checkregisteredname_config,
   flt_checkregisteredname_handlers,
+  NULL,
   NULL,
   NULL,
   NULL,

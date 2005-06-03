@@ -740,6 +740,23 @@ int add_module(t_configfile *cfile,const u_char *path,const u_char *name) {
         return -1;
       }
 
+      if(mod_cfg->module_magic_cookie != MODULE_MAGIC_COOKIE) {
+        #ifdef DEBUG
+        fprintf(stderr,"module magic number: %lu, modcfg: %lu\n",mod_cfg->module_magic_cookie,MODULE_MAGIC_COOKIE);
+        #endif
+
+        /* check what's the problem */
+        if((mod_cfg->module_magic_cookie >> 16) == MODULE_MAGIC_NUMBER_MAJOR) fprintf(stderr,"CAUTION! module '%s': bad minor magic number, you should really update the module!\n",name);
+        else {
+          fprintf(stderr,"FATAL ERROR! bad magic number! Maybe module '%s' is to old or to new?\n",name);
+          return -1;
+        }
+      }
+
+      if(mod_cfg->config_init) {
+        if(mod_cfg->config_init(cfile) != 0) return -1;
+      }
+
       if(mod_cfg->cfgopts) cfg_register_options(cfile,mod_cfg->cfgopts);
 
       /* register the module in the module list */

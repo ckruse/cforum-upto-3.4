@@ -311,8 +311,10 @@ t_handler_config flt_moderated_handlers[] = {
 };
 
 t_module_config flt_moderated = {
+  MODULE_MAGIC_COOKIE,
   flt_moderated_config,
   flt_moderated_handlers,
+  NULL,
   NULL,
   NULL,
   NULL,

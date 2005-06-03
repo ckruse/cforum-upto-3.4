@@ -342,8 +342,10 @@ t_handler_config flt_openclose_handlers[] = {
 };
 
 t_module_config flt_openclose = {
+  MODULE_MAGIC_COOKIE,
   flt_openclose_config,
   flt_openclose_handlers,
+  NULL,
   flt_oc_validate,
   NULL,
   NULL,

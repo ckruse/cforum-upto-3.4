@@ -51,9 +51,9 @@ static int flt_shortcuts_activate = 0;
 static flt_shortcuts_t flt_shortcuts_threadlisttable[] = {
   { 'b', FLT_SHORTCUTS_MOD_NONE,  "add_to_blacklist" }, /* add to blacklist */
   { 'b', FLT_SHORTCUTS_MOD_SHIFT, "remove_from_blacklist" }, /* remove from blacklist */
-  { 'w', FLT_SHORTCUTS_MOD_NONE, "add_to_whitelist" }, /* add to whitelist */
+  { 'w', FLT_SHORTCUTS_MOD_NONE,  "add_to_whitelist" }, /* add to whitelist */
   { 'w', FLT_SHORTCUTS_MOD_SHIFT, "remove_from_whitelist" }, /* remove from whitelist */
-  { 'k', FLT_SHORTCUTS_MOD_NONE, "add_to_highlightcats"  }, /* add to highlightcats */
+  { 'k', FLT_SHORTCUTS_MOD_NONE,  "add_to_highlightcats"  }, /* add to highlightcats */
   { 'k', FLT_SHORTCUTS_MOD_SHIFT, "remove_from_highlightcats" },  /* remove from highlightcats */
   { 'a', FLT_SHORTCUTS_MOD_NONE,  "mark_all_visited" } /* mark all postings visited */
 };
@@ -70,7 +70,6 @@ static flt_shortcuts_t flt_shortcuts_postingtable[] = {
   { 'k', FLT_SHORTCUTS_MOD_NONE,  "kill_post" }, /* mark thread as deleted */
   { 'r', FLT_SHORTCUTS_MOD_SHIFT, "mark_visited" } /* mark thread visited */
 };
-
 
 static u_char *flt_shortcuts_fn = NULL;
 
@@ -245,8 +244,10 @@ t_handler_config flt_shortcuts_handlers[] = {
 };
 
 t_module_config flt_shortcuts = {
+  MODULE_MAGIC_COOKIE,
   flt_shortcuts_config,
   flt_shortcuts_handlers,
+  NULL,
   NULL,
   NULL,
   NULL,

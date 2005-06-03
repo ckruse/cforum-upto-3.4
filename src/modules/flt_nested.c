@@ -328,8 +328,10 @@ t_handler_config flt_nested_handlers[] = {
 };
 
 t_module_config flt_nested = {
+  MODULE_MAGIC_COOKIE,
   flt_nested_config,
   flt_nested_handlers,
+  NULL,
   NULL,
   NULL,
   NULL,

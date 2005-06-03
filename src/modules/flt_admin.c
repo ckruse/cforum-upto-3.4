@@ -421,8 +421,10 @@ t_handler_config flt_admin_handlers[] = {
 };
 
 t_module_config flt_admin = {
+  MODULE_MAGIC_COOKIE,
   flt_admin_config,
   flt_admin_handlers,
+  NULL,
   flt_admin_validator,
   flt_admin_lm,
   NULL,

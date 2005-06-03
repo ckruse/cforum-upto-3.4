@@ -176,8 +176,10 @@ t_handler_config flt_remotesignature_handlers[] = {
 };
 
 t_module_config flt_remotesignature = {
+  MODULE_MAGIC_COOKIE,
   flt_remotesignature_config,
   flt_remotesignature_handlers,
+  NULL,
   NULL,
   NULL,
   NULL,

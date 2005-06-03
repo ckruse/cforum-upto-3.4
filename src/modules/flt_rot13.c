@@ -118,8 +118,10 @@ t_handler_config flt_rot13_handlers[] = {
 };
 
 t_module_config flt_rot13 = {
+  MODULE_MAGIC_COOKIE,
   flt_rot13_config,
   flt_rot13_handlers,
+  NULL,
   NULL,
   NULL,
   NULL,

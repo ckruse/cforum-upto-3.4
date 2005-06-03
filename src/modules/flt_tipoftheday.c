@@ -121,8 +121,10 @@ t_handler_config flt_tipoftheday_handlers[] = {
 };
 
 t_module_config flt_tipoftheday = {
+  MODULE_MAGIC_COOKIE,
   flt_tipoftheday_config,
   flt_tipoftheday_handlers,
+  NULL,
   NULL,
   NULL,
   NULL,

@@ -209,8 +209,10 @@ t_handler_config flt_list_handlers[] = {
 };
 
 t_module_config flt_list = {
+  MODULE_MAGIC_COOKIE,
   flt_list_config,
   flt_list_handlers,
+  NULL,
   NULL,
   NULL,
   NULL,

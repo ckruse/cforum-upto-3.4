@@ -212,8 +212,10 @@ t_handler_config flt_basic_handlers[] = {
 };
 
 t_module_config flt_basic = {
+  MODULE_MAGIC_COOKIE,
   flt_basic_config,
   flt_basic_handlers,
+  NULL,
   NULL,
   NULL,
   NULL,

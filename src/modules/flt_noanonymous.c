@@ -99,8 +99,10 @@ t_handler_config flt_noanonymous_handlers[] = {
 };
 
 t_module_config flt_noanonymous = {
+  MODULE_MAGIC_COOKIE,
   flt_noanonymous_config,
   flt_noanonymous_handlers,
+  NULL,
   NULL,
   NULL,
   NULL,

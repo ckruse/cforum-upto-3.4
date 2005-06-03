@@ -193,8 +193,10 @@ t_handler_config flt_admin_mysql_handlers[] = {
 };
 
 t_module_config flt_admin_mysql = {
+  MODULE_MAGIC_COOKIE,
   flt_admin_mysql_config,
   flt_admin_mysql_handlers,
+  NULL,
   NULL,
   NULL,
   NULL,

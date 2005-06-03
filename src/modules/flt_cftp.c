@@ -565,8 +565,10 @@ t_handler_config flt_cftp_handlers[] = {
 };
 
 t_module_config flt_cftp = {
+  MODULE_MAGIC_COOKIE,
   flt_cftp_config,
   flt_cftp_handlers,
+  NULL,
   NULL,
   NULL,
   NULL,

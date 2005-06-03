@@ -443,8 +443,10 @@ t_handler_config flt_poas_handlers[] = {
 };
 
 t_module_config flt_postingassistant = {
+  MODULE_MAGIC_COOKIE,
   flt_poas_config,
   flt_poas_handlers,
+  NULL,
   NULL,
   NULL,
   NULL,

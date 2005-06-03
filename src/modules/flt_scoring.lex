@@ -375,8 +375,10 @@ t_handler_config flt_scoring_handlers[] = {
 };
 
 t_module_config flt_scoring = {
+  MODULE_MAGIC_COOKIE,
   flt_scoring_config,
   flt_scoring_handlers,
+  NULL,
   NULL,
   NULL,
   NULL,

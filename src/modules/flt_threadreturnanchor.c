@@ -73,19 +73,21 @@ int flt_threadreturnanchor_handle(t_configfile *cf,t_conf_opt *opt,const u_char 
 }
 /* }}} */
 
-t_conf_opt config[] = {
+t_conf_opt flt_threadreturnanchor_config[] = {
   { "ThreadReturnAnchor", flt_threadreturnanchor_handle, CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
   { NULL, NULL, 0, NULL }
 };
 
-t_handler_config handlers[] = {
+t_handler_config flt_threadreturnanchor_handlers[] = {
   { POSTING_HANDLER,   flt_threadreturnanchor_post },
   { 0, NULL }
 };
 
 t_module_config flt_threadreturnanchor = {
-  config,
-  handlers,
+  MODULE_MAGIC_COOKIE,
+  flt_threadreturnanchor_config,
+  flt_threadreturnanchor_handlers,
+  NULL,
   NULL,
   NULL,
   NULL,

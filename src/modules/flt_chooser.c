@@ -116,8 +116,10 @@ t_handler_config flt_chooser_handlers[] = {
 };
 
 t_module_config flt_chooser = {
+  MODULE_MAGIC_COOKIE,
   flt_chooser_config,
   flt_chooser_handlers,
+  NULL,
   NULL,
   NULL,
   NULL,

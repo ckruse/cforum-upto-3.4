@@ -658,8 +658,10 @@ t_handler_config flt_xmlarc_handlers[] = {
 };
 
 t_module_config flt_xmlarc = {
+  MODULE_MAGIC_COOKIE,
   flt_xmlarc_config,
   flt_xmlarc_handlers,
+  NULL,
   NULL,
   NULL,
   NULL,

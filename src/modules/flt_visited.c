@@ -553,8 +553,10 @@ t_handler_config flt_visited_handlers[] = {
 };
 
 t_module_config flt_visited = {
+  MODULE_MAGIC_COOKIE,
   flt_visited_config,
   flt_visited_handlers,
+  NULL,
   flt_visited_validate,
   flt_visited_lm,
   NULL,

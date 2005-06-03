@@ -70,8 +70,10 @@ t_handler_config flt_categorycheck_handlers[] = {
 };
 
 t_module_config flt_categorycheck = {
+  MODULE_MAGIC_COOKIE,
   flt_categorycheck_config,
   flt_categorycheck_handlers,
+  NULL,
   NULL,
   NULL,
   NULL,

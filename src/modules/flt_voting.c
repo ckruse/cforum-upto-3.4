@@ -182,8 +182,10 @@ t_handler_config flt_voting_handlers[] = {
 };
 
 t_module_config flt_voting = {
+  MODULE_MAGIC_COOKIE,
   flt_voting_config,
   flt_voting_handlers,
+  NULL,
   NULL,
   NULL,
   NULL,

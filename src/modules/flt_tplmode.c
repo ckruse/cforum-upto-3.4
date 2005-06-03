@@ -96,8 +96,10 @@ t_handler_config flt_tplmode_handlers[] = {
 };
 
 t_module_config flt_tplmode = {
+  MODULE_MAGIC_COOKIE,
   flt_tplmode_config,
   flt_tplmode_handlers,
+  NULL,
   NULL,
   NULL,
   NULL,

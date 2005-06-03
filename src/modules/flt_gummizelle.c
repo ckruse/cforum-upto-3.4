@@ -378,8 +378,10 @@ t_handler_config flt_gummizelle_handlers[] = {
 };
 
 t_module_config flt_gummizelle = {
+  MODULE_MAGIC_COOKIE,
   flt_gummizelle_config,
   flt_gummizelle_handlers,
+  NULL,
   NULL,
   NULL,
   NULL,

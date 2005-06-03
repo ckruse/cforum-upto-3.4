@@ -388,8 +388,10 @@ t_handler_config flt_registerednames_handlers[] = {
 };
 
 t_module_config flt_registerednames = {
+  MODULE_MAGIC_COOKIE,
   flt_registerednames_config,
   flt_registerednames_handlers,
+  NULL,
   NULL,
   NULL,
   NULL,

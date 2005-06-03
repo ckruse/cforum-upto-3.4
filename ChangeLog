@@ -1,3 +1,11 @@
+2005-06-03 Christian Kruse <ckruse@wwwtech.de>
+	* src/defines.h: Added defines for MODULE_MAGIC_NUMBER_* and
+		MODULE_MAGIC_COOKIE
+	* src/configparser.[ch]: Added another hook for executing during configuration
+		parsing time, added handling for MODULE_MAGIC_COOKIE
+	* src/modules/*.{c,lex}: Added MODULE_MAGIC_COOKIE and also added NULL values
+		for the new hook
+
 2005-06-01 Christian Kruse <ckruse@wwwtech.de>
 	* conf/modules.de.xml: Fixed bug, ifNotCommitted attribute was wrong
 	* src/utils.c, src/clientlib.c, src/modules/flt_motd.c,

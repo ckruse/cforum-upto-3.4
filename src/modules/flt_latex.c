@@ -362,8 +362,10 @@ t_handler_config flt_latex_handlers[] = {
 };
 
 t_module_config flt_latex = {
+  MODULE_MAGIC_COOKIE,
   flt_latex_config,
   flt_latex_handlers,
+  NULL,
   NULL,
   NULL,
   NULL,

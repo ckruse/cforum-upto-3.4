@@ -290,8 +290,10 @@ t_handler_config flt_failsafe_handlers[] = {
 };
 
 t_module_config flt_failsafe = {
+  MODULE_MAGIC_COOKIE,
   flt_failsafe_config,
   flt_failsafe_handlers,
+  NULL,
   NULL,
   NULL,
   NULL,

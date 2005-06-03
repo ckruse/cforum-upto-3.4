@@ -146,8 +146,10 @@ t_handler_config flt_preview_handlers[] = {
 };
 
 t_module_config flt_preview = {
+  MODULE_MAGIC_COOKIE,
   flt_preview_config,
   flt_preview_handlers,
+  NULL,
   NULL,
   NULL,
   NULL,

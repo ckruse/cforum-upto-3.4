@@ -241,8 +241,10 @@ t_handler_config flt_stdreplacements_handlers[] = {
 };
 
 t_module_config flt_stdreplacements = {
+  MODULE_MAGIC_COOKIE,
   flt_stdreplacements_config,
   flt_stdreplacements_handlers,
+  NULL,
   NULL,
   NULL,
   NULL,

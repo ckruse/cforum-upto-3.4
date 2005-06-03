@@ -1132,8 +1132,10 @@ t_handler_config flt_xmlstorage_handlers[] = {
 };
 
 t_module_config flt_xmlstorage = {
+  MODULE_MAGIC_COOKIE,
   flt_xmlstorage_config,
   flt_xmlstorage_handlers,
+  NULL,
   NULL,
   NULL,
   NULL,

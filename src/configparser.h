@@ -108,6 +108,9 @@ typedef struct s_handler_config {
 /** This function type is used for cleaning up module specific data */
 typedef void (*t_finish)(void);
 
+/** This function type is used for the configuration init hook */
+typedef int (*t_config_init_hook)(t_configfile *file);
+
 /** This function type is used for cache revalidation */
 #ifndef CF_SHARED_MEM
 typedef int (*t_cache_revalidator)(t_cf_hash *,t_configuration *,t_configuration *,time_t,int);
@@ -131,8 +134,10 @@ typedef time_t (*t_last_modified)(t_cf_hash *,t_configuration *,t_configuration 
 
 /** This structure saves a configuration of a module */
 typedef struct s_module_config {
+  u_int32_t module_magic_cookie;
   t_conf_opt *cfgopts; /**< The configuration directive options of this module */
   t_handler_config *handlers; /**< The handler configuration */
+  t_config_init_hook config_init;
   t_cache_revalidator revalidator; /**< The cache revalidation hook */
   t_last_modified last_modified; /**< The last modified validation hook */
   t_header_hook header_hook; /**< Hook for http headers */

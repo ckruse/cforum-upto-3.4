@@ -509,8 +509,10 @@ t_handler_config flt_posting_handlers[] = {
 };
 
 t_module_config flt_posting = {
+  MODULE_MAGIC_COOKIE,
   flt_posting_config,
   flt_posting_handlers,
+  NULL,
   NULL,
   NULL,
   NULL,

@@ -191,8 +191,10 @@ t_handler_config flt_frameset_handlers[] = {
 };
 
 t_module_config flt_frameset = {
+  MODULE_MAGIC_COOKIE,
   flt_frameset_config,
   flt_frameset_handlers,
+  NULL,
   NULL,
   NULL,
   NULL,

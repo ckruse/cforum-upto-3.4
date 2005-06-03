@@ -499,8 +499,10 @@ t_handler_config flt_urlrewrite_handlers[] = {
 };
 
 t_module_config flt_urlrewrite = {
+  MODULE_MAGIC_COOKIE,
   flt_urlrewrite_config,
   flt_urlrewrite_handlers,
+  NULL,
   NULL,
   NULL,
   NULL,

@@ -161,8 +161,10 @@ t_handler_config flt_handle404_handlers[] = {
 };
 
 t_module_config flt_handle404 = {
+  MODULE_MAGIC_COOKIE,
   flt_handle404_config,
   flt_handle404_handlers,
+  NULL,
   NULL,
   NULL,
   NULL,

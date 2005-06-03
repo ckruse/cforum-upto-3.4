@@ -125,7 +125,7 @@ void flt_include_finish(void) {
   }
 }
 
-t_conf_opt config[] = {
+t_conf_opt flt_include_config[] = {
   { "OwnCSSFile",           flt_include_handle, CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
   { "OverwriteStandardCSS", flt_include_handle, CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
   { "OwnJSFile",            flt_include_handle, CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
@@ -134,15 +134,17 @@ t_conf_opt config[] = {
   { NULL, NULL, 0, NULL }
 };
 
-t_handler_config handlers[] = {
+t_handler_config flt_include_handlers[] = {
   { VIEW_INIT_HANDLER, flt_include_exec_list },
   { POSTING_HANDLER,   flt_include_exec_post },
   { 0, NULL }
 };
 
 t_module_config flt_include = {
-  config,
-  handlers,
+  MODULE_MAGIC_COOKIE,
+  flt_include_config,
+  flt_include_handlers,
+  NULL,
   NULL,
   NULL,
   NULL,

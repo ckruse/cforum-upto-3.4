@@ -89,8 +89,10 @@ t_handler_config flt_cookieauth_handlers[] = {
 };
 
 t_module_config flt_cookieauth = {
+  MODULE_MAGIC_COOKIE,
   flt_cookieauth_config,
   flt_cookieauth_handlers,
+  NULL,
   NULL,
   NULL,
   NULL,

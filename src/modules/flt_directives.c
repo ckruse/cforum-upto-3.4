@@ -1106,8 +1106,10 @@ t_handler_config flt_directives_handlers[] = {
 };
 
 t_module_config flt_directives = {
+  MODULE_MAGIC_COOKIE,
   flt_directives_config,
   flt_directives_handlers,
+  NULL,
   NULL,
   NULL,
   NULL,

@@ -98,8 +98,10 @@ t_handler_config flt_motd_handlers[] = {
 };
 
 t_module_config flt_motd = {
+  MODULE_MAGIC_COOKIE,
   flt_motd_config,
   flt_motd_handlers,
+  NULL,
   NULL,
   NULL,
   NULL,

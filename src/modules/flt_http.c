@@ -429,8 +429,10 @@ t_handler_config flt_http_handlers[] = {
 };
 
 t_module_config flt_http = {
+  MODULE_MAGIC_COOKIE,
   flt_http_config,
   flt_http_handlers,
+  NULL,
   flt_http_validate,
   flt_http_lm,
   flt_http_set_headers,

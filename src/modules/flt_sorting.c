@@ -160,8 +160,10 @@ t_handler_config flt_sorting_handlers[] = {
 };
 
 t_module_config flt_sorting = {
+  MODULE_MAGIC_COOKIE,
   flt_sorting_config,
   flt_sorting_handlers,
+  NULL,
   NULL,
   NULL,
   NULL,

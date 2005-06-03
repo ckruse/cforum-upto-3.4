@@ -176,8 +176,10 @@ t_handler_config flt_noarchive_handlers[] = {
 };
 
 t_module_config flt_noarchive = {
+  MODULE_MAGIC_COOKIE,
   flt_noarchive_config,
   flt_noarchive_handlers,
+  NULL,
   NULL,
   NULL,
   NULL,

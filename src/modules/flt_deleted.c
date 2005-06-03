@@ -445,8 +445,10 @@ t_handler_config flt_deleted_handlers[] = {
 };
 
 t_module_config flt_deleted = {
+  MODULE_MAGIC_COOKIE,
   flt_deleted_config,
   flt_deleted_handlers,
+  NULL,
   flt_deleted_validate,
   flt_deleted_lm,
   NULL,

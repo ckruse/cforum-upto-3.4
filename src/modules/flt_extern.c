@@ -377,8 +377,10 @@ t_handler_config flt_extern_handlers[] = {
 };
 
 t_module_config flt_extern = {
+  MODULE_MAGIC_COOKIE,
   flt_extern_config,
   flt_extern_handlers,
+  NULL,
   NULL,
   NULL,
   NULL,

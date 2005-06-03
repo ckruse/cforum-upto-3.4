@@ -178,7 +178,7 @@ u_char *flt_phpsessauth_getvar(const u_char *vname) {
   }
 
   if(st.st_size == 0) {
-    fprintf(stderror,"flt_phpsessauth: file '%s' is empty!\n",path.content);
+    fprintf(stderr,"flt_phpsessauth: file '%s' is empty!\n",path.content);
     close(fd);
     str_cleanup(&path);
     return NULL;
@@ -290,8 +290,10 @@ t_handler_config flt_phpsessauth_handlers[] = {
 };
 
 t_module_config flt_phpsessauth = {
+  MODULE_MAGIC_COOKIE,
   flt_phpsessauth_config,
   flt_phpsessauth_handlers,
+  NULL,
   NULL,
   NULL,
   NULL,

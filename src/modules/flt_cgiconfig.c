@@ -155,8 +155,10 @@ t_handler_config flt_cgiconfig_handlers[] = {
 };
 
 t_module_config flt_cgiconfig = {
+  MODULE_MAGIC_COOKIE,
   flt_cgiconfig_config,
   flt_cgiconfig_handlers,
+  NULL,
   NULL,
   NULL,
   NULL,

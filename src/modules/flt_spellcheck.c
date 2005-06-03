@@ -581,8 +581,10 @@ t_handler_config flt_spellcheck_handlers[] = {
 };
 
 t_module_config flt_spellcheck = {
+  MODULE_MAGIC_COOKIE,
   flt_spellcheck_config,
   flt_spellcheck_handlers,
+  NULL,
   NULL,
   NULL,
   NULL,

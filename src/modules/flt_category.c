@@ -112,8 +112,10 @@ t_handler_config flt_category_handlers[] = {
 };
 
 t_module_config flt_category = {
+  MODULE_MAGIC_COOKIE,
   flt_category_config,
   flt_category_handlers,
+  NULL,
   NULL,
   NULL,
   NULL,

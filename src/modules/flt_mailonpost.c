@@ -696,8 +696,10 @@ t_handler_config flt_mailonpost_handlers[] = {
 };
 
 t_module_config flt_mailonpost = {
+  MODULE_MAGIC_COOKIE,
   flt_mailonpost_config,
   flt_mailonpost_handlers,
+  NULL,
   NULL,
   NULL,
   NULL,

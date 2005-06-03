@@ -191,8 +191,10 @@ t_handler_config flt_link_handlers[] = {
 };
 
 t_module_config flt_link = {
+  MODULE_MAGIC_COOKIE,
   flt_link_config,
   flt_link_handlers,
+  NULL,
   NULL,
   NULL,
   NULL,

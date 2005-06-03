@@ -150,8 +150,10 @@ t_handler_config flt_tid_index_handlers[] = {
 };
 
 t_module_config flt_tid_index = {
+  MODULE_MAGIC_COOKIE,
   flt_tid_index_config,
   flt_tid_index_handlers,
+  NULL,
   NULL,
   NULL,
   NULL,

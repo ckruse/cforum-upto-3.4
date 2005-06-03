@@ -1481,8 +1481,10 @@ t_handler_config flt_syntax_handlers[] = {
 };
 
 t_module_config flt_syntax = {
+  MODULE_MAGIC_COOKIE,
   flt_syntax_config,
   flt_syntax_handlers,
+  NULL,
   NULL,
   NULL,
   NULL,

@@ -66,8 +66,10 @@ t_handler_config flt_httpauth_handlers[] = {
 };
 
 t_module_config flt_httpauth = {
+  MODULE_MAGIC_COOKIE,
   flt_httpauth_config,
   flt_httpauth_handlers,
+  NULL,
   NULL,
   NULL,
   NULL,

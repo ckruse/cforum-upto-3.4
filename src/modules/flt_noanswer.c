@@ -209,8 +209,10 @@ t_handler_config flt_noanswer_handlers[] = {
 };
 
 t_module_config flt_noanswer = {
+  MODULE_MAGIC_COOKIE,
   flt_noanswer_config,
   flt_noanswer_handlers,
+  NULL,
   NULL,
   NULL,
   NULL,

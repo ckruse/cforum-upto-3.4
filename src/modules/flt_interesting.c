@@ -381,8 +381,10 @@ t_handler_config flt_interesting_handlers[] = {
 };
 
 t_module_config flt_interesting = {
+  MODULE_MAGIC_COOKIE,
   flt_interesting_config,
   flt_interesting_handlers,
+  NULL,
   flt_interesting_validate,
   flt_interesting_lm,
   NULL,
