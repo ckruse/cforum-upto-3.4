@@ -40,6 +40,8 @@ typedef struct s_mem_pool {
   void *content; /**< The memory area itself */
 } t_mem_pool;
 
+#define MEMORY_INITIALIZER { 0, 0, 0, NULL }
+
 /**
  * \ingroup memory_funcs
  * This function initializes a memory pool
@@ -104,6 +106,7 @@ typedef struct s_string {
   u_char *content; /**< The memory area itself */
 } t_string;
 
+#define STRING_INITIALIZER { 0, 0, CF_BUFSIZ, NULL }
 
 /**
  * \ingroup string_funcs
@@ -363,6 +366,7 @@ typedef struct s_array {
   void *array; /**< Array pointer */
 } t_array;
 
+#define ARRAY_INITIALIZER(size,destroy) { 0, 0, (size), (func), NULL }
 
 /**
  * \ingroup array_funcs

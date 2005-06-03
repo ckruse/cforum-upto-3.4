@@ -5,6 +5,9 @@
 		parsing time, added handling for MODULE_MAGIC_COOKIE
 	* src/modules/*.{c,lex}: Added MODULE_MAGIC_COOKIE and also added NULL values
 		for the new hook
+	* src/utils.h: Added some initializers
+	* src/fo_post.c: Fixed documentation bug, ** instead of *
+	* src/parsetpl/parsetpl.lex: Now using initializers
 
 2005-06-01 Christian Kruse <ckruse@wwwtech.de>
 	* conf/modules.de.xml: Fixed bug, ifNotCommitted attribute was wrong

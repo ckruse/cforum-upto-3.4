@@ -1,4 +1,4 @@
-/*
+/**
  * \file fo_post.c
  * \author Christian Kruse, <ckruse@wwwtech.de>
  * \brief Implementation of fo_post

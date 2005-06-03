@@ -64,12 +64,12 @@ typedef struct s_token {
 #define PARSETPL_ERR_NOTINLOOP             -6
 
 static long lineno                   = 0;
-static t_string  string              = { 0, 0, CF_BUFSIZ, NULL };
-static t_string  content             = { 0, 0, CF_BUFSIZ, NULL };
-static t_string  content_backup      = { 0, 0, CF_BUFSIZ, NULL };
-static t_string  output              = { 0, 0, CF_BUFSIZ, NULL };
-static t_string  output_mem          = { 0, 0, CF_BUFSIZ, NULL };
-static t_string  current_file        = { 0, 0, CF_BUFSIZ, NULL };
+static t_string  string              = STRING_INITIALIZER;
+static t_string  content             = STRING_INITIALIZER;
+static t_string  content_backup      = STRING_INITIALIZER;
+static t_string  output              = STRING_INITIALIZER;
+static t_string  output_mem          = STRING_INITIALIZER;
+static t_string  current_file        = STRING_INITIALIZER;
 static t_array   foreach_var_stack;
 static t_array   if_level_stack;
 static long n_assign_vars            = 0;
