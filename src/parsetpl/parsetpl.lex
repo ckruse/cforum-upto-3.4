@@ -7,6 +7,7 @@
 #include "defines.h"
 
 #include "utils.h"
+#include "hashlib.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -17,6 +18,12 @@ typedef struct s_token {
   int type;
   t_string *data;
 } t_token;
+
+typedef struct s_function {
+  t_string name;
+  t_string content;
+  t_array  params;
+} t_function;
 
 #define YY_DECL int parsetpl_lex(void)
 
@@ -52,6 +59,11 @@ typedef struct s_token {
 #define PARSETPL_TOK_IWS_END             0x26
 #define PARSETPL_TOK_NLE_START           0x27
 #define PARSETPL_TOK_NLE_END             0x28
+#define PARSETPL_TOK_FUNC                0x29
+#define PARSETPL_TOK_FUNC_END            0x30
+#define PARSETPL_TOK_FUNC_CALL           0x31
+#define PARSETPL_TOK_PARAMS_START        0x32
+#define PARSETPL_TOK_PARAMS_END          0x33
 
 #define PARSETPL_INCLUDE_EXT     ".html"
 
@@ -64,14 +76,15 @@ typedef struct s_token {
 #define PARSETPL_ERR_NOTINLOOP             -6
 
 static long lineno                   = 0;
-static t_string  string              = STRING_INITIALIZER;
-static t_string  content             = STRING_INITIALIZER;
-static t_string  content_backup      = STRING_INITIALIZER;
-static t_string  output              = STRING_INITIALIZER;
-static t_string  output_mem          = STRING_INITIALIZER;
-static t_string  current_file        = STRING_INITIALIZER;
-static t_array   foreach_var_stack;
-static t_array   if_level_stack;
+static t_cf_hash  *defined_functions  = NULL;
+static t_string   string              = STRING_INITIALIZER;
+static t_string   content             = STRING_INITIALIZER;
+static t_string   content_backup      = STRING_INITIALIZER;
+static t_string   output              = STRING_INITIALIZER;
+static t_string   output_mem          = STRING_INITIALIZER;
+static t_string   current_file        = STRING_INITIALIZER;
+static t_array    foreach_var_stack;
+static t_array    if_level_stack;
 static long n_assign_vars            = 0;
 static long n_cur_assign_vars        = 0;
 static long n_foreach_vars           = 0;
@@ -203,6 +216,14 @@ t_cf_tpl-variable  *vi0;          variables dynamically generated for if
     str_chars_append(&content_backup,yytext,yyleng);
     return PARSETPL_TOK_ARRAYEND;
   }
+  \(                  {
+    str_chars_append(&content_backup,yytext,yyleng);
+    return PARSETPL_TOK_PARAMS_START;
+  }
+  \)                  {
+    str_chars_append(&content_backup,yytext,yyleng);
+    return PARSETPL_TOK_PARAMS_END;
+  }
   !                   {
     str_chars_append(&content_backup,yytext,yyleng);
     return PARSETPL_TOK_NOT;
@@ -254,6 +275,18 @@ t_cf_tpl-variable  *vi0;          variables dynamically generated for if
   endnle              {
     str_chars_append(&content_backup,yytext,yyleng);
     return PARSETPL_TOK_NLE_END;
+  }
+  def                 {
+    str_chars_append(&content_backup,yytext,yyleng);
+    return PARSETPL_TOK_FUNC;
+  }
+  enddef              {
+    str_chars_append(&content_backup,yytext,yyleng);
+    return PARSETPL_TOK_FUNC_END;
+  }
+  call                {
+    str_chars_append(&content_backup,yytext,yyleng);
+    return PARSETPL_TOK_FUNC_CALL;
   }
 
   <<EOF>>        {

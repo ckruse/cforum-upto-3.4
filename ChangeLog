@@ -1,3 +1,8 @@
+2005-06-12 Christian Seiler <self@christian-seiler.de>
+	* src/parsetpl/parsetpl.lex: Added some stuff to template parser
+		that will later be needed when functions will be
+		implemented.
+
 2005-06-03 Christian Kruse <ckruse@wwwtech.de>
 	* src/defines.h: Added defines for MODULE_MAGIC_NUMBER_* and
 		MODULE_MAGIC_COOKIE
