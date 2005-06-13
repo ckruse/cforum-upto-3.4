@@ -57,17 +57,50 @@ void cf_tpl_cleanup_var(void *data) {
  *
  */
 int cf_tpl_init(t_cf_template *tpl,const u_char *fname) {
-  if((tpl->tpl = dlopen(fname,RTLD_LAZY)) == NULL) {
-    fprintf(stderr,"%s\n",dlerror());
-    return -1;
+  if(fname) {
+    if((tpl->tpl = dlopen(fname,RTLD_LAZY)) == NULL) {
+      fprintf(stderr,"%s\n",dlerror());
+      return -1;
+    }
+    tpl->filename = strdup(fname);
+  } else {
+    tpl->tpl = NULL;
+    tpl->filename = NULL;
   }
 
   str_init(&tpl->parsed);
-  
-  tpl->filename = strdup(fname);
   tpl->varlist = cf_hash_new(cf_tpl_cleanup_var);
 
   return 0;
+}
+
+/*
+ * Returns: nothing
+ * Parameters:
+ *   - t_cf_template *dst    a pointer to the destination template variable
+ *   - t_cf_template *src    a pointer to the source template variable
+ *
+ * copies template vars from one template to another
+ *
+ */
+void cf_tpl_copyvars(t_cf_template *dst,t_cf_template *src) {
+  t_cf_hash_entry *ent;
+  t_cf_tpl_variable *tmp_var;
+  long i;
+  
+  for(i=0;i<hashsize(src->varlist->tablesize);i++) {
+    if(!src->varlist->table[i]) {
+      continue;
+    }
+    for(ent = src->varlist->table[i];ent;ent=ent->next) {
+      tmp_var = cf_tpl_var_clone((t_cf_tpl_variable *)ent->data);
+      if(!tmp_var) {
+        continue;
+      }
+      tmp_var->temporary = 1;
+      cf_tpl_setvar(dst,ent->key,tmp_var);
+    }
+  }
 }
 
 /*
@@ -79,11 +112,11 @@ int cf_tpl_init(t_cf_template *tpl,const u_char *fname) {
  */
 void cf_tpl_setvar(t_cf_template *tpl,const u_char *vname,t_cf_tpl_variable *var) {
   int tmp = 0;
-  cf_hash_set(tpl->varlist,(u_char *)vname,strlen(vname),var,sizeof(t_cf_tpl_variable));
   if(var->temporary) {
     tmp = 1;
   }
   var->temporary = 0;
+  cf_hash_set(tpl->varlist,(u_char *)vname,strlen(vname),var,sizeof(t_cf_tpl_variable));
   // cleanup if it's temporary
   if(tmp) {
     // don't destroy the var, only free it
@@ -596,7 +629,9 @@ void cf_tpl_parse_to_mem(t_cf_template *tpl) {
  *
  */
 void cf_tpl_finish(t_cf_template *tpl) {
-  dlclose(tpl->tpl);
+  if(tpl->tpl) {
+    dlclose(tpl->tpl);
+  }
   str_cleanup(&tpl->parsed);
   cf_hash_destroy(tpl->varlist);
 }
