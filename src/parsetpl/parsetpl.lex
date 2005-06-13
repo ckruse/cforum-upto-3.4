@@ -2815,6 +2815,28 @@ int process_tag(t_array *data) {
 }
 
 
+
+void write_parser_functions_def(FILE *ofp, t_string *func_name, t_context *ctx, t_array *params) {
+  long i;
+  
+  fprintf(ofp,"void %s(t_cf_template *%stpl", func_name->content, (params ? "o" : ""));
+  if(params) {
+    for(i = 0; i < params->elements; i++) {
+      fprintf(ofp,", t_cf_tpl_variable *p%d", i);
+    }
+  }
+  fprintf(ofp,");\n");
+  fprintf(ofp,"void %s_to_mem(t_cf_template *%stpl", func_name->content, (params ? "o" : ""));
+  if(params) {
+    for(i = 0; i < params->elements; i++) {
+      fprintf(ofp,", t_cf_tpl_variable *p%d", i);
+    }
+  }
+  fprintf(ofp,");\n");
+}
+
+
+
 void write_parser_functions(FILE *ofp, t_string *func_name, t_context *ctx, t_array *params) {
   long i;
   t_string *s;
@@ -3102,8 +3124,15 @@ int parse_file(const u_char *filename) {
   }
   
   fprintf(ofp, "/*\n * this is a template file\n *\n */\n\n#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\n#include \"config.h\"\n#include \"defines.h\"\n\n#include \"utils.h\"\n#include \"hashlib.h\"\n#include \"charconvert.h\"\n#include \"template.h\"\n\nstatic void my_write(const u_char *s) {\n  register u_char *ptr;\n\n  for(ptr = (u_char *)s;*ptr;ptr++) {\n    fputc(*ptr,stdout);\n  }\n}\n");
-  
-  
+
+  for(i = 0; i < defined_function_list->elements; i++) {
+    t_function **func = (t_function **)array_element_at(defined_function_list,i);
+    str_init(&tmp);
+    str_cstr_append(&tmp,"tpl_func_");
+    str_str_append(&tmp,&(*func)->name);
+    write_parser_functions_def(ofp, &tmp, (*func)->ctx, &(*func)->params);
+    str_cleanup(&tmp);
+  }
   for(i = 0; i < defined_function_list->elements; i++) {
     t_function **func = (t_function **)array_element_at(defined_function_list,i);
     str_init(&tmp);
