@@ -19,10 +19,33 @@ typedef struct s_token {
   t_string *data;
 } t_token;
 
+typedef struct s_context {
+  t_string   output;
+  t_string   output_mem;
+  t_array    foreach_var_stack;
+  t_array    if_level_stack;
+  long       n_assign_vars;
+  long       n_cur_assign_vars;
+  long       n_foreach_vars;
+  long       n_cur_foreach_vars;
+  long       n_if_vars;
+  long       n_cur_if_vars;
+  long       n_if_iters;
+  long       n_cur_if_iters;
+  int        uses_include;
+  int        uses_print;
+  int        uses_iter_print;
+  int        uses_clonevar;
+  int        uses_loopassign;
+  int        uses_tmpstring;
+  int        iws;
+  int        nle;
+} t_context;
+
 typedef struct s_function {
   t_string name;
-  t_string content;
   t_array  params;
+  t_context *ctx;
 } t_function;
 
 #define YY_DECL int parsetpl_lex(void)
@@ -77,30 +100,13 @@ typedef struct s_function {
 
 static long lineno                   = 0;
 static t_cf_hash  *defined_functions  = NULL;
+static t_array *defined_function_list = NULL;
+static t_context  *current_context    = NULL;
 static t_string   string              = STRING_INITIALIZER;
 static t_string   content             = STRING_INITIALIZER;
 static t_string   content_backup      = STRING_INITIALIZER;
-static t_string   output              = STRING_INITIALIZER;
-static t_string   output_mem          = STRING_INITIALIZER;
 static t_string   current_file        = STRING_INITIALIZER;
-static t_array    foreach_var_stack;
-static t_array    if_level_stack;
-static long n_assign_vars            = 0;
-static long n_cur_assign_vars        = 0;
-static long n_foreach_vars           = 0;
-static long n_cur_foreach_vars       = 0;
-static long n_if_vars                = 0;
-static long n_cur_if_vars            = 0;
-static long n_if_iters               = 0;
-static long n_cur_if_iters           = 0;
-static int  uses_include             = 0;
-static int  uses_print               = 0;
-static int  uses_iter_print          = 0;
-static int  uses_clonevar            = 0;
-static int  uses_loopassign          = 0;
-static int  uses_tmpstring           = 0;
-static int  iws                      = 0;
-static int  nle                      = 0;
+static t_context  global_context;
 
 /*
 
@@ -122,7 +128,7 @@ t_cf_tpl-variable  *vi0;          variables dynamically generated for if
 
 \n   {
   ++lineno; /* count line numbers */
-  if (!iws && !nle) {
+  if (!current_context->iws && !current_context->nle) {
     str_char_append(&content,'\n');
   }
 }
@@ -145,7 +151,7 @@ t_cf_tpl-variable  *vi0;          variables dynamically generated for if
 
 <TAG>{
   \n                  {
-    if(!iws && !nle) {
+    if(!current_context->iws && !current_context->nle) {
       str_chars_append(&content_backup,yytext,yyleng);
       ++lineno;
       return PARSETPL_ERR_UNRECOGNIZEDCHARACTER;
@@ -350,7 +356,7 @@ t_cf_tpl-variable  *vi0;          variables dynamically generated for if
 }
 
 [ \r\t] {
-  if (!iws) {
+  if (!current_context->iws) {
     str_char_append(&content,*yytext);
   }
 }
@@ -360,6 +366,38 @@ t_cf_tpl-variable  *vi0;          variables dynamically generated for if
 }
 
 %%
+
+void init_context(t_context *context) {
+  // set everything to zero
+  memset(context,0,sizeof(*context));
+  // initialize variables
+  str_init(&context->output);
+  str_init(&context->output_mem);
+  array_init(&context->foreach_var_stack,sizeof(t_string),(void(*)(void *))str_cleanup);
+  array_init(&context->if_level_stack,sizeof(int),NULL);
+}
+
+void destroy_context(t_context *context) {
+  str_cleanup(&context->output);
+  str_cleanup(&context->output_mem);
+  array_destroy(&context->foreach_var_stack);
+  array_destroy(&context->if_level_stack);
+}
+
+void init_function(t_function *func) {
+  memset(func,0,sizeof(*func));
+  str_init(&func->name);
+  array_init(&func->params,sizeof(t_string),(void(*)(void *))str_cleanup);
+  func->ctx = fo_alloc(NULL,sizeof(t_context),1,FO_ALLOC_MALLOC);
+  init_context(func->ctx);
+}
+
+void destroy_function(t_function *func) {
+  str_cleanup(&func->name);
+  array_destroy(&func->params);
+  destroy_context(func->ctx);
+  free(func->ctx);
+}
 
 void destroy_token(void *t) {
   t_token *token = (t_token *)t;
@@ -488,17 +526,17 @@ int dereference_iterator(t_string *out_str,t_token *var,t_array *data,t_string *
     break;
   }
   
-  if(!foreach_var_stack.elements) {
+  if(!current_context->foreach_var_stack.elements) {
     return PARSETPL_ERR_NOTINLOOP;
   }
-  if(idx >= 0 && foreach_var_stack.elements <= idx) {
+  if(idx >= 0 && current_context->foreach_var_stack.elements <= idx) {
     return PARSETPL_ERR_NOTINLOOP;
   }
-  if(idx < 0 && foreach_var_stack.elements < -idx) {
+  if(idx < 0 && current_context->foreach_var_stack.elements < -idx) {
     return PARSETPL_ERR_NOTINLOOP;
   }
   if(idx < 0) {
-    idx += foreach_var_stack.elements;
+    idx += current_context->foreach_var_stack.elements;
   }
   snprintf(idxbuf,19,"%ld",idx);
   snprintf(idx2buf,19,"%ld",idx*2);
@@ -580,17 +618,17 @@ int process_array_assignment(t_array *data,t_string *tmp) {
   int n_elems, is_hash, is_hval, nt, is_concat, jh_concat;
   t_string *hkey;
   
-  v1n = n_cur_assign_vars++;
+  v1n = current_context->n_cur_assign_vars++;
   snprintf(v1nb,19,"%ld",v1n);
-  v2n = n_cur_assign_vars;
-  if(n_cur_assign_vars > n_assign_vars) {
-    n_assign_vars = n_cur_assign_vars;
+  v2n = current_context->n_cur_assign_vars;
+  if(current_context->n_cur_assign_vars > current_context->n_assign_vars) {
+    current_context->n_assign_vars = current_context->n_cur_assign_vars;
   }
   snprintf(v2nb,19,"%ld",v2n);
   
   is_hash = peek_for_hash(data);
   if(is_hash == -1) { // invalid tag
-    --n_cur_assign_vars;
+    --current_context->n_cur_assign_vars;
     return PARSETPL_ERR_INVALIDTAG;
   }
   
@@ -622,7 +660,7 @@ int process_array_assignment(t_array *data,t_string *tmp) {
         str_cleanup(hkey);
         free(hkey);
       }
-      --n_cur_assign_vars;
+      --current_context->n_cur_assign_vars;
       return PARSETPL_ERR_INVALIDTAG;
     }
     if(!jh_concat && !had_sep && !is_hval && token->type != PARSETPL_TOK_ARRAYEND && token->type != PARSETPL_TOK_ARRAYSEP) {
@@ -631,7 +669,7 @@ int process_array_assignment(t_array *data,t_string *tmp) {
         str_cleanup(hkey);
         free(hkey);
       }
-      --n_cur_assign_vars;
+      --current_context->n_cur_assign_vars;
       return PARSETPL_ERR_INVALIDTAG;
     }
     jh_concat = 0;
@@ -640,7 +678,7 @@ int process_array_assignment(t_array *data,t_string *tmp) {
       if(is_hval) {
         str_cleanup(hkey);
         free(hkey);
-        --n_cur_assign_vars;
+        --current_context->n_cur_assign_vars;
         return PARSETPL_ERR_INVALIDTAG;
       }
       break;
@@ -650,7 +688,7 @@ int process_array_assignment(t_array *data,t_string *tmp) {
       if(is_hval) {
         str_cleanup(hkey);
         free(hkey);
-        --n_cur_assign_vars;
+        --current_context->n_cur_assign_vars;
         return PARSETPL_ERR_INVALIDTAG;
       }
       had_sep = 1;
@@ -662,7 +700,7 @@ int process_array_assignment(t_array *data,t_string *tmp) {
       nt = peek_next_nws_type(data);
       if(nt == PARSETPL_TOK_CONCAT || is_concat) {
         // ok, we need to concatenate a string
-        uses_tmpstring = 1;
+        current_context->uses_tmpstring = 1;
         if(!is_concat) {
           str_cstr_append(tmp,"str_init(&tmp_string);");
           is_concat = 1;
@@ -684,7 +722,7 @@ int process_array_assignment(t_array *data,t_string *tmp) {
           // end of concatenations
           if(is_hash && !is_hval) {
             destroy_token(token); free(token);
-            --n_cur_assign_vars;
+            --current_context->n_cur_assign_vars;
             return PARSETPL_ERR_INVALIDTAG;
           }
           if(is_hval) {
@@ -710,13 +748,13 @@ int process_array_assignment(t_array *data,t_string *tmp) {
         // if we already had elements and this is no hash
         if(n_elems && !is_hash) {
           destroy_token(token); free(token);
-          --n_cur_assign_vars;
+          --current_context->n_cur_assign_vars;
           return PARSETPL_ERR_INVALIDTAG;
         }
         // if this is a concatenation (["bla". => ] or ["bla"."blub" => ])
         if(is_concat) {
           destroy_token(token); free(token);
-          --n_cur_assign_vars;
+          --current_context->n_cur_assign_vars;
           return PARSETPL_ERR_INVALIDTAG;
         }
         is_hash = 1;
@@ -733,7 +771,7 @@ int process_array_assignment(t_array *data,t_string *tmp) {
       else {
         if(is_hash && !is_hval) {
           destroy_token(token); free(token);
-          --n_cur_assign_vars;
+          --current_context->n_cur_assign_vars;
           return PARSETPL_ERR_INVALIDTAG;
         }
         if(is_hval) {
@@ -768,7 +806,7 @@ int process_array_assignment(t_array *data,t_string *tmp) {
           str_cleanup(hkey);
           free(hkey);
         }
-        --n_cur_assign_vars;
+        --current_context->n_cur_assign_vars;
         return PARSETPL_ERR_INVALIDTAG;
       }
       if(is_hval) {
@@ -793,13 +831,13 @@ int process_array_assignment(t_array *data,t_string *tmp) {
           str_cleanup(hkey);
           free(hkey);
         }
-        --n_cur_assign_vars;
+        --current_context->n_cur_assign_vars;
         return PARSETPL_ERR_INVALIDTAG;
       }
       ret = process_array_assignment(data,tmp);
       if(ret < 0) {
         destroy_token(token); free(token);
-        --n_cur_assign_vars;
+        --current_context->n_cur_assign_vars;
         return ret;
       }
       if(is_hval) {
@@ -824,21 +862,21 @@ int process_array_assignment(t_array *data,t_string *tmp) {
       str_cstr_append(tmp,v2nb);
       str_cstr_append(tmp,");\n");
     } else if(token->type == PARSETPL_TOK_VARIABLE) {
-      uses_clonevar = 1;
+      current_context->uses_clonevar = 1;
       str_cstr_append(tmp,"vc = NULL;\n");
       str_init(&varn);
       str_cstr_append(&varn,"vc");
       ret = dereference_variable(tmp,token,data,&varn);
       str_cleanup(&varn);
       if(ret < 0) {
-        --n_cur_assign_vars;
+        --current_context->n_cur_assign_vars;
         return ret;
       }
       // peek to see if this is a concatentation or a hash assignment
       nt = peek_next_nws_type(data);
       if(nt == PARSETPL_TOK_CONCAT || is_concat) {
         // ok, we need to concatenate a string
-        uses_tmpstring = 1;
+        current_context->uses_tmpstring = 1;
         if(!is_concat) {
           str_cstr_append(tmp,"str_init(&tmp_string);");
           is_concat = 1;
@@ -860,7 +898,7 @@ int process_array_assignment(t_array *data,t_string *tmp) {
           // end of concatenations
           if(is_hash && !is_hval) {
             destroy_token(token); free(token);
-            --n_cur_assign_vars;
+            --current_context->n_cur_assign_vars;
             return PARSETPL_ERR_INVALIDTAG;
           }
           if(is_hval) {
@@ -885,7 +923,7 @@ int process_array_assignment(t_array *data,t_string *tmp) {
       else if(nt == PARSETPL_TOK_HASHASSIGNMENT) {
         // invalid
         destroy_token(token); free(token);
-        --n_cur_assign_vars;
+        --current_context->n_cur_assign_vars;
         return PARSETPL_ERR_INVALIDTAG;
       }
       else if(is_hval) {
@@ -916,14 +954,14 @@ int process_array_assignment(t_array *data,t_string *tmp) {
         str_cstr_append(tmp,"free(vc);\n");
       }
     } else if(token->type == PARSETPL_TOK_LOOPVAR) {
-      uses_loopassign = 1;
+      current_context->uses_loopassign = 1;
       str_cstr_append(tmp,"ic = 0;\n");
       str_init(&varn);
       str_cstr_append(&varn,"ic");
       ret = dereference_iterator(tmp,token,data,&varn);
       str_cleanup(&varn);
       if(ret < 0) {
-        --n_cur_assign_vars;
+        --current_context->n_cur_assign_vars;
         return ret;
       }
       if(is_hval) {
@@ -944,7 +982,7 @@ int process_array_assignment(t_array *data,t_string *tmp) {
     destroy_token(token); free(token);
     n_elems++;
   }
-  --n_cur_assign_vars;
+  --current_context->n_cur_assign_vars;
   return 0;
 }
 
@@ -981,7 +1019,7 @@ int process_variable_assignment_tag(t_token *variable,t_array *data) {
         nt = peek_next_nws_type(data);
         if(nt == PARSETPL_TOK_CONCAT || is_concat) {
           // ok, we need to concatenate a string
-          uses_tmpstring = 1;
+          current_context->uses_tmpstring = 1;
           if(!is_concat) {
             str_cstr_append(&tmp,"str_init(&tmp_string);");
             is_concat = 1;
@@ -1028,7 +1066,7 @@ int process_variable_assignment_tag(t_token *variable,t_array *data) {
         str_cstr_append(&tmp,");\n");
         break;
       case PARSETPL_TOK_VARIABLE:
-        uses_clonevar = 1;
+        current_context->uses_clonevar = 1;
         str_cstr_append(&tmp,"vc = NULL;\n");
         str_init(&varn);
         str_cstr_append(&varn,"vc");
@@ -1042,7 +1080,7 @@ int process_variable_assignment_tag(t_token *variable,t_array *data) {
         nt = peek_next_nws_type(data);
         if(nt == PARSETPL_TOK_CONCAT || is_concat) {
           // ok, we need to concatenate a string
-          uses_tmpstring = 1;
+          current_context->uses_tmpstring = 1;
           if(!is_concat) {
             str_cstr_append(&tmp,"str_init(&tmp_string);");
             is_concat = 1;
@@ -1083,7 +1121,7 @@ int process_variable_assignment_tag(t_token *variable,t_array *data) {
         }
         break;
       case PARSETPL_TOK_LOOPVAR:
-        uses_loopassign = 1;
+        current_context->uses_loopassign = 1;
         str_cstr_append(&tmp,"ic = 0;\n");
         str_init(&varn);
         str_cstr_append(&varn,"ic");
@@ -1124,8 +1162,8 @@ int process_variable_assignment_tag(t_token *variable,t_array *data) {
     }
     n++;
   } while(token);
-  str_str_append(&output,&tmp);
-  str_str_append(&output_mem,&tmp);
+  str_str_append(&current_context->output,&tmp);
+  str_str_append(&current_context->output_mem,&tmp);
   return 0;
 }
 
@@ -1159,22 +1197,22 @@ int process_variable_print_tag (t_token *variable,t_array *data) {
   str_cstr_append(&tmp,"if(vp->type != TPL_VARIABLE_STRING) {\n");
   str_cstr_append(&tmp,"vp = cf_tpl_var_convert(NULL,vp,TPL_VARIABLE_STRING);\n}\n");
   str_cstr_append(&tmp,"if(vp && vp->type == TPL_VARIABLE_STRING) {\n");
-  str_str_append(&output,&tmp);
-  str_str_append(&output_mem,&tmp);
+  str_str_append(&current_context->output,&tmp);
+  str_str_append(&current_context->output_mem,&tmp);
   str_cleanup(&tmp);
   
   if(escape_html) {
-    str_cstr_append(&output,"print_htmlentities_encoded(vp->data.d_string.content,0,stdout);\n}\n}\n");
-    str_cstr_append(&output_mem,"tmp = htmlentities(vp->data.d_string.content,0);\nstr_chars_append(&tpl->parsed,tmp,strlen(tmp));\nfree(tmp);\n}\n}\n");
+    str_cstr_append(&current_context->output,"print_htmlentities_encoded(vp->data.d_string.content,0,stdout);\n}\n}\n");
+    str_cstr_append(&current_context->output_mem,"tmp = htmlentities(vp->data.d_string.content,0);\nstr_chars_append(&tpl->parsed,tmp,strlen(tmp));\nfree(tmp);\n}\n}\n");
   } else {
-    str_cstr_append(&output,"my_write(vp->data.d_string.content);\n}\n}\n");
-    str_cstr_append(&output_mem,"str_chars_append(&tpl->parsed,vp->data.d_string.content,strlen(vp->data.d_string.content));\n}\n}\n");
+    str_cstr_append(&current_context->output,"my_write(vp->data.d_string.content);\n}\n}\n");
+    str_cstr_append(&current_context->output_mem,"str_chars_append(&tpl->parsed,vp->data.d_string.content,strlen(vp->data.d_string.content));\n}\n}\n");
   }
-  str_cstr_append(&output,"if(vp && vp->temporary) {\ncf_tpl_var_destroy(vp); free(vp);\n");
-  str_cstr_append(&output_mem,"if(vp && vp->temporary) {\ncf_tpl_var_destroy(vp); free(vp);\n");
-  str_cstr_append(&output,"}\n");
-  str_cstr_append(&output_mem,"}\n");
-  uses_print = 1;
+  str_cstr_append(&current_context->output,"if(vp && vp->temporary) {\ncf_tpl_var_destroy(vp); free(vp);\n");
+  str_cstr_append(&current_context->output_mem,"if(vp && vp->temporary) {\ncf_tpl_var_destroy(vp); free(vp);\n");
+  str_cstr_append(&current_context->output,"}\n");
+  str_cstr_append(&current_context->output_mem,"}\n");
+  current_context->uses_print = 1;
   return 0;
 }
 
@@ -1196,13 +1234,13 @@ int process_iterator_print_tag (t_token *iterator,t_array *data) {
     str_cleanup(&tmp);
     return PARSETPL_ERR_INVALIDTAG;
   }
-  str_str_append(&output,&tmp);
-  str_str_append(&output_mem,&tmp);
+  str_str_append(&current_context->output,&tmp);
+  str_str_append(&current_context->output_mem,&tmp);
   str_cleanup(&tmp);
-  str_cstr_append(&output,"printf(\"%ld\",iter_var);\n");
-  str_cstr_append(&output_mem,"snprintf(iter_buf,19,\"%ld\",iter_var);\n");
-  str_cstr_append(&output_mem,"str_chars_append(&tpl->parsed,iter_buf,strlen(iter_buf));\n");
-  uses_iter_print = 1;
+  str_cstr_append(&current_context->output,"printf(\"%ld\",iter_var);\n");
+  str_cstr_append(&current_context->output_mem,"snprintf(iter_buf,19,\"%ld\",iter_var);\n");
+  str_cstr_append(&current_context->output_mem,"str_chars_append(&tpl->parsed,iter_buf,strlen(iter_buf));\n");
+  current_context->uses_iter_print = 1;
   return 0;
 }
 
@@ -1245,11 +1283,11 @@ int process_include_tag(t_string *file) {
   // evil, we copy the varlist - but i don't have a better idea that doesn't cost much code
   str_chars_append(&tmp,"ov = inc_tpl->varlist;\n",23);
   str_chars_append(&tmp,"inc_tpl->varlist = tpl->varlist;\n",33);
-  str_str_append(&output,&tmp);
-  str_str_append(&output_mem,&tmp);
-  str_chars_append(&output,"cf_tpl_parse(inc_tpl);\n",23);
-  str_chars_append(&output_mem,"cf_tpl_parse_to_mem(inc_tpl);\n",30);
-  str_chars_append(&output_mem,"if(inc_tpl->parsed.len) str_str_append(&tpl->parsed,&inc_tpl->parsed);\n",71);
+  str_str_append(&current_context->output,&tmp);
+  str_str_append(&current_context->output_mem,&tmp);
+  str_chars_append(&current_context->output,"cf_tpl_parse(inc_tpl);\n",23);
+  str_chars_append(&current_context->output_mem,"cf_tpl_parse_to_mem(inc_tpl);\n",30);
+  str_chars_append(&current_context->output_mem,"if(inc_tpl->parsed.len) str_str_append(&tpl->parsed,&inc_tpl->parsed);\n",71);
   str_cleanup(&tmp);
   str_init(&tmp);
   str_chars_append(&tmp,"inc_tpl->varlist = ov;\n",23);
@@ -1263,9 +1301,9 @@ int process_include_tag(t_string *file) {
   str_chars_append(&tmp,"free(inc_filepart);\n",20);
   str_chars_append(&tmp,"free(inc_filename);\n",20);
   str_chars_append(&tmp,"free(inc_fileext);\n",19);
-  str_str_append(&output,&tmp);
-  str_str_append(&output_mem,&tmp);
-  uses_include = 1;
+  str_str_append(&current_context->output,&tmp);
+  str_str_append(&current_context->output_mem,&tmp);
+  current_context->uses_include = 1;
   return 0;
 }
 
@@ -1283,11 +1321,11 @@ int process_foreach_tag(t_array *data) {
     if(data->elements) {
       return PARSETPL_ERR_INVALIDTAG;
     }
-    if(!foreach_var_stack.elements) { // impossible
+    if(!current_context->foreach_var_stack.elements) { // impossible
       return PARSETPL_ERR_INVALIDTAG;
     }
-    tvs = (t_string*)array_pop(&foreach_var_stack);
-    ivn = --n_cur_foreach_vars;
+    tvs = (t_string*)array_pop(&current_context->foreach_var_stack);
+    ivn = --current_context->n_cur_foreach_vars;
     v1n = ivn*2;
     v2n = v1n + 1;
     snprintf(v1nb,19,"%ld",v1n);
@@ -1298,8 +1336,8 @@ int process_foreach_tag(t_array *data) {
     // overwrite the *ORIGINAL* template variable (array member of vf2)
     str_init(&tmp);
     str_cstr_append(&tmp,"}\n}\n");
-    str_str_append(&output,&tmp);
-    str_str_append(&output_mem,&tmp);
+    str_str_append(&current_context->output,&tmp);
+    str_str_append(&current_context->output_mem,&tmp);
     str_cleanup(&tmp);
     str_cleanup(tvs);
     free(tvs);
@@ -1324,11 +1362,11 @@ int process_foreach_tag(t_array *data) {
       destroy_token(token); free(token);
       return PARSETPL_ERR_INVALIDTAG;
     }
-    ivn = n_cur_foreach_vars++;
+    ivn = current_context->n_cur_foreach_vars++;
     v1n = ivn*2;
     v2n = v1n + 1;
-    if(n_cur_foreach_vars > n_foreach_vars) {
-      n_foreach_vars = n_cur_foreach_vars;
+    if(current_context->n_cur_foreach_vars > current_context->n_foreach_vars) {
+      current_context->n_foreach_vars = current_context->n_cur_foreach_vars;
     }
     str_init(&tmp);
     snprintf(v1nb,19,"%ld",v1n);
@@ -1345,21 +1383,21 @@ int process_foreach_tag(t_array *data) {
     destroy_token(token); free(token);
     if(ret < 0) {
       str_cleanup(&tmp);
-      n_cur_foreach_vars--;
+      current_context->n_cur_foreach_vars--;
       return PARSETPL_ERR_INVALIDTAG;
     }
     token = (t_token*)array_shift(data);
     if(token->type != PARSETPL_TOK_WHITESPACE || !data->elements) {
       destroy_token(token); free(token);
       str_cleanup(&tmp);
-      n_cur_foreach_vars--;
+      current_context->n_cur_foreach_vars--;
       return PARSETPL_ERR_INVALIDTAG;
     }
     while(token->type == PARSETPL_TOK_WHITESPACE) {
       destroy_token(token); free(token);
       if(!data->elements) {
         str_cleanup(&tmp);
-        n_cur_foreach_vars--;
+        current_context->n_cur_foreach_vars--;
         return PARSETPL_ERR_INVALIDTAG;
       }
       token = (t_token*)array_shift(data);
@@ -1373,14 +1411,14 @@ int process_foreach_tag(t_array *data) {
     if(token->type != PARSETPL_TOK_WHITESPACE || !data->elements) {
       destroy_token(token); free(token);
       str_cleanup(&tmp);
-      n_cur_foreach_vars--;
+      current_context->n_cur_foreach_vars--;
       return PARSETPL_ERR_INVALIDTAG;
     }
     while(token->type == PARSETPL_TOK_WHITESPACE) {
       destroy_token(token); free(token);
       if(!data->elements) {
         str_cleanup(&tmp);
-        n_cur_foreach_vars--;
+        current_context->n_cur_foreach_vars--;
         return PARSETPL_ERR_INVALIDTAG;
       }
       token = (t_token*)array_shift(data);
@@ -1388,7 +1426,7 @@ int process_foreach_tag(t_array *data) {
     if(token->type != PARSETPL_TOK_VARIABLE || data->elements) {
       destroy_token(token); free(token);
       str_cleanup(&tmp);
-      n_cur_foreach_vars--;
+      current_context->n_cur_foreach_vars--;
       return PARSETPL_ERR_INVALIDTAG;
     }
     var2 = token;
@@ -1432,9 +1470,9 @@ int process_foreach_tag(t_array *data) {
     str_cstr_append(&tmp,"->arrayref = 0;\n");
     str_init(&vs);
     str_str_set(&vs,var2->data);
-    array_push(&foreach_var_stack,&vs); // do not clean it up, this will be done by the array destroy function
-    str_str_append(&output,&tmp);
-    str_str_append(&output_mem,&tmp);
+    array_push(&current_context->foreach_var_stack,&vs); // do not clean it up, this will be done by the array destroy function
+    str_str_append(&current_context->output,&tmp);
+    str_str_append(&current_context->output_mem,&tmp);
     destroy_token(var2); free(var2);
   } else {
     destroy_token(token); free(token);
@@ -1460,13 +1498,13 @@ int process_if_tag(t_array *data, int is_elseif) {
     if(data->elements) {
       return PARSETPL_ERR_INVALIDTAG;
     }
-    if(!if_level_stack.elements) {
+    if(!current_context->if_level_stack.elements) {
       return PARSETPL_ERR_INVALIDTAG;
     }
-    ilevel = array_pop(&if_level_stack);
+    ilevel = array_pop(&current_context->if_level_stack);
     for(level = 0;level <= *ilevel;level++) {
-      str_cstr_append(&output,"}\n");
-      str_cstr_append(&output_mem,"}\n");
+      str_cstr_append(&current_context->output,"}\n");
+      str_cstr_append(&current_context->output_mem,"}\n");
     }
     free(ilevel);
     return 0;
@@ -1475,31 +1513,31 @@ int process_if_tag(t_array *data, int is_elseif) {
     if(data->elements) {
       return PARSETPL_ERR_INVALIDTAG;
     }
-    if(!if_level_stack.elements) {
+    if(!current_context->if_level_stack.elements) {
       return PARSETPL_ERR_INVALIDTAG;
     }
-    str_cstr_append(&output,"} else {\n");
-    str_cstr_append(&output_mem,"} else {\n");
+    str_cstr_append(&current_context->output,"} else {\n");
+    str_cstr_append(&current_context->output_mem,"} else {\n");
     return 0;
   } else if(token->type == PARSETPL_TOK_ELSIF) {
-    if(!if_level_stack.elements) {
+    if(!current_context->if_level_stack.elements) {
       return PARSETPL_ERR_INVALIDTAG;
     }
     token->type = PARSETPL_TOK_IF;
     array_unshift(data,token);
-    str_cstr_append(&output,"} else {\n");
-    str_cstr_append(&output_mem,"} else {\n");
+    str_cstr_append(&current_context->output,"} else {\n");
+    str_cstr_append(&current_context->output_mem,"} else {\n");
     ret = process_if_tag(data, 1);
     if(ret < 0) {
       // length of } else {\n is 9 chars
       // remove the else again
-      output.len -= 9;
-      output.content[output.len] = '\0';
-      output_mem.len -= 9;
-      output_mem.content[output_mem.len] = '\0';
+      current_context->output.len -= 9;
+      current_context->output.content[current_context->output.len] = '\0';
+      current_context->output_mem.len -= 9;
+      current_context->output_mem.content[current_context->output_mem.len] = '\0';
       return ret;
     }
-    ilevel = array_element_at(&if_level_stack,if_level_stack.elements-1);
+    ilevel = array_element_at(&current_context->if_level_stack,current_context->if_level_stack.elements-1);
     (*ilevel)++;
     return 0;
   } else if(token->type == PARSETPL_TOK_IF) {
@@ -1538,10 +1576,10 @@ int process_if_tag(t_array *data, int is_elseif) {
     if(token->type == PARSETPL_TOK_VARIABLE) {
       type1 = PARSETPL_TOK_VARIABLE;
       str_char_set(&v1,"vi",2);
-      snprintf(buf,19,"%ld",n_cur_if_vars++);
+      snprintf(buf,19,"%ld",current_context->n_cur_if_vars++);
       str_cstr_append(&v1,buf);
-      if(n_cur_if_vars > n_if_vars) {
-        n_if_vars = n_cur_if_vars;
+      if(current_context->n_cur_if_vars > current_context->n_if_vars) {
+        current_context->n_if_vars = current_context->n_cur_if_vars;
       }
       ret = dereference_variable(&tmp,token,data,&v1);
       destroy_token(token); free(token);
@@ -1559,10 +1597,10 @@ int process_if_tag(t_array *data, int is_elseif) {
     } else if (token->type == PARSETPL_TOK_LOOPVAR) {
       type1 = token->type;
       str_char_set(&iv1,"ii",2);
-      snprintf(buf,19,"%ld",n_cur_if_iters++);
+      snprintf(buf,19,"%ld",current_context->n_cur_if_iters++);
       str_cstr_append(&iv1,buf);
-      if(n_cur_if_iters > n_if_iters) {
-        n_if_iters = n_cur_if_iters;
+      if(current_context->n_cur_if_iters > current_context->n_if_iters) {
+        current_context->n_if_iters = current_context->n_cur_if_iters;
       }
       str_str_append(&tmp,&iv1);
       str_cstr_append(&tmp," = 0;\n");
@@ -1613,7 +1651,7 @@ int process_if_tag(t_array *data, int is_elseif) {
           str_str_append(&tmp,&v1);
           str_cstr_append(&tmp,"); }\n");
           str_cstr_append(&tmp,"if(cmp_res) {\n");
-          n_cur_if_vars -= 1;
+          current_context->n_cur_if_vars -= 1;
           break;
         case PARSETPL_TOK_LOOPVAR:
           if(invert) {
@@ -1623,7 +1661,7 @@ int process_if_tag(t_array *data, int is_elseif) {
           }
           str_str_append(&tmp,&iv1);
           str_cstr_append(&tmp,") {\n");
-          n_cur_if_iters -= 1;
+          current_context->n_cur_if_iters -= 1;
           break;
         default:
           if(tok1) {
@@ -1636,12 +1674,12 @@ int process_if_tag(t_array *data, int is_elseif) {
           str_cleanup(&v2);
           return PARSETPL_ERR_INVALIDTAG;
       }
-      str_str_append(&output,&tmp);
-      str_str_append(&output_mem,&tmp);
+      str_str_append(&current_context->output,&tmp);
+      str_str_append(&current_context->output_mem,&tmp);
       str_cleanup(&tmp);
       if (!is_elseif) {
         level = 0;
-        array_push(&if_level_stack,&level);
+        array_push(&current_context->if_level_stack,&level);
       }
       return 0;
     }
@@ -1695,10 +1733,10 @@ int process_if_tag(t_array *data, int is_elseif) {
     if(token->type == PARSETPL_TOK_VARIABLE) {
       type2 = PARSETPL_TOK_VARIABLE;
       str_char_set(&v2,"vi",2);
-      snprintf(buf,19,"%ld",n_cur_if_vars++);
+      snprintf(buf,19,"%ld",current_context->n_cur_if_vars++);
       str_cstr_append(&v2,buf);
-      if(n_cur_if_vars > n_if_vars) {
-        n_if_vars = n_cur_if_vars;
+      if(current_context->n_cur_if_vars > current_context->n_if_vars) {
+        current_context->n_if_vars = current_context->n_cur_if_vars;
       }
       ret = dereference_variable(&tmp,token,data,&v2);
       destroy_token(token); free(token);
@@ -1720,10 +1758,10 @@ int process_if_tag(t_array *data, int is_elseif) {
     } else if (token->type == PARSETPL_TOK_LOOPVAR) {
       type2 = PARSETPL_TOK_LOOPVAR;
       str_char_set(&iv2,"ii",2);
-      snprintf(buf,19,"%ld",n_cur_if_iters++);
+      snprintf(buf,19,"%ld",current_context->n_cur_if_iters++);
       str_cstr_append(&iv2,buf);
-      if(n_cur_if_iters > n_if_iters) {
-        n_if_iters = n_cur_if_iters;
+      if(current_context->n_cur_if_iters > current_context->n_if_iters) {
+        current_context->n_if_iters = current_context->n_cur_if_iters;
       }
       str_str_append(&tmp,&iv2);
       str_cstr_append(&tmp," = 0;\n");
@@ -1873,7 +1911,7 @@ int process_if_tag(t_array *data, int is_elseif) {
             str_str_append(&tmp,&v2);
             str_cstr_append(&tmp,"); }\n");
             str_cstr_append(&tmp,"}\n");
-            n_cur_if_vars -= 2;
+            current_context->n_cur_if_vars -= 2;
             break;
           case PARSETPL_TOK_LOOPVAR:
             // convert it to integer
@@ -1909,8 +1947,8 @@ int process_if_tag(t_array *data, int is_elseif) {
             str_cstr_append(&tmp,"); free(");
             str_str_append(&tmp,&v2);
             str_cstr_append(&tmp,"); }\n");
-            n_cur_if_vars -= 1;
-            n_cur_if_iters -= 1;
+            current_context->n_cur_if_vars -= 1;
+            current_context->n_cur_if_iters -= 1;
             break;
           case PARSETPL_TOK_INTEGER:
             // convert it to integer
@@ -1946,7 +1984,7 @@ int process_if_tag(t_array *data, int is_elseif) {
             str_cstr_append(&tmp,"); free(");
             str_str_append(&tmp,&v2);
             str_cstr_append(&tmp,"); }\n");
-            n_cur_if_vars -= 1;
+            current_context->n_cur_if_vars -= 1;
             break;
           case PARSETPL_TOK_STRING:
             // convert it to string
@@ -1982,7 +2020,7 @@ int process_if_tag(t_array *data, int is_elseif) {
             str_cstr_append(&tmp,"); free(");
             str_str_append(&tmp,&v2);
             str_cstr_append(&tmp,"); }\n");
-            n_cur_if_vars -= 1;
+            current_context->n_cur_if_vars -= 1;
             break;
           default:
             str_chars_append(&tmp,"cmp_res = 0;\n",13);
@@ -2025,8 +2063,8 @@ int process_if_tag(t_array *data, int is_elseif) {
             str_cstr_append(&tmp,"); free(");
             str_str_append(&tmp,&v1);
             str_cstr_append(&tmp,"); }\n");
-            n_cur_if_vars -= 1;
-            n_cur_if_iters -= 1;
+            current_context->n_cur_if_vars -= 1;
+            current_context->n_cur_if_iters -= 1;
             break;
           case PARSETPL_TOK_LOOPVAR:
             str_cstr_append(&tmp,"if(");
@@ -2046,7 +2084,7 @@ int process_if_tag(t_array *data, int is_elseif) {
               str_cstr_append(&tmp,"cmp_res = 0;\n");
             }
             str_cstr_append(&tmp,"}\n");
-            n_cur_if_iters -= 2;
+            current_context->n_cur_if_iters -= 2;
             break;
           case PARSETPL_TOK_INTEGER:
             str_cstr_append(&tmp,"if(");
@@ -2066,7 +2104,7 @@ int process_if_tag(t_array *data, int is_elseif) {
               str_cstr_append(&tmp,"cmp_res = 0;\n");
             }
             str_cstr_append(&tmp,"}\n");
-            n_cur_if_iters -= 1;
+            current_context->n_cur_if_iters -= 1;
             break;
           case PARSETPL_TOK_STRING:
             str_cstr_append(&tmp,"if(strtol(\"");
@@ -2086,7 +2124,7 @@ int process_if_tag(t_array *data, int is_elseif) {
               str_cstr_append(&tmp,"cmp_res = 0;\n");
             }
             str_cstr_append(&tmp,"}\n");
-            n_cur_if_iters -= 1;
+            current_context->n_cur_if_iters -= 1;
             break;
           default:
             str_cstr_append(&tmp,"cmp_res = 0;\n");
@@ -2129,7 +2167,7 @@ int process_if_tag(t_array *data, int is_elseif) {
             str_cstr_append(&tmp,"); free(");
             str_str_append(&tmp,&v1);
             str_cstr_append(&tmp,"); }\n");
-            n_cur_if_vars -= 1;
+            current_context->n_cur_if_vars -= 1;
             break;
           case PARSETPL_TOK_LOOPVAR:
             str_cstr_append(&tmp,"if(strtol(\"");
@@ -2149,7 +2187,7 @@ int process_if_tag(t_array *data, int is_elseif) {
               str_cstr_append(&tmp,"cmp_res = 0;\n");
             }
             str_cstr_append(&tmp,"}\n");
-            n_cur_if_iters -= 1;
+            current_context->n_cur_if_iters -= 1;
             break;
           case PARSETPL_TOK_STRING:
           case PARSETPL_TOK_INTEGER:
@@ -2209,7 +2247,7 @@ int process_if_tag(t_array *data, int is_elseif) {
             str_cstr_append(&tmp,"); free(");
             str_str_append(&tmp,&v1);
             str_cstr_append(&tmp,"); }\n");
-            n_cur_if_vars -= 1;
+            current_context->n_cur_if_vars -= 1;
             break;
           case PARSETPL_TOK_LOOPVAR:
             str_cstr_append(&tmp,"if(");
@@ -2229,7 +2267,7 @@ int process_if_tag(t_array *data, int is_elseif) {
               str_cstr_append(&tmp,"cmp_res = 0;\n");
             }
             str_cstr_append(&tmp,"}\n");
-            n_cur_if_iters -= 1;
+            current_context->n_cur_if_iters -= 1;
             break;
           case PARSETPL_TOK_STRING:
           case PARSETPL_TOK_INTEGER:
@@ -2258,8 +2296,8 @@ int process_if_tag(t_array *data, int is_elseif) {
         break;
     }
     str_cstr_append(&tmp,"if(cmp_res) {\n");
-    str_str_append(&output,&tmp);
-    str_str_append(&output_mem,&tmp);
+    str_str_append(&current_context->output,&tmp);
+    str_str_append(&current_context->output_mem,&tmp);
     str_cleanup(&tmp);
     str_cleanup(&iv1);
     str_cleanup(&iv2);
@@ -2274,7 +2312,7 @@ int process_if_tag(t_array *data, int is_elseif) {
     }
     if (!is_elseif) {
       level = 0;
-      array_push(&if_level_stack,&level);
+      array_push(&current_context->if_level_stack,&level);
     }
     return 0;
   } else { // elseif is not supported currently!
@@ -2295,19 +2333,19 @@ int process_tag(t_array *data) {
   rtype = ((t_token*)array_element_at(data,0))->type;
   
   if(rtype == PARSETPL_TOK_IWS_START && data->elements == 1) {
-    iws = 1;
+    current_context->iws = 1;
     return 0;
   }
   else if(rtype == PARSETPL_TOK_IWS_END && data->elements == 1) {
-    iws = 0;
+    current_context->iws = 0;
     return 0;
   }
   else if(rtype == PARSETPL_TOK_NLE_START && data->elements == 1) {
-    nle = 1;
+    current_context->nle = 1;
     return 0;
   }
   else if(rtype == PARSETPL_TOK_NLE_END && data->elements == 1) {
-    nle = 0;
+    current_context->nle = 0;
     return 0;
   }
   else if(rtype == PARSETPL_TOK_VARIABLE) {
@@ -2423,6 +2461,7 @@ int parse_file(const u_char *filename) {
   if(!strcmp(PARSETPL_INCLUDE_EXT,basename+strlen(basename)-strlen(PARSETPL_INCLUDE_EXT))) {
     basename[strlen(basename)-strlen(PARSETPL_INCLUDE_EXT)] = '\0';
   }
+  
   str_init(&output_name);
   str_init(&current_file); // global variable
   str_char_set(&output_name,basename,strlen(basename));
@@ -2434,6 +2473,12 @@ int parse_file(const u_char *filename) {
     p++;
   str_char_set(&current_file,p,strlen(p));
   free(basename);
+  
+  current_context = &global_context;
+  init_context(current_context);
+  defined_functions = cf_hash_new(destroy_function);
+  defined_function_list = fo_alloc(NULL,sizeof(t_array),1,FO_ALLOC_MALLOC);
+  array_init(defined_function_list,sizeof(t_function*),NULL);
   
   // now open input file
   ifp = fopen(filename,"rb");
@@ -2456,10 +2501,7 @@ int parse_file(const u_char *filename) {
   
   yyin = ifp;
   str_init(&content);
-  str_init(&output);
   array_init(&data,sizeof(t_token),destroy_token);
-  array_init(&foreach_var_stack,sizeof(t_string),(void(*)(void *))str_cleanup);
-  array_init(&if_level_stack,sizeof(int),NULL);
   
   do {
     ret = parsetpl_lex();
@@ -2504,15 +2546,15 @@ int parse_file(const u_char *filename) {
     }
     // a new tag starts or EOF
     if(content.len) {
-      str_chars_append(&output,"my_write(\"",10);
-      str_chars_append(&output_mem,"str_chars_append(&tpl->parsed,\"",31);
-      append_escaped_string(&output,&content);
-      append_escaped_string(&output_mem,&content);
-      str_chars_append(&output,"\");\n",4);
-      str_chars_append(&output_mem,"\",", 2);
+      str_chars_append(&current_context->output,"my_write(\"",10);
+      str_chars_append(&current_context->output_mem,"str_chars_append(&tpl->parsed,\"",31);
+      append_escaped_string(&current_context->output,&content);
+      append_escaped_string(&current_context->output_mem,&content);
+      str_chars_append(&current_context->output,"\");\n",4);
+      str_chars_append(&current_context->output_mem,"\",", 2);
       snprintf(buf,19,"%ld",content.len);
-      str_chars_append(&output_mem,buf,strlen(buf));
-      str_chars_append(&output_mem,");\n",3);
+      str_chars_append(&current_context->output_mem,buf,strlen(buf));
+      str_chars_append(&current_context->output_mem,");\n",3);
     }
     if(ret == PARSETPL_TOK_TAGSTART) {
       tag_started = 1;
@@ -2521,104 +2563,108 @@ int parse_file(const u_char *filename) {
   
   fclose(ifp); // we don't need it any more
   
-  if(ret < 0) {
+  if(ret < 0 || current_context != &global_context) {
     fprintf(stderr,"Error processing %s: %d\n", filename, ret);
     str_cleanup(&content);
-    str_cleanup(&output);
     str_cleanup(&current_file);
     array_destroy(&data);
-    array_destroy(&foreach_var_stack);
+    destroy_context(current_context);
+    cf_hash_destroy(defined_functions);
+    array_destroy(defined_function_list);
+    free(defined_function_list);
     fclose(ofp);
     return ret;
   }
   
   fprintf(ofp, "/*\n * this is a template file\n *\n */\n\n#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\n#include \"config.h\"\n#include \"defines.h\"\n\n#include \"utils.h\"\n#include \"hashlib.h\"\n#include \"charconvert.h\"\n#include \"template.h\"\n\nstatic void my_write(const u_char *s) {\n  register u_char *ptr;\n\n  for(ptr = (u_char *)s;*ptr;ptr++) {\n    fputc(*ptr,stdout);\n  }\n}\n");
   fprintf(ofp,"void parse(t_cf_template *tpl) {\nt_cf_tpl_variable *v = NULL;\n");
-  if(uses_print) {
+  if(current_context->uses_print) {
     fprintf(ofp,"t_cf_tpl_variable *vp = NULL;\n");
   }
-  if(uses_clonevar) {
+  if(current_context->uses_clonevar) {
     fprintf(ofp,"t_cf_tpl_variable *vc = NULL;\n");
   }
-  if(uses_loopassign) {
+  if(current_context->uses_loopassign) {
     fprintf(ofp,"long ic = 0;\n");
   }
-  if(uses_tmpstring) {
+  if(current_context->uses_tmpstring) {
     fprintf(ofp,"t_string tmp_string;\n");
   }
-  if(uses_iter_print) {
+  if(current_context->uses_iter_print) {
     fprintf(ofp,"long iter_var = 0;\n");
   }
   fprintf(ofp,"long cmp_res = 0;\n");
-  for(i = 0;i < n_assign_vars;i++) {
+  for(i = 0;i < current_context->n_assign_vars;i++) {
     fprintf(ofp,"t_cf_tpl_variable *va%ld = NULL;\n",i);
   }
-  for(i = 0;i < n_if_vars;i++) {
+  for(i = 0;i < current_context->n_if_vars;i++) {
     fprintf(ofp,"t_cf_tpl_variable *vi%ld = NULL;\n",i);
   }
-  for(i = 0;i < n_if_iters;i++) {
+  for(i = 0;i < current_context->n_if_iters;i++) {
     fprintf(ofp,"long ii%ld = 0;\n",i);
   }
-  for(i = 0;i < n_foreach_vars;i++) {
+  for(i = 0;i < current_context->n_foreach_vars;i++) {
     fprintf(ofp,"t_cf_tpl_variable *vf%ld = NULL;\n",i*2);
     fprintf(ofp,"t_cf_tpl_variable *vf%ld = NULL;\n",i*2+1);
     fprintf(ofp,"int i%ld = 0;\n",i);
   }
-  if(uses_include) {
+  if(current_context->uses_include) {
     fprintf(ofp,"t_cf_template *inc_tpl;\n");
     fprintf(ofp,"t_string *inc_filename, *inc_filepart, *inc_fileext;\n");
     fprintf(ofp,"u_char *p;\n");
     fprintf(ofp,"t_cf_hash *ov;\n");
     fprintf(ofp,"int ret;\n");
   }
-  fprintf(ofp,"\n%s\n}\n\n",output.content);
+  fprintf(ofp,"\n%s\n}\n\n",current_context->output.content);
   fprintf(ofp,"void parse_to_mem(t_cf_template *tpl) {\nt_cf_tpl_variable *v = NULL;\n");
-  if(uses_print) {
+  if(current_context->uses_print) {
     fprintf(ofp,"t_cf_tpl_variable *vp = NULL;\n");
     fprintf(ofp,"u_char *tmp = NULL;\n");
   }
-  if(uses_iter_print) {
+  if(current_context->uses_iter_print) {
     fprintf(ofp,"long iter_var = 0;\n");
   }
-  if(uses_clonevar) {
+  if(current_context->uses_clonevar) {
     fprintf(ofp,"t_cf_tpl_variable *vc = NULL;\n");
   }
-  if(uses_loopassign) {
+  if(current_context->uses_loopassign) {
     fprintf(ofp,"long ic = 0;\n");
   }
-  if(uses_tmpstring) {
+  if(current_context->uses_tmpstring) {
     fprintf(ofp,"t_string tmp_string;\n");
   }
   fprintf(ofp,"long cmp_res = 0;\n");
   fprintf(ofp,"char iter_buf[20];\n");
-  for(i = 0;i < n_assign_vars;i++) {
+  for(i = 0;i < current_context->n_assign_vars;i++) {
     fprintf(ofp,"t_cf_tpl_variable *va%ld = NULL;\n",i);
   }
-  for(i = 0;i < n_if_vars;i++) {
+  for(i = 0;i < current_context->n_if_vars;i++) {
     fprintf(ofp,"t_cf_tpl_variable *vi%ld = NULL;\n",i);
   }
-  for(i = 0;i < n_if_iters;i++) {
+  for(i = 0;i < current_context->n_if_iters;i++) {
     fprintf(ofp,"long ii%ld = 0;\n",i);
   }
-  for(i = 0;i < n_foreach_vars;i++) {
+  for(i = 0;i < current_context->n_foreach_vars;i++) {
     fprintf(ofp,"t_cf_tpl_variable *vf%ld = NULL;\n",i*2);
     fprintf(ofp,"t_cf_tpl_variable *vf%ld = NULL;\n",i*2+1);
     fprintf(ofp,"int i%ld = 0;\n",i);
   }
-  if(uses_include) {
+  if(current_context->uses_include) {
     fprintf(ofp,"t_cf_template *inc_tpl;\n");
     fprintf(ofp,"t_string *inc_filename, *inc_filepart, *inc_fileext;\n");
     fprintf(ofp,"u_char *p;\n");
     fprintf(ofp,"t_cf_hash *ov;\n");
     fprintf(ofp,"int ret;\n");
   }
-  fprintf(ofp,"\n%s\n}\n\n",output_mem.content);
+  fprintf(ofp,"\n%s\n}\n\n",current_context->output_mem.content);
   fclose(ofp);
   str_cleanup(&content);
-  str_cleanup(&output);
   str_cleanup(&current_file);
   array_destroy(&data);
-  array_destroy(&foreach_var_stack);
+  cf_hash_destroy(defined_functions);
+  array_destroy(defined_function_list);
+  free(defined_function_list);
+  destroy_context(current_context);
   return 0;
 }
 
