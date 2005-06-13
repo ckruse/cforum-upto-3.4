@@ -40,7 +40,6 @@ static size_t flt_admin_AdminNum = 0;
 static int my_errno      = 0;
 static int is_admin      = -1;
 static int flt_admin_204 = 0;
-static int flt_admin_js  = 0;
 
 static u_char *flt_admin_fn = NULL;
 
@@ -83,18 +82,12 @@ int flt_admin_gogogo(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc,void
   u_char *action = NULL,*tid,*mid,buff[512],*answer,*mode;
   size_t len;
   rline_t rl;
-  int x = 0,ret;
+  int x = 0;
 
   u_int64_t itid;
 
   u_char *UserName = cf_hash_get(GlobalValues,"UserName",8);
   u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
-  t_name_value *cs,*ot,*ct;;
-
-  cf_readmode_t *rm;
-
-  t_cl_thread thread;
-  t_string str;
 
   if(!flt_admin_is_admin(UserName)) return FLT_DECLINE;
 
@@ -151,65 +144,19 @@ int flt_admin_gogogo(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc,void
 
     itid = str_to_u_int64(tid);
 
-    cf_hash_entry_delete(cgi,"t",1);
-    cf_hash_entry_delete(cgi,"m",1);
-
-    if((mode = cf_cgi_get(cgi,"mode")) != NULL && cf_strcmp(mode,"xmlhttp") == 0) {
-      cs = cfg_get_first_value(&fo_default_conf,forum_name,"ExternCharset");
-
-      if(cf_strcmp(mode,"archive") == 0) printf("Content-Type: text/html; charset=%s\015\012\015\012Ok\n",cs->values[0]);
-      else {
-        /* {{{ init variables */
-        cs = cfg_get_first_value(dc,forum_name,"ExternCharset");
-        ot = cfg_get_first_value(vc,forum_name,"OpenThread");
-        ct = cfg_get_first_value(vc,forum_name,"CloseThread");
-
-        rm = cf_hash_get(GlobalValues,"RM",2);
-
-        memset(&thread,0,sizeof(thread));
-        memset(&rl,0,sizeof(rl));
-        /* }}} */
-
-        if(cf_get_message_through_sock(sock,&rl,&thread,rm->threadlist_thread_tpl,itid,0,CF_KEEP_DELETED) == -1) {
-          printf("500 Internal Server Error\015\012\015\012Error");
-          return FLT_EXIT;
-        }
-
-        thread.threadmsg = thread.messages;
-
-        #ifndef CF_NO_SORTING
-        #ifdef CF_SHARED_MEM
-        cf_run_thread_sorting_handlers(cgi,ptr,&thread);
-        #else
-        cf_run_thread_sorting_handlers(cgi,sock,&rl,&thread);
-        #endif
-        #endif
-
-        str_init(&str);
-        cf_gen_threadlist(&thread,cgi,&str,"full",NULL,CF_MODE_THREADLIST);
-        cf_cleanup_thread(&thread);
-
-        printf("Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
-        fwrite(str.content + strlen(ot->values[0]),1,str.len - strlen(ot->values[0]) - strlen(ct->values[0]),stdout);
-        str_cleanup(&str);
-      }
-
-      #ifdef CF_SHARED_MEM
-      writen(sock,"QUIT\n",5);
-      close(sock);
-      #endif
-
-      return FLT_EXIT;
-    }
-
     #ifdef CF_SHARED_MEM
     writen(sock,"QUIT\n",5);
     close(sock);
     #endif
 
-    if(flt_admin_204) {
-      printf("Status: 204 No Content\015\012\015\012");
-      return FLT_EXIT;
+    if((mode = cf_cgi_get(cgi,"mode")) == NULL || cf_strcmp(mode,"xmlhttp") != 0) {
+      cf_hash_entry_delete(cgi,"t",1);
+      cf_hash_entry_delete(cgi,"m",1);
+
+      if(flt_admin_204) {
+        printf("Status: 204 No Content\015\012\015\012");
+        return FLT_EXIT;
+      }
     }
 
     return FLT_OK;
@@ -225,13 +172,15 @@ int flt_admin_setvars(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc,t_c
   size_t len,len1;
   u_char *UserName = cf_hash_get(GlobalValues,"UserName",8);
   int ShowInvisible = cf_hash_get(GlobalValues,"ShowInvisible",13) != NULL;
+  u_char *fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
+  t_name_value *usejs = cfg_get_first_value(&fo_view_conf,fn,"AdminUseJS");
 
   if(flt_admin_is_admin(UserName)) {
     cf_tpl_setvalue(top,"admin",TPL_VARIABLE_INT,1);
 
     if(ShowInvisible) {
       cf_tpl_setvalue(top,"aaf",TPL_VARIABLE_INT,1);
-      if(flt_admin_js) cf_tpl_setvalue(top,"AdminJS",TPL_VARIABLE_INT,1);
+      if(usejs && cf_strcmp(usejs->values[0],"yes") == 0) cf_tpl_setvalue(top,"AdminJS",TPL_VARIABLE_INT,1);
     }
 
     if(my_errno) {
@@ -320,6 +269,7 @@ int flt_admin_posthandler(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc
   u_char *UserName = cf_hash_get(GlobalValues,"UserName",8);
   int ShowInvisible = cf_hash_get(GlobalValues,"ShowInvisible",13) != NULL;
   cf_readmode_t *rm = cf_hash_get(GlobalValues,"RM",2);
+  t_name_value *usejs = cfg_get_first_value(&fo_view_conf,forum_name,"AdminUseJS");
 
   if(!UserName) return FLT_DECLINE;
 
@@ -327,7 +277,7 @@ int flt_admin_posthandler(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc
     cf_tpl_setvalue(&msg->tpl,"admin",TPL_VARIABLE_INT,1);
 
     cf_tpl_setvalue(&msg->tpl,"aaf",TPL_VARIABLE_INT,1);
-    if(flt_admin_js && (mode & CF_MODE_THREADLIST)) cf_tpl_setvalue(&msg->tpl,"AdminJS",TPL_VARIABLE_INT,1);
+    if(usejs && cf_strcmp(usejs->values[0],"yes") == 0 && (mode & CF_MODE_THREADLIST)) cf_tpl_setvalue(&msg->tpl,"AdminJS",TPL_VARIABLE_INT,1);
 
     link = cf_advanced_get_link(rm->posting_uri[1],tid,msg->mid,NULL,1,&l,"faa","archive");
     cf_tpl_setvalue(&msg->tpl,"archive_link",TPL_VARIABLE_STRING,link,l);
@@ -398,7 +348,6 @@ int flt_admin_handle(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u
   if(!context || cf_strcmp(flt_admin_fn,context) != 0) return 0;
 
   if(cf_strcmp(opt->name,"AdminSend204") == 0) flt_admin_204 = cf_strcmp(args[0],"yes") == 0;
-  else if(cf_strcmp(opt->name,"AdminUseJS") == 0) flt_admin_js = cf_strcmp(args[0],"yes") == 0;
 
   return 0;
 }
@@ -406,7 +355,6 @@ int flt_admin_handle(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u
 
 t_conf_opt flt_admin_config[] = {
   { "AdminSend204", flt_admin_handle, CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
-  { "AdminUseJS",   flt_admin_handle, CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
   { NULL, NULL, 0, NULL }
 };
 

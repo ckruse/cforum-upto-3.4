@@ -289,7 +289,7 @@ void flt_extern_handle_request(int sock) {
           /* {{{ GET LASTMODIFIED */
           else if(cf_strcmp(tokens[1],"LASTMODIFIED") == 0) {
             CF_RW_RD(&forum->lock);
-            len = snprintf(buff,50,"%ld\n",forum->date.visible);
+            len = snprintf(buff,250,"200 Ok\n%ld\n",forum->date.visible);
             CF_RW_UN(&forum->lock);
 
             writen(sock,buff,len);

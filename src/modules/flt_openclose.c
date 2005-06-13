@@ -85,18 +85,13 @@ int flt_oc_exec_xmlhttp(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc,i
 int flt_oc_exec_xmlhttp(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc,void *shm)
 #endif
 {
-  u_char *val,*fn = cf_hash_get(GlobalValues,"FORUM_NAME",10),buff[512],fo_thread_tplname[256];
+  u_char *val,*fn = cf_hash_get(GlobalValues,"FORUM_NAME",10),buff[512];
   u_int64_t tid;
-  t_cl_thread thread;
-  size_t len;
-  t_string str;
-  rline_t rl;
   int ret;
   char one[] = "1";
+  size_t len;
 
   DBT key,data;
-
-  t_name_value *fo_thread_tpl,*cs,*ot,*ct;
 
   if(cgi == NULL || flt_oc_dbfile == NULL) return FLT_DECLINE;
 
@@ -121,51 +116,6 @@ int flt_oc_exec_xmlhttp(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc,v
         }
       }
       else flt_oc_db->del(flt_oc_db,NULL,&key,0);
-      /* }}} */
-
-      /* {{{ xmlhttp mode */
-      if((val = cf_cgi_get(cgi,"mode")) != NULL && cf_strcmp(val,"xmlhttp") == 0) {
-        /* {{{ init variables to get content */
-        fo_thread_tpl  = cfg_get_first_value(vc,fn,"TemplateForumThread");
-        cs             = cfg_get_first_value(dc,fn,"ExternCharset");
-        ot             = cfg_get_first_value(vc,fn,"OpenThread");
-        ct             = cfg_get_first_value(vc,fn,"CloseThread");
-
-        cf_gen_tpl_name(fo_thread_tplname,256,fo_thread_tpl->values[0]);
-
-        memset(&thread,0,sizeof(thread));
-        memset(&rl,0,sizeof(rl));
-        /* }}} */
-
-        #ifndef CF_SHARED_MEM
-        if(cf_get_message_through_sock(sock,&rl,&thread,fo_thread_tplname,tid,0,CF_KILL_DELETED) == -1)
-        #else
-        if(cf_get_message_through_shm(shm,&thread,fo_thread_tplname,tid,0,CF_KILL_DELETED) == -1)
-        #endif
-          {
-            printf("500 Internal Server Error\015\012\015\012");
-            return FLT_EXIT;
-          }
-
-        thread.threadmsg = thread.messages;
-        #ifndef CF_NO_SORTING
-        #ifdef CF_SHARED_MEM
-        cf_run_thread_sorting_handlers(cgi,shm,&thread);
-        #else
-        cf_run_thread_sorting_handlers(cgi,sock,&rl,&thread);
-        #endif
-        #endif
-
-        str_init(&str);
-        cf_gen_threadlist(&thread,cgi,&str,"full",NULL,CF_MODE_THREADLIST);
-        cf_cleanup_thread(&thread);
-
-        printf("Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
-        fwrite(str.content + strlen(ot->values[0]),1,str.len - strlen(ot->values[0]) - strlen(ct->values[0]),stdout);
-        str_cleanup(&str);
-
-        return FLT_EXIT;
-      }
       /* }}} */
     }
   }

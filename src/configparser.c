@@ -130,6 +130,7 @@ t_conf_opt fo_view_options[] = {
   { "EMail",                      handle_command,   CFG_OPT_USER|CFG_OPT_UNIQUE|CFG_OPT_GLOBAL, &fo_view_conf },
   { "HomepageUrl",                handle_command,   CFG_OPT_USER|CFG_OPT_UNIQUE|CFG_OPT_GLOBAL, &fo_view_conf },
   { "ImageUrl",                   handle_command,   CFG_OPT_USER|CFG_OPT_UNIQUE|CFG_OPT_GLOBAL, &fo_view_conf },
+  { "AdminUseJS",                 handle_command,   CFG_OPT_USER|CFG_OPT_LOCAL|CFG_OPT_UNIQUE,  &fo_view_conf },
 
   { NULL, NULL, 0, NULL }
 };

@@ -52,7 +52,7 @@ int flt_noanswer_gogogo(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc,v
 
   size_t len;
   rline_t rl;
-  u_char *action = NULL,*tid,*mid,buff[512],*uname,*fn,*answer;
+  u_char *action = NULL,*tid,*mid,buff[512],*uname,*fn,*answer,*mode;
   int si = cf_hash_get(GlobalValues,"ShowInvisible",13) != NULL,x = 0;
 
   if(si == 0 || cgi == NULL) return FLT_DECLINE;
@@ -108,12 +108,14 @@ int flt_noanswer_gogogo(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc,v
     cf_reget_shm_ptr();
     #endif
 
-    cf_hash_entry_delete(cgi,"t",1);
-    cf_hash_entry_delete(cgi,"m",1);
+    if((mode = cf_cgi_get(cgi,"mode")) == NULL || cf_strcmp(mode,"xmlhttp") != 0) {
+      cf_hash_entry_delete(cgi,"t",1);
+      cf_hash_entry_delete(cgi,"m",1);
 
-    if(flt_na_204) {
-      printf("Status: 204 No Content\015\012\015\012");
-      return FLT_EXIT;
+      if(flt_na_204) {
+        printf("Status: 204 No Content\015\012\015\012");
+        return FLT_EXIT;
+      }
     }
 
     return FLT_OK;

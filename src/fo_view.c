@@ -54,6 +54,88 @@ int ignre(t_configfile *cfile,const u_char *context,u_char *name,u_char **args,s
   return 0;
 }
 
+/* {{{ show_xmlhttp_thread */
+#ifndef CF_SHARED_MEM
+void show_xmlhttp_thread(t_cf_hash *head,int sock,u_int64_t tid,u_int64_t mid)
+#else
+void show_xmlhttp_thread(t_cf_hash *head,void *shm_ptr,u_int64_t tid,u_int64_t mid)
+#endif
+{
+  int ret;
+  u_char fo_thread_tplname[256],buff[512],*line = NULL;
+  t_name_value *fo_thread_tpl,*cs,*ot,*ct;
+  u_char *fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
+  int show_invi = cf_hash_get(GlobalValues,"ShowInvisible",13) != NULL;
+  t_cl_thread thread;
+  t_string str;
+  size_t len;
+  rline_t tsd;
+
+  #ifdef CF_SHARED_MEM
+  int sock;
+  #endif
+
+  memset(&tsd,0,sizeof(tsd));
+
+  fo_thread_tpl = cfg_get_first_value(&fo_view_conf,fn,"TemplateForumThread");
+  cs            = cfg_get_first_value(&fo_default_conf,fn,"ExternCharset");
+  ot            = cfg_get_first_value(&fo_view_conf,fn,"OpenThread");
+  ct            = cfg_get_first_value(&fo_view_conf,fn,"CloseThread");
+
+  cf_gen_tpl_name(fo_thread_tplname,256,fo_thread_tpl->values[0]);
+
+  #ifdef CF_SHARED_MEM
+  if((sock = cf_socket_setup()) == -1) {
+    printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=UTF-8\015\012\015\012");
+    cf_error_message("E_NO_CONN",NULL,strerror(errno));
+    return;
+  }
+  #endif
+
+  len = snprintf(buff,512,"SELECT %s\n",fn);
+  writen(sock,buff,len);
+
+  if((line = readline(sock,&tsd)) == NULL || cf_strncmp(line,"200",3) != 0) {
+    if(line) {
+      fprintf(stderr,"fo_view: xmlhttp: Server returned: %s\n",line);
+      free(line);
+    }
+    printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=UTF-8\015\012\015\012");
+    cf_error_message("E_DATA_FAILURE",NULL);
+    return;
+  }
+
+  free(line);
+  ret = cf_get_message_through_sock(sock,&tsd,&thread,fo_thread_tplname,tid,0,show_invi ? CF_KEEP_DELETED : CF_KILL_DELETED);
+
+  if(ret == -1) {
+    printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
+    if(*ErrorString) cf_error_message(ErrorString,NULL);
+    else cf_error_message("E_DATA_FAILURE",NULL);
+    return;
+  }
+
+  thread.threadmsg = thread.messages;
+
+  #ifndef CF_NO_SORTING
+  #ifdef CF_SHARED_MEM
+  cf_run_thread_sorting_handlers(head,shm_ptr,&thread);
+  #else
+  cf_run_thread_sorting_handlers(head,sock,&tsd,&thread);
+  #endif
+  #endif
+
+  str_init(&str);
+  cf_gen_threadlist(&thread,head,&str,"full",NULL,CF_MODE_THREADLIST);
+
+  printf("Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
+  fwrite(str.content + strlen(ot->values[0]),1,str.len - strlen(ot->values[0]) - strlen(ct->values[0]),stdout);
+  str_cleanup(&str);
+
+  cf_cleanup_thread(&thread);
+}
+/* }}} */
+
 /* {{{ show_posting */
 
 #ifndef CF_SHARED_MEM
@@ -468,7 +550,7 @@ int main(int argc,char *argv[],char *env[]) {
   };
 
   int ret;
-  u_char  *ucfg,*m  = NULL,*t = NULL,*UserName,*fname;
+  u_char  *ucfg,*m  = NULL,*t = NULL,*UserName,*fname,*mode;
   t_array *cfgfiles;
   t_cf_hash *head;
   t_configfile conf,dconf;
@@ -639,15 +721,21 @@ int main(int argc,char *argv[],char *env[]) {
     if(ret != FLT_EXIT) {
       /* after that, look for m= and t= */
       if(head) {
-        t = cf_cgi_get(head,"t");
-        m = cf_cgi_get(head,"m");
+        t    = cf_cgi_get(head,"t");
+        m    = cf_cgi_get(head,"m");
+        mode = cf_cgi_get(head,"mode");
       }
 
       if(t) tid = str_to_u_int64(t);
       if(m) mid = str_to_u_int64(m);
 
-      if(tid) show_posting(head,sock,tid,mid);
-      else    show_threadlist(sock,head);
+      if(mode && cf_strcmp(mode,"xmlhttp") == 0 && t) {
+        show_xmlhttp_thread(head,sock,tid,mid);
+      }
+      else {
+        if(tid) show_posting(head,sock,tid,mid);
+        else    show_threadlist(sock,head);
+      }
     }
 
     #ifndef CF_SHARED_MEM

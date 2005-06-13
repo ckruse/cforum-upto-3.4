@@ -1,3 +1,17 @@
+2005-06-13 Christian Kruse <ckruse@wwwtech.de>
+	* src/fo_view.c: Added abstraction layer for XMLHttpRequest mode
+	* src/modules/flt_noanswer.c: Small patch for correct mode handling
+	* src/modules/flt_deleted.c: Removed XMLHttpRequest code
+	* src/modules/flt_shortcuts.c: Added possibility for wikipedia lookup; needed
+		later
+	* src/modules/flt_extern.c: Fixed small bug in response code for GET MIDLIST
+	* src/modules/flt_visited.c: Removed XMHttpRequest code
+	* src/modules/flt_noarchive.c: Small patch for correct mode handling
+	* src/modules/flt_openclose.c: Removed XMLHttpRequest code
+	* src/modules/flt_admin.c: Removed XMLHttpRequest code
+	* src/configparser.c: Moved AdminUseJS to core config options
+	* scripts/cf-cleanup.pl.in: Small patch to support %u correctly
+
 2005-06-12 Christian Seiler <self@christian-seiler.de>
 	* src/parsetpl/parsetpl.lex: Added some stuff to template parser
 		that will later be needed when functions will be

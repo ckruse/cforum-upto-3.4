@@ -276,6 +276,7 @@ sub cleanup_mid_file {
   if($pattern) {
     $regex = $pattern;
     $regex =~ s!\%m!(\\d+)!g;
+    $regex =~ s!\%u!(\\s+)!g;
   }
   else {
     $regex = '^(\d+)$';

@@ -47,7 +47,7 @@ typedef struct {
 
 static int flt_shortcuts_activate = 0;
 
-#define FLT_SHORTCUTS_THREADLISTTABLE_LENGTH 7
+#define FLT_SHORTCUTS_THREADLISTTABLE_LENGTH 8
 static flt_shortcuts_t flt_shortcuts_threadlisttable[] = {
   { 'b', FLT_SHORTCUTS_MOD_NONE,  "add_to_blacklist" }, /* add to blacklist */
   { 'b', FLT_SHORTCUTS_MOD_SHIFT, "remove_from_blacklist" }, /* remove from blacklist */
@@ -55,10 +55,11 @@ static flt_shortcuts_t flt_shortcuts_threadlisttable[] = {
   { 'w', FLT_SHORTCUTS_MOD_SHIFT, "remove_from_whitelist" }, /* remove from whitelist */
   { 'k', FLT_SHORTCUTS_MOD_NONE,  "add_to_highlightcats"  }, /* add to highlightcats */
   { 'k', FLT_SHORTCUTS_MOD_SHIFT, "remove_from_highlightcats" },  /* remove from highlightcats */
-  { 'a', FLT_SHORTCUTS_MOD_NONE,  "mark_all_visited" } /* mark all postings visited */
+  { 'a', FLT_SHORTCUTS_MOD_NONE,  "mark_all_visited" }, /* mark all postings visited */
+  { 'l', FLT_SHORTCUTS_MOD_NONE,  "wikipedia_lookup" }
 };
 
-#define FLT_SHORTCUTS_POSTINGTABLE_LENGTH 9
+#define FLT_SHORTCUTS_POSTINGTABLE_LENGTH 10
 static flt_shortcuts_t flt_shortcuts_postingtable[] = {
   { 'n', FLT_SHORTCUTS_MOD_NONE,  "next_posting" }, /* next posting */
   { 'p', FLT_SHORTCUTS_MOD_NONE,  "prev_posting" }, /* previous posting */
@@ -68,7 +69,8 @@ static flt_shortcuts_t flt_shortcuts_postingtable[] = {
   { 'b', FLT_SHORTCUTS_MOD_NONE,  "vote_bad" },  /* vote bad */
   { 'a', FLT_SHORTCUTS_MOD_NONE,  "focus_active" }, /* mark active posting */
   { 'k', FLT_SHORTCUTS_MOD_NONE,  "kill_post" }, /* mark thread as deleted */
-  { 'r', FLT_SHORTCUTS_MOD_SHIFT, "mark_visited" } /* mark thread visited */
+  { 'r', FLT_SHORTCUTS_MOD_SHIFT, "mark_visited" }, /* mark thread visited */
+  { 'l', FLT_SHORTCUTS_MOD_NONE,  "wikipedia_lookup" }
 };
 
 static u_char *flt_shortcuts_fn = NULL;

@@ -219,14 +219,7 @@ int flt_deleted_del_thread(t_cf_hash *head,t_configuration *dc,t_configuration *
           /* }}} */
 
           /* {{{ XMLHttp mode */
-          if((tmp = cf_cgi_get(head,"mode")) != NULL && cf_strcmp(tmp,"xmlhttp") == 0) {
-            printf("Content-Type: text/html\015\012\015\012");
-            printf("Ok\015\012");
-            return FLT_EXIT;
-          }
-          /* }}} */
-          /* {{{ 204 Response */
-          else if(Cfg.resp_204) {
+          if(((tmp = cf_cgi_get(head,"mode")) == NULL || cf_strcmp(tmp,"xmlhttp") != 0) && Cfg.resp_204) {
             printf("Status: 204 No Content\015\012\015\012");
             return FLT_EXIT;
           }
