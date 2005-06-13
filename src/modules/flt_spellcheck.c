@@ -257,7 +257,7 @@ int flt_spellcheck_execute(t_cf_hash *head,t_configuration *dc,t_configuration *
       had_break = 1;
       continue;
     }
-    else if(!cf_strncmp(ptr,"_/_SIG_/_",9) && had_break) { // ignore signature
+    else if(!cf_strncmp(ptr,"_/_SIG_/_",9)) { // ignore signature
       break;
     }
     else if(*ptr == '\x7f') { // ignore citations

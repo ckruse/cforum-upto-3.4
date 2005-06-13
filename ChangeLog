@@ -1,3 +1,7 @@
+2005-06-13 Christian Seiler <self@christian-seiler.de>
+	* src/modules/flt_xmlarc.c, src/modules/flt_posting.c,
+		src/modules/flt_spellcheck.c: Fixed some small bugs.
+
 2005-06-13 Christian Kruse <ckruse@wwwtech.de>
 	* src/fo_view.c: Added abstraction layer for XMLHttpRequest mode
 	* src/modules/flt_noanswer.c: Small patch for correct mode handling

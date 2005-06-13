@@ -447,8 +447,13 @@ int flt_posting_handle_box(t_configfile *cfile,t_conf_opt *opt,const u_char *con
   if(flt_posting_cfg.TWidth) free(flt_posting_cfg.TWidth);
   if(flt_posting_cfg.THeight) free(flt_posting_cfg.THeight);
 
-  flt_posting_cfg.TWidth  = strdup(args[0]);
-  flt_posting_cfg.THeight = strdup(args[1]);
+  if(strlen(args[0]))
+    flt_posting_cfg.TWidth  = strdup(args[0]);
+  else flt_posting_cfg.TWidth  = NULL;
+
+  if(strlen(args[1]))
+    flt_posting_cfg.THeight = strdup(args[1]);
+  else flt_posting_cfg.THeight = NULL;
 
   return 0;
 }

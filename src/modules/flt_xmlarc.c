@@ -386,7 +386,7 @@ int flt_xmlarc_validate_thread(const u_char *year,const u_char *month,const u_ch
   v = cfg_get_first_value(&fo_default_conf,flt_xmlarc_fn,"ExternCharset");
 
   printf("Status: 404 Not Found\015\012Content-Type: text/html; charset=%s\015\012\015\012",v->values[0]);
-  cf_error_message("E_ARCHIVE_MONTHNOTPRESENT",NULL);
+  cf_error_message("E_ARCHIVE_THREADNOTPRESENT",NULL);
 
   return FLT_EXIT;
 }
