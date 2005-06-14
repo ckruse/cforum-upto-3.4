@@ -50,6 +50,7 @@ int flt_list_execute_filter(t_cf_hash *head,t_configuration *dc,t_configuration 
   t_string content,threadlist;
   int utf8,ShowInvisible;
   t_message *msg;
+  cf_readmode_t *rm_infos = cf_hash_get(GlobalValues,"RM",2);
 
   /* are we in the right read mode? */
   if(cf_strcmp(rm->values[0],"list") != 0) return FLT_DECLINE;
@@ -135,7 +136,7 @@ int flt_list_execute_filter(t_cf_hash *head,t_configuration *dc,t_configuration 
   cf_tpl_setvar(tpl,"threads",&array);
 
   if(cf_strcmp(st->values[0],"none") != 0) {
-    cf_gen_threadlist(thread,head,&threadlist,st->values[0],lt->values[0],CF_MODE_THREADVIEW);
+    cf_gen_threadlist(thread,head,&threadlist,rm_infos->post_threadlist_tpl,st->values[0],lt->values[0],CF_MODE_THREADVIEW);
     cf_tpl_setvalue(tpl,"threadlist",TPL_VARIABLE_STRING,threadlist.content,threadlist.len);
     str_cleanup(&threadlist);
   }

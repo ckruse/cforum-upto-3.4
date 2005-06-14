@@ -41,6 +41,7 @@ static u_char *flt_nested_tpl = NULL;
 static u_char *flt_nested_pt_tpl = NULL;
 static u_char *flt_nested_fn = NULL;
 
+/* {{{ flt_nested_make_hierarchical */
 void flt_nested_make_hierarchical(t_configuration *vc,t_cf_template *tpl,t_cl_thread *thread,t_hierarchical_node *msg,t_cf_hash *head,int first,int ShowInvisible,int utf8,t_cf_tpl_variable *hash,t_name_value *cs,t_name_value *df,t_name_value *locale,t_name_value *qc,t_name_value *ms,t_name_value *ss) {
   size_t len,msgcntlen,i;
   u_char *msgcnt,*tmp,buff[512];
@@ -115,6 +116,7 @@ void flt_nested_make_hierarchical(t_configuration *vc,t_cf_template *tpl,t_cl_th
     cf_tpl_hashvar_set(hash,"subposts",&subposts);
   }
 }
+/* }}} */
 
 /* {{{ flt_nested_execute_filter */
 int flt_nested_execute_filter(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cl_thread *thread,t_cf_template *tpl) {
@@ -127,6 +129,7 @@ int flt_nested_execute_filter(t_cf_hash *head,t_configuration *dc,t_configuratio
   t_string content,threadlist;
   int utf8,ShowInvisible,slvl = -1,level = 0,first = 1,printed = 0;
   t_message *msg;
+  cf_readmode_t *rm_infos = cf_hash_get(GlobalValues,"RM",2);
 
   /* are we in the right read mode? */
   if(cf_strcmp(rm->values[0],"nested") != 0) return FLT_DECLINE;
@@ -178,7 +181,7 @@ int flt_nested_execute_filter(t_cf_hash *head,t_configuration *dc,t_configuratio
   cf_tpl_setvar(tpl,"thread",&hash);
 
   if(cf_strcmp(st->values[0],"none") != 0) {
-    cf_gen_threadlist(thread,head,&threadlist,st->values[0],lt->values[0],CF_MODE_THREADVIEW);
+    cf_gen_threadlist(thread,head,&threadlist,rm_infos->post_threadlist_tpl,st->values[0],lt->values[0],CF_MODE_THREADVIEW);
     cf_tpl_setvalue(tpl,"threadlist",TPL_VARIABLE_STRING,threadlist.content,threadlist.len);
     str_cleanup(&threadlist);
   }

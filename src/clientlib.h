@@ -77,7 +77,7 @@ typedef struct s_message {
   short may_show; /**< The visibility flag for plugins to use to hide postings */
   short invisible; /**< The visibility flag (if 0, posting is deleted) */
 
-  t_cf_template tpl; /**< The template object corresponding to this message */
+  t_cf_tpl_variable hashvar;
 
   struct s_message *next; /**< The pointer to the next message in the chain */
   struct s_message *prev; /**< The pointer to the previous message in the chain */
@@ -584,22 +584,20 @@ u_char *cf_general_get_time(u_char *fmt,u_char *locale,int *len,time_t *date);
  * \param sock The socket
  * \param tsd The readline buffer
  * \param thr The thread structure
- * \param tplname The template name
  * \param tid The thread id
  * \param mid The message id
  * \param del Boolean. If CF_KILL_DELETED, deleted messages will be killed. If CF_KEEP_DELETED, deleted messages will not be killed
  * \return 0 on success, -1 on failure
  */
-int cf_get_message_through_sock(int sock,rline_t *tsd,t_cl_thread *thr,const u_char *tplname,u_int64_t tid,u_int64_t mid,int del);
+int cf_get_message_through_sock(int sock,rline_t *tsd,t_cl_thread *thr,u_int64_t tid,u_int64_t mid,int del);
 
 /**
  * This function reads the next thread from a socket
  * \param sock The socket
  * \param tsd The readline buffer
  * \param thr The thread structure
- * \param tplname The template name
  */
-int cf_get_next_thread_through_sock(int sock,rline_t *tsd,t_cl_thread *thr,const u_char *tplname);
+int cf_get_next_thread_through_sock(int sock,rline_t *tsd,t_cl_thread *thr);
 
 #ifndef CF_SHARED_MEM
 /**
@@ -608,20 +606,18 @@ int cf_get_next_thread_through_sock(int sock,rline_t *tsd,t_cl_thread *thr,const
  * \param ary Reference to an array object (will be initialized in this function!
  * \param sock The socket to the server
  * \param tsd The readline structure
- * \param tplname The path to the template file, may be NULL if not used
  * \return -1 on failure, 0 on success
  */
-int cf_get_threadlist(t_array *ary,int sock,rline_t *tsd,const u_char *tplname);
+int cf_get_threadlist(t_array *ary,int sock,rline_t *tsd);
 #else
 /**
  * Reads a complete threadlist into an array
  *
  * \param ary Reference to an array object (will be initialized in this function!
  * \param ptr Pointer to the shared memory
- * \param tplname The path to the template file, may be NULL if not used
  * \return -1 on failure, 0 on success
  */
-int cf_get_threadlist(t_array *ary,void *ptr,const u_char *tplname);
+int cf_get_threadlist(t_array *ary,void *ptr);
 #endif
 
 #ifdef CF_SHARED_MEM
@@ -629,22 +625,20 @@ int cf_get_threadlist(t_array *ary,void *ptr,const u_char *tplname);
  * This function gets a message from the server
  * \param shm_ptr The pointer to the shared memory segment
  * \param thr The thread structure
- * \param tplname The template name
  * \param tid The thread id
  * \param mid The message id
  * \param del Boolean. If CF_KILL_DELETED, deleted messages will be killed. If CF_KEEP_DELETED, deleted messages will not be killed
  * \return 0 on success, -1 on failure
  */
-int cf_get_message_through_shm(void *shm_ptr,t_cl_thread *thr,const u_char *tplname,u_int64_t tid,u_int64_t mid,int del);
+int cf_get_message_through_shm(void *shm_ptr,t_cl_thread *thr,u_int64_t tid,u_int64_t mid,int del);
 
 /**
  * This function reads the next thread from the shared memory segment
  * \param shm_ptr The pointer to the shared memory segment
  * \param thr The thread structure
- * \param tplname The path to the template
  * \return NULL on failure, the modified pointer on success
  */
-void *cf_get_next_thread_through_shm(void *shm_ptr,t_cl_thread *thr,const u_char *tplname);
+void *cf_get_next_thread_through_shm(void *shm_ptr,t_cl_thread *thr);
 #endif
 
 

@@ -137,8 +137,8 @@ int flt_frameset_set_posting_vars(t_cf_hash *head,t_configuration *dc,t_configur
 /* {{{ flt_frameset_set_list_vars */
 int flt_frameset_set_list_vars(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_message *msg,u_int64_t tid,int mode) {
   if(ShallFrameset) {
-    cf_tpl_setvalue(&msg->tpl,"frameset",TPL_VARIABLE_INT,1);
-    if(mode & CF_MODE_THREADLIST) cf_tpl_setvalue(&msg->tpl,"target",TPL_VARIABLE_STRING,"view",4);
+    cf_tpl_hashvar_setvalue(&msg->hashvar,"frameset",TPL_VARIABLE_INT,1);
+    if(mode & CF_MODE_THREADLIST) cf_tpl_hashvar_setvalue(&msg->hashvar,"target",TPL_VARIABLE_STRING,"view",4);
     return FLT_OK;
   }
 

@@ -272,83 +272,76 @@ int normalize_cgi_variables(t_cf_hash *head,const u_char *field_name) {
   t_cf_cgi_param *param;
   char *buff;
   t_string str;
+  t_cf_hash_keylist *key;
 
   if(!field) return -1;
 
   /* In UTF-8 &#255; is xC3xBF, so if first char is not \194 it is not UTF-8 */
   if(*field != 0xC3) {
     /* {{{ transform everything to utf-8... */
-    for(i=0;i<hashsize(head->tablesize);i++) {
-      if(head->table[i]) {
-        for(ent = head->table[i];ent;ent=ent->next) {
-          for(param = (t_cf_cgi_param *)ent->data;param;param=param->next) {
-            if((converted = charset_convert(param->value,strlen(param->value),cs->values[0],"UTF-8",NULL)) == NULL) return -1;
+    for(key=head->keys.elems;key;key=key->next) {
+      for(param = cf_cgi_get_multiple(head,key->key);param;param=param->next) {
+        if((converted = charset_convert(param->value,strlen(param->value),cs->values[0],"UTF-8",NULL)) == NULL) return -1;
 
-            /* {{{ removed unicode whitespaces */
-            str_init(&str);
-            for(ptr=converted;*ptr;++ptr) {
-              // \xC2\xA0 is nbsp
-              if(cf_strncmp(ptr,"\xC2\xA0",2) == 0) {
-                str_char_append(&str,' ');
-                ++ptr;
-              }
-              // \xE2\x80[\x80-\x8B\xA8-\xAF] are unicode whitespaces
-              else if(cf_strncmp(ptr,"\xE2\x80",2) == 0) {
-                c = *(ptr+3);
-                if((c >= 0x80 && c <= 0x8B) || (c >= 0xA8 && c <= 0xAF)) {
-                  str_char_append(&str,' ');
-                  ptr += 2;
-                }
-                else str_char_append(&str,*ptr);
-              }
-              else str_char_append(&str,*ptr);
-            }
-            /* }}} */
-
-            free(param->value);
-            param->value = str.content;
-
-            free(converted);
+        /* {{{ removed unicode whitespaces */
+        str_init(&str);
+        for(ptr=converted;*ptr;++ptr) {
+          // \xC2\xA0 is nbsp
+          if(cf_strncmp(ptr,"\xC2\xA0",2) == 0) {
+            str_char_append(&str,' ');
+            ++ptr;
           }
+          // \xE2\x80[\x80-\x8B\xA8-\xAF] are unicode whitespaces
+          else if(cf_strncmp(ptr,"\xE2\x80",2) == 0) {
+            c = *(ptr+3);
+            if((c >= 0x80 && c <= 0x8B) || (c >= 0xA8 && c <= 0xAF)) {
+              str_char_append(&str,' ');
+              ptr += 2;
+            }
+            else str_char_append(&str,*ptr);
+          }
+          else str_char_append(&str,*ptr);
         }
+        /* }}} */
+
+        free(param->value);
+        param->value = str.content;
+
+        free(converted);
       }
     }
     /* }}} */
   }
   else {
     /* {{{ input seems to be UTF-8, check if strings are valid UTF-8 */
-    for(i=0;i<hashsize(head->tablesize);i++) {
-      if(head->table[i]) {
-        for(ent = head->table[i];ent;ent=ent->next) {
-          for(param = (t_cf_cgi_param *)ent->data;param;param=param->next) {
-            if(is_valid_utf8_string(param->value,strlen(param->value)) != 0) return -1;
+    for(key=head->keys.elems;key;key=key->next) {
+      for(param = cf_cgi_get_multiple(head,key->key);param;param=param->next) {
+        if(is_valid_utf8_string(param->value,strlen(param->value)) != 0) return -1;
 
-            /* {{{ removed unicode whitespaces */
-            str_init(&str);
-            for(ptr=param->value;*ptr;++ptr) {
-              // \xC2\xA0 is nbsp
-              if(cf_strncmp(ptr,"\xC2\xA0",2) == 0) {
-                str_char_append(&str,' ');
-                ++ptr;
-              }
-              // \xE2\x80[\x80-\x8B\xA8-\xAF] are unicode whitespaces
-              else if(cf_strncmp(ptr,"\xE2\x80",2) == 0) {
-                c = *(ptr+3);
-                if((c >= 0x80 && c <= 0x8B) || (c >= 0xA8 && c <= 0xAF)) {
-                  str_char_append(&str,' ');
-                  ptr += 2;
-                }
-                else str_char_append(&str,*ptr);
-              }
-              else str_char_append(&str,*ptr);
-
-            }
-            /* }}} */
-
-            free(param->value);
-            param->value = str.content;
+        /* {{{ removed unicode whitespaces */
+        str_init(&str);
+        for(ptr=param->value;*ptr;++ptr) {
+          // \xC2\xA0 is nbsp
+          if(cf_strncmp(ptr,"\xC2\xA0",2) == 0) {
+            str_char_append(&str,' ');
+            ++ptr;
           }
+          // \xE2\x80[\x80-\x8B\xA8-\xAF] are unicode whitespaces
+          else if(cf_strncmp(ptr,"\xE2\x80",2) == 0) {
+            c = *(ptr+3);
+            if((c >= 0x80 && c <= 0x8B) || (c >= 0xA8 && c <= 0xAF)) {
+              str_char_append(&str,' ');
+              ptr += 2;
+            }
+            else str_char_append(&str,*ptr);
+          }
+          else str_char_append(&str,*ptr);
+
         }
+        /* }}} */
+
+        free(param->value);
+        param->value = str.content;
       }
     }
     /* }}} */
@@ -692,9 +685,9 @@ int get_thread(t_cl_thread *thr,t_cf_hash *head) {
         #endif
         else {
           #ifdef CF_SHARED_MEM
-          if(cf_get_message_through_shm(shm,thr,NULL,tid,mid,CF_KILL_DELETED) == -1) return -1;
+          if(cf_get_message_through_shm(shm,thr,tid,mid,CF_KILL_DELETED) == -1) return -1;
           #else
-          if(cf_get_message_through_sock(sock,&rl,thr,NULL,tid,mid,CF_KILL_DELETED) == -1) return -1;
+          if(cf_get_message_through_sock(sock,&rl,thr,tid,mid,CF_KILL_DELETED) == -1) return -1;
           #endif
           else return 0;
         }
@@ -971,13 +964,13 @@ int main(int argc,char *argv[],char *env[]) {
       #endif
 
       #ifdef CF_SHARED_MEM
-      if(new_thread == 0 && cf_get_message_through_shm(shm,&thr,NULL,tid,mid,ShowInvisible ? CF_KEEP_DELETED : CF_KILL_DELETED) == -1) {
+      if(new_thread == 0 && cf_get_message_through_shm(shm,&thr,tid,mid,ShowInvisible ? CF_KEEP_DELETED : CF_KILL_DELETED) == -1) {
         printf("Status: 500 Internal Server Error\015\012\015\012");
         cf_error_message(ErrorString,NULL);
         return EXIT_SUCCESS;
       }
       #else
-      if(new_thread == 0 && cf_get_message_through_sock(sock,&rl,&thr,NULL,tid,mid,ShowInvisible ? CF_KEEP_DELETED : CF_KILL_DELETED) == -1) {
+      if(new_thread == 0 && cf_get_message_through_sock(sock,&rl,&thr,tid,mid,ShowInvisible ? CF_KEEP_DELETED : CF_KILL_DELETED) == -1) {
         printf("Status: 500 Internal Server Error\015\012\015\012");
         cf_error_message(ErrorString,NULL);
         return EXIT_SUCCESS;

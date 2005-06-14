@@ -63,7 +63,7 @@ void show_xmlhttp_thread(t_cf_hash *head,void *shm_ptr,u_int64_t tid,u_int64_t m
 {
   int ret;
   u_char fo_thread_tplname[256],buff[512],*line = NULL;
-  t_name_value *fo_thread_tpl,*cs,*ot,*ct;
+  t_name_value *fo_thread_tpl,*cs;
   u_char *fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   int show_invi = cf_hash_get(GlobalValues,"ShowInvisible",13) != NULL;
   t_cl_thread thread;
@@ -79,8 +79,6 @@ void show_xmlhttp_thread(t_cf_hash *head,void *shm_ptr,u_int64_t tid,u_int64_t m
 
   fo_thread_tpl = cfg_get_first_value(&fo_view_conf,fn,"TemplateForumThread");
   cs            = cfg_get_first_value(&fo_default_conf,fn,"ExternCharset");
-  ot            = cfg_get_first_value(&fo_view_conf,fn,"OpenThread");
-  ct            = cfg_get_first_value(&fo_view_conf,fn,"CloseThread");
 
   cf_gen_tpl_name(fo_thread_tplname,256,fo_thread_tpl->values[0]);
 
@@ -106,7 +104,7 @@ void show_xmlhttp_thread(t_cf_hash *head,void *shm_ptr,u_int64_t tid,u_int64_t m
   }
 
   free(line);
-  ret = cf_get_message_through_sock(sock,&tsd,&thread,fo_thread_tplname,tid,0,show_invi ? CF_KEEP_DELETED : CF_KILL_DELETED);
+  ret = cf_get_message_through_sock(sock,&tsd,&thread,tid,0,show_invi ? CF_KEEP_DELETED : CF_KILL_DELETED);
 
   if(ret == -1) {
     printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
@@ -126,10 +124,10 @@ void show_xmlhttp_thread(t_cf_hash *head,void *shm_ptr,u_int64_t tid,u_int64_t m
   #endif
 
   str_init(&str);
-  cf_gen_threadlist(&thread,head,&str,"full",NULL,CF_MODE_THREADLIST);
+  cf_gen_threadlist(&thread,head,&str,fo_thread_tplname,"full",NULL,CF_MODE_THREADLIST);
 
   printf("Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
-  fwrite(str.content + strlen(ot->values[0]),1,str.len - strlen(ot->values[0]) - strlen(ct->values[0]),stdout);
+  fwrite(str.content,1,str.len,stdout);
   str_cleanup(&str);
 
   cf_cleanup_thread(&thread);
@@ -196,9 +194,9 @@ void show_posting(t_cf_hash *head,void *shm_ptr,u_int64_t tid,u_int64_t mid)
   }
 
   #ifndef CF_SHARED_MEM
-  if(cf_get_message_through_sock(sock,&tsd,&thread,rmi->thread_posting_tpl,tid,mid,del) == -1)
+  if(cf_get_message_through_sock(sock,&tsd,&thread,tid,mid,del) == -1)
   #else
-  if(cf_get_message_through_shm(shm_ptr,&thread,rmi->thread_posting_tpl,tid,mid,del) == -1)
+  if(cf_get_message_through_shm(shm_ptr,&thread,tid,mid,del) == -1)
   #endif
   {
     if(cf_strcmp(ErrorString,"E_FO_404") == 0) {
@@ -250,9 +248,9 @@ void show_posting(t_cf_hash *head,void *shm_ptr,u_int64_t tid,u_int64_t mid)
   if(hpurl && *hpurl->values[0]) cf_set_variable(&tpl,cs,"aurl",hpurl->values[0],strlen(hpurl->values[0]),1);
   if(imgurl && *imgurl->values[0]) cf_set_variable(&tpl,cs,"aimg",imgurl->values[0],strlen(imgurl->values[0]),1);
 
-  cf_tpl_setvalue(&thread.messages->tpl,"start",TPL_VARIABLE_INT,1);
-  cf_tpl_setvalue(&thread.messages->tpl,"msgnum",TPL_VARIABLE_INT,thread.msg_len);
-  cf_tpl_setvalue(&thread.messages->tpl,"answers",TPL_VARIABLE_INT,thread.msg_len-1);
+  cf_tpl_hashvar_setvalue(&thread.messages->hashvar,"start",TPL_VARIABLE_INT,1);
+  cf_tpl_hashvar_setvalue(&thread.messages->hashvar,"msgnum",TPL_VARIABLE_INT,thread.msg_len);
+  cf_tpl_hashvar_setvalue(&thread.messages->hashvar,"answers",TPL_VARIABLE_INT,thread.msg_len-1);
   if(UserName) cf_tpl_setvalue(&tpl,"authed",TPL_VARIABLE_INT,1);
   cf_tpl_setvalue(&tpl,"cf_version",TPL_VARIABLE_STRING,CF_VERSION,strlen(CF_VERSION));
   /* }}} */
@@ -435,7 +433,7 @@ void show_threadlist(void *shm_ptr,t_cf_hash *head)
       if(thread.messages) {
         if((thread.messages->invisible == 0 && thread.messages->may_show) || del == CF_KEEP_DELETED) {
           str_init(&tlist);
-          if(cf_gen_threadlist(&thread,head,&tlist,"full",rm->posting_uri[UserName?1:0],CF_MODE_THREADLIST) != FLT_EXIT) fwrite(tlist.content,1,tlist.len,stdout);
+          if(cf_gen_threadlist(&thread,head,&tlist,rm->threadlist_thread_tpl,"full",rm->posting_uri[UserName?1:0],CF_MODE_THREADLIST) != FLT_EXIT) fwrite(tlist.content,1,tlist.len,stdout);
           str_cleanup(&tlist);
           cf_cleanup_thread(&thread);
         }
@@ -446,9 +444,9 @@ void show_threadlist(void *shm_ptr,t_cf_hash *head)
     #else
 
     #ifdef CF_SHARED_MEM
-    if(cf_get_threadlist(&threads,ptr1,rm->threadlist_thread_tpl) == -1)
+    if(cf_get_threadlist(&threads,ptr1) == -1)
     #else
-    if(cf_get_threadlist(&threads,sock,&tsd,rm->threadlist_thread_tpl) == -1)
+    if(cf_get_threadlist(&threads,sock,&tsd) == -1)
     #endif
     {
       if(*ErrorString) cf_error_message(ErrorString,NULL);
@@ -468,7 +466,7 @@ void show_threadlist(void *shm_ptr,t_cf_hash *head)
 
         if((threadp->messages->invisible == 0 && threadp->messages->may_show) || del == CF_KEEP_DELETED) {
           str_init(&tlist);
-          if(cf_gen_threadlist(threadp,head,&tlist,"full",rm->posting_uri[UserName?1:0],CF_MODE_THREADLIST) != FLT_EXIT) fwrite(tlist.content,1,tlist.len,stdout);
+          if(cf_gen_threadlist(threadp,head,&tlist,rm->threadlist_thread_tpl,"full",rm->posting_uri[UserName?1:0],CF_MODE_THREADLIST) != FLT_EXIT) fwrite(tlist.content,1,tlist.len,stdout);
           str_cleanup(&tlist);
         }
       }
@@ -550,7 +548,7 @@ int main(int argc,char *argv[],char *env[]) {
   };
 
   int ret;
-  u_char  *ucfg,*m  = NULL,*t = NULL,*UserName,*fname,*mode;
+  u_char  *ucfg,*m  = NULL,*t = NULL,*UserName,*fname,*mode = NULL;
   t_array *cfgfiles;
   t_cf_hash *head;
   t_configfile conf,dconf;

@@ -140,7 +140,7 @@ int flt_basic_set_target(t_cf_hash *head,t_configuration *dc,t_configuration *vc
   t_name_value *cs = cfg_get_first_value(dc,forum_name,"ExternCharset");
 
   if(Cfg.BaseTarget && *Cfg.BaseTarget && mode == 0) {
-    cf_set_variable(&msg->tpl,cs,"target",Cfg.BaseTarget,strlen(Cfg.BaseTarget),1);
+    cf_set_variable_hash(&msg->hashvar,cs,"target",Cfg.BaseTarget,strlen(Cfg.BaseTarget),1);
     return FLT_OK;
   }
 

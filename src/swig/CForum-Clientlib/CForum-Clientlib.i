@@ -80,8 +80,6 @@ typedef struct s_message {
   const char *get_content();
   void set_content(const char *cnt);
 
-  t_cf_template *get_tpl();
-
   t_message *get_first_visible();
   t_message *delete_subtree();
   t_message *next_subtree();
@@ -174,9 +172,6 @@ void t_message_set_content(t_message *msg,const u_char *cnt) {
   str_chars_set(&msg->content,cnt,strlen(cnt));
 }
 
-t_cf_template *t_message_get_tpl(t_message *msg) {
-  return &msg->tpl;
-}
 %}
 /* }}} */
 
@@ -280,13 +275,13 @@ char *cf_pl_general_get_time(const char *fmt,const char *locale,unsigned int dat
 char *cf_pl_general_get_time(const char *fmt,const char *locale,unsigned int date);
 
 %{
-t_cl_thread *cf_pl_get_message_through_sock(int sock,rline_t *tsd,const u_char *tplname,const u_char *ctid,const u_char *cmid,bool del) {
+t_cl_thread *cf_pl_get_message_through_sock(int sock,rline_t *tsd,const u_char *ctid,const u_char *cmid,bool del) {
   t_cl_thread *thr = fo_alloc(NULL,1,sizeof(*thr),FO_ALLOC_CALLOC);
 
   u_int64_t tid = str_to_u_int64(ctid);
   u_int64_t mid = str_to_u_int64(cmid);
 
-  if(cf_get_message_through_sock(sock,tsd,thr,tplname,tid,mid,del) != 0) {
+  if(cf_get_message_through_sock(sock,tsd,thr,tid,mid,del) != 0) {
     free(thr);
     return NULL;
   }
@@ -294,13 +289,13 @@ t_cl_thread *cf_pl_get_message_through_sock(int sock,rline_t *tsd,const u_char *
   return thr;
 }
 %}
-t_cl_thread *cf_pl_get_message_through_sock(int sock,rline_t *tsd,const char *tplname,const char *ctid,const char *cmid,bool del);
+t_cl_thread *cf_pl_get_message_through_sock(int sock,rline_t *tsd,const char *ctid,const char *cmid,bool del);
 
 %{
-t_cl_thread *cf_pl_get_next_thread_through_sock(int sock,rline_t *tsd,const u_char *tplname) {
+t_cl_thread *cf_pl_get_next_thread_through_sock(int sock,rline_t *tsd) {
   t_cl_thread *thr = fo_alloc(NULL,1,sizeof(*thr),FO_ALLOC_CALLOC);
 
-  if(cf_get_next_thread_through_sock(sock,tsd,thr,tplname) != 0) {
+  if(cf_get_next_thread_through_sock(sock,tsd,thr) != 0) {
     free(thr);
     return NULL;
   }
@@ -308,16 +303,16 @@ t_cl_thread *cf_pl_get_next_thread_through_sock(int sock,rline_t *tsd,const u_ch
   return thr;
 }
 %}
-t_cl_thread *cf_pl_get_next_thread_through_sock(int sock,rline_t *tsd,const char *tplname);
+t_cl_thread *cf_pl_get_next_thread_through_sock(int sock,rline_t *tsd);
 
 %{
-t_cl_thread *cf_pl_get_message_through_shm(void *shm_ptr,const char *tplname,const char *ctid,const char *cmid,bool del) {
+t_cl_thread *cf_pl_get_message_through_shm(void *shm_ptr,const char *ctid,const char *cmid,bool del) {
   t_cl_thread *thr = fo_alloc(NULL,1,sizeof(*thr),FO_ALLOC_CALLOC);
 
   u_int64_t tid = str_to_u_int64(ctid);
   u_int64_t mid = str_to_u_int64(cmid);
 
-  if(cf_get_message_through_shm(shm_ptr,thr,tplname,tid,mid,del) != 0) {
+  if(cf_get_message_through_shm(shm_ptr,thr,tid,mid,del) != 0) {
     free(thr);
     return NULL;
   }
@@ -325,7 +320,7 @@ t_cl_thread *cf_pl_get_message_through_shm(void *shm_ptr,const char *tplname,con
   return thr;
 }
 %}
-t_cl_thread *cf_pl_get_message_through_shm(void *shm_ptr,const char *tplname,const char *ctid,const char *cmid,bool del);
+t_cl_thread *cf_pl_get_message_through_shm(void *shm_ptr,const char *ctid,const char *cmid,bool del);
 
 
 char *charset_convert(const char *toencode,int in_len,const char *from_charset,const char *to_charset,int *out_len_p);

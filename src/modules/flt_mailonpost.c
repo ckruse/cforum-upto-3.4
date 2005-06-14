@@ -550,7 +550,7 @@ int flt_mailonpost_execute(t_cf_hash *head,t_configuration *dc,t_configuration *
     memset(&thr,0,sizeof(thr));
     memset(&rl,0,sizeof(rl));
 
-    if(cf_get_message_through_sock(sock,&rl,&thr,NULL,tid,p->mid,CF_KILL_DELETED) == -1) {
+    if(cf_get_message_through_sock(sock,&rl,&thr,tid,p->mid,CF_KILL_DELETED) == -1) {
       fprintf(stderr,"flt_mailonpost: Error getting thread: %s\n",ErrorString);
       return FLT_DECLINE;
     }

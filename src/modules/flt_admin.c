@@ -274,24 +274,24 @@ int flt_admin_posthandler(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc
   if(!UserName) return FLT_DECLINE;
 
   if(flt_admin_is_admin(UserName) && ShowInvisible) {
-    cf_tpl_setvalue(&msg->tpl,"admin",TPL_VARIABLE_INT,1);
+    cf_tpl_hashvar_setvalue(&msg->hashvar,"admin",TPL_VARIABLE_INT,1);
 
-    cf_tpl_setvalue(&msg->tpl,"aaf",TPL_VARIABLE_INT,1);
-    if(usejs && cf_strcmp(usejs->values[0],"yes") == 0 && (mode & CF_MODE_THREADLIST)) cf_tpl_setvalue(&msg->tpl,"AdminJS",TPL_VARIABLE_INT,1);
+    cf_tpl_hashvar_setvalue(&msg->hashvar,"aaf",TPL_VARIABLE_INT,1);
+    if(usejs && cf_strcmp(usejs->values[0],"yes") == 0 && (mode & CF_MODE_THREADLIST)) cf_tpl_hashvar_setvalue(&msg->hashvar,"AdminJS",TPL_VARIABLE_INT,1);
 
     link = cf_advanced_get_link(rm->posting_uri[1],tid,msg->mid,NULL,1,&l,"faa","archive");
-    cf_tpl_setvalue(&msg->tpl,"archive_link",TPL_VARIABLE_STRING,link,l);
+    cf_tpl_hashvar_setvalue(&msg->hashvar,"archive_link",TPL_VARIABLE_STRING,link,l);
     free(link);
 
     if(msg->invisible == 0) {
       link = cf_advanced_get_link(rm->posting_uri[1],tid,msg->mid,NULL,1,&l,"faa","del");
-      cf_tpl_setvalue(&msg->tpl,"visible",TPL_VARIABLE_STRING,"1",1);
-      cf_tpl_setvalue(&msg->tpl,"del_link",TPL_VARIABLE_STRING,link,l);
+      cf_tpl_hashvar_setvalue(&msg->hashvar,"visible",TPL_VARIABLE_STRING,"1",1);
+      cf_tpl_hashvar_setvalue(&msg->hashvar,"del_link",TPL_VARIABLE_STRING,link,l);
       free(link);
     }
     else {
       link = cf_advanced_get_link(rm->posting_uri[1],tid,msg->mid,NULL,1,&l,"faa","undel");
-      cf_tpl_setvalue(&msg->tpl,"undel_link",TPL_VARIABLE_STRING,link,l);
+      cf_tpl_hashvar_setvalue(&msg->hashvar,"undel_link",TPL_VARIABLE_STRING,link,l);
       free(link);
     }
 

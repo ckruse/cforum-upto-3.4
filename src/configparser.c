@@ -111,12 +111,6 @@ t_conf_opt fo_view_options[] = {
   { "ParamType",                  handle_command,   CFG_OPT_CONFIG|CFG_OPT_NEEDED|CFG_OPT_LOCAL,              &fo_view_conf },
   { "ShowSig",                    handle_command,   CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_UNIQUE|CFG_OPT_LOCAL, &fo_view_conf },
   { "MaxSigLines",                handle_command,   CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_UNIQUE|CFG_OPT_LOCAL, &fo_view_conf },
-  { "OpenThread",                 handle_command,   CFG_OPT_CONFIG|CFG_OPT_LOCAL|CFG_OPT_NEEDED,              &fo_view_conf },
-  { "OpenPosting",                handle_command,   CFG_OPT_CONFIG|CFG_OPT_LOCAL|CFG_OPT_NEEDED,              &fo_view_conf },
-  { "OpenSubtree",                handle_command,   CFG_OPT_CONFIG|CFG_OPT_LOCAL|CFG_OPT_NEEDED,              &fo_view_conf },
-  { "CloseSubtree",               handle_command,   CFG_OPT_CONFIG|CFG_OPT_LOCAL|CFG_OPT_NEEDED,              &fo_view_conf },
-  { "ClosePosting",               handle_command,   CFG_OPT_CONFIG|CFG_OPT_LOCAL|CFG_OPT_NEEDED,              &fo_view_conf },
-  { "CloseThread",                handle_command,   CFG_OPT_CONFIG|CFG_OPT_LOCAL|CFG_OPT_NEEDED,              &fo_view_conf },
 
   { "TemplateForumBegin",         handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_view_conf },
   { "TemplateForumEnd",           handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_view_conf },

@@ -41,18 +41,18 @@
 
 /* {{{ cf_get_threadlist */
 #ifndef CF_SHARED_MEM
-int cf_get_threadlist(t_array *ary,int sock,rline_t *tsd,const u_char *tplname)
+int cf_get_threadlist(t_array *ary,int sock,rline_t *tsd)
 #else
-int cf_get_threadlist(t_array *ary,void *ptr,const u_char *tplname)
+int cf_get_threadlist(t_array *ary,void *ptr)
 #endif
 {
   t_cl_thread thread;
   array_init(ary,sizeof(thread),cf_cleanup_thread);
 
   #ifndef CF_SHARED_MEM
-  while(cf_get_next_thread_through_sock(sock,tsd,&thread,tplname) == 0)
+  while(cf_get_next_thread_through_sock(sock,tsd,&thread) == 0)
   #else
-  while((ptr = cf_get_next_thread_through_shm(ptr,&thread,tplname)) != NULL)
+  while((ptr = cf_get_next_thread_through_shm(ptr,&thread)) != NULL)
   #endif
   {
     array_push(ary,&thread);
@@ -65,7 +65,7 @@ int cf_get_threadlist(t_array *ary,void *ptr,const u_char *tplname)
 
 
 /* {{{ cf_get_next_thread_through_sock */
-int cf_get_next_thread_through_sock(int sock,rline_t *tsd,t_cl_thread *thr,const u_char *tplname) {
+int cf_get_next_thread_through_sock(int sock,rline_t *tsd,t_cl_thread *thr) {
   u_char *line,*chtmp;
   int shallRun = 1;
   t_message *x;
@@ -93,7 +93,7 @@ int cf_get_next_thread_through_sock(int sock,rline_t *tsd,t_cl_thread *thr,const
         thr->msg_len            = 1;
         thr->tid                = str_to_u_int64(line+8);
 
-        if(tplname) cf_tpl_init(&thr->last->tpl,tplname);
+        cf_tpl_var_init(&thr->messages->hashvar,TPL_VARIABLE_HASH);
       }
       else if(cf_strncmp(line,"MSG m",5) == 0) {
         x = thr->last;
@@ -113,7 +113,7 @@ int cf_get_next_thread_through_sock(int sock,rline_t *tsd,t_cl_thread *thr,const
 
         thr->msg_len++;
 
-        if(tplname) cf_tpl_init(&thr->last->tpl,tplname);
+        cf_tpl_var_init(&thr->messages->hashvar,TPL_VARIABLE_HASH);
       }
       else if(cf_strncmp(line,"Flag:",5) == 0) {
         chtmp = strstr(line+5,"=");
@@ -160,7 +160,7 @@ int cf_get_next_thread_through_sock(int sock,rline_t *tsd,t_cl_thread *thr,const
     thr->ht = fo_alloc(NULL,1,sizeof(*thr->ht),FO_ALLOC_CALLOC);
     thr->ht->msg = thr->messages;
 
-    cf_msg_build_hierarchical_structure(thr->ht,thr->messages);
+    if(thr->messages->next) cf_msg_build_hierarchical_structure(thr->ht,thr->messages);
     /* }}} */
 
     return 0;
@@ -171,7 +171,7 @@ int cf_get_next_thread_through_sock(int sock,rline_t *tsd,t_cl_thread *thr,const
 
 /* {{{ cf_get_next_thread_through_shm */
 #ifdef CF_SHARED_MEM
-void *cf_get_next_thread_through_shm(void *shm_ptr,t_cl_thread *thr,const u_char *tplname) {
+void *cf_get_next_thread_through_shm(void *shm_ptr,t_cl_thread *thr) {
   register void *ptr = shm_ptr;
   u_int32_t post,i,val,val1;
   struct shmid_ds shm_buf;
@@ -215,7 +215,7 @@ void *cf_get_next_thread_through_shm(void *shm_ptr,t_cl_thread *thr,const u_char
     }
 
     if(!thr->newest) thr->newest = thr->last;
-    if(tplname) cf_tpl_init(&thr->last->tpl,tplname);
+    cf_tpl_var_init(&thr->last->hashvar,TPL_VARIABLE_HASH);
 
     /* {{{ message id */
     thr->last->mid = *((u_int64_t *)ptr);
@@ -359,7 +359,7 @@ void *cf_get_next_thread_through_shm(void *shm_ptr,t_cl_thread *thr,const u_char
   thr->ht = fo_alloc(NULL,1,sizeof(*thr->ht),FO_ALLOC_CALLOC);
   thr->ht->msg = thr->messages;
 
-  cf_msg_build_hierarchical_structure(thr->ht,thr->messages);
+  if(thr->messages->next) cf_msg_build_hierarchical_structure(thr->ht,thr->messages->next);
   /* }}} */
 
   return ptr;
@@ -368,7 +368,7 @@ void *cf_get_next_thread_through_shm(void *shm_ptr,t_cl_thread *thr,const u_char
 /* }}} */
 
 /* {{{ cf_get_message_through_sock */
-int cf_get_message_through_sock(int sock,rline_t *tsd,t_cl_thread *thr,const u_char *tplname,u_int64_t tid,u_int64_t mid,int del) {
+int cf_get_message_through_sock(int sock,rline_t *tsd,t_cl_thread *thr,u_int64_t tid,u_int64_t mid,int del) {
   size_t len;
   u_char buff[128],*line;
   t_message *msg;
@@ -396,7 +396,7 @@ int cf_get_message_through_sock(int sock,rline_t *tsd,t_cl_thread *thr,const u_c
       thr->ht       = NULL;
       thr->last     = NULL;
 
-      if(cf_get_next_thread_through_sock(sock,tsd,thr,tplname) < 0 && *ErrorString) {
+      if(cf_get_next_thread_through_sock(sock,tsd,thr) < 0 && *ErrorString) {
         strcpy(ErrorString,"E_COMMUNICATION");
         return -1;
       }
@@ -440,7 +440,7 @@ int cf_get_message_through_sock(int sock,rline_t *tsd,t_cl_thread *thr,const u_c
 
 /* {{{ cf_get_message_through_shm */
 #ifdef CF_SHARED_MEM
-int cf_get_message_through_shm(void *shm_ptr,t_cl_thread *thr,const u_char *tplname,u_int64_t tid,u_int64_t mid,int del) {
+int cf_get_message_through_shm(void *shm_ptr,t_cl_thread *thr,u_int64_t tid,u_int64_t mid,int del) {
   struct shmid_ds shm_buf;
   register void *ptr1;
   u_int64_t val = 0;
@@ -540,13 +540,9 @@ int cf_get_message_through_shm(void *shm_ptr,t_cl_thread *thr,const u_char *tpln
     return -1;
   }
 
-  if((ptr1 = cf_get_next_thread_through_shm(ptr1,thr,tplname)) == NULL) {
-    return -1;
-  }
+  if((ptr1 = cf_get_next_thread_through_shm(ptr1,thr)) == NULL) return -1;
 
-  if(mid == 0) {
-    thr->threadmsg = thr->messages;
-  }
+  if(mid == 0) thr->threadmsg = thr->messages;
   else {
     for(msg=thr->messages;msg;msg=msg->next) {
       if(msg->mid == mid) {

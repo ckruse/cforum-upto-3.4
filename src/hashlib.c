@@ -201,6 +201,8 @@ t_cf_hash *cf_hash_new(t_cf_hash_cleanup cl) {
 
   hsh->destroy   = cl;
 
+  hsh->keys.elems = hsh->keys.last = NULL;
+
   return hsh;
 }
 /* }}} */
@@ -218,8 +220,9 @@ t_cf_hash *cf_hash_new(t_cf_hash_cleanup cl) {
  *
  * This function is private!
  */
-t_cf_hash_entry *_cf_hash_save(unsigned char *key,size_t keylen,void *data,size_t datalen,ub4 hashval) {
+t_cf_hash_entry *_cf_hash_save(t_cf_hash *hsh,unsigned char *key,size_t keylen,void *data,size_t datalen,ub4 hashval) {
   t_cf_hash_entry *ent = malloc(sizeof(t_cf_hash_entry));
+  t_cf_hash_keylist *akt = NULL;
 
   if(!ent) return NULL;
 
@@ -257,6 +260,25 @@ t_cf_hash_entry *_cf_hash_save(unsigned char *key,size_t keylen,void *data,size_
 
   ent->prev        = NULL;
   ent->next        = NULL;
+
+  if(hsh->keys.last == NULL) {
+    if((akt = hsh->keys.last = hsh->keys.elems = malloc(sizeof(*hsh->keys.last))) == NULL) return NULL;
+  }
+  else {
+    if((akt = hsh->keys.last->next = malloc(sizeof(*hsh->keys.last))) == NULL) return NULL;
+  }
+
+  akt->key  = ent->key;
+  akt->next = NULL;
+
+  /* are we at the first element? */
+  if(hsh->keys.last != akt) {
+    akt->prev = hsh->keys.last;
+    hsh->keys.last = akt;
+  }
+  else akt->prev = NULL;
+
+  ent->keyelem = akt;
 
   return ent;
 }
@@ -358,11 +380,11 @@ void _cf_hash_split(t_cf_hash *hsh,unsigned char *key,size_t keylen,void *data,s
   hval_short = hval & (elems - 1);
   if(hsh->table[hval_short]) {
     for(elem1=hsh->table[hval_short];elem1->next;elem1=elem1->next);
-    elem1->next        = _cf_hash_save(key,keylen,data,datalen,hval);
+    elem1->next        = _cf_hash_save(hsh,key,keylen,data,datalen,hval);
     elem1->next->prev  = elem1;
   }
   else {
-    hsh->table[hval_short] = _cf_hash_save(key,keylen,data,datalen,hval);
+    hsh->table[hval_short] = _cf_hash_save(hsh,key,keylen,data,datalen,hval);
   }
 
 }
@@ -370,22 +392,7 @@ void _cf_hash_split(t_cf_hash *hsh,unsigned char *key,size_t keylen,void *data,s
 
 #endif
 
-/* {{{ cf_hash_set
- * Returns:                0 if unsuccessful, 1 if successful
- * Parameters:
- *   - t_cf_hash *hsh      the hash object
- *   - unsigned char *key  the key
- *   - size_t keylen       the length of the key
- *   - void *data          the data
- *   - size_t datalen      the size of the data object
- *
- * This function saves a hash entry with the given key in the hash
- * table. It can happen that the table has to be resized, but this
- * should not happen very often (there's one double hashvalue in a
- * 32 bit keylen and we accept 5 double hashvalues per entry). But
- * *when* it happens, this call is very expensive...
- *
- */
+/* {{{ cf_hash_set */
 int cf_hash_set(t_cf_hash *hsh,unsigned char *key,size_t keylen,void *data,size_t datalen) {
   ub4 hval,hval_short;
   t_cf_hash_entry *ent,*prev;
@@ -426,21 +433,20 @@ int cf_hash_set(t_cf_hash *hsh,unsigned char *key,size_t keylen,void *data,size_
       prev = ent;
     }
 
-    prev->next       = _cf_hash_save(key,keylen,data,datalen,hval);
-    prev->next->prev = prev;
-    hsh->elements++;
-
     /*
      * phew... I *really* hope this case happens not very often.
      */
-    if(hsh->elements >= hashsize(hsh->tablesize)) {
-      _cf_hash_split(hsh,key,keylen,data,datalen,hval);
+    if(hsh->elements >= hashsize(hsh->tablesize)) _cf_hash_split(hsh,key,keylen,data,datalen,hval);
+    else {
+      prev->next       = _cf_hash_save(hsh,key,keylen,data,datalen,hval);
+      prev->next->prev = prev;
+      hsh->elements++;
     }
 
     return 1;
   }
   else {
-    hsh->table[hval_short] = _cf_hash_save(key,keylen,data,datalen,hval);
+    hsh->table[hval_short] = _cf_hash_save(hsh,key,keylen,data,datalen,hval);
     return 1;
   }
 
@@ -448,21 +454,7 @@ int cf_hash_set(t_cf_hash *hsh,unsigned char *key,size_t keylen,void *data,size_
 }
 /* }}} */
 
-/* {{{ cf_hash_set_static
- * Returns:                0 if unsuccessful, 1 if successful
- * Parameters:
- *   - t_cf_hash *hsh      the hash object
- *   - unsigned char *key  the key
- *   - size_t keylen       the length of the key
- *   - void *data          the data
- *
- * This function saves a hash entry with the given key in the hash
- * table. It can happen that the table has to be resized, but this
- * should not happen very often (there's one double hashvalue in a
- * 32 bit keylen and we accept 5 double hashvalues per entry). But
- * *when* it happens, this call is very expensive...
- *
- */
+/* {{{ cf_hash_set_static */
 int cf_hash_set_static(t_cf_hash *hsh,unsigned char *key,size_t keylen,void *data) {
   ub4 hval,hval_short;
   t_cf_hash_entry *ent,*prev;
@@ -502,21 +494,20 @@ int cf_hash_set_static(t_cf_hash *hsh,unsigned char *key,size_t keylen,void *dat
       prev = ent;
     }
 
-    prev->next       = _cf_hash_save(key,keylen,data,0,hval);
-    prev->next->prev = prev;
-    hsh->elements++;
-
     /*
      * phew... I *really* hope this case happens not very often.
      */
-    if(hsh->elements >= hashsize(hsh->tablesize)) {
-      _cf_hash_split(hsh,key,keylen,data,0,hval);
+    if(hsh->elements >= hashsize(hsh->tablesize)) _cf_hash_split(hsh,key,keylen,data,0,hval);
+    else {
+      prev->next       = _cf_hash_save(hsh,key,keylen,data,0,hval);
+      prev->next->prev = prev;
+      hsh->elements++;
     }
 
     return 1;
   }
   else {
-    hsh->table[hval_short] = _cf_hash_save(key,keylen,data,0,hval);
+    hsh->table[hval_short] = _cf_hash_save(hsh,key,keylen,data,0,hval);
     return 1;
   }
 
@@ -524,17 +515,7 @@ int cf_hash_set_static(t_cf_hash *hsh,unsigned char *key,size_t keylen,void *dat
 }
 /* }}} */
 
-/* {{{ cf_hash_get
- * Returns:                the data of the hash entry if found or NULL
- * Parameters:
- *   - t_cf_hash *hsh      the hash object
- *   - unsigned char *key  the key
- *   - size_t keylen       the length of the key
- *
- * This function looks up a hash entry in a hash table. If an entry with
- * the key has not been found NULL is returned.
- *
- */
+/* {{{ cf_hash_get */
 void *cf_hash_get(t_cf_hash *hsh,unsigned char *key,size_t keylen) {
   ub4 hval,hval_short;
   t_cf_hash_entry *ent;
@@ -552,18 +533,7 @@ void *cf_hash_get(t_cf_hash *hsh,unsigned char *key,size_t keylen) {
 }
 /* }}} */
 
-/* {{{ cf_hash_entry_delete
- * Returns:                0 or 1
- * Parameters:
- *   - t_cf_hash *hsh      the hash object
- *   - unsigned char *key  the key
- *   - size_t keylen       the length of the key
- *
- * This function deletes a hash entry in a hashtable. Returns
- * 0 if an entry with this key could not be found, returns 1 if
- * the hash entry has successfully been deleted
- *
- */
+/* {{{ cf_hash_entry_delete */
 int cf_hash_entry_delete(t_cf_hash *hsh,unsigned char *key,size_t keylen) {
   ub4 hval,hval_short;
   t_cf_hash_entry *ent;
@@ -581,15 +551,15 @@ int cf_hash_entry_delete(t_cf_hash *hsh,unsigned char *key,size_t keylen) {
       }
       free(ent->key);
 
-      if(ent->prev) {
-        ent->prev->next = ent->next;
-      }
-      else {
-        hsh->table[hval_short] = ent->next;
-      }
-      if(ent->next) {
-        ent->next->prev = ent->prev;
-      }
+      if(ent->prev) ent->prev->next = ent->next;
+      else hsh->table[hval_short] = ent->next;
+
+      if(ent->next) ent->next->prev = ent->prev;
+
+      if(ent->keyelem->next) ent->keyelem->next->prev = ent->keyelem->prev;
+      if(ent->keyelem->prev) ent->keyelem->prev->next = ent->keyelem->next;
+
+      free(ent->keyelem);
 
       free(ent);
       hsh->elements--;
@@ -602,16 +572,7 @@ int cf_hash_entry_delete(t_cf_hash *hsh,unsigned char *key,size_t keylen) {
 }
 /* }}} */
 
-/* {{{ cf_hash_destroy()
- * Returns:                nothing
- * Parameters:
- *   - t_cf_hash *hsh      the hash object
- *
- * This function destroys a hash and frees all of its values.
- * After this function call you have to create a new hash with
- * cf_hash_new()!
- *
- */
+/* {{{ cf_hash_destroy() */
 void cf_hash_destroy(t_cf_hash *hsh) {
   ub4 elems = hashsize(hsh->tablesize);
   ub4 i;
@@ -626,6 +587,8 @@ void cf_hash_destroy(t_cf_hash *hsh) {
         }
 
         ent1 = ent->next;
+
+        free(ent->keyelem);
 
         free(ent->key);
         free(ent);

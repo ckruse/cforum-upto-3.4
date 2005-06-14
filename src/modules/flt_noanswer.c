@@ -133,17 +133,17 @@ int flt_noanswer_posthandler(t_cf_hash *cgi,t_configuration *dc,t_configuration 
   u_char *link;
   size_t l;
 
-  if((flag = cf_flag_by_name(&msg->flags,"no-answer")) != NULL) cf_tpl_setvalue(&msg->tpl,"na",TPL_VARIABLE_INT,1);
+  if((flag = cf_flag_by_name(&msg->flags,"no-answer")) != NULL) cf_tpl_hashvar_setvalue(&msg->hashvar,"na",TPL_VARIABLE_INT,1);
 
   if(si) {
     if(flag) {
       link = cf_advanced_get_link(rm->posting_uri[1],tid,msg->mid,NULL,1,&l,"a","remove-na");
-      cf_tpl_setvalue(&msg->tpl,"removena_link",TPL_VARIABLE_STRING,link,l);
+      cf_tpl_hashvar_setvalue(&msg->hashvar,"removena_link",TPL_VARIABLE_STRING,link,l);
       free(link);
     }
     else {
       link = cf_advanced_get_link(rm->posting_uri[1],tid,msg->mid,NULL,1,&l,"a","set-na");
-      cf_tpl_setvalue(&msg->tpl,"setna_link",TPL_VARIABLE_STRING,link,l);
+      cf_tpl_hashvar_setvalue(&msg->hashvar,"setna_link",TPL_VARIABLE_STRING,link,l);
       free(link);
     }
   }

@@ -203,7 +203,7 @@ int flt_scoring_execute(t_cf_hash *head,t_configuration *dc,t_configuration *vc,
     else {
       /* no, so go and calculate the color */
       len = flt_scoring_calc_col(buff,score);
-      cf_tpl_setvalue(&msg->tpl,"flt_scoring_color",TPL_VARIABLE_STRING,buff,len);
+      cf_tpl_hashvar_setvalue(&msg->hashvar,"flt_scoring_color",TPL_VARIABLE_STRING,buff,len);
     }
 
     return FLT_OK;

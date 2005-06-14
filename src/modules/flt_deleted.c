@@ -93,30 +93,30 @@ int flt_deleted_execute(t_cf_hash *head,t_configuration *dc,t_configuration *vc,
           }
           else {
             len = snprintf(buff,256,"?a=u&dt=%llu",thread->tid);
-            cf_tpl_setvalue(&thread->messages->tpl,"deleted_undel_link",TPL_VARIABLE_STRING,buff,len);
+            cf_tpl_hashvar_setvalue(&thread->messages->hashvar,"deleted_undel_link",TPL_VARIABLE_STRING,buff,len);
 
-            for(msg=thread->messages;msg;msg=msg->next) cf_tpl_setvalue(&msg->tpl,"undel",TPL_VARIABLE_INT,1);
+            for(msg=thread->messages;msg;msg=msg->next) cf_tpl_hashvar_setvalue(&msg->hashvar,"undel",TPL_VARIABLE_INT,1);
           }
         }
         else {
           if(Cfg.CheckBoxes) {
-            cf_tpl_setvalue(&msg->tpl,"delcheckbox",TPL_VARIABLE_INT,1);
-            cf_tpl_setvalue(&msg->tpl,"deltid",TPL_VARIABLE_STRING,buff,len);
+            cf_tpl_hashvar_setvalue(&msg->hashvar,"delcheckbox",TPL_VARIABLE_INT,1);
+            cf_tpl_hashvar_setvalue(&msg->hashvar,"deltid",TPL_VARIABLE_STRING,buff,len);
           }
 
-          if(Cfg.xml_http) cf_tpl_setvalue(&msg->tpl,"DeletedUseXMLHttp",TPL_VARIABLE_INT,1);
+          if(Cfg.xml_http) cf_tpl_hashvar_setvalue(&msg->hashvar,"DeletedUseXMLHttp",TPL_VARIABLE_INT,1);
 
           len = snprintf(buff,150,"%s?a=d&dt=%lld",url->values[0],thread->tid);
-          cf_tpl_setvalue(&msg->tpl,"dellink",TPL_VARIABLE_STRING,buff,len);
+          cf_tpl_hashvar_setvalue(&msg->hashvar,"dellink",TPL_VARIABLE_STRING,buff,len);
         }
       }
     }
     else {
       if(mode & CF_MODE_THREADVIEW) {
         len = snprintf(buff,150,"%s?a=d&dt=%lld",url->values[0],thread->tid);
-        cf_tpl_setvalue(&msg->tpl,"dellink",TPL_VARIABLE_STRING,buff,len);
+        cf_tpl_hashvar_setvalue(&msg->hashvar,"dellink",TPL_VARIABLE_STRING,buff,len);
 
-        if(Cfg.xml_http) cf_tpl_setvalue(&msg->tpl,"DeletedUseXMLHttp",TPL_VARIABLE_INT,1);
+        if(Cfg.xml_http) cf_tpl_hashvar_setvalue(&msg->hashvar,"DeletedUseXMLHttp",TPL_VARIABLE_INT,1);
       }
     }
 

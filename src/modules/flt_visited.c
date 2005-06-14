@@ -184,9 +184,9 @@ int flt_visited_execute_filter(t_cf_hash *head,t_configuration *dc,t_configurati
 
             if(tid) {
               #ifdef CF_SHARED_MEM
-              ret = cf_get_message_through_shm(sock,&thread,NULL,tid,0,CF_KILL_DELETED);
+              ret = cf_get_message_through_shm(sock,&thread,tid,0,CF_KILL_DELETED);
               #else
-              ret = cf_get_message_through_sock(sock,&tsd,&thread,NULL,tid,0,CF_KILL_DELETED);
+              ret = cf_get_message_through_sock(sock,&tsd,&thread,tid,0,CF_KILL_DELETED);
               #endif
 
               if(ret == -1) return FLT_DECLINE;
@@ -225,9 +225,9 @@ int flt_visited_execute_filter(t_cf_hash *head,t_configuration *dc,t_configurati
 
         if(tid) {
           #ifdef CF_SHARED_MEM
-          ret = cf_get_message_through_shm(sock,&thread,NULL,tid,0,CF_KILL_DELETED);
+          ret = cf_get_message_through_shm(sock,&thread,tid,0,CF_KILL_DELETED);
           #else
-          ret = cf_get_message_through_sock(sock,&tsd,&thread,NULL,tid,0,CF_KILL_DELETED);
+          ret = cf_get_message_through_sock(sock,&tsd,&thread,tid,0,CF_KILL_DELETED);
           #endif
 
           if(ret == -1) return FLT_DECLINE;
@@ -331,7 +331,7 @@ int flt_visited_mark_visited(t_cf_hash *head,t_configuration *dc,t_configuration
       memset(&data,0,sizeof(data));
     }
 
-    if(Cfg.mark_all_visited || Cfg.db->get(Cfg.db,NULL,&key,&data,0) == 0) cf_tpl_setvalue(&msg->tpl,"visited",TPL_VARIABLE_INT,1);
+    if(Cfg.mark_all_visited || Cfg.db->get(Cfg.db,NULL,&key,&data,0) == 0) cf_tpl_hashvar_setvalue(&msg->hashvar,"visited",TPL_VARIABLE_INT,1);
 
     return FLT_OK;
   }
@@ -442,9 +442,9 @@ int flt_visited_set_link(t_cf_hash *head,t_configuration *dc,t_configuration *vc
 
   if(Cfg.VisitedFile && Cfg.HighlightVisitedPostings) {
     len = snprintf(buff,512,"%s?mv=%llu",x->values[0],thr->tid);
-    cf_set_variable(&msg->tpl,cs,"mvlink",buff,len,1);
+    cf_set_variable_hash(&msg->hashvar,cs,"mvlink",buff,len,1);
 
-    if(Cfg.xml_http) cf_tpl_setvalue(&msg->tpl,"VisitedUseXMLHttp",TPL_VARIABLE_INT,1);
+    if(Cfg.xml_http) cf_tpl_hashvar_setvalue(&msg->hashvar,"VisitedUseXMLHttp",TPL_VARIABLE_INT,1);
   }
 
   return FLT_OK;

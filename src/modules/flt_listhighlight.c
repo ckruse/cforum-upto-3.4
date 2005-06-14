@@ -104,22 +104,22 @@ int flt_lh_execute_filter(t_cf_hash *head,t_configuration *dc,t_configuration *v
 
   if(Cfg.VIPList) {
     tmp = flt_lh_tolwer(msg->author.content,&len);
-    if(cf_hash_get(Cfg.VIPList,tmp,len)) cf_tpl_setvalue(&msg->tpl,"vip",TPL_VARIABLE_STRING,"1",1);
+    if(cf_hash_get(Cfg.VIPList,tmp,len)) cf_tpl_hashvar_setvalue(&msg->hashvar,"vip",TPL_VARIABLE_INT,1);
     free(tmp);
   }
 
   if(Cfg.WhiteList) {
     tmp = flt_lh_tolwer(msg->author.content,&len);
-    if(cf_hash_get(Cfg.WhiteList,tmp,len)) cf_tpl_setvalue(&msg->tpl,"whitelist",TPL_VARIABLE_STRING,"1",1);
+    if(cf_hash_get(Cfg.WhiteList,tmp,len)) cf_tpl_hashvar_setvalue(&msg->hashvar,"whitelist",TPL_VARIABLE_INT,1);
     free(tmp);
   }
 
   if(Cfg.HighlightCategories && msg->category.len) {
-    if(cf_hash_get(Cfg.HighlightCategories,msg->category.content,msg->category.len)) cf_tpl_setvalue(&msg->tpl,"cathigh",TPL_VARIABLE_STRING,"1",1);
+    if(cf_hash_get(Cfg.HighlightCategories,msg->category.content,msg->category.len)) cf_tpl_hashvar_setvalue(&msg->hashvar,"cathigh",TPL_VARIABLE_INT,1);
   }
 
   if(Cfg.HighlightOwnPostings && uname) {
-    if(cf_strcasecmp(msg->author.content,uname->values[0]) == 0) cf_tpl_setvalue(&msg->tpl,"ownposting",TPL_VARIABLE_STRING,"1",1);
+    if(cf_strcasecmp(msg->author.content,uname->values[0]) == 0) cf_tpl_hashvar_setvalue(&msg->hashvar,"ownposting",TPL_VARIABLE_INT,1);
   }
 
   return FLT_OK;

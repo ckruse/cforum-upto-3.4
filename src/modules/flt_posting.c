@@ -108,6 +108,7 @@ int flt_posting_execute_filter(t_cf_hash *head,t_configuration *dc,t_configurati
   size_t len,qclen,msgcntlen;
   t_string cite,content,threadlist;
   t_cf_tpl_variable hash;
+  cf_readmode_t *rm_infos = cf_hash_get(GlobalValues,"RM",2);
 
   /* {{{ standard variables, set always, mode doesn't matter */
   if(flt_posting_cfg.TWidth) cf_tpl_setvalue(tpl,"twidth",TPL_VARIABLE_STRING,flt_posting_cfg.TWidth,strlen(flt_posting_cfg.TWidth));
@@ -236,7 +237,7 @@ int flt_posting_execute_filter(t_cf_hash *head,t_configuration *dc,t_configurati
   free(qchars);
 
   if(cf_strcmp(st->values[0],"none") != 0) {
-    cf_gen_threadlist(thread,head,&threadlist,st->values[0],NULL,CF_MODE_THREADVIEW);
+    cf_gen_threadlist(thread,head,&threadlist,rm_infos->post_threadlist_tpl,st->values[0],NULL,CF_MODE_THREADVIEW);
     cf_tpl_setvalue(tpl,"threadlist",TPL_VARIABLE_STRING,threadlist.content,threadlist.len);
     str_cleanup(&threadlist);
   }

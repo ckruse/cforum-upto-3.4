@@ -518,9 +518,9 @@ void show_thread(t_cf_hash *head,void *sock,u_int64_t tid)
   #endif
 
   #ifndef CF_SHARED_MEM
-  if(cf_get_message_through_sock(sock,&tsd,&thread,rm->threadlist_thread_tpl,tid,0,del) == -1)
+  if(cf_get_message_through_sock(sock,&tsd,&thread,tid,0,del) == -1)
   #else
-  if(cf_get_message_through_shm(shm_ptr,&thread,rm->threadlist_thread_tpl,tid,0,del) == -1)
+  if(cf_get_message_through_shm(shm_ptr,&thread,tid,0,del) == -1)
   #endif
   {
     if(cf_strcmp(ErrorString,"E_FO_404") == 0) {
@@ -908,9 +908,9 @@ void show_threadlist(void *shm_ptr,t_cf_hash *head)
     #else
 
     #ifdef CF_SHARED_MEM
-    if(cf_get_threadlist(&threads,ptr1,rm->threadlist_thread_tpl) == -1)
+    if(cf_get_threadlist(&threads,ptr1) == -1)
     #else
-    if(cf_get_threadlist(&threads,sock,&tsd,rm->threadlist_thread_tpl) == -1)
+    if(cf_get_threadlist(&threads,sock,&tsd) == -1)
     #endif
     {
       if(*ErrorString) cf_error_message(ErrorString,NULL);

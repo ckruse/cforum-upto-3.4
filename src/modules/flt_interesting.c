@@ -245,14 +245,14 @@ int flt_interesting_mark_interesting(t_cf_hash *head,t_configuration *dc,t_confi
         key.size = len;
 
         if(flt_interesting_db->get(flt_interesting_db,NULL,&key,&data,0) == 0) {
-          cf_tpl_setvalue(&msg->tpl,"mi",TPL_VARIABLE_INT,1);
+          cf_tpl_hashvar_setvalue(&msg->hashvar,"mi",TPL_VARIABLE_INT,1);
 
           len = snprintf(buff,150,"%s?a=rmi&mit=%llu",url->values[0],thread->tid);
-          cf_tpl_setvalue(&msg->tpl,"rmilink",TPL_VARIABLE_STRING,buff,len);
+          cf_tpl_hashvar_setvalue(&msg->hashvar,"rmilink",TPL_VARIABLE_STRING,buff,len);
         }
         else {
           len = snprintf(buff,150,"%s?a=mi&mit=%llu",url->values[0],thread->tid);
-          cf_tpl_setvalue(&msg->tpl,"milink",TPL_VARIABLE_STRING,buff,len);
+          cf_tpl_hashvar_setvalue(&msg->hashvar,"milink",TPL_VARIABLE_STRING,buff,len);
         }
       }
     }

@@ -141,13 +141,13 @@ int flt_oc_execute_filter(t_cf_hash *head,t_configuration *dc,t_configuration *v
   if(flt_oc_fn == NULL) flt_oc_fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
 
   vs = cfg_get_first_value(dc,flt_oc_fn,UserName ? "UBaseURL" : "BaseURL");
-  cf_tpl_setvalue(&thread->messages->tpl,"openclose",TPL_VARIABLE_INT,1);
+  cf_tpl_hashvar_setvalue(&thread->messages->hashvar,"openclose",TPL_VARIABLE_INT,1);
 
   i = snprintf(buff,512,"t%llu",thread->tid);
-  cf_tpl_setvalue(&thread->messages->tpl,"unanch",TPL_VARIABLE_STRING,buff,i);
+  cf_tpl_hashvar_setvalue(&thread->messages->hashvar,"unanch",TPL_VARIABLE_STRING,buff,i);
 
   /* user wants to use java script */
-  if(UseJavaScript) cf_tpl_setvalue(&thread->messages->tpl,"UseJavaScript",TPL_VARIABLE_INT,1);
+  if(UseJavaScript) cf_tpl_hashvar_setvalue(&thread->messages->hashvar,"UseJavaScript",TPL_VARIABLE_INT,1);
 
   if(ThreadsOpenByDefault == 0) {
     i = snprintf(buff,512,"%llu",thread->tid);
@@ -159,9 +159,9 @@ int flt_oc_execute_filter(t_cf_hash *head,t_configuration *dc,t_configuration *v
     key.size = i;
 
     if(flt_oc_db->get(flt_oc_db,NULL,&key,&data,0) == 0) {
-      cf_tpl_setvalue(&thread->messages->tpl,"open",TPL_VARIABLE_INT,1);
+      cf_tpl_hashvar_setvalue(&thread->messages->hashvar,"open",TPL_VARIABLE_INT,1);
       i = snprintf(buff,512,"%s?oc_t=%lld&a=close",vs->values[0],thread->tid);
-      cf_tpl_setvalue(&thread->messages->tpl,"link_oc",TPL_VARIABLE_STRING,buff,i);
+      cf_tpl_hashvar_setvalue(&thread->messages->hashvar,"link_oc",TPL_VARIABLE_STRING,buff,i);
 
       return FLT_DECLINE; /* thread is open */
     }
@@ -177,9 +177,9 @@ int flt_oc_execute_filter(t_cf_hash *head,t_configuration *dc,t_configuration *v
         for(msg=thread->messages;msg;msg=msg->next) {
           /* Thread has at least one not yet visited messages -- leave it open */
           if(is_visited(&(msg->mid)) == NULL && msg->invisible == 0 && msg->may_show == 1) {
-            cf_tpl_setvalue(&thread->messages->tpl,"open",TPL_VARIABLE_INT,1);
+            cf_tpl_hashvar_setvalue(&thread->messages->hashvar,"open",TPL_VARIABLE_INT,1);
             i = snprintf(buff,500,"%s?oc_t=%lld&a=close",vs->values[0],thread->tid);
-            cf_tpl_setvalue(&thread->messages->tpl,"link_oc",TPL_VARIABLE_STRING,buff,i);
+            cf_tpl_hashvar_setvalue(&thread->messages->hashvar,"link_oc",TPL_VARIABLE_STRING,buff,i);
 
             return FLT_DECLINE;
           }
@@ -188,7 +188,7 @@ int flt_oc_execute_filter(t_cf_hash *head,t_configuration *dc,t_configuration *v
     }
 
     i = snprintf(buff,512,"%s?oc_t=%lld&a=open",vs->values[0],thread->tid);
-    cf_tpl_setvalue(&thread->messages->tpl,"link_oc",TPL_VARIABLE_STRING,buff,i,1);
+    cf_tpl_hashvar_setvalue(&thread->messages->hashvar,"link_oc",TPL_VARIABLE_STRING,buff,i,1);
 
     cf_msg_delete_subtree(thread->messages);
   }
@@ -204,15 +204,15 @@ int flt_oc_execute_filter(t_cf_hash *head,t_configuration *dc,t_configuration *v
 
     if(flt_oc_db->get(flt_oc_db,NULL,&key,&data,0) == 0) {
       i = snprintf(buff,512,"%s?oc_t=%lld&a=open",vs->values[0],thread->tid);
-      cf_tpl_setvalue(&thread->messages->tpl,"link_oc",TPL_VARIABLE_STRING,buff,i,1);
+      cf_tpl_hashvar_setvalue(&thread->messages->hashvar,"link_oc",TPL_VARIABLE_STRING,buff,i,1);
       cf_msg_delete_subtree(thread->messages);
       return FLT_DECLINE; /* thread is closed */
     }
 
     /* this thread must be open */
-    cf_tpl_setvalue(&thread->messages->tpl,"open",TPL_VARIABLE_INT,1);
+    cf_tpl_hashvar_setvalue(&thread->messages->hashvar,"open",TPL_VARIABLE_INT,1);
     i = snprintf(buff,512,"%s?oc_t=%lld&a=close",vs->values[0],thread->tid);
-    cf_tpl_setvalue(&thread->messages->tpl,"link_oc",TPL_VARIABLE_STRING,buff,i);
+    cf_tpl_hashvar_setvalue(&thread->messages->hashvar,"link_oc",TPL_VARIABLE_STRING,buff,i);
   }
 
   return FLT_DECLINE;

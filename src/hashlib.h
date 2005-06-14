@@ -42,6 +42,11 @@ typedef           u_char     ub1;   /**< unified character format */
  */
 typedef void (*t_cf_hash_cleanup)(void *);
 
+typedef struct s_cf_hash_keylist {
+  u_char *key;
+  struct s_cf_hash_keylist *next,*prev;
+} t_cf_hash_keylist;
+
 /**
  * this struct is used to store a hashtable entry.
  */
@@ -60,12 +65,18 @@ typedef struct s_cf_hashentry {
    */
   struct s_cf_hashentry *next;
 
+  t_cf_hash_keylist *keyelem;
+
   /**
    * This is the pointer to the previous value. Because we cannot avoid double hash values, we have a
    * linked list of entries.
    */
   struct s_cf_hashentry *prev;
 } t_cf_hash_entry;
+
+typedef struct {
+  t_cf_hash_keylist *elems,*last;
+} t_cf_hash_keylist_head;
 
 /**
  *
@@ -92,6 +103,8 @@ typedef struct s_cf_hash {
    * has to cleanup the structure we saved.
    */
   t_cf_hash_cleanup destroy;
+
+  t_cf_hash_keylist_head keys;
 
   /**
    * We save only pointers because in each element we have a

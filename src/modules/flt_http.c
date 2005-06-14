@@ -212,10 +212,11 @@ time_t flt_http_lm_callbacks(t_cf_hash *head,t_configuration *dc,t_configuration
 
 /* {{{ flt_http_execute */
 #ifndef CF_SHARED_MEM
-int flt_http_execute(t_cf_hash *head,t_configuration *dc,t_configuration *vc,int sock) {
+int flt_http_execute(t_cf_hash *head,t_configuration *dc,t_configuration *vc,int sock)
 #else
-int flt_http_execute(t_cf_hash *head,t_configuration *dc,t_configuration *vc,void *sock) {
+int flt_http_execute(t_cf_hash *head,t_configuration *dc,t_configuration *vc,void *sock)
 #endif
+{
   u_char buff[100];
   time_t t,t1;
   struct tm *tm;
@@ -226,18 +227,15 @@ int flt_http_execute(t_cf_hash *head,t_configuration *dc,t_configuration *vc,voi
   ub4 elems = hashsize(header_table->tablesize);
   ub4 i;
   t_cf_hash_entry *ent;
+  t_cf_hash_keylist *key;
 
   /* {{{ http header management */
   ret = flt_http_header_callbacks(head,header_table,dc,vc,sock);
 
   cf_hash_entry_delete(header_table,"Last-Modified",13);
 
-  for(i=0;i<elems;i++) {
-    if(header_table->table[i]) {
-      for(ent=header_table->table[i];ent;ent=ent->next) {
-        printf("%s: %s\015\012",ent->key,(char *)ent->data);
-      }
-    }
+  for(key=header_table->keys.elems;key;key=key->next) {
+    printf("%s: %s\015\012",key->key,(char *)cf_hash_get(header_table,key->key,strlen(key->key)));
   }
 
   cf_hash_destroy(header_table);

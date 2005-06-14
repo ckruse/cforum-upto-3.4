@@ -136,17 +136,17 @@ int flt_noarchive_thread(t_cf_hash *head,t_configuration *dc,t_configuration *vc
   size_t l;
   t_cf_post_flag *flag;
 
-  if((flag = cf_flag_by_name(&thread->messages->flags,"no-archive")) != NULL) cf_tpl_setvalue(&thread->messages->tpl,"noarchive",TPL_VARIABLE_INT,1);
+  if((flag = cf_flag_by_name(&thread->messages->flags,"no-archive")) != NULL) cf_tpl_hashvar_setvalue(&thread->messages->hashvar,"noarchive",TPL_VARIABLE_INT,1);
 
   if(si) {
     if(flag) {
       link = cf_advanced_get_link(rm->posting_uri[1],thread->tid,thread->messages->mid,NULL,1,&l,"a","remove-noarchive");
-      cf_tpl_setvalue(&thread->messages->tpl,"removenoarchive_link",TPL_VARIABLE_STRING,link,l);
+      cf_tpl_hashvar_setvalue(&thread->messages->hashvar,"removenoarchive_link",TPL_VARIABLE_STRING,link,l);
       free(link);
     }
     else {
       link = cf_advanced_get_link(rm->posting_uri[1],thread->tid,thread->messages->mid,NULL,1,&l,"a","set-noarchive");
-      cf_tpl_setvalue(&thread->messages->tpl,"setnoarchive_link",TPL_VARIABLE_STRING,link,l);
+      cf_tpl_hashvar_setvalue(&thread->messages->hashvar,"setnoarchive_link",TPL_VARIABLE_STRING,link,l);
       free(link);
     }
   }
