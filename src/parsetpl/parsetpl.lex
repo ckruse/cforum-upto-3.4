@@ -2906,7 +2906,7 @@ void write_parser_functions(FILE *ofp, t_string *func_name, t_context *ctx, t_ar
   }
   fprintf(ofp,"\n%s\n",ctx->output.content);
   if(params) {
-    fprintf(ofp,"cf_tpl_finish(tpl);\n");
+    fprintf(ofp,"str_str_append(&otpl->parsed,&tpl->parsed); cf_tpl_finish(tpl);\n");
   }
   fprintf(ofp,"}\n\n");
   fprintf(ofp,"void %s_to_mem(t_cf_template *%stpl", func_name->content, (params ? "o" : ""));
@@ -2963,7 +2963,7 @@ void write_parser_functions(FILE *ofp, t_string *func_name, t_context *ctx, t_ar
   }
   if(params) {
     fprintf(ofp,"t_cf_template *tpl = fo_alloc(NULL,sizeof(t_cf_template),1,FO_ALLOC_MALLOC);\n");
-    fprintf(ofp,"if (!cf_tpl_init(tpl,NULL)) return;\n");
+    fprintf(ofp,"if (cf_tpl_init(tpl,NULL)) return;\n");
     fprintf(ofp,"cf_tpl_copyvars(tpl,otpl);\n");
     for(i = 0; i < params->elements; i++) {
       s = (t_string *)array_element_at(params,i);
@@ -2975,7 +2975,7 @@ void write_parser_functions(FILE *ofp, t_string *func_name, t_context *ctx, t_ar
   }
   fprintf(ofp,"\n%s\n",ctx->output_mem.content);
   if(params) {
-    fprintf(ofp,"cf_tpl_finish(tpl);\n");
+    fprintf(ofp,"str_str_append(&otpl->parsed,&tpl->parsed); cf_tpl_finish(tpl);\n");
   }
   fprintf(ofp,"}\n\n");
 }
