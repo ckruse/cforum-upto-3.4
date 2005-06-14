@@ -1,3 +1,7 @@
+2005-06-14 Christian Kruse <ckruse@wwwtech.de>
+	* src/modules/flt_nested.c: Moved to template functions; this makes
+		PerThreadTemplate totally unnecessary!
+
 2005-06-13 Christian Seiler <self@christian-seiler.de>
 	* src/modules/flt_xmlarc.c, src/modules/flt_posting.c,
 		src/modules/flt_spellcheck.c: Fixed some small bugs.
