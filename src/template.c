@@ -1,6 +1,6 @@
 /**
  * \file template.c
- * \author Christian Kruse, <ckruse@wwwtech.de>,
+ * \author Christian Kruse, <ckruse@wwwtech.de>
  *         Christian Seiler, <self@christian-seiler.de>
  * \brief the template library function implementations
  */
@@ -32,38 +32,27 @@
 /* }}} */
 
 #ifndef DOXYGEN
-/*
- * Returns:          nothing
- * Parameters:
- *   - void *data    the entry data
- *
- * this function cleans up hash entry
- *
- */
+/* {{{ cf_tpl_cleanup_var */
 void cf_tpl_cleanup_var(void *data) {
   t_cf_tpl_variable *v = (t_cf_tpl_variable *)data;
 
   cf_tpl_var_destroy(v);
 }
+/* }}} */
 #endif
 
-/*
- * Returns: nothing
- * Parameters:
- *   - const u_char *file      the absolute path to the file
- *   - t_cf_template *tpl    a pointer to the template variable
- *
- * this function binds a template lib
- *
- */
+/* {{{ cf_tpl_init */
 int cf_tpl_init(t_cf_template *tpl,const u_char *fname) {
   if(fname) {
     if((tpl->tpl = dlopen(fname,RTLD_LAZY)) == NULL) {
       fprintf(stderr,"%s\n",dlerror());
       return -1;
     }
+
     tpl->filename = strdup(fname);
-  } else {
+
+  }
+  else {
     tpl->tpl = NULL;
     tpl->filename = NULL;
   }
@@ -73,50 +62,34 @@ int cf_tpl_init(t_cf_template *tpl,const u_char *fname) {
 
   return 0;
 }
+/* }}} */
 
-/*
- * Returns: nothing
- * Parameters:
- *   - t_cf_template *dst    a pointer to the destination template variable
- *   - t_cf_template *src    a pointer to the source template variable
- *   - int clone             clone variables or just add references?
- *
- * copies template vars from one template to another
- *
- */
+/* {{{ cf_tpl_copyvars */
 void cf_tpl_copyvars(t_cf_template *dst,t_cf_template *src, int clone) {
   t_cf_tpl_variable *tmp_var;
-  long i;
-  long is_arrayref;
+  long i,is_arrayref;
   t_cf_hash_keylist *key;
 
   for(key=src->varlist->keys.elems;key;key=key->next) {
-    tmp_var = cf_hash_get(src->varlist,key->key,strlen(key->key));
-    if(!tmp_var) continue;
+    if((tmp_var = cf_hash_get(src->varlist,key->key,strlen(key->key))) == NULL) continue;
 
     if(clone) {
-      tmp_var = cf_tpl_var_clone(tmp_var);
-      if(!tmp_var) continue;
+      if((tmp_var = cf_tpl_var_clone(tmp_var)) == NULL) continue;
     }
 
     is_arrayref = tmp_var->arrayref;
-    if(clone)
-      tmp_var->temporary = 1;
-    else
-      tmp_var->arrayref = 1;
+
+    if(clone) tmp_var->temporary = 1;
+    else tmp_var->arrayref = 1;
+
     cf_tpl_setvar(dst,key->key,tmp_var);
-    if(!clone && !is_arrayref)
-      tmp_var->arrayref = 0;
+
+    if(!clone && !is_arrayref) tmp_var->arrayref = 0;
   }
 }
+/* }}} */
 
-/*
- * Returns: nothing
- * Parameters:
- *   - t_cf_template *tpl       a pointer to the template variable
- *   - const u_char *vname      the name of the varialbe
- *   - t_cf_tpl_variable *var   the variable that is to be added
- */
+/* {{{ cf_tpl_setvar */
 void cf_tpl_setvar(t_cf_template *tpl,const u_char *vname,t_cf_tpl_variable *var) {
   int tmp = 0;
 
@@ -128,19 +101,9 @@ void cf_tpl_setvar(t_cf_template *tpl,const u_char *vname,t_cf_tpl_variable *var
   // cleanup if it's temporary
   if(tmp) free(var); // don't destroy the var, only free it
 }
+/* }}} */
 
-/*
- * Returns: nothing
- * Parameters:
- *   - t_cf_template *tpl       a pointer to the template variable
- *   - const u_char *vname      the name of the varialbe
- *   - unsigned short type      the type of the variable
- *                              (TPL_VARIABLE_*)
- *      - signed long value     the integer value
- *    or:
- *      - const u_char *value   the string value
- *      - int len               the length of the value
- */
+/* {{{ cf_tpl_setvalue */
 void cf_tpl_setvalue(t_cf_template *tpl,const u_char *vname,unsigned short type,...) {
   va_list ap;
   signed long int_value;
@@ -152,7 +115,8 @@ void cf_tpl_setvalue(t_cf_template *tpl,const u_char *vname,unsigned short type,
   switch(type) {
     case TPL_VARIABLE_STRING:
       string_value = va_arg(ap,const u_char *);
-      string_len = va_arg(ap,int);
+      string_len   = va_arg(ap,int);
+
       cf_tpl_var_init(&var,type);
       str_char_set(&var.data.d_string,string_value,string_len);
       cf_tpl_setvar(tpl,vname,&var);
@@ -173,20 +137,12 @@ void cf_tpl_setvalue(t_cf_template *tpl,const u_char *vname,unsigned short type,
       // illegal
       break;
   }
+
   va_end(ap);
 }
+/* }}} */
 
-/*
- * Returns: nothing
- * Parameters:
- *   - t_cf_template *tpl    a pointer to the template variable
- *   - const u_char *vname   the name of the variable
- *   - const u_char *value   the value of the variable
- *   - int len               the length of the content in val
- *
- * this function appends a value to a variable
- *
- */
+/* {{{ cf_tpl_appendvalue */
 int cf_tpl_appendvalue(t_cf_template *tpl,const u_char *vname,const u_char *value,int len) {
   t_cf_tpl_variable *var = (t_cf_tpl_variable *)cf_hash_get(tpl->varlist,(u_char*)vname,strlen(vname));
 
@@ -197,33 +153,19 @@ int cf_tpl_appendvalue(t_cf_template *tpl,const u_char *vname,const u_char *valu
 
   return -1;
 }
+/* }}} */
 
-/*
- * Returns: nothing
- * Parameters:
- *   - t_cf_template *tpl    a pointer to the template variable
- *   - const u_char *name     the name of the variable
- *
- * this function frees a template variable
- *
- */
+/* {{{ cf_tpl_freevar */
 void cf_tpl_freevar(t_cf_template *tpl,const u_char *vname) {
   cf_hash_entry_delete(tpl->varlist,(u_char *)vname,strlen(vname));
 }
+/* }}} */
 
-/*
- * Returns: nothing
- * Parameters:
- *   - t_cf_tpl_variable *var    a pointer to the variable structure
- *   - unsigned short type       the type of the variable
- *
- * this function initializes a template variable
- *
- */
+/* {{{ cf_tpl_var_init */
 void cf_tpl_var_init(t_cf_tpl_variable *var,unsigned short type) {
-  var->type = type;
+  var->type      = type;
   var->temporary = 0;
-  var->arrayref = 0;
+  var->arrayref  = 0;
 
   switch(type) {
     case TPL_VARIABLE_STRING:
@@ -247,15 +189,9 @@ void cf_tpl_var_init(t_cf_tpl_variable *var,unsigned short type) {
       break;
   }
 }
+/* }}} */
 
-/*
- * Returns: nothing
- * Parameters:
- *   - t_cf_tpl_variable *var    a pointer to the variable structure
-  *
- * this function frees a template variable
- *
- */
+/* {{{ cf_tpl_var_destroy */
 void cf_tpl_var_destroy(t_cf_tpl_variable *var) {
   // if this is a variable created in a foreach loop => do nothing
   if(var->arrayref) return;
@@ -278,32 +214,21 @@ void cf_tpl_var_destroy(t_cf_tpl_variable *var) {
       break;
   }
 }
+/* }}} */
 
-/*
- * Returns: nothing
- * Parameters:
- *   - t_cf_tpl_variable *var    a pointer to the variable structure
- *
- *      - signed long value     the integer value
- *    or:
- *      - const u_char *value   the string value
- *      - int len               the length of the value
- *
- * this function frees a template variable
- *
- */
+/* {{{ cf_tpl_var_setvalue */
 void cf_tpl_var_setvalue(t_cf_tpl_variable *var,...) {
   va_list ap;
-  signed long int_value;
-  const u_char *string_value;
   int string_len;
+  long int_value;
+  const u_char *string_value;
   
   va_start(ap,var);
 
   switch(var->type) {
     case TPL_VARIABLE_STRING:
       string_value = va_arg(ap,const u_char *);
-      string_len = va_arg(ap,int);
+      string_len   = va_arg(ap,int);
       str_char_set(&var->data.d_string,string_value,string_len);
       break;
 
@@ -323,18 +248,9 @@ void cf_tpl_var_setvalue(t_cf_tpl_variable *var,...) {
 
   va_end(ap);
 }
+/* }}} */
 
-/*
- * Returns: The destination variable that contains the converted value
- * Parameters:
- *   - t_cf_tpl_variable *dest    a pointer to the destination variable structure or NULL
- *                                if a new one is to be created. should be not initialized
- *   - t_cf_tpl_variable *src     a pointer to the source variable structure
- *   - unsigned short new_type    the new type of the variable 
- *
- * this function converts a template variable from one type to another
- *
- */
+/* {{{ cf_tpl_var_convert */
 t_cf_tpl_variable *cf_tpl_var_convert(t_cf_tpl_variable *dest,t_cf_tpl_variable *src,unsigned short new_type) {
   t_cf_tpl_variable *var;
   u_char intbuf[20]; /* this will not be longer than 20 digits */
@@ -401,15 +317,9 @@ t_cf_tpl_variable *cf_tpl_var_convert(t_cf_tpl_variable *dest,t_cf_tpl_variable 
 
   return var;
 }
+/* }}} */
 
-/*
- * Returns: The cloned variable
- * Parameters:
- *   - t_cf_tpl_variable *var     a pointer to the variable structure
- *
- * this function clones a template variable and all subvariables
- *
- */
+/* {{{ cf_tpl_var_clone */
 t_cf_tpl_variable *cf_tpl_var_clone(t_cf_tpl_variable *var) {
   t_cf_hash_keylist *key;
   t_cf_tpl_variable *new_var, *tmp_var;
@@ -433,9 +343,7 @@ t_cf_tpl_variable *cf_tpl_var_clone(t_cf_tpl_variable *var) {
 
     case TPL_VARIABLE_ARRAY:
       for(i = 0; i < var->data.d_array.elements; i++) {
-        tmp_var = cf_tpl_var_clone((t_cf_tpl_variable *)array_element_at(&var->data.d_array,i));
-
-        if(!tmp_var) {
+        if((tmp_var = cf_tpl_var_clone((t_cf_tpl_variable *)array_element_at(&var->data.d_array,i))) == NULL) {
           cf_tpl_var_destroy(new_var);
           free(new_var);
           return NULL;
@@ -449,9 +357,8 @@ t_cf_tpl_variable *cf_tpl_var_clone(t_cf_tpl_variable *var) {
     case TPL_VARIABLE_HASH:
       for(key=var->data.d_hash->keys.elems;key;key=key->next) {
         tmp_var = cf_hash_get(var->data.d_hash,key->key,strlen(key->key));
-        tmp_var = cf_tpl_var_clone(tmp_var);
 
-        if(!tmp_var) {
+        if((tmp_var = cf_tpl_var_clone(tmp_var)) == NULL) {
           cf_tpl_var_destroy(new_var);
           free(new_var);
           return NULL;
@@ -465,19 +372,11 @@ t_cf_tpl_variable *cf_tpl_var_clone(t_cf_tpl_variable *var) {
   
   return new_var;
 }
+/* }}} */
 
-/*
- * Returns: The destination variable that contains the converted value
- * Parameters:
- *   - t_cf_tpl_variable *var     a pointer to the variable structure
- *   - t_cf_tpl_variable *element a pointer to the element that is to be added
- *
- * This function adds an element to an array
- *
- */
+/* {{{ cf_tpl_var_add */
 void cf_tpl_var_add(t_cf_tpl_variable *var,t_cf_tpl_variable *element) {
   int tmp = 0;
-  t_cf_hash_keylist *key;
 
   if(var->type != TPL_VARIABLE_ARRAY) return;
   if(element->temporary) tmp = 1;
@@ -488,19 +387,9 @@ void cf_tpl_var_add(t_cf_tpl_variable *var,t_cf_tpl_variable *element) {
   // cleanup if it's temporary
   if(tmp) free(element); // don't destroy the var, only free it
 }
+/* }}} */
 
-/*
- * Parameters:
- *   - t_cf_tpl_variable *array_var   a pointer to the variable structure
- *   - unsigned short type            the type of the new element
- *      - signed long value           the integer value
- *    or:
- *      - const u_char *value         the string value
- *      - int len                     the length of the value
- *
- * This function adds an element to an array by its value. Only string and integer values are supported
- *
- */
+/* {{{ cf_tpl_var_addvalue */
 void cf_tpl_var_addvalue(t_cf_tpl_variable *array_var,unsigned short type,...) {
   va_list ap;
   signed long int_value;
@@ -513,14 +402,14 @@ void cf_tpl_var_addvalue(t_cf_tpl_variable *array_var,unsigned short type,...) {
   switch(type) {
     case TPL_VARIABLE_STRING:
       string_value = va_arg(ap,const u_char *);
-      string_len = va_arg(ap,int);
+      string_len   = va_arg(ap,int);
       cf_tpl_var_init(&var,type);
       str_char_set(&var.data.d_string,string_value,string_len);
       cf_tpl_var_add(array_var,&var);
       break;
 
     case TPL_VARIABLE_INT:
-      int_value = va_arg(ap,signed long);
+      int_value      = va_arg(ap,signed long);
       cf_tpl_var_init(&var,type);
       var.data.d_int = int_value;
       cf_tpl_var_add(array_var,&var);
@@ -537,18 +426,12 @@ void cf_tpl_var_addvalue(t_cf_tpl_variable *array_var,unsigned short type,...) {
 
   va_end(ap);
 }
+/* }}} */
 
-/*
- * Parameters:
- *   - t_cf_tpl_variable *var     a pointer to the variable structure
- *   - const u_char *key          the key of the element
- *   - t_cf_tpl_variable *element a pointer to the element that is to be set
- *
- * This function sets an element of a hash
- *
- */
+/* {{{ cf_tpl_hashvar_set */
 void cf_tpl_hashvar_set(t_cf_tpl_variable *var,const u_char *key,t_cf_tpl_variable *element) {
   int tmp = 0;
+
   if(var->type != TPL_VARIABLE_HASH) return;
   if(element->temporary) tmp = 1;
 
@@ -558,19 +441,9 @@ void cf_tpl_hashvar_set(t_cf_tpl_variable *var,const u_char *key,t_cf_tpl_variab
   // cleanup if it's temporary
   if(tmp) free(element); // don't destroy the var, only free it
 }
+/* }}} */
 
-/*
- * Parameters:
- *   - t_cf_tpl_variable *hash_var    a pointer to the variable structure
- *   - unsigned short type            the type of the new element
- *      - signed long value           the integer value
- *    or:
- *      - const u_char *value         the string value
- *      - int len                     the length of the value
- *
- * This function sets an element of a hash by its value. Only string and integer values are supported
- *
- */
+/* {{{ cf_tpl_hashvar_setvalue */
 void cf_tpl_hashvar_setvalue(t_cf_tpl_variable *hash_var,const u_char *key,unsigned short type,...) {
   va_list ap;
   signed long int_value;
@@ -583,14 +456,14 @@ void cf_tpl_hashvar_setvalue(t_cf_tpl_variable *hash_var,const u_char *key,unsig
   switch(type) {
     case TPL_VARIABLE_STRING:
       string_value = va_arg(ap,const u_char *);
-      string_len = va_arg(ap,int);
+      string_len   = va_arg(ap,int);
       cf_tpl_var_init(&var,type);
       str_char_set(&var.data.d_string,string_value,string_len);
       cf_tpl_hashvar_set(hash_var,key,&var);
       break;
 
     case TPL_VARIABLE_INT:
-      int_value = va_arg(ap,signed long);
+      int_value      = va_arg(ap,signed long);
       cf_tpl_var_init(&var,type);
       var.data.d_int = int_value;
       cf_tpl_hashvar_set(hash_var,key,&var);
@@ -607,15 +480,9 @@ void cf_tpl_hashvar_setvalue(t_cf_tpl_variable *hash_var,const u_char *key,unsig
 
   va_end(ap);
 }
+/* }}} */
 
-/*
- * Returns: nothing
- * Parameters:
- *   - t_cf_template *tpl    a pointer to the template variable
- *
- * this function starts the parsing process
- *
- */
+/* {{{ cf_tpl_parse */
 void cf_tpl_parse(t_cf_template *tpl) {
   void *pa = dlsym(tpl->tpl,"parse");
 
@@ -624,16 +491,9 @@ void cf_tpl_parse(t_cf_template *tpl) {
     x(tpl);
   }
 }
+/* }}} */
 
-/*
- * Returns: nothing
- * Parameters:
- *   - t_cf_template *tpl    a pointer to the template variable
- *
- * this function starts the parsing process and spits it out
- * to memory
- *
- */
+/* {{{ cf_tpl_parse_to_mem */
 void cf_tpl_parse_to_mem(t_cf_template *tpl) {
   void *pa = dlsym(tpl->tpl,"parse_to_mem");
 
@@ -642,36 +502,23 @@ void cf_tpl_parse_to_mem(t_cf_template *tpl) {
     x(tpl);
   }
 }
+/* }}} */
 
-/*
- * Returns: nothing
- * Parameters:
- *   - t_cf_template *tpl    a pointer to the template variable
- *
- * this function frees the internal template structures
- *
- */
+/* {{{ cf_tpl_finish */
 void cf_tpl_finish(t_cf_template *tpl) {
   if(tpl->tpl) dlclose(tpl->tpl);
 
   str_cleanup(&tpl->parsed);
   cf_hash_destroy(tpl->varlist);
 }
+/* }}} */
 
-/*
- * Returns: t_cf_variable *  a pointer to the variable
- * Parameters:
- *   - t_cf_template *tpl    a pointer to the template variable
- *   - const u_char *name     the variable name
- *
- * this function searches a template variable and returns it
- * if not found, it returns NULL
- *
- */
+/* {{{ cf_tpl_getvar */
 const t_cf_tpl_variable *cf_tpl_getvar(t_cf_template *tpl,const u_char *name) {
   t_cf_tpl_variable *var = (t_cf_tpl_variable *)cf_hash_get(tpl->varlist,(u_char *)name,strlen(name));
 
   return (const t_cf_tpl_variable *)var;
 }
+/* }}} */
 
 /* eof */

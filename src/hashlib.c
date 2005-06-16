@@ -574,27 +574,9 @@ int cf_hash_entry_delete(t_cf_hash *hsh,unsigned char *key,size_t keylen) {
 
 /* {{{ cf_hash_destroy() */
 void cf_hash_destroy(t_cf_hash *hsh) {
-  ub4 elems = hashsize(hsh->tablesize);
-  ub4 i;
-  t_cf_hash_entry *ent,*ent1;
+  t_cf_hash_keylist *key;
 
-  for(i=0;i<elems;i++) {
-    if(hsh->table[i]) {
-      for(ent = hsh->table[i];ent;ent=ent1) {
-        if(ent->stat == 0) {
-          if(hsh->destroy) hsh->destroy(ent->data);
-          free(ent->data);
-        }
-
-        ent1 = ent->next;
-
-        free(ent->keyelem);
-
-        free(ent->key);
-        free(ent);
-      }
-    }
-  }
+  for(key=hsh->keys.elems;key;key=key->next) cf_hash_entry_delete(hsh,key->key,strlen(key->key));
 
   free(hsh->table);
   free(hsh);
