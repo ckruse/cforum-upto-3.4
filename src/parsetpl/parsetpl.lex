@@ -2523,18 +2523,6 @@ int process_func_call_tag(t_array *data) {
           str_cleanup(&tmp);
           return PARSETPL_ERR_INVALIDTAG;
         }
-        str_cstr_append(&tmp, "if (");
-        str_str_append(&tmp, &v1);
-        str_cstr_append(&tmp, ") ");
-        str_str_append(&tmp, &v1);
-        str_cstr_append(&tmp, " = cf_tpl_var_clone(");
-        str_str_append(&tmp, &v1);
-        str_cstr_append(&tmp, ");\n");
-        str_cstr_append(&tmp, "if (");
-        str_str_append(&tmp, &v1);
-        str_cstr_append(&tmp, ") ");
-        str_str_append(&tmp, &v1);
-        str_cstr_append(&tmp, "->temporary = 1;");
         array_push(&params,&v1);
       } else if(token->type == PARSETPL_TOK_LOOPVAR) {
         str_init(&iv1);
@@ -2849,6 +2837,9 @@ void write_parser_functions(FILE *ofp, t_string *func_name, t_context *ctx, t_ar
     }
   }
   fprintf(ofp,") {\nt_cf_tpl_variable *v = NULL;\n");
+  if(params) {
+    fprintf(ofp,"int is_tmp_var = 0;");
+  }
   if(ctx->uses_print) {
     fprintf(ofp,"t_cf_tpl_variable *vp = NULL;\n");
   }
@@ -2900,7 +2891,11 @@ void write_parser_functions(FILE *ofp, t_string *func_name, t_context *ctx, t_ar
       s = (t_string *)array_element_at(params,i);
       str_init(&tmp);
       append_escaped_string(&tmp,s);
+      fprintf(ofp,"if(p%d) {\n", i);
+      fprintf(ofp,"if(!p%d->temporary) {\nis_tmp_var = 1; p%d->arrayref = 1;\n}\n", i, i);
       fprintf(ofp,"cf_tpl_setvar(tpl,\"%s\",p%d);\n", tmp.content+1, i);
+      fprintf(ofp,"if(is_tmp_var) {\nis_tmp_var = 0; p%d->arrayref = 0;\n}\n", i);
+      fprintf(ofp,"}\n");
       str_cleanup(&tmp);
     }
   }
@@ -2916,6 +2911,9 @@ void write_parser_functions(FILE *ofp, t_string *func_name, t_context *ctx, t_ar
     }
   }
   fprintf(ofp,") {\nt_cf_tpl_variable *v = NULL;\n");
+  if(params) {
+    fprintf(ofp,"int is_tmp_var = 0;");
+  }
   if(ctx->uses_print) {
     fprintf(ofp,"t_cf_tpl_variable *vp = NULL;\n");
     fprintf(ofp,"u_char *tmp = NULL;\n");
@@ -2969,7 +2967,11 @@ void write_parser_functions(FILE *ofp, t_string *func_name, t_context *ctx, t_ar
       s = (t_string *)array_element_at(params,i);
       str_init(&tmp);
       append_escaped_string(&tmp,s);
+      fprintf(ofp,"if(p%d) {\n", i);
+      fprintf(ofp,"if(!p%d->temporary) {\nis_tmp_var = 1; p%d->arrayref = 1;\n}\n", i, i);
       fprintf(ofp,"cf_tpl_setvar(tpl,\"%s\",p%d);\n", tmp.content+1, i);
+      fprintf(ofp,"if(is_tmp_var) {\nis_tmp_var = 0; p%d->arrayref = 0;\n}\n", i);
+      fprintf(ofp,"}\n");
       str_cleanup(&tmp);
     }
   }
