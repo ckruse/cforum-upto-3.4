@@ -79,23 +79,32 @@ int cf_tpl_init(t_cf_template *tpl,const u_char *fname) {
  * Parameters:
  *   - t_cf_template *dst    a pointer to the destination template variable
  *   - t_cf_template *src    a pointer to the source template variable
+ *   - int clone             clone variables or just add references?
  *
  * copies template vars from one template to another
  *
  */
-void cf_tpl_copyvars(t_cf_template *dst,t_cf_template *src) {
+void cf_tpl_copyvars(t_cf_template *dst,t_cf_template *src, int clone) {
   t_cf_tpl_variable *tmp_var;
   long i;
   t_cf_hash_keylist *key;
 
   for(key=src->varlist->keys.elems;key;key=key->next) {
     tmp_var = cf_hash_get(src->varlist,key->key,strlen(key->key));
-    tmp_var = cf_tpl_var_clone(tmp_var);
-
     if(!tmp_var) continue;
 
-    tmp_var->temporary = 1;
+    if(clone) {
+      tmp_var = cf_tpl_var_clone(tmp_var);
+      if(!tmp_var) continue;
+    }
+
+    if(clone)
+      tmp_var->temporary = 1;
+    else
+      tmp_var->arrayref = 1;
     cf_tpl_setvar(dst,key->key,tmp_var);
+    if(!clone)
+      tmp_var->arrayref = 0;
   }
 }
 

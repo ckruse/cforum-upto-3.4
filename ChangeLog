@@ -1,3 +1,7 @@
+2005-06-16 Christian Seiler <self@christian-seiler.de>
+	* src/template.c, src/parsetpl/parsetpl.lex: A very simple but
+		hopefully very drastic speed optimization.
+
 2005-06-14 Christian Kruse <ckruse@wwwtech.de>
 	* src/modules/flt_nested.c: Moved to template functions; this makes
 		PerThreadTemplate totally unnecessary!
