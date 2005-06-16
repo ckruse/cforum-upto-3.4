@@ -435,10 +435,10 @@ void append_escaped_string(t_string *dest,t_string *src) {
 
 
 int dereference_variable(t_string *out_str,t_token *var,t_array *data,t_string *c_var) {
-  int level;
-  t_token *token;
+  int level, is_hash;
+  char buf[20];
   t_string *arrayidx;
-  int is_hash;
+  t_token *token;
   
   str_cstr_append(out_str,"v = (t_cf_tpl_variable *)cf_tpl_getvar(tpl,\"");
   str_chars_append(out_str,var->data->content+1,var->data->len-1);
@@ -479,9 +479,9 @@ int dereference_variable(t_string *out_str,t_token *var,t_array *data,t_string *
       str_cstr_append(out_str,"if(v && v->type == TPL_VARIABLE_HASH) {\n");
       str_cstr_append(out_str,"v = (t_cf_tpl_variable *)cf_hash_get(v->data.d_hash,\"");
       append_escaped_string(out_str,arrayidx);
-      str_cstr_append(out_str,"\",strlen(\"");
-      append_escaped_string(out_str,arrayidx);
-      str_cstr_append(out_str,"\")");
+      str_cstr_append(out_str,"\",");
+      snprintf(buf,19,"%ld",arrayidx->len);
+      str_cstr_append(out_str,buf);
     } else {
       str_cstr_append(out_str,"if(v && v->type == TPL_VARIABLE_ARRAY) {\n");
       str_cstr_append(out_str,"v = (t_cf_tpl_variable *)array_element_at(&v->data.d_array,");
@@ -1216,7 +1216,7 @@ int process_variable_print_tag (t_token *variable,t_array *data) {
     str_cstr_append(&current_context->output_mem,"tmp = htmlentities(vp->data.d_string.content,0);\nstr_chars_append(&tpl->parsed,tmp,strlen(tmp));\nfree(tmp);\n}\n}\n");
   } else {
     str_cstr_append(&current_context->output,"my_write(vp->data.d_string.content);\n}\n}\n");
-    str_cstr_append(&current_context->output_mem,"str_chars_append(&tpl->parsed,vp->data.d_string.content,strlen(vp->data.d_string.content));\n}\n}\n");
+    str_cstr_append(&current_context->output_mem,"str_chars_append(&tpl->parsed,vp->data.d_string.content,vp->data.d_string.len);\n}\n}\n");
   }
   str_cstr_append(&current_context->output,"if(vp && vp->temporary) {\ncf_tpl_var_destroy(vp); free(vp);\n");
   str_cstr_append(&current_context->output_mem,"if(vp && vp->temporary) {\ncf_tpl_var_destroy(vp); free(vp);\n");
