@@ -2839,6 +2839,7 @@ void write_parser_functions(FILE *ofp, t_string *func_name, t_context *ctx, t_ar
   fprintf(ofp,") {\nt_cf_tpl_variable *v = NULL;\n");
   if(params) {
     fprintf(ofp,"int is_tmp_var = 0;");
+    fprintf(ofp,"int is_arf_var = 0;");
   }
   if(ctx->uses_print) {
     fprintf(ofp,"t_cf_tpl_variable *vp = NULL;\n");
@@ -2886,22 +2887,26 @@ void write_parser_functions(FILE *ofp, t_string *func_name, t_context *ctx, t_ar
   if(params) {
     fprintf(ofp,"t_cf_template *tpl = fo_alloc(NULL,sizeof(t_cf_template),1,FO_ALLOC_MALLOC);\n");
     fprintf(ofp,"if (cf_tpl_init(tpl,NULL)) return;\n");
+    fprintf(ofp,"str_cleanup(&tpl->parsed);\n");
+    fprintf(ofp,"memcpy(&tpl->parsed,&otpl->parsed,sizeof(t_string));\n");
     fprintf(ofp,"cf_tpl_copyvars(tpl,otpl,0);\n");
     for(i = 0; i < params->elements; i++) {
       s = (t_string *)array_element_at(params,i);
       str_init(&tmp);
       append_escaped_string(&tmp,s);
       fprintf(ofp,"if(p%d) {\n", i);
+      fprintf(ofp,"is_arf_var = p%d->arrayref;\n");
       fprintf(ofp,"if(!p%d->temporary) {\nis_tmp_var = 1; p%d->arrayref = 1;\n}\n", i, i);
       fprintf(ofp,"cf_tpl_setvar(tpl,\"%s\",p%d);\n", tmp.content+1, i);
-      fprintf(ofp,"if(is_tmp_var) {\nis_tmp_var = 0; p%d->arrayref = 0;\n}\n", i);
+      fprintf(ofp,"if(is_tmp_var) {\nis_tmp_var = 0; p%d->arrayref = is_arf_var;\n}\n", i);
       fprintf(ofp,"}\n");
       str_cleanup(&tmp);
     }
   }
   fprintf(ofp,"\n%s\n",ctx->output.content);
   if(params) {
-    fprintf(ofp,"str_str_append(&otpl->parsed,&tpl->parsed); cf_tpl_finish(tpl);\n");
+    fprintf(ofp,"memcpy(&otpl->parsed,&tpl->parsed,sizeof(t_string));\n");
+    fprintf(ofp,"str_init(&tpl->parsed); cf_tpl_finish(tpl);\n");
   }
   fprintf(ofp,"}\n\n");
   fprintf(ofp,"void %s_to_mem(t_cf_template *%stpl", func_name->content, (params ? "o" : ""));
@@ -2913,6 +2918,7 @@ void write_parser_functions(FILE *ofp, t_string *func_name, t_context *ctx, t_ar
   fprintf(ofp,") {\nt_cf_tpl_variable *v = NULL;\n");
   if(params) {
     fprintf(ofp,"int is_tmp_var = 0;");
+    fprintf(ofp,"int is_arf_var = 0;");
   }
   if(ctx->uses_print) {
     fprintf(ofp,"t_cf_tpl_variable *vp = NULL;\n");
@@ -2962,22 +2968,26 @@ void write_parser_functions(FILE *ofp, t_string *func_name, t_context *ctx, t_ar
   if(params) {
     fprintf(ofp,"t_cf_template *tpl = fo_alloc(NULL,sizeof(t_cf_template),1,FO_ALLOC_MALLOC);\n");
     fprintf(ofp,"if (cf_tpl_init(tpl,NULL)) return;\n");
+    fprintf(ofp,"str_cleanup(&tpl->parsed);\n");
+    fprintf(ofp,"memcpy(&tpl->parsed,&otpl->parsed,sizeof(t_string));\n");
     fprintf(ofp,"cf_tpl_copyvars(tpl,otpl,0);\n");
     for(i = 0; i < params->elements; i++) {
       s = (t_string *)array_element_at(params,i);
       str_init(&tmp);
       append_escaped_string(&tmp,s);
       fprintf(ofp,"if(p%d) {\n", i);
+      fprintf(ofp,"is_arf_var = p%d->arrayref;\n");
       fprintf(ofp,"if(!p%d->temporary) {\nis_tmp_var = 1; p%d->arrayref = 1;\n}\n", i, i);
       fprintf(ofp,"cf_tpl_setvar(tpl,\"%s\",p%d);\n", tmp.content+1, i);
-      fprintf(ofp,"if(is_tmp_var) {\nis_tmp_var = 0; p%d->arrayref = 0;\n}\n", i);
+      fprintf(ofp,"if(is_tmp_var) {\nis_tmp_var = 0; p%d->arrayref = is_arf_var;\n}\n", i);
       fprintf(ofp,"}\n");
       str_cleanup(&tmp);
     }
   }
   fprintf(ofp,"\n%s\n",ctx->output_mem.content);
   if(params) {
-    fprintf(ofp,"str_str_append(&otpl->parsed,&tpl->parsed); cf_tpl_finish(tpl);\n");
+    fprintf(ofp,"memcpy(&otpl->parsed,&tpl->parsed,sizeof(t_string));\n");
+    fprintf(ofp,"str_init(&tpl->parsed); cf_tpl_finish(tpl);\n");
   }
   fprintf(ofp,"}\n\n");
 }
