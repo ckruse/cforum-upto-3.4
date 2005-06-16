@@ -87,6 +87,7 @@ int cf_tpl_init(t_cf_template *tpl,const u_char *fname) {
 void cf_tpl_copyvars(t_cf_template *dst,t_cf_template *src, int clone) {
   t_cf_tpl_variable *tmp_var;
   long i;
+  long is_arrayref;
   t_cf_hash_keylist *key;
 
   for(key=src->varlist->keys.elems;key;key=key->next) {
@@ -98,12 +99,13 @@ void cf_tpl_copyvars(t_cf_template *dst,t_cf_template *src, int clone) {
       if(!tmp_var) continue;
     }
 
+    is_arrayref = tmp_var->arrayref;
     if(clone)
       tmp_var->temporary = 1;
     else
       tmp_var->arrayref = 1;
     cf_tpl_setvar(dst,key->key,tmp_var);
-    if(!clone)
+    if(!clone && !is_arrayref)
       tmp_var->arrayref = 0;
   }
 }
