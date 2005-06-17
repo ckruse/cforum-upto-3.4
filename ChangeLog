@@ -1,6 +1,10 @@
 2005-06-17 Christian Kruse <ckruse@wwwtech.de>
 	* src/hashlib.c: Patch to speed up hash destroying
 	* src/template.c: Code reformatting; sorry, Chris ;-)
+	* src/clientlib.h: Added cf_msg_ht_get_first_visible()
+	* src/communication.c: Little code cleanup
+	* src/htmllib.c: Fixed conversion to new API
+	* src/messageutils.c: Added cf_msg_ht_get_first_visible()
 
 2005-06-16 Christian Seiler <self@christian-seiler.de>
 	* src/template.c, src/parsetpl/parsetpl.lex: A very simple but

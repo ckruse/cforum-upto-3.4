@@ -353,6 +353,8 @@ u_char *cf_get_error_message(const u_char *msg,size_t *len, ...);
  */
 t_message *cf_msg_get_first_visible(t_message *msg);
 
+t_hierarchical_node *cf_msg_ht_get_first_visible(t_hierarchical_node *msg);
+
 /**
  * This function deletes a posting subtree
  * \param msg The message structure

@@ -176,9 +176,7 @@ void *cf_get_next_thread_through_shm(void *shm_ptr,t_cl_thread *thr) {
   u_int32_t post,i,val,val1;
   struct shmid_ds shm_buf;
   void *ptr1 = cf_get_shm_ptr();
-  size_t len;
   int msglen;
-  u_char buff[128];
   t_cf_post_flag flag;
 
   memset(thr,0,sizeof(*thr));

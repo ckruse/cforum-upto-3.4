@@ -47,6 +47,23 @@ t_message *cf_msg_get_first_visible(t_message *msg) {
 }
 /* }}} */
 
+/* {{{ cf_msg_ht_get_first_visible */
+t_hierarchical_node *cf_msg_ht_get_first_visible(t_hierarchical_node *msg) {
+  size_t i;
+  t_hierarchical_node *val;
+  
+  for(i=0;i<msg->childs.elements;++i) {
+    val = array_element_at(&msg->childs,i);
+
+    if(val->msg->invisible == 0 && val->msg->may_show) return val;
+
+    if(val->childs.elements && (val = cf_msg_ht_get_first_visible(val)) != NULL) return val;
+  }
+
+  return NULL;
+}
+/* }}} */
+
 /* {{{ cf_msg_delete_subtree */
 t_message *cf_msg_delete_subtree(t_message *msg) {
   int lvl = msg->level;
@@ -193,7 +210,7 @@ t_message *cf_msg_build_hierarchical_structure(t_hierarchical_node *parent,t_mes
 
       h.msg = m;
       array_push(&parent->childs,&h);
-      m = m->next;
+      m     = m->next;
     }
     else if(m->level > lvl) m = cf_msg_build_hierarchical_structure(array_element_at(&parent->childs,parent->childs.elements-1),m);
     else return m;
