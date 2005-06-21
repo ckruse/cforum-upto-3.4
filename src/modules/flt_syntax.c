@@ -83,6 +83,7 @@ typedef struct {
 static t_array flt_syntax_files;
 static int flt_syntax_active = 0;
 static int flt_syntax_alreadyerr = 0;
+static size_t flt_syntax_tabsreplace = 8;
 
 #define FLT_SYNTAX_GLOBAL 0
 #define FLT_SYNTAX_BLOCK  1
@@ -855,6 +856,11 @@ int flt_syntax_doit(flt_syntax_pattern_file_t *file,flt_syntax_block_t *block,u_
 
       continue;
     }
+    /* replace tabs by spaces */
+    else if(*ptr == '\t' && flt_syntax_tabsreplace) {
+      for(i=0;i<flt_syntax_tabsreplace;++i) str_chars_append(cnt,"&nbsp;",6);
+      continue;
+    }
 
     for(i=0,matched=0;i<block->statement.elements && matched == 0;++i) {
       statement = array_element_at(&block->statement,i);
@@ -1456,6 +1462,10 @@ int flt_syntax_handle(t_configfile *cfile,t_conf_opt *opt,const u_char *context,
     fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
     if(cf_strcmp(fn,context) == 0) flt_syntax_active = cf_strcmp(args[0],"yes") == 0;
   }
+  else if(cf_strcmp(opt->name,"ReplaceTabs") == 0) {
+    fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
+    if(cf_strcmp(fn,context) == 0) flt_syntax_tabsreplace = atoi(args[0]);
+  }
   else {
     if(flt_syntax_patterns_dir != NULL) free(flt_syntax_patterns_dir);
     flt_syntax_patterns_dir = strdup(args[0]);
@@ -1471,6 +1481,7 @@ void flt_syntax_cleanup(void) {
 
 t_conf_opt flt_syntax_config[] = {
   { "ActivateSyntax",    flt_syntax_handle, CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
+  { "ReplaceTabs",       flt_syntax_handle, CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
   { "PatternsDirectory", flt_syntax_handle, CFG_OPT_CONFIG|CFG_OPT_GLOBAL|CFG_OPT_NEEDED,  NULL },
   { NULL, NULL, 0, NULL }
 };
