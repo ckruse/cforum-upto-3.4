@@ -9,6 +9,8 @@
 	* configure.in, src/modules/Makefile.am: Added flt_bbcodes module
 	* src/modules/flt_bbcodes.c: Added module for some common bbcodes
 	* conf/modules.de.xml: Added ReplaceTabs directive
+	* src/modules/flt_http.c: Small bugfix because of header management
+	* src/fo_vote.c: Small bugfix, variable uninitialized
 
 2005-06-21 Christian Kruse <ckruse@wwwtech.de>
 	* src/modules/flt_syntax.c: Added possibility to replace tabs by spaces

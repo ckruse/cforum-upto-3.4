@@ -157,7 +157,7 @@ int main(int argc,char *argv[],char *env[]) {
   int sock,ret;
   t_array *cfgfiles;
   t_configfile dconf,conf,vconf;
-  u_char *fname,*ctid,*cmid,*a,buff[512],*uname,*ucfg,*mode,*line;
+  u_char *fname,*ctid,*cmid,*a,buff[512],*uname,*ucfg,*mode = NULL,*line;
   t_cf_hash *head;
   size_t len;
   DB_ENV *dbenv;

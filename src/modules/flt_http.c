@@ -232,10 +232,10 @@ int flt_http_execute(t_cf_hash *head,t_configuration *dc,t_configuration *vc,voi
   /* {{{ http header management */
   ret = flt_http_header_callbacks(head,header_table,dc,vc,sock);
 
-  cf_hash_entry_delete(header_table,"Last-Modified",13);
+  cf_hash_entry_delete(header_table,"Last-Modified",14);
 
   for(key=header_table->keys.elems;key;key=key->next) {
-    printf("%s: %s\015\012",key->key,(char *)cf_hash_get(header_table,key->key,strlen(key->key)));
+    printf("%s: %s\015\012",key->key,(char *)cf_hash_get(header_table,key->key,strlen(key->key)+1));
   }
 
   cf_hash_destroy(header_table);
