@@ -657,7 +657,7 @@ int handle_post_command(t_configfile *cfile,const u_char *context,u_char *name,u
 /* }}} */
 
 /* {{{ get_thread */
-int get_thread(t_cl_thread *thr,t_cf_hash *head) {
+int get_thread(t_cl_thread *thr,t_cf_hash *head,int overwritten) {
   u_char *tidmid,*val;
   u_int64_t tid,mid;
   #ifndef CF_SHARED_MEM
@@ -672,7 +672,7 @@ int get_thread(t_cl_thread *thr,t_cf_hash *head) {
     memset(&rl,0,sizeof(rl));
     #endif
 
-    if((val = cf_cgi_get(head,"a")) != NULL && cf_strcmp(val,"answer") == 0) {
+    if(((val = cf_cgi_get(head,"a")) != NULL && cf_strcmp(val,"answer") == 0) || overwritten) {
       val = strstr(tidmid,",");
       tid = str_to_u_int64(tidmid);
       mid = str_to_u_int64(val+1);
@@ -888,7 +888,7 @@ int main(int argc,char *argv[],char *env[]) {
     if(head) {
       /* {{{ ok, user gave us variables -- lets normalize them */
       if(normalize_cgi_variables(head,"qchar") != 0) {
-        if(get_thread(&thr,head) == -1) {
+        if(get_thread(&thr,head,0) == -1) {
           strcpy(ErrorString,"E_manipulated");
           display_posting_form(head,NULL,NULL);
         }
@@ -904,7 +904,7 @@ int main(int argc,char *argv[],char *env[]) {
 
       /* {{{ everything seems to be fine, so lets validate user input */
       if(validate_cgi_variables(head) != 0) {
-        if(get_thread(&thr,head) == -1) display_posting_form(head,NULL,NULL);
+        if(get_thread(&thr,head,1) == -1) display_posting_form(head,NULL,NULL);
         else {
           *ErrorString = '\0';
           display_posting_form(head,thr.threadmsg,NULL);
@@ -926,7 +926,10 @@ int main(int argc,char *argv[],char *env[]) {
 
         if((ret = cf_validate_msg(NULL,str->content,&var)) == FLT_ERROR) {
           cf_cgi_set(head,"validate","no");
-          display_posting_form(head,NULL,&var);
+
+          if(get_thread(&thr,head,1) == -1) display_posting_form(head,NULL,&var);
+          else display_posting_form(head,thr.threadmsg,&var);
+
           return EXIT_SUCCESS;
         }
       }

@@ -237,9 +237,11 @@ int flt_posting_execute_filter(t_cf_hash *head,t_configuration *dc,t_configurati
   free(qchars);
 
   if(cf_strcmp(st->values[0],"none") != 0) {
-    cf_gen_threadlist(thread,head,&threadlist,rm_infos->post_threadlist_tpl,st->values[0],NULL,CF_MODE_THREADVIEW);
-    cf_tpl_setvalue(tpl,"threadlist",TPL_VARIABLE_STRING,threadlist.content,threadlist.len);
-    str_cleanup(&threadlist);
+    if(cf_gen_threadlist(thread,head,&threadlist,rm_infos->thread_posting_tpl,st->values[0],rm_infos->posting_uri[UserName?1:0],CF_MODE_THREADVIEW) != FLT_EXIT) {
+      //cf_gen_threadlist(thread,head,&threadlist,rm_infos->post_threadlist_tpl,st->values[0],NULL,CF_MODE_THREADVIEW);
+      cf_tpl_setvalue(tpl,"threadlist",TPL_VARIABLE_STRING,threadlist.content,threadlist.len);
+      str_cleanup(&threadlist);
+    }
   }
 
   cf_run_perpost_var_handlers(head,thread,thread->threadmsg,&hash);
