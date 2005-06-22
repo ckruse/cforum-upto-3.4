@@ -6,6 +6,8 @@
 		explicitely to NULL after usage
 	* src/htmllib.c: some smaller bugfixes
 	* src/defines.h: Incremented module magic cookie, changed version number
+	* configure.in, src/modules/Makefile.am: Added flt_bbcodes module
+	* src/modules/flt_bbcodes.c: Added module for some common bbcodes
 
 2005-06-21 Christian Kruse <ckruse@wwwtech.de>
 	* src/modules/flt_syntax.c: Added possibility to replace tabs by spaces

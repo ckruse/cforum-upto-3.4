@@ -254,6 +254,11 @@ EXTRA_LTLIBRARIES+=flt_shortcuts.la
 flt_shortcuts_la_SOURCES=flt_shortcuts.c
 flt_shortcuts_la_LDFLAGS=-module -export-dynamic -avoid-version -rpath '$(pkglibdir)'
 
+EXTRA_LTLIBRARIES+=flt_bbcodes.la
+flt_bbcodes_la_SOURCES=flt_bbcodes.c
+flt_bbcodes_la_LDFLAGS=-module -export-dynamic -avoid-version -rpath '$(pkglibdir)'
+
+
 pkglib_LTLIBRARIES+=${OPTIONAL_MODULES}
 
 # eof
