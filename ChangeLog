@@ -8,6 +8,7 @@
 	* src/defines.h: Incremented module magic cookie, changed version number
 	* configure.in, src/modules/Makefile.am: Added flt_bbcodes module
 	* src/modules/flt_bbcodes.c: Added module for some common bbcodes
+	* conf/modules.de.xml: Added ReplaceTabs directive
 
 2005-06-21 Christian Kruse <ckruse@wwwtech.de>
 	* src/modules/flt_syntax.c: Added possibility to replace tabs by spaces
