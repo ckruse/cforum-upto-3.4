@@ -5,6 +5,7 @@
 	* src/parsetpl/parsetpl.lex: Several smaller bugfixes, setting vi<n> now
 		explicitely to NULL after usage
 	* src/htmllib.c: some smaller bugfixes
+	* src/defines.h: Incremented module magic cookie, changed version number
 
 2005-06-21 Christian Kruse <ckruse@wwwtech.de>
 	* src/modules/flt_syntax.c: Added possibility to replace tabs by spaces
