@@ -1659,7 +1659,9 @@ int process_if_tag(t_array *data, int is_elseif) {
           str_str_append(&tmp,&v1);
           str_cstr_append(&tmp,"); free(");
           str_str_append(&tmp,&v1);
-          str_cstr_append(&tmp,"); }\n");
+          str_cstr_append(&tmp,");\n");
+          str_str_append(&tmp,&v1);
+          str_cstr_append(&tmp," = NULL; }\n");
           str_cstr_append(&tmp,"if(cmp_res) {\n");
           current_context->n_cur_if_vars -= 1;
           break;
@@ -1910,7 +1912,9 @@ int process_if_tag(t_array *data, int is_elseif) {
             str_str_append(&tmp,&v1);
             str_cstr_append(&tmp,"); free(");
             str_str_append(&tmp,&v1);
-            str_cstr_append(&tmp,"); }\n");
+            str_cstr_append(&tmp,");\n");
+            str_str_append(&tmp,&v1);
+            str_cstr_append(&tmp," = NULL; }\n");
             str_cstr_append(&tmp,"if(");
             str_str_append(&tmp,&v2);
             str_cstr_append(&tmp," && ");
@@ -1919,7 +1923,9 @@ int process_if_tag(t_array *data, int is_elseif) {
             str_str_append(&tmp,&v2);
             str_cstr_append(&tmp,"); free(");
             str_str_append(&tmp,&v2);
-            str_cstr_append(&tmp,"); }\n");
+            str_cstr_append(&tmp,");\n");
+            str_str_append(&tmp,&v2);
+            str_cstr_append(&tmp," = NULL; }\n");
             str_cstr_append(&tmp,"}\n");
             current_context->n_cur_if_vars -= 2;
             break;
@@ -1956,7 +1962,9 @@ int process_if_tag(t_array *data, int is_elseif) {
             str_str_append(&tmp,&v2);
             str_cstr_append(&tmp,"); free(");
             str_str_append(&tmp,&v2);
-            str_cstr_append(&tmp,"); }\n");
+            str_cstr_append(&tmp,");");
+            str_str_append(&tmp,&v2);
+            str_cstr_append(&tmp," = NULL; }\n");
             current_context->n_cur_if_vars -= 1;
             current_context->n_cur_if_iters -= 1;
             break;
@@ -1993,7 +2001,9 @@ int process_if_tag(t_array *data, int is_elseif) {
             str_str_append(&tmp,&v2);
             str_cstr_append(&tmp,"); free(");
             str_str_append(&tmp,&v2);
-            str_cstr_append(&tmp,"); }\n");
+            str_cstr_append(&tmp,");\n");
+            str_str_append(&tmp,&v2);
+            str_cstr_append(&tmp," = NULL; }\n");
             current_context->n_cur_if_vars -= 1;
             break;
           case PARSETPL_TOK_STRING:
@@ -2029,7 +2039,9 @@ int process_if_tag(t_array *data, int is_elseif) {
             str_str_append(&tmp,&v2);
             str_cstr_append(&tmp,"); free(");
             str_str_append(&tmp,&v2);
-            str_cstr_append(&tmp,"); }\n");
+            str_cstr_append(&tmp,");\n");
+            str_str_append(&tmp,&v2);
+            str_cstr_append(&tmp," = NULL; }\n");
             current_context->n_cur_if_vars -= 1;
             break;
           default:
@@ -2072,7 +2084,9 @@ int process_if_tag(t_array *data, int is_elseif) {
             str_str_append(&tmp,&v1);
             str_cstr_append(&tmp,"); free(");
             str_str_append(&tmp,&v1);
-            str_cstr_append(&tmp,"); }\n");
+            str_cstr_append(&tmp,");\n");
+            str_str_append(&tmp,&v1);
+            str_cstr_append(&tmp," = NULL; }\n");
             current_context->n_cur_if_vars -= 1;
             current_context->n_cur_if_iters -= 1;
             break;
@@ -2176,7 +2190,9 @@ int process_if_tag(t_array *data, int is_elseif) {
             str_str_append(&tmp,&v1);
             str_cstr_append(&tmp,"); free(");
             str_str_append(&tmp,&v1);
-            str_cstr_append(&tmp,"); }\n");
+            str_cstr_append(&tmp,");\n");
+            str_str_append(&tmp,&v1);
+            str_cstr_append(&tmp," = NULL; }\n");
             current_context->n_cur_if_vars -= 1;
             break;
           case PARSETPL_TOK_LOOPVAR:
@@ -2256,7 +2272,9 @@ int process_if_tag(t_array *data, int is_elseif) {
             str_str_append(&tmp,&v1);
             str_cstr_append(&tmp,"); free(");
             str_str_append(&tmp,&v1);
-            str_cstr_append(&tmp,"); }\n");
+            str_cstr_append(&tmp,");\n");
+            str_str_append(&tmp,&v1);
+            str_cstr_append(&tmp," = NULL; }\n");
             current_context->n_cur_if_vars -= 1;
             break;
           case PARSETPL_TOK_LOOPVAR:

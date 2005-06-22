@@ -962,8 +962,10 @@ void _do_threadlist(t_cl_thread *thread,t_hierarchical_node *msg,int ShowInvisib
       }
     }
 
-    if(did_push) cf_tpl_hashvar_setvalue(&msg->msg->hashvar,"has_subposts",TPL_VARIABLE_INT,1);
-    cf_tpl_hashvar_set(&msg->msg->hashvar,"subposts",&ary);
+    if(did_push) {
+      cf_tpl_hashvar_setvalue(&msg->msg->hashvar,"has_subposts",TPL_VARIABLE_INT,1);
+      cf_tpl_hashvar_set(&msg->msg->hashvar,"subposts",&ary);
+    }
   }
 
 }
@@ -1001,8 +1003,8 @@ void _start_threadlist(t_cl_thread *thread,int ShowInvisible,const u_char *linkt
         }
       }
 
-      cf_tpl_hashvar_set(&ht->msg->hashvar,"posts",&ary);
       if(did_push) {
+        cf_tpl_hashvar_set(&ht->msg->hashvar,"posts",&ary);
         cf_tpl_hashvar_setvalue(&ht->msg->hashvar,"visible_posts",TPL_VARIABLE_INT,1);
         cf_tpl_hashvar_setvalue(&ht->msg->hashvar,"posts_list",TPL_VARIABLE_INT,1);
       }

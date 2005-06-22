@@ -1,3 +1,11 @@
+2005-06-22 Christian Kruse <ckruse@wwwtech.de>
+	* src/fo_view.c: Corrected call to cf_gen_threadlist()
+	* src/hashlib.c: Bugfix, caused invalid memory access
+	* src/communication.c: Two bugfixes, wargl, they really bugged me!
+	* src/parsetpl/parsetpl.lex: Several smaller bugfixes, setting vi<n> now
+		explicitely to NULL after usage
+	* src/htmllib.c: some smaller bugfixes
+
 2005-06-21 Christian Kruse <ckruse@wwwtech.de>
 	* src/modules/flt_syntax.c: Added possibility to replace tabs by spaces
 

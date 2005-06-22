@@ -62,7 +62,7 @@ void show_xmlhttp_thread(t_cf_hash *head,void *shm_ptr,u_int64_t tid,u_int64_t m
 #endif
 {
   int ret;
-  u_char fo_thread_tplname[256],buff[512],*line = NULL;
+  u_char fo_thread_tplname[256],buff[512],*line = NULL,*UserName = cf_hash_get(GlobalValues,"UserName",8);
   t_name_value *fo_thread_tpl,*cs;
   u_char *fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   int show_invi = cf_hash_get(GlobalValues,"ShowInvisible",13) != NULL;
@@ -70,6 +70,7 @@ void show_xmlhttp_thread(t_cf_hash *head,void *shm_ptr,u_int64_t tid,u_int64_t m
   t_string str;
   size_t len;
   rline_t tsd;
+  cf_readmode_t *rm = cf_hash_get(GlobalValues,"RM",2);
 
   #ifdef CF_SHARED_MEM
   int sock;
@@ -124,18 +125,21 @@ void show_xmlhttp_thread(t_cf_hash *head,void *shm_ptr,u_int64_t tid,u_int64_t m
   #endif
 
   str_init(&str);
-  cf_gen_threadlist(&thread,head,&str,fo_thread_tplname,"full",NULL,CF_MODE_THREADLIST);
-
-  printf("Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
-  fwrite(str.content,1,str.len,stdout);
-  str_cleanup(&str);
+  if(cf_gen_threadlist(&thread,head,&str,rm->threadlist_thread_tpl,"full",rm->posting_uri[UserName?1:0],CF_MODE_THREADLIST) != FLT_EXIT) {
+    printf("Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
+    fwrite(str.content,1,str.len,stdout);
+    str_cleanup(&str);
+  }
+  else {
+    printf("Status: 500 Internal Server Error\015\012Content-Type: text/html\015\012\015\012");
+    cf_error_message("E_DATA_FAILURE",NULL);
+  }
 
   cf_cleanup_thread(&thread);
 }
 /* }}} */
 
 /* {{{ show_posting */
-
 #ifndef CF_SHARED_MEM
 void show_posting(t_cf_hash *head,int sock,u_int64_t tid,u_int64_t mid)
 #else

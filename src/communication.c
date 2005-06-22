@@ -113,7 +113,7 @@ int cf_get_next_thread_through_sock(int sock,rline_t *tsd,t_cl_thread *thr) {
 
         thr->msg_len++;
 
-        cf_tpl_var_init(&thr->messages->hashvar,TPL_VARIABLE_HASH);
+        cf_tpl_var_init(&thr->last->hashvar,TPL_VARIABLE_HASH);
       }
       else if(cf_strncmp(line,"Flag:",5) == 0) {
         chtmp = strstr(line+5,"=");
@@ -160,7 +160,7 @@ int cf_get_next_thread_through_sock(int sock,rline_t *tsd,t_cl_thread *thr) {
     thr->ht = fo_alloc(NULL,1,sizeof(*thr->ht),FO_ALLOC_CALLOC);
     thr->ht->msg = thr->messages;
 
-    if(thr->messages->next) cf_msg_build_hierarchical_structure(thr->ht,thr->messages);
+    if(thr->messages->next) cf_msg_build_hierarchical_structure(thr->ht,thr->messages->next);
     /* }}} */
 
     return 0;
