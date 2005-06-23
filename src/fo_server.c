@@ -23,6 +23,8 @@
 #include <string.h>
 
 #include <unistd.h>
+#include <grp.h>
+#include <pwd.h>
 #include <time.h>
 #include <errno.h>
 #include <sys/types.h>
@@ -197,6 +199,26 @@ void logfile_worker(void) {
 }
 /* }}} */
 
+/* {{{ get_gid */
+gid_t get_gid(const u_char *gname) {
+  struct group *gr = getgrnam(gname);
+
+  if(gr) return gr->gr_gid;
+  perror("getgrnam");
+
+  return 0;
+}
+/* }}} */
+
+/* {{{ get_uid */
+uid_t get_uid(const u_char *uname) {
+  struct passwd *pwd = getpwnam(uname);
+
+  if(pwd) return pwd->pw_uid;
+  return 0;
+}
+/* }}} */
+
 /* {{{ struct option server_cmdline_options[] */
 static struct option server_cmdline_options[] = {
   { "pid-file",         1, NULL, 'p' },
@@ -228,6 +250,9 @@ int main(int argc,char *argv[]) {
       start_threads = 0,
       spare_threads = 0;
 
+  gid_t gid;
+  uid_t uid;
+
   size_t i,
          size;
 
@@ -244,7 +269,8 @@ int main(int argc,char *argv[]) {
   t_name_value *pidfile_nv,
                *forums,
                *threads,
-               *run_archiver;
+               *run_archiver,
+               *usergroup;
 
   t_forum *actforum;
 
@@ -262,6 +288,10 @@ int main(int argc,char *argv[]) {
   t_handler_config *handler;
 
   t_periodical per;
+
+  #ifdef CF_ENABLE_CHROOT
+  t_name_value *chrootv;
+  #endif
 
   /* set signal handlers */
   signal(SIGPIPE,SIG_IGN);
@@ -344,6 +374,62 @@ int main(int argc,char *argv[]) {
 
   array_destroy(cfgfiles);
   free(cfgfiles);
+  /* }}} */
+
+  /* {{{ security handling... never run as root, give ability to chroot() somewhere */
+  /* {{{ get GID and UID */
+  if((usergroup = cfg_get_first_value(&fo_server_conf,NULL,"UserGroup")) != NULL) {
+    if((gid = atoi(usergroup->values[1])) == 0 && (gid = get_gid(usergroup->values[1])) == 0) {
+      fprintf(stderr,"config error: cannot set gid! Config value: %s\n",usergroup->values[1]);
+      return EXIT_FAILURE;
+    }
+
+    if((uid = atoi(usergroup->values[0])) == 0 && (uid = get_uid(usergroup->values[0])) == 0) {
+      fprintf(stderr,"config error: cannot set uid! config value: %s\n",usergroup->values[0]);
+      return EXIT_FAILURE;
+    }
+  }
+  else {
+    if((uid = getuid()) == 0) {
+      fprintf(stderr,"You should not run this server as root! Set UserGroup in fo_server.conf to an appropriate value!\n");
+      return EXIT_FAILURE;
+    }
+
+    if((gid = getgid()) == 0) {
+      fprintf(stderr,"You should not run this server with gid 0! Set UserGroup in fo_server.conf to an appropriate value!\n");
+      return EXIT_FAILURE;
+    }
+  }
+  /* }}} */
+
+  /* {{{ chroot() */
+  #ifdef CF_ENABLE_CHROOT
+  chrootv = cfg_get_first_value(&fo_server_conf,NULL,"Chroot");
+  if(chdir(chrootv->values[0]) == -1) {
+    fprintf(stderr,"could not chdir to chroot dir '%s': %s\n",chrootv->values[0],strerror(errno));
+    return EXIT_SUCCESS;
+  }
+
+  if(chroot(chrootv->values[0]) == -1) {
+    fprintf(stderr,"could not chroot to dir '%s': %s\n",chrootv->values[0],strerror(errno));
+    return EXIT_SUCCESS;
+  }
+  #endif
+  /* }}} */
+
+  /* {{{ set GID and UID */
+  if((usergroup = cfg_get_first_value(&fo_server_conf,NULL,"UserGroup")) != NULL) {
+    if(setgid(gid) == -1 || setregid(gid,gid) == -1) {
+      fprintf(stderr,"config error: cannot set gid! Config value: %s, error: %s\n",usergroup->values[1],strerror(errno));
+      return EXIT_FAILURE;
+    }
+
+    if(setuid(uid) == -1 || setreuid(uid,uid) == -1) {
+      fprintf(stderr,"config error: cannot set uid! config value: %s, error: %s\n",usergroup->values[0],strerror(errno));
+      return EXIT_FAILURE;
+    }
+  }
+  /* }}} */
   /* }}} */
 
   /* {{{ check if all forum contexts are present */

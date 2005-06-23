@@ -156,6 +156,14 @@ AC_ARG_ENABLE(sorting,
   [ AC_DEFINE(CF_NO_SORTING,1,[Defined if sorting is not enabled]) ]
 )
 
+AC_ARG_ENABLE(chroot,
+  [AC_HELP_STRING(
+    [--enable-chroot],
+    [enable chrooting features])],
+  [ AC_DEFINE(CF_ENABLE_CHROOT,1,[Defined if chroot feature is enabled]) ],
+  [ fake=1 ]
+)
+
 AX_PATH_BDB([3],[
     BDB_LIB="$BDB_LIBS";
     CFLAGS="$CFLAGS $BDB_CPPFLAGS"

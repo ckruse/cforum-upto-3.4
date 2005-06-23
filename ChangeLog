@@ -7,6 +7,10 @@
 	* scripts/forum.js: Moved forum.js to repository
 	* conf/modules.de.xml: Added wiki lookup shortcut
 	* scripts/forum.js: Added wiki lookup shortcut function
+	* configure.in: Added --enable-chroot feature
+	* src/configparser.c: Added UserGroup and Chroot config directive
+	* src/fo_server.c: Added possibility to set user and group, added possibility
+		to chroot()
 
 2005-06-22 Christian Kruse <ckruse@wwwtech.de>
 	* src/fo_view.c: Corrected call to cf_gen_threadlist()
