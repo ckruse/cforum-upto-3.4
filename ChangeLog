@@ -5,6 +5,8 @@
 	* src/modules/flt_nested.c: Fixed the temporary code to generate the real
 		thread list
 	* scripts/forum.js: Moved forum.js to repository
+	* conf/modules.de.xml: Added wiki lookup shortcut
+	* scripts/forum.js: Added wiki lookup shortcut function
 
 2005-06-22 Christian Kruse <ckruse@wwwtech.de>
 	* src/fo_view.c: Corrected call to cf_gen_threadlist()

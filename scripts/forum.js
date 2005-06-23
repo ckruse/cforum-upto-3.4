@@ -6,7 +6,10 @@ var MODIFIER_SHIFT = 1;
 var MODIFIER_ALT   = 2;
 var MODIFIER_CTRL  = 4;
 
+var wiki_uri = 'http://de.wikipedia.org/wiki/';
+
 var active_thread = null;
+var wiki_window   = null;
 
 /* get XmlHttpRequest instance */
 xmlhttp = false;
@@ -291,6 +294,33 @@ function remove_from_highlightcats() {
 
 function mark_all_visited() {
   window.location.href = forum_base_url + '?mav=1';
+}
+
+function wikipedia_lookup() {
+  if(!xmlhttp) return true;
+
+  var val = '';
+
+  if(window.getSelection) {
+    var obj = window.getSelection();
+    val = obj.toString();
+  }
+  else if(document.selection) {
+    var range = document.selection.createRange();
+    val = range.text;
+  }
+
+  if(!val) {
+    val = prompt("Suchbegriff:");
+    if(!val) return true;
+  }
+
+  try {
+    wiki_window = window.open(wiki_uri + val,'wiki','');
+  }
+  catch(e) {
+    location.href = wiki_uri + val;
+  }
 }
 /* }}} */
 

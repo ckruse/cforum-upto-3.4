@@ -231,7 +231,8 @@ int flt_nested_execute_filter(t_cf_hash *head,t_configuration *dc,t_configuratio
   }
 
   flt_nested_inprogress = 1;
-  flt_nested_make_hierarchical(vc,tpl,thread,thread->ht,head,1,ShowInvisible,utf8,&hash,cs,df,locale,qc,ms,ss);
+  flt_nested_start_hierarchical(vc,head,tpl,thread,ShowInvisible,utf8,&hash,cs,df,locale,qc,ms,ss);
+  flt_nested_inprogress = 0;
 
   cf_tpl_setvar(tpl,"thread",&hash);
 

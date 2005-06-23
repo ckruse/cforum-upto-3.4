@@ -768,6 +768,11 @@
       <validate>^(?:\\[CAS]-){0,3}[a-zA-Z]$</validate>
       <error>Shortcut &quot;Thread als gelesen markieren&quot; ist ungültig!</error>
     </argument>
+
+    <argument paramname="shortcutsposting10" encode="plain" default="l" emptyIfNotCommitted="yes">
+      <validate>^(?:\\[CAS]-){0,3}[a-zA-Z]$</validate>
+      <error>Shortcut &quot;Wikipedia-Lookup&quot; ist ungültig!</error>
+    </argument>
   </directive>
 
   <directive name="InterestingMarkOwnPosts" arguments="1">
