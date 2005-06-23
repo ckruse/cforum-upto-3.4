@@ -418,7 +418,7 @@ int main(int argc,char *argv[]) {
   /* }}} */
 
   /* {{{ set GID and UID */
-  if((usergroup = cfg_get_first_value(&fo_server_conf,NULL,"UserGroup")) != NULL) {
+  if(usergroup) {
     if(setgid(gid) == -1 || setregid(gid,gid) == -1) {
       fprintf(stderr,"config error: cannot set gid! Config value: %s, error: %s\n",usergroup->values[1],strerror(errno));
       return EXIT_FAILURE;
