@@ -1,6 +1,9 @@
 2005-06-23 Christian Kruse <ckruse@wwwtech.de>
 	* src/modules/flt_posting.c: Bugfix for threadlist generation
 	* src/fo_post.c: Bugfix for displaying validation errors
+	* src/clientlib.c: Bugfix in cf_get_link()
+	* src/modules/flt_nested.c: Fixed the temporary code to generate the real
+		thread list
 
 2005-06-22 Christian Kruse <ckruse@wwwtech.de>
 	* src/fo_view.c: Corrected call to cf_gen_threadlist()

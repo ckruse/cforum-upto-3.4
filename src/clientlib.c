@@ -555,7 +555,7 @@ u_char *cf_get_link(const u_char *link,u_int64_t tid,u_int64_t mid) {
   register const u_char *ptr;
   t_string buff;
   u_char *tmp;
-  int qm = 0;
+  int qm = 0,run = 1;
   cf_readmode_t *rm;
   cf_uri_flag_t *flag;
   t_cf_list_element *elem;
@@ -566,31 +566,40 @@ u_char *cf_get_link(const u_char *link,u_int64_t tid,u_int64_t mid) {
     rm = cf_hash_get(GlobalValues,"RM",2);
     if(rm) link = rm->posting_uri[cf_hash_get(GlobalValues,"UserName",8) ? 1 : 0];
     else return NULL;
+    if(!link) return NULL;
   }
 
-  if(link) {
-    for(ptr=link;*ptr;++ptr) {
-      switch(*ptr) {
-        case '%':
-          if(*(ptr+1) == 't') {
-            u_int64_to_str(&buff,tid);
-            ptr += 1;
-          }
-          else if(*(ptr+1) == 'm') {
-            u_int64_to_str(&buff,mid);
-            ptr += 1;
-          }
-          else str_char_append(&buff,*ptr);
-          break;
+  /* {{{ work on link template */
+  for(ptr=link;*ptr && run;++ptr) {
+    switch(*ptr) {
+      case '%':
+        if(*(ptr+1) == 't') {
+          u_int64_to_str(&buff,tid);
+          ptr += 1;
+        }
+        else if(*(ptr+1) == 'm') {
+          u_int64_to_str(&buff,mid);
+          ptr += 1;
+        }
+        else str_char_append(&buff,*ptr);
+        break;
 
-        case '?':
-          qm = 1;
-        default:
-          str_char_append(&buff,*ptr);
-      }
+      case '#':
+        /* uh! Anchor in link template */
+        ptr -= 1;
+        run = 0;
+        break;
+
+      case '?':
+        qm = 1;
+
+      default:
+        str_char_append(&buff,*ptr);
     }
   }
+  /* }}} */
 
+  /* {{{ append static URI flags */
   for(elem=uri_flags.elements;elem;elem=elem->next) {
     flag = (cf_uri_flag_t *)elem->data;
 
@@ -617,7 +626,31 @@ u_char *cf_get_link(const u_char *link,u_int64_t tid,u_int64_t mid) {
       str_chars_append(&buff,flag->val,strlen(flag->val));
     }
   }
+  /* }}} */
 
+  /* {{{ we got an anchor, perhaps, append it to the _end_ of the uri */
+  if(*ptr) {
+    for(;*ptr;++ptr) {
+      switch(*ptr) {
+        case '%':
+          if(*(ptr+1) == 't') {
+            u_int64_to_str(&buff,tid);
+            ptr += 1;
+          }
+          else if(*(ptr+1) == 'm') {
+            u_int64_to_str(&buff,mid);
+            ptr += 1;
+          }
+          else str_char_append(&buff,*ptr);
+
+          break;
+
+        default:
+          str_char_append(&buff,*ptr);
+      }
+    }
+  }
+  /* }}} */
 
   return buff.content;
 }

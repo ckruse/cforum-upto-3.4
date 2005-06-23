@@ -37,9 +37,11 @@
 #include "htmllib.h"
 /* }}} */
 
-static u_char *flt_nested_tpl = NULL;
+static int flt_nested_inprogress = 0;
+
+static u_char *flt_nested_tpl    = NULL;
 static u_char *flt_nested_pt_tpl = NULL;
-static u_char *flt_nested_fn = NULL;
+static u_char *flt_nested_fn     = NULL;
 
 /* {{{ flt_nested_make_hierarchical */
 void flt_nested_make_hierarchical(t_configuration *vc,t_cf_template *tpl,t_cl_thread *thread,t_hierarchical_node *msg,t_cf_hash *head,int first,int ShowInvisible,int utf8,t_cf_tpl_variable *hash,t_name_value *cs,t_name_value *df,t_name_value *locale,t_name_value *qc,t_name_value *ms,t_name_value *ss) {
@@ -49,8 +51,6 @@ void flt_nested_make_hierarchical(t_configuration *vc,t_cf_template *tpl,t_cl_th
   t_hierarchical_node *msg1;
 
   t_string content;
-
-  if(ShowInvisible == 0 && (msg->msg->may_show == 0 || msg->msg->invisible == 1)) return;
 
   cf_tpl_var_init(hash,TPL_VARIABLE_HASH);
 
@@ -108,15 +108,72 @@ void flt_nested_make_hierarchical(t_configuration *vc,t_cf_template *tpl,t_cl_th
     for(i=0;i<msg->childs.elements;++i) {
       msg1 = array_element_at(&msg->childs,i);
 
-      cf_tpl_var_init(&my_hash,TPL_VARIABLE_HASH);
-      flt_nested_make_hierarchical(vc,tpl,thread,msg1,head,0,ShowInvisible,utf8,&my_hash,cs,df,locale,qc,ms,ss);
-      cf_tpl_var_add(&subposts,&my_hash);
+      if(ShowInvisible || (msg1->msg->may_show == 1 && msg1->msg->invisible == 0)) {
+        cf_tpl_var_init(&my_hash,TPL_VARIABLE_HASH);
+        flt_nested_make_hierarchical(vc,tpl,thread,msg1,head,0,ShowInvisible,utf8,&my_hash,cs,df,locale,qc,ms,ss);
+        cf_tpl_var_add(&subposts,&my_hash);
+      }
+      else {
+        if((msg1 = cf_msg_ht_get_first_visible(msg1)) != NULL) {
+          cf_tpl_var_init(&my_hash,TPL_VARIABLE_HASH);
+          flt_nested_make_hierarchical(vc,tpl,thread,msg1,head,0,ShowInvisible,utf8,&my_hash,cs,df,locale,qc,ms,ss);
+          cf_tpl_var_add(&subposts,&my_hash);
+        }
+      }
     }
 
     cf_tpl_hashvar_set(hash,"subposts",&subposts);
   }
 }
 /* }}} */
+
+void flt_nested_start_hierarchical(t_configuration *vc,t_cf_hash *head,t_cf_template *tpl,t_cl_thread *thread,int ShowInvisible,int utf8,t_cf_tpl_variable *hash,t_name_value *cs,t_name_value *df,t_name_value *locale,t_name_value *qc,t_name_value *ms,t_name_value *ss) {
+  t_cf_tpl_variable ary,l_hash;
+  t_hierarchical_node *ht = thread->ht,*ht1;
+  size_t i;
+  int did_push = 0,first = 1;
+
+  if(ShowInvisible || (ht->msg->invisible == 0 && ht->msg->may_show)) {
+    flt_nested_make_hierarchical(vc,tpl,thread,ht,head,1,ShowInvisible,utf8,hash,cs,df,locale,qc,ms,ss);
+  }
+  else {
+    if(ht->childs.elements) {
+      cf_tpl_var_init(&ary,TPL_VARIABLE_ARRAY);
+
+      for(i=0;i<ht->childs.elements;++i) {
+        ht1 = array_element_at(&ht->childs,i);
+
+        if(ht1->msg->invisible == 0 && ht1->msg->may_show) {
+          if(first) flt_nested_make_hierarchical(vc,tpl,thread,ht1,head,first,ShowInvisible,utf8,hash,cs,df,locale,qc,ms,ss);
+          else {
+            cf_tpl_var_init(&l_hash,TPL_VARIABLE_HASH);
+            flt_nested_make_hierarchical(vc,tpl,thread,ht1,head,first,ShowInvisible,utf8,&l_hash,cs,df,locale,qc,ms,ss);
+            cf_tpl_var_add(&ary,&l_hash);
+          }
+
+          did_push = 1;
+          first    = 0;
+        }
+        else {
+          if((ht1 = cf_msg_ht_get_first_visible(ht1)) != NULL) {
+            if(first) flt_nested_make_hierarchical(vc,tpl,thread,ht1,head,first,ShowInvisible,utf8,hash,cs,df,locale,qc,ms,ss);
+            else {
+              cf_tpl_var_init(&l_hash,TPL_VARIABLE_HASH);
+              flt_nested_make_hierarchical(vc,tpl,thread,ht1,head,first,ShowInvisible,utf8,&l_hash,cs,df,locale,qc,ms,ss);
+              cf_tpl_var_add(&ary,&l_hash);
+            }
+
+            did_push = 1;
+            first    = 0;
+          }
+        }
+      }
+
+      if(did_push) cf_tpl_hashvar_set(hash,"subposts",&ary);
+    }
+  }
+
+}
 
 /* {{{ flt_nested_execute_filter */
 int flt_nested_execute_filter(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cl_thread *thread,t_cf_template *tpl) {
@@ -134,6 +191,7 @@ int flt_nested_execute_filter(t_cf_hash *head,t_configuration *dc,t_configuratio
   /* are we in the right read mode? */
   if(cf_strcmp(rm->values[0],"nested") != 0) return FLT_DECLINE;
   if(flt_nested_tpl == NULL) return FLT_DECLINE;
+  if(flt_nested_inprogress) return FLT_DECLINE;
 
   /* {{{ init some variables */
   UserName = cf_hash_get(GlobalValues,"UserName",8);
@@ -172,16 +230,13 @@ int flt_nested_execute_filter(t_cf_hash *head,t_configuration *dc,t_configuratio
     reg = cfg_get_first_value(&fo_default_conf,forum_name,"UserRegister");
   }
 
-  free(rm->values[0]);
-  rm->values[0] = strdup("_NONE_");
+  flt_nested_inprogress = 1;
   flt_nested_make_hierarchical(vc,tpl,thread,thread->ht,head,1,ShowInvisible,utf8,&hash,cs,df,locale,qc,ms,ss);
-  free(rm->values[0]);
-  rm->values[0] = strdup("nested");
 
   cf_tpl_setvar(tpl,"thread",&hash);
 
   if(cf_strcmp(st->values[0],"none") != 0) {
-    cf_gen_threadlist(thread,head,&threadlist,rm_infos->post_threadlist_tpl,st->values[0],lt->values[0],CF_MODE_THREADVIEW);
+    cf_gen_threadlist(thread,head,&threadlist,rm_infos->thread_posting_tpl,st->values[0],lt->values[0],CF_MODE_THREADVIEW);
     cf_tpl_setvalue(tpl,"threadlist",TPL_VARIABLE_STRING,threadlist.content,threadlist.len);
     str_cleanup(&threadlist);
   }
