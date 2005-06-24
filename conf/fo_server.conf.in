@@ -26,6 +26,8 @@ MinThreads "10"
 SpareThreads "5"
 MaxThreads "120"
 
+UserGroup "ckruse" "users"
+Chroot "/home/ckruse/tmp/cforum/chroot/"
 
 # We want logfiles to be 2MB max
 LogMaxSize "2097152"
@@ -37,8 +39,6 @@ PIDFile "@localstatedir@/run/cf_pid"
 # external interface
 ExternPort "6666"
 # ExternInterface 192.168.50.2
-
-Forums "FORUM1"
 
 Forum FORUM1 {
  MessagePath "@localstatedir@/cforum/messages/forum1/"

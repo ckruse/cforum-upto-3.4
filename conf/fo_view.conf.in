@@ -71,7 +71,6 @@ Forum FORUM1 {
  TemplateForumThread    "@sysconfdir@/cforum/templates/forum1/%s_%s_forum_thread.so"
  TemplateForumList      "@sysconfdir@/cforum/templates/forum1/%s_%s_forum_list.so"
  TemplateForumNested    "@sysconfdir@/cforum/templates/forum1/%s_%s_forum_nested.so"
- PerThreadTemplate      "@sysconfdir@/cforum/templates/forum1/%s_%s_forum_nested_perthread.so"
 
  TemplatePosting        "@sysconfdir@/cforum/templates/forum1/%s_%s_forum_posting.so"
 
