@@ -870,9 +870,9 @@ void show_threadlist(void *shm_ptr,t_cf_hash *head)
     #ifdef CF_NO_SORTING
 
     #ifndef CF_SHARED_MEM
-    while(cf_get_next_thread_through_sock(sock,&tsd,&thread,rm->threadlist_thread_tpl) == 0)
+    while(cf_get_next_thread_through_sock(sock,&tsd,&thread) == 0)
     #else
-    while((ptr1 = cf_get_next_thread_through_shm(ptr1,&thread,rm->threadlist_thread_tpl)) != NULL)
+    while((ptr1 = cf_get_next_thread_through_shm(ptr1,&thread)) != NULL)
     #endif
     {
       if(thread.messages) {

@@ -169,11 +169,9 @@ t_conf_opt fo_server_options[] = {
   { "MainFileMaxBytes",     handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL,  &fo_server_conf },
   { "MainFileMaxPostings",  handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL,  &fo_server_conf },
   { "MainFileMaxThreads",   handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL,  &fo_server_conf },
-  { "UserGroup",            handle_command,   CFG_OPT_CONFIG|CFG_OPT_GLOBAL,                &fo_server_conf },
 
-  #ifdef CF_ENABLE_CHROOT
-  { "Chroot",               handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_GLOBAL, &fo_server_conf },
-  #endif
+  { "UserGroup",            handle_command,   CFG_OPT_CONFIG|CFG_OPT_GLOBAL,                &fo_server_conf },
+  { "Chroot",               handle_command,   CFG_OPT_CONFIG|CFG_OPT_GLOBAL,                &fo_server_conf },
 
   { NULL, NULL, 0, NULL }
 };

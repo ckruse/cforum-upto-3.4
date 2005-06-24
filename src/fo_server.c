@@ -270,7 +270,8 @@ int main(int argc,char *argv[]) {
                *forums,
                *threads,
                *run_archiver,
-               *usergroup;
+               *usergroup,
+               *chrootv;
 
   t_forum *actforum;
 
@@ -289,9 +290,6 @@ int main(int argc,char *argv[]) {
 
   t_periodical per;
 
-  #ifdef CF_ENABLE_CHROOT
-  t_name_value *chrootv;
-  #endif
 
   /* set signal handlers */
   signal(SIGPIPE,SIG_IGN);
@@ -403,18 +401,17 @@ int main(int argc,char *argv[]) {
   /* }}} */
 
   /* {{{ chroot() */
-  #ifdef CF_ENABLE_CHROOT
-  chrootv = cfg_get_first_value(&fo_server_conf,NULL,"Chroot");
-  if(chdir(chrootv->values[0]) == -1) {
-    fprintf(stderr,"could not chdir to chroot dir '%s': %s\n",chrootv->values[0],strerror(errno));
-    return EXIT_SUCCESS;
-  }
+  if((chrootv = cfg_get_first_value(&fo_server_conf,NULL,"Chroot")) != NULL) {
+    if(chdir(chrootv->values[0]) == -1) {
+      fprintf(stderr,"could not chdir to chroot dir '%s': %s\n",chrootv->values[0],strerror(errno));
+      return EXIT_SUCCESS;
+    }
 
-  if(chroot(chrootv->values[0]) == -1) {
-    fprintf(stderr,"could not chroot to dir '%s': %s\n",chrootv->values[0],strerror(errno));
-    return EXIT_SUCCESS;
+    if(chroot(chrootv->values[0]) == -1) {
+      fprintf(stderr,"could not chroot to dir '%s': %s\n",chrootv->values[0],strerror(errno));
+      return EXIT_SUCCESS;
+    }
   }
-  #endif
   /* }}} */
 
   /* {{{ set GID and UID */

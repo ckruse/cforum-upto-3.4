@@ -3,6 +3,12 @@
 		removed second Forums directive
 	* conf/fo_view.conf.in: Removed PerThreadTemplate directive, it is totally
 		uneccessary
+	* configure.in: Removed --enable-chroot
+	* src/fo_view.c: Small bugfix for calling cf_get_next_thread_through_*()
+	* src/fo_feeds.c: Small bugfix for calling cf_get_next_thread_through_*()
+	* src/configparser.c: Removed #ifdef CF_ENABLE_CHROOT and made Chroot
+		directive optional
+	* src/fo_server.c: Removed #ifdef for chroot and made chrooting optional
 
 2005-06-23 Christian Kruse <ckruse@wwwtech.de>
 	* src/modules/flt_posting.c: Bugfix for threadlist generation
