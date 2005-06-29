@@ -64,7 +64,7 @@ static struct {
 } flt_latex_cfg = { NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, FLT_LATEX_PNG };
 
 /* {{{ flt_latex_create_cache */
-int flt_latex_create_cache(const u_char *cnt,size_t len,const u_char *our_sum) {
+int flt_latex_create_cache(const u_char *cnt,size_t len,const u_char *our_sum,int elatex) {
   FILE *fd;
   t_string path,document;
   size_t mylen;
@@ -105,9 +105,12 @@ int flt_latex_create_cache(const u_char *cnt,size_t len,const u_char *our_sum) {
 
   /* {{{ create latex document and write it to the file */
   str_init(&document);
-  str_chars_append(&document,"\\documentclass[12pt]{article}\n\\usepackage{ucs}\n\\usepackage[utf8x]{inputenc}\n\\nonstopmode\n\\usepackage{amsmath}\n\\usepackage{amsfonts}\n\\usepackage{amssymb}\n\\pagestyle{empty}\n\n\\begin{document}\n\\[\n",192);
+  str_chars_append(&document,"\\documentclass[12pt]{article}\n\\usepackage{ucs}\n\\usepackage[utf8x]{inputenc}\n\\nonstopmode\n\\usepackage{amsmath}\n\\usepackage{amsfonts}\n\\usepackage{amssymb}\n\\pagestyle{empty}\n\n\\begin{document}\n\n",190);
+
+  if(elatex == 0) str_chars_append(&document,"\\]",2);
   str_chars_append(&document,cnt,len);
-  str_chars_append(&document,"\n\\]\n\\end{document}\n",19);
+  if(elatex == 0) str_chars_append(&document,"\n\\]",3);
+  str_chars_append(&document,"\n\\end{document}\n",16);
 
   str_chars_append(&path,"file.tex",8);
   if((fd = fopen(path.content,"w")) == NULL) {
@@ -129,6 +132,7 @@ int flt_latex_create_cache(const u_char *cnt,size_t len,const u_char *our_sum) {
   /* {{{ create dvi file */
   switch(pid = fork()) {
     case -1:
+      fprintf(stderr,"flt_latex: fork() error: %s\n",strerror(errno));
       cf_remove_recursive(path.content);
       str_cleanup(&path);
       return -1;
@@ -151,6 +155,7 @@ int flt_latex_create_cache(const u_char *cnt,size_t len,const u_char *our_sum) {
   }
 
   if(WEXITSTATUS(status) != 0) {
+    fprintf(stderr,"flt_latex: execlp(%s)'s exit status is not 0 but %d!\n",flt_latex_cfg.tex,WEXITSTATUS(status));
     cf_remove_recursive(path.content);
     str_cleanup(&path);
     return -1;
@@ -160,16 +165,21 @@ int flt_latex_create_cache(const u_char *cnt,size_t len,const u_char *our_sum) {
   /* {{{ create png file from dvi file (call dvips -R -E md5.dvi -f | convert -quality 100 -density 120 ps:- /path/to/right/md5.png) */
   switch(pid = fork()) {
     case -1:
+      fprintf(stderr,"flt_latex: fork() error: %s\n",strerror(errno));
       cf_remove_recursive(path.content);
       str_cleanup(&path);
       return -1;
 
     case 0:
-      if(pipe(fds) < 0) return -1;
+      if(pipe(fds) < 0) {
+        fprintf(stderr,"flt_latex: pipe() error: %s\n",strerror(errno));
+        return -1;
+      }
 
       switch(pid = fork()) {
         case -1:
           exit(-1);
+
         case 0:
           dup2(fds[0],STDIN_FILENO);
           close(STDOUT_FILENO);
@@ -211,6 +221,7 @@ int flt_latex_create_cache(const u_char *cnt,size_t len,const u_char *our_sum) {
   }
 
   if(WEXITSTATUS(status) != 0) {
+    fprintf(stderr,"flt_latex: execlp(%s)'s exit status is not 0 but %d!\n",flt_latex_cfg.tex,WEXITSTATUS(status));
     cf_remove_recursive(path.content);
     str_cleanup(&path);
     return -1;
@@ -236,6 +247,37 @@ void flt_latex_create_md5_sum(u_char *str,size_t len,u_char *res) {
 }
 /* }}} */
 
+/* {{{ flt_latex_filter */
+u_char *flt_latex_filter(const u_char *cnt,size_t *len) {
+  u_char *val;
+  t_string str;
+  register u_char *ptr;
+
+  str_init(&str);
+
+  for(ptr=(u_char *)cnt;*ptr;++ptr) {
+    switch(*ptr) {
+      case '<':
+        if(cf_strncmp(ptr,"<br>",4) == 0 || cf_strncmp(ptr,"<br />",6) == 0) str_char_append(&str,'\n');
+        for(;*ptr && *ptr != '>';++ptr);
+        continue;
+      case '\\':
+        if(cf_strncmp(ptr,"\\include",8) == 0 || cf_strncmp(ptr,"\\newcommand",11) == 0 || cf_strncmp(ptr,"\\renewcommand",13) == 0) {
+          str_cleanup(&str);
+          return NULL;
+        }
+      default:
+        str_char_append(&str,*ptr);
+    }
+  }
+
+  val = htmlentities_decode(str.content,len);
+  str_cleanup(&str);
+
+  return val;
+}
+/* }}} */
+
 /* {{{ flt_latex_execute */
 int flt_latex_execute(t_configuration *fdc,t_configuration *fvc,t_cl_thread *thread,const u_char *directive,const u_char **parameters,size_t plen,t_string *bco,t_string *bci,t_string *content,t_string *cite,const u_char *qchars,int sig) {
   u_char *fn;
@@ -245,22 +287,32 @@ int flt_latex_execute(t_configuration *fdc,t_configuration *fvc,t_cl_thread *thr
   u_char *my_cnt;
 
   if(sig) return FLT_DECLINE;
+  if((my_cnt = flt_latex_filter(content->content,&len)) == NULL) {
+    fprintf(stderr,"Security violation! include, newcommand or renewcommand!\n");
+    return FLT_DECLINE;
+  }
 
   fn     =  cf_hash_get(GlobalValues,"FORUM_NAME",10);
   xhtml  = cfg_get_first_value(fdc,fn,"XHTMLMode");
-  my_cnt = htmlentities_decode(content->content,&len);
 
   flt_latex_create_md5_sum(my_cnt,len,sum);
 
-  if(flt_latex_create_cache(my_cnt,len,sum) != 0) {
+  if(flt_latex_create_cache(my_cnt,len,sum,cf_strcmp(directive,"elatex") == 0) != 0) {
     free(my_cnt);
     return FLT_DECLINE;
   }
 
   if(bci) {
-    str_chars_append(bci,"[latex]",7);
-    str_str_append(bci,cite);
-    str_chars_append(bci,"[/latex]",8);
+    if(cf_strcmp(directive,"elatex") == 0) {
+      str_chars_append(bci,"[elatex]",8);
+      str_str_append(bci,cite);
+      str_chars_append(bci,"[/elatex]",9);
+    }
+    else {
+      str_chars_append(bci,"[latex]",7);
+      str_str_append(bci,cite);
+      str_chars_append(bci,"[/latex]",8);
+    }
   }
 
   str_chars_append(bco,"<img src=\"",10);
@@ -283,6 +335,7 @@ int flt_latex_execute(t_configuration *fdc,t_configuration *fvc,t_cl_thread *thr
 
 int flt_latex_init(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc) {
   cf_html_register_directive("latex",flt_latex_execute,CF_HTML_DIR_TYPE_ARG|CF_HTML_DIR_TYPE_BLOCK);
+  cf_html_register_directive("elatex",flt_latex_execute,CF_HTML_DIR_TYPE_ARG|CF_HTML_DIR_TYPE_BLOCK);
 
   return FLT_DECLINE;
 }

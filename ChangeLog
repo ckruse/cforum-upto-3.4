@@ -1,3 +1,7 @@
+2005-06-29 Christian Kruse <ckruse@wwwtech.de>
+	* src/modules/flt_latex.c: Fixed bug #43, added some security fixes, added
+		elatex directive
+
 2005-06-27 Christian Kruse <ckruse@wwwtech.de>
 	* src/modules/flt_list.c: Fixed a bug in choosing the template
 
