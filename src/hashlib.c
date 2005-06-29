@@ -620,7 +620,7 @@ void cf_hash_destroy(t_cf_hash *hsh) {
 /*
  * this is a small example
  *
- */
+ *
 
 int main(void) {
   t_cf_hash *hsh = cf_hash_new(NULL);
@@ -644,6 +644,6 @@ int main(void) {
 
   return 0;
 }
-/**/
+*/
 
 /* eof */
