@@ -769,16 +769,16 @@ int validate_message(t_array *stack,t_cl_thread *thread,const u_char *msg,u_char
 
 
 /* {{{ cf_html_register_validator */
-int cf_html_register_validator(u_char *name,t_directive_validator filter,int type) {
+int cf_html_register_validator(const u_char *name,t_directive_validator filter,int type) {
   t_validator_callback clbck;
   size_t len = strlen(name);
 
   if(!registered_validators) registered_validators = cf_hash_new(NULL);
-  if(cf_hash_get(registered_validators,name,len) != NULL) return -1;
+  if(cf_hash_get(registered_validators,(u_char *)name,len) != NULL) return -1;
 
   clbck.type = type;
   clbck.callback = filter;
-  cf_hash_set(registered_validators,name,len,&clbck,sizeof(clbck));
+  cf_hash_set(registered_validators,(u_char *)name,len,&clbck,sizeof(clbck));
 
   return 0;
 }
@@ -801,23 +801,23 @@ int cf_validate_msg(t_cl_thread *thread,const u_char *msg,t_cf_tpl_variable *var
 /* }}} */
 
 /* {{{ cf_html_register_directive */
-int cf_html_register_directive(u_char *name,t_directive_filter filter,int type) {
+int cf_html_register_directive(const u_char *name,t_directive_filter filter,int type) {
   t_directive_callback clbck;
   size_t len = strlen(name);
 
   if(!registered_directives) registered_directives = cf_hash_new(NULL);
-  if(cf_hash_get(registered_directives,name,len) != NULL) return -1;
+  if(cf_hash_get(registered_directives,(u_char *)name,len) != NULL) return -1;
 
   clbck.type = type;
   clbck.callback = filter;
-  cf_hash_set(registered_directives,name,len,&clbck,sizeof(clbck));
+  cf_hash_set(registered_directives,(u_char *)name,len,&clbck,sizeof(clbck));
 
   return 0;
 }
 /* }}} */
 
 /* {{{ cf_html_register_textfilter */
-int cf_html_register_textfilter(u_char *text,t_directive_filter filter) {
+int cf_html_register_textfilter(const u_char *text,t_directive_filter filter) {
   u_char *ptr;
   t_html_tree *elem,*elem1;
 
@@ -828,7 +828,7 @@ int cf_html_register_textfilter(u_char *text,t_directive_filter filter) {
     parser_tree[*text] = elem;
     elem1    = elem;
 
-    for(ptr=text+1;*ptr;++ptr) {
+    for(ptr=(u_char *)text+1;*ptr;++ptr) {
       if(!elem1->nodes) elem1->nodes = fo_alloc(NULL,256,sizeof(*elem->nodes),FO_ALLOC_CALLOC);
 
       elem        = fo_alloc(NULL,1,sizeof(*elem),FO_ALLOC_CALLOC);
@@ -843,7 +843,7 @@ int cf_html_register_textfilter(u_char *text,t_directive_filter filter) {
   else {
     elem1 = parser_tree[*text];
 
-    for(ptr=text+1;*ptr;++ptr) {
+    for(ptr=(u_char *)text+1;*ptr;++ptr) {
       if(!elem1->nodes) {
         elem1->nodes = fo_alloc(NULL,256,sizeof(*elem->nodes),FO_ALLOC_CALLOC);
         elem = fo_alloc(NULL,1,sizeof(*elem),FO_ALLOC_CALLOC);

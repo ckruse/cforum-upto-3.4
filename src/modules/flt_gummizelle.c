@@ -160,7 +160,7 @@ int flt_gummizelle_check_caged(void) {
 
 /* {{{ flt_gummizelle_init */
 int flt_gummizelle_init(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc) {
-  u_char *UserName,*ip,*name;
+  u_char *UserName,*ip;
   struct stat st;
   int fd;
   u_char *f_ptr;
@@ -181,7 +181,7 @@ int flt_gummizelle_init(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc) 
   }
 
   if(st.st_size == 0) {
-    fprintf(stderr,"flt_gummizelle: stat: file '%s' is empty!\n",flt_gummizelle_db,strerror(errno));
+    fprintf(stderr,"flt_gummizelle: stat: file '%s' is empty!\n",flt_gummizelle_db);
     return FLT_DECLINE;
   }
 

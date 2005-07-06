@@ -48,7 +48,7 @@ int flt_threadreturnanchor_post(t_cf_hash *head,t_configuration *dc,t_configurat
     if (!path) return 1;
 
     str_init(&new_path);
-    str_str_set(&new_path,&path->data.d_string);
+    str_str_set(&new_path,(t_string *)&path->data.d_string);
     str_char_append(&new_path,'#');
     len = snprintf(buf, 50, "t%llu", thread->tid);
     str_chars_append(&new_path,buf,len);

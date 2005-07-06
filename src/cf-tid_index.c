@@ -103,7 +103,6 @@ int is_thread(const char *path) {
 void index_month(char *year,char *month) {
   t_name_value *apath = cfg_get_first_value(&fo_server_conf,forum_name,"ArchivePath");
   char path[256],path1[256],ym[256];
-  t_tid_index midx;
   struct stat st;
   DBT key,data;
   size_t ym_len,len;

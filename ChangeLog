@@ -2,4 +2,5 @@
 	* src/stringutils.c, src/utils.h: Added cf_isspace() function, which checks if
 		a given unicode number refers to a space character
 	* src/modules/flt_directives.c: Fixed bug #44
+	* src/*.[ch], src/modules/*.[ch]: Lot of code cleaning
 

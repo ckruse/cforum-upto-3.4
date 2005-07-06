@@ -158,6 +158,7 @@ extern t_configuration fo_arcview_conf; /**< The configuration data of the archi
 extern t_configuration fo_post_conf; /**< The configuration data of the archive viewer */
 extern t_configuration fo_vote_conf; /**< The configuration data of the voting program */
 extern t_configuration fo_feeds_conf; /**< The configuration data of the feeds program */
+extern t_configuration fo_userconf_conf; /**< The configuration data of the userconfig program */
 
 extern t_conf_opt default_options[]; /**< The default configuration options */
 extern t_conf_opt fo_view_options[]; /**< The client configuration options */
@@ -166,6 +167,7 @@ extern t_conf_opt fo_server_options[]; /**< The server configuration options */
 extern t_conf_opt fo_arcview_options[]; /**< The archiv viewer configuration options */
 extern t_conf_opt fo_vote_options[]; /**< The voting program configuration options */
 extern t_conf_opt fo_feeds_options[];  /**< The feeds program configuration options */
+extern t_conf_opt fo_userconf_options[]; /**< The userconf program configuration options */
 
 extern t_array Modules[]; /**< The modules array */
 

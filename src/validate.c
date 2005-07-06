@@ -1128,19 +1128,19 @@ int is_valid_file_link(const u_char *link) {
     if((dp = strstr(link+7,":")) == NULL) {
       hostname = strndup(link+7,ptr-link+7);
       if(!is_valid_hostname(hostname)) {
-        free(hostname);
+        free((void *)hostname);
         return -1;
       }
-      free(hostname);
+      free((void *)hostname);
     }
     /* we got a hostname with port number */
     else {
       hostname = strndup(link+7,dp-link+7);
       if(!is_valid_hostname(hostname)) {
-        free(hostname);
+        free((void *)hostname);
         return -1;
       }
-      free(hostname);
+      free((void *)hostname);
 
       for(ptr=dp+1;*ptr;ptr++) {
         if(!isdigit(*ptr)) return -1;

@@ -293,7 +293,6 @@ void flt_mailonpost_encode_header(t_string *str,const u_char *enc,size_t len) {
   unsigned x;
   u_char *ptr;
   size_t llen,clen;
-  u_int32_t num;
 
   for(ptr=(u_char *)enc;*ptr && di == 0;++ptr) {
     if(((u_int8_t)*ptr) & 0x80) ++di;
@@ -470,7 +469,6 @@ void flt_mailonpost_mail(u_char **emails,u_int64_t len,t_message *p,t_cl_thread 
 
   u_char *msg_subj = cf_get_error_message("Send_Answer_Subject",NULL),
          *msg_body = cf_get_error_message("Send_Answer_Body",NULL),
-         *ptr,
          *link = cf_get_link(rm->posting_uri[0],t->tid,p->mid),
          *mylink = cf_get_link(rm->posting_uri[1],t->tid,p->mid);
 
@@ -525,12 +523,10 @@ int flt_mailonpost_execute(t_cf_hash *head,t_configuration *dc,t_configuration *
 #endif
 {
   int ret;
-  u_char buff[256],**list = NULL,*ptr;
+  u_char buff[256],**list = NULL;
   size_t n,i;
   t_string str;
   t_cl_thread thr;
-
-  struct s_smtp *inf;
 
   DB *db = NULL;
   DBT key,data;
@@ -582,7 +578,7 @@ int flt_mailonpost_execute(t_cf_hash *head,t_configuration *dc,t_configuration *
 
 int flt_mailonpost_post_handler(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cl_thread *thread,t_cf_template *tpl) {
   u_char *link,buff[256];
-  t_name_value *uri,*cs,*email;
+  t_name_value *cs,*email;
   size_t len;
   DB *db = NULL;
   int ret;

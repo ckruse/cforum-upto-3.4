@@ -253,6 +253,7 @@ void display_posting_form(t_cf_hash *head,t_message *p,t_cf_tpl_variable *var) {
 /* }}} */
 
 /* {{{ normalize_cgi_variables */
+
 /**
  * "Normalizes" the cgi input variables (means: everything to UTF-8)
  * and checks if strings are valid UTF-8 (in case of UTF-8 cgi params)
@@ -265,8 +266,6 @@ int normalize_cgi_variables(t_cf_hash *head,const u_char *field_name) {
   u_char *field = cf_cgi_get(head,(u_char *)field_name),*forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   register u_char *ptr;
   u_char c;
-  u_int32_t i;
-  t_cf_hash_entry *ent;
   u_char *converted;
   t_name_value *cs = cfg_get_first_value(&fo_default_conf,forum_name,"ExternCharset");
   t_cf_cgi_param *param;
@@ -363,6 +362,7 @@ int normalize_cgi_variables(t_cf_hash *head,const u_char *field_name) {
 
   return 0;
 }
+
 /* }}} */
 
 /* {{{ validate_cgi_variables */
@@ -507,7 +507,7 @@ int get_message_url(const u_char *msgstr,t_name_value **v) {
 /* {{{ body_plain2coded */
 t_string *body_plain2coded(const u_char *text) {
   u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
-  u_char *body,*safe;
+  u_char *body;
   t_string *str = fo_alloc(NULL,1,sizeof(*str),FO_ALLOC_CALLOC);
   u_char *ptr,*end,*tmp,*qchars;
   t_name_value *v;

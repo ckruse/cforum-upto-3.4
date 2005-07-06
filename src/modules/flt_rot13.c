@@ -45,11 +45,8 @@ static int flt_rot13_decoded = 0;
 /* {{{ flt_rot13_execute */
 int flt_rot13_execute(t_configuration *fdc,t_configuration *fvc,t_cl_thread *thread,const u_char *directive,const u_char **parameters,size_t plen,t_string *bco,t_string *bci,t_string *content,t_string *cite,const u_char *qchars,int sig) {
   register u_char *ptr,b1,b2;
-  u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   u_char *link;
   size_t l;
-
-  t_string cnt;
 
   int un = cf_hash_get(GlobalValues,"UserName",8) != NULL;
   cf_readmode_t *rm = cf_hash_get(GlobalValues,"RM",2);

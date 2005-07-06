@@ -146,10 +146,7 @@ int flt_visited_execute_filter(t_cf_hash *head,t_configuration *dc,t_configurati
   u_char buff[256],*mav,*a;
   t_cf_cgi_param *parm;
   size_t len;
-  t_string str;
   t_name_value *rm = cfg_get_first_value(vc,fn,"ReadMode");
-
-  t_name_value *cs,*ot,*ct;
 
   if(uname && Cfg.VisitedFile) {
     memset(&key,0,sizeof(key));

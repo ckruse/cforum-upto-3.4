@@ -55,6 +55,7 @@ t_configuration fo_arcview_conf;
 t_configuration fo_post_conf;
 t_configuration fo_vote_conf;
 t_configuration fo_feeds_conf;
+t_configuration fo_userconf_conf;
 
 t_array Modules[MOD_MAX+1];
 
@@ -221,6 +222,20 @@ t_conf_opt fo_feeds_options[] = {
   { "FeedLang",             handle_command,   CFG_OPT_CONFIG|CFG_OPT_LOCAL,                &fo_feeds_conf },
   { "RSSWebMaster",         handle_command,   CFG_OPT_CONFIG|CFG_OPT_LOCAL,                &fo_feeds_conf },
   { "RSSCategory",          handle_command,   CFG_OPT_CONFIG|CFG_OPT_LOCAL,                &fo_feeds_conf },
+
+  { NULL, NULL, 0, NULL }
+};
+/* }}} */
+
+/* {{{ fo_userconf_options */
+t_conf_opt fo_userconf_options[] = {
+  { "MinLength",       handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_userconf_conf },
+  { "MaxLength",       handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_userconf_conf },
+  { "MinVal",          handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_userconf_conf },
+  { "MaxVal",          handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_userconf_conf },
+  { "ModuleConfig",    handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_userconf_conf },
+  { "FromUntilFormat", handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_userconf_conf },
+  { "Edit",            handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_userconf_conf },
 
   { NULL, NULL, 0, NULL }
 };
@@ -921,7 +936,6 @@ void cleanup_modules(t_array *modules) {
 
 /* {{{ cfg_get_first_value */
 t_name_value *cfg_get_first_value(t_configuration *cfg,const u_char *context,const u_char *name) {
-  t_name_value *ent;
   const t_cf_tree_dataset *dt;
   t_cf_tree_dataset dt1;
   t_cf_list_head *head;
@@ -955,7 +969,6 @@ t_name_value *cfg_get_first_value(t_configuration *cfg,const u_char *context,con
 
 /* {{{ cfg_get_value */
 t_cf_list_head *cfg_get_value(t_configuration *cfg,const u_char *context,const u_char *name) {
-  t_name_value *ent;
   const t_cf_tree_dataset *dt;
   t_cf_tree_dataset dt1;
   t_cf_list_element *elem;

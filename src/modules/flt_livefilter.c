@@ -469,7 +469,6 @@ void flt_lf_to_int(t_flt_lf_result *v) {
 /* {{{ flt_lf_transform_date */
 time_t flt_lf_transform_date(const u_char *datestr,t_flt_lf_result *v) {
   struct tm t;
-  time_t x;
   u_char *ptr,*before;
   u_char *str = fo_alloc(NULL,strlen(datestr)+1,1,FO_ALLOC_MALLOC);
 
@@ -626,13 +625,10 @@ int flt_lf_is_true(t_flt_lf_result *v) {
 
 /* {{{ flt_lf_evaluate */
 t_flt_lf_result *flt_lf_evaluate(t_flt_lf_node *n,t_message *msg,u_int64_t tid) {
-  u_char buff[50];
-  u_char *ret = NULL;
   t_mod_api is_visited = cf_get_mod_api_ent("is_visited");
   t_flt_lf_result *result = fo_alloc(NULL,1,sizeof(*result),FO_ALLOC_CALLOC);
   t_flt_lf_result *l = NULL,*r = NULL,*tmp;
   struct tm tm,tm1;
-  time_t t;
 
   if(!n) return NULL;
 

@@ -123,9 +123,6 @@ void flt_mod_setlinks(t_cf_tpl_variable *tpl,int ret,u_int64_t tid,u_int64_t mid
 /* {{{ flt_moderated_thread */
 int flt_moderated_thread(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cl_thread *thread,int mode) {
   int si = cf_hash_get(GlobalValues,"ShowInvisible",13) != NULL,ret;
-  cf_readmode_t *rm = cf_hash_get(GlobalValues,"RM",2);
-  u_char *link;
-  size_t l;
 
   DBT key,data;
   t_string str;
