@@ -96,8 +96,11 @@ int flt_directives_is_valid_pref(const u_char *parameter,u_char **tmp,u_char **t
             for(;*ptr && isdigit(*ptr);++ptr);
 
             if(cf_strncmp(ptr,"@title=",7) == 0) {
-              *tmp1 = ptr;
-              return 1;
+              if(*(ptr+7) && flt_directives_is_valid_title(ptr+7,strlen(ptr+7))) {
+                *tmp1 = ptr;
+                return 1;
+              }
+              else return 0;
             }
 
             *tmp1 = NULL;
@@ -354,10 +357,13 @@ int flt_directives_execute(t_configuration *fdc,t_configuration *fvc,t_cl_thread
     /* {{{ [image:] */
     if(cf_strcmp(directive,"image") == 0) {
       if((ptr = strstr(parameter,"@alt=")) != NULL) {
-        tmp1      = strndup(parameter,ptr-parameter);
-        len       = ptr - parameter;
-        title_alt = htmlentities(ptr + 5,1);
-        len1      = strlen(title_alt);
+        if(*(ptr+5) && flt_directives_is_valid_title(ptr+5,strlen(ptr+5))) {
+          tmp1      = strndup(parameter,ptr-parameter);
+          len       = ptr - parameter;
+          title_alt = htmlentities(ptr + 5,1);
+          len1      = strlen(title_alt);
+        }
+        else return FLT_DECLINE;
       }
       else {
         tmp1 = (u_char *)parameter;
@@ -494,8 +500,11 @@ int flt_directives_execute(t_configuration *fdc,t_configuration *fvc,t_cl_thread
           if(cf_strcmp(uri->id,list[0]) == 0) {
             /* check for title */
             if((title_alt = strstr(list[1],"@title=")) != NULL) {
-              tmp2 = strndup(list[1],title_alt-list[1]);
-              title_alt = htmlentities(title_alt+7,0);
+              if(*(title_alt+7) && flt_directives_is_valid_title(title_alt+7,strlen(title_alt+7))) {
+                tmp2 = strndup(list[1],title_alt-list[1]);
+                title_alt = htmlentities(title_alt+7,0);
+              }
+              else return FLT_DECLINE;
             }
             else tmp2 = strdup(list[1]);
 
