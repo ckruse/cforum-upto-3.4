@@ -754,6 +754,13 @@ size_t cf_strlen_utf8(const u_char *str,size_t rlen);
  */
 size_t cf_strlen_utf8_wo_space(const u_char *str,size_t rlen);
 
+/**
+ * Checks if the character the unicode number given by argument refers to is a space character
+ * \param num The unicode number of the character
+ * \return 1 if it is a space character, 0 if it is not
+ */
+int cf_isspace(u_int32_t num);
+
 /* }}} */
 
 /* {{{ caching functions */
