@@ -490,8 +490,6 @@ void show_thread(t_cf_hash *head,void *sock,u_int64_t tid)
   rline_t tsd;
   #endif
 
-  cf_readmode_t *rm = cf_hash_get(GlobalValues,"RM",2);
-
   u_char *tmp,
          *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
 
@@ -767,8 +765,6 @@ void show_threadlist(void *shm_ptr,t_cf_hash *head)
         *UserName = cf_hash_get(GlobalValues,"UserName",8);
 
   t_name_value *fbase,*cs = cfg_get_first_value(&fo_default_conf,forum_name,"ExternCharset");
-
-  cf_readmode_t *rm = cf_hash_get(GlobalValues,"RM",2);
 
   t_cl_thread thread,*threadp;
   t_message *msg;

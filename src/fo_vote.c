@@ -160,7 +160,6 @@ int main(int argc,char *argv[],char *env[]) {
   u_char *fname,*ctid,*cmid,*a,buff[512],*uname,*ucfg,*mode = NULL,*line;
   t_cf_hash *head;
   size_t len;
-  DB_ENV *dbenv;
   DB *db;
   DBT key,data;
   t_name_value *dbname,*cs,*send204;

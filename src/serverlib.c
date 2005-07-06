@@ -136,7 +136,9 @@ t_forum *cf_register_forum(const u_char *name) {
 
 /* {{{ cf_destroy_forum */
 void cf_destroy_forum(t_forum *forum) {
+  #ifdef CF_SHARED_MEM
   int i;
+  #endif
 
   cf_rwlock_destroy(&forum->lock);
   cf_rwlock_destroy(&forum->threads.lock);
@@ -308,7 +310,6 @@ void cf_cleanup_thread(t_thread *t) {
 /* {{{ cf_cleanup_forumtree */
 void cf_cleanup_forumtree(t_forum *forum) {
   t_thread *t,*t1;
-  t_posting *p,*p1;
 
   for(t=forum->threads.list;t;t=t1) {
     cf_cleanup_thread(t);
@@ -950,7 +951,6 @@ t_posting_flag *cf_get_flag_by_name(t_cf_list_head *flags,const u_char *name) {
 
 /* {{{ cf_send_posting */
 void cf_send_posting(t_forum *forum,int sock,u_int64_t tid,u_int64_t mid,int invisible) {
-  int n;
   t_thread *t = cf_get_thread(forum,tid);
   t_posting *p = NULL;
   t_string bff;
@@ -1170,7 +1170,7 @@ int cf_read_posting(t_forum *forum,t_posting *p,int sock,rline_t *tsd) {
 /* {{{ cf_remove_flags */
 int cf_remove_flags(int sockfd,rline_t *tsd,t_posting *p1) {
   size_t len,i;
-  u_char *line,**list,*name;
+  u_char *line,**list;
   t_posting_flag *flagp;
   t_cf_list_element *elem;
 
@@ -1212,7 +1212,6 @@ int cf_remove_flags(int sockfd,rline_t *tsd,t_posting *p1) {
 int cf_read_flags(int sockfd,rline_t *tsd,t_posting *p) {
   u_char *line,*ptr;
   t_posting_flag flag,*flagp;
-  t_cf_list_element *elem;
 
   while((line = readline(sockfd,tsd)) != NULL) {
     line[tsd->rl_len-1] = '\0';
@@ -1344,8 +1343,7 @@ void *cf_generate_cache(void *arg) {
 
 /* {{{ cf_generate_list */
 void cf_generate_list(t_forum *forum,t_string *str,int del) {
-  int n,did = 0;
-  u_char buff[500];
+  int did = 0;
   t_thread *t,*t1;
   int first;
   t_posting *p;

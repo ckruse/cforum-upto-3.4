@@ -329,12 +329,12 @@ int flt_xmlstorage_make_forumtree(t_forum *forum) {
 
   root_element = gdome_doc_documentElement(doc_index,&e);
 
-  if((ctid = xml_get_attribute(root_element,"lastThread")) != NULL) {
+  if((ctid = xml_get_attribute((GdomeNode *)root_element,"lastThread")) != NULL) {
     forum->threads.last_tid = str_to_u_int64(ctid+1);
     free(ctid);
   }
 
-  if((ctid = xml_get_attribute(root_element,"lastMessage")) != NULL) {
+  if((ctid = xml_get_attribute((GdomeNode *)root_element,"lastMessage")) != NULL) {
     forum->threads.last_mid = str_to_u_int64(ctid+1);
     free(ctid);
   }

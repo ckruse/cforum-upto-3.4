@@ -2466,7 +2466,7 @@ int process_func_call_tag(t_array *data) {
   t_array params;
   t_string tmp,v1,iv1;
   t_string *v;
-  int vn,i,ret;
+  int i,ret;
   char buf[20];
 
   array_init(&params,sizeof(t_string),str_cleanup); // internal vars
@@ -2913,7 +2913,7 @@ void write_parser_functions(FILE *ofp, t_string *func_name, t_context *ctx, t_ar
       str_init(&tmp);
       append_escaped_string(&tmp,s);
       fprintf(ofp,"if(p%d) {\n", i);
-      fprintf(ofp,"is_arf_var = p%d->arrayref;\n");
+      fprintf(ofp,"is_arf_var = p%d->arrayref;\n",i);
       fprintf(ofp,"if(!p%d->temporary) {\nis_tmp_var = 1; p%d->arrayref = 1;\n}\n", i, i);
       fprintf(ofp,"cf_tpl_setvar(tpl,\"%s\",p%d);\n", tmp.content+1, i);
       fprintf(ofp,"if(is_tmp_var) {\nis_tmp_var = 0; p%d->arrayref = is_arf_var;\n}\n", i);
@@ -2994,7 +2994,7 @@ void write_parser_functions(FILE *ofp, t_string *func_name, t_context *ctx, t_ar
       str_init(&tmp);
       append_escaped_string(&tmp,s);
       fprintf(ofp,"if(p%d) {\n", i);
-      fprintf(ofp,"is_arf_var = p%d->arrayref;\n");
+      fprintf(ofp,"is_arf_var = p%d->arrayref;\n",i);
       fprintf(ofp,"if(!p%d->temporary) {\nis_tmp_var = 1; p%d->arrayref = 1;\n}\n", i, i);
       fprintf(ofp,"cf_tpl_setvar(tpl,\"%s\",p%d);\n", tmp.content+1, i);
       fprintf(ofp,"if(is_tmp_var) {\nis_tmp_var = 0; p%d->arrayref = is_arf_var;\n}\n", i);

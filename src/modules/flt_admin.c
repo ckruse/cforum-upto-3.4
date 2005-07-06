@@ -263,7 +263,6 @@ int flt_admin_init(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc) {
 /* {{{ flt_admin_posthandler */
 int flt_admin_posthandler(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc,t_message *msg,u_int64_t tid,int mode) {
   u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);  
-  u_char buff[256];
   u_char *link;
   size_t l;
   u_char *UserName = cf_hash_get(GlobalValues,"UserName",8);

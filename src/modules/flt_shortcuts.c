@@ -199,7 +199,6 @@ void flt_shortcuts_parser(const u_char *text,flt_shortcuts_t *shortcut) {
 /* {{{ flt_shortcuts_handle */
 int flt_shortcuts_handle(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
   size_t i;
-  flt_shortcuts_t shortcut;
 
   if(flt_shortcuts_fn == NULL) flt_shortcuts_fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   if(!context || cf_strcmp(flt_shortcuts_fn,context) != 0) return 0;

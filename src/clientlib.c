@@ -660,7 +660,6 @@ u_char *cf_get_link(const u_char *link,u_int64_t tid,u_int64_t mid) {
 u_char *cf_advanced_get_link(const u_char *link,u_int64_t tid,u_int64_t mid,u_char *anchor,size_t plen,size_t *l,...) {
   register const u_char *ptr;
   t_string buff;
-  u_char *my_anchor;
   int qm = 0,run = 1;
   u_char *name,*value,*tmp;
   size_t i;

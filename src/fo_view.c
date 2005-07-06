@@ -285,16 +285,16 @@ void show_threadlist(void *shm_ptr,t_cf_hash *head)
 #endif
 {
   /* {{{ variables */
-  int ret,len;
+  int len;
   #ifndef CF_SHARED_MEM
   rline_t tsd;
-  u_char *line,*tmp;
+  u_char *line,buff[128];
+  int ret;
   #else
   void *ptr,*ptr1;
   #endif
 
-  u_char buff[128],
-    *ltime,
+  u_char *ltime,
     *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10),
     *UserName = cf_hash_get(GlobalValues,"UserName",8);
 
@@ -308,7 +308,6 @@ void show_threadlist(void *shm_ptr,t_cf_hash *head)
 
   time_t tm;
   t_cl_thread thread,*threadp;
-  t_message *msg;
   size_t i;
   int del = cf_hash_get(GlobalValues,"ShowInvisible",13) == NULL ? CF_KILL_DELETED : CF_KEEP_DELETED;
 

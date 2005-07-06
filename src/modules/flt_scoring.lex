@@ -215,7 +215,7 @@ int flt_scoring_execute(t_cf_hash *head,t_configuration *dc,t_configuration *vc,
 
 /* {{{ flt_scoring_parse */
 int flt_scoring_parse(t_configfile *cf,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
-  u_char *error,*ptr;
+  u_char *error;
   struct s_scoring_filter filter;
   int err_offset,ret;
   YY_BUFFER_STATE yybuff;

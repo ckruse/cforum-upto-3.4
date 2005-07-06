@@ -410,7 +410,7 @@ int flt_urlrewrite_execute(t_configuration *fdc,t_configuration *fvc,const u_cha
   }
   
   *new_uri = dest.content;
-  free(uri);
+  free((void *)uri);
 
   return FLT_EXIT;
 }

@@ -79,6 +79,28 @@ static t_array flt_directives_puris = { 0, 0, 0, NULL, NULL };
 
 static u_char *flt_directives_fname = NULL;
 
+/* {{{ flt_directives_is_valid_title */
+int flt_directives_is_valid_title(const u_char *title,size_t len) {
+  int bytes = 0;
+  register u_char *ptr;
+  u_int32_t num;
+
+  for(ptr=(u_char *)title;*ptr;) {
+    if((bytes = utf8_to_unicode(ptr,len,&num)) < 0) {
+      ++ptr;
+      --len;
+    }
+
+    if(cf_isspace(num) == 0) return 1;
+
+    ptr += bytes;
+    len -= bytes;
+  }
+
+  return 0;
+}
+/* }}} */
+
 /* {{{ flt_directives_is_valid_pref */
 int flt_directives_is_valid_pref(const u_char *parameter,u_char **tmp,u_char **tmp1) {
   u_char *ptr;
@@ -132,28 +154,6 @@ int flt_directives_is_relative_uri(const u_char *tmp,size_t len) {
 }
 /* }}} */
 
-/* {{{ flt_directives_is_valid_title */
-int flt_directives_is_valid_title(const u_char *title,size_t len) {
-  int bytes = 0;
-  register u_char *ptr;
-  u_int32_t num;
-
-  for(ptr=(u_char *)title;*ptr;) {
-    if((bytes = utf8_to_unicode(ptr,len,&num)) < 0) {
-      ++ptr;
-      --len;
-    }
-
-    if(cf_isspace(num) == 0) return 1;
-
-    ptr += bytes;
-    len -= bytes;
-  }
-
-  return 0;
-}
-/* }}} */
-
 /* {{{ flt_directives_replace */
 void flt_directives_replace(t_string *content,const u_char *str,const u_char *uri,size_t ulen,const u_char *escaped,size_t eulen,const u_char *title,size_t tlen) {
   register u_char *ptr;
@@ -188,8 +188,7 @@ void flt_directives_replace(t_string *content,const u_char *str,const u_char *ur
 
 /* {{{ flt_directives_generate_uri */
 void flt_directives_generate_uri(const u_char *uri,const u_char *title,t_string *content,t_string *cite,int sig,t_configuration *dc,t_configuration *vc,int icons) {
-  register u_char *ptr;
-  u_char *tmp1,*tmp2 = NULL,*tmp3,*hostname;
+  u_char *tmp1,*tmp2 = NULL,*hostname;
   size_t len = 0,len1 = 0,len2,i;
   t_flt_directives_lt_tok *tok;
   u_char *new_uri = NULL;
@@ -305,7 +304,7 @@ void flt_directives_generate_uri(const u_char *uri,const u_char *title,t_string 
 
   free(tmp1);
   free(tmp2);
-  free(uri);
+  free((void *)uri);
 }
 /* }}} */
 
@@ -583,10 +582,9 @@ int flt_directives_is_unwanted(const u_char *link,size_t len) {
 
 /* {{{ flt_directives_validate */
 int flt_directives_validate(t_configuration *fdc,t_configuration *fvc,const u_char *directive,const u_char **parameters,size_t plen,t_cf_tpl_variable *var) {
-  u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   u_char *parameter = (u_char *)parameters[0];
 
-  u_char *tmp1,*tmp2,*title_alt,*ptr,**list,*err;
+  u_char *tmp1,*tmp2,*ptr,**list,*err;
 
   t_flt_directives_ref_uri *uri;
 

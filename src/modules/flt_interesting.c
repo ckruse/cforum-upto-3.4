@@ -88,7 +88,7 @@ int flt_interesting_mark_thread(t_cf_hash *head,t_configuration *dc,t_configurat
 int flt_interesting_mark_thread(t_cf_hash *head,t_configuration *dc,t_configuration *vc,void *sock)
 #endif
 {
-  u_char *c_tid,*a;
+  u_char *a;
   u_int64_t tid;
   DBT key,data;
   char one[] = "1";
@@ -96,7 +96,6 @@ int flt_interesting_mark_thread(t_cf_hash *head,t_configuration *dc,t_configurat
   char buff[256];
   size_t len;
   t_cf_cgi_param *parm;
-  u_char *tmp;
 
   if(head && flt_interesting_file) {
     if((a = cf_cgi_get(head,"a")) != NULL) {

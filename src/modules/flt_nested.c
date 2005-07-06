@@ -176,16 +176,16 @@ void flt_nested_start_hierarchical(t_configuration *vc,t_cf_hash *head,t_cf_temp
 }
 
 /* {{{ flt_nested_execute_filter */
+
 int flt_nested_execute_filter(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cl_thread *thread,t_cf_template *tpl) {
   t_cf_tpl_variable hash;
 
-  u_char *qchars,*UserName,*tmp,*msgcnt,buff[256],tplname[256],*forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
+  u_char *qchars,*UserName,*forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   t_name_value *cs,*st,*qc,*ms,*ss,*locale,*df,*dft,
     *rm = cfg_get_first_value(vc,forum_name,"ReadMode"),*lt,*fbase,*ps,*reg;
-  size_t len,qclen,msgcntlen;
-  t_string content,threadlist;
-  int utf8,ShowInvisible,slvl = -1,level = 0,first = 1,printed = 0;
-  t_message *msg;
+  size_t qclen;
+  t_string threadlist;
+  int utf8,ShowInvisible;
   cf_readmode_t *rm_infos = cf_hash_get(GlobalValues,"RM",2);
 
   /* are we in the right read mode? */
@@ -244,6 +244,7 @@ int flt_nested_execute_filter(t_cf_hash *head,t_configuration *dc,t_configuratio
 
   return FLT_OK;
 }
+
 /* }}} */
 
 /* {{{ flt_nested_rm_collector */

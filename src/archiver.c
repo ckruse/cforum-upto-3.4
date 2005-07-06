@@ -63,7 +63,6 @@ void cf_run_archiver(void) {
   t_archive_filter fkt;
   size_t i;
   t_forum *forum;
-  t_posting *p,*p1;
 
   for(i=0;i<forums->valnum;i++) {
     CF_RW_RD(&head.lock);
@@ -213,7 +212,7 @@ void cf_run_archiver(void) {
 /* {{{ cf_archive_threads */
 void cf_archive_threads(t_forum *forum,t_thread **to_archive,size_t len) {
   int ret;
-  size_t i,j;
+  size_t j;
   t_handler_config *handler;
   t_archive_thread fkt;
 

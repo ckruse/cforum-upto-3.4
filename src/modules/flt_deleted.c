@@ -171,7 +171,7 @@ int flt_deleted_del_thread(t_cf_hash *head,t_configuration *dc,t_configuration *
 int flt_deleted_del_thread(t_cf_hash *head,t_configuration *dc,t_configuration *vc,void *sock)
 #endif
 {
-  u_char *c_tid,*a;
+  u_char *a;
   u_int64_t tid;
   DBT key,data;
   char one[] = "1";

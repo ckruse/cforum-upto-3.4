@@ -130,7 +130,7 @@ int flt_noarchive_gogogo(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc,
 
 /* {{{ flt_noarchive_thread */
 int flt_noarchive_thread(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cl_thread *thread,int mode) {
-  int si = cf_hash_get(GlobalValues,"ShowInvisible",13) != NULL,ret;
+  int si = cf_hash_get(GlobalValues,"ShowInvisible",13) != NULL;
   cf_readmode_t *rm = cf_hash_get(GlobalValues,"RM",2);
   u_char *link;
   size_t l;

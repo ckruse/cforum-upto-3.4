@@ -110,11 +110,8 @@ void flt_link_getlink(t_string *str,u_int64_t tid,u_int64_t mid,u_char *forum_na
 int flt_link_set_links_post(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cl_thread *thread,t_cf_template *tpl) {
   u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   t_message *msg;
-  size_t n;
-  u_char *buff;
   t_string str;
-  t_name_value *qtype = cfg_get_first_value(&fo_view_conf,forum_name,"ParamType"),
-    *cs = cfg_get_first_value(&fo_default_conf,forum_name,"ExternCharset"),
+  t_name_value *cs = cfg_get_first_value(&fo_default_conf,forum_name,"ExternCharset"),
     *rm = cfg_get_first_value(vc,forum_name,"ReadMode");
 
   /* user doesn't want <link> tags */

@@ -53,7 +53,6 @@ int flt_cftp_handler(int sockfd,t_forum *forum,const u_char **tokens,int tnum,rl
 
   size_t i,
          l,
-         len,
          err = 0,
          one = 1;
 

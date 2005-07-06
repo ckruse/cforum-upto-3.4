@@ -224,9 +224,6 @@ int flt_http_execute(t_cf_hash *head,t_configuration *dc,t_configuration *vc,voi
   u_char *lm;
   int ret;
   t_cf_hash *header_table = cf_hash_new(NULL);
-  ub4 elems = hashsize(header_table->tablesize);
-  ub4 i;
-  t_cf_hash_entry *ent;
   t_cf_hash_keylist *key;
 
   /* {{{ http header management */

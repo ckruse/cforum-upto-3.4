@@ -67,7 +67,7 @@ int cf_tpl_init(t_cf_template *tpl,const u_char *fname) {
 /* {{{ cf_tpl_copyvars */
 void cf_tpl_copyvars(t_cf_template *dst,t_cf_template *src, int clone) {
   t_cf_tpl_variable *tmp_var;
-  long i,is_arrayref;
+  long is_arrayref;
   t_cf_hash_keylist *key;
 
   for(key=src->varlist->keys.elems;key;key=key->next) {
@@ -279,13 +279,13 @@ t_cf_tpl_variable *cf_tpl_var_convert(t_cf_tpl_variable *dest,t_cf_tpl_variable 
         break;
 
       case TPL_VARIABLE_ARRAY:
-        snprintf(intbuf,19,"%ld",src->data.d_array.elements);
-        str_char_set(&var->data.d_string,intbuf,strlen(intbuf));
+        var->data.d_string.len = 0;
+        u_int32_to_str(&var->data.d_string,src->data.d_array.elements);
         break;
 
       case TPL_VARIABLE_HASH:
-        snprintf(intbuf,19,"%ld",src->data.d_hash->elements);
-        str_char_set(&var->data.d_string,intbuf,strlen(intbuf));
+        var->data.d_string.len = 0;
+        u_int32_to_str(&var->data.d_string,src->data.d_hash->elements);
         break;
     }
 
@@ -323,9 +323,7 @@ t_cf_tpl_variable *cf_tpl_var_convert(t_cf_tpl_variable *dest,t_cf_tpl_variable 
 t_cf_tpl_variable *cf_tpl_var_clone(t_cf_tpl_variable *var) {
   t_cf_hash_keylist *key;
   t_cf_tpl_variable *new_var, *tmp_var;
-  long i;
-  
-  t_cf_hash_entry *ent;
+  size_t i;
   
   if(!var || (var->type != TPL_VARIABLE_STRING && var->type != TPL_VARIABLE_INT && var->type != TPL_VARIABLE_ARRAY && var->type != TPL_VARIABLE_HASH)) return NULL;
   
