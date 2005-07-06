@@ -129,6 +129,28 @@ int flt_directives_is_relative_uri(const u_char *tmp,size_t len) {
 }
 /* }}} */
 
+/* {{{ flt_directives_is_valid_title */
+int flt_directives_is_valid_title(const u_char *title,size_t len) {
+  int bytes = 0;
+  register u_char *ptr;
+  u_int32_t num;
+
+  for(ptr=(u_char *)title;*ptr;) {
+    if((bytes = utf8_to_unicode(ptr,len,&num)) < 0) {
+      ++ptr;
+      --len;
+    }
+
+    if(cf_isspace(num) == 0) return 1;
+
+    ptr += bytes;
+    len -= bytes;
+  }
+
+  return 0;
+}
+/* }}} */
+
 /* {{{ flt_directives_replace */
 void flt_directives_replace(t_string *content,const u_char *str,const u_char *uri,size_t ulen,const u_char *escaped,size_t eulen,const u_char *title,size_t tlen) {
   register u_char *ptr;
@@ -304,14 +326,17 @@ int flt_directives_execute(t_configuration *fdc,t_configuration *fvc,t_cl_thread
     /* {{{ [link:] */
     if(cf_strcmp(directive,"link") == 0) {
       if((ptr = strstr(parameter,"@title=")) != NULL) {
-        tmp1      = strndup(parameter,ptr-parameter);
-        title_alt = htmlentities(ptr + 7,1);
+        if(*(ptr + 7) && flt_directives_is_valid_title(ptr+7,strlen(ptr+7))) {
+          tmp1      = strndup(parameter,ptr-parameter);
+          title_alt = htmlentities(ptr + 7,1);
+        }
+        else return FLT_DECLINE;
       }
       else tmp1 = (u_char *)parameter;
 
       if(is_valid_link(tmp1) != 0) {
         if(cf_strncmp(tmp1,"..",2) == 0 || *tmp1 == '/' || *tmp1 == '?') {
-          if(!flt_directives_is_relative_uri(tmp1,len)) go = 0;
+          if(!flt_directives_is_relative_uri(tmp1,strlen(tmp1))) go = 0;
         }
         else go = 0;
       }
