@@ -46,12 +46,12 @@ typedef struct s_flt_spellcheck_replacement {
   const u_char *replacement;
 } t_flt_spellcheck_replacement;
 
-static int flt_spellcheck_enabled = 0;
-static u_char *flt_spellcheck_path = NULL;
+static int flt_spellcheck_enabled        = 0;
+static u_char *flt_spellcheck_path       = NULL;
 static u_char *flt_spellcheck_dictionary = NULL;
-static u_char *flt_spellcheck_formatter = NULL;
+static u_char *flt_spellcheck_formatter  = NULL;
 
-static u_char *flt_spellcheck_fn = NULL;
+static u_char *flt_spellcheck_fn         = NULL;
 
 static t_array flt_spellcheck_options;
 
@@ -59,9 +59,7 @@ int flt_spellcheck_replacement_compare(t_flt_spellcheck_replacement *a, t_flt_sp
   return a->start - b->start;
 }
 
-
 /* {{{ flt_spellcheck_execute */
-
 #ifdef CF_SHARED_MEM
 int flt_spellcheck_execute(t_cf_hash *head,t_configuration *dc,t_configuration *pc,t_message *p,t_cl_thread *thr,void *shm_ptr,int sock,int mode)
 #else
