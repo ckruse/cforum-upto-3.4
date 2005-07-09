@@ -1,3 +1,15 @@
+2005-07-09 Christian Kruse <ckruse@wwwtech.de>
+	* conf/errormessages.de.txt: Added E_CONFIG_BROKEN
+	* conf/modules.de.xml: Removed encode="plain", added absolute DTD URI
+	* conf/fo_userconf.conf.in: Changed modules.%s.xml to modules.de.xml
+	* src/modules/flt_syntax.c, src/modules/flt_spellcheck.c, src/communication.c:
+		A little bit code cleaning
+	* src/fo_post.c: Fixed small bug (removed unneccessary config file structure)
+	* src/fo_userconf.c: Began to implement fo_userconf in C
+	* src/userconf.[ch]: Utility functions for user and user config management
+	* src/Makefile.am: Added fo_userconf and libcfuserconf.la
+	* scripts/Makefile.am: Removed fo_userconf
+
 2005-07-07 Christian Kruse <ckruse@wwwtech.de>
 	* src/modules/flt_spellcheck.c: Some code cleaning
 

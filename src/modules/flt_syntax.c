@@ -304,7 +304,7 @@ int flt_syntax_load(const u_char *path,const u_char *lang) {
         }
 
         /* we sort them to be able to search faster in it */
-        array_sort(&list.list,flt_syntax_my_cmp);
+        array_sort(&list.list,(int (*)(const void *,const void *))flt_syntax_my_cmp);
         array_push(&file.lists,&list);
       }
       /* }}} */
@@ -955,7 +955,7 @@ int flt_syntax_doit(flt_syntax_pattern_file_t *file,flt_syntax_block_t *block,u_
 
           tmpchar = flt_syntax_get_token(ptr);
 
-          if(tmpchar && (tmpstr = array_bsearch(&tmplist->list,tmpchar,flt_syntax_my_scmp)) != NULL) {
+          if(tmpchar && (tmpstr = array_bsearch(&tmplist->list,tmpchar,(int (*)(const void *,const void *))flt_syntax_my_scmp)) != NULL) {
             matched = 1;
 
             str = array_element_at(&statement->args,1);

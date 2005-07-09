@@ -31,7 +31,7 @@ Forum FORUM1 {
   MinVal "AutoReload"   "2"
   MaxVal "AutoReload"   "30"
 
-  ModuleConfig "@sysconfdir@/cforum/modules.%s.xml"
+  ModuleConfig "@sysconfdir@/cforum/modules.de.xml"
 
   FromUntilFormat "%d. %m. %Y, %H:%M"
 

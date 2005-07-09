@@ -91,3 +91,4 @@ E_noanonymous_read: Sie müssen angemeldet sein, um hier lesen und posten zu kö
 E_noanonymous_post: Sie müssen angemeldet sein, um hier posten zu können.
 E_noanswer: Sie dürfen auf dieses Posting nicht antworten!
 E_dontknow: Es ist ein Fehler aufgetreten. Leider ist unklar, was das Problem ist.
+E_CONFIG_BROKEN: Ihre Benutzer-Konfiguration scheint kaputt zu sein. Kontaktieren sie den System-Administrator. Geben Sie dabei Ihren Benutzernamen an!
