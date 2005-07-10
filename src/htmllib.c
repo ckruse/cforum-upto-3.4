@@ -976,15 +976,14 @@ int _start_threadlist(t_cl_thread *thread,int ShowInvisible,const u_char *linktp
 
       for(i=0;i<ary.childs.elements;++i) {
         ary1 = array_element_at(&ary.childs,i);
-        if(tmp == NULL) tmp = ary1;
 
         _do_html(ary1,thread,ShowInvisible,linktpl,cs,dft,locale);
         cf_tpl_var_add(&tpl_ary,&ary1->msg->hashvar);
       }
 
-      cf_tpl_hashvar_set(&tmp->msg->hashvar,"posts",&tpl_ary);
-      cf_tpl_hashvar_setvalue(&tmp->msg->hashvar,"visible_posts",TPL_VARIABLE_INT,1);
-      cf_tpl_hashvar_setvalue(&tmp->msg->hashvar,"posts_list",TPL_VARIABLE_INT,1);
+      cf_tpl_hashvar_set(&thread->messages->hashvar,"posts",&tpl_ary);
+      cf_tpl_hashvar_setvalue(&thread->messages->hashvar,"visible_posts",TPL_VARIABLE_INT,1);
+      cf_tpl_hashvar_setvalue(&thread->messages->hashvar,"posts_list",TPL_VARIABLE_INT,1);
 
       return 0;
     }
