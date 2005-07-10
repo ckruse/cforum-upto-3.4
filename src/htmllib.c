@@ -905,65 +905,39 @@ void msg_to_html(t_cl_thread *thread,const u_char *msg,t_string *content,t_strin
 }
 /* }}} */
 
-typedef struct priv_ht_s {
-  t_array childs;
-  t_hierarchical_node *msg;
-} priv_ht_t;
-
-/* {{{ _do_it_for_childs */
-void _do_it_for_childs(t_hierarchical_node *ht,priv_ht_t *ary,int si) {
-  size_t i;
-  t_hierarchical_node *ht1;
-  priv_ht_t ary1;
-
-  for(i=0;i<ht->childs.elements;++i) {
-    ht1 = array_element_at(&ht->childs,i);
-
-    if(si || (ht1->msg->invisible == 0 && ht1->msg->may_show)) {
-      array_init(&ary1.childs,sizeof(ary1),NULL);
-      ary1.msg = ht1;
-      _do_it_for_childs(ht1,&ary1,si);
-      array_push(&ary->childs,&ary1);
-    }
-    else _do_it_for_childs(ht1,ary,si);
-  }
-
-}
-/* }}} */
-
 /* {{{ _do_html */
-void _do_html(priv_ht_t *ary,t_cl_thread *thread,int ShowInvisible,const u_char *linktpl,t_name_value *cs,t_name_value *dft,t_name_value *locale) {
+void _do_html(t_hierarchical_node *ary,t_cl_thread *thread,int ShowInvisible,const u_char *linktpl,t_name_value *cs,t_name_value *dft,t_name_value *locale) {
   size_t len,i;
   u_char *date,*link;
   t_cf_tpl_variable ary_tpl;
   t_string tmpstr;
-  priv_ht_t *ary1;
+  t_hierarchical_node *ary1;
 
-  date = cf_general_get_time(dft->values[0],locale->values[0],&len,&ary->msg->msg->date);
-  link = cf_get_link(linktpl,thread->tid,ary->msg->msg->mid);
+  date = cf_general_get_time(dft->values[0],locale->values[0],&len,&ary->msg->date);
+  link = cf_get_link(linktpl,thread->tid,ary->msg->mid);
 
-  cf_set_variable_hash(&ary->msg->msg->hashvar,cs,"author",ary->msg->msg->author.content,ary->msg->msg->author.len,1);
-  cf_set_variable_hash(&ary->msg->msg->hashvar,cs,"title",ary->msg->msg->subject.content,ary->msg->msg->subject.len,1);
+  cf_set_variable_hash(&ary->msg->hashvar,cs,"author",ary->msg->author.content,ary->msg->author.len,1);
+  cf_set_variable_hash(&ary->msg->hashvar,cs,"title",ary->msg->subject.content,ary->msg->subject.len,1);
 
   str_init_growth(&tmpstr,120);
-  u_int64_to_str(&tmpstr,ary->msg->msg->mid);
-  cf_set_variable_hash(&ary->msg->msg->hashvar,cs,"mid",tmpstr.content,tmpstr.len,0);
+  u_int64_to_str(&tmpstr,ary->msg->mid);
+  cf_set_variable_hash(&ary->msg->hashvar,cs,"mid",tmpstr.content,tmpstr.len,0);
   str_cleanup(&tmpstr);
 
   str_init_growth(&tmpstr,120);
   u_int64_to_str(&tmpstr,thread->tid);
-  cf_set_variable_hash(&ary->msg->msg->hashvar,cs,"tid",tmpstr.content,tmpstr.len,0);
+  cf_set_variable_hash(&ary->msg->hashvar,cs,"tid",tmpstr.content,tmpstr.len,0);
   str_cleanup(&tmpstr);
 
-  if(ary->msg->msg->category.len) cf_set_variable_hash(&ary->msg->msg->hashvar,cs,"category",ary->msg->msg->category.content,ary->msg->msg->category.len,1);
+  if(ary->msg->category.len) cf_set_variable_hash(&ary->msg->hashvar,cs,"category",ary->msg->category.content,ary->msg->category.len,1);
 
   if(date) {
-    cf_set_variable_hash(&ary->msg->msg->hashvar,cs,"time",date,len,1);
+    cf_set_variable_hash(&ary->msg->hashvar,cs,"time",date,len,1);
     free(date);
   }
 
   if(link) {
-    cf_set_variable_hash(&ary->msg->msg->hashvar,cs,"link",link,strlen(link),1);
+    cf_set_variable_hash(&ary->msg->hashvar,cs,"link",link,strlen(link),1);
     free(link);
   }
 
@@ -974,44 +948,47 @@ void _do_html(priv_ht_t *ary,t_cl_thread *thread,int ShowInvisible,const u_char 
       ary1 = array_element_at(&ary->childs,i);
 
       _do_html(ary1,thread,ShowInvisible,linktpl,cs,dft,locale);
-      cf_tpl_var_add(&ary_tpl,&ary1->msg->msg->hashvar);
+      cf_tpl_var_add(&ary_tpl,&ary1->msg->hashvar);
     }
 
-    cf_tpl_hashvar_setvalue(&ary->msg->msg->hashvar,"has_subposts",TPL_VARIABLE_INT,1);
-    cf_tpl_hashvar_set(&ary->msg->msg->hashvar,"subposts",&ary_tpl);
+    cf_tpl_hashvar_setvalue(&ary->msg->hashvar,"has_subposts",TPL_VARIABLE_INT,1);
+    cf_tpl_hashvar_set(&ary->msg->hashvar,"subposts",&ary_tpl);
   }
 }
 /* }}} */
 
-/* {{{ _new_start_threadlist */
-void _start_threadlist(t_cl_thread *thread,int ShowInvisible,const u_char *linktpl,t_name_value *cs,t_name_value *dft,t_name_value *locale) {
-  priv_ht_t ary,*ary1;
+/* {{{ _start_threadlist */
+int _start_threadlist(t_cl_thread *thread,int ShowInvisible,const u_char *linktpl,t_name_value *cs,t_name_value *dft,t_name_value *locale) {
+  t_hierarchical_node ary,*ary1;
   size_t i;
   t_cf_tpl_variable tpl_ary;
 
-  array_init(&ary.childs,sizeof(ary),NULL);
-  ary.msg = thread->ht;
-
-  _do_it_for_childs(thread->ht,&ary,ShowInvisible);
+  cf_msg_filter_invisible(thread->ht,&ary,ShowInvisible);
 
   if(ShowInvisible || (thread->ht->msg->invisible == 0 && thread->ht->msg->may_show)) {
     _do_html(&ary,thread,ShowInvisible,linktpl,cs,dft,locale);
-    cf_tpl_hashvar_setvalue(&ary.msg->msg->hashvar,"visible_posts",TPL_VARIABLE_INT,1);
+    cf_tpl_hashvar_setvalue(&ary.msg->hashvar,"visible_posts",TPL_VARIABLE_INT,1);
+    return 0;
   }
   else {
-    cf_tpl_var_init(&tpl_ary,TPL_VARIABLE_ARRAY);
+    if(ary.childs.elements) {
+      cf_tpl_var_init(&tpl_ary,TPL_VARIABLE_ARRAY);
 
-    for(i=0;i<ary.childs.elements;++i) {
-      ary1 = array_element_at(&ary.childs,i);
-      _do_html(ary1,thread,ShowInvisible,linktpl,cs,dft,locale);
-      cf_tpl_var_add(&tpl_ary,&ary1->msg->msg->hashvar);
+      for(i=0;i<ary.childs.elements;++i) {
+        ary1 = array_element_at(&ary.childs,i);
+        _do_html(ary1,thread,ShowInvisible,linktpl,cs,dft,locale);
+        cf_tpl_var_add(&tpl_ary,&ary1->msg->hashvar);
+      }
+
+      cf_tpl_hashvar_set(&ary.msg->hashvar,"posts",&tpl_ary);
+      cf_tpl_hashvar_setvalue(&ary.msg->hashvar,"visible_posts",TPL_VARIABLE_INT,1);
+      cf_tpl_hashvar_setvalue(&ary.msg->hashvar,"posts_list",TPL_VARIABLE_INT,1);
+
+      return 0;
     }
-
-    cf_tpl_hashvar_set(&ary.msg->msg->hashvar,"posts",&tpl_ary);
-    cf_tpl_hashvar_setvalue(&ary.msg->msg->hashvar,"visible_posts",TPL_VARIABLE_INT,1);
-    cf_tpl_hashvar_setvalue(&ary.msg->msg->hashvar,"posts_list",TPL_VARIABLE_INT,1);
   }
 
+  return -1;
 }
 /* }}} */
 
@@ -1072,15 +1049,16 @@ int cf_gen_threadlist(t_cl_thread *thread,t_cf_hash *head,t_string *threadlist,c
     }
     /* }}} */
 
-    _start_threadlist(thread,ShowInvisible,linktpl,cs,dft,locale);
+    if(_start_threadlist(thread,ShowInvisible,linktpl,cs,dft,locale) == 0) {
+      cf_tpl_setvar(&tpl,"thread",&thread->messages->hashvar);
+      cf_tpl_parse_to_mem(&tpl);
+      threadlist->content  = tpl.parsed.content;
+      threadlist->len      = tpl.parsed.len;
+      threadlist->reserved = tpl.parsed.reserved;
 
-    cf_tpl_setvar(&tpl,"thread",&thread->messages->hashvar);
-    cf_tpl_parse_to_mem(&tpl);
-    threadlist->content  = tpl.parsed.content;
-    threadlist->len      = tpl.parsed.len;
-    threadlist->reserved = tpl.parsed.reserved;
+      memset(&tpl.parsed,0,sizeof(tpl.parsed));
+    }
 
-    memset(&tpl.parsed,0,sizeof(tpl.parsed));
     cf_tpl_finish(&tpl);
   }
 
