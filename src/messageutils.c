@@ -51,7 +51,7 @@ t_message *cf_msg_get_first_visible(t_message *msg) {
 t_hierarchical_node *cf_msg_ht_get_first_visible(t_hierarchical_node *msg) {
   size_t i;
   t_hierarchical_node *val;
-  
+
   for(i=0;i<msg->childs.elements;++i) {
     val = array_element_at(&msg->childs,i);
 
@@ -63,6 +63,34 @@ t_hierarchical_node *cf_msg_ht_get_first_visible(t_hierarchical_node *msg) {
   return NULL;
 }
 /* }}} */
+
+/* {{{ cf_msg_filter_invisible */
+void _cf_msg_filter_invisible(t_hierarchical_node *ht,t_hierarchical_node *ary,int si) {
+  size_t i;
+  t_hierarchical_node *ht1,ary1;
+
+  for(i=0;i<ht->childs.elements;++i) {
+    ht1 = array_element_at(&ht->childs,i);
+
+    if(si || (ht1->msg->invisible == 0 && ht1->msg->may_show)) {
+      array_init(&ary1.childs,sizeof(ary1),NULL);
+      ary1.msg = ht1->msg;
+      _cf_msg_filter_invisible(ht1,&ary1,si);
+      array_push(&ary->childs,&ary1);
+    }
+    else _cf_msg_filter_invisible(ht1,ary,si);
+  }
+}
+/* }}} */
+
+void cf_msg_filter_invisible(t_hierarchical_node *ht,t_hierarchical_node *ary,int si) {
+  array_init(&ary->childs,sizeof(*ary),NULL);
+
+  if(si || (ht->msg->invisible == 0 && ht->msg->may_show)) ary->msg = ht->msg;
+  else ary->msg = NULL;
+
+  _cf_msg_filter_invisible(ht,ary,si);
+}
 
 /* {{{ cf_msg_delete_subtree */
 t_message *cf_msg_delete_subtree(t_message *msg) {

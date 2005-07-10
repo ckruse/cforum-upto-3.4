@@ -1,3 +1,13 @@
+2005-07-11 Christian Kruse <ckruse@wwwtech.de>
+	* src/clientlib.h: Added prototype for cf_msg_filter_invisible()
+	* src/htmllib.c: Big bugfix for thread tree generation
+	* src/messageutils.c: Added cf_msg_filter_invisible()
+
+2005-07-09 Christian Kruse <ckruse@wwwtech.de>
+	* src/modules/flt_syntax.c, src/modules/flt_spellcheck.c, src/communication.c:
+		A little bit code cleaning
+	* src/fo_post.c: Fixed small bug (removed unneccessary config file structure)
+
 2005-07-07 Christian Kruse <ckruse@wwwtech.de>
 	* src/modules/flt_spellcheck.c: Some code cleaning
 

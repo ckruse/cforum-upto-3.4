@@ -134,7 +134,7 @@ int flt_spellcheck_execute(t_cf_hash *head,t_configuration *dc,t_configuration *
       }
     }
 
-    array_sort(&replacements,flt_spellcheck_replacement_compare);
+    array_sort(&replacements,(int (*)(void *,void *))flt_spellcheck_replacement_compare);
     
     cpos = 0;
     str_init(&html_out);
@@ -196,7 +196,7 @@ int flt_spellcheck_execute(t_cf_hash *head,t_configuration *dc,t_configuration *
     return FLT_OK;
   }
   
-  array_init(&flt_spellcheck_options,sizeof(t_string),str_cleanup);
+  array_init(&flt_spellcheck_options,sizeof(t_string),(void (*)(void *))str_cleanup);
 
   // generic options
   str_init(&tmp);

@@ -751,7 +751,7 @@ int main(int argc,char *argv[],char *env[]) {
   u_char  *ucfg,*val,buff[256],*forum_name;
   t_array *cfgfiles;
   t_cf_hash *head;
-  t_configfile conf,dconf,uconf;
+  t_configfile conf,dconf;
   t_name_value *cs = NULL,*cfg_val;
   u_char *UserName;
   u_char *fname;
@@ -853,7 +853,6 @@ int main(int argc,char *argv[],char *env[]) {
 
         cfg_cleanup_file(&conf);
         cfg_cleanup_file(&dconf);
-        cfg_cleanup_file(&uconf);
 
         return EXIT_FAILURE;
       }
