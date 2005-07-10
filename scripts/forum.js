@@ -242,7 +242,7 @@ function focus_active() {
 
   for(var i=0;i<lis.length;++i) {
     /* check if this is the active */
-    if(lis[i] == act.parentNode) {
+    if(lis[i] == act) {
       if(++i == lis.length) return true;
 
       var a = lis[i].getElementsByTagName('a')[0];
