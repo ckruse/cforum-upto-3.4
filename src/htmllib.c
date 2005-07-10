@@ -959,13 +959,13 @@ void _do_html(t_hierarchical_node *ary,t_cl_thread *thread,int ShowInvisible,con
 
 /* {{{ _start_threadlist */
 int _start_threadlist(t_cl_thread *thread,int ShowInvisible,const u_char *linktpl,t_name_value *cs,t_name_value *dft,t_name_value *locale) {
-  t_hierarchical_node ary,*ary1;
+  t_hierarchical_node ary,*ary1,*tmp = NULL;
   size_t i;
   t_cf_tpl_variable tpl_ary;
 
   cf_msg_filter_invisible(thread->ht,&ary,ShowInvisible);
 
-  if(ShowInvisible || (thread->ht->msg->invisible == 0 && thread->ht->msg->may_show)) {
+  if(ary.msg) {
     _do_html(&ary,thread,ShowInvisible,linktpl,cs,dft,locale);
     cf_tpl_hashvar_setvalue(&ary.msg->hashvar,"visible_posts",TPL_VARIABLE_INT,1);
     return 0;
@@ -976,13 +976,15 @@ int _start_threadlist(t_cl_thread *thread,int ShowInvisible,const u_char *linktp
 
       for(i=0;i<ary.childs.elements;++i) {
         ary1 = array_element_at(&ary.childs,i);
+        if(tmp == NULL) tmp = ary1;
+
         _do_html(ary1,thread,ShowInvisible,linktpl,cs,dft,locale);
         cf_tpl_var_add(&tpl_ary,&ary1->msg->hashvar);
       }
 
-      cf_tpl_hashvar_set(&ary.msg->hashvar,"posts",&tpl_ary);
-      cf_tpl_hashvar_setvalue(&ary.msg->hashvar,"visible_posts",TPL_VARIABLE_INT,1);
-      cf_tpl_hashvar_setvalue(&ary.msg->hashvar,"posts_list",TPL_VARIABLE_INT,1);
+      cf_tpl_hashvar_set(&tmp->msg->hashvar,"posts",&tpl_ary);
+      cf_tpl_hashvar_setvalue(&tmp->msg->hashvar,"visible_posts",TPL_VARIABLE_INT,1);
+      cf_tpl_hashvar_setvalue(&tmp->msg->hashvar,"posts_list",TPL_VARIABLE_INT,1);
 
       return 0;
     }
