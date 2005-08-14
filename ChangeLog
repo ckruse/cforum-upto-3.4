@@ -6,6 +6,8 @@
 	* src/fo_post.c: Fixed small typo
 	* src/userconf.[ch], src/fo_userconf.c: More developement
 	* src/Makefile.am: Added DL reference
+	* conf/errormessages.de.txt: Added messages for invalid and bad characters
+	* src/fo_post.c: Bugfix to check for invalid and bad characters
 
 2005-07-09 Christian Kruse <ckruse@wwwtech.de>
 	* conf/errormessages.de.txt: Added E_CONFIG_BROKEN
