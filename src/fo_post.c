@@ -132,7 +132,7 @@ void display_posting_form(t_cf_hash *head,t_message *p,t_cf_tpl_variable *var) {
   u_char tplname[256],*forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10),*uname = cf_hash_get(GlobalValues,"UserName",8);
   t_name_value *tt  = cfg_get_first_value(&fo_post_conf,forum_name,"ThreadTemplate");
   t_name_value *cs  = cfg_get_first_value(&fo_default_conf,forum_name,"ExternCharset");
-  t_name_value *cats = cfg_get_first_value(&fo_default_conf,forum_name,"Categories");;
+  t_name_value *cats = cfg_get_first_value(&fo_default_conf,forum_name,"Categories");
   t_name_value *qc = cfg_get_first_value(&fo_post_conf,forum_name,"QuotingChars");
   t_name_value *ps = cfg_get_first_value(&fo_default_conf,forum_name,uname ? "UPostScript" : "PostScript");
   t_name_value *fb = cfg_get_first_value(&fo_default_conf,forum_name,uname ? "UBaseURL" : "BaseURL");

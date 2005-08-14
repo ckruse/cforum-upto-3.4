@@ -43,7 +43,7 @@ libcfutils_la_LIBADD=libcfhashlib.la libcfcharconvert.la -lz
 libcfutils_la_LDFLAGS=-export-dynamic -avoid-version
 
 libcftemplate_la_SOURCES=template.c
-libcftemplate_la_LIBADD=libcfutils.la libcfhashlib.la libcfcharconvert.la
+libcftemplate_la_LIBADD=libcfutils.la libcfhashlib.la libcfcharconvert.la $(DL)
 libcftemplate_la_LDFLAGS=-export-dynamic -avoid-version
 
 libcfcgi_la_SOURCES=cfcgi.c

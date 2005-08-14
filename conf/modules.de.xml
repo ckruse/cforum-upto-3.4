@@ -163,7 +163,7 @@
     </argument>
   </directive>
 
-  <directive name="HideCategoriesInThreadView" arguments="1">
+  <directive name="HideCategoriesInThreadView" arguments="1" ifNotCommitted="yes">
     <argument paramname="hidecategoriesinthreadview">
       <validate>^(yes|no)$</validate>
       <error>Sollen ausgeblendete Kategorien auch in der Thread-Ansicht ausgeblendet werden? Bitte geben Sie &quot;ja&quot; oder &quot;nein&quot; an!</error>
@@ -336,7 +336,7 @@
       <validate>^#(?:[\da-fA-F]{3}|[\da-fA-F]{6})$</validate>
       <error>Bitte geben Sie eine valide Vordergrundfarbe für Hervorhebung bereits besuchter Nachrichten an!</error>
     </argument>
-    <argument paramname="highlightvisibackcol" type="text">
+    <argument paramname="highlightvisibackcol">
       <validate>^#(?:[\da-fA-F]{3}|[\da-fA-F]{6})$</validate>
       <error>Bitte geben Sie eine valide Hintergrundfarbe für die Hervorhebung bereits besuchter Nachrichten an!</error>
     </argument>
@@ -592,14 +592,14 @@
   </directive>
 
   <directive name="BlacklistInThreadview" arguments="1">
-    <argument paramname="blacklistthreadview" ifNotCommitted="no">
+    <argument paramname="blacklistthreadview" ifNotCommitted="yes">
       <validate>^(?:yes|no)$</validate>
       <error>Soll die Blacklist auch in der Thread-Anzeige wirken? Bitte geben Sie &quot;ja&quot; oder &quot;nein&quot; an!</error>
     </argument>
   </directive>
 
   <directive name="HighlightCategories" arguments="1">
-    <argument paramname="highlightcats" multiple="yes">
+    <argument paramname="highlightcats">
       <validate>.</validate>
       <error>Bitte geben Sie eine korrekte Kategorie für die Hervorhebung an!</error>
     </argument>
@@ -617,7 +617,7 @@
   </directive>
 
   <directive name="ShowCategories" arguments="1">
-    <argument paramname="showcats" multiple="yes">
+    <argument paramname="showcats">
       <validate>.</validate>
       <error>Bitte geben Sie (eine) valide Kategorie(n) an, die Sie nur angezeigt bekommen wollen!</error>
     </argument>
@@ -784,12 +784,12 @@
 
   <directive name="InterestingColors" arguments="1">
     <argument paramname="interesting_fgcol">
-      <validate>^#(?[0-9a-fA-F]{3}|[0-9a-fA-f]{6})$</validate>
+      <validate>^#(?:[0-9a-fA-F]{3}|[0-9a-fA-f]{6})$</validate>
       <error>Mit welcher Vordergrundfarbe sollen als interessant markierte Threads hervorgehoben werden? Geben sie eine korrekte Farbe an!</error>
     </argument>
 
     <argument paramname="interesting_bgcol">
-      <validate>^#(?[0-9a-fA-F]{3}|[0-9a-fA-f]{6})$</validate>
+      <validate>^#(?:[0-9a-fA-F]{3}|[0-9a-fA-f]{6})$</validate>
       <error>Mit welcher Hintergrundfarbe sollen als interessant markierte Threads hervorgehoben werden? Geben sie eine korrekte Farbe an!</error>
     </argument>
 

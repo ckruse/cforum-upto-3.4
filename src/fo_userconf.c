@@ -105,9 +105,15 @@ int handle_userconf_command(t_configfile *cfile,const u_char *context,u_char *na
 }
 /* }}} */
 
-void show_edit_content(t_cf_hash *head,const u_char *msg,const u_char *source) {
-  u_char tplname[256],*ucfg,*uname,*fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
-  t_name_value *cs = cfg_get_first_value(&fo_default_conf,fn,"ExternCharset"),*tplnv = cfg_get_first_value(&fo_userconf_conf,fn,"Edit");
+/* {{{ show_edit_content */
+void show_edit_content(t_cf_hash *head,const u_char *msg,const u_char *source,int saved) {
+  u_char tplname[256],*ucfg,*uname,*fn = cf_hash_get(GlobalValues,"FORUM_NAME",10),*tmp,buff[256];
+
+  t_name_value *cval,
+    *cs = cfg_get_first_value(&fo_default_conf,fn,"ExternCharset"),
+    *tplnv = cfg_get_first_value(&fo_userconf_conf,fn,"Edit"),
+    *cats = cfg_get_first_value(&fo_default_conf,fn,"Categories");
+
   t_configfile config;
   uconf_userconfig_t *modxml;
   t_cf_template tpl;
@@ -116,6 +122,10 @@ void show_edit_content(t_cf_hash *head,const u_char *msg,const u_char *source) {
   t_name_value *value;
   t_cf_cgi_param *mult;
   t_string val;
+  t_cf_tpl_variable array;
+  int utf8 = cf_strcmp(cs->values[0],"UTF-8") == 0;
+  struct tm tm;
+  time_t tval;
 
   size_t i,j;
 
@@ -177,6 +187,7 @@ void show_edit_content(t_cf_hash *head,const u_char *msg,const u_char *source) {
       arg = array_element_at(&directive->arguments,j);
 
       /* {{{ set value */
+      str_init(&val);
       if(source) {
         /*
          * Source is set, so we check: if it is CGI, we take our value from the CGI
@@ -185,26 +196,22 @@ void show_edit_content(t_cf_hash *head,const u_char *msg,const u_char *source) {
          */
         if(cf_strcmp(source,"cgi") == 0) {
           if(head && (mult = cf_cgi_get_multiple(head,arg->param)) != NULL) {
-            str_init(&val);
             str_char_set(&val,mult->value,strlen(mult->value));
 
             for(mult=mult->next;mult;mult=mult->next) {
               str_char_append(&val,',');
               str_cstr_append(&val,mult->value);
             }
-
-            cf_set_variable(&tpl,cs,arg->param,val.content,val.len,1);
-            str_cleanup(&val);
           }
-          else if(arg->ifnotcommitted) cf_set_variable(&tpl,cs,arg->param,arg->ifnotcommitted,strlen(arg->ifnotcommitted),1);
+          else if(arg->ifnotcommitted) str_char_set(&val,arg->ifnotcommitted,strlen(arg->ifnotcommitted));
         }
         /*
          * Ok, source is config, check if config has the specific
          * value (j < valnum) and set it to the template
          */
         else {
-          if(value && j < value->valnum) cf_set_variable(&tpl,cs,arg->param,value->values[j],strlen(value->values[j]),1);
-          else if(arg->deflt) cf_set_variable(&tpl,cs,arg->param,arg->deflt,strlen(arg->deflt),1);
+          if(value && j < value->valnum) str_char_set(&val,value->values[j],strlen(value->values[j]));
+          else if(arg->deflt) str_char_set(&val,arg->deflt,strlen(arg->deflt));
         }
       }
       else {
@@ -214,30 +221,80 @@ void show_edit_content(t_cf_hash *head,const u_char *msg,const u_char *source) {
          * if the specific config value exists.
          */
         if(head && (mult = cf_cgi_get_multiple(head,arg->param)) != NULL) {
-          str_init(&val);
           str_char_set(&val,mult->value,strlen(mult->value));
 
           for(mult=mult->next;mult;mult=mult->next) {
             str_char_append(&val,',');
             str_cstr_append(&val,mult->value);
           }
-
-          cf_set_variable(&tpl,cs,arg->param,val.content,val.len,1);
-          str_cleanup(&val);
         }
         else {
           /*
            * A value for this config directive has not been
            * committed by CGI, so set it by config if exists
            */
-          if(value && j < value->valnum) cf_set_variable(&tpl,cs,arg->param,value->values[j],strlen(value->values[j]),1);
-          else if(arg->deflt) cf_set_variable(&tpl,cs,arg->param,arg->deflt,strlen(arg->deflt),1);
+          if(value && j < value->valnum) str_char_set(&val,value->values[j],strlen(value->values[j]));
+          else if(arg->deflt) str_char_set(&val,arg->deflt,strlen(arg->deflt));
         }
       }
       /* }}} */
+
+      if(val.content && *val.content) {
+        if(!arg->parse || cf_strcmp(arg->parse,"date") != 0) cf_uconf_to_html(&val);
+        else {
+          /* date value */
+          tval = (time_t)strtoul(val.content,NULL,10);
+          localtime_r(&tm,&tval);
+          j = snprintf(buff,256,"%02d. %02d. %4d %02d:%02d:%02d",tm.tm_mday,tm.tm_mon+1,tm.tm_year+1900,tm.tm_hour,tm.tm_min,tm.tm_sec);
+          str_char_set(&val,buff,j);
+        }
+
+        cf_set_variable(&tpl,cs,arg->param,val.content,val.len,1);
+        str_cleanup(&val);
+      }
     }
   }
 
+  /* {{{ set error message */
+  if(msg) {
+    if((tmp = cf_get_error_message(msg,&i)) != NULL) {
+      cf_set_variable(&tpl,cs,"err",tmp,i,1);
+      free(tmp);
+    }
+    else cf_set_variable(&tpl,cs,"err",msg,strlen(msg),1);
+  }
+  /* }}} */
+
+  /* {{{ set categories */
+  cf_tpl_var_init(&array,TPL_VARIABLE_ARRAY);
+  for(i=0;i<cats->valnum;++i) {
+    if(utf8) {
+      tmp = htmlentities(cats->values[i],0);
+      j   = strlen(tmp);
+    }
+    else tmp = charset_convert_entities(cats->values[i],strlen(cats->values[i]),"UTF-8",cs->values[0],&j);
+    printf("tmp: %s\n",tmp);
+
+    cf_tpl_var_addvalue(&array,TPL_VARIABLE_STRING,tmp,j);
+    free(tmp);
+  }
+  cf_tpl_setvar(&tpl,"categories",&array);
+  /* }}} */
+
+  if(saved) cf_tpl_setvalue(&tpl,"save",TPL_VARIABLE_INT,1);
+  if(cf_hash_get(GlobalValues,"is_admin",8) != NULL) cf_tpl_setvalue(&tpl,"save",TPL_VARIABLE_INT,1);
+
+  cval = cfg_get_first_value(&fo_default_conf,fn,"UBaseURL");
+  cf_set_variable(&tpl,cs,"forumbase",cval->values[0],strlen(cval->values[0]),1);
+
+  cval = cfg_get_first_value(&fo_default_conf,fn,"UserConfig");
+  cf_set_variable(&tpl,cs,"userconfig",cval->values[0],strlen(cval->values[0]),1);
+  cf_set_variable(&tpl,cs,"script",cval->values[0],strlen(cval->values[0]),1);
+
+  cval = cfg_get_first_value(&fo_default_conf,fn,"UserManagement");
+  cf_set_variable(&tpl,cs,"usermanagement",cval->values[0],strlen(cval->values[0]),1);
+
+  cf_set_variable(&tpl,cs,"charset",cs->values[0],strlen(cs->values[0]),1);
 
   printf("Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
   cf_tpl_parse(&tpl);
@@ -245,6 +302,50 @@ void show_edit_content(t_cf_hash *head,const u_char *msg,const u_char *source) {
   cf_tpl_finish(&tpl);
   cf_uconf_cleanup_modxml(modxml);
   cfg_cleanup_file(&config);
+}
+/* }}} */
+
+void do_save(t_cf_hash *head) {
+  uconf_userconfig_t *merged;
+  u_char *msg,*uname,*ucfg;
+  t_configfile config;
+
+  if((uname = cf_hash_get(GlobalValues,"UserName",8)) == NULL) {
+    printf("Status: 403 Forbidden\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
+    cf_error_message("E_MUST_AUTH",NULL);
+    return;
+  }
+
+  if((ucfg = cf_get_uconf_name(uname)) == NULL) {
+    printf("Status: 403 Forbidden\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
+    cf_error_message("E_MUST_AUTH",NULL);
+    return;
+  }
+
+  cfg_init_file(&config,ucfg);
+  free(ucfg);
+
+  if(read_config(&config,handle_userconf_command,CFG_MODE_USER) != 0) {
+    printf("Status: 500 Internal Server Error\015\012COntent-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
+    cf_error_message("E_CONFIG_BROKEN",NULL);
+    return;
+  }
+
+  if((merged = cf_uconf_merge_config(head,&glob_config,1)) != NULL) {
+    /* TODO: run plugins */
+
+    if((msg = cf_write_uconf(merged)) == NULL) cf_error_message(msg,NULL);
+    else show_edit_content(head,NULL,"cgi",1);
+
+    cf_uconf_cleanup_modxml(merged);
+    free(merged);
+    cfg_cleanup_file(&config);
+    return;
+  }
+  else show_edit_content(head,ErrorString,"cgi",0);
+
+  cfg_cleanup_file(&config);
+
 }
 
 /* {{{ normalize_params */
@@ -486,17 +587,16 @@ int main(int argc,char *argv[],char *env[]) {
   }
 
   if(head) {
-    if((action = cf_cgi_get(head,"a")) == NULL) show_edit_content(head,NULL,NULL);
+    if((action = cf_cgi_get(head,"a")) == NULL) show_edit_content(head,NULL,NULL,0);
     else {
-      if(cf_strcmp(action,"save") == 0) {
-      }
+      if(cf_strcmp(action,"save") == 0) do_save(head);
       else {
         /* TODO: check if action is registered */
-        show_edit_content(head,NULL,NULL);
+        show_edit_content(head,NULL,NULL,0);
       }
     }
   }
-  else show_edit_content(head,NULL,NULL);
+  else show_edit_content(head,NULL,NULL,0);
 
   if(head) cf_hash_destroy(head);
 

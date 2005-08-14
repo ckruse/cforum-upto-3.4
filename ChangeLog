@@ -1,3 +1,12 @@
+2005-08-14 Christian Kruse <ckruse@wwwtech.de>
+	* conf/modules.de.xml: Some smaller bugfixes
+	* src/modules/flt_latex.c: Small bugfix, [ instead of ]
+	* src/modules/flt_postingassistant.c: Added debugging code
+	* src/parsetpl/processors.c: Small bugfix to avoid warning
+	* src/fo_post.c: Fixed small typo
+	* src/userconf.[ch], src/fo_userconf.c: More developement
+	* src/Makefile.am: Added DL reference
+
 2005-07-09 Christian Kruse <ckruse@wwwtech.de>
 	* conf/errormessages.de.txt: Added E_CONFIG_BROKEN
 	* conf/modules.de.xml: Removed encode="plain", added absolute DTD URI

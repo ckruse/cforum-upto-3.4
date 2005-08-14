@@ -29,6 +29,7 @@ typedef struct {
   u_char *ifnotcommitted;
   u_char *deflt;
   u_char *parse;
+  u_char *val;
 
   int validation_type;
   u_char *validation;
@@ -41,6 +42,7 @@ uconf_userconfig_t *cf_uconf_read_modxml();
 void cf_uconf_destroy_argument(uconf_argument_t *argument);
 void cf_uconf_destroy_directive(uconf_directive_t *dir);
 void cf_uconf_cleanup_modxml(uconf_userconfig_t *modxml);
+void cf_uconf_to_html(t_string *str);
 
 #endif
 

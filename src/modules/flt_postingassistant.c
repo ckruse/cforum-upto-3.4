@@ -126,7 +126,12 @@ float flt_poas_check_for_signs(u_char *str,int strict,int musthave) {
         if(signs >= 2) {
           /* we *never* accept more than three signs */
           if(signs > 3) {
-            if(flt_poas_last_chars_consist_of(ptr,".",signs,1)) return 3.0;
+            if(flt_poas_last_chars_consist_of(ptr,".",signs,1)) {
+              #ifdef DEBUG
+              fprintf(stderr,"signs-check: got %d signs: '%s', returning 3.0\n",signs,strndup(ptr-signs,signs));
+              #endif
+              return 3.0;
+            }
             signs = 0;
             continue;
           }
@@ -135,16 +140,24 @@ float flt_poas_check_for_signs(u_char *str,int strict,int musthave) {
             case 0:
             case 1:
               /* we accept ... and .. */
-              if(cf_strncmp(ptr-signs,"...",signs)) break;
+              if(cf_strncmp(ptr-signs,"...",signs) == 0) break;
 
               /* we accept ?!?, !?! ?! and !? (in both cases) */
               if(flt_poas_last_chars_consist_of(ptr,"?!",signs,1) == 0) break;
 
               /* we do not accept everything else in strict mode 1 */
-              if(strict == 1) return 2.0;
+              if(strict == 1) {
+                #ifdef DEBUG
+                fprintf(stderr,"signs-check: got %d signs: '%s', returning 2.0\n",signs,strndup(ptr-signs,signs));
+                #endif
+                return 2.0;
+              }
               break;
 
             case 2:
+              #ifdef DEBUG
+              fprintf(stderr,"signs-check: got %d signs: '%s', returning 3.0\n",signs,strndup(ptr-signs,signs));
+              #endif
               return 3.0;
               break;
           }
@@ -221,9 +234,7 @@ int flt_poas_check_newlines(u_char *str) {
 
   for(ptr=str,nl=0;*ptr;ptr++) {
     if(*ptr == '<') {
-      if(cf_strncmp(ptr,"<br />",6) == 0) {
-        nl++;
-      }
+      if(cf_strncmp(ptr,"<br />",6) == 0) nl++;
     }
   }
 
@@ -263,19 +274,54 @@ float flt_poas_check_sig(u_char *str) {
 int flt_poas_standardchecks(t_message *p) {
   float score = flt_poas_conf.fds_allowed;
 
+  #ifdef DEBUG
+  fprintf(stderr,"score is: %3.3f\n",score);
+  #endif
+
   score -= flt_poas_check_for_signs(p->subject.content,0,0);
+  #ifdef DEBUG
+  fprintf(stderr,"score after signs-check in subject is: %3.3f\n",score);
+  #endif
+
   score -= flt_poas_check_for_signs(p->author.content,2,0);
+  #ifdef DEBUG
+  fprintf(stderr,"score after signs-check in author is: %3.3f\n",score);
+  #endif
+
   score -= flt_poas_check_for_signs(p->content.content,1,1);
+  #ifdef DEBUG
+  fprintf(stderr,"score after signs-check in content is: %3.3f\n",score);
+  #endif
 
   score -= flt_poas_check_for_cases(p->subject.content);
+  #ifdef DEBUG
+  fprintf(stderr,"score after cases-check in subject is: %3.3f\n",score);
+  #endif
+
   score -= flt_poas_check_for_cases(p->author.content);
+  #ifdef DEBUG
+  fprintf(stderr,"score after cases-check in author is: %3.3f\n",score);
+  #endif
+
   score -= flt_poas_check_for_cases(p->content.content);
+  #ifdef DEBUG
+  fprintf(stderr,"score after cases-check in content is: %3.3f\n",score);
+  #endif
 
   score -= flt_poas_check_newlines(p->content.content);
+  #ifdef DEBUG
+  fprintf(stderr,"score after newlines-check in content is: %3.3f\n",score);
+  #endif
 
   score -= flt_poas_check_sig(p->content.content);
+  #ifdef DEBUG
+  fprintf(stderr,"score after sig-check is: %3.3f\n",score);
+  #endif
 
   if(p->email.len == 0) score -= 1.0;
+  #ifdef DEBUG
+  fprintf(stderr,"score after mail-check is: %3.3f\n",score);
+  #endif
 
   return score > .0 ? 0 : -1;
 }

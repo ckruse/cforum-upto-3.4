@@ -44,6 +44,7 @@ void cf_uconf_destroy_argument(uconf_argument_t *argument) {
   if(argument->deflt) free(argument->deflt);
   if(argument->validation) free(argument->validation);
   if(argument->error) free(argument->error);
+  if(argument->val) free(argument->val);
 }
 /* }}} */
 
@@ -232,5 +233,75 @@ void cf_uconf_cleanup_modxml(uconf_userconfig_t *modxml) {
   free(modxml);
 }
 /* }}} */
+
+/* {{{ cf_uconf_to_html */
+void cf_uconf_to_html(t_string *str) {
+  t_string local;
+  register u_char *ptr;
+
+  str_init(&local);
+  for(ptr=str->content;*ptr;++ptr) {
+    switch(*ptr) {
+      case '\\':
+        switch(*(ptr+1)) {
+          case '"':
+            str_char_append(&local,'"');
+            ++ptr;
+            break;
+          case 'n':
+            str_chars_append(&local,"<br />",6);
+            ++ptr;
+            break;
+          default:
+            str_char_append(&local,*ptr);
+            break;
+        }
+        break;
+
+      default:
+        str_char_append(&local,*ptr);
+    }
+  }
+
+  str_cleanup(str);
+  str->content  = local.content;
+  str->len      = local.len;
+  str->reserved = local.reserved;
+}
+/* }}} */
+
+void cf_uconf_copy_values(t_configuration *config,uconf_directive_t *directive,uconf_directive_t *my_directive) {
+  uconf_argument_t *arg,my_arg;
+  t_name_value *val;
+
+}
+
+uconf_userconfig_t *cf_uconf_merge_config(t_cf_hash *head,t_configuration *config,int touch_committed) {
+  uconf_userconfig_t *modxml = cf_read_modxml(),*merged;
+  uconf_directive_t *directive,my_directive;
+  uconf_argument_t *arg;
+  t_cf_cgi_param *mult;
+  size_t i,j;
+
+  if(!modxml) return NULL;
+
+  merged = fo_alloc(NULL,1,sizeof(*merged),FO_ALLOC_MALLOC);
+  array_init(&merged->directives,sizeof(my_directive),(void (*)(void *))cf_uconf_destroy_directive);
+
+  for(i=0;i<modxml->directives.elements;++i) {
+    directive = array_element_at(&modxml->directives,i);
+
+    if(directive->flags & CF_UCONF_FLAG_INVISIBLE) {
+      cf_uconf_copy_values(directive,&my_directive);
+      array_push();
+    }
+  }
+
+
+  cf_uconf_cleanup_modxml(modxml);
+  free(modxml);
+
+  return NULL;
+}
 
 /* eof */
