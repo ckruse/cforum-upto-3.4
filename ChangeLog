@@ -1,12 +1,25 @@
-2005-07-11 Christian Kruse <ckruse@wwwtech.de>
-	* src/clientlib.h: Added prototype for cf_msg_filter_invisible()
-	* src/htmllib.c: Big bugfix for thread tree generation
-	* src/messageutils.c: Added cf_msg_filter_invisible()
+2005-08-14 Christian Kruse <ckruse@wwwtech.de>
+	* conf/modules.de.xml: Some smaller bugfixes
+	* src/modules/flt_latex.c: Small bugfix, [ instead of ]
+	* src/modules/flt_postingassistant.c: Added debugging code
+	* src/parsetpl/processors.c: Small bugfix to avoid warning
+	* src/fo_post.c: Fixed small typo
+	* src/userconf.[ch], src/fo_userconf.c: More developement
+	* src/Makefile.am: Added DL reference
+	* conf/errormessages.de.txt: Added messages for invalid and bad characters
+	* src/fo_post.c: Bugfix to check for invalid and bad characters
 
 2005-07-09 Christian Kruse <ckruse@wwwtech.de>
+	* conf/errormessages.de.txt: Added E_CONFIG_BROKEN
+	* conf/modules.de.xml: Removed encode="plain", added absolute DTD URI
+	* conf/fo_userconf.conf.in: Changed modules.%s.xml to modules.de.xml
 	* src/modules/flt_syntax.c, src/modules/flt_spellcheck.c, src/communication.c:
 		A little bit code cleaning
 	* src/fo_post.c: Fixed small bug (removed unneccessary config file structure)
+	* src/fo_userconf.c: Began to implement fo_userconf in C
+	* src/userconf.[ch]: Utility functions for user and user config management
+	* src/Makefile.am: Added fo_userconf and libcfuserconf.la
+	* scripts/Makefile.am: Removed fo_userconf
 
 2005-07-07 Christian Kruse <ckruse@wwwtech.de>
 	* src/modules/flt_spellcheck.c: Some code cleaning

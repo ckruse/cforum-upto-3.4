@@ -27,7 +27,7 @@ int process_array_assignment(t_array *data,t_string *tmp) {
   char buf[20];
   char v1nb[20],v2nb[20];
   int n_elems, is_hash, is_hval, nt, is_concat, jh_concat;
-  t_string *hkey;
+  t_string *hkey = NULL;
   
   v1n = current_context->n_cur_assign_vars++;
   snprintf(v1nb,19,"%ld",v1n);
@@ -2057,7 +2057,7 @@ int process_func_call_tag(t_array *data) {
   int ret;
   char buf[20];
 
-  array_init(&params,sizeof(t_string),str_cleanup); // internal vars
+  array_init(&params,sizeof(t_string),(void (*)(void *))str_cleanup); // internal vars
   str_init(&tmp);
 
   token = (t_token*)array_shift(data);

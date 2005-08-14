@@ -107,7 +107,7 @@ int flt_latex_create_cache(const u_char *cnt,size_t len,const u_char *our_sum,in
   str_init(&document);
   str_chars_append(&document,"\\documentclass[12pt]{article}\n\\usepackage{ucs}\n\\usepackage[utf8x]{inputenc}\n\\nonstopmode\n\\usepackage{amsmath}\n\\usepackage{amsfonts}\n\\usepackage{amssymb}\n\\pagestyle{empty}\n\n\\begin{document}\n\n",190);
 
-  if(elatex == 0) str_chars_append(&document,"\\]",2);
+  if(elatex == 0) str_chars_append(&document,"\\[",2);
   str_chars_append(&document,cnt,len);
   if(elatex == 0) str_chars_append(&document,"\n\\]",3);
   str_chars_append(&document,"\n\\end{document}\n",16);

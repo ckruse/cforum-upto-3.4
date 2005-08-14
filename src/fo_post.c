@@ -132,7 +132,7 @@ void display_posting_form(t_cf_hash *head,t_message *p,t_cf_tpl_variable *var) {
   u_char tplname[256],*forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10),*uname = cf_hash_get(GlobalValues,"UserName",8);
   t_name_value *tt  = cfg_get_first_value(&fo_post_conf,forum_name,"ThreadTemplate");
   t_name_value *cs  = cfg_get_first_value(&fo_default_conf,forum_name,"ExternCharset");
-  t_name_value *cats = cfg_get_first_value(&fo_default_conf,forum_name,"Categories");;
+  t_name_value *cats = cfg_get_first_value(&fo_default_conf,forum_name,"Categories");
   t_name_value *qc = cfg_get_first_value(&fo_post_conf,forum_name,"QuotingChars");
   t_name_value *ps = cfg_get_first_value(&fo_default_conf,forum_name,uname ? "UPostScript" : "PostScript");
   t_name_value *fb = cfg_get_first_value(&fo_default_conf,forum_name,uname ? "UBaseURL" : "BaseURL");
@@ -262,7 +262,7 @@ void display_posting_form(t_cf_hash *head,t_message *p,t_cf_tpl_variable *var) {
  * \return 0 on success, -1 on failure
  */
 int normalize_cgi_variables(t_cf_hash *head,const u_char *field_name) {
-  size_t flen;
+  size_t flen,len,i;
   u_char *field = cf_cgi_get(head,(u_char *)field_name),*forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   register u_char *ptr;
   u_char c;
@@ -272,6 +272,7 @@ int normalize_cgi_variables(t_cf_hash *head,const u_char *field_name) {
   char *buff;
   t_string str;
   t_cf_hash_keylist *key;
+  u_int32_t num;
 
   if(!field) return -1;
 
@@ -281,6 +282,46 @@ int normalize_cgi_variables(t_cf_hash *head,const u_char *field_name) {
     for(key=head->keys.elems;key;key=key->next) {
       for(param = cf_cgi_get_multiple(head,key->key);param;param=param->next) {
         if((converted = charset_convert(param->value,strlen(param->value),cs->values[0],"UTF-8",NULL)) == NULL) return -1;
+
+        for(ptr=converted,len=strlen(converted);*ptr;) {
+          if((i = utf8_to_unicode(ptr,len,&num)) <= 0) return -2;
+
+          if(num == 0x9 || num == 0xA || num == 0xD || (num >= 0x20 && num <= 0xD7FF) || (num >= 0xE000 && num <= 0xFFFD) || (num >= 0x10000 && num <= 0x10FFFF)) {
+            /* valid character, but may be a discouraged character as defined in http://www.w3.org/TR/REC-xml/#charsets */
+            if(
+               (num >= 0x7F && num <= 0x84) ||
+               (num >= 0x86 && num <= 0x9F) ||
+               (num >= 0xFDD0 && num <= 0xFDDF) ||
+               (num >= 0x1FFFE && num <= 0x1FFFF) ||
+               (num >= 0x2FFFE && num <= 0x2FFFF) ||
+               (num >= 0x3FFFE && num <= 0x3FFFF) ||
+               (num >= 0x4FFFE && num <= 0x4FFFF) ||
+               (num >= 0x5FFFE && num <= 0x5FFFF) ||
+               (num >= 0x6FFFE && num <= 0x6FFFF) ||
+               (num >= 0x7FFFE && num <= 0x7FFFF) ||
+               (num >= 0x8FFFE && num <= 0x8FFFF) ||
+               (num >= 0x9FFFE && num <= 0x9FFFF) ||
+               (num >= 0xAFFFE && num <= 0xAFFFF) ||
+               (num >= 0xBFFFE && num <= 0xBFFFF) ||
+               (num >= 0xCFFFE && num <= 0xCFFFF) ||
+               (num >= 0xDFFFE && num <= 0xDFFFF) ||
+               (num >= 0xEFFFE && num <= 0xEFFFF) ||
+               (num >= 0xFFFFE && num <= 0xFFFFF) ||
+               (num >= 0x10FFFE && num <= 0x10FFFF)
+               ) {
+              strcpy(ErrorString,"E_BADCHAR");
+              return -2;
+            }
+          }
+          /* invalid character as defined in http://www.w3.org/TR/REC-xml/#charsets */
+          else {
+            strcpy(ErrorString,"E_INVALID_CHAR");
+            return -2;
+          }
+
+          len -= i;
+          ptr += i;
+        }
 
         /* {{{ removed unicode whitespaces */
         str_init(&str);
@@ -315,7 +356,45 @@ int normalize_cgi_variables(t_cf_hash *head,const u_char *field_name) {
     /* {{{ input seems to be UTF-8, check if strings are valid UTF-8 */
     for(key=head->keys.elems;key;key=key->next) {
       for(param = cf_cgi_get_multiple(head,key->key);param;param=param->next) {
-        if(is_valid_utf8_string(param->value,strlen(param->value)) != 0) return -1;
+        for(ptr=param->value,len=strlen(param->value);*ptr;) {
+          if((i = utf8_to_unicode(ptr,len,&num)) <= 0) return -2;
+
+          if(num == 0x9 || num == 0xA || num == 0xD || (num >= 0x20 && num <= 0xD7FF) || (num >= 0xE000 && num <= 0xFFFD) || (num >= 0x10000 && num <= 0x10FFFF)) {
+            /* valid character, but may be a discouraged character as defined in http://www.w3.org/TR/REC-xml/#charsets */
+            if(
+               (num >= 0x7F && num <= 0x84) ||
+               (num >= 0x86 && num <= 0x9F) ||
+               (num >= 0xFDD0 && num <= 0xFDDF) ||
+               (num >= 0x1FFFE && num <= 0x1FFFF) ||
+               (num >= 0x2FFFE && num <= 0x2FFFF) ||
+               (num >= 0x3FFFE && num <= 0x3FFFF) ||
+               (num >= 0x4FFFE && num <= 0x4FFFF) ||
+               (num >= 0x5FFFE && num <= 0x5FFFF) ||
+               (num >= 0x6FFFE && num <= 0x6FFFF) ||
+               (num >= 0x7FFFE && num <= 0x7FFFF) ||
+               (num >= 0x8FFFE && num <= 0x8FFFF) ||
+               (num >= 0x9FFFE && num <= 0x9FFFF) ||
+               (num >= 0xAFFFE && num <= 0xAFFFF) ||
+               (num >= 0xBFFFE && num <= 0xBFFFF) ||
+               (num >= 0xCFFFE && num <= 0xCFFFF) ||
+               (num >= 0xDFFFE && num <= 0xDFFFF) ||
+               (num >= 0xEFFFE && num <= 0xEFFFF) ||
+               (num >= 0xFFFFE && num <= 0xFFFFF) ||
+               (num >= 0x10FFFE && num <= 0x10FFFF)
+               ) {
+              strcpy(ErrorString,"E_BADCHAR");
+              return -2;
+            }
+          }
+          /* invalid character as defined in http://www.w3.org/TR/REC-xml/#charsets */
+          else {
+            strcpy(ErrorString,"E_INVALID_CHAR");
+            return -2;
+          }
+
+          len -= i;
+          ptr += i;
+        }
 
         /* {{{ removed unicode whitespaces */
         str_init(&str);
@@ -345,7 +424,6 @@ int normalize_cgi_variables(t_cf_hash *head,const u_char *field_name) {
     }
     /* }}} */
   }
-
 
   if((field = cf_cgi_get(head,(u_char *)field_name)) != NULL) {
     flen  = strlen(field);
@@ -886,9 +964,10 @@ int main(int argc,char *argv[],char *env[]) {
     /* ok -- lets check if user want's to post or just want's to fill out the form */
     if(head) {
       /* {{{ ok, user gave us variables -- lets normalize them */
+      *ErrorString = '\0';
       if(normalize_cgi_variables(head,"qchar") != 0) {
         if(get_thread(&thr,head,0) == -1) {
-          strcpy(ErrorString,"E_manipulated");
+          if(*ErrorString == '\0') strcpy(ErrorString,"E_manipulated");
           display_posting_form(head,NULL,NULL);
         }
         else {
