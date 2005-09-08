@@ -1,3 +1,9 @@
+2005-09-08 Christian Kruse <ckruse@wwwtech.de>
+	* src/utils.h: Bugfix in ARRAY_INITIALIZER macro
+	* src/modules/flt_directives.c: Bugfix in image handling
+	* src/fo_vote.c: Bugfix for #55
+	* src/htmllib.c: Bugfix for #62
+
 2005-08-14 Christian Kruse <ckruse@wwwtech.de>
 	* conf/modules.de.xml: Some smaller bugfixes
 	* src/modules/flt_latex.c: Small bugfix, [ instead of ]

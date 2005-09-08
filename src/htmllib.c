@@ -497,7 +497,8 @@ static u_char *parse_message(t_cl_thread *thread,u_char *start,t_array *stack,t_
     }
   }
 
-  if(quotemode || sig) str_chars_append(content,"</span>",7);
+  if(sig) str_chars_append(content,"</span>",7);
+  if(quotemode) str_chars_append(content,"</span>",7);
 
   return NULL;
 }

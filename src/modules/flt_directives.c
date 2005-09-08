@@ -390,14 +390,14 @@ int flt_directives_execute(t_configuration *fdc,t_configuration *fvc,t_cl_thread
         else {
           str_chars_append(content,"<img src=\"",10);
           str_chars_append(content,tmp2,len);
-          str_char_append(content,'"');
 
           if(title_alt) {
-            str_chars_append(content," alt=\"",6);
+            str_chars_append(content,"\" alt=\"",7);
             str_chars_append(content,title_alt,len1);
             str_chars_append(content,"\" title=\"",9);
             str_chars_append(content,title_alt,len1);
           }
+          else str_chars_append(content,"\" alt=\"",7);
 
           if(*xhtml->values[0] == 'y')  str_chars_append(content,"\"/>",3);
           else str_chars_append(content,"\">",2);
