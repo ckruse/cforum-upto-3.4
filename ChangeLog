@@ -1,34 +1,6 @@
-2005-08-14 Christian Kruse <ckruse@wwwtech.de>
-	* conf/modules.de.xml: Some smaller bugfixes
-	* src/modules/flt_latex.c: Small bugfix, [ instead of ]
-	* src/modules/flt_postingassistant.c: Added debugging code
-	* src/parsetpl/processors.c: Small bugfix to avoid warning
-	* src/fo_post.c: Fixed small typo
-	* src/userconf.[ch], src/fo_userconf.c: More developement
-	* src/Makefile.am: Added DL reference
-	* conf/errormessages.de.txt: Added messages for invalid and bad characters
-	* src/fo_post.c: Bugfix to check for invalid and bad characters
-
-2005-07-09 Christian Kruse <ckruse@wwwtech.de>
-	* conf/errormessages.de.txt: Added E_CONFIG_BROKEN
-	* conf/modules.de.xml: Removed encode="plain", added absolute DTD URI
-	* conf/fo_userconf.conf.in: Changed modules.%s.xml to modules.de.xml
-	* src/modules/flt_syntax.c, src/modules/flt_spellcheck.c, src/communication.c:
-		A little bit code cleaning
-	* src/fo_post.c: Fixed small bug (removed unneccessary config file structure)
-	* src/fo_userconf.c: Began to implement fo_userconf in C
-	* src/userconf.[ch]: Utility functions for user and user config management
-	* src/Makefile.am: Added fo_userconf and libcfuserconf.la
-	* scripts/Makefile.am: Removed fo_userconf
-
-2005-07-07 Christian Kruse <ckruse@wwwtech.de>
-	* src/modules/flt_spellcheck.c: Some code cleaning
-
-2005-07-06 Christian Kruse <ckruse@wwwtech.de>
-	* src/stringutils.c, src/utils.h: Added cf_isspace() function, which checks if
-		a given unicode number refers to a space character
-	* src/modules/flt_directives.c: Fixed bug #44
-	* src/*.[ch], src/modules/*.[ch]: Lot of code cleaning
-	* src/parsetpl/parsetpl.lex: Found some more bugs, cleaned up the code a
-		little bit
+2005-09-08 Christian Kruse <ckruse@wwwtech.de>
+	* src/utils.h: Bugfix in ARRAY_INITIALIZER macro
+	* src/modules/flt_directives.c: Bugfix in image handling
+	* src/fo_vote.c: Bugfix for #55
+	* src/htmllib.c: Bugfix for #62
 

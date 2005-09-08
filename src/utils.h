@@ -366,7 +366,7 @@ typedef struct s_array {
   void *array; /**< Array pointer */
 } t_array;
 
-#define ARRAY_INITIALIZER(size,destroy) { 0, 0, (size), (func), NULL }
+#define ARRAY_INITIALIZER(size,destroy) { 0, 0, (size), (destroy), NULL }
 
 /**
  * \ingroup array_funcs
