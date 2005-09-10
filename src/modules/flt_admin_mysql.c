@@ -51,12 +51,12 @@ static u_char *flt_amsql_fn = NULL;
 static MYSQL *flt_amsql_dbh = NULL;
 
 /* {{{ flt_admin_mysql_init */
-int flt_admin_mysql_init(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc) {
+int flt_admin_mysql_init(cf_hash_t *cgi,configuration_t *dc,configuration_t *vc) {
   MYSQL *ret;
   MYSQL_RES *result;
   MYSQL_ROW row;
 
-  t_string query;
+  string_t query;
   u_char *buff,*uname = cf_hash_get(GlobalValues,"UserName",8);
   unsigned int len;
 
@@ -116,7 +116,7 @@ int flt_admin_mysql_init(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc)
 /* }}} */
 
 /* {{{ flt_admin_mysql_handle */
-int flt_admin_mysql_handle(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
+int flt_admin_mysql_handle(configfile_t *cfile,conf_opt_t *opt,const u_char *context,u_char **args,size_t argnum) {
   if(flt_amsql_fn == NULL) flt_amsql_fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   if(!context || cf_strcmp(flt_amsql_fn,context) != 0) return 0;
 
@@ -173,7 +173,7 @@ void flt_admin_mysql_cleanup(void) {
 }
 /* }}} */
 
-t_conf_opt flt_admin_mysql_config[] = {
+conf_opt_t flt_admin_mysql_config[] = {
   { "MysqlHost",       flt_admin_mysql_handle, CFG_OPT_CONFIG|CFG_OPT_LOCAL, NULL },
   { "MysqlUser",       flt_admin_mysql_handle, CFG_OPT_CONFIG|CFG_OPT_LOCAL, NULL },
   { "MysqlPasswd",     flt_admin_mysql_handle, CFG_OPT_CONFIG|CFG_OPT_LOCAL, NULL },
@@ -187,12 +187,12 @@ t_conf_opt flt_admin_mysql_config[] = {
   { NULL, NULL, 0, NULL }
 };
 
-t_handler_config flt_admin_mysql_handlers[] = {
+handler_config_t flt_admin_mysql_handlers[] = {
   { INIT_HANDLER,  flt_admin_mysql_init },
   { 0, NULL }
 };
 
-t_module_config flt_admin_mysql = {
+module_config_t flt_admin_mysql = {
   MODULE_MAGIC_COOKIE,
   flt_admin_mysql_config,
   flt_admin_mysql_handlers,

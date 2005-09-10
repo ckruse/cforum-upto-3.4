@@ -35,9 +35,9 @@
 /* }}} */
 
 /* {{{ flt_httpauth_run */
-int flt_httpauth_run(t_cf_hash *head,t_configuration *dc,t_configuration *vc) {
+int flt_httpauth_run(cf_hash_t *head,configuration_t *dc,configuration_t *vc) {
   u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
-  t_name_value *v = cfg_get_first_value(dc,forum_name,"AuthMode");
+  name_value_t *v = cfg_get_first_value(dc,forum_name,"AuthMode");
   u_char *name,*path;
 
   if(!v || !v->values[0] || cf_strcmp(v->values[0],"http") != 0) return FLT_DECLINE;
@@ -56,16 +56,16 @@ int flt_httpauth_run(t_cf_hash *head,t_configuration *dc,t_configuration *vc) {
 }
 /* }}} */
 
-t_conf_opt flt_httpauth_config[] = {
+conf_opt_t flt_httpauth_config[] = {
   { NULL, NULL, 0, NULL }
 };
 
-t_handler_config flt_httpauth_handlers[] = {
+handler_config_t flt_httpauth_handlers[] = {
   { AUTH_HANDLER, flt_httpauth_run },
   { 0, NULL }
 };
 
-t_module_config flt_httpauth = {
+module_config_t flt_httpauth = {
   MODULE_MAGIC_COOKIE,
   flt_httpauth_config,
   flt_httpauth_handlers,

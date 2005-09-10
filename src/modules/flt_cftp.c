@@ -43,8 +43,8 @@ struct sockaddr_un;
 #include "fo_server.h"
 /* }}} */
 
-int flt_cftp_handler(int sockfd,t_forum *forum,const u_char **tokens,int tnum,rline_t *tsd) {
-  t_name_value *sort_t_v = cfg_get_first_value(&fo_server_conf,forum->name,"SortThreads"),
+int flt_cftp_handler(int sockfd,forum_t *forum,const u_char **tokens,int tnum,rline_t *tsd) {
+  name_value_t *sort_t_v = cfg_get_first_value(&fo_server_conf,forum->name,"SortThreads"),
                *sort_m_v = cfg_get_first_value(&fo_server_conf,forum->name,"SortMessages");
 
   int sort_m = cf_strcmp(sort_m_v->values[0],"ascending") == 0 ? CF_SORT_ASCENDING : CF_SORT_DESCENDING,
@@ -56,22 +56,22 @@ int flt_cftp_handler(int sockfd,t_forum *forum,const u_char **tokens,int tnum,rl
          err = 0,
          one = 1;
 
-  t_handler_config *handler;
+  handler_config_t *handler;
 
   u_int64_t tid,
             mid;
 
-  t_thread *t,
+  thread_t *t,
            *t1;
 
-  t_posting *p,
+  posting_t *p,
             *p1,
             *p2;
 
-  t_string str;
+  string_t str;
   u_char buff[512];
-  t_srv_new_post_filter pfkt;
-  t_srv_new_thread_filter tfkt;
+  srv_new_post_filter_t pfkt;
+  srv_new_thread_filter_t tfkt;
 
   /* {{{ get */
   if(cf_strcmp(tokens[0],"GET") == 0) {
@@ -221,7 +221,7 @@ int flt_cftp_handler(int sockfd,t_forum *forum,const u_char **tokens,int tnum,rl
 
     /* {{{ POST ANSWER */
     if(cf_strcmp(tokens[1],"ANSWER") == 0) {
-      p = fo_alloc(NULL,1,sizeof(t_posting),FO_ALLOC_CALLOC);
+      p = fo_alloc(NULL,1,sizeof(posting_t),FO_ALLOC_CALLOC);
 
       if(tnum != 4) {
         writen(sockfd,"500 Sorry\n",10);
@@ -318,7 +318,7 @@ int flt_cftp_handler(int sockfd,t_forum *forum,const u_char **tokens,int tnum,rl
                 if(Modules[NEW_POST_HANDLER].elements) {
                   for(i=0;i<Modules[NEW_POST_HANDLER].elements;i++) {
                     handler = array_element_at(&Modules[NEW_POST_HANDLER],i);
-                    pfkt    = (t_srv_new_post_filter)handler->func;
+                    pfkt    = (srv_new_post_filter_t)handler->func;
                     ret     = pfkt(forum,t->tid,p);
                   }
                 }
@@ -410,7 +410,7 @@ int flt_cftp_handler(int sockfd,t_forum *forum,const u_char **tokens,int tnum,rl
           if(Modules[NEW_THREAD_HANDLER].elements) {
             for(i=0;i<Modules[NEW_THREAD_HANDLER].elements;i++) {
               handler = array_element_at(&Modules[NEW_THREAD_HANDLER],i);
-              tfkt    = (t_srv_new_thread_filter)handler->func;
+              tfkt    = (srv_new_thread_filter_t)handler->func;
               ret     = tfkt(forum,t);
             }
           }
@@ -554,16 +554,16 @@ int flt_cftp_register_handlers(int sock) {
   return FLT_OK;
 }
 
-t_conf_opt flt_cftp_config[] = {
+conf_opt_t flt_cftp_config[] = {
   { NULL, NULL, 0, NULL }
 };
 
-t_handler_config flt_cftp_handlers[] = {
+handler_config_t flt_cftp_handlers[] = {
   { INIT_HANDLER,            flt_cftp_register_handlers   },
   { 0, NULL }
 };
 
-t_module_config flt_cftp = {
+module_config_t flt_cftp = {
   MODULE_MAGIC_COOKIE,
   flt_cftp_config,
   flt_cftp_handlers,

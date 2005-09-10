@@ -254,7 +254,7 @@ ssize_t getline(char **lineptr,size_t *n,FILE *stream) {
  *
  */
 ssize_t getdelim(char **lineptr,size_t *n,int delim,FILE *stream) {
-  t_string buf;
+  string_t buf;
   register u_char c;
 
   str_init(&buf);
@@ -298,7 +298,7 @@ time_t cf_timegm (struct tm *tm) {
 void redirect_with_nice_uri(const u_char *ruri,int perm) {
   u_char *tmp;
   register u_char *ptr;
-  t_string uri;
+  string_t uri;
   int slash = 0;
 
   str_init(&uri);

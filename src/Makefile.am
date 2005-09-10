@@ -74,7 +74,7 @@ libcfclientlib_la_LIBADD=libcfconfigparser.la libcfcharconvert.la libcfreadline.
 libcfclientlib_la_LDFLAGS=-export-dynamic -avoid-version
 
 libcfuserconfig_la_SOURCES=userconf.c xml_handling.c
-libcfuserconfig_la_LIBADD=libcfhashlib.la libcfutils.la libcfconfigparser.la libcfclientlib.la $(GDOME_LIBS)
+libcfuserconfig_la_LIBADD=libcfhashlib.la libcfutils.la libcfconfigparser.la libcfclientlib.la libcfvalidate.la $(PCRE_LIBS) $(GDOME_LIBS)
 libcfuserconfig_la_LDFLAGS=-export-dynamic -avoid-version
 
 fo_threadlookup_SOURCES=fo_threadlookup.c

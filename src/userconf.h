@@ -11,7 +11,7 @@
 #define CF_UCONF_FLAG_INVISIBLE 0x01
 
 typedef struct {
-  t_array directives;
+  array_t directives;
 } uconf_userconfig_t;
 
 typedef struct {
@@ -21,7 +21,7 @@ typedef struct {
   int flags;
   int argnum;
 
-  t_array arguments;
+  array_t arguments;
 } uconf_directive_t;
 
 typedef struct {
@@ -42,7 +42,10 @@ uconf_userconfig_t *cf_uconf_read_modxml();
 void cf_uconf_destroy_argument(uconf_argument_t *argument);
 void cf_uconf_destroy_directive(uconf_directive_t *dir);
 void cf_uconf_cleanup_modxml(uconf_userconfig_t *modxml);
-void cf_uconf_to_html(t_string *str);
+void cf_uconf_to_html(string_t *str);
+
+uconf_userconfig_t *cf_uconf_merge_config(cf_hash_t *head,configuration_t *config,array_t *errormessages,int touch_committed);
+u_char *cf_write_uconf(uconf_userconfig_t *merged);
 
 #endif
 

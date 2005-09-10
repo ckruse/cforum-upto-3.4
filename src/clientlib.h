@@ -30,20 +30,20 @@
  * \param param Expects a void pointer
  * \return Returns a void pointer
  */
-typedef void *(*t_mod_api)(void *);
+typedef void *(*mod_api_t)(void *);
 
 /** Struct for Module communication API entry */
 typedef struct s_mod_api_ent {
   u_char *mod_name;          /**< Name of the module */
   u_char *unique_identifier; /**< unique identifier of the API entry */
-  t_mod_api function;        /**< function pointer to the API function */
-} t_mod_api_ent;
+  mod_api_t function;        /**< function pointer to the API function */
+} mod_api_ent_t;
 
 
 typedef struct s_flag {
   u_char *name;
   u_char *val;
-} t_cf_post_flag;
+} cf_post_flag_t;
 
 typedef struct s_uri_flag {
   u_char *name;
@@ -55,18 +55,18 @@ typedef struct s_uri_flag {
 typedef struct s_message {
   u_int64_t mid; /**< The message id */
 
-  t_cf_list_head flags; /**< contains the flags of the posting */
+  cf_list_head_t flags; /**< contains the flags of the posting */
 
-  t_string author; /**< The author of the posting */
-  t_string email; /**< The email address of the author */
-  t_string hp; /**< The homepage URL of the poster */
-  t_string img; /**< The image URL of the poster */
+  string_t author; /**< The author of the posting */
+  string_t email; /**< The email address of the author */
+  string_t hp; /**< The homepage URL of the poster */
+  string_t img; /**< The image URL of the poster */
 
-  t_string remote_addr; /**< The remote address of the poster */
+  string_t remote_addr; /**< The remote address of the poster */
 
-  t_string subject; /**< The subject of the posting */
-  t_string category; /**< The category of the posting */
-  t_string content; /**< The content of the posting */
+  string_t subject; /**< The subject of the posting */
+  string_t category; /**< The category of the posting */
+  string_t content; /**< The content of the posting */
 
   time_t date; /**< The date this message was created */
   unsigned short level; /**< The indent level of the posting */
@@ -77,29 +77,29 @@ typedef struct s_message {
   short may_show; /**< The visibility flag for plugins to use to hide postings */
   short invisible; /**< The visibility flag (if 0, posting is deleted) */
 
-  t_cf_tpl_variable hashvar;
+  cf_tpl_variable_t hashvar;
 
   struct s_message *next; /**< The pointer to the next message in the chain */
   struct s_message *prev; /**< The pointer to the previous message in the chain */
-} t_message;
+} message_t;
 
 typedef struct s_hierchical_node {
-  t_message *msg;
-  t_array childs;
-} t_hierarchical_node;
+  message_t *msg;
+  array_t childs;
+} hierarchical_node_t;
 
 /** This struct is used to store and handle whole threads */
 typedef struct s_cl_thread {
   u_int64_t tid; /**< The thread id */
   u_int32_t msg_len; /**< The number of messages */
 
-  t_hierarchical_node *ht; /**< Thread in hierarchical datatypes */
+  hierarchical_node_t *ht; /**< Thread in hierarchical datatypes */
 
-  t_message *messages; /**< Pointer to the first message (thread message) in the chain */
-  t_message *last; /**< Pointer to the last message in the chain */
-  t_message *threadmsg; /**< Pointer to the message the user wants to see */
-  t_message *newest; /**< Pointer to the newest message in this thread */
-} t_cl_thread;
+  message_t *messages; /**< Pointer to the first message (thread message) in the chain */
+  message_t *last; /**< Pointer to the last message in the chain */
+  message_t *threadmsg; /**< Pointer to the message the user wants to see */
+  message_t *newest; /**< Pointer to the newest message in this thread */
+} cl_thread_t;
 
 
 typedef struct {
@@ -114,18 +114,18 @@ typedef struct {
 } cf_readmode_t;
 
 
-typedef int (*cf_readmode_collector_t)(t_cf_hash *,t_configuration *,t_configuration *,cf_readmode_t *);
+typedef int (*cf_readmode_collector_t)(cf_hash_t *,configuration_t *,configuration_t *,cf_readmode_t *);
 
 #ifndef CF_SHARED_MEM
-typedef int (*t_sorting_handler)(t_cf_hash *head,t_configuration *dc,t_configuration *vc,int sock,rline_t *tsd,t_array *threads);
+typedef int (*sorting_handler_t)(cf_hash_t *head,configuration_t *dc,configuration_t *vc,int sock,rline_t *tsd,array_t *threads);
 #else
-typedef int (*t_sorting_handler)(t_cf_hash *head,t_configuration *dc,t_configuration *vc,void *ptr,t_array *threads);
+typedef int (*sorting_handler_t)(cf_hash_t *head,configuration_t *dc,configuration_t *vc,void *ptr,array_t *threads);
 #endif
 
 #ifdef CF_SHARED_MEM
-typedef int (*t_thread_sorting_handler)(t_cf_hash *head,t_configuration *dc,t_configuration *vc,void *shm_ptr,t_cl_thread *thread);
+typedef int (*thread_sorting_handler_t)(cf_hash_t *head,configuration_t *dc,configuration_t *vc,void *shm_ptr,cl_thread_t *thread);
 #else
-typedef int (*t_thread_sorting_handler)(t_cf_hash *head,t_configuration *dc,t_configuration *vc,int sock,rline_t *tsd,t_cl_thread *thread);
+typedef int (*thread_sorting_handler_t)(cf_hash_t *head,configuration_t *dc,configuration_t *vc,int sock,rline_t *tsd,cl_thread_t *thread);
 #endif
 
 /**
@@ -136,7 +136,7 @@ typedef int (*t_thread_sorting_handler)(t_cf_hash *head,t_configuration *dc,t_co
  * \param vc The fo_view configuration object
  * \return FLT_OK, FLT_DECLINE or FLT_EXIT. FLT_EXIT terminates the program, FLT_OK terminates the plugin handling in this state.
  */
-typedef int (*t_filter_begin)(t_cf_hash *,t_configuration *,t_configuration *);
+typedef int (*filter_begin_t)(cf_hash_t *,configuration_t *,configuration_t *);
 
 /**
  * This function prototype pointer is used for the connection plugins
@@ -147,9 +147,9 @@ typedef int (*t_filter_begin)(t_cf_hash *,t_configuration *,t_configuration *);
  * \return FLT_OK, FLT_DECLINE or FLT_EXIT. FLT_EXIT terminates the program
  */
 #ifndef CF_SHARED_MEM
-typedef int (*t_filter_connect)(t_cf_hash *,t_configuration *,t_configuration *,int);
+typedef int (*connect_filter_t)(cf_hash_t *,configuration_t *,configuration_t *,int);
 #else
-typedef int (*t_filter_connect)(t_cf_hash *,t_configuration *,t_configuration *,void *);
+typedef int (*connect_filter_t)(cf_hash_t *,configuration_t *,configuration_t *,void *);
 #endif
 
 /**
@@ -161,7 +161,7 @@ typedef int (*t_filter_connect)(t_cf_hash *,t_configuration *,t_configuration *,
  * \param mode The mode argument
  * \return FLT_OK, FLT_DECLINE or FLT_EXIT. FLT_EXIT means, do not print this thread
  */
-typedef int (*t_filter_list)(t_cf_hash *,t_configuration *,t_configuration *,t_cl_thread *,int);
+typedef int (*filter_list_t)(cf_hash_t *,configuration_t *,configuration_t *,cl_thread_t *,int);
 
 /**
  * This function prototype pointer is used for the VIEW_LIST_HANDLER plugins. It will be called once for
@@ -174,7 +174,7 @@ typedef int (*t_filter_list)(t_cf_hash *,t_configuration *,t_configuration *,t_c
  * \param mode The mode argument
  * \return FLT_OK, FLT_DECLINE or FLT_EXIT. FLT_EXIT means, do not print this message
  */
-typedef int (*t_filter_list_posting)(t_cf_hash *,t_configuration *,t_configuration *,t_message *,u_int64_t,int);
+typedef int (*filter_list_posting_t)(cf_hash_t *,configuration_t *,configuration_t *,message_t *,u_int64_t,int);
 
 /**
  * This function prototype pointer is used for the 404_HANDLER plugins. It will be called if a thread or
@@ -186,7 +186,7 @@ typedef int (*t_filter_list_posting)(t_cf_hash *,t_configuration *,t_configurati
  * \param mid The message id
  * \return FLT_OK, FLT_DECLINE or FLT_EXIT. FLT_EXIT means, do not print an error message
  */
-typedef int (*t_filter_404_handler)(t_cf_hash *,t_configuration *,t_configuration *,u_int64_t,u_int64_t);
+typedef int (*filter_404_handler_t)(cf_hash_t *,configuration_t *,configuration_t *,u_int64_t,u_int64_t);
 
 /**
  * This function prototype pointer is used for the POSTING_HANDLER plugins. It will be called when a user requests
@@ -198,7 +198,7 @@ typedef int (*t_filter_404_handler)(t_cf_hash *,t_configuration *,t_configuratio
  * \param template The template object
  * \return FLT_OK, FLT_DECLINE or FLT_EXIT. FLT_EXIT means, terminate the plugin handling
  */
-typedef int (*t_filter_posting)(t_cf_hash *,t_configuration *,t_configuration *,t_cl_thread *,t_cf_template *);
+typedef int (*filter_posting_t)(cf_hash_t *,configuration_t *,configuration_t *,cl_thread_t *,cf_template_t *);
 
 /**
  * This function prototype pointer is used for the VIEW_INIT_HANDLER plugins. It will be called before the thread
@@ -210,7 +210,7 @@ typedef int (*t_filter_posting)(t_cf_hash *,t_configuration *,t_configuration *,
  * \param tpl_end The template object for the end of the page
  * \return FLT_OK, FLT_DECLINE or FLT_EXIT, it doesn't matter in this case
  */
-typedef int (*t_filter_init_view)(t_cf_hash *,t_configuration *,t_configuration *,t_cf_template *,t_cf_template *);
+typedef int (*filter_init_view_t)(cf_hash_t *,configuration_t *,configuration_t *,cf_template_t *,cf_template_t *);
 
 /**
  * This function prototype pointer is used for the NEW_POST_HANDLER plugins. It will be called before the
@@ -224,9 +224,9 @@ typedef int (*t_filter_init_view)(t_cf_hash *,t_configuration *,t_configuration 
  * \return FLT_OK, FLT_DECLINE or FLT_EXIT. FLT_DECLINE and FLT_OK are functionless, FLT_EXIT means: do nothing else, just cleanup and exit
  */
 #ifndef CF_SHARED_MEM
-typedef int (*t_new_post_filter)(t_cf_hash *,t_configuration *,t_configuration *,t_message *,t_cl_thread *,int,int);
+typedef int (*new_post_filter_t)(cf_hash_t *,configuration_t *,configuration_t *,message_t *,cl_thread_t *,int,int);
 #else
-typedef int (*t_new_post_filter)(t_cf_hash *,t_configuration *,t_configuration *,t_message *,t_cl_thread *,void *,int,int);
+typedef int (*new_post_filter_t)(cf_hash_t *,configuration_t *,configuration_t *,message_t *,cl_thread_t *,void *,int,int);
 #endif
 
 /**
@@ -240,27 +240,27 @@ typedef int (*t_new_post_filter)(t_cf_hash *,t_configuration *,t_configuration *
  * \return FLT_OK, FLT_DECLINE or FLT_EXIT. FLT_DECLINE and FLT_OK are functionless, FLT_EXIT means: run no more plugins
  */
 #ifdef CF_SHARED_MEM
-typedef int (*t_after_post_filter)(t_cf_hash *,t_configuration *,t_configuration *,t_message *,u_int64_t,int,void *);
+typedef int (*after_post_filter_t)(cf_hash_t *,configuration_t *,configuration_t *,message_t *,u_int64_t,int,void *);
 #else
-typedef int (*t_after_post_filter)(t_cf_hash *,t_configuration *,t_configuration *,t_message *,u_int64_t,int);
+typedef int (*after_post_filter_t)(cf_hash_t *,configuration_t *,configuration_t *,message_t *,u_int64_t,int);
 #endif
 
-typedef int (*t_post_display_filter)(t_cf_hash *,t_configuration *,t_configuration *,t_cf_template *,t_message *);
+typedef int (*post_display_filter_t)(cf_hash_t *,configuration_t *,configuration_t *,cf_template_t *,message_t *);
 
-typedef int (*t_filter_urlrewrite)(t_configuration *,t_configuration *,const u_char *,u_char **);
+typedef int (*filter_urlrewrite_t)(configuration_t *,configuration_t *,const u_char *,u_char **);
 
-typedef int (*t_filter_perpost_var)(t_cf_hash *,t_configuration *,t_configuration *,t_cl_thread *,t_message *,t_cf_tpl_variable *);
+typedef int (*filter_perpost_var_t)(cf_hash_t *,configuration_t *,configuration_t *,cl_thread_t *,message_t *,cf_tpl_variable_t *);
 
 /**
  * In this hash global values can be saved,
  * e.g. the username of logged in users
  */
-extern t_cf_hash *GlobalValues;
+extern cf_hash_t *GlobalValues;
 
 /**
  * In this hash the module API entries will be saved
  */
-extern t_cf_hash *APIEntries;
+extern cf_hash_t *APIEntries;
 
 
 extern int shm_id;
@@ -321,9 +321,9 @@ void cf_gen_tpl_name(u_char *buff,size_t len,const u_char *name);
  * \param len The length of the value
  * \param html 1 if output should be html escaped, 0 if not
  */
-void cf_set_variable(t_cf_template *tpl,t_name_value *cs,u_char *vname,const u_char *val,size_t len,int html);
+void cf_set_variable(cf_template_t *tpl,name_value_t *cs,u_char *vname,const u_char *val,size_t len,int html);
 
-void cf_set_variable_hash(t_cf_tpl_variable *hash,t_name_value *cs,u_char *key,const u_char *val,size_t len,int html);
+void cf_set_variable_hash(cf_tpl_variable_t *hash,name_value_t *cs,u_char *key,const u_char *val,size_t len,int html);
 
 
 /**
@@ -351,73 +351,73 @@ u_char *cf_get_error_message(const u_char *msg,size_t *len, ...);
  * \param msg The message list head
  * \return msg if no invisible message could be found, first visible message if a visible message could be found
  */
-t_message *cf_msg_get_first_visible(t_message *msg);
+message_t *cf_msg_get_first_visible(message_t *msg);
 
-t_hierarchical_node *cf_msg_ht_get_first_visible(t_hierarchical_node *msg);
-void cf_msg_filter_invisible(t_hierarchical_node *msg,t_hierarchical_node *ary,int si);
+hierarchical_node_t *cf_msg_ht_get_first_visible(hierarchical_node_t *msg);
+void cf_msg_filter_invisible(hierarchical_node_t *msg,hierarchical_node_t *ary,int si);
 
 /**
  * This function deletes a posting subtree
  * \param msg The message structure
  * \return Returns the next posting which has not been deleted
  */
-t_message *cf_msg_delete_subtree(t_message *msg);
+message_t *cf_msg_delete_subtree(message_t *msg);
 
 /**
  * This function search the first message in the next subtree
  * \param msg The message structure
  * \return Returns the pointer to the first message in the next subtree
  */
-t_message *cf_msg_next_subtree(t_message *msg);
+message_t *cf_msg_next_subtree(message_t *msg);
 
 /**
  * This function search the first message in the previous subtree
  * \param msg The message structure
  * \return Returns the pointer to the first message in the previous subtree
  */
-t_message *cf_msg_prev_subtree(t_message *msg);
+message_t *cf_msg_prev_subtree(message_t *msg);
 
 /**
  * This function searches for the parent message of the given posting
  * \param tmsg The message
  * \return NULL if there is no parent posting, otherwise a pointer to the parent posting
  */
-t_message *cf_msg_get_parent(t_message *tmsg);
+message_t *cf_msg_get_parent(message_t *tmsg);
 
 /**
  * This function checks if a message has answers
  * \param msg The message structure
  * \returns
  */
-int cf_msg_has_answers(t_message *msg);
+int cf_msg_has_answers(message_t *msg);
 
 /**
  * cleans up (== free()s needed memory) a message structure
  * \param msg The message to clean up
  */
-void cf_cleanup_message(t_message *msg);
+void cf_cleanup_message(message_t *msg);
 
 /**
  * cleans up (== free()s needed memory) a thread structure
  * \param thr The thread to clean up
  */
-void cf_cleanup_thread(t_cl_thread *thr);
+void cf_cleanup_thread(cl_thread_t *thr);
 
 /**
  * Insert the postings to a hierarchy level. This function works recursively.
- * \param parent The parent t_hierarchical structure
+ * \param parent The parent hierarchical_node_t structure
  * \param msg The message pointer
  * \return The pointer to the next posting in a hierarchy level smaller or equal to ours.
  */
-t_message *cf_msg_build_hierarchical_structure(t_hierarchical_node *parent,t_message *msg);
+message_t *cf_msg_build_hierarchical_structure(hierarchical_node_t *parent,message_t *msg);
 
 /**
  * This function serializes a hierarchical structure into a flat chain
  * \param thr The thread to linearize
- * \param h The t_hierarchical_node node
+ * \param h The hierarchical_node_t node
  * \return A posting in this or lower than this hierarchy level or NULL
  */
-void cf_msg_linearize(t_cl_thread *thr,t_hierarchical_node *h);
+void cf_msg_linearize(cl_thread_t *thr,hierarchical_node_t *h);
 
 
 /**
@@ -426,7 +426,7 @@ void cf_msg_linearize(t_cl_thread *thr,t_hierarchical_node *h);
  * \param rm_infos The readmode information struct
  * \return FLT_OK, FLT_EXIT or FLT_DECLINE
  */
-int cf_run_readmode_collectors(t_cf_hash *head,t_configuration *vc,cf_readmode_t *rm_infos);
+int cf_run_readmode_collectors(cf_hash_t *head,configuration_t *vc,cf_readmode_t *rm_infos);
 
 /**
  * Run VIEW_LIST_HANDLER handlers.
@@ -436,7 +436,7 @@ int cf_run_readmode_collectors(t_cf_hash *head,t_configuration *vc,cf_readmode_t
  * \param mode The mode which we run (0 == threadlist, 1 == thread view)
  * \return FLT_OK, FLT_EXIT or FLT_DECLINE
  */
-int cf_run_view_list_handlers(t_message *p,t_cf_hash *head,u_int64_t tid,int mode);
+int cf_run_view_list_handlers(message_t *p,cf_hash_t *head,u_int64_t tid,int mode);
 
 /**
  * Runs VIEW_HANDLER handlers
@@ -445,7 +445,7 @@ int cf_run_view_list_handlers(t_message *p,t_cf_hash *head,u_int64_t tid,int mod
  * \param mode The mode which we run (0 == threadlist, 1 == thread view)
  * \return FLT_OK, FLT_EXIT or FLT_DECLINE
  */
-int cf_run_view_handlers(t_cl_thread *thr,t_cf_hash *head,int mode);
+int cf_run_view_handlers(cl_thread_t *thr,cf_hash_t *head,int mode);
 
 /**
  * Runs POSTING_HANDLER handlers
@@ -455,7 +455,7 @@ int cf_run_view_handlers(t_cl_thread *thr,t_cf_hash *head,int mode);
  * \param vc The fo_view_config pointer
  * \return FLT_OK, FLT_EXIT or FLT_DECLINE
  */
-int cf_run_posting_handlers(t_cf_hash *head,t_cl_thread *thr,t_cf_template *tpl,t_configuration *vc);
+int cf_run_posting_handlers(cf_hash_t *head,cl_thread_t *thr,cf_template_t *tpl,configuration_t *vc);
 
 /**
  * Runs the 404 handlers
@@ -464,21 +464,21 @@ int cf_run_posting_handlers(t_cf_hash *head,t_cl_thread *thr,t_cf_template *tpl,
  * \param mid The Message-ID
  * \return FLT_OK, FLT_EXIT or FLT_DECLINE
  */
-int cf_run_404_handlers(t_cf_hash *head,u_int64_t tid,u_int64_t mid);
+int cf_run_404_handlers(cf_hash_t *head,u_int64_t tid,u_int64_t mid);
 
 /**
  * Runs the INIT_HANDLER handlers
  * \param head The CGI hash
  * \return FLT_OK, FLT_EXIT or FLT_DECLINE
  */
-int cf_run_init_handlers(t_cf_hash *head);
+int cf_run_init_handlers(cf_hash_t *head);
 
 /**
  * Runs the authentification handlers
  * \param head The CGI hash
  * \return FLT_OK, FLT_EXIT or FLT_DECLINE
  */
-int cf_run_auth_handlers(t_cf_hash *head);
+int cf_run_auth_handlers(cf_hash_t *head);
 
 #ifdef CF_SHARED_MEM
 /**
@@ -487,7 +487,7 @@ int cf_run_auth_handlers(t_cf_hash *head);
  * \param sock The pointer to the shared memory segment
  * \return FLT_OK, FLT_EXIT or FLT_DECLINE
  */
-int cf_run_connect_init_handlers(t_cf_hash *head,void *sock);
+int cf_run_connect_init_handlers(cf_hash_t *head,void *sock);
 #else
 /**
  * Runs the connection init handlers
@@ -495,7 +495,7 @@ int cf_run_connect_init_handlers(t_cf_hash *head,void *sock);
  * \param sock The socket to the server
  * \return FLT_OK, FLT_EXIT or FLT_DECLINE
  */
-int cf_run_connect_init_handlers(t_cf_hash *head,int sock);
+int cf_run_connect_init_handlers(cf_hash_t *head,int sock);
 #endif
 
 /**
@@ -505,30 +505,30 @@ int cf_run_connect_init_handlers(t_cf_hash *head,int sock);
  * \param tpl_end The forum footer template
  * \return FLT_OK, FLT_DECLINE or FLT_EXIT
  */
-int cf_run_view_init_handlers(t_cf_hash *head,t_cf_template *tpl_begin,t_cf_template *tpl_end);
+int cf_run_view_init_handlers(cf_hash_t *head,cf_template_t *tpl_begin,cf_template_t *tpl_end);
 
 #ifdef CF_SHARED_MEM
-int cf_run_sorting_handlers(t_cf_hash *head,void *ptr,t_array *threads);
+int cf_run_sorting_handlers(cf_hash_t *head,void *ptr,array_t *threads);
 #else
-int cf_run_sorting_handlers(t_cf_hash *head,int sock,rline_t *tsd,t_array *threads);
+int cf_run_sorting_handlers(cf_hash_t *head,int sock,rline_t *tsd,array_t *threads);
 #endif
 
 #ifdef CF_SHARED_MEM
-int cf_run_thread_sorting_handlers(t_cf_hash *head,void *shm_ptr,t_cl_thread *thread);
+int cf_run_thread_sorting_handlers(cf_hash_t *head,void *shm_ptr,cl_thread_t *thread);
 #else
-int cf_run_thread_sorting_handlers(t_cf_hash *head,int sock,rline_t *tsd,t_cl_thread *thread);
+int cf_run_thread_sorting_handlers(cf_hash_t *head,int sock,rline_t *tsd,cl_thread_t *thread);
 #endif
 
 #ifdef CF_SHARED_MEM
-void cf_run_after_post_handlers(t_cf_hash *head,t_message *p,u_int64_t tid,void *shm,int sock);
+void cf_run_after_post_handlers(cf_hash_t *head,message_t *p,u_int64_t tid,void *shm,int sock);
 #else
-void cf_run_after_post_handlers(t_cf_hash *head,t_message *p,u_int64_t tid,int sock);
+void cf_run_after_post_handlers(cf_hash_t *head,message_t *p,u_int64_t tid,int sock);
 #endif
 
 #ifdef CF_SHARED_MEM
-int cf_run_post_filters(t_cf_hash *head,t_message *p,t_cl_thread *thr,void *ptr,int sock);
+int cf_run_post_filters(cf_hash_t *head,message_t *p,cl_thread_t *thr,void *ptr,int sock);
 #else
-int cf_run_post_filters(t_cf_hash *head,t_message *p,t_cl_thread *thr,int sock);
+int cf_run_post_filters(cf_hash_t *head,message_t *p,cl_thread_t *thr,int sock);
 #endif
 
 /**
@@ -537,9 +537,9 @@ int cf_run_post_filters(t_cf_hash *head,t_message *p,t_cl_thread *thr,int sock);
  * \param tpl The template
  * \param p NULL or the posting
  */
-int cf_run_post_display_handlers(t_cf_hash *head,t_cf_template *tpl,t_message *p);
+int cf_run_post_display_handlers(cf_hash_t *head,cf_template_t *tpl,message_t *p);
 
-int cf_run_perpost_var_handlers(t_cf_hash *head,t_cl_thread *thread,t_message *msg,t_cf_tpl_variable *hash);
+int cf_run_perpost_var_handlers(cf_hash_t *head,cl_thread_t *thread,message_t *msg,cf_tpl_variable_t *hash);
 
 
 void cf_add_static_uri_flag(const u_char *name,const u_char *value,int encode);
@@ -592,7 +592,7 @@ u_char *cf_general_get_time(u_char *fmt,u_char *locale,int *len,time_t *date);
  * \param del Boolean. If CF_KILL_DELETED, deleted messages will be killed. If CF_KEEP_DELETED, deleted messages will not be killed
  * \return 0 on success, -1 on failure
  */
-int cf_get_message_through_sock(int sock,rline_t *tsd,t_cl_thread *thr,u_int64_t tid,u_int64_t mid,int del);
+int cf_get_message_through_sock(int sock,rline_t *tsd,cl_thread_t *thr,u_int64_t tid,u_int64_t mid,int del);
 
 /**
  * This function reads the next thread from a socket
@@ -600,7 +600,7 @@ int cf_get_message_through_sock(int sock,rline_t *tsd,t_cl_thread *thr,u_int64_t
  * \param tsd The readline buffer
  * \param thr The thread structure
  */
-int cf_get_next_thread_through_sock(int sock,rline_t *tsd,t_cl_thread *thr);
+int cf_get_next_thread_through_sock(int sock,rline_t *tsd,cl_thread_t *thr);
 
 #ifndef CF_SHARED_MEM
 /**
@@ -611,7 +611,7 @@ int cf_get_next_thread_through_sock(int sock,rline_t *tsd,t_cl_thread *thr);
  * \param tsd The readline structure
  * \return -1 on failure, 0 on success
  */
-int cf_get_threadlist(t_array *ary,int sock,rline_t *tsd);
+int cf_get_threadlist(array_t *ary,int sock,rline_t *tsd);
 #else
 /**
  * Reads a complete threadlist into an array
@@ -620,7 +620,7 @@ int cf_get_threadlist(t_array *ary,int sock,rline_t *tsd);
  * \param ptr Pointer to the shared memory
  * \return -1 on failure, 0 on success
  */
-int cf_get_threadlist(t_array *ary,void *ptr);
+int cf_get_threadlist(array_t *ary,void *ptr);
 #endif
 
 #ifdef CF_SHARED_MEM
@@ -633,7 +633,7 @@ int cf_get_threadlist(t_array *ary,void *ptr);
  * \param del Boolean. If CF_KILL_DELETED, deleted messages will be killed. If CF_KEEP_DELETED, deleted messages will not be killed
  * \return 0 on success, -1 on failure
  */
-int cf_get_message_through_shm(void *shm_ptr,t_cl_thread *thr,u_int64_t tid,u_int64_t mid,int del);
+int cf_get_message_through_shm(void *shm_ptr,cl_thread_t *thr,u_int64_t tid,u_int64_t mid,int del);
 
 /**
  * This function reads the next thread from the shared memory segment
@@ -641,7 +641,7 @@ int cf_get_message_through_shm(void *shm_ptr,t_cl_thread *thr,u_int64_t tid,u_in
  * \param thr The thread structure
  * \return NULL on failure, the modified pointer on success
  */
-void *cf_get_next_thread_through_shm(void *shm_ptr,t_cl_thread *thr);
+void *cf_get_next_thread_through_shm(void *shm_ptr,cl_thread_t *thr);
 #endif
 
 
@@ -651,7 +651,7 @@ void *cf_get_next_thread_through_shm(void *shm_ptr,t_cl_thread *thr);
  * \param name The name of the flag
  * \return NULL or the flag if found.
  */
-t_cf_post_flag *cf_flag_by_name(t_cf_list_head *flags,const u_char *name);
+cf_post_flag_t *cf_flag_by_name(cf_list_head_t *flags,const u_char *name);
 
 
 /**
@@ -661,7 +661,7 @@ t_cf_post_flag *cf_flag_by_name(t_cf_list_head *flags,const u_char *name);
  * \param func A pointer to the API function
  * \return Returns 0 on success and -1 on failure (e.g. doubly entries)
  */
-int cf_register_mod_api_ent(const u_char *mod_name,const u_char *unique_identifier,t_mod_api func);
+int cf_register_mod_api_ent(const u_char *mod_name,const u_char *unique_identifier,mod_api_t func);
 
 /**
  * This function deletes a module API hook
@@ -675,7 +675,7 @@ int cf_unregister_mod_api_ent(const u_char *unid);
  * \param unid The unique id of the API hook
  * \return The pointer on success, NULL on failure
  */
-t_mod_api cf_get_mod_api_ent(const u_char *unid);
+mod_api_t cf_get_mod_api_ent(const u_char *unid);
 
 
 

@@ -127,14 +127,14 @@ void cleanup_worker(void *data) {
 
 /* {{{ destroy_client */
 void destroy_client(void *data) {
-  t_cf_client *client = (t_cf_client *)data;
+  cf_client_t *client = (cf_client_t *)data;
   close(client->sock);
 }
 /* }}} */
 
 /* {{{ destroy_server */
 void destroy_server(void *data) {
-  t_server *srv = (t_server *)data;
+  server_t *srv = (server_t *)data;
   free(srv->addr);
   close(srv->sock);
 }
@@ -142,14 +142,14 @@ void destroy_server(void *data) {
 
 /* {{{ logfile_worker */
 void logfile_worker(void) {
-  t_name_value *v = cfg_get_first_value(&fo_server_conf,NULL,"LogMaxSize");
-  t_name_value *log;
+  name_value_t *v = cfg_get_first_value(&fo_server_conf,NULL,"LogMaxSize");
+  name_value_t *log;
   off_t size = strtol(v->values[0],NULL,10);
   struct stat st;
   u_char buff[256];
   struct tm tm;
   time_t t;
-  t_string str;
+  string_t str;
   size_t len;
 
   if(RUN == 0) return;
@@ -229,7 +229,7 @@ static struct option server_cmdline_options[] = {
 };
 /* }}} */
 
-t_head head;
+head_t head;
 int RUN = 1;
 
 static const u_char *wanted[] = {
@@ -261,34 +261,34 @@ int main(int argc,char *argv[]) {
   u_char *pidfile = NULL,
          *fname;
 
-  t_array *cfgfiles;
+  array_t *cfgfiles;
 
-  t_configfile conf,
+  configfile_t conf,
                dconf;
 
-  t_name_value *pidfile_nv,
+  name_value_t *pidfile_nv,
                *forums,
                *threads,
                *run_archiver,
                *usergroup,
                *chrootv;
 
-  t_forum *actforum;
+  forum_t *actforum;
 
-  t_internal_config *icfg;
+  internal_config_t *icfg;
 
-  t_cf_list_element *elem;
-  t_server *srv;
+  cf_list_element_t *elem;
+  server_t *srv;
   pthread_attr_t thread_attr;
   pthread_t thread;
   struct sockaddr_un addr;
   struct timeval timeout;
   struct sched_param param;
 
-  t_server_init_filter fkt;
-  t_handler_config *handler;
+  server_init_filter_t fkt;
+  handler_config_t *handler;
 
-  t_periodical per;
+  periodical_t per;
 
 
   /* set signal handlers */
@@ -434,7 +434,7 @@ int main(int argc,char *argv[]) {
   for(i=0;i<forums->valnum;i++) {
     status = 0;
     for(elem=fo_server_conf.forums.elements;elem;elem=elem->next) {
-      icfg = (t_internal_config *)elem->data;
+      icfg = (internal_config_t *)elem->data;
       if(cf_strcmp(icfg->name,forums->values[i]) == 0) {
         status = 1;
         break;
@@ -589,7 +589,7 @@ int main(int argc,char *argv[]) {
 
     for(i=0;i<Modules[INIT_HANDLER].elements && (ret == FLT_DECLINE || ret == FLT_OK);++i) {
       handler = array_element_at(&Modules[INIT_HANDLER],i);
-      fkt     = (t_server_init_filter)handler->func;
+      fkt     = (server_init_filter_t)handler->func;
       ret     = fkt(sock);
     }
   }
@@ -609,7 +609,7 @@ int main(int argc,char *argv[]) {
     CF_LM(&head.servers.lock);
 
     for(elem = head.servers.list.elements;elem;elem = elem->next) {
-      srv = (t_server *)elem->data;
+      srv = (server_t *)elem->data;
 
       if(sock < srv->sock) sock = srv->sock;
       FD_SET(srv->sock,&rfds);
@@ -637,7 +637,7 @@ int main(int argc,char *argv[]) {
       CF_LM(&head.servers.lock);
 
       for(elem=head.servers.list.elements;elem;elem=elem->next) {
-        srv = (t_server *)elem->data;
+        srv = (server_t *)elem->data;
 
         if(FD_ISSET(srv->sock,&rfds)) {
           size   = srv->size;

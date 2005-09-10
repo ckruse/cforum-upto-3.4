@@ -47,7 +47,7 @@ static struct {
 static u_char *flt_vv_fn = NULL;
 
 /* {{{ flt_votingvariables_execute_filter */
-int flt_votingvariables_execute_filter(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cl_thread *thread,t_cf_template *tpl) {
+int flt_votingvariables_execute_filter(cf_hash_t *head,configuration_t *dc,configuration_t *vc,cl_thread_t *thread,cf_template_t *tpl) {
   u_char *UserName = cf_hash_get(GlobalValues,"UserName",8);
 
   if(flt_vv_Config.activate) {
@@ -66,11 +66,11 @@ int flt_votingvariables_execute_filter(t_cf_hash *head,t_configuration *dc,t_con
 /* }}} */
 
 /* {{{ flt_votingvariables_setvar */
-int flt_votingvariables_setvars(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cl_thread *thread,t_message *msg,t_cf_tpl_variable *hash) {
+int flt_votingvariables_setvars(cf_hash_t *head,configuration_t *dc,configuration_t *vc,cl_thread_t *thread,message_t *msg,cf_tpl_variable_t *hash) {
   u_char *UserName = cf_hash_get(GlobalValues,"UserName",8),*tmp,buff[512];
   u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
 
-  t_name_value *v = cfg_get_first_value(dc,forum_name,"VoteURL"),*cs = cfg_get_first_value(dc,forum_name,"ExternCharset");
+  name_value_t *v = cfg_get_first_value(dc,forum_name,"VoteURL"),*cs = cfg_get_first_value(dc,forum_name,"ExternCharset");
 
   size_t len;
 
@@ -107,7 +107,7 @@ int flt_votingvariables_setvars(t_cf_hash *head,t_configuration *dc,t_configurat
 /* }}} */
 
 /* {{{ flt_votingvariables_handle */
-int flt_votingvariables_handle(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
+int flt_votingvariables_handle(configfile_t *cfile,conf_opt_t *opt,const u_char *context,u_char **args,size_t argnum) {
   if(!flt_vv_fn) flt_vv_fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   if(!context || cf_strcmp(flt_vv_fn,context) != 0) return 0;
 
@@ -119,20 +119,20 @@ int flt_votingvariables_handle(t_configfile *cfile,t_conf_opt *opt,const u_char 
 }
 /* }}} */
 
-t_conf_opt flt_votingvariables_config[] = {
+conf_opt_t flt_votingvariables_config[] = {
   { "VotingActivate", flt_votingvariables_handle, CFG_OPT_CONFIG|CFG_OPT_LOCAL, NULL },
   { "VotesShow",      flt_votingvariables_handle, CFG_OPT_CONFIG|CFG_OPT_LOCAL, NULL },
   { "VotingUseJS",    flt_votingvariables_handle, CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
   { NULL, NULL, 0, NULL }
 };
 
-t_handler_config flt_votingvariables_handlers[] = {
+handler_config_t flt_votingvariables_handlers[] = {
   { POSTING_HANDLER,     flt_votingvariables_execute_filter },
   { PERPOST_VAR_HANDLER, flt_votingvariables_setvars },
   { 0, NULL }
 };
 
-t_module_config flt_votingvariables = {
+module_config_t flt_votingvariables = {
   MODULE_MAGIC_COOKIE,
   flt_votingvariables_config,
   flt_votingvariables_handlers,

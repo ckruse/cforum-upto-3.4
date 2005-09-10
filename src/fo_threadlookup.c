@@ -133,15 +133,15 @@ void gen_archive_url(u_char *buff,u_char *aurl,u_char *url,u_int64_t tid,u_int64
 int main(int argc,char *argv[],char *envp[]) {
   /* {{{ variables */
   u_char *forum_name;
-  t_array *cfgfiles;
+  array_t *cfgfiles;
   u_char *file;
-  t_configfile dconf;
+  configfile_t dconf;
   u_int64_t tid,mid = 0;
   u_char *ctid,buff[256];
   struct stat st;
-  t_name_value *v;
-  t_name_value *archive_path,*cs;
-  t_array infos;
+  name_value_t *v;
+  name_value_t *archive_path,*cs;
+  array_t infos;
   DB *Tdb;
   DBT key,data;
   int ret;

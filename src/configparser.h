@@ -22,10 +22,10 @@ struct s_conf_opt;
 struct s_configfile;
 
 /** look at s_conf_opt */
-typedef struct s_conf_opt t_conf_opt;
+typedef struct s_conf_opt conf_opt_t;
 
 /** look at s_configfile */
-typedef struct s_configfile t_configfile;
+typedef struct s_configfile configfile_t;
 
 /**
  * This type of function is expected as a callback function
@@ -36,7 +36,7 @@ typedef struct s_configfile t_configfile;
  * \param len The length of the arguments array
  * \return 0 on success, any other value for failure
  */
-typedef int (*t_take)(t_configfile *cfile,t_conf_opt *entry,const u_char *context,u_char **args,size_t len);
+typedef int (*take_t)(configfile_t *cfile,conf_opt_t *entry,const u_char *context,u_char **args,size_t len);
 
 /**
  * This type of function is expected as a standard callback function (if no configuration directive entry could be found)
@@ -45,7 +45,7 @@ typedef int (*t_take)(t_configfile *cfile,t_conf_opt *entry,const u_char *contex
  * \param len The length of the directives array
  * \return 0 on success, any other value for failure
  */
-typedef int (*t_take_default)(t_configfile *cfile,const u_char *context,u_char *name,u_char **args,size_t len);
+typedef int (*t_take_default)(configfile_t *cfile,const u_char *context,u_char *name,u_char **args,size_t len);
 
 #define CFG_OPT_NEEDED     (0x1<<0) /**< directive _must_ exist */
 #define CFG_OPT_CONFIG     (0x1<<1) /**< directive may exist in fo_*.conf */
@@ -64,7 +64,7 @@ typedef int (*t_take_default)(t_configfile *cfile,const u_char *context,u_char *
 /** This describes the structure of a config file */
 struct s_conf_opt {
   u_char *name; /**< The name of the configuration directive */
-  t_take callback; /**< The callback function */
+  take_t callback; /**< The callback function */
   u_int32_t flags; /**< Flags for this entry */
   void *data; /**< User defined data */
 };
@@ -72,8 +72,8 @@ struct s_conf_opt {
 /** The configuration file structure */
 struct s_configfile {
   u_char *filename; /**< The filename */
-  t_cf_hash *options; /**< The configuration options */
-  t_cf_list_head options_list; /**< A list of all configuration option names, used for CFG_OPT_NEEDED */
+  cf_hash_t *options; /**< The configuration options */
+  cf_list_head_t options_list; /**< A list of all configuration option names, used for CFG_OPT_NEEDED */
 };
 
 /** A list of name-value-pairs */
@@ -82,20 +82,20 @@ typedef struct s_name_value {
 
   u_char **values; /**< The value array of this struct */
   size_t valnum; /**< The size of the values array */
-} t_name_value;
+} name_value_t;
 
 /***** NEW config parser API *****/
 
 /** A structure to save configuration data */
 typedef struct s_configuration {
-  t_cf_list_head forums;
-  t_cf_tree global_directives;
-} t_configuration;
+  cf_list_head_t forums;
+  cf_tree_t global_directives;
+} configuration_t;
 
 typedef struct s_internal_config {
   u_char *name;
-  t_cf_tree directives;
-} t_internal_config;
+  cf_tree_t directives;
+} internal_config_t;
 
 /* module API */
 
@@ -103,73 +103,73 @@ typedef struct s_internal_config {
 typedef struct s_handler_config {
   int handler; /**< The handler hook */
   void *func; /**< A pointer to the handler function */
-} t_handler_config;
+} handler_config_t;
 
 /** This function type is used for cleaning up module specific data */
-typedef void (*t_finish)(void);
+typedef void (*finish_t)(void);
 
 /** This function type is used for the configuration init hook */
-typedef int (*t_config_init_hook)(t_configfile *file);
+typedef int (*config_init_hook_t)(configfile_t *file);
 
 /** This function type is used for cache revalidation */
 #ifndef CF_SHARED_MEM
-typedef int (*t_cache_revalidator)(t_cf_hash *,t_configuration *,t_configuration *,time_t,int);
+typedef int (*cache_revalidator_t)(cf_hash_t *,configuration_t *,configuration_t *,time_t,int);
 #else
-typedef int (*t_cache_revalidator)(t_cf_hash *,t_configuration *,t_configuration *,time_t,void *);
+typedef int (*cache_revalidator_t)(cf_hash_t *,configuration_t *,configuration_t *,time_t,void *);
 #endif
 
 /** This function type is used for the HTTP header hook */
 #ifndef CF_SHARED_MEM
-typedef int (*t_header_hook)(t_cf_hash *,t_cf_hash *,t_configuration *,t_configuration *,int);
+typedef int (*head_ter_hook)(cf_hash_t *,cf_hash_t *,configuration_t *,configuration_t *,int);
 #else
-typedef int (*t_header_hook)(t_cf_hash *,t_cf_hash *,t_configuration *,t_configuration *,void *);
+typedef int (*head_ter_hook)(cf_hash_t *,cf_hash_t *,configuration_t *,configuration_t *,void *);
 #endif
 
 /** This function type is used for the Last Modified header revalidation */
 #ifndef CF_SHARED_MEM
-typedef time_t (*t_last_modified)(t_cf_hash *,t_configuration *,t_configuration *,int);
+typedef time_t (*last_modified_t)(cf_hash_t *,configuration_t *,configuration_t *,int);
 #else
-typedef time_t (*t_last_modified)(t_cf_hash *,t_configuration *,t_configuration *,void *);
+typedef time_t (*last_modified_t)(cf_hash_t *,configuration_t *,configuration_t *,void *);
 #endif
 
 /** This structure saves a configuration of a module */
 typedef struct s_module_config {
   u_int32_t module_magic_cookie;
-  t_conf_opt *cfgopts; /**< The configuration directive options of this module */
-  t_handler_config *handlers; /**< The handler configuration */
-  t_config_init_hook config_init;
-  t_cache_revalidator revalidator; /**< The cache revalidation hook */
-  t_last_modified last_modified; /**< The last modified validation hook */
-  t_header_hook header_hook; /**< Hook for http headers */
-  t_finish finish; /**< The cleanup function handler */
-} t_module_config;
+  conf_opt_t *cfgopts; /**< The configuration directive options of this module */
+  handler_config_t *handlers; /**< The handler configuration */
+  config_init_hook_t config_init;
+  cache_revalidator_t revalidator; /**< The cache revalidation hook */
+  last_modified_t last_modified; /**< The last modified validation hook */
+  head_ter_hook header_hook; /**< Hook for http headers */
+  finish_t finish; /**< The cleanup function handler */
+} module_config_t;
 
 /** This structure saves the information of all modules in a linked list */
 typedef struct s_module {
   void *module; /**< The pointer to the module object */
-  t_handler_config *handler; /**< The handlers of the actual module */
-  t_module_config *cfg; /**< The module configuration */
-} t_module;
+  handler_config_t *handler; /**< The handlers of the actual module */
+  module_config_t *cfg; /**< The module configuration */
+} module_t;
 
-extern t_configuration fo_default_conf; /**< The configuration data of the default configuration */
-extern t_configuration fo_server_conf; /**< The configuration data of the server */
-extern t_configuration fo_view_conf; /**< The configuration data of the forum viewer */
-extern t_configuration fo_arcview_conf; /**< The configuration data of the archive viewer */
-extern t_configuration fo_post_conf; /**< The configuration data of the archive viewer */
-extern t_configuration fo_vote_conf; /**< The configuration data of the voting program */
-extern t_configuration fo_feeds_conf; /**< The configuration data of the feeds program */
-extern t_configuration fo_userconf_conf; /**< The configuration data of the userconfig program */
+extern configuration_t fo_default_conf; /**< The configuration data of the default configuration */
+extern configuration_t fo_server_conf; /**< The configuration data of the server */
+extern configuration_t fo_view_conf; /**< The configuration data of the forum viewer */
+extern configuration_t fo_arcview_conf; /**< The configuration data of the archive viewer */
+extern configuration_t fo_post_conf; /**< The configuration data of the archive viewer */
+extern configuration_t fo_vote_conf; /**< The configuration data of the voting program */
+extern configuration_t fo_feeds_conf; /**< The configuration data of the feeds program */
+extern configuration_t fo_userconf_conf; /**< The configuration data of the userconfig program */
 
-extern t_conf_opt default_options[]; /**< The default configuration options */
-extern t_conf_opt fo_view_options[]; /**< The client configuration options */
-extern t_conf_opt fo_post_options[]; /**< The posting configuration options */
-extern t_conf_opt fo_server_options[]; /**< The server configuration options */
-extern t_conf_opt fo_arcview_options[]; /**< The archiv viewer configuration options */
-extern t_conf_opt fo_vote_options[]; /**< The voting program configuration options */
-extern t_conf_opt fo_feeds_options[];  /**< The feeds program configuration options */
-extern t_conf_opt fo_userconf_options[]; /**< The userconf program configuration options */
+extern conf_opt_t default_options[]; /**< The default configuration options */
+extern conf_opt_t fo_view_options[]; /**< The client configuration options */
+extern conf_opt_t fo_post_options[]; /**< The posting configuration options */
+extern conf_opt_t fo_server_options[]; /**< The server configuration options */
+extern conf_opt_t fo_arcview_options[]; /**< The archiv viewer configuration options */
+extern conf_opt_t fo_vote_options[]; /**< The voting program configuration options */
+extern conf_opt_t fo_feeds_options[];  /**< The feeds program configuration options */
+extern conf_opt_t fo_userconf_options[]; /**< The userconf program configuration options */
 
-extern t_array Modules[]; /**< The modules array */
+extern array_t Modules[]; /**< The modules array */
 
 /***** NEW config parser API ****/
 
@@ -185,7 +185,7 @@ extern t_array Modules[]; /**< The modules array */
  * \param llen The length of the list
  * \return An array containing the full path to the config files in the order given by the list
  */
-t_array *get_conf_file(const u_char **which,size_t llen);
+array_t *get_conf_file(const u_char **which,size_t llen);
 
 /**
  * This function parses a configuration file.
@@ -193,33 +193,33 @@ t_array *get_conf_file(const u_char **which,size_t llen);
  * \param deflt The default callback function
  * \return 0 on success, a value unequal 0 on failure
  */
-int read_config(t_configfile *conf,t_take_default deflt,int mode);
+int read_config(configfile_t *conf,t_take_default deflt,int mode);
 
 /**
  * This function initializes a configuration file structure
  * \param conf The configuration file structure
  * \param filename The configuration file filename
  */
-void cfg_init_file(t_configfile *conf,u_char *filename);
+void cfg_init_file(configfile_t *conf,u_char *filename);
 
 /**
  * This function registeres configuration options in the configuration file structure
  * \param conf The configuration file structure
  * \param opts The configuration options
  */
-int cfg_register_options(t_configfile *conf,t_conf_opt *opts);
+int cfg_register_options(configfile_t *conf,conf_opt_t *opts);
 
 /**
  * This function cleans up a configuration file structure
  * \param conf The configuration file structure
  */
-void cfg_cleanup_file(t_configfile *conf);
+void cfg_cleanup_file(configfile_t *conf);
 
 /**
  * This function cleans up the modules structure
  * \param modules The modules array
  */
-void cleanup_modules(t_array *modules);
+void cleanup_modules(array_t *modules);
 
 /**
  * This function handles a configuration entry.
@@ -230,7 +230,7 @@ void cleanup_modules(t_array *modules);
  * \param argnum The length of the argument list
  * \return 0 on success, any other value on error
  */
-int handle_command(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum);
+int handle_command(configfile_t *cfile,conf_opt_t *opt,const u_char *context,u_char **args,size_t argnum);
 
 /**
  * This function adds a plugin into the program space
@@ -239,30 +239,30 @@ int handle_command(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_c
  * \param name The name of the module
  * \return 0 on success, any other value on error
  */
-int add_module(t_configfile *cfile,const u_char *path,const u_char *name);
+int add_module(configfile_t *cfile,const u_char *path,const u_char *name);
 
 /**
  * This function cleans up a configuration file structure
  * \param cfg The configuration file structure
  */
-void cfg_cleanup(t_configuration *cfg);
+void cfg_cleanup(configuration_t *cfg);
 
 /**
  * This function returns a configuration entry list
  * \param cfg The configuration file structure
  * \param name The configuration entry name
- * \return NULL if not found, the t_cf_list_head structure on success
+ * \return NULL if not found, the cf_list_head_t structure on success
  */
-t_cf_list_head *cfg_get_value(t_configuration *cfg,const u_char *context,const u_char *name);
+cf_list_head_t *cfg_get_value(configuration_t *cfg,const u_char *context,const u_char *name);
 
 /**
  * This function returns the first configuration entry of a configuration
  * entry list
  * \param cfg The configuration file structure
  * \param name The configuration entry name
- * \return NULL if not found, the t_name_value structure on success
+ * \return NULL if not found, the name_value_t structure on success
  */
-t_name_value *cfg_get_first_value(t_configuration *cfg,const u_char *context,const u_char *name);
+name_value_t *cfg_get_first_value(configuration_t *cfg,const u_char *context,const u_char *name);
 
 /**
  * destructor function for the modules array

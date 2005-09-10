@@ -66,7 +66,7 @@ static struct {
 /* {{{ flt_latex_create_cache */
 int flt_latex_create_cache(const u_char *cnt,size_t len,const u_char *our_sum,int elatex) {
   FILE *fd;
-  t_string path,document;
+  string_t path,document;
   size_t mylen;
   pid_t pid;
   int status,fds[2];
@@ -250,7 +250,7 @@ void flt_latex_create_md5_sum(u_char *str,size_t len,u_char *res) {
 /* {{{ flt_latex_filter */
 u_char *flt_latex_filter(const u_char *cnt,size_t *len) {
   u_char *val;
-  t_string str;
+  string_t str;
   register u_char *ptr;
 
   str_init(&str);
@@ -279,10 +279,10 @@ u_char *flt_latex_filter(const u_char *cnt,size_t *len) {
 /* }}} */
 
 /* {{{ flt_latex_execute */
-int flt_latex_execute(t_configuration *fdc,t_configuration *fvc,t_cl_thread *thread,const u_char *directive,const u_char **parameters,size_t plen,t_string *bco,t_string *bci,t_string *content,t_string *cite,const u_char *qchars,int sig) {
+int flt_latex_execute(configuration_t *fdc,configuration_t *fvc,cl_thread_t *thread,const u_char *directive,const u_char **parameters,size_t plen,string_t *bco,string_t *bci,string_t *content,string_t *cite,const u_char *qchars,int sig) {
   u_char *fn;
   u_char sum[33];
-  t_name_value *xhtml;
+  name_value_t *xhtml;
   size_t len;
   u_char *my_cnt;
 
@@ -333,7 +333,7 @@ int flt_latex_execute(t_configuration *fdc,t_configuration *fvc,t_cl_thread *thr
 }
 /* }}} */
 
-int flt_latex_init(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc) {
+int flt_latex_init(cf_hash_t *cgi,configuration_t *dc,configuration_t *vc) {
   cf_html_register_directive("latex",flt_latex_execute,CF_HTML_DIR_TYPE_ARG|CF_HTML_DIR_TYPE_BLOCK);
   cf_html_register_directive("elatex",flt_latex_execute,CF_HTML_DIR_TYPE_ARG|CF_HTML_DIR_TYPE_BLOCK);
 
@@ -341,7 +341,7 @@ int flt_latex_init(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc) {
 }
 
 /* {{{ flt_latex_handle */
-int flt_latex_handle(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
+int flt_latex_handle(configfile_t *cfile,conf_opt_t *opt,const u_char *context,u_char **args,size_t argnum) {
   u_char *fn;
 
   if(cf_strcmp(opt->name,"LatexCachePath") == 0) {
@@ -397,7 +397,7 @@ int flt_latex_handle(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u
 }
 /* }}} */
 
-t_conf_opt flt_latex_config[] = {
+conf_opt_t flt_latex_config[] = {
   { "LatexTmpPath",     flt_latex_handle, CFG_OPT_CONFIG|CFG_OPT_GLOBAL|CFG_OPT_NEEDED, NULL },
   { "LatexTeXPath",     flt_latex_handle, CFG_OPT_CONFIG|CFG_OPT_GLOBAL|CFG_OPT_NEEDED, NULL },
   { "LatexConvertPath", flt_latex_handle, CFG_OPT_CONFIG|CFG_OPT_GLOBAL|CFG_OPT_NEEDED, NULL },
@@ -409,12 +409,12 @@ t_conf_opt flt_latex_config[] = {
   { NULL, NULL, 0, NULL }
 };
 
-t_handler_config flt_latex_handlers[] = {
+handler_config_t flt_latex_handlers[] = {
   { INIT_HANDLER, flt_latex_init },
   { 0, NULL }
 };
 
-t_module_config flt_latex = {
+module_config_t flt_latex = {
   MODULE_MAGIC_COOKIE,
   flt_latex_config,
   flt_latex_handlers,

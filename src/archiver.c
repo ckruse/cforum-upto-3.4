@@ -55,14 +55,14 @@ struct sockaddr_un;
 
 /* {{{ cf_run_archiver */
 void cf_run_archiver(void) {
-  t_thread *t,*oldest_t,*prev = NULL,**to_archive = NULL;
+  thread_t *t,*oldest_t,*prev = NULL,**to_archive = NULL;
   long size,threadnum,pnum,max_bytes,max_threads,max_posts;
   int shall_archive = 0,len = 0,ret = FLT_OK,j,mb = 0;
-  t_name_value *max_bytes_v, *max_posts_v, *max_threads_v, *forums = cfg_get_first_value(&fo_server_conf,NULL,"Forums");
-  t_handler_config *handler;
-  t_archive_filter fkt;
+  name_value_t *max_bytes_v, *max_posts_v, *max_threads_v, *forums = cfg_get_first_value(&fo_server_conf,NULL,"Forums");
+  handler_config_t *handler;
+  archive_filter_t fkt;
   size_t i;
-  t_forum *forum;
+  forum_t *forum;
 
   for(i=0;i<forums->valnum;i++) {
     CF_RW_RD(&head.lock);
@@ -132,7 +132,7 @@ void cf_run_archiver(void) {
       }
 
       if(shall_archive) {
-        to_archive        = fo_alloc(to_archive,++len,sizeof(t_thread *),FO_ALLOC_REALLOC);
+        to_archive        = fo_alloc(to_archive,++len,sizeof(thread_t *),FO_ALLOC_REALLOC);
         to_archive[len-1] = oldest_t;
 
         /*
@@ -161,7 +161,7 @@ void cf_run_archiver(void) {
 
           for(i=0;i<Modules[ARCHIVE_HANDLER].elements && (ret == FLT_DECLINE || ret == FLT_OK);i++) {
             handler = array_element_at(&Modules[ARCHIVE_HANDLER],i);
-            fkt     = (t_archive_filter)handler->func;
+            fkt     = (archive_filter_t)handler->func;
             ret     = fkt(forum,oldest_t);
           }
         }
@@ -178,7 +178,7 @@ void cf_run_archiver(void) {
             free(to_archive);
             to_archive = NULL;
           }
-          else to_archive = fo_alloc(to_archive,--len,sizeof(t_thread *),FO_ALLOC_REALLOC);
+          else to_archive = fo_alloc(to_archive,--len,sizeof(thread_t *),FO_ALLOC_REALLOC);
         }
       }
 
@@ -210,18 +210,18 @@ void cf_run_archiver(void) {
 /* }}} */
 
 /* {{{ cf_archive_threads */
-void cf_archive_threads(t_forum *forum,t_thread **to_archive,size_t len) {
+void cf_archive_threads(forum_t *forum,thread_t **to_archive,size_t len) {
   int ret;
   size_t j;
-  t_handler_config *handler;
-  t_archive_thread fkt;
+  handler_config_t *handler;
+  archive_thread_t fkt;
 
   if(Modules[ARCHIVE_THREAD_HANDLER].elements) {
     ret = FLT_DECLINE;
 
     for(j=0;j<Modules[ARCHIVE_THREAD_HANDLER].elements && ret == FLT_DECLINE;j++) {
       handler = array_element_at(&Modules[ARCHIVE_THREAD_HANDLER],j);
-      fkt     = (t_archive_thread)handler->func;
+      fkt     = (archive_thread_t)handler->func;
       ret     = fkt(forum,to_archive,len);
     }
   }
@@ -229,12 +229,12 @@ void cf_archive_threads(t_forum *forum,t_thread **to_archive,size_t len) {
 /* }}} */
 
 /* {{{ cf_write_threadlist */
-void cf_write_threadlist(t_forum *forum) {
+void cf_write_threadlist(forum_t *forum) {
   int ret;
   size_t i,j,k;
-  t_name_value *forums = cfg_get_first_value(&fo_server_conf,NULL,"Forums");
-  t_handler_config *handler;
-  t_archive_thrdlst_writer fkt;
+  name_value_t *forums = cfg_get_first_value(&fo_server_conf,NULL,"Forums");
+  handler_config_t *handler;
+  archive_thrdlst_writer_t fkt;
 
   if(forum) {
     if(Modules[THRDLST_WRITE_HANDLER].elements) {
@@ -242,7 +242,7 @@ void cf_write_threadlist(t_forum *forum) {
 
       for(i=0;i<Modules[THRDLST_WRITE_HANDLER].elements && ret == FLT_DECLINE;i++) {
         handler = array_element_at(&Modules[THRDLST_WRITE_HANDLER],i);
-        fkt     = (t_archive_thrdlst_writer)handler->func;
+        fkt     = (archive_thrdlst_writer_t)handler->func;
 
         cf_log(CF_DBG|CF_FLSH,__FILE__,__LINE__,"starting disc writer\n");
         ret     = fkt(forum);
@@ -251,7 +251,7 @@ void cf_write_threadlist(t_forum *forum) {
         if(ret == FLT_OK && Modules[THRDLST_WRITTEN_HANDLER].elements) {
           for(j=0;j<Modules[THRDLST_WRITTEN_HANDLER].elements;++j) {
             handler = array_element_at(&Modules[THRDLST_WRITTEN_HANDLER],j);
-            fkt     = (t_archive_thrdlst_writer)handler->func;
+            fkt     = (archive_thrdlst_writer_t)handler->func;
 
             fkt(forum);
           }
@@ -267,7 +267,7 @@ void cf_write_threadlist(t_forum *forum) {
 
         for(i=0;i<Modules[THRDLST_WRITE_HANDLER].elements && ret == FLT_DECLINE;i++) {
           handler = array_element_at(&Modules[THRDLST_WRITE_HANDLER],i);
-          fkt     = (t_archive_thrdlst_writer)handler->func;
+          fkt     = (archive_thrdlst_writer_t)handler->func;
 
           cf_log(CF_DBG|CF_FLSH,__FILE__,__LINE__,"starting disc writer\n");
           ret     = fkt(forum);
@@ -276,7 +276,7 @@ void cf_write_threadlist(t_forum *forum) {
           if(ret == FLT_OK && Modules[THRDLST_WRITTEN_HANDLER].elements) {
             for(k=0;k<Modules[THRDLST_WRITTEN_HANDLER].elements;++k) {
               handler = array_element_at(&Modules[THRDLST_WRITTEN_HANDLER],k);
-              fkt     = (t_archive_thrdlst_writer)handler->func;
+              fkt     = (archive_thrdlst_writer_t)handler->func;
 
               fkt(forum);
             }
@@ -290,9 +290,9 @@ void cf_write_threadlist(t_forum *forum) {
 /* }}} */
 
 /* {{{ cf_archive_thread */
-int cf_archive_thread(t_forum *forum,u_int64_t tid) {
-  t_thread *t = cf_get_thread(forum,tid);
-  t_thread **list;
+int cf_archive_thread(forum_t *forum,u_int64_t tid) {
+  thread_t *t = cf_get_thread(forum,tid);
+  thread_t **list;
 
   if(t) {
     cf_unregister_thread(forum,t);
@@ -309,18 +309,18 @@ int cf_archive_thread(t_forum *forum,u_int64_t tid) {
 /* }}} */
 
 /* {{{ cf_remove_thread */
-void cf_ar_remove_thread(t_forum *forum,t_thread *thr) {
+void cf_ar_remove_thread(forum_t *forum,thread_t *thr) {
   int ret;
   size_t j;
-  t_handler_config *handler;
-  t_remove_thread fkt;
+  handler_config_t *handler;
+  remove_thread_t fkt;
 
   if(Modules[REMOVE_THREAD_HANDLER].elements) {
     ret = FLT_DECLINE;
 
     for(j=0;j<Modules[REMOVE_THREAD_HANDLER].elements && ret == FLT_DECLINE;j++) {
       handler = array_element_at(&Modules[REMOVE_THREAD_HANDLER],j);
-      fkt     = (t_remove_thread)handler->func;
+      fkt     = (remove_thread_t)handler->func;
       ret     = fkt(forum,thr);
     }
   }

@@ -21,15 +21,15 @@
 /* {{{ parse_file */
 int parse_file(const u_char *filename) {
   u_char *basename, *p;
-  t_string output_name;
-  t_string tmp;
+  string_t output_name;
+  string_t tmp;
   FILE *ifp, *ofp;
   int ret;
   long i;
   char buf[20];
-  t_array data;
+  array_t data;
   int tag_started = 0;
-  t_token token;
+  token_t token;
   
   basename = strdup((u_char *)filename);
   if(!strcmp(PARSETPL_INCLUDE_EXT,basename+strlen(basename)-strlen(PARSETPL_INCLUDE_EXT))) basename[strlen(basename)-strlen(PARSETPL_INCLUDE_EXT)] = '\0';
@@ -49,8 +49,8 @@ int parse_file(const u_char *filename) {
   current_context = &global_context;
   init_context(current_context);
   defined_functions = cf_hash_new(destroy_function);
-  defined_function_list = fo_alloc(NULL,sizeof(t_array),1,FO_ALLOC_MALLOC);
-  array_init(defined_function_list,sizeof(t_function*),NULL);
+  defined_function_list = fo_alloc(NULL,sizeof(array_t),1,FO_ALLOC_MALLOC);
+  array_init(defined_function_list,sizeof(function_t*),NULL);
   
   // now open input file
   if((ifp = fopen(filename,"rb")) == NULL) {
@@ -73,7 +73,7 @@ int parse_file(const u_char *filename) {
   
   yyin = ifp;
   str_init(&content);
-  array_init(&data,sizeof(t_token),destroy_token);
+  array_init(&data,sizeof(token_t),destroy_token);
   
   do {
     ret = parsetpl_lex();
@@ -88,7 +88,7 @@ int parse_file(const u_char *filename) {
       str_init(&content);
       str_str_append(&content,&content_backup);
       array_destroy(&data);
-      array_init(&data,sizeof(t_token),destroy_token);
+      array_init(&data,sizeof(token_t),destroy_token);
       tag_started = 0;
       ret = PARSETPL_TOK_TAGEND; // dummy
 
@@ -102,12 +102,12 @@ int parse_file(const u_char *filename) {
         if(ret < PARSETPL_TOK_EOF) str_str_append(&content,&content_backup); // no error, append content backup
 
         array_destroy(&data);
-        array_init(&data,sizeof(t_token),destroy_token);
+        array_init(&data,sizeof(token_t),destroy_token);
         tag_started = 0;
       }
       else {
         token.type = ret;
-        token.data = fo_alloc(NULL,sizeof(t_string),1,FO_ALLOC_MALLOC);
+        token.data = fo_alloc(NULL,sizeof(string_t),1,FO_ALLOC_MALLOC);
         str_init(token.data);
 
         if(ret == PARSETPL_TOK_STRING) str_str_set(token.data,&string);
@@ -172,7 +172,7 @@ int parse_file(const u_char *filename) {
   );
 
   for(i = 0; (size_t)i < defined_function_list->elements; i++) {
-    t_function **func = (t_function **)array_element_at(defined_function_list,i);
+    function_t **func = (function_t **)array_element_at(defined_function_list,i);
     str_init(&tmp);
     str_cstr_append(&tmp,"tpl_func_");
     str_str_append(&tmp,&(*func)->name);
@@ -181,7 +181,7 @@ int parse_file(const u_char *filename) {
   }
 
   for(i = 0; (size_t)i < defined_function_list->elements; i++) {
-    t_function **func = (t_function **)array_element_at(defined_function_list,i);
+    function_t **func = (function_t **)array_element_at(defined_function_list,i);
     str_init(&tmp);
     str_cstr_append(&tmp,"tpl_func_");
     str_str_append(&tmp,&(*func)->name);

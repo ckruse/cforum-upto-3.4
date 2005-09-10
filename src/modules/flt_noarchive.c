@@ -45,9 +45,9 @@ static int flt_noarchive_errno = 0;
 
 /* {{{ flt_noarchive_gogogo */
 #ifndef CF_SHARED_MEM
-int flt_noarchive_gogogo(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc,int sock)
+int flt_noarchive_gogogo(cf_hash_t *cgi,configuration_t *dc,configuration_t *vc,int sock)
 #else
-int flt_noarchive_gogogo(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc,void *ptr)
+int flt_noarchive_gogogo(cf_hash_t *cgi,configuration_t *dc,configuration_t *vc,void *ptr)
 #endif
 {
   #ifdef CF_SHARED_MEM
@@ -129,12 +129,12 @@ int flt_noarchive_gogogo(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc,
 /* }}} */
 
 /* {{{ flt_noarchive_thread */
-int flt_noarchive_thread(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cl_thread *thread,int mode) {
+int flt_noarchive_thread(cf_hash_t *head,configuration_t *dc,configuration_t *vc,cl_thread_t *thread,int mode) {
   int si = cf_hash_get(GlobalValues,"ShowInvisible",13) != NULL;
   cf_readmode_t *rm = cf_hash_get(GlobalValues,"RM",2);
   u_char *link;
   size_t l;
-  t_cf_post_flag *flag;
+  cf_post_flag_t *flag;
 
   if((flag = cf_flag_by_name(&thread->messages->flags,"no-archive")) != NULL) cf_tpl_hashvar_setvalue(&thread->messages->hashvar,"noarchive",TPL_VARIABLE_INT,1);
 
@@ -156,7 +156,7 @@ int flt_noarchive_thread(t_cf_hash *head,t_configuration *dc,t_configuration *vc
 /* }}} */
 
 /* {{{ flt_noarchive_handle */
-int flt_noarchive_handle(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
+int flt_noarchive_handle(configfile_t *cfile,conf_opt_t *opt,const u_char *context,u_char **args,size_t argnum) {
   if(flt_noarchive_fn == NULL) flt_noarchive_fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   if(!context || cf_strcmp(flt_noarchive_fn,context) != 0) return 0;
 
@@ -166,18 +166,18 @@ int flt_noarchive_handle(t_configfile *cfile,t_conf_opt *opt,const u_char *conte
 }
 /* }}} */
 
-t_conf_opt flt_noarchive_config[] = {
+conf_opt_t flt_noarchive_config[] = {
   { "NoArchiveSend204", flt_noarchive_handle, CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
   { NULL, NULL, 0, NULL }
 };
 
-t_handler_config flt_noarchive_handlers[] = {
+handler_config_t flt_noarchive_handlers[] = {
   { CONNECT_INIT_HANDLER, flt_noarchive_gogogo },
   { VIEW_HANDLER,         flt_noarchive_thread },
   { 0, NULL }
 };
 
-t_module_config flt_noarchive = {
+module_config_t flt_noarchive = {
   MODULE_MAGIC_COOKIE,
   flt_noarchive_config,
   flt_noarchive_handlers,

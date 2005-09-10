@@ -1,3 +1,9 @@
+2005-09-10 Christian Kruse <ckruse@wwwtech.de>
+	* *: Unified datatype naming conversions. <typename>_t is now obligation for
+		type names
+	* src/userconf.[ch], src/fo_userconf.[ch]: More developement for the user
+		config replacement
+
 2005-09-08 Christian Kruse <ckruse@wwwtech.de>
 	* src/utils.h: Bugfix in ARRAY_INITIALIZER macro
 	* src/modules/flt_directives.c: Bugfix in image handling

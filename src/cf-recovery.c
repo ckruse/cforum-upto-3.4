@@ -59,17 +59,17 @@
 
 /* definition of the global variables; needed because of undefined references */
 int    RUN;
-t_head head;
+head_t head;
 
 #define CFFS_SUPPORTED_VERSION "0.2"
 
 /* {{{ read_posting_from_file */
-void read_posting_from_file(FILE *fd,t_posting *p) {
-  t_posting n;
+void read_posting_from_file(FILE *fd,posting_t *p) {
+  posting_t n;
   int fr = 0;
   u_int32_t flagnum = 0,i,len;
 
-  t_posting_flag flag;
+  posting_flag_t flag;
 
   /* in this case we only want to have the filepointer to the next posting */
   if(p == NULL) {
@@ -217,12 +217,12 @@ void usage(void) {
 }
 /* }}} */
 
-t_conf_opt extra_opts[] = {
+conf_opt_t extra_opts[] = {
   { "BackupFile", handle_command, CFG_OPT_CONFIG|CFG_OPT_NEEDED|CFG_OPT_LOCAL, &fo_server_conf },
   { NULL, NULL, 0, NULL }
 };
 
-t_head head;
+head_t head;
 int RUN = 1;
 
 int main(int argc,char *argv[]) {
@@ -230,20 +230,20 @@ int main(int argc,char *argv[]) {
   char c;
 
   u_char *file;
-  t_array *cfgfiles;
+  array_t *cfgfiles;
 
   FILE *fd;
 
   int n,sort_m;
   u_int64_t int64_val;
-  t_thread *t;
-  t_posting *p,*p1,*p2;
+  thread_t *t;
+  posting_t *p,*p1,*p2;
 
-  t_configfile sconf,dconf;
+  configfile_t sconf,dconf;
 
-  t_forum *forum;
+  forum_t *forum;
 
-  t_name_value *v,*sort_m_v;
+  name_value_t *v,*sort_m_v;
 
   struct stat st;
 

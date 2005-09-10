@@ -118,14 +118,14 @@ u_char *flt_remotesignature_get_url(const u_char *url) {
 
 /* {{{ flt_remotesignature_execute */
 #ifdef CF_SHARED_MEM
-int flt_remotesignature_execute(t_cf_hash *head,t_configuration *dc,t_configuration *pc,t_message *p,t_cl_thread *thr,void *mptr,int sock,int mode)
+int flt_remotesignature_execute(cf_hash_t *head,configuration_t *dc,configuration_t *pc,message_t *p,cl_thread_t *thr,void *mptr,int sock,int mode)
 #else
-int flt_remotesignature_execute(t_cf_hash *head,t_configuration *dc,t_configuration *pc,t_message *p,t_cl_thread *thr,int sock,int mode)
+int flt_remotesignature_execute(cf_hash_t *head,configuration_t *dc,configuration_t *pc,message_t *p,cl_thread_t *thr,int sock,int mode)
 #endif
 {
   u_char *rs = strstr(p->content.content,"[remote-signature:"),*tmp,*url,*cnt,*bottom;
   register u_char *ptr;
-  t_string *str;
+  string_t *str;
 
   if(rs) {
     for(ptr=rs+18;*ptr && *ptr != ']' && !isspace(*ptr);ptr++);
@@ -166,16 +166,16 @@ int flt_remotesignature_execute(t_cf_hash *head,t_configuration *dc,t_configurat
 }
 /* }}} */
 
-t_conf_opt flt_remotesignature_config[] = {
+conf_opt_t flt_remotesignature_config[] = {
   { NULL, NULL, 0, NULL }
 };
 
-t_handler_config flt_remotesignature_handlers[] = {
+handler_config_t flt_remotesignature_handlers[] = {
   { NEW_POST_HANDLER, flt_remotesignature_execute },
   { 0, NULL }
 };
 
-t_module_config flt_remotesignature = {
+module_config_t flt_remotesignature = {
   MODULE_MAGIC_COOKIE,
   flt_remotesignature_config,
   flt_remotesignature_handlers,

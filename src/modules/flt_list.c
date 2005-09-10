@@ -41,15 +41,15 @@ static u_char *flt_list_fn = NULL;
 static u_char *flt_list_tpl = NULL;
 
 /* {{{ flt_list_execute_filter */
-int flt_list_execute_filter(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cl_thread *thread,t_cf_template *tpl) {
-  t_cf_tpl_variable array,hash;
+int flt_list_execute_filter(cf_hash_t *head,configuration_t *dc,configuration_t *vc,cl_thread_t *thread,cf_template_t *tpl) {
+  cf_tpl_variable_t array,hash;
 
   u_char *qchars,*UserName,*tmp,*msgcnt,buff[256],*forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
-  t_name_value *cs,*st,*qc,*ms,*ss,*locale,*df,*dft,*rm = cfg_get_first_value(vc,forum_name,"ReadMode"),*lt;
+  name_value_t *cs,*st,*qc,*ms,*ss,*locale,*df,*dft,*rm = cfg_get_first_value(vc,forum_name,"ReadMode"),*lt;
   size_t len,qclen,msgcntlen;
-  t_string content,threadlist;
+  string_t content,threadlist;
   int utf8,ShowInvisible;
-  t_message *msg;
+  message_t *msg;
   cf_readmode_t *rm_infos = cf_hash_get(GlobalValues,"RM",2);
 
   /* are we in the right read mode? */
@@ -146,11 +146,11 @@ int flt_list_execute_filter(t_cf_hash *head,t_configuration *dc,t_configuration 
 /* }}} */
 
 /* {{{ flt_list_rm_collector */
-int flt_list_rm_collector(t_cf_hash *head,t_configuration *dc,t_configuration *vc,cf_readmode_t *rm_infos) {
+int flt_list_rm_collector(cf_hash_t *head,configuration_t *dc,configuration_t *vc,cf_readmode_t *rm_infos) {
   u_char *fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
 
-  t_name_value *rm = cfg_get_first_value(vc,fn,"ReadMode");
-  t_name_value *v;
+  name_value_t *rm = cfg_get_first_value(vc,fn,"ReadMode");
+  name_value_t *v;
 
   u_char buff[256];
 
@@ -188,7 +188,7 @@ int flt_list_rm_collector(t_cf_hash *head,t_configuration *dc,t_configuration *v
 }
 /* }}} */
 
-int flt_list_handle(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
+int flt_list_handle(configfile_t *cfile,conf_opt_t *opt,const u_char *context,u_char **args,size_t argnum) {
   if(flt_list_fn == NULL) flt_list_fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   if(!context || cf_strcmp(flt_list_fn,context) != 0) return 0;
 
@@ -198,18 +198,18 @@ int flt_list_handle(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_
   return 0;
 }
 
-t_conf_opt flt_list_config[] = {
+conf_opt_t flt_list_config[] = {
   { "TemplateForumList", flt_list_handle, CFG_OPT_CONFIG|CFG_OPT_LOCAL, NULL },
   { NULL, NULL, 0, NULL }
 };
 
-t_handler_config flt_list_handlers[] = {
+handler_config_t flt_list_handlers[] = {
   { RM_COLLECTORS_HANDLER, flt_list_rm_collector },
   { POSTING_HANDLER,       flt_list_execute_filter },
   { 0, NULL }
 };
 
-t_module_config flt_list = {
+module_config_t flt_list = {
   MODULE_MAGIC_COOKIE,
   flt_list_config,
   flt_list_handlers,

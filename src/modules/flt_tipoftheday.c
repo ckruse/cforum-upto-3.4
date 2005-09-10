@@ -41,7 +41,7 @@ static int TOTD_Activate = 0;
 static u_char *TOTD_fn = NULL;
 
 /* {{{ flt_tipoftheday_execute */
-int flt_tipoftheday_execute(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc,t_cf_template *top,t_cf_template *down) {
+int flt_tipoftheday_execute(cf_hash_t *cgi,configuration_t *dc,configuration_t *vc,cf_template_t *top,cf_template_t *down) {
   FILE *fd;
   u_char *line = NULL;
   u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
@@ -49,7 +49,7 @@ int flt_tipoftheday_execute(t_cf_hash *cgi,t_configuration *dc,t_configuration *
   size_t bufflen = 0;
   u_int32_t num,offset;
   int chosen;
-  t_name_value *cs;
+  name_value_t *cs;
 
   srand(getpid() ^ time(NULL));
 
@@ -83,7 +83,7 @@ int flt_tipoftheday_execute(t_cf_hash *cgi,t_configuration *dc,t_configuration *
 /* }}} */
 
 /* {{{ flt_tipoftheday_confighandler */
-int flt_tipoftheday_confighandler(t_configfile *cf,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
+int flt_tipoftheday_confighandler(configfile_t *cf,conf_opt_t *opt,const u_char *context,u_char **args,size_t argnum) {
   if(!TOTD_fn) TOTD_fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   if(!context || cf_strcmp(TOTD_fn,context) != 0) return 0;
 
@@ -108,19 +108,19 @@ void flt_tipoftheday_cleanup(void) {
 }
 /* }}} */
 
-t_conf_opt flt_tipoftheday_config[] = {
+conf_opt_t flt_tipoftheday_config[] = {
   { "TipOfTheDayFile",     flt_tipoftheday_confighandler, CFG_OPT_CONFIG|CFG_OPT_LOCAL, NULL },
   { "TipOfTheDayActivate", flt_tipoftheday_confighandler, CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
   { "TipOfTheDayIndex",    flt_tipoftheday_confighandler, CFG_OPT_CONFIG|CFG_OPT_LOCAL, NULL },
   { NULL, NULL, 0, NULL }
 };
 
-t_handler_config flt_tipoftheday_handlers[] = {
+handler_config_t flt_tipoftheday_handlers[] = {
   { VIEW_INIT_HANDLER,    flt_tipoftheday_execute },
   { 0, NULL }
 };
 
-t_module_config flt_tipoftheday = {
+module_config_t flt_tipoftheday = {
   MODULE_MAGIC_COOKIE,
   flt_tipoftheday_config,
   flt_tipoftheday_handlers,

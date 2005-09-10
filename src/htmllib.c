@@ -34,44 +34,44 @@
 /* }}} */
 
 typedef struct s_directive_callback {
-  t_directive_filter callback;
+  directive_filter_t callback;
   int type;
-} t_directive_callback;
+} directive_callback_t;
 
 typedef struct s_validator_callback {
-  t_directive_validator callback;
+  directive_validator_t callback;
   int type;
-} t_validator_callback;
+} validator_callback_t;
 
 typedef struct s_html_stack {
   u_char *begin;
   u_char *name;
   u_char **args;
   size_t argnum;
-} t_html_stack_elem;
+} html_stack_elem_t;
 
 typedef struct s_html_tree {
   u_char c;
   struct s_html_tree **nodes;
-  t_directive_filter cb;
-} t_html_tree;
+  directive_filter_t cb;
+} html_tree_t;
 
-static t_cf_hash *registered_directives = NULL;
-static t_cf_hash *registered_validators = NULL;
-static t_html_tree *parser_tree[256];
+static cf_hash_t *registered_directives = NULL;
+static cf_hash_t *registered_validators = NULL;
+static html_tree_t *parser_tree[256];
 
 
 /* {{{ run_content_filters */
-void run_content_filters(int mode,t_cl_thread *thr,t_string *content,t_string *cite,const u_char *qchars) {
+void run_content_filters(int mode,cl_thread_t *thr,string_t *content,string_t *cite,const u_char *qchars) {
   int ret = FLT_OK;
-  t_handler_config *handler;
+  handler_config_t *handler;
   size_t i;
-  t_content_filter fkt;
+  content_filter_t fkt;
 
   if(Modules[mode].elements) {
     for(i=0;i<Modules[mode].elements;i++) {
       handler = array_element_at(&Modules[mode],i);
-      fkt     = (t_content_filter)handler->func;
+      fkt     = (content_filter_t)handler->func;
       ret     = fkt(&fo_default_conf,&fo_view_conf,thr,content,cite,qchars);
     }
   }
@@ -79,8 +79,8 @@ void run_content_filters(int mode,t_cl_thread *thr,t_string *content,t_string *c
 /* }}} */
 
 /* {{{ run_inline_directive_filters */
-int run_inline_directive_filters(t_cl_thread *thread,const u_char *directive,const u_char **parameters,t_string *content,t_string *cite,const u_char *qchars,int sig) {
-  t_directive_callback *cb;
+int run_inline_directive_filters(cl_thread_t *thread,const u_char *directive,const u_char **parameters,string_t *content,string_t *cite,const u_char *qchars,int sig) {
+  directive_callback_t *cb;
 
   if((cb = cf_hash_get(registered_directives,(u_char *)directive,strlen(directive))) == NULL) return FLT_DECLINE;
 
@@ -90,8 +90,8 @@ int run_inline_directive_filters(t_cl_thread *thread,const u_char *directive,con
 /* }}} */
 
 /* {{{ run_validate_inline */
-int run_validate_inline(const u_char *directive,const u_char **parameters,t_cf_tpl_variable *var) {
-  t_validator_callback *cb;
+int run_validate_inline(const u_char *directive,const u_char **parameters,cf_tpl_variable_t *var) {
+  validator_callback_t *cb;
 
   if((cb = cf_hash_get(registered_validators,(u_char *)directive,strlen(directive))) == NULL) return FLT_DECLINE;
 
@@ -114,9 +114,9 @@ static int next_line_is_no_quote_line(const u_char *ptr) {
 /* }}} */
 
 /* {{{ is_open */
-static int is_open(const u_char *name,t_array *stack) {
+static int is_open(const u_char *name,array_t *stack) {
   int i;
-  t_html_stack_elem *s_el;
+  html_stack_elem_t *s_el;
 
   for(i=stack->elements-1;i>=0;--i) {
     s_el = array_element_at(stack,i);
@@ -128,8 +128,8 @@ static int is_open(const u_char *name,t_array *stack) {
 /* }}} */
 
 /* {{{ run_block_directive_filters */
-static int run_block_directive_filters(t_cl_thread *thread,const u_char *directive,const u_char **parameters,size_t len,t_string *bcontent,t_string *bcite,t_string *content,t_string *cite,const u_char *qchars,int sig) {
-  t_directive_callback *cb;
+static int run_block_directive_filters(cl_thread_t *thread,const u_char *directive,const u_char **parameters,size_t len,string_t *bcontent,string_t *bcite,string_t *content,string_t *cite,const u_char *qchars,int sig) {
+  directive_callback_t *cb;
 
   if((cb = cf_hash_get(registered_directives,(u_char *)directive,strlen(directive))) == NULL) return FLT_DECLINE;
 
@@ -139,8 +139,8 @@ static int run_block_directive_filters(t_cl_thread *thread,const u_char *directi
 /* }}} */
 
 /* {{{ run_validate_block_directive */
-static int run_validate_block_directive(const u_char *directive,const u_char **parameters,size_t len,t_cf_tpl_variable *var) {
-  t_validator_callback *cb;
+static int run_validate_block_directive(const u_char *directive,const u_char **parameters,size_t len,cf_tpl_variable_t *var) {
+  validator_callback_t *cb;
 
   if((cb = cf_hash_get(registered_validators,(u_char *)directive,strlen(directive))) == NULL) return FLT_DECLINE;
 
@@ -150,13 +150,13 @@ static int run_validate_block_directive(const u_char *directive,const u_char **p
 /* }}} */
 
 /* {{{ parse_message */
-static u_char *parse_message(t_cl_thread *thread,u_char *start,t_array *stack,t_string *content,t_string *cite,const u_char *qchars,size_t qclen,int utf8,int xml,int max_sig_lines,int show_sig,int linebrk,int sig,int quotemode,int line) {
+static u_char *parse_message(cl_thread_t *thread,u_char *start,array_t *stack,string_t *content,string_t *cite,const u_char *qchars,size_t qclen,int utf8,int xml,int max_sig_lines,int show_sig,int linebrk,int sig,int quotemode,int line) {
   const u_char *ptr,*tmp,*ptr1;
   int rc,run = 1,sb = 0,fail,ending,doit;
   u_char *directive,*parameter,*safe,*buff,*retval;
-  t_string d_content,d_cite,strtmp;
-  t_html_stack_elem stack_elem,*stack_tmp;
-  t_html_tree *telem1,*telem2;
+  string_t d_content,d_cite,strtmp;
+  html_stack_elem_t stack_elem,*stack_tmp;
+  html_tree_t *telem1,*telem2;
 
   for(ptr=start;*ptr && run;++ptr) {
     switch(*ptr) {
@@ -505,12 +505,12 @@ static u_char *parse_message(t_cl_thread *thread,u_char *start,t_array *stack,t_
 /* }}} */
 
 /* {{{ validate_message */
-int validate_message(t_array *stack,t_cl_thread *thread,const u_char *msg,u_char **pos,t_cf_tpl_variable *var) {
+int validate_message(array_t *stack,cl_thread_t *thread,const u_char *msg,u_char **pos,cf_tpl_variable_t *var) {
   const u_char *ptr,*tmp,*ptr1;
   int rc,run = 1,sb = 0,fail,ending,retval,ret = 1;
   u_char *directive,*parameter,*safe,*buff;
-  t_string strtmp;
-  t_html_stack_elem stack_elem,*stack_tmp;
+  string_t strtmp;
+  html_stack_elem_t stack_elem,*stack_tmp;
 
   for(ptr=(u_char *)msg;*ptr && run;++ptr) {
     switch(*ptr) {
@@ -770,8 +770,8 @@ int validate_message(t_array *stack,t_cl_thread *thread,const u_char *msg,u_char
 
 
 /* {{{ cf_html_register_validator */
-int cf_html_register_validator(const u_char *name,t_directive_validator filter,int type) {
-  t_validator_callback clbck;
+int cf_html_register_validator(const u_char *name,directive_validator_t filter,int type) {
+  validator_callback_t clbck;
   size_t len = strlen(name);
 
   if(!registered_validators) registered_validators = cf_hash_new(NULL);
@@ -786,13 +786,13 @@ int cf_html_register_validator(const u_char *name,t_directive_validator filter,i
 /* }}} */
 
 /* {{{ cf_validate_msg */
-int cf_validate_msg(t_cl_thread *thread,const u_char *msg,t_cf_tpl_variable *var) {
-  t_array my_stack;
+int cf_validate_msg(cl_thread_t *thread,const u_char *msg,cf_tpl_variable_t *var) {
+  array_t my_stack;
   int rc;
 
   if(registered_validators == NULL) registered_validators = cf_hash_new(NULL);
 
-  array_init(&my_stack,sizeof(t_html_stack_elem),NULL);
+  array_init(&my_stack,sizeof(html_stack_elem_t),NULL);
   rc = validate_message(&my_stack,thread,msg,NULL,var);
 
   array_destroy(&my_stack);
@@ -802,8 +802,8 @@ int cf_validate_msg(t_cl_thread *thread,const u_char *msg,t_cf_tpl_variable *var
 /* }}} */
 
 /* {{{ cf_html_register_directive */
-int cf_html_register_directive(const u_char *name,t_directive_filter filter,int type) {
-  t_directive_callback clbck;
+int cf_html_register_directive(const u_char *name,directive_filter_t filter,int type) {
+  directive_callback_t clbck;
   size_t len = strlen(name);
 
   if(!registered_directives) registered_directives = cf_hash_new(NULL);
@@ -818,9 +818,9 @@ int cf_html_register_directive(const u_char *name,t_directive_filter filter,int 
 /* }}} */
 
 /* {{{ cf_html_register_textfilter */
-int cf_html_register_textfilter(const u_char *text,t_directive_filter filter) {
+int cf_html_register_textfilter(const u_char *text,directive_filter_t filter) {
   u_char *ptr;
-  t_html_tree *elem,*elem1;
+  html_tree_t *elem,*elem1;
 
   /* there isn't an entry starting with *text */
   if(parser_tree[*text] == NULL) {
@@ -874,14 +874,14 @@ int cf_html_register_textfilter(const u_char *text,t_directive_filter filter) {
 /* }}} */
 
 /* {{{ msg_to_html */
-void msg_to_html(t_cl_thread *thread,const u_char *msg,t_string *content,t_string *cite,u_char *quote_chars,int max_sig_lines,int show_sig) {
+void msg_to_html(cl_thread_t *thread,const u_char *msg,string_t *content,string_t *cite,u_char *quote_chars,int max_sig_lines,int show_sig) {
   u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
-  t_name_value *cs   = cfg_get_first_value(&fo_default_conf,forum_name,"ExternCharset");
-  t_name_value *xmlm = cfg_get_first_value(&fo_default_conf,forum_name,"XHTMLMode");
+  name_value_t *cs   = cfg_get_first_value(&fo_default_conf,forum_name,"ExternCharset");
+  name_value_t *xmlm = cfg_get_first_value(&fo_default_conf,forum_name,"XHTMLMode");
   u_char *qchars;
   size_t qclen;
   int utf8 = cf_strcmp(cs->values[0],"UTF-8") == 0,xml;
-  t_array my_stack;
+  array_t my_stack;
 
   if(registered_directives == NULL) registered_directives = cf_hash_new(NULL);
 
@@ -897,7 +897,7 @@ void msg_to_html(t_cl_thread *thread,const u_char *msg,t_string *content,t_strin
   /* first line has no linebreak, so append quoting chars to cite */
   if(cite) str_chars_append(cite,qchars,qclen);
 
-  array_init(&my_stack,sizeof(t_html_stack_elem),NULL);
+  array_init(&my_stack,sizeof(html_stack_elem_t),NULL);
   parse_message(thread,(u_char *)msg,&my_stack,content,cite,qchars,qclen,utf8,xml,max_sig_lines,show_sig,0,0,0,0);
 
   run_content_filters(POST_CONTENT_FILTER,thread,content,cite,qchars);
@@ -907,12 +907,12 @@ void msg_to_html(t_cl_thread *thread,const u_char *msg,t_string *content,t_strin
 /* }}} */
 
 /* {{{ _do_html */
-void _do_html(t_hierarchical_node *ary,t_cl_thread *thread,int ShowInvisible,const u_char *linktpl,t_name_value *cs,t_name_value *dft,t_name_value *locale) {
+void _do_html(hierarchical_node_t *ary,cl_thread_t *thread,int ShowInvisible,const u_char *linktpl,name_value_t *cs,name_value_t *dft,name_value_t *locale) {
   size_t len,i;
   u_char *date,*link;
-  t_cf_tpl_variable ary_tpl;
-  t_string tmpstr;
-  t_hierarchical_node *ary1;
+  cf_tpl_variable_t ary_tpl;
+  string_t tmpstr;
+  hierarchical_node_t *ary1;
 
   date = cf_general_get_time(dft->values[0],locale->values[0],&len,&ary->msg->date);
   link = cf_get_link(linktpl,thread->tid,ary->msg->mid);
@@ -958,11 +958,11 @@ void _do_html(t_hierarchical_node *ary,t_cl_thread *thread,int ShowInvisible,con
 }
 /* }}} */
 
-/* {{{ _start_threadlist */
-int _start_threadlist(t_cl_thread *thread,int ShowInvisible,const u_char *linktpl,t_name_value *cs,t_name_value *dft,t_name_value *locale) {
-  t_hierarchical_node ary,*ary1,*tmp = NULL;
+/* {{{ _starthread_tlist */
+int _starthread_tlist(cl_thread_t *thread,int ShowInvisible,const u_char *linktpl,name_value_t *cs,name_value_t *dft,name_value_t *locale) {
+  hierarchical_node_t ary,*ary1,*tmp = NULL;
   size_t i;
-  t_cf_tpl_variable tpl_ary;
+  cf_tpl_variable_t tpl_ary;
 
   cf_msg_filter_invisible(thread->ht,&ary,ShowInvisible);
 
@@ -995,16 +995,16 @@ int _start_threadlist(t_cl_thread *thread,int ShowInvisible,const u_char *linktp
 /* }}} */
 
 /* {{{ cf_gen_threadlist */
-int cf_gen_threadlist(t_cl_thread *thread,t_cf_hash *head,t_string *threadlist,const u_char *tplname,const u_char *type,const u_char *linktpl,int mode) {
-  t_cf_template tpl;
-  t_message *msg;
+int cf_gen_threadlist(cl_thread_t *thread,cf_hash_t *head,string_t *threadlist,const u_char *tplname,const u_char *type,const u_char *linktpl,int mode) {
+  cf_template_t tpl;
+  message_t *msg;
   int ShowInvisible = cf_hash_get(GlobalValues,"ShowInvisible",13) == NULL ? 0 : 1;
 
   u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
 
   int ret,level;
 
-  t_name_value *dft = cfg_get_first_value(&fo_view_conf,forum_name,"DateFormatThreadList"),
+  name_value_t *dft = cfg_get_first_value(&fo_view_conf,forum_name,"DateFormatThreadList"),
     *locale = cfg_get_first_value(&fo_default_conf,forum_name,"DateLocale"),
     *cs = cfg_get_first_value(&fo_default_conf,forum_name,"ExternCharset");
 
@@ -1051,7 +1051,7 @@ int cf_gen_threadlist(t_cl_thread *thread,t_cf_hash *head,t_string *threadlist,c
     }
     /* }}} */
 
-    if(_start_threadlist(thread,ShowInvisible,linktpl,cs,dft,locale) == 0) {
+    if(_starthread_tlist(thread,ShowInvisible,linktpl,cs,dft,locale) == 0) {
       cf_tpl_setvar(&tpl,"thread",&thread->messages->hashvar);
       cf_tpl_parse_to_mem(&tpl);
       threadlist->content  = tpl.parsed.content;

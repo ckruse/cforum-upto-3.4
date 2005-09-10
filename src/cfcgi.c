@@ -43,10 +43,10 @@
  * \param hash the CGI hash
  * \param data the parameter string
  */
-int _cf_cgi_parse_params(t_cf_hash *hash,u_char *data);
+int _cf_cgi_parse_params(cf_hash_t *hash,u_char *data);
 
 /**
- * \fn _cf_cgi_save_param(t_cf_hash *hash,u_char *name,int namlen,u_char *value)
+ * \fn _cf_cgi_save_param(cf_hash_t *hash,u_char *name,int namlen,u_char *value)
  * \brief this function saves a parsed parameter to the CGI hash.
  * \ingroup cgi_privfuncs
  * \param hash    the CGI hash
@@ -54,7 +54,7 @@ int _cf_cgi_parse_params(t_cf_hash *hash,u_char *data);
  * \param namlen  the length of the name string
  * \param value   the value of the parameter
  */
-int _cf_cgi_save_param(t_cf_hash *hash,u_char *name,int namlen,u_char *value);
+int _cf_cgi_save_param(cf_hash_t *hash,u_char *name,int namlen,u_char *value);
 
 /**
  * \brief this function destroys a parameter list.
@@ -66,16 +66,16 @@ void cf_cgi_destroy_entry(void *data);
 /* }}} */
 
 /* {{{ cf_cgi_new()
- * Returns: t_cf_hash *    a hash with the cgi values in it
+ * Returns: cf_hash_t *    a hash with the cgi values in it
  * Parameters:
  *
  * this function parses the CGI paramters and returns a
  * hash with the entries in it.
  *
  */
-t_cf_hash *cf_cgi_new(void) {
+cf_hash_t *cf_cgi_new(void) {
   u_char *clen = getenv("CONTENT_LENGTH"),*rqmeth = getenv("REQUEST_METHOD"),*data;
-  t_cf_hash *hash;
+  cf_hash_t *hash;
   long len  = 0;
   int trash = 0;
 
@@ -118,7 +118,7 @@ t_cf_hash *cf_cgi_new(void) {
 /* }}} */
 
 /* {{{ cf_cgi_parse_path_info */
-void cf_cgi_parse_path_info(t_array *ary) {
+void cf_cgi_parse_path_info(array_t *ary) {
   u_char *data = getenv("PATH_INFO");
   register u_char *ptr = (u_char *)data+1;
   u_char *start = data,*name = NULL;
@@ -150,7 +150,7 @@ void cf_cgi_parse_path_info(t_array *ary) {
 /* }}} */
 
 /* {{{ cf_cgi_parse_path_info_nv */
-t_cf_hash *cf_cgi_parse_path_info_nv(t_cf_hash *hash) {
+cf_hash_t *cf_cgi_parse_path_info_nv(cf_hash_t *hash) {
   u_char *pi = getenv("PATH_INFO"),*start,*name,*value;
   register u_char *ptr;
 
@@ -194,7 +194,7 @@ t_cf_hash *cf_cgi_parse_path_info_nv(t_cf_hash *hash) {
 /* }}} */
 
 /* {{{ cf_cgi_parse_cookies */
-void cf_cgi_parse_cookies(t_cf_hash *hash) {
+void cf_cgi_parse_cookies(cf_hash_t *hash) {
   u_char *cookies = getenv("HTTP_COOKIE");
   u_char *pos = cookies,*pos1 = cookies;
   u_char *name = NULL,*value = NULL;
@@ -321,7 +321,7 @@ u_char *cf_cgi_url_encode(const u_char *str,size_t len) {
 /* {{{ _cf_cgi_save_param
  * Returns: int            0 on failure, 1 on success
  * Parameters:
- *   - t_cf_hash *hash     the cgi-hash
+ *   - cf_hash_t *hash     the cgi-hash
  *   - u_char *name         the name of the field
  *   - int namlen          the length of the name-field
  *   - u_char *value        the value of the field
@@ -329,19 +329,19 @@ u_char *cf_cgi_url_encode(const u_char *str,size_t len) {
  * This function saves a cgi-parameter to the hash
  *
  */
-int _cf_cgi_save_param(t_cf_hash *hash,u_char *name,int namlen,u_char *value) {
-  t_cf_cgi_param *ent,*ent1;
+int _cf_cgi_save_param(cf_hash_t *hash,u_char *name,int namlen,u_char *value) {
+  cf_cgi_param_t *ent,*ent1;
 
   namlen = strlen(name);
 
   ent = cf_hash_get(hash,name,namlen);
   if(!ent) {
-    ent        = fo_alloc(NULL,1,sizeof(t_cf_cgi_param),FO_ALLOC_CALLOC);
+    ent        = fo_alloc(NULL,1,sizeof(cf_cgi_param_t),FO_ALLOC_CALLOC);
 
     ent->name  = name;
     ent->value = value;
 
-    cf_hash_set(hash,name,namlen,ent,sizeof(t_cf_cgi_param));
+    cf_hash_set(hash,name,namlen,ent,sizeof(cf_cgi_param_t));
 
     /* we make a copy, so we do not need it again */
     free(ent);
@@ -349,7 +349,7 @@ int _cf_cgi_save_param(t_cf_hash *hash,u_char *name,int namlen,u_char *value) {
     ent = cf_hash_get(hash,name,strlen(name));
   }
   else {
-    ent1            = fo_alloc(NULL,1,sizeof(t_cf_cgi_param),FO_ALLOC_CALLOC);
+    ent1            = fo_alloc(NULL,1,sizeof(cf_cgi_param_t),FO_ALLOC_CALLOC);
 
     ent1->name  = name;
     ent1->value = value;
@@ -369,13 +369,13 @@ int _cf_cgi_save_param(t_cf_hash *hash,u_char *name,int namlen,u_char *value) {
 /* {{{ _cf_cgi_parse_params
  * Returns: int            0 on failure, 1 on success
  * Parameters:
- *   - t_cf_hash *hash     the cgi-hash
+ *   - cf_hash_t *hash     the cgi-hash
  *   - u_char *data         the url-encoded data-string
  *
  * This function parses an url-encoded data-string
  *
  */
-int _cf_cgi_parse_params(t_cf_hash *hash,u_char *data) {
+int _cf_cgi_parse_params(cf_hash_t *hash,u_char *data) {
   u_char  *pos = data,*pos1 = data;
   u_char *name = NULL,*value = NULL;
   int len = 0,namlen = 0,vallen = 0;
@@ -429,7 +429,7 @@ int _cf_cgi_parse_params(t_cf_hash *hash,u_char *data) {
  *
  */
 void cf_cgi_destroy_entry(void *data) {
-  t_cf_cgi_param *ent = (t_cf_cgi_param *)data,*ent1;
+  cf_cgi_param_t *ent = (cf_cgi_param_t *)data,*ent1;
 
   for(;ent;ent=ent1) {
     free(ent->name);
@@ -445,14 +445,14 @@ void cf_cgi_destroy_entry(void *data) {
 /* {{{ cf_cgi_get
  * Returns:                the value of the field
  * Parameters:
- *   - t_cf_hash *hash     the cgi-hash
+ *   - cf_hash_t *hash     the cgi-hash
  *   - const u_char *name   the name of the field
  *
  * this function gets a single value
  *
  */
-u_char *cf_cgi_get(t_cf_hash *hash,u_char *name) {
-  t_cf_cgi_param *p = cf_hash_get(hash,name,strlen(name));
+u_char *cf_cgi_get(cf_hash_t *hash,u_char *name) {
+  cf_cgi_param_t *p = cf_hash_get(hash,name,strlen(name));
 
   if(p) return p->value;
 
@@ -461,10 +461,10 @@ u_char *cf_cgi_get(t_cf_hash *hash,u_char *name) {
 /* }}} */
 
 /* {{{ cf_cgi_set */
-void cf_cgi_set(t_cf_hash *hash,const u_char *name,const u_char *value) {
+void cf_cgi_set(cf_hash_t *hash,const u_char *name,const u_char *value) {
   size_t nlen = strlen(name);
-  t_cf_cgi_param *p = cf_hash_get(hash,(u_char *)name,nlen),*p1,*p2;
-  t_cf_cgi_param par;
+  cf_cgi_param_t *p = cf_hash_get(hash,(u_char *)name,nlen),*p1,*p2;
+  cf_cgi_param_t par;
 
   if(p) {
     if(p->next) {
@@ -493,24 +493,24 @@ void cf_cgi_set(t_cf_hash *hash,const u_char *name,const u_char *value) {
 /* {{{ cf_cgi_get_multiple
  * Returns:                 the value of the field
  * Parameters:
- *   - t_cf_hash *hash      the CGI hash
+ *   - cf_hash_t *hash      the CGI hash
  *   - const u_char *param   the name of the parameter
  *
  * this function returns a multiple value list
  */
-t_cf_cgi_param *cf_cgi_get_multiple(t_cf_hash *hash,u_char *param) {
-  return (t_cf_cgi_param *)cf_hash_get(hash,param,strlen(param));
+cf_cgi_param_t *cf_cgi_get_multiple(cf_hash_t *hash,u_char *param) {
+  return (cf_cgi_param_t *)cf_hash_get(hash,param,strlen(param));
 }
 /* }}} */
 
 /* {{{ cf_cgi_destroy
  * Returns:                 nothing
  * Parameters:
- *   - t_cf_hash *hash      the CGI hash
+ *   - cf_hash_t *hash      the CGI hash
  *
  * this function destroys a CGI hash
  */
-void cf_cgi_destroy(t_cf_hash *hash) {
+void cf_cgi_destroy(cf_hash_t *hash) {
   cf_hash_destroy(hash);
 }
 /* }}} */

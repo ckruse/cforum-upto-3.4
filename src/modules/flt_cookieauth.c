@@ -38,11 +38,11 @@ static u_char *flt_cookieauth_name  = NULL;
 static u_char *flt_cookieauth_fn = NULL;
 
 /* {{{ flt_cookieauth_run */
-int flt_cookieauth_run(t_cf_hash *head,t_configuration *dc,t_configuration *vc) {
+int flt_cookieauth_run(cf_hash_t *head,configuration_t *dc,configuration_t *vc) {
   u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
-  t_name_value *v = cfg_get_first_value(dc,forum_name,"AuthMode");
+  name_value_t *v = cfg_get_first_value(dc,forum_name,"AuthMode");
   u_char *name,*path;
-  t_cf_hash *cookies;
+  cf_hash_t *cookies;
 
   if(!v || !v->values[0] || cf_strcmp(v->values[0],"cookie") != 0 || flt_cookieauth_name == NULL) return FLT_DECLINE;
 
@@ -63,7 +63,7 @@ int flt_cookieauth_run(t_cf_hash *head,t_configuration *dc,t_configuration *vc) 
 /* }}} */
 
 /* {{{ flt_cookieauth_handle */
-int flt_cookieauth_handle(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
+int flt_cookieauth_handle(configfile_t *cfile,conf_opt_t *opt,const u_char *context,u_char **args,size_t argnum) {
   if(flt_cookieauth_fn == NULL) flt_cookieauth_fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   if(!context || cf_strcmp(flt_cookieauth_fn,context) != 0) return 0;
 
@@ -78,17 +78,17 @@ void flt_cookieauth_cleanup(void) {
   if(flt_cookieauth_name) free(flt_cookieauth_name);
 }
 
-t_conf_opt flt_cookieauth_config[] = {
+conf_opt_t flt_cookieauth_config[] = {
   { "CookieName", flt_cookieauth_handle, CFG_OPT_CONFIG|CFG_OPT_LOCAL, NULL },
   { NULL, NULL, 0, NULL }
 };
 
-t_handler_config flt_cookieauth_handlers[] = {
+handler_config_t flt_cookieauth_handlers[] = {
   { AUTH_HANDLER, flt_cookieauth_run },
   { 0, NULL }
 };
 
-t_module_config flt_cookieauth = {
+module_config_t flt_cookieauth = {
   MODULE_MAGIC_COOKIE,
   flt_cookieauth_config,
   flt_cookieauth_handlers,

@@ -49,10 +49,10 @@ struct s_scoring_filter {
   pcre_extra *regex_extra;
 };
 
-static t_string flt_scoring_str        = { 0, 0, 0, NULL };
+static string_t flt_scoring_str        = { 0, 0, 0, NULL };
 static int      flt_scoring_number     = 0;
 
-static t_array flt_scoring_ary         = { 0, 0, 0, NULL, NULL };
+static array_t flt_scoring_ary         = { 0, 0, 0, NULL, NULL };
 static int     flt_scoring_hide_score  = 0;
 static int     flt_scoring_hide_score_set = 0;
 static int     flt_scoring_min_val     = 0;
@@ -162,7 +162,7 @@ size_t flt_scoring_calc_col(u_char buff[],int score) {
 /* }}} */
 
 /* {{{ flt_scoring_execute */
-int flt_scoring_execute(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_message *msg,u_int64_t tid,int mode) {
+int flt_scoring_execute(cf_hash_t *head,t_configuration *dc,t_configuration *vc,t_message *msg,u_int64_t tid,int mode) {
   int res = 0;
   size_t i;
   struct s_scoring_filter *flt;
@@ -374,7 +374,7 @@ t_handler_config flt_scoring_handlers[] = {
   { 0, NULL }
 };
 
-t_module_config flt_scoring = {
+module_config_t flt_scoring = {
   MODULE_MAGIC_COOKIE,
   flt_scoring_config,
   flt_scoring_handlers,

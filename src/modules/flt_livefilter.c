@@ -75,20 +75,20 @@ static const u_char *symbols[] = {
 typedef struct {
   int type,flags;
   void *val;
-} t_flt_lf_result;
+} flt_lf_result_t;
 
 typedef struct s_node {
   int type,prec;
   u_char *content;
 
   struct s_node *left,*right,*parent,*argument;
-} t_flt_lf_node;
+} flt_lf_node_t;
 
-static t_flt_lf_node *flt_lf_first = NULL;
+static flt_lf_node_t *flt_lf_first = NULL;
 static int flt_lf_active = 0;
 static int flt_lf_overwrite = 0;
 
-static t_string flt_lf_str = { 0, 0, 128, NULL };
+static string_t flt_lf_str = { 0, 0, 128, NULL };
 
 static int flt_lf_success = 1;
 
@@ -234,8 +234,8 @@ int flt_lf_scanner(u_char *str,u_char **pos) {
 /* }}} */
 
 /* {{{ flt_lf_insert_node */
-t_flt_lf_node *flt_lf_insert_node(t_flt_lf_node *cur,t_flt_lf_node *tok,t_flt_lf_node *root) {
-  t_flt_lf_node *n = cur;
+flt_lf_node_t *flt_lf_insert_node(flt_lf_node_t *cur,flt_lf_node_t *tok,flt_lf_node_t *root) {
+  flt_lf_node_t *n = cur;
 
   if(!cur) {
     if(root) root->argument = tok;
@@ -287,11 +287,11 @@ t_flt_lf_node *flt_lf_insert_node(t_flt_lf_node *cur,t_flt_lf_node *tok,t_flt_lf
 /* }}} */
 
 /* {{{ flt_lf_parse_string */
-int flt_lf_parse_string(u_char *str,u_char **pos,t_cf_template *tpl,t_flt_lf_node *node,t_flt_lf_node *root_node,t_configuration *dc) {
+int flt_lf_parse_string(u_char *str,u_char **pos,cf_template_t *tpl,flt_lf_node_t *node,flt_lf_node_t *root_node,configuration_t *dc) {
   int ret = 0;
-  t_flt_lf_node *current = NULL;
+  flt_lf_node_t *current = NULL;
   u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
-  t_name_value *cs = cfg_get_first_value(dc,forum_name,"ExternCharset");
+  name_value_t *cs = cfg_get_first_value(dc,forum_name,"ExternCharset");
 
   while((ret = flt_lf_scanner(str,pos)) > 0) {
     current       = fo_alloc(NULL,1,sizeof(*current),FO_ALLOC_CALLOC);
@@ -364,7 +364,7 @@ int flt_lf_parse_string(u_char *str,u_char **pos,t_cf_template *tpl,t_flt_lf_nod
 /* }}} */
 
 /* {{{ flt_lf_form */
-int flt_lf_form(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cf_template *begin,t_cf_template *end) {
+int flt_lf_form(cf_hash_t *head,configuration_t *dc,configuration_t *vc,cf_template_t *begin,cf_template_t *end) {
   u_char *filter_str,*pos;
 
   if(head) {
@@ -399,7 +399,7 @@ int flt_lf_intval(const u_char *val) {
 /* }}} */
 
 /* {{{ flt_fl_to_string */
-void flt_lf_to_string(t_flt_lf_result *v) {
+void flt_lf_to_string(flt_lf_result_t *v) {
   u_char buff[256];
 
   switch(v->type) {
@@ -423,7 +423,7 @@ void flt_lf_to_string(t_flt_lf_result *v) {
 /* }}} */
 
 /* {{{ flt_lf_to_bool */
-void flt_lf_to_bool(t_flt_lf_result *v) {
+void flt_lf_to_bool(flt_lf_result_t *v) {
   u_char *tmp;
 
   switch(v->type) {
@@ -448,7 +448,7 @@ void flt_lf_to_bool(t_flt_lf_result *v) {
 /* }}} */
 
 /* {{{ flt_lf_to_int */
-void flt_lf_to_int(t_flt_lf_result *v) {
+void flt_lf_to_int(flt_lf_result_t *v) {
   u_char *tmp;
 
   switch(v->type) {
@@ -467,7 +467,7 @@ void flt_lf_to_int(t_flt_lf_result *v) {
 /* }}} */
 
 /* {{{ flt_lf_transform_date */
-time_t flt_lf_transform_date(const u_char *datestr,t_flt_lf_result *v) {
+time_t flt_lf_transform_date(const u_char *datestr,flt_lf_result_t *v) {
   struct tm t;
   u_char *ptr,*before;
   u_char *str = fo_alloc(NULL,strlen(datestr)+1,1,FO_ALLOC_MALLOC);
@@ -571,7 +571,7 @@ time_t flt_lf_transform_date(const u_char *datestr,t_flt_lf_result *v) {
 /* }}} */
 
 /* {{{ flt_lf_to_date */
-void flt_lf_to_date(t_flt_lf_result *v) {
+void flt_lf_to_date(flt_lf_result_t *v) {
   u_char *tmp;
 
   switch(v->type) {
@@ -593,7 +593,7 @@ void flt_lf_to_date(t_flt_lf_result *v) {
 /* }}} */
 
 /* {{{ flt_lf_r2l */
-void flt_lf_r2l(t_flt_lf_result *l,t_flt_lf_result *r) {
+void flt_lf_r2l(flt_lf_result_t *l,flt_lf_result_t *r) {
   switch(l->type) {
     case T_BOOL:
       flt_lf_to_bool(r);
@@ -612,7 +612,7 @@ void flt_lf_r2l(t_flt_lf_result *l,t_flt_lf_result *r) {
 /* }}} */
 
 /* {{{ flt_lf_is_true */
-int flt_lf_is_true(t_flt_lf_result *v) {
+int flt_lf_is_true(flt_lf_result_t *v) {
   switch(v->type) {
     case T_STRING:
       return *((u_char *)v->val);
@@ -624,10 +624,10 @@ int flt_lf_is_true(t_flt_lf_result *v) {
 
 
 /* {{{ flt_lf_evaluate */
-t_flt_lf_result *flt_lf_evaluate(t_flt_lf_node *n,t_message *msg,u_int64_t tid) {
-  t_mod_api is_visited = cf_get_mod_api_ent("is_visited");
-  t_flt_lf_result *result = fo_alloc(NULL,1,sizeof(*result),FO_ALLOC_CALLOC);
-  t_flt_lf_result *l = NULL,*r = NULL,*tmp;
+flt_lf_result_t *flt_lf_evaluate(flt_lf_node_t *n,message_t *msg,u_int64_t tid) {
+  mod_api_t is_visited = cf_get_mod_api_ent("is_visited");
+  flt_lf_result_t *result = fo_alloc(NULL,1,sizeof(*result),FO_ALLOC_CALLOC);
+  flt_lf_result_t *l = NULL,*r = NULL,*tmp;
   struct tm tm,tm1;
 
   if(!n) return NULL;
@@ -860,9 +860,9 @@ t_flt_lf_result *flt_lf_evaluate(t_flt_lf_node *n,t_message *msg,u_int64_t tid) 
 /* }}} */
 
 /* {{{ flt_lf_filter */
-int flt_lf_filter(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_message *msg,u_int64_t tid,int mode) {
+int flt_lf_filter(cf_hash_t *head,configuration_t *dc,configuration_t *vc,message_t *msg,u_int64_t tid,int mode) {
   if(mode & CF_MODE_THREADVIEW) return FLT_DECLINE;
-  t_flt_lf_result *res;
+  flt_lf_result_t *res;
 
   if(flt_lf_first && flt_lf_success) {
     res = flt_lf_evaluate(flt_lf_first,msg,tid);
@@ -883,7 +883,7 @@ int flt_lf_filter(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_mess
 /* }}} */
 
 /* {{{ flt_lf_handle_command */
-int flt_lf_handle_command(t_configfile *cf,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
+int flt_lf_handle_command(configfile_t *cf,conf_opt_t *opt,const u_char *context,u_char **args,size_t argnum) {
   if(!flt_lf_fn) flt_lf_fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   if(!context || cf_strcmp(flt_lf_fn,context) != 0) return 0;
 
@@ -900,19 +900,19 @@ void flt_lf_cleanup(void) {
 }
 /* }}} */
 
-t_conf_opt config[] = {
+conf_opt_t config[] = {
   { "ActivateLiveFilter",  flt_lf_handle_command, CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
   { "LiveFilterOverwrite", flt_lf_handle_command, CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
   { NULL, NULL, 0, NULL }
 };
 
-t_handler_config handlers[] = {
+handler_config_t handlers[] = {
   { VIEW_INIT_HANDLER, flt_lf_form },
   { VIEW_LIST_HANDLER, flt_lf_filter },
   { 0, NULL }
 };
 
-t_module_config flt_livefilter = {
+module_config_t flt_livefilter = {
   MODULE_MAGIC_COOKIE,
   config,
   handlers,

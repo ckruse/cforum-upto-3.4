@@ -128,9 +128,9 @@ void *flt_visited_mark_visited_api(void *vmid) {
 
 /* {{{ flt_visited_execute_filter */
 #ifndef CF_SHARED_MEM
-int flt_visited_execute_filter(t_cf_hash *head,t_configuration *dc,t_configuration *vc,int sock)
+int flt_visited_execute_filter(cf_hash_t *head,configuration_t *dc,configuration_t *vc,int sock)
 #else
-int flt_visited_execute_filter(t_cf_hash *head,t_configuration *dc,t_configuration *vc,void *sock)
+int flt_visited_execute_filter(cf_hash_t *head,configuration_t *dc,configuration_t *vc,void *sock)
 #endif
 {
   u_char *uname = cf_hash_get(GlobalValues,"UserName",8);
@@ -140,13 +140,13 @@ int flt_visited_execute_filter(t_cf_hash *head,t_configuration *dc,t_configurati
   int ret,fd,xmlhttp = 0,we_set_it = 0;
   char one[] = "1";
   rline_t tsd;
-  t_message *msg;
-  t_cl_thread thread;
+  message_t *msg;
+  cl_thread_t thread;
   DBT key,data;
   u_char buff[256],*mav,*a;
-  t_cf_cgi_param *parm;
+  cf_cgi_param_t *parm;
   size_t len;
-  t_name_value *rm = cfg_get_first_value(vc,fn,"ReadMode");
+  name_value_t *rm = cfg_get_first_value(vc,fn,"ReadMode");
 
   if(uname && Cfg.VisitedFile) {
     memset(&key,0,sizeof(key));
@@ -278,7 +278,7 @@ int flt_visited_execute_filter(t_cf_hash *head,t_configuration *dc,t_configurati
 /* }}} */
 
 /* {{{ flt_visited_set_col */
-int flt_visited_set_col(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cf_template *begin,t_cf_template *end) {
+int flt_visited_set_col(cf_hash_t *head,configuration_t *dc,configuration_t *vc,cf_template_t *begin,cf_template_t *end) {
   if(Cfg.VisitedPostingsColorF || Cfg.VisitedPostingsColorB) {
     cf_tpl_setvalue(begin,"visitedcol",TPL_VARIABLE_INT,1);
 
@@ -296,13 +296,13 @@ int flt_visited_set_col(t_cf_hash *head,t_configuration *dc,t_configuration *vc,
 /* }}} */
 
 /* {{{ flt_visited_posting_handler */
-int flt_visited_posting_handler(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cl_thread *thread,t_cf_template *tpl) {
+int flt_visited_posting_handler(cf_hash_t *head,configuration_t *dc,configuration_t *vc,cl_thread_t *thread,cf_template_t *tpl) {
   return flt_visited_set_col(head,dc,vc,tpl,NULL);
 }
 /* }}} */
 
 /* {{{ flt_visited_mark_visited */
-int flt_visited_mark_visited(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_message *msg,u_int64_t tid,int mode) {
+int flt_visited_mark_visited(cf_hash_t *head,configuration_t *dc,configuration_t *vc,message_t *msg,u_int64_t tid,int mode) {
   u_char *uname = cf_hash_get(GlobalValues,"UserName",8);
   DBT key,data;
   u_char buff[256];
@@ -339,9 +339,9 @@ int flt_visited_mark_visited(t_cf_hash *head,t_configuration *dc,t_configuration
 
 /* {{{ flt_visited_mark_own */
 #ifdef CF_SHARED_MEM
-int flt_visited_mark_own(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_message *msg,u_int64_t tid,void *shm,int sock)
+int flt_visited_mark_own(cf_hash_t *head,configuration_t *dc,configuration_t *vc,message_t *msg,u_int64_t tid,void *shm,int sock)
 #else
-int flt_visited_mark_own(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_message *msg,u_int64_t tid,int sock)
+int flt_visited_mark_own(cf_hash_t *head,configuration_t *dc,configuration_t *vc,message_t *msg,u_int64_t tid,int sock)
 #endif
 {
   if(Cfg.mark_visited) return flt_visited_mark_visited_api(&msg->mid) ? FLT_OK : FLT_DECLINE;
@@ -351,9 +351,9 @@ int flt_visited_mark_own(t_cf_hash *head,t_configuration *dc,t_configuration *vc
 
 /* {{{ flt_visited_validate */
 #ifndef CF_SHARED_MEM
-int flt_visited_validate(t_cf_hash *head,t_configuration *dc,t_configuration *vc,time_t last_modified,int sock)
+int flt_visited_validate(cf_hash_t *head,configuration_t *dc,configuration_t *vc,time_t last_modified,int sock)
 #else
-int flt_visited_validate(t_cf_hash *head,t_configuration *dc,t_configuration *vc,time_t last_modified,void *sock)
+int flt_visited_validate(cf_hash_t *head,configuration_t *dc,configuration_t *vc,time_t last_modified,void *sock)
 #endif
 {
   struct stat st;
@@ -371,9 +371,9 @@ int flt_visited_validate(t_cf_hash *head,t_configuration *dc,t_configuration *vc
 
 /* {{{ flt_visited_lm */
 #ifndef CF_SHARED_MEM
-time_t flt_visited_lm(t_cf_hash *head,t_configuration *dc,t_configuration *vc,int sock)
+time_t flt_visited_lm(cf_hash_t *head,configuration_t *dc,configuration_t *vc,int sock)
 #else
-time_t flt_visited_lm(t_cf_hash *head,t_configuration *dc,t_configuration *vc,void *sock)
+time_t flt_visited_lm(cf_hash_t *head,configuration_t *dc,configuration_t *vc,void *sock)
 #endif
 {
   struct stat st;
@@ -391,7 +391,7 @@ time_t flt_visited_lm(t_cf_hash *head,t_configuration *dc,t_configuration *vc,vo
 /* }}} */
 
 /* {{{ flt_visited_init_handler */
-int flt_visited_init_handler(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc) {
+int flt_visited_init_handler(cf_hash_t *cgi,configuration_t *dc,configuration_t *vc) {
   int ret,fd;
 
   if(Cfg.VisitedFile) {
@@ -424,18 +424,18 @@ int flt_visited_init_handler(t_cf_hash *cgi,t_configuration *dc,t_configuration 
 
 /* {{{ flt_visited_set_link */
 #ifndef CF_SHARED_MEM
-int flt_visited_set_link(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cl_thread *thr,int sock)
+int flt_visited_set_link(cf_hash_t *head,configuration_t *dc,configuration_t *vc,cl_thread_t *thr,int sock)
 #else
-int flt_visited_set_link(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cl_thread *thr,void *sock)
+int flt_visited_set_link(cf_hash_t *head,configuration_t *dc,configuration_t *vc,cl_thread_t *thr,void *sock)
 #endif
 {
   u_char buff[512];
   int UserName = cf_hash_get(GlobalValues,"UserName",8) != NULL;
   u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
-  t_name_value *x = cfg_get_first_value(dc,forum_name,UserName?"UBaseURL":"BaseURL");
-  t_name_value *cs = cfg_get_first_value(dc,forum_name,"ExternCharset");
+  name_value_t *x = cfg_get_first_value(dc,forum_name,UserName?"UBaseURL":"BaseURL");
+  name_value_t *cs = cfg_get_first_value(dc,forum_name,"ExternCharset");
   size_t len;
-  t_message *msg = cf_msg_get_first_visible(thr->messages);
+  message_t *msg = cf_msg_get_first_visible(thr->messages);
 
   if(Cfg.VisitedFile && Cfg.HighlightVisitedPostings) {
     len = snprintf(buff,512,"%s?mv=%llu",x->values[0],thr->tid);
@@ -449,7 +449,7 @@ int flt_visited_set_link(t_cf_hash *head,t_configuration *dc,t_configuration *vc
 /* }}} */
 
 /* {{{ flt_visit_handle_command */
-int flt_visit_handle_command(t_configfile *cf,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
+int flt_visit_handle_command(configfile_t *cf,conf_opt_t *opt,const u_char *context,u_char **args,size_t argnum) {
   if(flt_visited_fn == NULL) flt_visited_fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   if(!context || cf_strcmp(flt_visited_fn,context) != 0) return 0;
 
@@ -493,7 +493,7 @@ void flt_visited_cleanup(void) {
 }
 /* }}} */
 
-t_conf_opt flt_visited_config[] = {
+conf_opt_t flt_visited_config[] = {
   { "HighlightVisitedPostings", flt_visit_handle_command, CFG_OPT_USER|CFG_OPT_LOCAL,                NULL },
   { "VisitedPostingsColors",    flt_visit_handle_command, CFG_OPT_USER|CFG_OPT_LOCAL,                NULL },
   { "VisitedFile",              flt_visit_handle_command, CFG_OPT_USER|CFG_OPT_LOCAL|CFG_OPT_NEEDED, NULL },
@@ -504,7 +504,7 @@ t_conf_opt flt_visited_config[] = {
   { NULL, NULL, 0, NULL }
 };
 
-t_handler_config flt_visited_handlers[] = {
+handler_config_t flt_visited_handlers[] = {
   { INIT_HANDLER,         flt_visited_init_handler   },
   { CONNECT_INIT_HANDLER, flt_visited_execute_filter },
   { VIEW_INIT_HANDLER,    flt_visited_set_col        },
@@ -515,7 +515,7 @@ t_handler_config flt_visited_handlers[] = {
   { 0, NULL }
 };
 
-t_module_config flt_visited = {
+module_config_t flt_visited = {
   MODULE_MAGIC_COOKIE,
   flt_visited_config,
   flt_visited_handlers,

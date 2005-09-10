@@ -44,7 +44,7 @@ typedef struct s_flt_spellcheck_replacement {
   int start;
   int len;
   const u_char *replacement;
-} t_flt_spellcheck_replacement;
+} flt_spellcheck_replacement_t;
 
 static int flt_spellcheck_enabled        = 0;
 static u_char *flt_spellcheck_path       = NULL;
@@ -53,17 +53,17 @@ static u_char *flt_spellcheck_formatter  = NULL;
 
 static u_char *flt_spellcheck_fn         = NULL;
 
-static t_array flt_spellcheck_options;
+static array_t flt_spellcheck_options;
 
-int flt_spellcheck_replacement_compare(t_flt_spellcheck_replacement *a, t_flt_spellcheck_replacement *b) {
+int flt_spellcheck_replacement_compare(flt_spellcheck_replacement_t *a, flt_spellcheck_replacement_t *b) {
   return a->start - b->start;
 }
 
 /* {{{ flt_spellcheck_execute */
 #ifdef CF_SHARED_MEM
-int flt_spellcheck_execute(t_cf_hash *head,t_configuration *dc,t_configuration *pc,t_message *p,t_cl_thread *thr,void *shm_ptr,int sock,int mode)
+int flt_spellcheck_execute(cf_hash_t *head,configuration_t *dc,configuration_t *pc,message_t *p,cl_thread_t *thr,void *shm_ptr,int sock,int mode)
 #else
-int flt_spellcheck_execute(t_cf_hash *head,t_configuration *dc,t_configuration *pc,t_message *p,t_cl_thread *thr,int sock,int mode)
+int flt_spellcheck_execute(cf_hash_t *head,configuration_t *dc,configuration_t *pc,message_t *p,cl_thread_t *thr,int sock,int mode)
 #endif
 {
   // -a -S -C -d <dict> [-p <dict>] [-T <type>]
@@ -84,19 +84,19 @@ int flt_spellcheck_execute(t_cf_hash *head,t_configuration *dc,t_configuration *
   
   u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   
-  t_string spellchecker_input;
-  t_string html_out;
-  t_string tmp;
-  t_string *ptmp;
+  string_t spellchecker_input;
+  string_t html_out;
+  string_t tmp;
+  string_t *ptmp;
   FILE *ispell_read;
   
-  t_cf_hash_entry *ent;
-  t_cf_cgi_param *param;
-  t_name_value *v;
+  cf_hash_t_entry *ent;
+  cf_cgi_param_t *param;
+  name_value_t *v;
   
-  t_array replacements;
-  t_flt_spellcheck_replacement replacement;
-  t_flt_spellcheck_replacement *r;
+  array_t replacements;
+  flt_spellcheck_replacement_t replacement;
+  flt_spellcheck_replacement_t *r;
   
   if(!head) return FLT_DECLINE;
   if(!cf_cgi_get(head,"spellcheck")) {
@@ -106,12 +106,12 @@ int flt_spellcheck_execute(t_cf_hash *head,t_configuration *dc,t_configuration *
   v = cfg_get_first_value(pc,forum_name,"QuotingChars");
   
   if(cf_cgi_get(head,"spellcheck_ok")) {
-    array_init(&replacements,sizeof(t_flt_spellcheck_replacement),NULL);
+    array_init(&replacements,sizeof(flt_spellcheck_replacement_t),NULL);
     for(i=0;(size_t)i<hashsize(head->tablesize);i++) {
       if(!head->table[i]) continue;
 
       for(ent = head->table[i];ent;ent=ent->next) {
-        for(param = (t_cf_cgi_param *)ent->data;param;param=param->next) {
+        for(param = (cf_cgi_param_t *)ent->data;param;param=param->next) {
           if(!param->value) continue;
           if(cf_strncmp(param->name,"spelling_",9)) continue;
 
@@ -140,7 +140,7 @@ int flt_spellcheck_execute(t_cf_hash *head,t_configuration *dc,t_configuration *
     str_init(&html_out);
     str_init(&tmp);
     for(j = 0; (size_t)j < replacements.elements; j++) {
-      r = (t_flt_spellcheck_replacement *)array_element_at(&replacements,j);
+      r = (flt_spellcheck_replacement_t *)array_element_at(&replacements,j);
 
       for(i = cpos; (size_t)i < p->content.len && i < r->start; i++) {
         ptr = p->content.content + i;
@@ -196,7 +196,7 @@ int flt_spellcheck_execute(t_cf_hash *head,t_configuration *dc,t_configuration *
     return FLT_OK;
   }
   
-  array_init(&flt_spellcheck_options,sizeof(t_string),(void (*)(void *))str_cleanup);
+  array_init(&flt_spellcheck_options,sizeof(string_t),(void (*)(void *))str_cleanup);
 
   // generic options
   str_init(&tmp);
@@ -274,7 +274,7 @@ int flt_spellcheck_execute(t_cf_hash *head,t_configuration *dc,t_configuration *
   ispell_argv[0] = "ispell";
 
   for(i = 0; (size_t)i < flt_spellcheck_options.elements; i++) {
-    ptmp = (t_string *)array_element_at(&flt_spellcheck_options,i);
+    ptmp = (string_t *)array_element_at(&flt_spellcheck_options,i);
     ispell_argv[i+1] = ptmp->content;
   }
 
@@ -500,19 +500,19 @@ int flt_spellcheck_execute(t_cf_hash *head,t_configuration *dc,t_configuration *
 /* }}} */
 
 /* {{{ flt_spellcheck_variables */
-int flt_spellcheck_variables(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cl_thread *thread,t_cf_template *tpl) {
+int flt_spellcheck_variables(cf_hash_t *head,configuration_t *dc,configuration_t *vc,cl_thread_t *thread,cf_template_t *tpl) {
   if(flt_spellcheck_enabled) cf_tpl_setvalue(tpl,"spellcheck_enabled",TPL_VARIABLE_INT,1);
   
   return FLT_OK;
 }
 /* }}} */
 
-int flt_spellcheck_variables_posting(t_cf_hash *head,t_configuration *dc,t_configuration *pc,t_cf_template *tpl) {
+int flt_spellcheck_variables_posting(cf_hash_t *head,configuration_t *dc,configuration_t *pc,cf_template_t *tpl) {
   return flt_spellcheck_variables(NULL,NULL,NULL,NULL,tpl);
 }
 
 /* {{{ flt_spellcheck_cmd */
-int flt_spellcheck_cmd(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
+int flt_spellcheck_cmd(configfile_t *cfile,conf_opt_t *opt,const u_char *context,u_char **args,size_t argnum) {
   if(flt_spellcheck_fn == NULL) flt_spellcheck_fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   if(!context || cf_strcmp(flt_spellcheck_fn,context) != 0) return 0;
 
@@ -536,7 +536,7 @@ int flt_spellcheck_cmd(t_configfile *cfile,t_conf_opt *opt,const u_char *context
 }
 /* }}} */
 
-t_conf_opt flt_spellcheck_config[] = {
+conf_opt_t flt_spellcheck_config[] = {
   { "SpellCheckerEnabled",       flt_spellcheck_cmd, CFG_OPT_CONFIG|CFG_OPT_NEEDED|CFG_OPT_LOCAL, NULL },
   { "SpellCheckerPath",          flt_spellcheck_cmd, CFG_OPT_CONFIG|CFG_OPT_NEEDED|CFG_OPT_LOCAL, NULL },
   { "SpellCheckerDictionary",    flt_spellcheck_cmd, CFG_OPT_CONFIG|CFG_OPT_NEEDED|CFG_OPT_LOCAL, NULL },
@@ -544,14 +544,14 @@ t_conf_opt flt_spellcheck_config[] = {
   { NULL, NULL, 0, NULL }
 };
 
-t_handler_config flt_spellcheck_handlers[] = {
+handler_config_t flt_spellcheck_handlers[] = {
   { NEW_POST_HANDLER,     flt_spellcheck_execute },
   { POSTING_HANDLER,      flt_spellcheck_variables },
   { POST_DISPLAY_HANDLER, flt_spellcheck_variables_posting },
   { 0, NULL }
 };
 
-t_module_config flt_spellcheck = {
+module_config_t flt_spellcheck = {
   MODULE_MAGIC_COOKIE,
   flt_spellcheck_config,
   flt_spellcheck_handlers,

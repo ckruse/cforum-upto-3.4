@@ -33,7 +33,7 @@
 /* }}} */
 
 /* {{{ array_init */
-void array_init(t_array *ary,size_t element_size,void (*array_destroy)(void *)) {
+void array_init(array_t *ary,size_t element_size,void (*array_destroy)(void *)) {
   ary->reserved      = 0;
   ary->elements      = 0;
   ary->element_size  = element_size;
@@ -43,7 +43,7 @@ void array_init(t_array *ary,size_t element_size,void (*array_destroy)(void *)) 
 /* }}} */
 
 /* {{{ array_push */
-void array_push(t_array *ary,const void *element) {
+void array_push(array_t *ary,const void *element) {
   if(ary->elements + 1 >= ary->reserved) {
     ary->array     = fo_alloc(ary->array,ary->element_size,ary->reserved+1,FO_ALLOC_REALLOC);
     ary->reserved += 1;
@@ -55,14 +55,14 @@ void array_push(t_array *ary,const void *element) {
 /* }}} */
 
 /* {{{ array_pop */
-void *array_pop(t_array *ary) {
+void *array_pop(array_t *ary) {
   ary->elements -= 1;
   return memdup((void *)(ary->array + ((ary->elements) * ary->element_size)),ary->element_size);
 }
 /* }}} */
 
 /* {{{ array_shift */
-void *array_shift(t_array *ary) {
+void *array_shift(array_t *ary) {
   void *elem = memdup(ary->array,ary->element_size);
 
   memmove(ary->array,ary->array+ary->element_size,(ary->elements - 1) * ary->element_size);
@@ -72,7 +72,7 @@ void *array_shift(t_array *ary) {
 /* }}} */
 
 /* {{{ array_unshift */
-void array_unshift(t_array *ary,const void *element) {
+void array_unshift(array_t *ary,const void *element) {
   if(ary->elements + 1 >= ary->reserved) {
     ary->array     = fo_alloc(ary->array,ary->element_size,ary->reserved+1,FO_ALLOC_REALLOC);
     ary->reserved += 1;
@@ -85,19 +85,19 @@ void array_unshift(t_array *ary,const void *element) {
 /* }}} */
 
 /* {{{ array_sort */
-void array_sort(t_array *ary,int(*compar)(const void *,const void *)) {
+void array_sort(array_t *ary,int(*compar)(const void *,const void *)) {
   qsort(ary->array,ary->elements,ary->element_size,compar);
 }
 /* }}} */
 
 /* {{{ array_bsearch */
-void *array_bsearch(t_array *ary,const void *key,int (*compar)(const void *, const void *)) {
+void *array_bsearch(array_t *ary,const void *key,int (*compar)(const void *, const void *)) {
   return bsearch(key,ary->array,ary->elements,ary->element_size,compar);
 }
 /* }}} */
 
 /* {{{ array_element_at */
-void *array_element_at(t_array *ary,size_t index) {
+void *array_element_at(array_t *ary,size_t index) {
   if(index < 0 || index >= ary->elements) {
     errno = EINVAL;
     return NULL;
@@ -108,7 +108,7 @@ void *array_element_at(t_array *ary,size_t index) {
 /* }}} */
 
 /* {{{ array_destroy */
-void array_destroy(t_array *ary) {
+void array_destroy(array_t *ary) {
   size_t i;
 
   if(ary->array_destroy) {

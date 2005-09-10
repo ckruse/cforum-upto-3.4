@@ -160,7 +160,7 @@ ub4 lookup(register ub1 *k,register ub4 length,register ub4 level) {
 /* {{{ cf_hash_new()
  * Returns:                the new hashtable object
  * Parameters:
- *   - t_cf_hash_cleanup   a destructor function for the entry data
+ *   - cf_hash_t_cleanup   a destructor function for the entry data
  *
  * This function constructs a new hash. It expects a pointer to a
  * destructor function. This function will be called when a hash
@@ -173,8 +173,8 @@ ub4 lookup(register ub1 *k,register ub4 length,register ub4 level) {
  * If the function pointer is NULL, no cleanup function will be called.
  *
  */
-t_cf_hash *cf_hash_new(t_cf_hash_cleanup cl) {
-  t_cf_hash *hsh = malloc(sizeof(t_cf_hash));
+cf_hash_t *cf_hash_new(cf_hash_t_cleanup cl) {
+  cf_hash_t *hsh = malloc(sizeof(cf_hash_t));
   ub4 elems = hashsize(CF_HASH_SIZE);
 
   if(!hsh) return NULL;
@@ -197,7 +197,7 @@ t_cf_hash *cf_hash_new(t_cf_hash_cleanup cl) {
    * this *sucks*. It costs a lot of time, but we need it because
    * we have to know if an element is set or not
    */
-  hsh->table     = calloc(elems,sizeof(t_cf_hash_entry **));
+  hsh->table     = calloc(elems,sizeof(cf_hash_t_entry **));
 
   hsh->destroy   = cl;
 
@@ -211,7 +211,7 @@ t_cf_hash *cf_hash_new(t_cf_hash_cleanup cl) {
 /* {{{ _cf_hash_save()
  * Returns:                the data of the hash entry if found or NULL
  * Parameters:
- *   - t_cf_hash *hsh      the hash object
+ *   - cf_hash_t *hsh      the hash object
  *   - unsigned char *key  the key
  *   - size_t keylen       the length of the key
  *
@@ -220,9 +220,9 @@ t_cf_hash *cf_hash_new(t_cf_hash_cleanup cl) {
  *
  * This function is private!
  */
-t_cf_hash_entry *_cf_hash_save(t_cf_hash *hsh,unsigned char *key,size_t keylen,void *data,size_t datalen,ub4 hashval) {
-  t_cf_hash_entry *ent = malloc(sizeof(t_cf_hash_entry));
-  t_cf_hash_keylist *akt = NULL;
+cf_hash_t_entry *_cf_hash_save(cf_hash_t *hsh,unsigned char *key,size_t keylen,void *data,size_t datalen,ub4 hashval) {
+  cf_hash_t_entry *ent = malloc(sizeof(cf_hash_t_entry));
+  cf_hash_t_keylist *akt = NULL;
 
   if(!ent) return NULL;
 
@@ -287,7 +287,7 @@ t_cf_hash_entry *_cf_hash_save(t_cf_hash *hsh,unsigned char *key,size_t keylen,v
 /* {{{ _cf_hash_split()
  * Returns:                nothing
  * Parameters:
- *   - t_cf_hash *hsh      the hash object
+ *   - cf_hash_t *hsh      the hash object
  *   - unsigned char *key  the key
  *   - size_t keylen       the length of the key
  *   - void *data          the data object to save
@@ -300,9 +300,9 @@ t_cf_hash_entry *_cf_hash_save(t_cf_hash *hsh,unsigned char *key,size_t keylen,v
  * This function is private!
  *
  */
-void _cf_hash_split(t_cf_hash *hsh,unsigned char *key,size_t keylen,void *data,size_t datalen,ub4 hval) {
+void _cf_hash_split(cf_hash_t *hsh,unsigned char *key,size_t keylen,void *data,size_t datalen,ub4 hval) {
   ub4 elems,oelems,i,hval_short;
-  t_cf_hash_entry *elem,*elem1;
+  cf_hash_t_entry *elem,*elem1;
 
   oelems = hashsize(hsh->tablesize);
   elems  = hashsize(++(hsh->tablesize));
@@ -310,13 +310,13 @@ void _cf_hash_split(t_cf_hash *hsh,unsigned char *key,size_t keylen,void *data,s
   /*
    * first, we have to reallocate the hashtable. This is expensive enough...
    */
-  hsh->table = realloc(hsh->table,elems * sizeof(t_cf_hash_entry **));
+  hsh->table = realloc(hsh->table,elems * sizeof(cf_hash_t_entry **));
 
   /*
    * But this is not enough. We also have to set the second
    * half to NULL *grr* this is *very* expensive.
    */
-  memset(&hsh->table[oelems],0,oelems * sizeof(t_cf_hash_entry **));
+  memset(&hsh->table[oelems],0,oelems * sizeof(cf_hash_t_entry **));
 
   /*
    * But as if this is not enough, we have to re-structure the complete
@@ -393,9 +393,9 @@ void _cf_hash_split(t_cf_hash *hsh,unsigned char *key,size_t keylen,void *data,s
 #endif
 
 /* {{{ cf_hash_set */
-int cf_hash_set(t_cf_hash *hsh,unsigned char *key,size_t keylen,void *data,size_t datalen) {
+int cf_hash_set(cf_hash_t *hsh,unsigned char *key,size_t keylen,void *data,size_t datalen) {
   ub4 hval,hval_short;
-  t_cf_hash_entry *ent,*prev;
+  cf_hash_t_entry *ent,*prev;
 
   /*
    * generate the hash value
@@ -455,9 +455,9 @@ int cf_hash_set(t_cf_hash *hsh,unsigned char *key,size_t keylen,void *data,size_
 /* }}} */
 
 /* {{{ cf_hash_set_static */
-int cf_hash_set_static(t_cf_hash *hsh,unsigned char *key,size_t keylen,void *data) {
+int cf_hash_set_static(cf_hash_t *hsh,unsigned char *key,size_t keylen,void *data) {
   ub4 hval,hval_short;
-  t_cf_hash_entry *ent,*prev;
+  cf_hash_t_entry *ent,*prev;
 
   /*
    * generate the hash value
@@ -516,9 +516,9 @@ int cf_hash_set_static(t_cf_hash *hsh,unsigned char *key,size_t keylen,void *dat
 /* }}} */
 
 /* {{{ cf_hash_get */
-void *cf_hash_get(t_cf_hash *hsh,unsigned char *key,size_t keylen) {
+void *cf_hash_get(cf_hash_t *hsh,unsigned char *key,size_t keylen) {
   ub4 hval,hval_short;
-  t_cf_hash_entry *ent;
+  cf_hash_t_entry *ent;
 
   hval       = lookup(key,keylen,0);
   hval_short = hval & hashmask(hsh->tablesize);
@@ -534,9 +534,9 @@ void *cf_hash_get(t_cf_hash *hsh,unsigned char *key,size_t keylen) {
 /* }}} */
 
 /* {{{ cf_hash_entry_delete */
-int cf_hash_entry_delete(t_cf_hash *hsh,unsigned char *key,size_t keylen) {
+int cf_hash_entry_delete(cf_hash_t *hsh,unsigned char *key,size_t keylen) {
   ub4 hval,hval_short;
-  t_cf_hash_entry *ent;
+  cf_hash_t_entry *ent;
 
   hval       = lookup(key,keylen,0);
   hval_short = hval & hashmask(hsh->tablesize);
@@ -573,10 +573,10 @@ int cf_hash_entry_delete(t_cf_hash *hsh,unsigned char *key,size_t keylen) {
 /* }}} */
 
 /* {{{ cf_hash_destroy() */
-void cf_hash_destroy(t_cf_hash *hsh) {
-  t_cf_hash_keylist *key,*key1;
+void cf_hash_destroy(cf_hash_t *hsh) {
+  cf_hash_t_keylist *key,*key1;
   ub4 hval,hval_short;
-  t_cf_hash_entry *ent;
+  cf_hash_t_entry *ent;
   size_t keylen;
 
   for(key=hsh->keys.elems;key;key=key1) {
@@ -623,7 +623,7 @@ void cf_hash_destroy(t_cf_hash *hsh) {
  *
 
 int main(void) {
-  t_cf_hash *hsh = cf_hash_new(NULL);
+  cf_hash_t *hsh = cf_hash_new(NULL);
   int i = 0,len;
   unsigned char buff[50];
 

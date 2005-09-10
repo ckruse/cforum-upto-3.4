@@ -50,24 +50,24 @@
 /**
  * Dummy function, for ignoring unknown directives
  */
-int ignre(t_configfile *cfile,const u_char *context,u_char *name,u_char **args,size_t len) {
+int ignre(configfile_t *cfile,const u_char *context,u_char *name,u_char **args,size_t len) {
   return 0;
 }
 
 /* {{{ show_xmlhttp_thread */
 #ifndef CF_SHARED_MEM
-void show_xmlhttp_thread(t_cf_hash *head,int sock,u_int64_t tid,u_int64_t mid)
+void show_xmlhttp_thread(cf_hash_t *head,int sock,u_int64_t tid,u_int64_t mid)
 #else
-void show_xmlhttp_thread(t_cf_hash *head,void *shm_ptr,u_int64_t tid,u_int64_t mid)
+void show_xmlhttp_thread(cf_hash_t *head,void *shm_ptr,u_int64_t tid,u_int64_t mid)
 #endif
 {
   int ret;
   u_char fo_thread_tplname[256],buff[512],*line = NULL,*UserName = cf_hash_get(GlobalValues,"UserName",8);
-  t_name_value *fo_thread_tpl,*cs;
+  name_value_t *fo_thread_tpl,*cs;
   u_char *fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   int show_invi = cf_hash_get(GlobalValues,"ShowInvisible",13) != NULL;
-  t_cl_thread thread;
-  t_string str;
+  cl_thread_t thread;
+  string_t str;
   size_t len;
   rline_t tsd;
   cf_readmode_t *rm = cf_hash_get(GlobalValues,"RM",2);
@@ -141,12 +141,12 @@ void show_xmlhttp_thread(t_cf_hash *head,void *shm_ptr,u_int64_t tid,u_int64_t m
 
 /* {{{ show_posting */
 #ifndef CF_SHARED_MEM
-void show_posting(t_cf_hash *head,int sock,u_int64_t tid,u_int64_t mid)
+void show_posting(cf_hash_t *head,int sock,u_int64_t tid,u_int64_t mid)
 #else
-void show_posting(t_cf_hash *head,void *shm_ptr,u_int64_t tid,u_int64_t mid)
+void show_posting(cf_hash_t *head,void *shm_ptr,u_int64_t tid,u_int64_t mid)
 #endif
 {
-  t_cl_thread thread;
+  cl_thread_t thread;
 
   #ifndef CF_SHARED_MEM
   rline_t tsd;
@@ -157,7 +157,7 @@ void show_posting(t_cf_hash *head,void *shm_ptr,u_int64_t tid,u_int64_t mid)
     *UserName = cf_hash_get(GlobalValues,"UserName",8),
     *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
 
-  t_name_value *tm  = cfg_get_first_value(&fo_view_conf,forum_name,"ThreadMode"),
+  name_value_t *tm  = cfg_get_first_value(&fo_view_conf,forum_name,"ThreadMode"),
     *rm             = cfg_get_first_value(&fo_view_conf,forum_name,"ReadMode"),
     *cs             = cfg_get_first_value(&fo_default_conf,forum_name,"ExternCharset"),
     *fbase          = NULL,
@@ -168,7 +168,7 @@ void show_posting(t_cf_hash *head,void *shm_ptr,u_int64_t tid,u_int64_t mid)
     *ps = NULL,
     *reg = NULL;
 
-  t_cf_template tpl;
+  cf_template_t tpl;
 
   cf_readmode_t *rmi = cf_hash_get(GlobalValues,"RM",2);
 
@@ -279,9 +279,9 @@ void show_posting(t_cf_hash *head,void *shm_ptr,u_int64_t tid,u_int64_t mid)
 
 /* {{{ show_threadlist */
 #ifndef CF_SHARED_MEM
-void show_threadlist(int sock,t_cf_hash *head)
+void show_threadlist(int sock,cf_hash_t *head)
 #else
-void show_threadlist(void *shm_ptr,t_cf_hash *head)
+void show_threadlist(void *shm_ptr,cf_hash_t *head)
 #endif
 {
   /* {{{ variables */
@@ -298,25 +298,25 @@ void show_threadlist(void *shm_ptr,t_cf_hash *head)
     *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10),
     *UserName = cf_hash_get(GlobalValues,"UserName",8);
 
-  t_name_value *cs = cfg_get_first_value(&fo_default_conf,forum_name,"ExternCharset"),
+  name_value_t *cs = cfg_get_first_value(&fo_default_conf,forum_name,"ExternCharset"),
     *fbase         = NULL,
     *pbase         = NULL,
     *time_fmt      = cfg_get_first_value(&fo_view_conf,forum_name,"DateFormatLoadTime"),
     *time_lc       = cfg_get_first_value(&fo_default_conf,forum_name,"DateLocale");
 
-  t_cf_template tpl_begin,tpl_end;
+  cf_template_t tpl_begin,tpl_end;
 
   time_t tm;
-  t_cl_thread thread,*threadp;
+  cl_thread_t thread,*threadp;
   size_t i;
   int del = cf_hash_get(GlobalValues,"ShowInvisible",13) == NULL ? CF_KILL_DELETED : CF_KEEP_DELETED;
 
-  t_string tlist;
+  string_t tlist;
 
   cf_readmode_t *rm = cf_hash_get(GlobalValues,"RM",2);
 
   #ifndef CF_NO_SORTING
-  t_array threads;
+  array_t threads;
   #endif
   /* }}} */
 
@@ -552,11 +552,11 @@ int main(int argc,char *argv[],char *env[]) {
 
   int ret;
   u_char  *ucfg,*m  = NULL,*t = NULL,*UserName,*fname,*mode = NULL;
-  t_array *cfgfiles;
-  t_cf_hash *head;
-  t_configfile conf,dconf;
-  t_name_value *cs = NULL;
-  t_name_value *pt;
+  array_t *cfgfiles;
+  cf_hash_t *head;
+  configfile_t conf,dconf;
+  name_value_t *cs = NULL;
+  name_value_t *pt;
   u_char *forum_name = NULL;
 
   cf_readmode_t rm_infos;

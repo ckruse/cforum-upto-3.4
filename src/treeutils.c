@@ -38,8 +38,8 @@
  * unbalanced
  * \param n The subtree root node
  */
-void cf_tree_rotate_left(t_cf_tree_node **n) {
-  t_cf_tree_node *tmp = *n;
+void cf_tree_rotate_left(cf_tree_node_t **n) {
+  cf_tree_node_t *tmp = *n;
 
   *n = (*n)->right;
   tmp->right = (*n)->left;
@@ -53,8 +53,8 @@ void cf_tree_rotate_left(t_cf_tree_node **n) {
  * is unbalanced
  * \param n The subtree root node
  */
-void cf_tree_rotate_right(t_cf_tree_node **n) {
-  t_cf_tree_node *tmp = *n;
+void cf_tree_rotate_right(cf_tree_node_t **n) {
+  cf_tree_node_t *tmp = *n;
 
   *n = (*n)->left;
   tmp->left = (*n)->right;
@@ -69,7 +69,7 @@ void cf_tree_rotate_right(t_cf_tree_node **n) {
  * \param n The subtree root node
  * \return Returns 0 or 1
  */
-int cf_tree_leftgrown(t_cf_tree_node **n) {
+int cf_tree_leftgrown(cf_tree_node_t **n) {
   switch((*n)->bal) {
     case CF_TREE_LEFT:
       if((*n)->left->bal == CF_TREE_LEFT) {
@@ -120,7 +120,7 @@ int cf_tree_leftgrown(t_cf_tree_node **n) {
  * \param n Subtree root node
  * \return Returns 0 or 1
  */
-int cf_tree_rightgrown(t_cf_tree_node **n) {
+int cf_tree_rightgrown(cf_tree_node_t **n) {
   switch((*n)->bal) {
     case CF_TREE_LEFT:
       (*n)->bal = CF_TREE_NONE;
@@ -163,7 +163,7 @@ int cf_tree_rightgrown(t_cf_tree_node **n) {
 /* }}} */
 
 /* {{{ cf_tree_insert */
-int cf_tree_insert(t_cf_tree *tree,t_cf_tree_node **n, t_cf_tree_dataset *d) {
+int cf_tree_insert(cf_tree_t *tree,cf_tree_node_t **n, cf_tree_dataset_t *d) {
   int tmp;
 
   if(!n) n = &tree->root;
@@ -203,7 +203,7 @@ int cf_tree_insert(t_cf_tree *tree,t_cf_tree_node **n, t_cf_tree_dataset *d) {
  * \param n The subtree root node
  * \return Returns 0 or 1
  */
-int cf_tree_leftshrunk(t_cf_tree_node **n) {
+int cf_tree_leftshrunk(cf_tree_node_t **n) {
   switch((*n)->bal) {
     case CF_TREE_LEFT:
       (*n)->bal = CF_TREE_NONE;
@@ -261,7 +261,7 @@ int cf_tree_leftshrunk(t_cf_tree_node **n) {
  * \param n The subtree root node
  * \return Returns 0 or 1
  */
-int cf_tree_rightshrunk(t_cf_tree_node **n) {
+int cf_tree_rightshrunk(cf_tree_node_t **n) {
   switch((*n)->bal) {
     case CF_TREE_RIGHT:
       (*n)->bal = CF_TREE_NONE;
@@ -321,8 +321,8 @@ int cf_tree_rightshrunk(t_cf_tree_node **n) {
  * \param res Result of this operation (height of the tree)
  * \return Returns 0 or 1
  */
-int cf_tree_findhighest(t_cf_tree_node *target,t_cf_tree_node **n,int *res) {
-  t_cf_tree_node *tmp;
+int cf_tree_findhighest(cf_tree_node_t *target,cf_tree_node_t **n,int *res) {
+  cf_tree_node_t *tmp;
 
   *res = 1;
   if(!(*n)) {
@@ -357,8 +357,8 @@ int cf_tree_findhighest(t_cf_tree_node *target,t_cf_tree_node **n,int *res) {
  * \param res The result of this operation (height of the tree)
  * \return Returns 0 or 1
  */
-int cf_tree_findlowest(t_cf_tree_node *target,t_cf_tree_node **n,int *res) {
-  t_cf_tree_node *tmp;
+int cf_tree_findlowest(cf_tree_node_t *target,cf_tree_node_t **n,int *res) {
+  cf_tree_node_t *tmp;
 
   *res = 1;
   if(!(*n)) return 0;
@@ -384,7 +384,7 @@ int cf_tree_findlowest(t_cf_tree_node *target,t_cf_tree_node **n,int *res) {
 /* }}} */
 
 /* {{{ cf_tree_remove */
-int cf_tree_remove(t_cf_tree *tree,t_cf_tree_node **n,t_cf_tree_dataset *key) {
+int cf_tree_remove(cf_tree_t *tree,cf_tree_node_t **n,cf_tree_dataset_t *key) {
   int tmp = 1;
 
   if(!n) n = &tree->root;
@@ -432,7 +432,7 @@ int cf_tree_remove(t_cf_tree *tree,t_cf_tree_node **n,t_cf_tree_dataset *key) {
 /* }}} */
 
 /* {{{ cf_tree_find */
-const t_cf_tree_dataset *cf_tree_find(t_cf_tree *tree,t_cf_tree_node *n, t_cf_tree_dataset *key) {
+const cf_tree_dataset_t *cf_tree_find(cf_tree_t *tree,cf_tree_node_t *n, cf_tree_dataset_t *key) {
 
   if(!n) return NULL;
 
@@ -448,7 +448,7 @@ const t_cf_tree_dataset *cf_tree_find(t_cf_tree *tree,t_cf_tree_node *n, t_cf_tr
 /* }}} */
 
 /* {{{ cf_tree_init */
-void cf_tree_init(t_cf_tree *tree,int (*compare)(t_cf_tree_dataset *,t_cf_tree_dataset *),void (*destroy)(t_cf_tree_dataset *)) {
+void cf_tree_init(cf_tree_t *tree,int (*compare)(cf_tree_dataset_t *,cf_tree_dataset_t *),void (*destroy)(cf_tree_dataset_t *)) {
   tree->root    = NULL;
   tree->compare = compare;
   tree->destroy = destroy;
@@ -461,7 +461,7 @@ void cf_tree_init(t_cf_tree *tree,int (*compare)(t_cf_tree_dataset *,t_cf_tree_d
  * \param tree The tree
  * \param n Actual node
  */
-void cf_tree_destroy_nodes(t_cf_tree *tree,t_cf_tree_node *n) {
+void cf_tree_destroy_nodes(cf_tree_t *tree,cf_tree_node_t *n) {
   if(n) {
     if(n->left) cf_tree_destroy_nodes(tree,n->left);
     if(n->right) cf_tree_destroy_nodes(tree,n->right);
@@ -481,7 +481,7 @@ void cf_tree_destroy_nodes(t_cf_tree *tree,t_cf_tree_node *n) {
 /* }}} */
 
 /* {{{ cf_tree_destroy */
-void cf_tree_destroy(t_cf_tree *tree) {
+void cf_tree_destroy(cf_tree_t *tree) {
   cf_tree_destroy_nodes(tree,tree->root);
 }
 /* }}} */

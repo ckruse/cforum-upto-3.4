@@ -157,9 +157,9 @@ static u_char *flt_stdrepl_smiley_replacements[] = {
 
 
 /* {{{ flt_stdreplacements_smileys */
-int flt_stdreplacements_smileys(t_configuration *fdc,t_configuration *fvc,t_cl_thread *thread,const u_char *directive,const u_char **parameters,size_t plen,t_string *bco,t_string *bci,t_string *content,t_string *cite,const u_char *qchars,int sig) {
+int flt_stdreplacements_smileys(configuration_t *fdc,configuration_t *fvc,cl_thread_t *thread,const u_char *directive,const u_char **parameters,size_t plen,string_t *bco,string_t *bci,string_t *content,string_t *cite,const u_char *qchars,int sig) {
   int i;
-  t_name_value *xhtml;
+  name_value_t *xhtml;
 
   if(!flt_stdrepl_theme) return FLT_DECLINE;
   if(flt_stdrepl_fname == NULL) flt_stdrepl_fname = cf_hash_get(GlobalValues,"FORUM_NAME",10);
@@ -186,7 +186,7 @@ int flt_stdreplacements_smileys(t_configuration *fdc,t_configuration *fvc,t_cl_t
 /* }}} */
 
 /* {{{ flt_stdreplacements_filter */
-int flt_stdreplacements_filter(t_configuration *fdc,t_configuration *fvc,t_cl_thread *thread,const u_char *directive,const u_char **parameters,size_t plen,t_string *bco,t_string *bci,t_string *content,t_string *cite,const u_char *qchars,int sig) {
+int flt_stdreplacements_filter(configuration_t *fdc,configuration_t *fvc,cl_thread_t *thread,const u_char *directive,const u_char **parameters,size_t plen,string_t *bco,string_t *bci,string_t *content,string_t *cite,const u_char *qchars,int sig) {
   if(cf_strcmp(directive,"...") == 0) {
     str_chars_append(content,"&#8230;",7);
     if(cite && sig == 0) str_chars_append(cite,"...",3);
@@ -198,7 +198,7 @@ int flt_stdreplacements_filter(t_configuration *fdc,t_configuration *fvc,t_cl_th
 /* }}} */
 
 /* {{{ flt_directives_init */
-int flt_stdreplacements_init(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc) {
+int flt_stdreplacements_init(cf_hash_t *cgi,configuration_t *dc,configuration_t *vc) {
   int i;
 
   /* {{{ smiley-definitions */
@@ -214,7 +214,7 @@ int flt_stdreplacements_init(t_cf_hash *cgi,t_configuration *dc,t_configuration 
 /* }}} */
 
 /* {{{ flt_stdreplacements_handle */
-int flt_stdreplacements_handle(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
+int flt_stdreplacements_handle(configfile_t *cfile,conf_opt_t *opt,const u_char *context,u_char **args,size_t argnum) {
   if(flt_stdrepl_fname == NULL) flt_stdrepl_fname = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   if(!context || cf_strcmp(context,flt_stdrepl_fname) != 0) return 0;
 
@@ -228,19 +228,19 @@ int flt_stdreplacements_handle(t_configfile *cfile,t_conf_opt *opt,const u_char 
 }
 /* }}} */
 
-t_conf_opt flt_stdreplacements_config[] = {
+conf_opt_t flt_stdreplacements_config[] = {
   { "ReplaceSmileys",   flt_stdreplacements_handle,  CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL,  NULL },
   { "SmileyTheme",      flt_stdreplacements_handle,  CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL,  NULL },
 
   { NULL, NULL, 0, NULL }
 };
 
-t_handler_config flt_stdreplacements_handlers[] = {
+handler_config_t flt_stdreplacements_handlers[] = {
   { INIT_HANDLER,        flt_stdreplacements_init },
   { 0, NULL }
 };
 
-t_module_config flt_stdreplacements = {
+module_config_t flt_stdreplacements = {
   MODULE_MAGIC_COOKIE,
   flt_stdreplacements_config,
   flt_stdreplacements_handlers,

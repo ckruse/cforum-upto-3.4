@@ -53,7 +53,7 @@ static u_char *flt_xmlarc_fn = NULL;
 
 
 /* {{{ flt_xmlarc_snvts */
-void flt_xmlarc_snvts(GdomeNode *n,t_string *str) {
+void flt_xmlarc_snvts(GdomeNode *n,string_t *str) {
   GdomeException exc;
   GdomeNode *x   = gdome_n_firstChild(n,&exc);
   GdomeDOMString *y;
@@ -88,7 +88,7 @@ void flt_xmlarc_snvts(GdomeNode *n,t_string *str) {
 /* }}} */
 
 /* {{{ flt_xmlarc_hh */
-void flt_xmlarc_hh(t_message *p,GdomeNode *n) {
+void flt_xmlarc_hh(message_t *p,GdomeNode *n) {
   GdomeException     exc;
   GdomeNodeList     *nl       = gdome_n_childNodes(n,&exc);
   GdomeNode         *author   = gdome_nl_item(nl,0,&exc);
@@ -133,7 +133,7 @@ void flt_xmlarc_hh(t_message *p,GdomeNode *n) {
 /* }}} */
 
 /* {{{ flt_xmlarc_mtt */
-int flt_xmlarc_mtt(t_cl_thread *thr,t_hierarchical_node *hmsg,GdomeNode *posting) {
+int flt_xmlarc_mtt(cl_thread_t *thr,hierarchical_node_t *hmsg,GdomeNode *posting) {
   GdomeException e;
   GdomeNodeList     *childs    = gdome_n_childNodes(posting,&e);
   GdomeNamedNodeMap *atts      = gdome_n_attributes(posting,&e);
@@ -144,7 +144,7 @@ int flt_xmlarc_mtt(t_cl_thread *thr,t_hierarchical_node *hmsg,GdomeNode *posting
   GdomeNode *element;
   GdomeDOMString *name;
   GdomeDOMString *tmp;
-  t_hierarchical_node h;
+  hierarchical_node_t h;
 
   u_char *ctmp;
   size_t len,i;
@@ -205,7 +205,7 @@ int flt_xmlarc_mtt(t_cl_thread *thr,t_hierarchical_node *hmsg,GdomeNode *posting
 /* }}} */
 
 /* {{{ flt_xmlarc_cts */
-int flt_xmlarc_cts(GdomeDocument *doc,t_cl_thread *thr) {
+int flt_xmlarc_cts(GdomeDocument *doc,cl_thread_t *thr) {
   GdomeException e;
   GdomeNodeList *messages;
   GdomeNode *msg;
@@ -255,10 +255,10 @@ u_int64_t flt_xmlarc_gi(u_char *ptr,const u_char *base,size_t len) {
 /* }}} */
 
 /* {{{ flt_xmlarc_get_ndc */
-t_array *flt_xmlarc_get_ndc(const u_char *dir) {
+array_t *flt_xmlarc_get_ndc(const u_char *dir) {
   DIR *d_dir;
   struct dirent *ent;
-  t_array *ary = fo_alloc(NULL,1,sizeof(*ary),FO_ALLOC_MALLOC);
+  array_t *ary = fo_alloc(NULL,1,sizeof(*ary),FO_ALLOC_MALLOC);
   int num;
 
   array_init(ary,sizeof(num),NULL);
@@ -291,7 +291,7 @@ int flt_xmlarc_is_numeric(register const u_char *ptr) {
 
 /* {{{ flt_xmlarc_tlm */
 time_t flt_xmlarc_tlm(const u_char *year,const u_char *month,const u_char *tid) {
-  t_string str;
+  string_t str;
   struct stat st;
 
   str_init(&str);
@@ -317,7 +317,7 @@ time_t flt_xmlarc_tlm(const u_char *year,const u_char *month,const u_char *tid) 
 
 /* {{{ flt_xmlarc_mlm */
 time_t flt_xmlarc_mlm(const u_char *year,const u_char *month) {
-  t_string str;
+  string_t str;
 
   struct stat st;
 
@@ -341,10 +341,10 @@ time_t flt_xmlarc_mlm(const u_char *year,const u_char *month) {
 
 /* {{{ flt_xmlarc_validate_thread */
 int flt_xmlarc_validate_thread(const u_char *year,const u_char *month,const u_char *tid) {
-  t_string str;
+  string_t str;
   struct stat st;
 
-  t_name_value *v;
+  name_value_t *v;
 
   str_init(&str);
   str_char_set(&str,flt_xmlarc_apath,strlen(flt_xmlarc_apath));
@@ -394,10 +394,10 @@ int flt_xmlarc_validate_thread(const u_char *year,const u_char *month,const u_ch
 
 /* {{{ flt_xmlarc_validate_month */
 int flt_xmlarc_validate_month(const u_char *year,const u_char *month) {
-  t_string str;
+  string_t str;
   struct stat st;
 
-  t_name_value *v;
+  name_value_t *v;
 
   str_init(&str);
   str_char_set(&str,flt_xmlarc_apath,strlen(flt_xmlarc_apath));
@@ -425,10 +425,10 @@ int flt_xmlarc_validate_month(const u_char *year,const u_char *month) {
 
 /* {{{ flt_xmlarc_validate_year */
 int flt_xmlarc_validate_year(const u_char *year) {
-  t_string str;
+  string_t str;
   struct stat st;
 
-  t_name_value *v;
+  name_value_t *v;
 
   str_init(&str);
   str_char_set(&str,flt_xmlarc_apath,strlen(flt_xmlarc_apath));
@@ -452,9 +452,9 @@ int flt_xmlarc_validate_year(const u_char *year) {
 }
 /* }}} */
 
-t_cl_thread *flt_xmlarc_getthread(const u_char *year,const u_char *month,const u_char *tid) {
-  t_string str;
-  t_cl_thread *thr = fo_alloc(NULL,1,sizeof(*thr),FO_ALLOC_CALLOC);
+cl_thread_t *flt_xmlarc_getthread(const u_char *year,const u_char *month,const u_char *tid) {
+  string_t str;
+  cl_thread_t *thr = fo_alloc(NULL,1,sizeof(*thr),FO_ALLOC_CALLOC);
 
   GdomeException e;
   GdomeDocument *doc;
@@ -487,10 +487,10 @@ t_cl_thread *flt_xmlarc_getthread(const u_char *year,const u_char *month,const u
 }
 
 /* {{{ flt_xmlarc_getthreadlist */
-t_array *flt_xmlarc_getthreadlist(const u_char *year,const u_char *month) {
-  t_string str,strbuff;
-  t_array *ary = fo_alloc(NULL,1,sizeof(*ary),FO_ALLOC_MALLOC);
-  t_arc_tl_ent ent;
+array_t *flt_xmlarc_getthreadlist(const u_char *year,const u_char *month) {
+  string_t str,strbuff;
+  array_t *ary = fo_alloc(NULL,1,sizeof(*ary),FO_ALLOC_MALLOC);
+  arc_tl_ent_t ent;
 
   int fd;
   u_int64_t tid;
@@ -593,9 +593,9 @@ t_array *flt_xmlarc_getthreadlist(const u_char *year,const u_char *month) {
 /* }}} */
 
 /* {{{ flt_xmlarc_getmonthlist */
-t_array *flt_xmlarc_getmonthlist(const u_char *year) {
-  t_string str;
-  t_array *ret;
+array_t *flt_xmlarc_getmonthlist(const u_char *year) {
+  string_t str;
+  array_t *ret;
 
   str_init(&str);
   str_char_set(&str,flt_xmlarc_apath,strlen(flt_xmlarc_apath));
@@ -610,12 +610,12 @@ t_array *flt_xmlarc_getmonthlist(const u_char *year) {
 /* }}} */
 
 /* {{{ flt_xmlarc_getyears */
-t_array *flt_xmlarc_getyears(void) {
+array_t *flt_xmlarc_getyears(void) {
   return flt_xmlarc_get_ndc(flt_xmlarc_apath);
 }
 /* }}} */
 
-int flt_xmlarc_init_handler(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc) {
+int flt_xmlarc_init_handler(cf_hash_t *cgi,configuration_t *dc,configuration_t *vc) {
   cf_hash_set_static(ArcviewHandlers,"av_validate_year",16,flt_xmlarc_validate_year);
   cf_hash_set_static(ArcviewHandlers,"av_validate_month",17,flt_xmlarc_validate_month);
   cf_hash_set_static(ArcviewHandlers,"av_validate_thread",18,flt_xmlarc_validate_thread);
@@ -632,7 +632,7 @@ int flt_xmlarc_init_handler(t_cf_hash *cgi,t_configuration *dc,t_configuration *
 }
 
 /* {{{ flt_xmlarc_handle */
-int flt_xmlarc_handle(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
+int flt_xmlarc_handle(configfile_t *cfile,conf_opt_t *opt,const u_char *context,u_char **args,size_t argnum) {
   if(flt_xmlarc_fn == NULL) flt_xmlarc_fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   if(!context || cf_strcmp(flt_xmlarc_fn,context) != 0) return 0;
 
@@ -647,17 +647,17 @@ void flt_xmlarc_cleanup(void) {
   if(flt_xmlarc_apath) free(flt_xmlarc_apath);
 }
 
-t_conf_opt flt_xmlarc_config[] = {
+conf_opt_t flt_xmlarc_config[] = {
   { "ArchivePath", flt_xmlarc_handle, CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL, NULL },
   { NULL, NULL, 0, NULL }
 };
 
-t_handler_config flt_xmlarc_handlers[] = {
+handler_config_t flt_xmlarc_handlers[] = {
   { INIT_HANDLER, flt_xmlarc_init_handler },
   { 0, NULL }
 };
 
-t_module_config flt_xmlarc = {
+module_config_t flt_xmlarc = {
   MODULE_MAGIC_COOKIE,
   flt_xmlarc_config,
   flt_xmlarc_handlers,

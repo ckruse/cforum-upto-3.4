@@ -230,7 +230,7 @@ u_int32_t get_named_entity(const u_char *entity) {
 /* {{{ htmlentities_decode */
 u_char *htmlentities_decode(const u_char *string,size_t *slen) {
   u_char *ptr;
-  t_string new_str;
+  string_t new_str;
   u_int32_t num;
 
   u_char buff[8],*val,*safe;
@@ -303,7 +303,7 @@ u_char *htmlentities_decode(const u_char *string,size_t *slen) {
  */
 u_char *htmlentities(const u_char *string,int sq) {
   register u_char *ptr;
-  t_string new_str;
+  string_t new_str;
 
   str_init(&new_str);
 
@@ -398,7 +398,7 @@ size_t print_htmlentities_encoded(const u_char *string,int sq,FILE *handle) {
 u_char *htmlentities_charset_convert(const u_char *toencode, const u_char *from, const u_char *to,size_t *outlen,int sq) {
   register u_char *ptr;
   u_char *in_ptr,*entity,buff[15];
-  t_string new_str;
+  string_t new_str;
 
   iconv_t cd;
   size_t in_left, out_size, out_left,in_len,elen;

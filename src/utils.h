@@ -38,7 +38,7 @@ typedef struct s_mem_pool {
   unsigned long reserved; /**< length of the memory area itself */
   unsigned growth; /**< The growth factor */
   void *content; /**< The memory area itself */
-} t_mem_pool;
+} mem_pool_t;
 
 #define MEMORY_INITIALIZER { 0, 0, 0, NULL }
 
@@ -47,7 +47,7 @@ typedef struct s_mem_pool {
  * This function initializes a memory pool
  * \param pool The memory pool object pointer
  */
-void mem_init(t_mem_pool *pool);
+void mem_init(mem_pool_t *pool);
 
 /**
  * \ingroup memory_funcs
@@ -55,14 +55,14 @@ void mem_init(t_mem_pool *pool);
  * \param pool The memory pool object pointer
  * \param growth The growth factor
  */
-void mem_init_growth(t_mem_pool *pool,unsigned growth);
+void mem_init_growth(mem_pool_t *pool,unsigned growth);
 
 /**
  * \ingroup memory_funcs
  * This function cleans up a memory pool.
  * \param pool The memory pool object pointer
  */
-void mem_cleanup(t_mem_pool *pool);
+void mem_cleanup(mem_pool_t *pool);
 
 /**
  * \ingroup memory_funcs
@@ -72,7 +72,7 @@ void mem_cleanup(t_mem_pool *pool);
  * \param length The length of the region to copy
  * \return Number of copied bytes
  */
-size_t mem_set(t_mem_pool *pool,const void *src,size_t length);
+size_t mem_set(mem_pool_t *pool,const void *src,size_t length);
 
 /**
  * \ingroup memory_funcs
@@ -83,7 +83,7 @@ size_t mem_set(t_mem_pool *pool,const void *src,size_t length);
  * \param len The length of the region
  * \return Number of bytes copied
  */
-void *mem_append(t_mem_pool *pool,const void *src,size_t len);
+void *mem_append(mem_pool_t *pool,const void *src,size_t len);
 /*\@}*/
 
 /* }}} */
@@ -104,7 +104,7 @@ typedef struct s_string {
   unsigned long reserved; /**< length of the memory area itself */
   unsigned growth;
   u_char *content; /**< The memory area itself */
-} t_string;
+} string_t;
 
 #define STRING_INITIALIZER { 0, 0, CF_BUFSIZ, NULL }
 
@@ -114,21 +114,21 @@ typedef struct s_string {
  * \param str A reference to a string structure
  * \param growth The growth factor
  */
-void str_init_growth(t_string *str,unsigned growth);
+void str_init_growth(string_t *str,unsigned growth);
 
 /**
  * \ingroup string_funcs
  * This function initializes a string structure. It just sets everything to 0
  * \param str A reference to a string structure
  */
-void str_init(t_string *str);
+void str_init(string_t *str);
 
 /**
  * \ingroup string_funcs
  * This function frees the reserved memory in a string structure and sets everything to NULL
  * \param str A reference to the string structure
  */
-void str_cleanup(t_string *str);
+void str_cleanup(string_t *str);
 
 /**
  * \ingroup string_funcs
@@ -137,7 +137,7 @@ void str_cleanup(t_string *str);
  * \param content The character to append
  * \return Number of characters appended on success or 0 on failure
  */
-size_t str_char_append(t_string *str,const u_char content);
+size_t str_char_append(string_t *str,const u_char content);
 
 /**
  * \ingroup string_funcs
@@ -147,7 +147,7 @@ size_t str_char_append(t_string *str,const u_char content);
  * \param length The length of the u_char array
  * \return The number of characters appended on success or 0 on failure
  */
-size_t str_chars_append(t_string *str,const u_char *content,size_t length);
+size_t str_chars_append(string_t *str,const u_char *content,size_t length);
 
 /**
  * \ingroup string_funcs
@@ -156,7 +156,7 @@ size_t str_chars_append(t_string *str,const u_char *content,size_t length);
  * \param str A reference to the string structure to append to
  * \param content A reference to the string structure to append
  */
-size_t str_str_append(t_string *str,t_string *content);
+size_t str_str_append(string_t *str,string_t *content);
 
 /**
  * \ingroup string_funcs
@@ -166,7 +166,7 @@ size_t str_str_append(t_string *str,t_string *content);
  * \param content The u_char array to append
  * \return The number of characters appended on success or 0 on failure
  */
-size_t str_cstr_append(t_string *str,const u_char *content);
+size_t str_cstr_append(string_t *str,const u_char *content);
 
 /**
  * \ingroup string_funcs
@@ -176,7 +176,7 @@ size_t str_cstr_append(t_string *str,const u_char *content);
  * \param content The string to set
  * \return The number of characters set on success or 0 on failure
  */
-int str_cstr_set(t_string *str,const u_char *content);
+int str_cstr_set(string_t *str,const u_char *content);
 
 /**
  * \ingroup string_funcs
@@ -187,7 +187,7 @@ int str_cstr_set(t_string *str,const u_char *content);
  * \param length The length of the string to set
  * \return The number of characters set on success or 0 on failure
  */
-size_t str_char_set(t_string *str,const u_char *content,size_t length);
+size_t str_char_set(string_t *str,const u_char *content,size_t length);
 
 /**
  * \ingroup string_funcs
@@ -197,26 +197,26 @@ size_t str_char_set(t_string *str,const u_char *content,size_t length);
  * \param content A reference to the structure to set
  * \return The number of characters set on success or 0 on failure
  */
-size_t str_str_set(t_string *str,t_string *content);
+size_t str_str_set(string_t *str,string_t *content);
 
 /**
  * \ingroup string_funcs
- * This function tests if two strings (t_string) are equal
+ * This function tests if two strings (string_t) are equal
  * \param str1 string 1
  * \param str2 string 2
  * \return TRUE if both equal, FALSE otherwise
  */
-int str_equal_string(const t_string *str1,const t_string *str2);
+int str_equal_string(const string_t *str1,const string_t *str2);
 
 /**
  * \ingroup string_funcs
- * This function tests if two strings (t_string, u_char *) are equal
+ * This function tests if two strings (string_t, u_char *) are equal
  * \param str1 string 1
  * \param str2 string 2
  * \param len Length of string str2
  * \return TRUE if both equal, FALSE otherwise
  */
-int str_equal_chars(const t_string *str1,const u_char *str2, size_t len);
+int str_equal_chars(const string_t *str1,const u_char *str2, size_t len);
 
 /*\@}*/
 /* }}} */
@@ -364,7 +364,7 @@ typedef struct s_array {
 
   void (*array_destroy)(void *); /**< Function pointer to element destructor */
   void *array; /**< Array pointer */
-} t_array;
+} array_t;
 
 #define ARRAY_INITIALIZER(size,destroy) { 0, 0, (size), (destroy), NULL }
 
@@ -375,7 +375,7 @@ typedef struct s_array {
  * \param element_size The size of one element in the array
  * \param array_destroy The destroy function for an array element. This function will be called whenever an element in the array has to be deleted. Could be NULL if a function like this is not needed and a simple free() call is enough.
  */
-void array_init(t_array *ary,size_t element_size,void (*array_destroy)(void *));
+void array_init(array_t *ary,size_t element_size,void (*array_destroy)(void *));
 
 /**
  * \ingroup array_funcs
@@ -385,7 +385,7 @@ void array_init(t_array *ary,size_t element_size,void (*array_destroy)(void *));
  * \param ary The array structure pointer
  * \param element The element to push to the end
  */
-void array_push(t_array *ary,const void *element);
+void array_push(array_t *ary,const void *element);
 
 /**
  * \ingroup array_funcs
@@ -394,7 +394,7 @@ void array_push(t_array *ary,const void *element);
  * \return A copy of the 'popped' element
  * \attention Because this function returns a copy of this element, the destroy function will not be called!
  */
-void *array_pop(t_array *ary);
+void *array_pop(array_t *ary);
 
 /**
  * \ingroup array_funcs
@@ -403,7 +403,7 @@ void *array_pop(t_array *ary);
  * \return A copy of the 'shifted' element
  * \attention Because this function returns a copy of this element, the destroy function will not be called!
  */
-void *array_shift(t_array *ary);
+void *array_shift(array_t *ary);
 
 /**
  * \ingroup array_funcs
@@ -411,7 +411,7 @@ void *array_shift(t_array *ary);
  * \param ary The array structure pointer
  * \param element The pointer to the element
  */
-void array_unshift(t_array *ary,const void *element);
+void array_unshift(array_t *ary,const void *element);
 
 /**
  * \ingroup array_funcs
@@ -419,7 +419,7 @@ void array_unshift(t_array *ary,const void *element);
  * \param ary The array structure pointer
  * \param compar The comparing function. See qsort(3) for informations of the return values and arguments of this coparing function.
  */
-void array_sort(t_array *ary,int(*compar)(const void *,const void *));
+void array_sort(array_t *ary,int(*compar)(const void *,const void *));
 
 /**
  * \ingroup array_funcs
@@ -429,7 +429,7 @@ void array_sort(t_array *ary,int(*compar)(const void *,const void *));
  * \param compar THe comparing function. See bsearch(3) for information of the return values and the arguments of this comparing function.
  * \return Returns NULL if element not found or element if found
  */
-void *array_bsearch(t_array *ary,const void *key,int (*compar)(const void *, const void *));
+void *array_bsearch(array_t *ary,const void *key,int (*compar)(const void *, const void *));
 
 /**
  * \ingroup array_funcs
@@ -438,7 +438,7 @@ void *array_bsearch(t_array *ary,const void *key,int (*compar)(const void *, con
  * \param index The index of the wanted element
  * \return The element at the specified position or NULL on failure
  */
-void *array_element_at(t_array *ary,size_t index);
+void *array_element_at(array_t *ary,size_t index);
 
 /**
  * \ingroup array_funcs
@@ -446,7 +446,7 @@ void *array_element_at(t_array *ary,size_t index);
  * for each argument and then free()s the array itself.
  * \param ary The array structure pointer
  */
-void array_destroy(t_array *ary);
+void array_destroy(array_t *ary);
 
 /*\@}*/
 
@@ -465,7 +465,7 @@ void array_destroy(t_array *ary);
 typedef struct s_cf_dataset {
   void *data; /**< Data member */
   void *key; /**< Key member */
-} t_cf_tree_dataset;
+} cf_tree_dataset_t;
 
 /**
  * \ingroup tree_funcs
@@ -487,10 +487,10 @@ typedef struct s_cf_tree_node {
   struct s_cf_tree_node *left,  /**< left subtree */
                         *right; /**< right subtree */
 
-  t_cf_tree_dataset *d; /**< Dataset member */
+  cf_tree_dataset_t *d; /**< Dataset member */
 
   enum e_cf_tree_balance bal; /**< balance */
-} t_cf_tree_node;
+} cf_tree_node_t;
 
 /**
  * \ingroup tree_funcs
@@ -502,15 +502,15 @@ typedef struct s_cf_tree {
    * than the second, +1 if first dataset is greater than the second
    * and 0 if both are equal.
    */
-  int (*compare)(t_cf_tree_dataset *,t_cf_tree_dataset *);
+  int (*compare)(cf_tree_dataset_t *,cf_tree_dataset_t *);
 
   /**
    * 'Destructor' function for a tree dataset
    */
-  void (*destroy)(t_cf_tree_dataset *);
+  void (*destroy)(cf_tree_dataset_t *);
 
-  t_cf_tree_node *root; /**< root node */
-} t_cf_tree;
+  cf_tree_node_t *root; /**< root node */
+} cf_tree_t;
 
 /**
  * \ingroup tree_funcs
@@ -519,14 +519,14 @@ typedef struct s_cf_tree {
  * \param compare The comparing function
  * \param destroy The destructor function for tree elements
  */
-void cf_tree_init(t_cf_tree *tree,int (*compare)(t_cf_tree_dataset *,t_cf_tree_dataset *),void (*destroy)(t_cf_tree_dataset *));
+void cf_tree_init(cf_tree_t *tree,int (*compare)(cf_tree_dataset_t *,cf_tree_dataset_t *),void (*destroy)(cf_tree_dataset_t *));
 
 /**
  * \ingroup tree_funcs
  * This function is used to destroy a tree
  * \param tree The tree object
  */
-void cf_tree_destroy(t_cf_tree *tree);
+void cf_tree_destroy(cf_tree_t *tree);
 
 /**
  * \ingroup tree_funcs
@@ -536,7 +536,7 @@ void cf_tree_destroy(t_cf_tree *tree);
  * \param d The dataset structure. Will be copied
  * \return CF_TREE_NONE, CF_TREE_LEFT or CF_TREE_RIGHT
  */
-int cf_tree_insert(t_cf_tree *tree,t_cf_tree_node **n, t_cf_tree_dataset *d);
+int cf_tree_insert(cf_tree_t *tree,cf_tree_node_t **n, cf_tree_dataset_t *d);
 
 /**
  * \ingroup tree_funcs
@@ -546,7 +546,7 @@ int cf_tree_insert(t_cf_tree *tree,t_cf_tree_node **n, t_cf_tree_dataset *d);
  * \param key A dataset structure with a valid key set
  * \return CF_TREE_NONE, CF_TREE_LEFT or CF_TREE_RIGHT
  */
-int cf_tree_remove(t_cf_tree *tree,t_cf_tree_node **n, t_cf_tree_dataset *key);
+int cf_tree_remove(cf_tree_t *tree,cf_tree_node_t **n, cf_tree_dataset_t *key);
 
 /**
  * \ingroup tree_funcs
@@ -556,7 +556,7 @@ int cf_tree_remove(t_cf_tree *tree,t_cf_tree_node **n, t_cf_tree_dataset *key);
  * \param key A dataset structure with a valid key
  * \return NULL if element could not be found, element reference if element has been found
  */
-const t_cf_tree_dataset *cf_tree_find(t_cf_tree *tree,t_cf_tree_node *n, t_cf_tree_dataset *key);
+const cf_tree_dataset_t *cf_tree_find(cf_tree_t *tree,cf_tree_node_t *n, cf_tree_dataset_t *key);
 
 /*\@}*/
 
@@ -580,23 +580,23 @@ typedef struct s_list_element {
 
   struct s_list_element *prev; /**< pointer to the previous element */
   struct s_list_element *next; /**< pointer to the next element */
-} t_cf_list_element;
+} cf_list_element_t;
 
 /**
  * This structure defines the header for a doubly linked list
  * \ingroup list_funcs
  */
-typedef struct s_list_head {
-  t_cf_list_element *elements; /**< list elements pointer */
-  t_cf_list_element *last; /**< pointer to the last element */
-} t_cf_list_head;
+typedef struct s_lishead_t {
+  cf_list_element_t *elements; /**< list elements pointer */
+  cf_list_element_t *last; /**< pointer to the last element */
+} cf_list_head_t;
 
 
 /**
  * This function initializes a list head
  * \param head The list header variable
  */
-void cf_list_init(t_cf_list_head *head);
+void cf_list_init(cf_list_head_t *head);
 
 /**
  * This function appends an element to a list
@@ -604,7 +604,7 @@ void cf_list_init(t_cf_list_head *head);
  * \param data The data to append
  * \param size The size of the data
  */
-void cf_list_append(t_cf_list_head *head,void *data,size_t size);
+void cf_list_append(cf_list_head_t *head,void *data,size_t size);
 
 /**
  * This function appends an element to a list _and_does_not_copy_it_ but
@@ -614,7 +614,7 @@ void cf_list_append(t_cf_list_head *head,void *data,size_t size);
  * \param size The size of the data
  */
 
-void cf_list_append_static(t_cf_list_head *head,void *data,size_t size);
+void cf_list_append_static(cf_list_head_t *head,void *data,size_t size);
 
 /**
  * This function prepends an element to a list
@@ -622,7 +622,7 @@ void cf_list_append_static(t_cf_list_head *head,void *data,size_t size);
  * \param data The data to prepend
  * \param size The size of the data
  */
-void cf_list_prepend(t_cf_list_head *head,void *data,size_t size);
+void cf_list_prepend(cf_list_head_t *head,void *data,size_t size);
 
 /**
  * This function prepends an element to a list _and_does_not_copy_it
@@ -633,7 +633,7 @@ _
  * \param size The size of the data
  */
 
-void cf_list_prepend_static(t_cf_list_head *head,void *data,size_t size);
+void cf_list_prepend_static(cf_list_head_t *head,void *data,size_t size);
 
 /**
  * This function inserts an element in a list after the given element
@@ -642,7 +642,7 @@ void cf_list_prepend_static(t_cf_list_head *head,void *data,size_t size);
  * \param data The data to insert
  * \param size The size of the data
  */
-void cf_list_insert(t_cf_list_head *head,t_cf_list_element *prev,void *data,size_t size);
+void cf_list_insert(cf_list_head_t *head,cf_list_element_t *prev,void *data,size_t size);
 
 /**
  * This function searches an element in a list
@@ -651,21 +651,21 @@ void cf_list_insert(t_cf_list_head *head,t_cf_list_element *prev,void *data,size
  * \param compare The comparing function
  * \return Returns the data of the element if found or NULL if not found
  */
-void *cf_list_search(t_cf_list_head *head,void *data,int (*compare)(const void *data1,const void *data2));
+void *cf_list_search(cf_list_head_t *head,void *data,int (*compare)(const void *data1,const void *data2));
 
 /**
  * This function deletes an element from a list
  * \param head The list header variable for this list
  * \param elem The list element to delete
  */
-void cf_list_delete(t_cf_list_head *head,t_cf_list_element *elem);
+void cf_list_delete(cf_list_head_t *head,cf_list_element_t *elem);
 
 /**
  * This function destroys a list
  * \param head The list header variable for this list
  * \param destroy A destroying function for the list elements (NULL if not needed)
  */
-void cf_list_destroy(t_cf_list_head *head,void (*destroy)(void *data));
+void cf_list_destroy(cf_list_head_t *head,void (*destroy)(void *data));
 
 /*\@}*/
 
@@ -772,7 +772,7 @@ typedef struct {
   void *ptr;   /**< Pointer to the content */
   size_t size; /**< Size of the segment */
   int fd;      /**< file descriptor */
-} t_cache_entry;
+} cache_entry_t;
 
 /**
  * function to check if a cache entry is outdated
@@ -810,37 +810,37 @@ int cf_cache(const u_char *base,const u_char *uri,const u_char *content,size_t l
  * \param gzip If > 0, it expects the content to be encoded with gzip
  * \return NULL on error, a cache entry on success
  */
-t_cache_entry *cf_get_cache(u_char *base,u_char *uri,int gzip);
+cache_entry_t *cf_get_cache(u_char *base,u_char *uri,int gzip);
 
 /**
- * Function cleaning up a t_cache_entry struct
+ * Function cleaning up a cache_entry_t struct
  * \param ent The entry to clean up
  */
-void cf_cache_destroy(t_cache_entry *ent);
+void cf_cache_destroy(cache_entry_t *ent);
 
 /* }}} */
 
 /* {{{ data utilities */
 /**
- * This function converts an u_int64_t to a t_string (using str_char_append calls).
+ * This function converts an u_int64_t to a string_t (using str_char_append calls).
  * \param str The string to use
  * \param num The u_int64_t to convert
  */
-void u_int64_to_str(t_string *str, u_int64_t num);
+void u_int64_to_str(string_t *str, u_int64_t num);
 
 /**
- * This function converts an u_int16_t to a t_string (using str_char_append calls).
+ * This function converts an u_int16_t to a string_t (using str_char_append calls).
  * \param str The string to use
  * \param num The u_int16_t to convert
  */
-void u_int16_to_str(t_string *str, u_int16_t num);
+void u_int16_to_str(string_t *str, u_int16_t num);
 
 /**
- * This function converts an u_int32_t to a t_string (using str_char_append calls).
+ * This function converts an u_int32_t to a string_t (using str_char_append calls).
  * \param str The string to use
  * \param num The u_int32_t to convert
  */
-void u_int32_to_str(t_string *str, u_int32_t num);
+void u_int32_to_str(string_t *str, u_int32_t num);
 
 /**
  * This function converts an u_char * to an u_int64_t

@@ -82,14 +82,14 @@ void sighandler(int segnum) {
 }
 /* }}} */
 
-int cfg_compare(t_cf_tree_dataset *dt1,t_cf_tree_dataset *dt2);
-void destroy_directive_list(t_cf_tree_dataset *dt);
+int cfg_compare(cf_tree_dataset_t *dt1,cf_tree_dataset_t *dt2);
+void destroy_directive_list(cf_tree_dataset_t *dt);
 
-t_configuration glob_config;
+configuration_t glob_config;
 
 /* {{{ handle_userconf_command */
-int handle_userconf_command(t_configfile *cfile,const u_char *context,u_char *name,u_char **args,size_t argnum) {
-  t_conf_opt opt;
+int handle_userconf_command(configfile_t *cfile,const u_char *context,u_char *name,u_char **args,size_t argnum) {
+  conf_opt_t opt;
   int ret;
   u_char *fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
 
@@ -106,23 +106,23 @@ int handle_userconf_command(t_configfile *cfile,const u_char *context,u_char *na
 /* }}} */
 
 /* {{{ show_edit_content */
-void show_edit_content(t_cf_hash *head,const u_char *msg,const u_char *source,int saved) {
+void show_edit_content(cf_hash_t *head,const u_char *msg,const u_char *source,int saved) {
   u_char tplname[256],*ucfg,*uname,*fn = cf_hash_get(GlobalValues,"FORUM_NAME",10),*tmp,buff[256];
 
-  t_name_value *cval,
+  name_value_t *cval,
     *cs = cfg_get_first_value(&fo_default_conf,fn,"ExternCharset"),
     *tplnv = cfg_get_first_value(&fo_userconf_conf,fn,"Edit"),
     *cats = cfg_get_first_value(&fo_default_conf,fn,"Categories");
 
-  t_configfile config;
+  configfile_t config;
   uconf_userconfig_t *modxml;
-  t_cf_template tpl;
+  cf_template_t tpl;
   uconf_directive_t *directive;
   uconf_argument_t *arg;
-  t_name_value *value;
-  t_cf_cgi_param *mult;
-  t_string val;
-  t_cf_tpl_variable array;
+  name_value_t *value;
+  cf_cgi_param_t *mult;
+  string_t val;
+  cf_tpl_variable_t array;
   int utf8 = cf_strcmp(cs->values[0],"UTF-8") == 0;
   struct tm tm;
   time_t tval;
@@ -244,7 +244,7 @@ void show_edit_content(t_cf_hash *head,const u_char *msg,const u_char *source,in
         else {
           /* date value */
           tval = (time_t)strtoul(val.content,NULL,10);
-          localtime_r(&tm,&tval);
+          localtime_r(&tval,&tm);
           j = snprintf(buff,256,"%02d. %02d. %4d %02d:%02d:%02d",tm.tm_mday,tm.tm_mon+1,tm.tm_year+1900,tm.tm_hour,tm.tm_min,tm.tm_sec);
           str_char_set(&val,buff,j);
         }
@@ -305,10 +305,12 @@ void show_edit_content(t_cf_hash *head,const u_char *msg,const u_char *source,in
 }
 /* }}} */
 
-void do_save(t_cf_hash *head) {
+void do_save(cf_hash_t *head) {
   uconf_userconfig_t *merged;
-  u_char *msg,*uname,*ucfg;
-  t_configfile config;
+  u_char *msg,*uname,*ucfg, *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);;
+  configfile_t config;
+  name_value_t *cs = cfg_get_first_value(&fo_default_conf,forum_name,"ExternCharset");
+  array_t errmsgs;
 
   if((uname = cf_hash_get(GlobalValues,"UserName",8)) == NULL) {
     printf("Status: 403 Forbidden\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
@@ -331,7 +333,8 @@ void do_save(t_cf_hash *head) {
     return;
   }
 
-  if((merged = cf_uconf_merge_config(head,&glob_config,1)) != NULL) {
+  memset(&errmsgs,0,sizeof(errmsgs));
+  if((merged = cf_uconf_merge_config(head,&glob_config,&errmsgs,1)) != NULL) {
     /* TODO: run plugins */
 
     if((msg = cf_write_uconf(merged)) == NULL) cf_error_message(msg,NULL);
@@ -349,15 +352,15 @@ void do_save(t_cf_hash *head) {
 }
 
 /* {{{ normalize_params */
-u_char *normalize_params(t_cf_hash *head,const u_char *name) {
+u_char *normalize_params(cf_hash_t *head,const u_char *name) {
   u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10),*converted,*val,c;
   register u_char *ptr;
-  t_name_value *cs = cfg_get_first_value(&fo_default_conf,forum_name,"ExternCharset");
-  t_cf_hash_keylist *key;
-  t_cf_cgi_param *param;
+  name_value_t *cs = cfg_get_first_value(&fo_default_conf,forum_name,"ExternCharset");
+  cf_hash_t_keylist *key;
+  cf_cgi_param_t *param;
   size_t flen;
 
-  t_string str;
+  string_t str;
 
 
   if((val = cf_cgi_get(head,(u_char *)name)) == NULL) return "E_manipulated";
@@ -452,8 +455,8 @@ u_char *normalize_params(t_cf_hash *head,const u_char *name) {
 /* }}} */
 
 /* {{{ add_view_directive */
-int add_view_directive(t_configfile *cfile,const u_char *context,u_char *name,u_char **args,size_t argnum) {
-  t_conf_opt opt;
+int add_view_directive(configfile_t *cfile,const u_char *context,u_char *name,u_char **args,size_t argnum) {
+  conf_opt_t opt;
   int ret;
 
   opt.name   = strdup(name);
@@ -474,7 +477,7 @@ int add_view_directive(t_configfile *cfile,const u_char *context,u_char *name,u_
 /**
  * Dummy function, for ignoring unknown directives
  */
-int ignre(t_configfile *cf,const u_char *context,u_char *name,u_char **args,size_t argnum) {
+int ignre(configfile_t *cf,const u_char *context,u_char *name,u_char **args,size_t argnum) {
   return 0;
 }
 
@@ -492,14 +495,14 @@ int main(int argc,char *argv[],char *env[]) {
     "fo_default", "fo_userconf", "fo_view"
   };
 
-  t_cf_hash *head;
+  cf_hash_t *head;
 
   u_char *forum_name,*fname,*uname,*err,*action,*ucfg;
 
-  t_array *cfgfiles;
-  t_configfile dconf,conf,vconf;
+  array_t *cfgfiles;
+  configfile_t dconf,conf,vconf;
 
-  t_name_value *cs;
+  name_value_t *cs;
 
   int ret;
   /* }}} */

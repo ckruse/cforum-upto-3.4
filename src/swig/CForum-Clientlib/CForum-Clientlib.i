@@ -24,16 +24,16 @@
 typedef struct s_flag {
   char *name;
   char *val;
-} t_cf_post_flag;
+} cf_post_flag_t;
 
-%extend t_cf_post_flag {
-  t_cf_post_flag(const char *name,const char *value);
+%extend cf_post_flag_t {
+  cf_post_flag_t(const char *name,const char *value);
 }
 
-/* {{{ t_cf_post_flag */
+/* {{{ cf_post_flag_t */
 %{
-t_cf_post_flag *new_t_cf_post_flag(const char *name,const char *value) {
-  t_cf_post_flag *flag = fo_alloc(NULL,1,sizeof(*flag),FO_ALLOC_MALLOC);
+cf_post_flag_t *new_cf_post_flag_t(const char *name,const char *value) {
+  cf_post_flag_t *flag = fo_alloc(NULL,1,sizeof(*flag),FO_ALLOC_MALLOC);
 
   flag->name = strdup(name);
   flag->val = strdup(value);
@@ -52,12 +52,12 @@ typedef struct s_message {
   int votes_bad;
 
   struct s_message *next,*prev;
-} t_message;
+} message_t;
 
-%extend t_message {
+%extend message_t {
   char *get_mid();
 
-  t_cf_list_head *get_flags();
+  cf_list_head_t *get_flags();
 
   const char *get_author();
   void set_author(const char *author);
@@ -80,38 +80,38 @@ typedef struct s_message {
   const char *get_content();
   void set_content(const char *cnt);
 
-  t_message *get_first_visible();
-  t_message *delete_subtree();
-  t_message *next_subtree();
-  t_message *prev_subtree();
-  t_message *get_parent();
+  message_t *get_first_visible();
+  message_t *delete_subtree();
+  message_t *next_subtree();
+  message_t *prev_subtree();
+  message_t *get_parent();
   bool has_answers();
 }
 
-/* {{{ t_message */
+/* {{{ message_t */
 %{
-t_message *t_message_get_first_visible(t_message *msg) {
+message_t *message_t_get_first_visible(message_t *msg) {
   return cf_msg_get_first_visible(msg);
 }
 
-t_message *t_message_delete_subtree(t_message *msg) {
+message_t *message_t_delete_subtree(message_t *msg) {
   return cf_msg_delete_subtree(msg);
 }
-t_message *t_message_next_subtree(t_message *msg) {
+message_t *message_t_next_subtree(message_t *msg) {
   return cf_msg_next_subtree(msg);
 }
-t_message *t_message_prev_subtree(t_message *msg) {
+message_t *message_t_prev_subtree(message_t *msg) {
   return cf_msg_prev_subtree(msg);
 }
-t_message *t_message_get_parent(t_message *msg) {
+message_t *message_t_get_parent(message_t *msg) {
   return cf_msg_get_parent(msg);
 }
-bool t_message_has_answers(t_message *msg) {
+bool message_t_has_answers(message_t *msg) {
   return cf_msg_has_answers(msg);
 }
 
-u_char *t_message_get_mid(t_message *msg) {
-  t_string str;
+u_char *message_t_get_mid(message_t *msg) {
+  string_t str;
   str_init(&str);
 
   u_int64_to_str(&str,msg->mid);
@@ -119,56 +119,56 @@ u_char *t_message_get_mid(t_message *msg) {
   return str.content;
 }
 
-t_cf_list_head *t_message_get_flags(t_message *msg) {
+cf_list_head_t *message_t_get_flags(message_t *msg) {
   return &msg->flags;
 }
 
-const char *t_message_get_author(t_message *msg) {
+const char *message_t_get_author(message_t *msg) {
   return msg->author.content;
 }
-void t_message_set_author(t_message *msg,const u_char *author) {
+void message_t_set_author(message_t *msg,const u_char *author) {
   str_chars_set(&msg->author,author,strlen(author));
 }
 
-const char *t_message_get_email(t_message *msg) {
+const char *message_t_get_email(message_t *msg) {
   return msg->email.content;
 }
-void t_message_set_email(t_message *msg,const u_char *email) {
+void message_t_set_email(message_t *msg,const u_char *email) {
   str_chars_set(&msg->email,email,strlen(email));
 }
 
-const char *t_message_get_hp(t_message *msg) {
+const char *message_t_get_hp(message_t *msg) {
   return msg->hp.content;
 }
-void t_message_set_hp(t_message *msg,const u_char *hp) {
+void message_t_set_hp(message_t *msg,const u_char *hp) {
   str_chars_set(&msg->hp,hp,strlen(hp));
 }
 
-const char *t_message_get_img(t_message *msg) {
+const char *message_t_get_img(message_t *msg) {
   return msg->img.content;
 }
-void t_message_set_img(t_message *msg,const u_char *img) {
+void message_t_set_img(message_t *msg,const u_char *img) {
   str_chars_set(&msg->img,img,strlen(img));
 }
 
-const char *t_message_get_subject(t_message *msg) {
+const char *message_t_get_subject(message_t *msg) {
   return msg->subject.content;
 }
-void t_message_set_subject(t_message *msg,const u_char *subj) {
+void message_t_set_subject(message_t *msg,const u_char *subj) {
   str_chars_set(&msg->subject,subj,strlen(subj));
 }
 
-const char *t_message_get_category(t_message *msg) {
+const char *message_t_get_category(message_t *msg) {
   return msg->category.content;
 }
-void t_message_set_category(t_message *msg,const u_char *cat) {
+void message_t_set_category(message_t *msg,const u_char *cat) {
   str_chars_set(&msg->category,cat,strlen(cat));
 }
 
-const char *t_message_get_content(t_message *msg) {
+const char *message_t_get_content(message_t *msg) {
   return msg->content.content;
 }
-void t_message_set_content(t_message *msg,const u_char *cnt) {
+void message_t_set_content(message_t *msg,const u_char *cnt) {
   str_chars_set(&msg->content,cnt,strlen(cnt));
 }
 
@@ -178,20 +178,20 @@ void t_message_set_content(t_message *msg,const u_char *cnt) {
 typedef struct s_cl_thread {
   int msg_len;
 
-  t_message *messages;
-  t_message *last;
-  t_message *threadmsg;
-  t_message *newest;
-} t_cl_thread;
+  message_t *messages;
+  message_t *last;
+  message_t *threadmsg;
+  message_t *newest;
+} cl_thread_t;
 
-%extend t_cl_thread {
+%extend cl_thread_t {
   char *get_tid();
 }
 
-/* {{{ t_cl_thread */
+/* {{{ cl_thread_t */
 %{
-char *t_cl_thread_get_tid(t_cl_thread *thr) {
-  t_string str;
+char *cl_thread_t_get_tid(cl_thread_t *thr) {
+  string_t str;
 
   str_init(&str);
   u_int64_to_str(&str,thr->tid);
@@ -240,7 +240,7 @@ u_char *cf_pl_tpl_name(const u_char *name) {
 %}
 char *cf_pl_tpl_name(const char *name);
 
-void cf_set_variable(t_cf_template *tpl,t_name_value *cs,const char *vname,const char *val,size_t len,bool html);
+void cf_set_variable(cf_template_t *tpl,name_value_t *cs,const char *vname,const char *val,size_t len,bool html);
 void cf_error_message(const char *msg,FILE *out, ...);
 char *cf_get_error_message(const char *msg,int *len, ...);
 
@@ -275,8 +275,8 @@ char *cf_pl_general_get_time(const char *fmt,const char *locale,unsigned int dat
 char *cf_pl_general_get_time(const char *fmt,const char *locale,unsigned int date);
 
 %{
-t_cl_thread *cf_pl_get_message_through_sock(int sock,rline_t *tsd,const u_char *ctid,const u_char *cmid,bool del) {
-  t_cl_thread *thr = fo_alloc(NULL,1,sizeof(*thr),FO_ALLOC_CALLOC);
+cl_thread_t *cf_pl_get_message_through_sock(int sock,rline_t *tsd,const u_char *ctid,const u_char *cmid,bool del) {
+  cl_thread_t *thr = fo_alloc(NULL,1,sizeof(*thr),FO_ALLOC_CALLOC);
 
   u_int64_t tid = str_to_u_int64(ctid);
   u_int64_t mid = str_to_u_int64(cmid);
@@ -289,11 +289,11 @@ t_cl_thread *cf_pl_get_message_through_sock(int sock,rline_t *tsd,const u_char *
   return thr;
 }
 %}
-t_cl_thread *cf_pl_get_message_through_sock(int sock,rline_t *tsd,const char *ctid,const char *cmid,bool del);
+cl_thread_t *cf_pl_get_message_through_sock(int sock,rline_t *tsd,const char *ctid,const char *cmid,bool del);
 
 %{
-t_cl_thread *cf_pl_get_next_thread_through_sock(int sock,rline_t *tsd) {
-  t_cl_thread *thr = fo_alloc(NULL,1,sizeof(*thr),FO_ALLOC_CALLOC);
+cl_thread_t *cf_pl_get_next_thread_through_sock(int sock,rline_t *tsd) {
+  cl_thread_t *thr = fo_alloc(NULL,1,sizeof(*thr),FO_ALLOC_CALLOC);
 
   if(cf_get_next_thread_through_sock(sock,tsd,thr) != 0) {
     free(thr);
@@ -303,11 +303,11 @@ t_cl_thread *cf_pl_get_next_thread_through_sock(int sock,rline_t *tsd) {
   return thr;
 }
 %}
-t_cl_thread *cf_pl_get_next_thread_through_sock(int sock,rline_t *tsd);
+cl_thread_t *cf_pl_get_next_thread_through_sock(int sock,rline_t *tsd);
 
 %{
-t_cl_thread *cf_pl_get_message_through_shm(void *shm_ptr,const char *ctid,const char *cmid,bool del) {
-  t_cl_thread *thr = fo_alloc(NULL,1,sizeof(*thr),FO_ALLOC_CALLOC);
+cl_thread_t *cf_pl_get_message_through_shm(void *shm_ptr,const char *ctid,const char *cmid,bool del) {
+  cl_thread_t *thr = fo_alloc(NULL,1,sizeof(*thr),FO_ALLOC_CALLOC);
 
   u_int64_t tid = str_to_u_int64(ctid);
   u_int64_t mid = str_to_u_int64(cmid);
@@ -320,7 +320,7 @@ t_cl_thread *cf_pl_get_message_through_shm(void *shm_ptr,const char *ctid,const 
   return thr;
 }
 %}
-t_cl_thread *cf_pl_get_message_through_shm(void *shm_ptr,const char *ctid,const char *cmid,bool del);
+cl_thread_t *cf_pl_get_message_through_shm(void *shm_ptr,const char *ctid,const char *cmid,bool del);
 
 
 char *charset_convert(const char *toencode,int in_len,const char *from_charset,const char *to_charset,int *out_len_p);

@@ -40,12 +40,12 @@ typedef           u_char     ub1;   /**< unified character format */
 /**
  * This is a destructor function type. This function type is used to destroy hash elements.
  */
-typedef void (*t_cf_hash_cleanup)(void *);
+typedef void (*cf_hash_t_cleanup)(void *);
 
 typedef struct s_cf_hash_keylist {
   u_char *key;
   struct s_cf_hash_keylist *next,*prev;
-} t_cf_hash_keylist;
+} cf_hash_t_keylist;
 
 /**
  * this struct is used to store a hashtable entry.
@@ -65,18 +65,18 @@ typedef struct s_cf_hashentry {
    */
   struct s_cf_hashentry *next;
 
-  t_cf_hash_keylist *keyelem;
+  cf_hash_t_keylist *keyelem;
 
   /**
    * This is the pointer to the previous value. Because we cannot avoid double hash values, we have a
    * linked list of entries.
    */
   struct s_cf_hashentry *prev;
-} t_cf_hash_entry;
+} cf_hash_t_entry;
 
 typedef struct {
-  t_cf_hash_keylist *elems,*last;
-} t_cf_hash_keylist_head;
+  cf_hash_t_keylist *elems,*last;
+} cf_hash_t_keylishead_t;
 
 /**
  *
@@ -86,7 +86,7 @@ typedef struct s_cf_hash {
   /**
    * The higher the tablesize, the smaller the possibility of
    * a double hash value. This goes on the cost of memory... a pointer to
-   * a t_cf_hashentry type has 4 byte, so 512 entries have 2048 bytes (2kb!).
+   * a cf_hash_tentry type has 4 byte, so 512 entries have 2048 bytes (2kb!).
    * This is very big... so be patiant!
    */
   ub4 tablesize;
@@ -102,16 +102,16 @@ typedef struct s_cf_hash {
    * For element cleanups we need a callback function. This callback function
    * has to cleanup the structure we saved.
    */
-  t_cf_hash_cleanup destroy;
+  cf_hash_t_cleanup destroy;
 
-  t_cf_hash_keylist_head keys;
+  cf_hash_t_keylishead_t keys;
 
   /**
    * We save only pointers because in each element we have a
    * linked list of elements
    */
-  t_cf_hash_entry **table;
-} t_cf_hash;
+  cf_hash_t_entry **table;
+} cf_hash_t;
 
 /**
  * this macro is used to make shorten indexes easier. It calculates the number of entries at the given table size
@@ -143,7 +143,7 @@ ub4 lookup(register ub1 *k, register ub4 length, register ub4 level);
  * \param cl The destructor for a data entry of the hash table. If the function pointer is NULL, no cleanup function will be called.
  * \return It returns the new created hash table object on success or NULL on failure
  */
-t_cf_hash *cf_hash_new(t_cf_hash_cleanup cl);
+cf_hash_t *cf_hash_new(cf_hash_t_cleanup cl);
 
 /**
  * This function saves a hash entry with the given key in the hash
@@ -158,7 +158,7 @@ t_cf_hash *cf_hash_new(t_cf_hash_cleanup cl);
  * \param datalen The size of the data
  * \return 0 on failure, 1 if successful
  */
-int cf_hash_set(t_cf_hash *hsh,unsigned char *key,size_t keylen,void *data,size_t datalen);
+int cf_hash_set(cf_hash_t *hsh,unsigned char *key,size_t keylen,void *data,size_t datalen);
 
 /**
  * This function saves a hash entry with the given key in the hash
@@ -175,7 +175,7 @@ int cf_hash_set(t_cf_hash *hsh,unsigned char *key,size_t keylen,void *data,size_
  * \param data    The data of the entry
  * \return 0 on failure, 1 if successful
  */
-int cf_hash_set_static(t_cf_hash *hsh,unsigned char *key,size_t keylen,void *data);
+int cf_hash_set_static(cf_hash_t *hsh,unsigned char *key,size_t keylen,void *data);
 
 /**
  * This function looks up a hash entry in a hash table. If an entry with
@@ -185,7 +185,7 @@ int cf_hash_set_static(t_cf_hash *hsh,unsigned char *key,size_t keylen,void *dat
  * \param keylen The length of the key
  * \return The data of the entry if it has been found or NULL if it could not be found.
  */
-void *cf_hash_get(t_cf_hash *hsh,unsigned char *key,size_t keylen);
+void *cf_hash_get(cf_hash_t *hsh,unsigned char *key,size_t keylen);
 
 /**
  * This function deletes a hash entry in a hashtable.
@@ -194,7 +194,7 @@ void *cf_hash_get(t_cf_hash *hsh,unsigned char *key,size_t keylen);
  * \param keylen The length of the key
  * \return It returns 0 if the entry could not be found and 1 if the entry has been deleted successfully.
  */
-int cf_hash_entry_delete(t_cf_hash *hsh,unsigned char *key,size_t keylen);
+int cf_hash_entry_delete(cf_hash_t *hsh,unsigned char *key,size_t keylen);
 
 /**
  * This function destroys a hash and frees all of its values.
@@ -202,6 +202,6 @@ int cf_hash_entry_delete(t_cf_hash *hsh,unsigned char *key,size_t keylen);
  * cf_hash_new()!
  * \param hsh The hash table to destroy.
  */
-void cf_hash_destroy(t_cf_hash *hsh);
+void cf_hash_destroy(cf_hash_t *hsh);
 
 #endif

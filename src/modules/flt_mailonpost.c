@@ -57,7 +57,7 @@ static u_char *flt_mailonpost_uemail = NULL;
 static u_char *flt_mailonpost_amail  = NULL;
 
 struct s_smtp {
-  t_string *msg;
+  string_t *msg;
   size_t pos;
 };
 
@@ -96,15 +96,15 @@ void flt_mailonpost_destroy(DB *db) {
 /* }}} */
 
 /* {{{ flt_mailonpost_init_handler */
-int flt_mailonpost_init_handler(t_cf_hash *head,t_configuration *dc,t_configuration *vc) {
+int flt_mailonpost_init_handler(cf_hash_t *head,configuration_t *dc,configuration_t *vc) {
   u_char *val,*email,buff[256],*user = cf_hash_get(GlobalValues,"UserName",8),**list = NULL;
   DB *db = NULL,*udb = NULL;
   DBT key,data;
   size_t n,i;
   u_int64_t tid = 0;
   int ret;
-  t_string str;
-  t_name_value *v = NULL;
+  string_t str;
+  name_value_t *v = NULL;
 
   if(!head) return FLT_DECLINE;
 
@@ -287,7 +287,7 @@ const char *flt_mailonpost_msgcb(void **buf, int *len, void *arg) {
 /* }}} */
 
 /* {{{ flt_mailonpost_encode_header */
-void flt_mailonpost_encode_header(t_string *str,const u_char *enc,size_t len) {
+void flt_mailonpost_encode_header(string_t *str,const u_char *enc,size_t len) {
   static const u_char hex[] = "0123456789ABCDEF";
   int di = 0;
   unsigned x;
@@ -334,11 +334,11 @@ void flt_mailonpost_encode_header(t_string *str,const u_char *enc,size_t len) {
 /* }}} */
 
 /* {{{ flt_mailonpost_parsestr */
-void flt_mailonpost_parsestr(t_cl_thread *t,t_message *p,t_string *str,const u_char *pars,const u_char *link,const u_char *mlink,int mode) {
+void flt_mailonpost_parsestr(cl_thread_t *t,message_t *p,string_t *str,const u_char *pars,const u_char *link,const u_char *mlink,int mode) {
   register u_char *ptr;
   u_char *l;
 
-  t_string str1,*str2 = NULL;
+  string_t str1,*str2 = NULL;
 
   cf_readmode_t *rm = cf_hash_get(GlobalValues,"RM",2);
 
@@ -457,7 +457,7 @@ void flt_mailonpost_parsestr(t_cl_thread *t,t_message *p,t_string *str,const u_c
 /* }}} */
 
 /* {{{ flt_mailonpost_mail */
-void flt_mailonpost_mail(u_char **emails,u_int64_t len,t_message *p,t_cl_thread *t) {
+void flt_mailonpost_mail(u_char **emails,u_int64_t len,message_t *p,cl_thread_t *t) {
   smtp_session_t sess;
   smtp_message_t msg;
 
@@ -472,7 +472,7 @@ void flt_mailonpost_mail(u_char **emails,u_int64_t len,t_message *p,t_cl_thread 
          *link = cf_get_link(rm->posting_uri[0],t->tid,p->mid),
          *mylink = cf_get_link(rm->posting_uri[1],t->tid,p->mid);
 
-  t_string str;
+  string_t str;
 
   str_init(&str);
 
@@ -517,16 +517,16 @@ void flt_mailonpost_mail(u_char **emails,u_int64_t len,t_message *p,t_cl_thread 
 
 /* {{{ flt_mailonpost_execute */
 #ifdef CF_SHARED_MEM
-int flt_mailonpost_execute(t_cf_hash *head,t_configuration *dc,t_configuration *pc,t_message *p,u_int64_t tid,int sock,void *shm)
+int flt_mailonpost_execute(cf_hash_t *head,configuration_t *dc,configuration_t *pc,message_t *p,u_int64_t tid,int sock,void *shm)
 #else
-int flt_mailonpost_execute(t_cf_hash *head,t_configuration *dc,t_configuration *pc,t_message *p,u_int64_t tid,int sock)
+int flt_mailonpost_execute(cf_hash_t *head,configuration_t *dc,configuration_t *pc,message_t *p,u_int64_t tid,int sock)
 #endif
 {
   int ret;
   u_char buff[256],**list = NULL;
   size_t n,i;
-  t_string str;
-  t_cl_thread thr;
+  string_t str;
+  cl_thread_t thr;
 
   DB *db = NULL;
   DBT key,data;
@@ -576,9 +576,9 @@ int flt_mailonpost_execute(t_cf_hash *head,t_configuration *dc,t_configuration *
 
 /* {{{ flt_mailonpost_post_handler */
 
-int flt_mailonpost_post_handler(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cl_thread *thread,t_cf_template *tpl) {
+int flt_mailonpost_post_handler(cf_hash_t *head,configuration_t *dc,configuration_t *vc,cl_thread_t *thread,cf_template_t *tpl) {
   u_char *link,buff[256];
-  t_name_value *cs,*email;
+  name_value_t *cs,*email;
   size_t len;
   DB *db = NULL;
   int ret;
@@ -629,7 +629,7 @@ int flt_mailonpost_post_handler(t_cf_hash *head,t_configuration *dc,t_configurat
 /* }}} */
 
 /* {{{ flt_mailonpost_cmd */
-int flt_mailonpost_cmd(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
+int flt_mailonpost_cmd(configfile_t *cfile,conf_opt_t *opt,const u_char *context,u_char **args,size_t argnum) {
   if(flt_mailonpost_fn == NULL) flt_mailonpost_fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   if(!context || cf_strcmp(flt_mailonpost_fn,context) != 0) return 0;
 
@@ -673,7 +673,7 @@ void flt_mailonpost_cleanup(void) {
   if(flt_mailonpost_dbname) free(flt_mailonpost_dbname);
 }
 
-t_conf_opt flt_mailonpost_config[] = {
+conf_opt_t flt_mailonpost_config[] = {
   { "SMTPHost",     flt_mailonpost_cmd, CFG_OPT_CONFIG|CFG_OPT_LOCAL, NULL },
   { "SMTPFrom",     flt_mailonpost_cmd, CFG_OPT_CONFIG|CFG_OPT_LOCAL, NULL },
   { "SMTPReverse",  flt_mailonpost_cmd, CFG_OPT_CONFIG|CFG_OPT_LOCAL, NULL },
@@ -684,14 +684,14 @@ t_conf_opt flt_mailonpost_config[] = {
   { NULL, NULL, 0, NULL }
 };
 
-t_handler_config flt_mailonpost_handlers[] = {
+handler_config_t flt_mailonpost_handlers[] = {
   { INIT_HANDLER,         flt_mailonpost_init_handler },
   { AFTER_POST_HANDLER,   flt_mailonpost_execute },
   { POSTING_HANDLER,      flt_mailonpost_post_handler },
   { 0, NULL }
 };
 
-t_module_config flt_mailonpost = {
+module_config_t flt_mailonpost = {
   MODULE_MAGIC_COOKIE,
   flt_mailonpost_config,
   flt_mailonpost_handlers,

@@ -48,21 +48,21 @@ struct sockaddr_un;
 
 /* {{{ mutex functions */
 /* {{{ cf_mutex_init */
-void cf_mutex_init(const u_char *name,t_cf_mutex *mutex) {
+void cf_mutex_init(const u_char *name,cf_mutex_t *mutex) {
   mutex->name = strdup(name);
   pthread_mutex_init(&mutex->mutex,NULL);
 }
 /* }}} */
 
 /* {{{ cf_mutex_destroy */
-void cf_mutex_destroy(t_cf_mutex *mutex) {
+void cf_mutex_destroy(cf_mutex_t *mutex) {
   free(mutex->name);
   pthread_mutex_destroy(&mutex->mutex);
 }
 /* }}} */
 
 /* {{{ cf_lock_mutex */
-void cf_lock_mutex(const u_char *file,const int line,t_cf_mutex *mutex) {
+void cf_lock_mutex(const u_char *file,const int line,cf_mutex_t *mutex) {
   #ifdef _FO_LOCK_DEBUG
   struct timeval tv1,tv2;
   struct timezone tz;
@@ -98,7 +98,7 @@ void cf_lock_mutex(const u_char *file,const int line,t_cf_mutex *mutex) {
 /* }}} */
 
 /* {{{ cf_unlock_mutex */
-void cf_unlock_mutex(const u_char *file,const int line,t_cf_mutex *mutex) {
+void cf_unlock_mutex(const u_char *file,const int line,cf_mutex_t *mutex) {
   #ifdef _FO_LOCK_DEBUG
   struct timeval tv1,tv2;
   struct timezone tz;
@@ -136,21 +136,21 @@ void cf_unlock_mutex(const u_char *file,const int line,t_cf_mutex *mutex) {
 
 /* {{{ rwlock functions */
 /* {{{ cf_rwlock_init */
-void cf_rwlock_init(const u_char *name,t_cf_rwlock *rwlock) {
+void cf_rwlock_init(const u_char *name,cf_rwlock_t *rwlock) {
   rwlock->name = strdup(name);
   pthread_rwlock_init(&rwlock->rwlock,NULL);
 }
 /* }}} */
 
 /* {{{ cf_rwlock_destroy */
-void cf_rwlock_destroy(t_cf_rwlock *rwlock) {
+void cf_rwlock_destroy(cf_rwlock_t *rwlock) {
   free(rwlock->name);
   pthread_rwlock_destroy(&rwlock->rwlock);
 }
 /* }}} */
 
 /* {{{ cf_rwlock_rdlock */
-void cf_rwlock_rdlock(const u_char *file,const int line,t_cf_rwlock *rwlock) {
+void cf_rwlock_rdlock(const u_char *file,const int line,cf_rwlock_t *rwlock) {
   #ifdef _FO_LOCK_DEBUG
   struct timeval tv1,tv2;
   struct timezone tz;
@@ -185,7 +185,7 @@ void cf_rwlock_rdlock(const u_char *file,const int line,t_cf_rwlock *rwlock) {
 /* }}} */
 
 /* {{{ cf_rwlock_wrlock */
-void cf_rwlock_wrlock(const u_char *file,const int line,t_cf_rwlock *rwlock) {
+void cf_rwlock_wrlock(const u_char *file,const int line,cf_rwlock_t *rwlock) {
   #ifdef _FO_LOCK_DEBUG
   struct timeval tv1,tv2;
   struct timezone tz;
@@ -220,7 +220,7 @@ void cf_rwlock_wrlock(const u_char *file,const int line,t_cf_rwlock *rwlock) {
 /* }}} */
 
 /* {{{ cf_rwlock_unlock */
-void cf_rwlock_unlock(const u_char *file,const int line,t_cf_rwlock *rwlock) {
+void cf_rwlock_unlock(const u_char *file,const int line,cf_rwlock_t *rwlock) {
   int status;
 
   if((status = pthread_rwlock_unlock(&rwlock->rwlock)) != 0) {
@@ -246,7 +246,7 @@ void cf_rwlock_unlock(const u_char *file,const int line,t_cf_rwlock *rwlock) {
 
 /* {{{ cond functions */
 /* {{{ cf_cond_init */
-void cf_cond_init(const u_char *name,t_cf_cond *cond,const pthread_condattr_t *attr) {
+void cf_cond_init(const u_char *name,cf_cond_t *cond,const pthread_condattr_t *attr) {
   cond->name = strdup(name);
   pthread_mutex_init(&cond->lock,NULL);
   pthread_cond_init(&cond->cond,attr);
@@ -254,7 +254,7 @@ void cf_cond_init(const u_char *name,t_cf_cond *cond,const pthread_condattr_t *a
 /* }}} */
 
 /* {{{ cf_cond_destroy */
-void cf_cond_destroy(t_cf_cond *cond) {
+void cf_cond_destroy(cf_cond_t *cond) {
   free(cond->name);
   pthread_mutex_destroy(&cond->lock);
   pthread_cond_destroy(&cond->cond);
@@ -262,7 +262,7 @@ void cf_cond_destroy(t_cf_cond *cond) {
 /* }}} */
 
 /* {{{ cf_cond_signal */
-void cf_cond_signal(const u_char *file,int line,t_cf_cond *cond) {
+void cf_cond_signal(const u_char *file,int line,cf_cond_t *cond) {
   #ifdef _FO_LOCK_DEBUG
   struct timeval tv1,tv2;
   struct timezone tz;
@@ -304,7 +304,7 @@ void cf_cond_signal(const u_char *file,int line,t_cf_cond *cond) {
 /* }}} */
 
 /* {{{ cf_cond_broadcast */
-void cf_cond_broadcast(const u_char *file,int line,t_cf_cond *cond) {
+void cf_cond_broadcast(const u_char *file,int line,cf_cond_t *cond) {
   #ifdef _FO_LOCK_DEBUG
   struct timeval tv1,tv2;
   struct timezone tz;
@@ -346,7 +346,7 @@ void cf_cond_broadcast(const u_char *file,int line,t_cf_cond *cond) {
 /* }}} */
 
 /* {{{ cf_cond_wait */
-void cf_cond_wait(const u_char *file,int line,t_cf_cond *cond) {
+void cf_cond_wait(const u_char *file,int line,cf_cond_t *cond) {
   #ifdef _FO_LOCK_DEBUG
   struct timeval tv1,tv2;
   struct timezone tz;
@@ -388,7 +388,7 @@ void cf_cond_wait(const u_char *file,int line,t_cf_cond *cond) {
 /* }}} */
 
 /* {{{ cf_cond_timedwait */
-int cf_cond_timedwait(const u_char *file,int line,t_cf_cond *cond,const struct timespec *ts) {
+int cf_cond_timedwait(const u_char *file,int line,cf_cond_t *cond,const struct timespec *ts) {
   #ifdef _FO_LOCK_DEBUG
   struct timeval tv1,tv2;
   struct timezone tz;

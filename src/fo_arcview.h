@@ -16,19 +16,19 @@
 #ifndef _FO_ARCVIEW_H
 #define _FO_ARCVIEW_H
 
-extern t_cf_hash *ArcviewHandlers;
+extern cf_hash_t *ArcviewHandlers;
 
-typedef int (*t_is_valid_year)(const u_char *);
-typedef int (*t_is_valid_month)(const u_char *,const u_char *);
-typedef int (*t_is_valid_thread)(const u_char *,const u_char *,const u_char *);
+typedef int (*is_valid_year_t)(const u_char *);
+typedef int (*is_valid_month_t)(const u_char *,const u_char *);
+typedef int (*is_valid_thread_t)(const u_char *,const u_char *,const u_char *);
 
-typedef t_array *(*t_get_years)(void);
-typedef t_array *(*t_get_monthlist)(const u_char *);
-typedef t_array *(*t_get_threadlist)(const u_char *,const u_char *);
-typedef t_cl_thread *(*t_get_thread)(const u_char *,const u_char *,const u_char *);
+typedef array_t *(*get_years_t)(void);
+typedef array_t *(*get_monthlist_t)(const u_char *);
+typedef array_t *(*get_threadlist_t)(const u_char *,const u_char *);
+typedef cl_thread_t *(*get_thread_t)(const u_char *,const u_char *,const u_char *);
 
-typedef time_t (*t_month_last_modified)(const u_char *,const u_char *);
-typedef time_t (*t_thread_last_modified)(const u_char *,const u_char *,const u_char *);
+typedef time_t (*month_last_modified_t)(const u_char *,const u_char *);
+typedef time_t (*thread_last_modified_t)(const u_char *,const u_char *,const u_char *);
 
 typedef struct {
   int invisible;
@@ -46,7 +46,7 @@ typedef struct {
   size_t tlen;
 
   time_t date;
-} t_arc_tl_ent;
+} arc_tl_ent_t;
 
 
 #endif

@@ -48,12 +48,12 @@ struct sockaddr_un;
 typedef struct s_names_db {
   DB *NamesDB;
   u_char *AuthNames;
-} t_names_db;
+} names_db_t;
 
-static t_cf_hash *flt_rn_namesdb = NULL;
+static cf_hash_t *flt_rn_namesdb = NULL;
 
 void flt_registerednames_cleanup_hash(void *arg) {
-  t_names_db *ndb = (t_names_db *)arg;
+  names_db_t *ndb = (names_db_t *)arg;
 
   ndb->NamesDB->close(ndb->NamesDB,0);
   free(ndb->AuthNames);
@@ -63,7 +63,7 @@ void flt_registerednames_cleanup_hash(void *arg) {
 u_char *flt_registerednames_transform(const u_char *val) {
   register u_char *ptr = (u_char *)val;
   register int ws = 0;
-  t_string str;
+  string_t str;
 
   if(!ptr) return NULL;
 
@@ -93,7 +93,7 @@ u_char *flt_registerednames_transform(const u_char *val) {
 /* }}} */
 
 /* {{{ flt_registerednames_check_auth */
-int flt_registerednames_check_auth(t_names_db *ndb,u_char *name,u_char *pass) {
+int flt_registerednames_check_auth(names_db_t *ndb,u_char *name,u_char *pass) {
   DBT key,data;
   int ret;
 
@@ -116,13 +116,13 @@ int flt_registerednames_check_auth(t_names_db *ndb,u_char *name,u_char *pass) {
 /* }}} */
 
 /* {{{ flt_registerednames_handler */
-int flt_registerednames_handler(int connfd,t_forum *forum,const u_char **tokens,int tnum,rline_t *tsd) {
+int flt_registerednames_handler(int connfd,forum_t *forum,const u_char **tokens,int tnum,rline_t *tsd) {
   u_char *ln = NULL,*tmp,*names[2] = { NULL, NULL },*pass = NULL;
   long llen;
-  t_cf_hash *infos;
+  cf_hash_t *infos;
   DBT key,data;
   int ret;
-  t_names_db *ndb = cf_hash_get(flt_rn_namesdb,forum->name,strlen(forum->name));
+  names_db_t *ndb = cf_hash_get(flt_rn_namesdb,forum->name,strlen(forum->name));
 
   memset(&key,0,sizeof(key));
   memset(&data,0,sizeof(data));
@@ -312,8 +312,8 @@ int flt_registerednames_handler(int connfd,t_forum *forum,const u_char **tokens,
 /* {{{ flt_registerednames_init_module */
 int flt_registerednames_init_module(int sock) {
   int ret;
-  t_names_db *ndb;
-  t_name_value *forums = cfg_get_first_value(&fo_server_conf,NULL,"Forums");
+  names_db_t *ndb;
+  name_value_t *forums = cfg_get_first_value(&fo_server_conf,NULL,"Forums");
   size_t i;
 
   if(!flt_rn_namesdb) {
@@ -347,8 +347,8 @@ int flt_registerednames_init_module(int sock) {
 /* }}} */
 
 /* {{{ flt_registerednames_handle_command */
-int flt_registerednames_handle_command(t_configfile *cf,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
-  t_names_db *ndb,ndb1;
+int flt_registerednames_handle_command(configfile_t *cf,conf_opt_t *opt,const u_char *context,u_char **args,size_t argnum) {
+  names_db_t *ndb,ndb1;
 
   if(flt_rn_namesdb == NULL) flt_rn_namesdb = cf_hash_new(flt_registerednames_cleanup_hash);
 
@@ -377,17 +377,17 @@ void flt_registerednames_cleanup(void) {
   if(flt_rn_namesdb) cf_hash_destroy(flt_rn_namesdb);
 }
 
-t_conf_opt flt_registerednames_config[] = {
+conf_opt_t flt_registerednames_config[] = {
   { "AuthNames", flt_registerednames_handle_command, CFG_OPT_CONFIG|CFG_OPT_NEEDED|CFG_OPT_LOCAL, NULL },
   { NULL, NULL, 0, NULL }
 };
 
-t_handler_config flt_registerednames_handlers[] = {
+handler_config_t flt_registerednames_handlers[] = {
   { INIT_HANDLER,            flt_registerednames_init_module   },
   { 0, NULL }
 };
 
-t_module_config flt_registerednames = {
+module_config_t flt_registerednames = {
   MODULE_MAGIC_COOKIE,
   flt_registerednames_config,
   flt_registerednames_handlers,

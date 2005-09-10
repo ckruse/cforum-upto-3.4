@@ -38,13 +38,13 @@ struct {
   int HighlightOwnPostings;
   u_char *OwnPostingsColorF;
   u_char *OwnPostingsColorB;
-  t_cf_hash *WhiteList;
+  cf_hash_t *WhiteList;
   u_char *WhiteListColorF;
   u_char *WhiteListColorB;
-  t_cf_hash *HighlightCategories;
+  cf_hash_t *HighlightCategories;
   u_char *CategoryHighlightColorF;
   u_char *CategoryHighlightColorB;
-  t_cf_hash *VIPList;
+  cf_hash_t *VIPList;
   u_char *VIPColorF;
   u_char *VIPColorB;
 } Cfg = { 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL };
@@ -52,7 +52,7 @@ struct {
 static u_char *flt_lh_fn = NULL;
 
 /* {{{ flt_lh_parse_list */
-void flt_lh_parse_list(u_char *vips,t_cf_hash *hash) {
+void flt_lh_parse_list(u_char *vips,cf_hash_t *hash) {
   if(vips) {
     u_char *ptr = vips;
     u_char *pos = ptr,*pre = ptr;
@@ -89,8 +89,8 @@ u_char *flt_lh_tolwer(const u_char *str,register int *len) {
 /* }}} */
 
 /* {{{ flt_lh_execute_filter */
-int flt_lh_execute_filter(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_message *msg,u_int64_t tid,int mode) {
-  t_name_value *uname = NULL;
+int flt_lh_execute_filter(cf_hash_t *head,configuration_t *dc,configuration_t *vc,message_t *msg,u_int64_t tid,int mode) {
+  name_value_t *uname = NULL;
   int len = 0;
   u_char *tmp;
   u_char *UserName = cf_hash_get(GlobalValues,"UserName",8);
@@ -143,8 +143,8 @@ void flt_listhighlight_cleanup(void) {
 /* }}} */
 
 /* {{{ flt_lh_set_colors */
-int flt_lh_set_colors(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cf_template *begin,t_cf_template *end) {
-  t_name_value *cs = cfg_get_first_value(dc,NULL,"ExternCharset");
+int flt_lh_set_colors(cf_hash_t *head,configuration_t *dc,configuration_t *vc,cf_template_t *begin,cf_template_t *end) {
+  name_value_t *cs = cfg_get_first_value(dc,NULL,"ExternCharset");
 
   if(Cfg.VIPColorF || Cfg.VIPColorB) {
     cf_tpl_setvalue(begin,"vipcol",TPL_VARIABLE_STRING,"1",1);
@@ -179,13 +179,13 @@ int flt_lh_set_colors(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_
 /* }}} */
 
 /* {{{ flt_lh_set_cols_p */
-int flt_lh_set_cols_p(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cl_thread *thread,t_cf_template *tpl) {
+int flt_lh_set_cols_p(cf_hash_t *head,configuration_t *dc,configuration_t *vc,cl_thread_t *thread,cf_template_t *tpl) {
   return flt_lh_set_colors(head,dc,vc,tpl,NULL);
 }
 /* }}} */
 
 /* {{{ flt_lh_handle_command */
-int flt_lh_handle_command(t_configfile *cf,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
+int flt_lh_handle_command(configfile_t *cf,conf_opt_t *opt,const u_char *context,u_char **args,size_t argnum) {
   int len;
   u_char *list;
 
@@ -238,7 +238,7 @@ int flt_lh_handle_command(t_configfile *cf,t_conf_opt *opt,const u_char *context
 }
 /* }}} */
 
-t_conf_opt flt_listhighlight_config[] = {
+conf_opt_t flt_listhighlight_config[] = {
   { "HighlightOwnPostings",    flt_lh_handle_command, CFG_OPT_USER|CFG_OPT_LOCAL,                NULL },
   { "OwnPostingsColors",       flt_lh_handle_command, CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
   { "WhiteList",               flt_lh_handle_command, CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
@@ -250,14 +250,14 @@ t_conf_opt flt_listhighlight_config[] = {
   { NULL, NULL, 0, NULL }
 };
 
-t_handler_config flt_listhighlight_handlers[] = {
+handler_config_t flt_listhighlight_handlers[] = {
   { VIEW_LIST_HANDLER, flt_lh_execute_filter    },
   { VIEW_INIT_HANDLER, flt_lh_set_colors },
   { POSTING_HANDLER,   flt_lh_set_cols_p },
   { 0, NULL }
 };
 
-t_module_config flt_listhighlight = {
+module_config_t flt_listhighlight = {
   MODULE_MAGIC_COOKIE,
   flt_listhighlight_config,
   flt_listhighlight_handlers,

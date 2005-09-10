@@ -50,7 +50,7 @@ static u_char *flt_syntax_patterns_dir = NULL;
 typedef struct {
   u_char *name;
 
-  t_array list;
+  array_t list;
 } flt_syntax_list_t;
 
 typedef struct {
@@ -62,25 +62,25 @@ typedef struct {
   int type;
   int start;
 
-  t_array args;
-  t_array pregs;
+  array_t args;
+  array_t pregs;
 } flt_syntax_statement_t;
 
 typedef struct {
   u_char *name;
   int le_behavior;
-  t_array statement;
+  array_t statement;
 } flt_syntax_block_t;
 
 typedef struct {
   u_char *start;
   u_char *lang;
 
-  t_array lists;
-  t_array blocks;
+  array_t lists;
+  array_t blocks;
 } flt_syntax_pattern_file_t;
 
-static t_array flt_syntax_files;
+static array_t flt_syntax_files;
 static int flt_syntax_active = 0;
 static int flt_syntax_alreadyerr = 0;
 static size_t flt_syntax_tabsreplace = 8;
@@ -105,7 +105,7 @@ static size_t flt_syntax_tabsreplace = 8;
 #define FLT_SYNTAX_ONREGEXP_AFTER_BACKREF 0x16
 
 /* {{{ flt_syntax_read_string */
-int flt_syntax_read_string(const u_char *begin,u_char **pos,t_string *str) {
+int flt_syntax_read_string(const u_char *begin,u_char **pos,string_t *str) {
   register u_char *ptr;
 
   for(ptr=(u_char *)begin;*ptr;++ptr) {
@@ -138,7 +138,7 @@ int flt_syntax_read_string(const u_char *begin,u_char **pos,t_string *str) {
 /* }}} */
 
 /* {{{ flt_syntax_next_token */
-int flt_syntax_next_token(const u_char *line,u_char **pos,t_string *str) {
+int flt_syntax_next_token(const u_char *line,u_char **pos,string_t *str) {
   u_char *ptr;
 
   for(ptr=(u_char *)(*pos?*pos:line);*ptr && isspace(*ptr);++ptr);
@@ -169,7 +169,7 @@ int flt_syntax_next_token(const u_char *line,u_char **pos,t_string *str) {
 /* {{{ flt_syntax_read_list */
 int flt_syntax_read_list(const u_char *pos,flt_syntax_list_t *list) {
   register u_char *ptr;
-  t_string str;
+  string_t str;
 
   array_init(&list->list,sizeof(str),NULL);
   str_init(&str);
@@ -217,11 +217,11 @@ int flt_syntax_read_list(const u_char *pos,flt_syntax_list_t *list) {
 }
 /* }}} */
 
-int flt_syntax_my_cmp(const t_string *a,const t_string *b) {
+int flt_syntax_my_cmp(const string_t *a,const string_t *b) {
   return strcasecmp(a->content,b->content);
 }
 
-int flt_syntax_my_scmp(const u_char *a,const t_string *b) {
+int flt_syntax_my_scmp(const u_char *a,const string_t *b) {
   return strcasecmp(a,b->content);
 }
 
@@ -232,7 +232,7 @@ int flt_syntax_load(const u_char *path,const u_char *lang) {
   u_char *line = NULL,*pos,*error;
   size_t buflen = 0;
   int state = FLT_SYNTAX_GLOBAL,offset,type,tb = 0,lineno = 0;
-  t_string str,*tmpstr;
+  string_t str,*tmpstr;
   flt_syntax_preg_t preg;
 
   flt_syntax_pattern_file_t file;
@@ -365,7 +365,7 @@ int flt_syntax_load(const u_char *path,const u_char *lang) {
         }
 
         statement.type = FLT_SYNTAX_ONSTRING;
-        array_init(&statement.args,sizeof(t_string),NULL);
+        array_init(&statement.args,sizeof(string_t),NULL);
 
         array_push(&statement.args,&str);
         str_init(&str);
@@ -403,7 +403,7 @@ int flt_syntax_load(const u_char *path,const u_char *lang) {
         str_cleanup(&str);
 
         statement.type = FLT_SYNTAX_ONSTRINGLIST;
-        array_init(&statement.args,sizeof(t_string),NULL);
+        array_init(&statement.args,sizeof(string_t),NULL);
 
         if((type = flt_syntax_next_token(line,&pos,&str)) != FLT_SYNTAX_TOK_STR) {
           fprintf(stderr,"flt_syntax: after onstringlist we got no list name at line %d!\n",lineno);
@@ -466,7 +466,7 @@ int flt_syntax_load(const u_char *path,const u_char *lang) {
         array_init(&statement.pregs,sizeof(preg),NULL);
         array_push(&statement.pregs,&preg);
 
-        array_init(&statement.args,sizeof(t_string),NULL);
+        array_init(&statement.args,sizeof(string_t),NULL);
 
         type = flt_syntax_next_token(line,&pos,&str);
         if(type == FLT_SYNTAX_TOK_KEY) {
@@ -522,7 +522,7 @@ int flt_syntax_load(const u_char *path,const u_char *lang) {
         array_init(&statement.pregs,sizeof(preg),NULL);
         array_push(&statement.pregs,&preg);
 
-        array_init(&statement.args,sizeof(t_string),NULL);
+        array_init(&statement.args,sizeof(string_t),NULL);
 
         if((type = flt_syntax_next_token(line,&pos,&str)) != FLT_SYNTAX_TOK_STR) {
           fprintf(stderr,"flt_syntax: after onregexp_backref we got no block name at line %d!\n",lineno);
@@ -593,7 +593,7 @@ int flt_syntax_load(const u_char *path,const u_char *lang) {
         str_cleanup(&str);
         array_push(&statement.pregs,&preg);
 
-        array_init(&statement.args,sizeof(t_string),NULL);
+        array_init(&statement.args,sizeof(string_t),NULL);
 
         type = flt_syntax_next_token(line,&pos,&str);
         if(type == FLT_SYNTAX_TOK_KEY) {
@@ -665,7 +665,7 @@ int flt_syntax_load(const u_char *path,const u_char *lang) {
         str_cleanup(&str);
         array_push(&statement.pregs,&preg);
 
-        array_init(&statement.args,sizeof(t_string),NULL);
+        array_init(&statement.args,sizeof(string_t),NULL);
 
         type = flt_syntax_next_token(line,&pos,&str);
         if(type != FLT_SYNTAX_TOK_STR) {
@@ -746,8 +746,8 @@ flt_syntax_list_t *flt_syntax_list_by_name(flt_syntax_pattern_file_t *file,const
 /* }}} */
 
 /* {{{ flt_syntax_extra_arg */
-t_string *flt_syntax_extra_arg(t_string *str,const u_char *extra_arg) {
-  t_string *target = fo_alloc(NULL,1,sizeof(*target),FO_ALLOC_CALLOC);
+string_t *flt_syntax_extra_arg(string_t *str,const u_char *extra_arg) {
+  string_t *target = fo_alloc(NULL,1,sizeof(*target),FO_ALLOC_CALLOC);
   register u_char *ptr;
 
   for(ptr=str->content;*ptr;++ptr) {
@@ -795,11 +795,11 @@ int flt_syntax_check_for_prev(register u_char *ptr,const u_char *begin) {
 /* }}} */
 
 /* {{{ flt_syntax_doit */
-int flt_syntax_doit(flt_syntax_pattern_file_t *file,flt_syntax_block_t *block,u_char *text,size_t len,t_string *cnt,u_char **pos,const u_char *extra_arg,int xhtml,int *pops) {
+int flt_syntax_doit(flt_syntax_pattern_file_t *file,flt_syntax_block_t *block,u_char *text,size_t len,string_t *cnt,u_char **pos,const u_char *extra_arg,int xhtml,int *pops) {
   u_char *ptr,*tmpchar,*priv_extra,*begin;
   size_t i,x;
   flt_syntax_statement_t *statement;
-  t_string *str,*tmpstr;
+  string_t *str,*tmpstr;
   int matched;
   flt_syntax_block_t *tmpblock;
   flt_syntax_list_t *tmplist;
@@ -1259,14 +1259,14 @@ int flt_syntax_doit(flt_syntax_pattern_file_t *file,flt_syntax_block_t *block,u_
 /* }}} */
 
 /* {{{ flt_syntax_highlight */
-int flt_syntax_highlight(t_string *content,t_string *bco,const u_char *lang,const u_char *fname) {
+int flt_syntax_highlight(string_t *content,string_t *bco,const u_char *lang,const u_char *fname) {
   u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   flt_syntax_pattern_file_t *file;
   size_t i;
   int found = 0;
-  t_string code;
+  string_t code;
   u_char *pos = NULL;
-  t_name_value *xmlm = cfg_get_first_value(&fo_default_conf,forum_name,"XHTMLMode");
+  name_value_t *xmlm = cfg_get_first_value(&fo_default_conf,forum_name,"XHTMLMode");
 
   for(i=0;i<flt_syntax_files.elements;++i) {
     file = array_element_at(&flt_syntax_files,i);
@@ -1302,8 +1302,8 @@ int flt_syntax_highlight(t_string *content,t_string *bco,const u_char *lang,cons
 /* }}} */
 
 /* {{{ flt_syntax_execute */
-int flt_syntax_execute(t_configuration *fdc,t_configuration *fvc,t_cl_thread *thr,const u_char *directive,const u_char **parameters,size_t plen,t_string *bco,t_string *bci,t_string *content,t_string *cite,const u_char *qchars,int sig) {
-  t_string str;
+int flt_syntax_execute(configuration_t *fdc,configuration_t *fvc,cl_thread_t *thr,const u_char *directive,const u_char **parameters,size_t plen,string_t *bco,string_t *bci,string_t *content,string_t *cite,const u_char *qchars,int sig) {
+  string_t str;
   struct stat st;
   u_char *lang,*ptr;
 
@@ -1392,14 +1392,14 @@ int flt_syntax_execute(t_configuration *fdc,t_configuration *fvc,t_cl_thread *th
 }
 /* }}} */
 
-int flt_syntax_validate(t_configuration *fdc,t_configuration *fvc,const u_char *directive,const u_char **parameters,size_t plen,t_cf_tpl_variable *var) {
+int flt_syntax_validate(configuration_t *fdc,configuration_t *fvc,const u_char *directive,const u_char **parameters,size_t plen,cf_tpl_variable_t *var) {
   u_char *err,*lang;
   register u_char *ptr;
   size_t len;
 
   struct stat st;
 
-  t_string str;
+  string_t str;
 
   if(flt_syntax_alreadyerr) return FLT_DECLINE;
 
@@ -1444,7 +1444,7 @@ int flt_syntax_validate(t_configuration *fdc,t_configuration *fvc,const u_char *
 }
 
 /* {{{ flt_syntax_init */
-int flt_syntax_init(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc) {
+int flt_syntax_init(cf_hash_t *cgi,configuration_t *dc,configuration_t *vc) {
   cf_html_register_directive("code",flt_syntax_execute,CF_HTML_DIR_TYPE_ARG|CF_HTML_DIR_TYPE_BLOCK);
   cf_html_register_validator("code",flt_syntax_validate,CF_HTML_DIR_TYPE_ARG|CF_HTML_DIR_TYPE_BLOCK);
 
@@ -1455,7 +1455,7 @@ int flt_syntax_init(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc) {
 /* }}} */
 
 /* {{{ flt_syntax_handle */
-int flt_syntax_handle(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
+int flt_syntax_handle(configfile_t *cfile,conf_opt_t *opt,const u_char *context,u_char **args,size_t argnum) {
   u_char *fn;
 
   if(cf_strcmp(opt->name,"ActivateSyntax") == 0) {
@@ -1479,19 +1479,19 @@ void flt_syntax_cleanup(void) {
   if(flt_syntax_patterns_dir != NULL) free(flt_syntax_patterns_dir);
 }
 
-t_conf_opt flt_syntax_config[] = {
+conf_opt_t flt_syntax_config[] = {
   { "ActivateSyntax",    flt_syntax_handle, CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
   { "ReplaceTabs",       flt_syntax_handle, CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
   { "PatternsDirectory", flt_syntax_handle, CFG_OPT_CONFIG|CFG_OPT_GLOBAL|CFG_OPT_NEEDED,  NULL },
   { NULL, NULL, 0, NULL }
 };
 
-t_handler_config flt_syntax_handlers[] = {
+handler_config_t flt_syntax_handlers[] = {
   { INIT_HANDLER, flt_syntax_init },
   { 0, NULL }
 };
 
-t_module_config flt_syntax = {
+module_config_t flt_syntax = {
   MODULE_MAGIC_COOKIE,
   flt_syntax_config,
   flt_syntax_handlers,

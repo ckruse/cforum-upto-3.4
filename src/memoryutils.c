@@ -84,7 +84,7 @@ void *memdup(void *inptr,size_t size) {
 /* }}} */
 
 /* {{{ mem_init_growth */
-void mem_init_growth(t_mem_pool *pool,unsigned growth) {
+void mem_init_growth(mem_pool_t *pool,unsigned growth) {
   pool->len      = 0;
   pool->reserved = 0;
   pool->growth   = growth;
@@ -93,7 +93,7 @@ void mem_init_growth(t_mem_pool *pool,unsigned growth) {
 /* }}} */
 
 /* {{{ mem_init */
-void mem_init(t_mem_pool *pool) {
+void mem_init(mem_pool_t *pool) {
   pool->len      = 0;
   pool->reserved = 0;
   pool->growth   = CF_BUFSIZ;
@@ -102,7 +102,7 @@ void mem_init(t_mem_pool *pool) {
 /* }}} */
 
 /* {{{ mem_cleanup */
-void mem_cleanup(t_mem_pool *pool) {
+void mem_cleanup(mem_pool_t *pool) {
   pool->len      = 0;
   pool->reserved = 0;
 
@@ -113,7 +113,7 @@ void mem_cleanup(t_mem_pool *pool) {
 /* }}} */
 
 /* {{{ mem_append */
-void *mem_append(t_mem_pool *pool,const void *src,size_t length) {
+void *mem_append(mem_pool_t *pool,const void *src,size_t length) {
   size_t len = pool->growth;
 
   if(pool->len + length >= pool->reserved) {
@@ -131,7 +131,7 @@ void *mem_append(t_mem_pool *pool,const void *src,size_t length) {
 /* }}} */
 
 /* {{{ mem_set */
-size_t mem_set(t_mem_pool *pool,const void *src,size_t length) {
+size_t mem_set(mem_pool_t *pool,const void *src,size_t length) {
   size_t len = pool->growth;
 
   if(pool->len + length >= pool->reserved) {
