@@ -1239,7 +1239,7 @@ int main(int argc,char *argv[],char *env[]) {
 
           if(cfg_val && cf_strcmp(cfg_val->values[0],"yes") == 0) {
             link = cf_get_link(rm_infos.posting_uri[UserName?1:0],tid,mid);
-            printf("Status: 302 Moved Temporarily\015\012Location: %s\015\012\015\012",link);
+            cf_http_redirect_with_nice_uri(link,0);
             free(link);
           }
           else display_finishing_screen(p);

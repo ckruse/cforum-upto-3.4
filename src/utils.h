@@ -22,6 +22,8 @@
 #include <time.h>
 #include <sys/types.h>
 
+#include "hashlib.h"
+
 /* {{{ Memory abstraction */
 /**
  * \defgroup memory_funcs Memory pool abstraction
@@ -852,9 +854,25 @@ u_int64_t str_to_u_int64(register const u_char *ptr);
 
 /* }}} */
 
+/* {{{ HTTP utilities */
+typedef struct {
+  int status;
+  u_char *reason;
+
+  cf_hash_t *headers;
+  string_t content;
+} cf_http_response_t;
+
+
+cf_http_response_t *cf_http_simple_get_uri(const u_char *uri);
+cf_http_response_t *cf_http_simple_post_uri(const u_char *uri,const u_char *postdata,size_t len);
+void cf_http_destroy_response(cf_http_response_t *rsp); 
+
+void cf_http_redirect_with_nice_uri(const u_char *ruri,int perm);
+/* }}} */
+
 time_t cf_timegm (struct tm *tm);
 
-void redirect_with_nice_uri(const u_char *ruri,int perm);
 
 #endif
 

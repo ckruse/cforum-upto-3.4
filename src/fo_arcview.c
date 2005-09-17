@@ -928,7 +928,7 @@ int main(int argc,char *argv[],char *env[]) {
       str_chars_append(&tmp,pi,strlen(pi));
       str_char_append(&tmp,'/');
 
-      redirect_with_nice_uri(tmp.content,1);
+      cf_http_redirect_with_nice_uri(tmp.content,1);
       str_cleanup(&tmp);
 
       ret = FLT_EXIT;

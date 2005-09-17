@@ -106,7 +106,7 @@ int handle_userconf_command(configfile_t *cfile,const u_char *context,u_char *na
 /* }}} */
 
 /* {{{ show_edit_content */
-void show_edit_content(cf_hash_t *head,const u_char *msg,const u_char *source,int saved) {
+void show_edit_content(cf_hash_t *head,const u_char *msg,const u_char *source,int saved,array_t *errors) {
   u_char tplname[256],*ucfg,*uname,*fn = cf_hash_get(GlobalValues,"FORUM_NAME",10),*tmp,buff[256];
 
   name_value_t *cval,
@@ -121,8 +121,8 @@ void show_edit_content(cf_hash_t *head,const u_char *msg,const u_char *source,in
   uconf_argument_t *arg;
   name_value_t *value;
   cf_cgi_param_t *mult;
-  string_t val;
-  cf_tpl_variable_t array;
+  string_t val,*emsg;
+  cf_tpl_variable_t array,errmsgs;
   int utf8 = cf_strcmp(cs->values[0],"UTF-8") == 0;
   struct tm tm;
   time_t tval;
@@ -195,7 +195,7 @@ void show_edit_content(cf_hash_t *head,const u_char *msg,const u_char *source,in
          * of the values
          */
         if(cf_strcmp(source,"cgi") == 0) {
-          if(head && (mult = cf_cgi_get_multiple(head,arg->param)) != NULL) {
+          if(head && (mult = cf_cgi_get_multiple(head,arg->param)) != NULL && mult->value && *mult->value) {
             str_char_set(&val,mult->value,strlen(mult->value));
 
             for(mult=mult->next;mult;mult=mult->next) {
@@ -262,6 +262,8 @@ void show_edit_content(cf_hash_t *head,const u_char *msg,const u_char *source,in
       free(tmp);
     }
     else cf_set_variable(&tpl,cs,"err",msg,strlen(msg),1);
+
+    cf_tpl_setvalue(&tpl,"error",TPL_VARIABLE_INT,1);
   }
   /* }}} */
 
@@ -273,7 +275,6 @@ void show_edit_content(cf_hash_t *head,const u_char *msg,const u_char *source,in
       j   = strlen(tmp);
     }
     else tmp = charset_convert_entities(cats->values[i],strlen(cats->values[i]),"UTF-8",cs->values[0],&j);
-    printf("tmp: %s\n",tmp);
 
     cf_tpl_var_addvalue(&array,TPL_VARIABLE_STRING,tmp,j);
     free(tmp);
@@ -295,6 +296,18 @@ void show_edit_content(cf_hash_t *head,const u_char *msg,const u_char *source,in
   cf_set_variable(&tpl,cs,"usermanagement",cval->values[0],strlen(cval->values[0]),1);
 
   cf_set_variable(&tpl,cs,"charset",cs->values[0],strlen(cs->values[0]),1);
+
+  if(errors->elements) {
+    cf_tpl_var_init(&errmsgs,TPL_VARIABLE_ARRAY);
+
+    for(i=0;i<errors->elements;++i) {
+      emsg = array_element_at(errors,i);
+      cf_tpl_var_addvalue(&errmsgs,TPL_VARIABLE_STRING,emsg->content,emsg->len);
+    }
+
+    cf_tpl_setvar(&tpl,"errmsgs",&errmsgs);
+    cf_tpl_setvalue(&tpl,"error",TPL_VARIABLE_INT,1);
+  }
 
   printf("Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
   cf_tpl_parse(&tpl);
@@ -337,15 +350,18 @@ void do_save(cf_hash_t *head) {
   if((merged = cf_uconf_merge_config(head,&glob_config,&errmsgs,1)) != NULL) {
     /* TODO: run plugins */
 
-    if((msg = cf_write_uconf(merged)) == NULL) cf_error_message(msg,NULL);
-    else show_edit_content(head,NULL,"cgi",1);
+    if((msg = cf_write_uconf(merged)) != NULL) cf_error_message(msg,NULL);
+    else show_edit_content(head,NULL,"cgi",1,NULL);
 
     cf_uconf_cleanup_modxml(merged);
     free(merged);
     cfg_cleanup_file(&config);
     return;
   }
-  else show_edit_content(head,ErrorString,"cgi",0);
+  else {
+    show_edit_content(head,NULL,"cgi",0,&errmsgs);
+    array_destroy(&errmsgs);
+  }
 
   cfg_cleanup_file(&config);
 
@@ -590,16 +606,16 @@ int main(int argc,char *argv[],char *env[]) {
   }
 
   if(head) {
-    if((action = cf_cgi_get(head,"a")) == NULL) show_edit_content(head,NULL,NULL,0);
+    if((action = cf_cgi_get(head,"a")) == NULL) show_edit_content(head,NULL,NULL,0,NULL);
     else {
       if(cf_strcmp(action,"save") == 0) do_save(head);
       else {
         /* TODO: check if action is registered */
-        show_edit_content(head,NULL,NULL,0);
+        show_edit_content(head,NULL,NULL,0,NULL);
       }
     }
   }
-  else show_edit_content(head,NULL,NULL,0);
+  else show_edit_content(head,NULL,NULL,0,NULL);
 
   if(head) cf_hash_destroy(head);
 

@@ -9,6 +9,8 @@ libdir = @libdir@
 SUBDIRS=CForum-Clientlib CForum-Configparser CForum-Template CForum-Validator
 
 all:
+
+swig:
 	for dir in $(SUBDIRS); do cd $$dir; $(PERL) Makefile.PL LIB=$(libdir)/cforum; cd ..; done;
 	for dir in $(SUBDIRS); do cd $$dir; $(MAKE); cd ..; done;
 

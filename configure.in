@@ -99,16 +99,26 @@ if test ! -n "$SWIG" ; then
   AC_MSG_ERROR([cannot find swig. Be sure that SWIG is installed and it is in your PATH])
 fi
 
+AC_PATH_PROG(LIBWWWCFG, libwww-config)
+
+if test ! -n "$LIBWWWCFG" ; then
+  AC_MSG_ERROR([cannot find libwww-config. Be sure that libwww is installed and libwww-config is in your PATH])
+fi
+
+LIBWWW_CFLAGS=`$LIBWWWCFG --cflags`
+LIBWWW_LIBS=`$LIBWWWCFG --libs`
+
 GDOME_CFLAGS=`$GDOMECFG --cflags`
 GDOME_LIBS=`$GDOMECFG --libs`
 
 PCRE_CFLAGS=`$PCRECFG --cflags`
 PCRE_LIBS=`$PCRECFG --libs`
 
-CFLAGS="$GDOME_CFLAGS $CFLAGS $PCRE_CFLAGS"
+CFLAGS="$GDOME_CFLAGS $CFLAGS $PCRE_CFLAGS $LIBWWW_CFLAGS"
 
 AC_SUBST(GDOME_LIBS)
 AC_SUBST(PCRE_LIBS)
+AC_SUBST(LIBWWW_LIBS)
 AC_SUBST(SWIG)
 AC_SUBST(ICONV)
 AC_SUBST(DL)
@@ -203,19 +213,7 @@ done
 dnl }}}
 
 dnl {{{ optional required libraries
-dnl libwww and libesmtp are only necessary if flt_remotesignature
-dnl respectively flt_mailonpost is activated
-if test "$enable_remotesignature" = "yes"; then
-  AC_PATH_PROG(LIBWWWCFG, libwww-config)
-
-  if test ! -n "$LIBWWWCFG" ; then
-    AC_MSG_ERROR([cannot find libwww-config. Be sure that libwww is installed and libwww-config is in your PATH])
-  fi
-
-  LIBWWW_CFLAGS=`$LIBWWWCFG --cflags`
-  LIBWWW_LIBS=`$LIBWWWCFG --libs`
-fi
-
+dnl libesmtp is only necessary if flt_mailonpost is activated
 if test "$enable_mailonpost" = "yes"; then
   AC_PATH_PROG(ESMTPCFG,libesmtp-config)
 
@@ -239,12 +237,11 @@ if test "$enable_admin_mysql" = "yes"; then
   MYSQL_LIBS_R="`$MYSQLCFG --libs_r`"
 fi
 
-AC_SUBST(LIBWWW_LIBS)
 AC_SUBST(ESMTP_LIBS)
 AC_SUBST(MYSQL_LIBS)
 AC_SUBST(MYSQL_LIBS_R)
 
-CFLAGS="$CFLAGS $ESMTP_CFLAGS $LIBWWW_CFLAGS $MYSQL_CFLAGS"
+CFLAGS="$CFLAGS $ESMTP_CFLAGS $MYSQL_CFLAGS"
 dnl }}}
 
 

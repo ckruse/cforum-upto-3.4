@@ -140,10 +140,8 @@ int flt_handle404_execute(cf_hash_t *head,configuration_t *dc,configuration_t *v
     return FLT_DECLINE;
   }
 
-  printf("Status: 301 Moved Permanently\015\012");
   flt_handle404_gen_url(buff,aurl->values[0],data.data,tid,mid);
-
-  printf("Location: %s\015\012\015\012",buff);
+  cf_http_redirect_with_nice_uri(buff,1);
 
   db->close(db,0);
 

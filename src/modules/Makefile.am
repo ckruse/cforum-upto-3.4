@@ -138,7 +138,6 @@ flt_postingassistant_la_LDFLAGS=-module -export-dynamic -avoid-version -rpath '$
 
 EXTRA_LTLIBRARIES+=flt_remotesignature.la
 flt_remotesignature_la_SOURCES=flt_remotesignature.c
-flt_remotesignature_la_LIBADD=$(LIBWWW_LIBS)
 flt_remotesignature_la_LDFLAGS=-module -export-dynamic -avoid-version -rpath '$(pkglibdir)'
 
 EXTRA_LTLIBRARIES+=flt_preview.la

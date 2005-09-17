@@ -248,9 +248,8 @@ int main(int argc,char *argv[],char *envp[]) {
   /* }}} */
 
   /* {{{ redirect */
-  printf("Status: 301 Moved Permanently\015\012");
   gen_archive_url(buff,archive_path->values[0],data.data,tid,mid);
-  printf("Location: %s\015\012\015\012",buff);
+  cf_http_redirect_with_nice_uri(buff,1);
   /* }}} */
 
   /* {{{ cleanup */

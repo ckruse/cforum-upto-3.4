@@ -274,6 +274,7 @@ void cf_uconf_to_html(string_t *str) {
 }
 /* }}} */
 
+/* {{{ cf_uconf_copy_values */
 void cf_uconf_copy_values(configuration_t *config,uconf_directive_t *directive,uconf_directive_t *my_directive,int do_if_empty) {
   uconf_argument_t *arg,my_arg;
   name_value_t *val;
@@ -305,15 +306,19 @@ void cf_uconf_copy_values(configuration_t *config,uconf_directive_t *directive,u
     }
   }
 }
+/* }}} */
 
+/* {{{ cf_uconf_merge_config */
 uconf_userconfig_t *cf_uconf_merge_config(cf_hash_t *head,configuration_t *config,array_t *errormessages,int touch_committed) {
   uconf_userconfig_t *modxml = cf_uconf_read_modxml(),*merged;
   uconf_directive_t *directive,my_directive;
   uconf_argument_t *arg,my_arg;
   cf_cgi_param_t *mult;
-  size_t i,j;
+  size_t i,j,len;
   string_t str,str1;
   name_value_t *val;
+  time_t t;
+  u_char buff[512];
 
   pcre *regexp;
   u_char *error;
@@ -345,8 +350,10 @@ uconf_userconfig_t *cf_uconf_merge_config(cf_hash_t *head,configuration_t *confi
     else {
       for(j=0;j<directive->arguments.elements;++j) {
         arg = array_element_at(&directive->arguments,j);
+        memset(&my_arg,0,sizeof(my_arg));
 
-        if((mult = cf_cgi_get_multiple(head,arg->param)) != NULL) {
+        if((mult = cf_cgi_get_multiple(head,arg->param)) != NULL && mult->value && *mult->value) {
+          /* {{{ create new value from CGI parameter(s) */
           str_init_growth(&str,128);
           str_cstr_set(&str,mult->value);
 
@@ -354,7 +361,9 @@ uconf_userconfig_t *cf_uconf_merge_config(cf_hash_t *head,configuration_t *confi
             str_char_append(&str,',');
             str_cstr_append(&str,mult->value);
           }
+          /* }}} */
 
+          /* {{{ validation by type */
           if(arg->validation_type) {
             if(cf_strcmp(arg->validation,"email") == 0) {
               if(is_valid_mailaddress(str.content) == -1) {
@@ -389,9 +398,11 @@ uconf_userconfig_t *cf_uconf_merge_config(cf_hash_t *head,configuration_t *confi
               }
             }
           }
+          /* }}} */
+          /* {{{ regexp validation */
           else {
             if((regexp = pcre_compile(arg->validation,0,(const char **)&error,&erroffset,NULL)) == NULL) {
-              fprintf(stderr,"Error in pattern '%s': %s\n",str.content,error);
+              fprintf(stderr,"Error in pattern '%s': %s\n",arg->validation,error);
               str_init_growth(&str1,128);
               str_cstr_set(&str1,arg->error);
               err_occured = 1;
@@ -405,23 +416,30 @@ uconf_userconfig_t *cf_uconf_merge_config(cf_hash_t *head,configuration_t *confi
               array_push(errormessages,&str1);
             }
 
-            pcre_free(regexp);
+            if(regexp) pcre_free(regexp);
           }
+          /* }}} */
 
+          /* {{{ closing work, copy value to argument */
           if(err_occured == 0) {
             if(arg->parse && cf_strcmp(arg->parse,"date") == 0) {
+              t = transform_date(str.content);
+              len = snprintf(buff,512,"%lu",(unsigned long)t);
+              str_char_set(&str,buff,len);
             }
-            else {
-            }
+
+            my_arg.val = str.content;
           }
+          /* }}} */
         }
         else {
-          memset(&my_arg,0,sizeof(my_arg));
-
+          /* shall we also set new values when value was not committed? */
           if(touch_committed) {
+            /* this is only possible if ifNotCommitted was set, else we set it (automatically) to a NULL value */
             if(arg->ifnotcommitted) my_arg.val = arg->ifnotcommitted;
           }
           else {
+            /* we should not touch the not-committed, so copy value from config */
             if((val = cfg_get_first_value(config,NULL,directive->name)) != NULL) my_arg.val = strdup(val->values[j]);
           }
         }
@@ -433,10 +451,14 @@ uconf_userconfig_t *cf_uconf_merge_config(cf_hash_t *head,configuration_t *confi
 
 
   cf_uconf_cleanup_modxml(modxml);
-  free(modxml);
+  if(err_occured) {
+    cf_uconf_cleanup_modxml(merged);
+    merged = NULL;
+  }
 
-  return NULL;
+  return merged;
 }
+/* }}} */
 
 u_char *cf_write_uconf(uconf_userconfig_t *merged) {
   return NULL;

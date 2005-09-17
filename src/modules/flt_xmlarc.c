@@ -372,7 +372,7 @@ int flt_xmlarc_validate_thread(const u_char *year,const u_char *month,const u_ch
         str_chars_append(&str,tid,strlen(tid));
         str_char_append(&str,'/');
 
-        redirect_with_nice_uri(str.content,1);
+        cf_http_redirect_with_nice_uri(str.content,1);
         str_cleanup(&str);
 
         return FLT_EXIT;

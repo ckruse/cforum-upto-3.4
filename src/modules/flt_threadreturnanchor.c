@@ -36,8 +36,8 @@
 static int    ThreadReturnAnchor = 0;
 static u_char *flt_tra_fn = NULL;
 
-/* {{{ flthread_treturnanchor_post */
-int flthread_treturnanchor_post(cf_hash_t *head,configuration_t *dc,configuration_t *vc,cl_thread_t *thread,cf_template_t *tpl) {
+/* {{{ flt_threadreturnanchor_post */
+int flt_threadreturnanchor_post(cf_hash_t *head,configuration_t *dc,configuration_t *vc,cl_thread_t *thread,cf_template_t *tpl) {
   const cf_tpl_variable_t *path;
   string_t new_path;
   char buf[50];
@@ -62,8 +62,8 @@ int flthread_treturnanchor_post(cf_hash_t *head,configuration_t *dc,configuratio
 }
 /* }}} */
 
-/* {{{ flthread_treturnanchor_handle */
-int flthread_treturnanchor_handle(configfile_t *cf,conf_opt_t *opt,const u_char *context,u_char **args,size_t argnum) {
+/* {{{ flt_threadreturnanchor_handle */
+int flt_threadreturnanchor_handle(configfile_t *cf,conf_opt_t *opt,const u_char *context,u_char **args,size_t argnum) {
   if(!flt_tra_fn) flt_tra_fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   if(!context || cf_strcmp(flt_tra_fn,context) != 0) return 0;
 
@@ -73,20 +73,20 @@ int flthread_treturnanchor_handle(configfile_t *cf,conf_opt_t *opt,const u_char 
 }
 /* }}} */
 
-conf_opt_t flthread_treturnanchor_config[] = {
-  { "ThreadReturnAnchor", flthread_treturnanchor_handle, CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
+conf_opt_t flt_threadreturnanchor_config[] = {
+  { "ThreadReturnAnchor", flt_threadreturnanchor_handle, CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
   { NULL, NULL, 0, NULL }
 };
 
-handler_config_t flthread_treturnanchor_handlers[] = {
-  { POSTING_HANDLER,   flthread_treturnanchor_post },
+handler_config_t flt_threadreturnanchor_handlers[] = {
+  { POSTING_HANDLER,   flt_threadreturnanchor_post },
   { 0, NULL }
 };
 
-module_config_t flthread_treturnanchor = {
+module_config_t flt_threadreturnanchor = {
   MODULE_MAGIC_COOKIE,
-  flthread_treturnanchor_config,
-  flthread_treturnanchor_handlers,
+  flt_threadreturnanchor_config,
+  flt_threadreturnanchor_handlers,
   NULL,
   NULL,
   NULL,
