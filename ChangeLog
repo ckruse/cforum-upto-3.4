@@ -1,3 +1,6 @@
+2005-09-18 Christian Kruse <ckruse@wwwtech.de>
+	* src/userconf.[ch], src/fo_userconf.c: More developement
+
 2005-09-17 Christian Kruse <ckruse@wwwtech.de>
 	* src/utils.c: Removed redirect_with_nice_uri(), moved it to wwwutils.c
 	* src/utils.h: Added wwwutils definitions

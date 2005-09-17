@@ -297,7 +297,7 @@ void show_edit_content(cf_hash_t *head,const u_char *msg,const u_char *source,in
 
   cf_set_variable(&tpl,cs,"charset",cs->values[0],strlen(cs->values[0]),1);
 
-  if(errors->elements) {
+  if(errors && errors->elements) {
     cf_tpl_var_init(&errmsgs,TPL_VARIABLE_ARRAY);
 
     for(i=0;i<errors->elements;++i) {
@@ -338,11 +338,11 @@ void do_save(cf_hash_t *head) {
   }
 
   cfg_init_file(&config,ucfg);
-  free(ucfg);
 
   if(read_config(&config,handle_userconf_command,CFG_MODE_USER) != 0) {
     printf("Status: 500 Internal Server Error\015\012COntent-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
     cf_error_message("E_CONFIG_BROKEN",NULL);
+    free(ucfg);
     return;
   }
 
@@ -350,12 +350,13 @@ void do_save(cf_hash_t *head) {
   if((merged = cf_uconf_merge_config(head,&glob_config,&errmsgs,1)) != NULL) {
     /* TODO: run plugins */
 
-    if((msg = cf_write_uconf(merged)) != NULL) cf_error_message(msg,NULL);
+    if((msg = cf_write_uconf(ucfg,merged)) != NULL) cf_error_message(msg,NULL,strerror(errno));
     else show_edit_content(head,NULL,"cgi",1,NULL);
 
     cf_uconf_cleanup_modxml(merged);
     free(merged);
     cfg_cleanup_file(&config);
+    free(ucfg);
     return;
   }
   else {
@@ -364,6 +365,7 @@ void do_save(cf_hash_t *head) {
   }
 
   cfg_cleanup_file(&config);
+  free(ucfg);
 
 }
 

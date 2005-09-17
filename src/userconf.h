@@ -45,7 +45,7 @@ void cf_uconf_cleanup_modxml(uconf_userconfig_t *modxml);
 void cf_uconf_to_html(string_t *str);
 
 uconf_userconfig_t *cf_uconf_merge_config(cf_hash_t *head,configuration_t *config,array_t *errormessages,int touch_committed);
-u_char *cf_write_uconf(uconf_userconfig_t *merged);
+u_char *cf_write_uconf(const u_char *filename,uconf_userconfig_t *merged);
 
 #endif
 

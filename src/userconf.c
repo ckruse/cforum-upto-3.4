@@ -275,10 +275,12 @@ void cf_uconf_to_html(string_t *str) {
 /* }}} */
 
 /* {{{ cf_uconf_copy_values */
-void cf_uconf_copy_values(configuration_t *config,uconf_directive_t *directive,uconf_directive_t *my_directive,int do_if_empty) {
+int cf_uconf_copy_values(configuration_t *config,uconf_directive_t *directive,uconf_directive_t *my_directive,int do_if_empty) {
   uconf_argument_t *arg,my_arg;
   name_value_t *val;
   size_t i;
+  int didit = 0;
+  u_char *fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
 
   memset(my_directive,0,sizeof(*my_directive));
   my_directive->name   = strdup(directive->name);
@@ -289,22 +291,29 @@ void cf_uconf_copy_values(configuration_t *config,uconf_directive_t *directive,u
   array_init(&my_directive->arguments,sizeof(my_arg),(void (*)(void *))cf_uconf_destroy_argument);
   memset(&my_arg,0,sizeof(my_arg));
 
-  if((val = cfg_get_first_value(config,NULL,directive->name)) == NULL) {
+  if((val = cfg_get_first_value(config,fn,directive->name)) == NULL) {
     if(do_if_empty) {
       for(i=0;i<directive->arguments.elements;++i) {
         arg = array_element_at(&directive->arguments,i);
-        if(arg->val) my_arg.val = strdup(arg->val);
+        if(arg->val) {
+          didit = 1;
+          my_arg.val = strdup(arg->val);
+        }
 
         array_push(&my_directive->arguments,&my_arg);
       }
     }
   }
   else {
+    didit = 1;
+
     for(i=0;i<val->valnum;++i) {
       my_arg.val = strdup(val->values[i]);
       array_push(&my_directive->arguments,&my_arg);
     }
   }
+
+  return didit;
 }
 /* }}} */
 
@@ -322,9 +331,11 @@ uconf_userconfig_t *cf_uconf_merge_config(cf_hash_t *head,configuration_t *confi
 
   pcre *regexp;
   u_char *error;
-  int erroffset;
+  int erroffset,didit = 0;
 
   int err_occured = 0;
+
+  u_char *fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
 
   if(!modxml) return NULL;
 
@@ -332,7 +343,7 @@ uconf_userconfig_t *cf_uconf_merge_config(cf_hash_t *head,configuration_t *confi
   array_init(&merged->directives,sizeof(my_directive),(void (*)(void *))cf_uconf_destroy_directive);
   array_init(errormessages,sizeof(str1),(void (*)(void *))str_cleanup);
 
-  for(i=0;i<modxml->directives.elements;++i) {
+  for(didit=0,i=0;i<modxml->directives.elements;++i,didit=0) {
     directive = array_element_at(&modxml->directives,i);
 
     memset(&my_directive,0,sizeof(my_directive));
@@ -343,18 +354,15 @@ uconf_userconfig_t *cf_uconf_merge_config(cf_hash_t *head,configuration_t *confi
 
     array_init(&my_directive.arguments,sizeof(my_arg),(void (*)(void *))cf_uconf_destroy_argument);
 
-    if(directive->flags & CF_UCONF_FLAG_INVISIBLE) {
-      cf_uconf_copy_values(config,directive,&my_directive,0);
-      array_push(&merged->directives,&my_directive);
-    }
+    if(directive->flags & CF_UCONF_FLAG_INVISIBLE) didit = cf_uconf_copy_values(config,directive,&my_directive,0);
     else {
       for(j=0;j<directive->arguments.elements;++j) {
         arg = array_element_at(&directive->arguments,j);
         memset(&my_arg,0,sizeof(my_arg));
+        str_init_growth(&str,128);
 
         if((mult = cf_cgi_get_multiple(head,arg->param)) != NULL && mult->value && *mult->value) {
           /* {{{ create new value from CGI parameter(s) */
-          str_init_growth(&str,128);
           str_cstr_set(&str,mult->value);
 
           for(mult=mult->next;mult;mult=mult->next) {
@@ -436,17 +444,22 @@ uconf_userconfig_t *cf_uconf_merge_config(cf_hash_t *head,configuration_t *confi
           /* shall we also set new values when value was not committed? */
           if(touch_committed) {
             /* this is only possible if ifNotCommitted was set, else we set it (automatically) to a NULL value */
-            if(arg->ifnotcommitted) my_arg.val = arg->ifnotcommitted;
+            if(arg->ifnotcommitted) my_arg.val = strdup(arg->ifnotcommitted);
           }
           else {
             /* we should not touch the not-committed, so copy value from config */
-            if((val = cfg_get_first_value(config,NULL,directive->name)) != NULL) my_arg.val = strdup(val->values[j]);
+            if((val = cfg_get_first_value(config,fn,directive->name)) != NULL) my_arg.val = strdup(val->values[j]);
           }
         }
 
-        if(err_occured == 0) array_push(&my_directive.arguments,&my_arg);
+        if(err_occured == 0 && my_arg.val) {
+          didit = 1;
+          array_push(&my_directive.arguments,&my_arg);
+        }
       }
     }
+
+    if(didit) array_push(&merged->directives,&my_directive);
   }
 
 
@@ -460,8 +473,73 @@ uconf_userconfig_t *cf_uconf_merge_config(cf_hash_t *head,configuration_t *confi
 }
 /* }}} */
 
-u_char *cf_write_uconf(uconf_userconfig_t *merged) {
+/* {{{ uconf_append_escaped */
+void uconf_append_escaped(string_t *str,const u_char *val) {
+  register u_char *ptr;
+
+  for(ptr=(u_char *)val;*ptr;++ptr) {
+    switch(*ptr) {
+      case '"':
+        str_chars_append(str,"\\\"",2);
+        break;
+      case '\\':
+        str_chars_append(str,"\\\\",2);
+        break;
+      case '\012':
+        if(*(ptr+1) == '\015') ++ptr;
+        str_char_append(str,'\n');
+        break;
+      case '\015':
+        if(*(ptr+1) == '\012') ++ptr;
+        str_char_append(str,'\n');
+        break;
+      default:
+        str_char_append(str,*ptr);
+    }
+  }
+}
+/* }}} */
+
+/* {{{ cf_write_uconf */
+u_char *cf_write_uconf(const u_char *filename,uconf_userconfig_t *merged) {
+  uconf_directive_t *directive;
+  uconf_argument_t *arg;
+  string_t str;
+  FILE *fd;
+
+  size_t i,j;
+  str_init_growth(&str,512);
+
+
+  for(i=0;i<merged->directives.elements;++i) {
+    directive = array_element_at(&merged->directives,i);
+
+    str_cstr_append(&str,directive->name);
+
+    for(j=0;j<directive->arguments.elements;++j) {
+      arg = array_element_at(&directive->arguments,j);
+
+      if(arg->val) {
+        str_chars_append(&str," \"",2);
+        uconf_append_escaped(&str,arg->val);
+        str_char_append(&str,'"');
+      }
+    }
+
+    str_char_append(&str,'\n');
+  }
+
+  if((fd = fopen(filename,"w")) == NULL) {
+    str_cleanup(&str);
+    return "E_IO_ERR";
+  }
+  fwrite(str.content,1,str.len,fd);
+  fclose(fd);
+  str_cleanup(&str);
+
+
   return NULL;
 }
+/* }}} */
 
 /* eof */
