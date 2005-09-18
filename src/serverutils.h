@@ -17,20 +17,20 @@
 
 #ifndef _CF_SERVERUTILS_H
 
-typedef struct s_cf_rwlocked_list_head {
-  t_cf_rwlock lock;
-  t_cf_list_head head;
-} t_cf_rw_list_head;
+typedef struct s_cf_rwlocked_lishead_t {
+  cf_rwlock_t lock;
+  cf_list_head_t head;
+} cf_rw_list_head_t;
 
-void cf_rw_list_init(const u_char *name,t_cf_rw_list_head *head);
-void cf_rw_list_append(t_cf_rw_list_head *head,void *data,size_t size);
-void cf_rw_list_append_static(t_cf_rw_list_head *head,void *data,size_t size);
-void cf_rw_list_prepend(t_cf_rw_list_head *head,void *data,size_t size);
-void cf_rw_list_prepend_static(t_cf_rw_list_head *head,void *data,size_t size);
-void cf_rw_list_insert(t_cf_rw_list_head *head,t_cf_list_element *prev,void *data,size_t size);
-void *cf_rw_list_search(t_cf_rw_list_head *head,void *data,int (*compare)(const void *data1,const void *data2));
-void cf_rw_list_delete(t_cf_rw_list_head *head,t_cf_list_element *elem);
-void cf_rw_list_destroy(t_cf_rw_list_head *head,void (*destroy)(void *data));
+void cf_rw_list_init(const u_char *name,cf_rw_list_head_t *head);
+void cf_rw_list_append(cf_rw_list_head_t *head,void *data,size_t size);
+void cf_rw_list_append_static(cf_rw_list_head_t *head,void *data,size_t size);
+void cf_rw_list_prepend(cf_rw_list_head_t *head,void *data,size_t size);
+void cf_rw_list_prepend_static(cf_rw_list_head_t *head,void *data,size_t size);
+void cf_rw_list_insert(cf_rw_list_head_t *head,cf_list_element_t *prev,void *data,size_t size);
+void *cf_rw_list_search(cf_rw_list_head_t *head,void *data,int (*compare)(const void *data1,const void *data2));
+void cf_rw_list_delete(cf_rw_list_head_t *head,cf_list_element_t *elem);
+void cf_rw_list_destroy(cf_rw_list_head_t *head,void (*destroy)(void *data));
 
 #define _CF_SERVERUTILS_H
 #endif

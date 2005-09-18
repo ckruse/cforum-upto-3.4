@@ -45,87 +45,17 @@
 #include "fo_post.h"
 /* }}} */
 
-/* {{{ printer */
-PRIVATE int printer(const char * fmt, va_list pArgs) {
-  return 0;
-}
-/* }}} */
-
-/* {{{ tracer */
-PRIVATE int tracer(const char * fmt, va_list pArgs) {
-  return 0;
-}
-/* }}} */
-
-/* {{{ terminate_handler */
-PRIVATE int terminate_handler(HTRequest *request, HTResponse *response, void *param, int status)  {
-  /* we're not handling other requests */
-  HTEventList_stopLoop ();
- 
-  /* stop here */
-  return HT_ERROR;
-}
-/* }}} */
-
-/* {{{ flt_remotesignature_get_url */
-u_char *flt_remotesignature_get_url(const u_char *url) {
-  u_char *cwd,*absolute_url;
-  HTRequest* request = HTRequest_new();
-  HTChunk* chunk = NULL;
-  u_char *string = NULL;
-
-  /* Initialize libwww core */
-  HTProfile_newPreemptiveClient("ClassicForum", CF_VERSION);
-
-  /* Gotta set up our own traces */
-  HTPrint_setCallback(printer);
-  HTTrace_setCallback(tracer);
-
-  /* We want raw output including headers */
-  HTRequest_setOutputFormat(request, WWW_SOURCE);
-
-  /* Close connection immediately */
-  HTRequest_addConnection(request, "close", "");
-
-  /* Add our own filter to handle termination */
-  HTNet_addAfter(terminate_handler, NULL, NULL, HT_ALL, HT_FILTER_LAST);
-
-  cwd = HTGetCurrentDirectoryURL();
-  absolute_url = HTParse(url, cwd, PARSE_ALL);
-  chunk = HTLoadToChunk(absolute_url, request);
-
-  HT_FREE(absolute_url);
-  HT_FREE(cwd);
-
-  /* If chunk != NULL then we have the data */
-  if (chunk) {
-    /* Go into the event loop... */
-    HTEventList_loop(request);
-
-    /* print the chunk result */
-    string = HTChunk_toCString(chunk);
-  }
-  
-  /* Clean up the request */
-  HTRequest_delete(request);
-
-  /* Terminate the Library */
-  HTProfile_delete();
-
-  return string;
-}
-/* }}} */
-
 /* {{{ flt_remotesignature_execute */
 #ifdef CF_SHARED_MEM
-int flt_remotesignature_execute(t_cf_hash *head,t_configuration *dc,t_configuration *pc,t_message *p,t_cl_thread *thr,void *mptr,int sock,int mode)
+int flt_remotesignature_execute(cf_hash_t *head,configuration_t *dc,configuration_t *pc,message_t *p,cl_thread_t *thr,void *mptr,int sock,int mode)
 #else
-int flt_remotesignature_execute(t_cf_hash *head,t_configuration *dc,t_configuration *pc,t_message *p,t_cl_thread *thr,int sock,int mode)
+int flt_remotesignature_execute(cf_hash_t *head,configuration_t *dc,configuration_t *pc,message_t *p,cl_thread_t *thr,int sock,int mode)
 #endif
 {
-  u_char *rs = strstr(p->content.content,"[remote-signature:"),*tmp,*url,*cnt,*bottom;
+  u_char *rs = strstr(p->content.content,"[remote-signature:"),*tmp,*url,*bottom;
   register u_char *ptr;
-  t_string *str;
+  string_t *str;
+  cf_http_response_t *rsp;
 
   if(rs) {
     for(ptr=rs+18;*ptr && *ptr != ']' && !isspace(*ptr);ptr++);
@@ -139,8 +69,11 @@ int flt_remotesignature_execute(t_cf_hash *head,t_configuration *dc,t_configurat
       /* we only accept strict URLs */
       if(is_valid_http_link(url,1) == 0) {
         /* get content from URL */
-        if((cnt = flt_remotesignature_get_url(url)) != NULL) {
-          str = body_plain2coded(cnt);
+        if((rsp = cf_http_simple_get_uri(url)) != NULL) {
+          str = body_plain2coded(rsp->content.content);
+
+          cf_http_destroy_response(rsp);
+          free(rsp);
 
           if(str) {
             if(is_valid_utf8_string(str->content,str->len) == 0) {
@@ -152,8 +85,6 @@ int flt_remotesignature_execute(t_cf_hash *head,t_configuration *dc,t_configurat
             str_cleanup(str);
             free(str);
           }
-
-          free(cnt);
         }
       }
 
@@ -166,16 +97,16 @@ int flt_remotesignature_execute(t_cf_hash *head,t_configuration *dc,t_configurat
 }
 /* }}} */
 
-t_conf_opt flt_remotesignature_config[] = {
+conf_opt_t flt_remotesignature_config[] = {
   { NULL, NULL, 0, NULL }
 };
 
-t_handler_config flt_remotesignature_handlers[] = {
+handler_config_t flt_remotesignature_handlers[] = {
   { NEW_POST_HANDLER, flt_remotesignature_execute },
   { 0, NULL }
 };
 
-t_module_config flt_remotesignature = {
+module_config_t flt_remotesignature = {
   MODULE_MAGIC_COOKIE,
   flt_remotesignature_config,
   flt_remotesignature_handlers,

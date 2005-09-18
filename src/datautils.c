@@ -43,7 +43,7 @@ u_int64_t str_to_u_int64(register const u_char *ptr) {
 /* }}} */
 
 /* {{{ u_int64_to_str */
-void u_int64_to_str(t_string *str, u_int64_t num) {
+void u_int64_to_str(string_t *str, u_int64_t num) {
   register u_char *ptr1,*ptr2,tmp;
   size_t i = 0;
 
@@ -66,7 +66,7 @@ void u_int64_to_str(t_string *str, u_int64_t num) {
 /* }}} */
 
 /* {{{ u_int16_to_str */
-void u_int16_to_str(t_string *str, u_int16_t num) {
+void u_int16_to_str(string_t *str, u_int16_t num) {
   register u_char *ptr1,*ptr2,tmp;
   size_t i = 0;
 
@@ -89,7 +89,7 @@ void u_int16_to_str(t_string *str, u_int16_t num) {
 /* }}} */
 
 /* {{{ ulong_to_str */
-void u_int32_to_str(t_string *str, u_int32_t num) {
+void u_int32_to_str(string_t *str, u_int32_t num) {
   register u_char *ptr1,*ptr2,tmp;
   size_t i = 0;
 

@@ -102,7 +102,7 @@ int flt_mod_closedb(void) {
 /* }}} */
 
 /* {{{ flt_mod_setlinks */
-void flt_mod_setlinks(t_cf_tpl_variable *tpl,int ret,u_int64_t tid,u_int64_t mid) {
+void flt_mod_setlinks(cf_tpl_variable_t *tpl,int ret,u_int64_t tid,u_int64_t mid) {
   cf_readmode_t *rm = cf_hash_get(GlobalValues,"RM",2);
   u_char *link;
   size_t l;
@@ -121,11 +121,11 @@ void flt_mod_setlinks(t_cf_tpl_variable *tpl,int ret,u_int64_t tid,u_int64_t mid
 /* }}} */
 
 /* {{{ flt_moderated_thread */
-int flt_moderated_thread(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cl_thread *thread,int mode) {
+int flt_moderated_thread(cf_hash_t *head,configuration_t *dc,configuration_t *vc,cl_thread_t *thread,int mode) {
   int si = cf_hash_get(GlobalValues,"ShowInvisible",13) != NULL,ret;
 
   DBT key,data;
-  t_string str;
+  string_t str;
 
   if(flt_moderated_cfg != FLT_MOD_THREAD || (mode & CF_MODE_POST) == 0) return FLT_DECLINE;
   if(flt_moderated_db == NULL) {
@@ -162,11 +162,11 @@ int flt_moderated_thread(t_cf_hash *head,t_configuration *dc,t_configuration *vc
 /* }}} */
 
 /* {{{ flt_moderated_posthandler */
-int flt_moderated_posthandler(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc,t_message *msg,u_int64_t tid,int mode) {
+int flt_moderated_posthandler(cf_hash_t *cgi,configuration_t *dc,configuration_t *vc,message_t *msg,u_int64_t tid,int mode) {
   int si = cf_hash_get(GlobalValues,"ShowInvisible",13) != NULL,ret;
 
   DBT key,data;
-  t_string str;
+  string_t str;
 
   if(flt_moderated_cfg != FLT_MOD_POSTS) return FLT_DECLINE;
 
@@ -204,14 +204,14 @@ int flt_moderated_posthandler(t_cf_hash *cgi,t_configuration *dc,t_configuration
 
 /* {{{ flt_moderated_gogogo */
 #ifndef CF_SHARED_MEM
-int flt_moderated_gogogo(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc,int sock)
+int flt_moderated_gogogo(cf_hash_t *cgi,configuration_t *dc,configuration_t *vc,int sock)
 #else
-int flt_moderated_gogogo(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc,void *ptr)
+int flt_moderated_gogogo(cf_hash_t *cgi,configuration_t *dc,configuration_t *vc,void *ptr)
 #endif
 {
   u_char *action = NULL,*tid,*mid;
   int si = cf_hash_get(GlobalValues,"ShowInvisible",13) != NULL,ret;
-  t_string str;
+  string_t str;
   DBT key,data;
 
   u_char one[] = "1";
@@ -275,7 +275,7 @@ int flt_moderated_gogogo(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc,
 /* }}} */
 
 /* {{{ flt_moderated_handle */
-int flt_modated_handle(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
+int flt_modated_handle(configfile_t *cfile,conf_opt_t *opt,const u_char *context,u_char **args,size_t argnum) {
   if(flt_modated_fn == NULL) flt_modated_fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   if(!context || cf_strcmp(flt_modated_fn,context) != 0) return 0;
 
@@ -294,20 +294,20 @@ void flt_moderated_cleanup(void) {
   if(flt_moderated_dbname) free(flt_moderated_dbname);
 }
 
-t_conf_opt flt_moderated_config[] = {
+conf_opt_t flt_moderated_config[] = {
   { "Moderation",   flt_modated_handle, CFG_OPT_CONFIG|CFG_OPT_LOCAL, NULL },
   { "ModerationDB", flt_modated_handle, CFG_OPT_CONFIG|CFG_OPT_LOCAL, NULL },
   { NULL, NULL, 0, NULL }
 };
 
-t_handler_config flt_moderated_handlers[] = {
+handler_config_t flt_moderated_handlers[] = {
   { CONNECT_INIT_HANDLER, flt_moderated_gogogo },
   { VIEW_LIST_HANDLER,    flt_moderated_posthandler },
   { VIEW_HANDLER,         flt_moderated_thread },
   { 0, NULL }
 };
 
-t_module_config flt_moderated = {
+module_config_t flt_moderated = {
   MODULE_MAGIC_COOKIE,
   flt_moderated_config,
   flt_moderated_handlers,

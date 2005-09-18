@@ -50,23 +50,23 @@ struct sockaddr_un;
 
 typedef struct {
   u_char *BackupFile;
-  t_cf_mutex BackupMutex;
-} t_cf_failsafe;
+  cf_mutex_t BackupMutex;
+} cf_failsafe_t;
 
-static t_cf_hash *flt_failsafe_hsh = NULL;
+static cf_hash_t *flt_failsafe_hsh = NULL;
 static int flt_failsafe_error = 0;
 
 void flt_failsafe_cleanup_hash(void *data) {
-  t_cf_failsafe *fl = (t_cf_failsafe *)data;
+  cf_failsafe_t *fl = (cf_failsafe_t *)data;
 
   if(flt_failsafe_error == 0) remove(fl->BackupFile);
   free(fl->BackupFile);
   cf_mutex_destroy(&fl->BackupMutex);
 }
 
-void flt_failsafe_cleaner(t_forum *forum) {
+void flt_failsafe_cleaner(forum_t *forum) {
   FILE *fd;
-  t_cf_failsafe *fl = cf_hash_get(flt_failsafe_hsh,forum->name,strlen(forum->name));
+  cf_failsafe_t *fl = cf_hash_get(flt_failsafe_hsh,forum->name,strlen(forum->name));
 
   /* lock backup mutex */
   CF_LM(&fl->BackupMutex);
@@ -81,9 +81,9 @@ void flt_failsafe_cleaner(t_forum *forum) {
 }
 
 /* {{{ flt_failsafe_write */
-void flt_failsafe_write(t_forum *forum,FILE *fd,u_int64_t tid,u_int64_t bmid,t_posting *p) {
-  t_cf_list_element *elem;
-  t_posting_flag *flag;
+void flt_failsafe_write(forum_t *forum,FILE *fd,u_int64_t tid,u_int64_t bmid,posting_t *p) {
+  cf_list_element_t *elem;
+  posting_flag_t *flag;
   u_int32_t flagnum;
 
   /* write thread id */
@@ -107,7 +107,7 @@ void flt_failsafe_write(t_forum *forum,FILE *fd,u_int64_t tid,u_int64_t bmid,t_p
   fwrite(&flagnum,sizeof(flagnum),1,fd);
 
   for(elem=p->flags.elements;elem;elem=elem->next) {
-    flag = (t_posting_flag *)elem->data;
+    flag = (posting_flag_t *)elem->data;
 
     flagnum = strlen(flag->name);
     fwrite(&flagnum,sizeof(flagnum),1,fd);
@@ -161,9 +161,9 @@ void flt_failsafe_write(t_forum *forum,FILE *fd,u_int64_t tid,u_int64_t bmid,t_p
 /* }}} */
 
 /* {{{ flt_failsafe_thread_handler */
-int flt_failsafe_thread_handler(t_forum *forum,t_thread *t) {
+int flt_failsafe_thread_handler(forum_t *forum,thread_t *t) {
   FILE *fd;
-  t_cf_failsafe *fl = cf_hash_get(flt_failsafe_hsh,forum->name,strlen(forum->name));
+  cf_failsafe_t *fl = cf_hash_get(flt_failsafe_hsh,forum->name,strlen(forum->name));
 
   /* lock backup mutex */
   CF_LM(&fl->BackupMutex);
@@ -185,9 +185,9 @@ int flt_failsafe_thread_handler(t_forum *forum,t_thread *t) {
 /* }}} */
 
 /* {{{ flt_failsafe_post_handler */
-int flt_failsafe_post_handler(t_forum *forum,u_int64_t tid,t_posting *p) {
+int flt_failsafe_post_handler(forum_t *forum,u_int64_t tid,posting_t *p) {
   FILE *fd;
-  t_cf_failsafe *fl = cf_hash_get(flt_failsafe_hsh,forum->name,strlen(forum->name));
+  cf_failsafe_t *fl = cf_hash_get(flt_failsafe_hsh,forum->name,strlen(forum->name));
 
   /* lock backup mutex */
   CF_LM(&fl->BackupMutex);
@@ -213,9 +213,9 @@ int flt_failsafe_post_handler(t_forum *forum,u_int64_t tid,t_posting *p) {
 int flt_failsafe_init(int main_socket) {
   FILE *fd;
   struct stat st;
-  t_name_value *forums = cfg_get_first_value(&fo_server_conf,NULL,"Forums");
+  name_value_t *forums = cfg_get_first_value(&fo_server_conf,NULL,"Forums");
   size_t i;
-  t_cf_failsafe *fl;
+  cf_failsafe_t *fl;
 
   for(i=0;i<forums->valnum;++i) {
     fl = cf_hash_get(flt_failsafe_hsh,forums->values[i],strlen(forums->values[i]));
@@ -242,8 +242,8 @@ int flt_failsafe_init(int main_socket) {
 /* }}} */
 
 /* {{{ flt_failsafe_handle_command */
-int flt_failsafe_handle_command(t_configfile *cf,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
-  t_cf_failsafe *fl,fl1;
+int flt_failsafe_handle_command(configfile_t *cf,conf_opt_t *opt,const u_char *context,u_char **args,size_t argnum) {
+  cf_failsafe_t *fl,fl1;
   u_char buff[512];
 
   if(flt_failsafe_hsh == NULL) flt_failsafe_hsh = cf_hash_new(flt_failsafe_cleanup_hash);
@@ -276,12 +276,12 @@ void flt_failsafe_cleanup(void) {
 }
 /* }}} */
 
-t_conf_opt flt_failsafe_config[] = {
+conf_opt_t flt_failsafe_config[] = {
   { "BackupFile", flt_failsafe_handle_command, CFG_OPT_CONFIG|CFG_OPT_NEEDED|CFG_OPT_LOCAL, NULL },
   { NULL, NULL, 0, NULL }
 };
 
-t_handler_config flt_failsafe_handlers[] = {
+handler_config_t flt_failsafe_handlers[] = {
   { INIT_HANDLER,       flt_failsafe_init           },
   { NEW_POST_HANDLER,   flt_failsafe_post_handler   },
   { NEW_THREAD_HANDLER, flt_failsafe_thread_handler },
@@ -289,7 +289,7 @@ t_handler_config flt_failsafe_handlers[] = {
   { 0, NULL }
 };
 
-t_module_config flt_failsafe = {
+module_config_t flt_failsafe = {
   MODULE_MAGIC_COOKIE,
   flt_failsafe_config,
   flt_failsafe_handlers,

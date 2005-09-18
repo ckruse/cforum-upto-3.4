@@ -28,14 +28,14 @@
  * \param tid The thread id
  * \param mid The message id
  */
-void send_posting(t_cf_hash *head,int sock,u_int64_t tid,u_int64_t mid);
+void send_posting(cf_hash_t *head,int sock,u_int64_t tid,u_int64_t mid);
 
 /**
  * This function sends a thread list to the client
  * \param sock The server socket
  * \param head The CGI hash
  */
-void send_threadlist(int sock,t_cf_hash *head);
+void send_threadlist(int sock,cf_hash_t *head);
 #else
 /**
  * This function sends a posting to the user
@@ -44,14 +44,14 @@ void send_threadlist(int sock,t_cf_hash *head);
  * \param tid The thread id
  * \param mid The message id
  */
-void send_posting(t_cf_hash *head,void *shm_ptr,u_int64_t tid,u_int64_t mid);
+void send_posting(cf_hash_t *head,void *shm_ptr,u_int64_t tid,u_int64_t mid);
 
 /**
  * This function sends the threadlist to the client
  * \param shm_ptr Pointer to the shared memory segment
  * \param head The CGI hash
  */
-void send_threadlist(void *shm_ptr,t_cf_hash *head);
+void send_threadlist(void *shm_ptr,cf_hash_t *head);
 #endif
 
 
@@ -60,7 +60,7 @@ void send_threadlist(void *shm_ptr,t_cf_hash *head);
  * \param thread The thread structure
  * \param head The CGI hash
  */
-void print_thread_structure(t_cl_thread *thread,t_cf_hash *head);
+void printhread_t_structure(cl_thread_t *thread,cf_hash_t *head);
 
 
 #endif

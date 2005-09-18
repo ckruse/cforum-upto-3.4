@@ -10,25 +10,25 @@
 typedef struct s_posting_flag {
   u_char *name;
   u_char *val;
-} t_posting_flag;
+} posting_flag_t;
 
 struct s_forum;
-typedef struct s_forum t_forum;
+typedef struct s_forum forum_t;
 
-typedef void (*t_worker)(int); /**< This is a worker function */
-typedef int (*t_server_protocol_handler)(int,t_forum *,const u_char **,int,rline_t *); /**< Used for protocol plugins */
+typedef void (*worker_t)(int); /**< This is a worker function */
+typedef int (*server_protocol_handler_t)(int,forum_t *,const u_char **,int,rline_t *); /**< Used for protocol plugins */
 
-/* {{{ t_posting */
+/* {{{ posting_t */
 /**
  * this is the datatype for the postings
  */
 typedef struct s_posting {
   u_int64_t mid; /**< The message id. */
 
-  t_string unid; /**< Unique id of the posting. Used to avoid double postings. */
-  t_string subject; /**< The subject of the posting */
-  t_string category; /**< The category of the posting */
-  t_string content; /**< The content of the posting. */
+  string_t unid; /**< Unique id of the posting. Used to avoid double postings. */
+  string_t subject; /**< The subject of the posting */
+  string_t category; /**< The category of the posting */
+  string_t content; /**< The content of the posting. */
 
   time_t date; /**< the date as time_t (it should be a long or an unsigned long) */
 
@@ -40,61 +40,61 @@ typedef struct s_posting {
 
   /** the name, email, homepage, image and ip as strings in an extra struct */
   struct {
-    t_string name; /**< The name of the poster */
-    t_string email; /**< The email address of the poster */
-    t_string hp; /**< The homepage URL of the poster */
-    t_string img; /**< The image URL of the poster */
-    t_string ip; /**< The IP address of the  poster */
+    string_t name; /**< The name of the poster */
+    string_t email; /**< The email address of the poster */
+    string_t hp; /**< The homepage URL of the poster */
+    string_t img; /**< The image URL of the poster */
+    string_t ip; /**< The IP address of the  poster */
   } user;
 
-  t_cf_list_head flags;
+  cf_list_head_t flags;
 
   struct s_posting *next,*prev;
-} t_posting;
+} posting_t;
 /* }}} */
 
-/* {{{ t_thread */
+/* {{{ thread_t */
 /** this is the datatype for the threads */
 typedef struct s_thread {
   u_int64_t tid; /**< The thread id as an unsigned long long */
 
   /** the read-write-lock */
-  t_cf_rwlock lock;
+  cf_rwlock_t lock;
 
-  t_posting *postings; /**< A pointer to the first posting in the chain */
+  posting_t *postings; /**< A pointer to the first posting in the chain */
 
-  t_posting *newest; /**< A pointer to the newest posting in the chain */
-  t_posting *oldest; /**< A pointer to the oldest posting in the chain */
-  t_posting *last; /**< A pointer to the last posting in the chain */
+  posting_t *newest; /**< A pointer to the newest posting in the chain */
+  posting_t *oldest; /**< A pointer to the oldest posting in the chain */
+  posting_t *last; /**< A pointer to the last posting in the chain */
 
   u_int32_t posts; /**< The number of postings this thread contains */
 
   struct s_thread *next,*prev;
-} t_thread;
+} thread_t;
 /* }}} */
 
-/* {{{ t_cf_client */
+/* {{{ cf_client_t */
 /** This struct is used to save client requests in the queque */
 typedef struct s_client {
   int sock; /**< The connection descriptor to the client */
-  t_worker worker; /**< A pointer to the worker function specified for this connection */
-} t_cf_client;
+  worker_t worker; /**< A pointer to the worker function specified for this connection */
+} cf_client_t;
 /* }}} */
 
-/* {{{ t_server */
+/* {{{ server_t */
 /** This struct is used to save a server socket. */
 typedef struct s_server {
   int sock; /**< The server socket itself */
   size_t size; /**< The size of the memory block where the struct sockaddr * pointer points to */
-  t_worker worker; /**< The worker function which clients for this server socket should handle */
+  worker_t worker; /**< The worker function which clients for this server socket should handle */
   struct sockaddr *addr; /**< The address structure for this socket */
-} t_server;
+} server_t;
 /* }}} */
 
 /* {{{ struct s_forum */
 struct s_forum {
   /** forum locker */
-  t_cf_rwlock lock;
+  cf_rwlock_t lock;
 
   /** The name of the forum */
   u_char *name;
@@ -104,10 +104,10 @@ struct s_forum {
     int fresh;
 
     /** The cache including invisible messages and threads */
-    t_string visible;
+    string_t visible;
 
     /** The cache excluding invisible messages and threads  */
-    t_string invisible;
+    string_t invisible;
   } cache;
 
   struct {
@@ -129,20 +129,20 @@ struct s_forum {
     int ids[2]; /**< The shared memory id */
     int sem; /**< The locking semaphore id */
     void *ptrs[2]; /**< The pointer to the shared memory segment */
-    t_cf_mutex lock; /**< The mutex to synchronize access to this information */
+    cf_mutex_t lock; /**< The mutex to synchronize access to this information */
   } shm;
   #endif
 
 
   struct {
     /**< lock for the threads structure */
-    t_cf_rwlock lock;
+    cf_rwlock_t lock;
 
     /** This hash contains all threads */
-    t_cf_hash *threads;
+    cf_hash_t *threads;
 
     /** The thread list */
-    t_thread *list,*last;
+    thread_t *list,*last;
 
     /** The last tid */
     u_int64_t last_tid;
@@ -153,8 +153,8 @@ struct s_forum {
 
   struct {
     /** This hash contains all unique ids */
-    t_cf_hash *ids;
-    t_cf_mutex lock; /**< The mutex to synchronize access to unique_ids */
+    cf_hash_t *ids;
+    cf_mutex_t lock; /**< The mutex to synchronize access to unique_ids */
   } uniques;
 };
 /* }}} */
@@ -162,23 +162,23 @@ struct s_forum {
 typedef struct s_periodical {
   unsigned long periode;
   void (*worker)(void);
-} t_periodical;
+} periodical_t;
 
-typedef int (*t_data_loading_filter)(t_forum *);
-typedef int (*t_srv_new_post_filter)(t_forum *,u_int64_t,t_posting *);
-typedef int (*t_srv_new_thread_filter)(t_forum *,t_thread *);
+typedef int (*data_loading_filter_t)(forum_t *);
+typedef int (*srv_new_post_filter_t)(forum_t *,u_int64_t,posting_t *);
+typedef int (*srv_new_thread_filter_t)(forum_t *,thread_t *);
 
-t_forum *cf_register_forum(const u_char *name);
-int cf_load_data(t_forum *forum);
+forum_t *cf_register_forum(const u_char *name);
+int cf_load_data(forum_t *forum);
 
 void cf_log(int mode,const u_char *file,unsigned int line,const u_char *format, ...);
 
 int cf_setup_socket(struct sockaddr_un *addr);
-void cf_push_server(int sockfd,struct sockaddr *addr,size_t size,t_worker handler);
-int cf_push_client(int connfd,t_worker handler,int spare_threads,int max_threads,pthread_attr_t *attr);
-void cf_register_thread(t_forum *forum,t_thread *t);
-void cf_unregister_thread(t_forum *forum,t_thread *t);
-int cf_register_protocol_handler(u_char *handler_hook,t_server_protocol_handler handler);
+void cf_push_server(int sockfd,struct sockaddr *addr,size_t size,worker_t handler);
+int cf_push_client(int connfd,worker_t handler,int spare_threads,int max_threads,pthread_attr_t *attr);
+void cf_register_thread(forum_t *forum,thread_t *t);
+void cf_unregister_thread(forum_t *forum,thread_t *t);
+int cf_register_protocol_handler(u_char *handler_hook,server_protocol_handler_t handler);
 
 int cf_tokenize(u_char *line,u_char ***tokens);
 void cf_cftp_handler(int sockfd);
@@ -186,31 +186,31 @@ void cf_cftp_handler(int sockfd);
 int cf_shmdt(void *ptr);
 void *cf_shmat(int shmid,void *addr,int shmflag);
 
-void cf_generate_list(t_forum *forum,t_string *str,int del);
-void cf_generate_shared_memory(t_forum *forum);
+void cf_generate_list(forum_t *forum,string_t *str,int del);
+void cf_generate_shared_memory(forum_t *forum);
 void *cf_generate_cache(void *arg);
 
-t_thread *cf_get_thread(t_forum *forum,u_int64_t tid);
-t_posting *cf_get_posting(t_thread *t,u_int64_t mid);
+thread_t *cf_get_thread(forum_t *forum,u_int64_t tid);
+posting_t *cf_get_posting(thread_t *t,u_int64_t mid);
 
 void *cf_worker(void *arg);
 
 void cf_destroy_flag(void *data);
-void cf_remove_thread(t_forum *forum,t_thread *t);
+void cf_remove_thread(forum_t *forum,thread_t *t);
 
-void cf_destroy_forum(t_forum *forum);
-void cf_cleanup_forumtree(t_forum *forum);
-void cf_cleanup_thread(t_thread *t);
-void cf_cleanup_posting(t_posting *p);
+void cf_destroy_forum(forum_t *forum);
+void cf_cleanup_forumtree(forum_t *forum);
+void cf_cleanup_thread(thread_t *t);
+void cf_cleanup_posting(posting_t *p);
 
 void *cf_periodical_worker(void *arg);
 void cf_io_worker(void);
 
-void cf_send_posting(t_forum *forum,int sock,u_int64_t tid,u_int64_t mid,int invisible);
-int cf_read_posting(t_forum *forum,t_posting *p,int sock,rline_t *tsd);
+void cf_send_posting(forum_t *forum,int sock,u_int64_t tid,u_int64_t mid,int invisible);
+int cf_read_posting(forum_t *forum,posting_t *p,int sock,rline_t *tsd);
 
-int cf_remove_flags(int sockfd,rline_t *tsd,t_posting *p1);
-int cf_read_flags(int sockfd,rline_t *tsd,t_posting *p);
-t_posting_flag *cf_get_flag_by_name(t_cf_list_head *flags,const u_char *name);
+int cf_remove_flags(int sockfd,rline_t *tsd,posting_t *p1);
+int cf_read_flags(int sockfd,rline_t *tsd,posting_t *p);
+posting_flag_t *cf_get_flag_by_name(cf_list_head_t *flags,const u_char *name);
 
 /* eof */

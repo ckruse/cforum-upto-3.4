@@ -101,12 +101,12 @@ int is_thread(const char *path) {
  * \param month The month
  */
 void index_month(char *year,char *month) {
-  t_name_value *apath = cfg_get_first_value(&fo_server_conf,forum_name,"ArchivePath");
+  name_value_t *apath = cfg_get_first_value(&fo_server_conf,forum_name,"ArchivePath");
   char path[256],path1[256],ym[256];
   struct stat st;
   DBT key,data;
   size_t ym_len,len;
-  t_string str;
+  string_t str;
   int ret;
   u_int64_t x;
   u_char y[50];
@@ -175,7 +175,7 @@ void index_month(char *year,char *month) {
  * \param year The year
  */
 void do_year(char *year) {
-  t_name_value *apath = cfg_get_first_value(&fo_server_conf,forum_name,"ArchivePath");
+  name_value_t *apath = cfg_get_first_value(&fo_server_conf,forum_name,"ArchivePath");
   char path[256];
 
   DIR *months;
@@ -201,7 +201,7 @@ void do_year(char *year) {
 /**
  * Dummy function, for ignoring unknown directives
  */
-int ignre(t_configfile *cfile,const u_char *context,u_char *name,u_char **args,size_t len) {
+int ignre(configfile_t *cfile,const u_char *context,u_char *name,u_char **args,size_t len) {
   return 0;
 }
 
@@ -226,7 +226,7 @@ void usage(void) {
 }
 /* }}} */
 
-t_conf_opt extra_opts[] = {
+conf_opt_t extra_opts[] = {
   { "ArchivePath", handle_command, CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_server_conf },
   { NULL, NULL, 0, NULL }
 };
@@ -238,10 +238,10 @@ t_conf_opt extra_opts[] = {
  * \param envp Environment vector
  */
 int main(int argc,char *argv[],char *envp[]) {
-  t_array *cfgfiles;
+  array_t *cfgfiles;
   u_char *file;
-  t_configfile sconf,dconf;
-  t_name_value *ent,*idxfile;
+  configfile_t sconf,dconf;
+  name_value_t *ent,*idxfile;
   char c;
 
   DIR *years;

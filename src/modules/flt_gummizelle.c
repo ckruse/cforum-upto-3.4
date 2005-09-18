@@ -59,12 +59,12 @@ static u_char *flt_gummizelle_ip    = NULL;
 static u_char *flt_gummizelle_uname = NULL;
 static u_char *flt_gummizelle_name  = NULL;
 
-static t_array flt_gummizelle_entries;
+static array_t flt_gummizelle_entries;
 
 flt_gummizelle_t *flt_gummizelle_entry = NULL;
 
 /* {{{ flt_gummizelle_read_string */
-void flt_gummizelle_read_string(u_char *ptr,t_string *str,u_char **pos) {
+void flt_gummizelle_read_string(u_char *ptr,string_t *str,u_char **pos) {
   for(;*ptr;++ptr) {
     switch(*ptr) {
       case '\\':
@@ -159,16 +159,16 @@ int flt_gummizelle_check_caged(void) {
 /* }}} */
 
 /* {{{ flt_gummizelle_init */
-int flt_gummizelle_init(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc) {
+int flt_gummizelle_init(cf_hash_t *cgi,configuration_t *dc,configuration_t *vc) {
   u_char *UserName,*ip;
   struct stat st;
   int fd;
   u_char *f_ptr;
   u_char *ptr;
 
-  t_name_value *v = NULL;
+  name_value_t *v = NULL;
   flt_gummizelle_t ent;
-  t_string val;
+  string_t val;
 
   if(flt_gummizelle_fn == NULL) flt_gummizelle_fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
 
@@ -256,21 +256,21 @@ int flt_gummizelle_init(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc) 
 /* }}} */
 
 /* {{{ flt_gummizelle_view_init */
-int flt_gummizelle_view_init(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cf_template *begin,t_cf_template *end) {
+int flt_gummizelle_view_init(cf_hash_t *head,configuration_t *dc,configuration_t *vc,cf_template_t *begin,cf_template_t *end) {
   if(flt_gummizelle_is_caged) cf_hash_entry_delete(GlobalValues,"ShowInvisible",13);
   return FLT_DECLINE;
 }
 /* }}} */
 
 /* {{{ flt_gummizelle_posting_filter */
-int flt_gummizelle_posting_filter(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cl_thread *thread,t_cf_template *tpl) {
+int flt_gummizelle_posting_filter(cf_hash_t *head,configuration_t *dc,configuration_t *vc,cl_thread_t *thread,cf_template_t *tpl) {
   if(flt_gummizelle_is_caged) cf_hash_entry_delete(GlobalValues,"ShowInvisible",13);
   return FLT_DECLINE;
 }
 /* }}} */
 
 /* {{{ flt_gummizelle_undelete_subtree */
-t_message *flt_gummizelle_undelete_subtree(t_message *msg) {
+message_t *flt_gummizelle_undelete_subtree(message_t *msg) {
   int lvl = msg->level;
 
   for(msg=msg->next;msg && msg->level > lvl;msg=msg->next) msg->invisible = 0;
@@ -280,12 +280,12 @@ t_message *flt_gummizelle_undelete_subtree(t_message *msg) {
 /* }}} */
 
 /* {{{ flt_gummizelle_execute */
-int flt_gummizelle_execute(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_message *msg,u_int64_t tid,int mode) {
+int flt_gummizelle_execute(cf_hash_t *head,configuration_t *dc,configuration_t *vc,message_t *msg,u_int64_t tid,int mode) {
   int restore = 0;
   time_t now = time(NULL);
 
-  t_cf_list_element *elem;
-  t_cf_post_flag *flag;
+  cf_list_element_t *elem;
+  cf_post_flag_t *flag;
 
   if(flt_gummizelle_is_caged == 0 || flt_gummizelle_entry == NULL || msg->invisible == 0) return FLT_DECLINE;
   if(flt_gummizelle_entry->start && now < flt_gummizelle_entry->start) return FLT_DECLINE;
@@ -302,7 +302,7 @@ int flt_gummizelle_execute(t_cf_hash *head,t_configuration *dc,t_configuration *
 
     if(restore == 0 && flt_gummizelle_uname) {
       for(elem=msg->flags.elements;elem;elem=elem->next) {
-        flag = (t_cf_post_flag *)elem->data;
+        flag = (cf_post_flag_t *)elem->data;
         if(cf_strcmp(flag->name,"UserName") == 0) {
           if(cf_strcmp(flt_gummizelle_entry->uname,flag->val) == 0) restore = 1;
           break;
@@ -320,24 +320,46 @@ int flt_gummizelle_execute(t_cf_hash *head,t_configuration *dc,t_configuration *
 
 /* {{{ flt_gummizelle_newpost */
 #ifdef CF_SHARED_MEM
-int flt_gummizelle_newpost(t_cf_hash *head,t_configuration *dc,t_configuration *pc,t_message *p,t_cl_thread *thr,void *ptr,int sock,int mode)
+int flt_gummizelle_newpost(cf_hash_t *head,configuration_t *dc,configuration_t *pc,message_t *p,cl_thread_t *thr,void *ptr,int sock,int mode)
 #else
-int flt_gummizelle_newpost(t_cf_hash *head,t_configuration *dc,t_configuration *pc,t_message *p,t_cl_thread *thr,int sock,int mode)
+int flt_gummizelle_newpost(cf_hash_t *head,configuration_t *dc,configuration_t *pc,message_t *p,cl_thread_t *thr,int sock,int mode)
 #endif
 {
   int restore = 0;
   time_t now = time(NULL);
   u_char *uname = cf_hash_get(GlobalValues,"UserName",8);
+  size_t i;
+  flt_gummizelle_t *ent;
 
-  if(flt_gummizelle_is_caged == 0 || flt_gummizelle_entry == NULL) return FLT_DECLINE;
+  if(flt_gummizelle_is_caged == 0 || flt_gummizelle_entry == NULL) {
+    for(i=0;i<flt_gummizelle_entries.elements;++i) {
+      ent = array_element_at(&flt_gummizelle_entries,i);
+
+      if(flt_gummizelle_ip && ent->ip && cf_strcmp(ent->ip,flt_gummizelle_ip) == 0) {
+        flt_gummizelle_entry = ent;
+        break;
+      }
+      if(flt_gummizelle_uname && ent->uname && cf_strcmp(ent->uname,flt_gummizelle_uname) == 0) {
+        flt_gummizelle_entry = ent;
+        break;
+      }
+      if(ent->name && cf_strcmp(ent->name,p->author.content) == 0) {
+        flt_gummizelle_entry = ent;
+        break;
+      }
+    }
+
+    if(flt_gummizelle_entry == NULL) return FLT_DECLINE;
+  }
+
   if(flt_gummizelle_entry->start && now < flt_gummizelle_entry->start) return FLT_DECLINE;
   if(flt_gummizelle_entry->end && now > flt_gummizelle_entry->end) return FLT_DECLINE;
 
   /* filter works only for a specific thread */
   if(flt_gummizelle_entry->tid) return FLT_DECLINE;
 
-  if(flt_gummizelle_entry->name && flt_gummizelle_name) {
-    if(cf_strcasecmp(p->author.content,flt_gummizelle_name) == 0) {
+  if(flt_gummizelle_entry->name) {
+    if(cf_strcasecmp(p->author.content,flt_gummizelle_entry->name) == 0) {
       restore = 1;
       p->invisible = 1;
     }
@@ -352,7 +374,7 @@ int flt_gummizelle_newpost(t_cf_hash *head,t_configuration *dc,t_configuration *
 /* }}} */
 
 /* {{{ flt_gummizelle_handle */
-int flt_gummizelle_handle(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
+int flt_gummizelle_handle(configfile_t *cfile,conf_opt_t *opt,const u_char *context,u_char **args,size_t argnum) {
   if(flt_gummizelle_fn == NULL) flt_gummizelle_fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   if(!context || cf_strcmp(flt_gummizelle_fn,context) != 0) return 0;
 
@@ -363,12 +385,12 @@ int flt_gummizelle_handle(t_configfile *cfile,t_conf_opt *opt,const u_char *cont
 }
 /* }}} */
 
-t_conf_opt flt_gummizelle_config[] = {
+conf_opt_t flt_gummizelle_config[] = {
   { "Gummizelle",  flt_gummizelle_handle,  CFG_OPT_CONFIG|CFG_OPT_LOCAL, NULL },
   { NULL, NULL, 0, NULL }
 };
 
-t_handler_config flt_gummizelle_handlers[] = {
+handler_config_t flt_gummizelle_handlers[] = {
   { INIT_HANDLER,         flt_gummizelle_init },
   { VIEW_INIT_HANDLER,    flt_gummizelle_view_init },
   { VIEW_LIST_HANDLER,    flt_gummizelle_execute },
@@ -377,7 +399,7 @@ t_handler_config flt_gummizelle_handlers[] = {
   { 0, NULL }
 };
 
-t_module_config flt_gummizelle = {
+module_config_t flt_gummizelle = {
   MODULE_MAGIC_COOKIE,
   flt_gummizelle_config,
   flt_gummizelle_handlers,

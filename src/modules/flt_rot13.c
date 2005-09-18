@@ -43,7 +43,7 @@
 static int flt_rot13_decoded = 0;
 
 /* {{{ flt_rot13_execute */
-int flt_rot13_execute(t_configuration *fdc,t_configuration *fvc,t_cl_thread *thread,const u_char *directive,const u_char **parameters,size_t plen,t_string *bco,t_string *bci,t_string *content,t_string *cite,const u_char *qchars,int sig) {
+int flt_rot13_execute(configuration_t *fdc,configuration_t *fvc,cl_thread_t *thread,const u_char *directive,const u_char **parameters,size_t plen,string_t *bco,string_t *bci,string_t *content,string_t *cite,const u_char *qchars,int sig) {
   register u_char *ptr,b1,b2;
   u_char *link;
   size_t l;
@@ -90,7 +90,7 @@ int flt_rot13_execute(t_configuration *fdc,t_configuration *fvc,t_cl_thread *thr
 /* }}} */
 
 /* {{{ flt_rot13_init */
-int flt_rot13_init(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc) {
+int flt_rot13_init(cf_hash_t *cgi,configuration_t *dc,configuration_t *vc) {
   u_char *ptr;
 
   cf_html_register_directive("rot13",flt_rot13_execute,CF_HTML_DIR_TYPE_ARG|CF_HTML_DIR_TYPE_BLOCK);
@@ -105,16 +105,16 @@ int flt_rot13_init(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc) {
 }
 /* }}} */
 
-t_conf_opt flt_rot13_config[] = {
+conf_opt_t flt_rot13_config[] = {
   { NULL, NULL, 0, NULL }
 };
 
-t_handler_config flt_rot13_handlers[] = {
+handler_config_t flt_rot13_handlers[] = {
   { INIT_HANDLER,     flt_rot13_init },
   { 0, NULL }
 };
 
-t_module_config flt_rot13 = {
+module_config_t flt_rot13 = {
   MODULE_MAGIC_COOKIE,
   flt_rot13_config,
   flt_rot13_handlers,

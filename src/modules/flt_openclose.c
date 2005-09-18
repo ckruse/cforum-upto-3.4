@@ -47,7 +47,7 @@ static u_char *flt_oc_fn        = NULL;
 
 
 /* {{{ flt_oc_opendb */
-int flt_oc_opendb(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc) {
+int flt_oc_opendb(cf_hash_t *cgi,configuration_t *dc,configuration_t *vc) {
   int ret,fd;
 
   if(flt_oc_dbfile) {
@@ -80,9 +80,9 @@ int flt_oc_opendb(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc) {
 
 /* {{{ flt_oc_exec_xmlhttp */
 #ifndef CF_SHARED_MEM
-int flt_oc_exec_xmlhttp(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc,int sock)
+int flt_oc_exec_xmlhttp(cf_hash_t *cgi,configuration_t *dc,configuration_t *vc,int sock)
 #else
-int flt_oc_exec_xmlhttp(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc,void *shm)
+int flt_oc_exec_xmlhttp(cf_hash_t *cgi,configuration_t *dc,configuration_t *vc,void *shm)
 #endif
 {
   u_char *val,buff[512];
@@ -125,13 +125,13 @@ int flt_oc_exec_xmlhttp(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc,v
 /* }}} */
 
 /* {{{ flt_oc_execute_filter */
-int flt_oc_execute_filter(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cl_thread *thread,int mode) {
+int flt_oc_execute_filter(cf_hash_t *head,configuration_t *dc,configuration_t *vc,cl_thread_t *thread,int mode) {
   u_char *UserName = cf_hash_get(GlobalValues,"UserName",8);
   u_char buff[512];
   size_t i;
-  t_name_value *vs;
-  t_message *msg;
-  t_mod_api is_visited;
+  name_value_t *vs;
+  message_t *msg;
+  mod_api_t is_visited;
 
   DBT key,data;
 
@@ -220,7 +220,7 @@ int flt_oc_execute_filter(t_cf_hash *head,t_configuration *dc,t_configuration *v
 /* }}} */
 
 /* {{{ flt_oc_set_js */
-int flt_oc_set_js(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cf_template *begin,t_cf_template *end) {
+int flt_oc_set_js(cf_hash_t *head,configuration_t *dc,configuration_t *vc,cf_template_t *begin,cf_template_t *end) {
   /* user wants to use java script */
   if(UseJavaScript) {
     cf_tpl_setvalue(begin,"UseJavaScript",TPL_VARIABLE_INT,1);
@@ -234,9 +234,9 @@ int flt_oc_set_js(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cf_t
 
 /* {{{ flt_oc_validate */
 #ifndef CF_SHARED_MEM
-int flt_oc_validate(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc,time_t last_modified,int sock)
+int flt_oc_validate(cf_hash_t *cgi,configuration_t *dc,configuration_t *vc,time_t last_modified,int sock)
 #else
-int flt_oc_validate(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc,time_t last_modified,void *sock)
+int flt_oc_validate(cf_hash_t *cgi,configuration_t *dc,configuration_t *vc,time_t last_modified,void *sock)
 #endif
 {
   u_char *val;
@@ -255,7 +255,7 @@ int flt_oc_validate(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc,time_
 
 
 /* {{{ flt_oc_get_conf */
-int flt_oc_get_conf(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
+int flt_oc_get_conf(configfile_t *cfile,conf_opt_t *opt,const u_char *context,u_char **args,size_t argnum) {
   if(flt_oc_fn == NULL) flt_oc_fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   if(!context || cf_strcmp(flt_oc_fn,context) != 0) return 0;
 
@@ -275,7 +275,7 @@ void flt_oc_cleanup(void) {
 }
 /* }}} */
 
-t_conf_opt flt_openclose_config[] = {
+conf_opt_t flt_openclose_config[] = {
   { "ThreadsOpenByDefault", flt_oc_get_conf, CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
   { "UseJavaScript",        flt_oc_get_conf, CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
   { "OpenThreadIfNew",      flt_oc_get_conf, CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
@@ -283,7 +283,7 @@ t_conf_opt flt_openclose_config[] = {
   { NULL, NULL, 0, NULL }
 };
 
-t_handler_config flt_openclose_handlers[] = {
+handler_config_t flt_openclose_handlers[] = {
   { INIT_HANDLER,         flt_oc_opendb },
   { CONNECT_INIT_HANDLER, flt_oc_exec_xmlhttp },
   { VIEW_HANDLER,         flt_oc_execute_filter },
@@ -291,7 +291,7 @@ t_handler_config flt_openclose_handlers[] = {
   { 0, NULL }
 };
 
-t_module_config flt_openclose = {
+module_config_t flt_openclose = {
   MODULE_MAGIC_COOKIE,
   flt_openclose_config,
   flt_openclose_handlers,

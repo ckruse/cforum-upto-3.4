@@ -35,14 +35,14 @@ typedef struct s_cf_cgi_param {
   u_char *value; /**< the parameter value */
   struct s_cf_cgi_param *next; /**< the values are stored in a double linked list. This is the pointer to the element after the actual element. It is NULL if there is no element after. */
   struct s_cf_cgi_param *last; /**< the values are stored in a double linked list. This is the pointer to the element before the actual element. It is NULL if there is no element before. */
-} t_cf_cgi_param;
+} cf_cgi_param_t;
 
 /**
  * this function is the constructor for the CGI hash. It reads the CGI data
  * from the environment, parses it and decodes it.
  * \return It returns NULL on error or the CGI hash on success.
  */
-t_cf_hash *cf_cgi_new(void);
+cf_hash_t *cf_cgi_new(void);
 
 /**
  * This function creates a CGI hash from a PATH_INFO string. It expects the
@@ -50,13 +50,13 @@ t_cf_hash *cf_cgi_new(void);
  * \param hash If not NULL, this hash will be used to store the parameters
  * \return It returns NULL on error or the CGI hash on success.
  */
-t_cf_hash *cf_cgi_parse_path_info_nv(t_cf_hash *hash);
+cf_hash_t *cf_cgi_parse_path_info_nv(cf_hash_t *hash);
 
 /**
  * This function parses a query string
  * \param ary A pointer to a array structure
  */
-void cf_cgi_parse_path_info(t_array *ary);
+void cf_cgi_parse_path_info(array_t *ary);
 
 /**
  * This function encodes a string to an URL encoded string. This means,
@@ -82,7 +82,7 @@ u_char *cf_cgi_url_decode(const u_char *str,size_t len);
  * This function gets a single CGI value and returns it as a C string.
  * \attention You may not free this returned value! This will be done when you call cf_cgi_destroy().
  */
-u_char *cf_cgi_get(t_cf_hash *cgi,u_char *name);
+u_char *cf_cgi_get(cf_hash_t *cgi,u_char *name);
 
 /**
  * This function sets a CGI param value
@@ -90,7 +90,7 @@ u_char *cf_cgi_get(t_cf_hash *cgi,u_char *name);
  * \param name The parameter name
  * \param value The value of the parameter
  */
-void cf_cgi_set(t_cf_hash *hash,const u_char *name,const u_char *value);
+void cf_cgi_set(cf_hash_t *hash,const u_char *name,const u_char *value);
 
 /**
  * This function returns a double linked list of parameters with the name the parameter 'param' defines.
@@ -99,13 +99,13 @@ void cf_cgi_set(t_cf_hash *hash,const u_char *name,const u_char *value);
  * \attention You may not free() anything in this list! This is done by the cf_cgi_destroy_entry() function!
  * \return The linked list if the entry could be found, NULL if the entry was not found.
  */
-t_cf_cgi_param *cf_cgi_get_multiple(t_cf_hash *hash,u_char *param);
+cf_cgi_param_t *cf_cgi_get_multiple(cf_hash_t *hash,u_char *param);
 
 /**
  * This function destroys a CGI hash.
  * \param hash The CGI hash
  */
-void cf_cgi_destroy(t_cf_hash *hash);
+void cf_cgi_destroy(cf_hash_t *hash);
 
 /**
  * This function parses a PATH_INFO string
@@ -118,7 +118,7 @@ u_int32_t cf_cgi_path_info_parsed(u_char ***infos);
  * This function parses the cookies
  * \param hash A hash to save cookies in
  */
-void cf_cgi_parse_cookies(t_cf_hash *hash);
+void cf_cgi_parse_cookies(cf_hash_t *hash);
 
 void cf_cgi_destroy_entry(void *data);
 

@@ -47,14 +47,14 @@ struct sockaddr_un;
 /* }}} */
 
 /* {{{ flt_tidx_module */
-int flt_tidx_module(t_forum *forum,t_thread *thr) {
-  t_name_value *v = cfg_get_first_value(&fo_default_conf,forum->name,"ThreadIndexFile");
+int flt_tidx_module(forum_t *forum,thread_t *thr) {
+  name_value_t *v = cfg_get_first_value(&fo_default_conf,forum->name,"ThreadIndexFile");
   struct stat st;
   struct tm t;
   DB *db;
   DBT key,data;
   int ret;
-  t_string str;
+  string_t str;
   u_char buff[256];
   u_char tid[50];
   size_t len,tlen;
@@ -140,16 +140,16 @@ int flt_tidx_module(t_forum *forum,t_thread *thr) {
 }
 /* }}} */
 
-t_conf_opt flt_tid_index_config[] = {
+conf_opt_t flt_tid_index_config[] = {
   { NULL, NULL, 0, NULL }
 };
 
-t_handler_config flt_tid_index_handlers[] = {
+handler_config_t flt_tid_index_handlers[] = {
   { ARCHIVE_HANDLER, flt_tidx_module },
   { 0, NULL }
 };
 
-t_module_config flt_tid_index = {
+module_config_t flt_tid_index = {
   MODULE_MAGIC_COOKIE,
   flt_tid_index_config,
   flt_tid_index_handlers,

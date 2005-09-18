@@ -38,32 +38,32 @@
 
 typedef struct s_flt_macro_variable {
   char *type;
-  t_cf_hash *locals;
-} t_flt_macro_variable;
+  cf_hash_t *locals;
+} flt_macro_variable_t;
 
 typedef struct s_flt_macro_node {
   int type;
   void *data;
 
   struct s_flt_macro_node *prev,*next;
-} t_flt_macro_node;
+} flt_macro_node_t;
 
 typedef struct s_flt_macro_method {
   char *name;
   int state;
-  t_flt_macro_node *nodes;
-} t_flt_macro_method;
+  flt_macro_node_t *nodes;
+} flt_macro_method_t;
 
 typedef struct s_flt_macro_static_method {
   char *name;
-  t_cf_hash *locals;
-  t_flt_macro_node *nodes;
-} t_flt_macro_static_method;
+  cf_hash_t *locals;
+  flt_macro_node_t *nodes;
+} flt_macro_static_method_t;
 
 typedef struct s_flt_macro_class {
   char *name;
-  t_cf_hash *attributes,*methods;
-} t_flt_macro_class;
+  cf_hash_t *attributes,*methods;
+} flt_macro_class_t;
 
 typedef struct s_flt_macro_macro {
   char *filename;
@@ -72,9 +72,9 @@ typedef struct s_flt_macro_macro {
   unsigned int err;
   unsigned long lineno;
 
-  t_flt_macro_node *main;
-  t_cf_hash *globals,*classes;
-} t_flt_macro_macro;
+  flt_macro_node_t *main;
+  cf_hash_t *globals,*classes;
+} flt_macro_macro_t;
 
 
 #define YY_DECL int flt_macro_lex(void)
@@ -140,7 +140,7 @@ typedef struct s_flt_macro_macro {
 
 static char     *MacroFilesDirectory = NULL;
 static long      lineno              = 0;
-static t_string  string              = { 0, 0, NULL };
+static string_t  string              = { 0, 0, NULL };
 
 
 #ifdef _FLT_MACRO_TEST
@@ -274,14 +274,14 @@ if|else|and|or|xor|while|until|for|global|local|begin|end|next|break|__LINE__|__
  * the tree builder
  * It builds the syntax tree with the results of our scanner (flt_macro_lex).
  */
-int flt_macro_tree_builder(t_flt_macro_macro *macro) {
+int flt_macro_tree_builder(flt_macro_macro_t *macro) {
 #ifdef _FLT_MACRO_TEST
   static const char cn[] = "flt_macro_tree_builder";
 #endif
 
   int ret;
   uint64 key;
-  t_flt_macro_node *node;
+  flt_macro_node_t *node;
 
   yyin = macro->fd = fopen(macro->filename,"r");
 
@@ -293,7 +293,7 @@ int flt_macro_tree_builder(t_flt_macro_macro *macro) {
   }
 
   lineno = 0;
-  node   = calloc(1,sizeof(t_flt_macro_node));
+  node   = calloc(1,sizeof(flt_macro_node_t));
 
   do {
     ret = flt_macro_lex();
@@ -408,7 +408,7 @@ int flt_macro_tree_builder(t_flt_macro_macro *macro) {
               break;
             case ';':
               if(node->type) { /* ignore empty statements */
-                node->next       = calloc(1,sizeof(t_flt_macro_node));
+                node->next       = calloc(1,sizeof(flt_macro_node_t));
                 node->next->prev = node;
                 node             = node->next;
               }
@@ -474,7 +474,7 @@ t_handler_config flt_macro_handlers[] = {
   { 0, NULL }
 };
 
-t_module_config flt_basic = {
+module_config_t flt_basic = {
   flt_macro_config,
   flt_macro_handlers,
   flt_macro_cleanup
@@ -483,9 +483,9 @@ t_module_config flt_basic = {
 #ifdef _FLT_MACRO_TEST
 int  main(int argc,const char *argv[],const char *envp[]) {
   int ret;
-  t_flt_macro_macro macro;
+  flt_macro_macro_t macro;
 
-  memset(&macro,0,sizeof(t_flt_macro_macro));
+  memset(&macro,0,sizeof(flt_macro_macro_t));
 
   if(argc >= 2) {
     int i;

@@ -43,23 +43,23 @@ struct sockaddr_un;
 #include "fo_server.h"
 /* }}} */
 
-int flt_noarchive_server_exec(t_forum *forum,t_thread *thread) {
-  t_posting_flag *flag = cf_get_flag_by_name(&thread->postings->flags,"no-archive");
+int flt_noarchive_server_exec(forum_t *forum,thread_t *thread) {
+  posting_flag_t *flag = cf_get_flag_by_name(&thread->postings->flags,"no-archive");
   if(flag) return FLT_EXIT;
 
   return FLT_DECLINE;
 }
 
-t_conf_opt flt_noarchive_server_config[] = {
+conf_opt_t flt_noarchive_server_config[] = {
   { NULL, NULL, 0, NULL }
 };
 
-t_handler_config flt_noarchive_server_handlers[] = {
+handler_config_t flt_noarchive_server_handlers[] = {
   { ARCHIVE_HANDLER, flt_noarchive_server_exec },
   { 0, NULL }
 };
 
-t_module_config flt_noarchive_server = {
+module_config_t flt_noarchive_server = {
   MODULE_MAGIC_COOKIE,
   flt_noarchive_server_config,
   flt_noarchive_server_handlers,

@@ -19,20 +19,20 @@
 #include "parsetpl.h"
 
 /* {{{ init_context */
-void init_context(t_context *context) {
+void init_context(context_t *context) {
   // set everything to zero
   memset(context,0,sizeof(*context));
   // initialize variables
   str_init(&context->output);
   str_init(&context->output_mem);
-  array_init(&context->foreach_var_stack,sizeof(t_string),(void(*)(void *))str_cleanup);
+  array_init(&context->foreach_var_stack,sizeof(string_t),(void(*)(void *))str_cleanup);
   array_init(&context->if_level_stack,sizeof(int),NULL);
   context->function = NULL;
 }
 /* }}} */
 
 /* {{{ destroy_context */
-void destroy_context(t_context *context) {
+void destroy_context(context_t *context) {
   str_cleanup(&context->output);
   str_cleanup(&context->output_mem);
   array_destroy(&context->foreach_var_stack);
@@ -41,11 +41,11 @@ void destroy_context(t_context *context) {
 /* }}} */
 
 /* {{{ init functions */
-void init_function(t_function *func) {
+void init_function(function_t *func) {
   memset(func,0,sizeof(*func));
   str_init(&func->name);
-  array_init(&func->params,sizeof(t_string),(void(*)(void *))str_cleanup);
-  func->ctx = fo_alloc(NULL,sizeof(t_context),1,FO_ALLOC_MALLOC);
+  array_init(&func->params,sizeof(string_t),(void(*)(void *))str_cleanup);
+  func->ctx = fo_alloc(NULL,sizeof(context_t),1,FO_ALLOC_MALLOC);
   init_context(func->ctx);
   func->ctx->function = func;
 }
@@ -53,7 +53,7 @@ void init_function(t_function *func) {
 
 /* {{{ destroy_function */
 void destroy_function(void *arg) {
-  t_function *func = (t_function *)arg;
+  function_t *func = (function_t *)arg;
 
   str_cleanup(&func->name);
   array_destroy(&func->params);
@@ -64,13 +64,13 @@ void destroy_function(void *arg) {
 
 /* {{{ destroy_token */
 void destroy_token(void *t) {
-  t_token *token = (t_token *)t;
+  token_t *token = (token_t *)t;
   str_cleanup(token->data);
 }
 /* }}} */
 
 /* {{{ append_escaped_string */
-void append_escaped_string(t_string *dest,t_string *src) {
+void append_escaped_string(string_t *dest,string_t *src) {
   size_t i;
 
   for(i = 0; i < src->len; i++) {

@@ -17,10 +17,10 @@
 
 #ifndef _CF_HTMLLIB_H
 
-typedef int (*t_directive_filter)(t_configuration *dc,t_configuration *vc,t_cl_thread *thr,const u_char *directive,const u_char **parameters,size_t plen,t_string *bcnt,t_string *bcite,t_string *content,t_string *cite,const u_char *qchars,int sig);
-typedef int (*t_content_filter)(t_configuration *dc,t_configuration *vc,t_cl_thread *thr,t_string *content,t_string *cite,const u_char *qchars);
+typedef int (*directive_filter_t)(configuration_t *dc,configuration_t *vc,cl_thread_t *thr,const u_char *directive,const u_char **parameters,size_t plen,string_t *bcnt,string_t *bcite,string_t *content,string_t *cite,const u_char *qchars,int sig);
+typedef int (*content_filter_t)(configuration_t *dc,configuration_t *vc,cl_thread_t *thr,string_t *content,string_t *cite,const u_char *qchars);
 
-typedef int (*t_directive_validator)(t_configuration *dc,t_configuration *vc,const u_char *directive,const u_char **parameters,size_t plen,t_cf_tpl_variable *var);
+typedef int (*directive_validator_t)(configuration_t *dc,configuration_t *vc,const u_char *directive,const u_char **parameters,size_t plen,cf_tpl_variable_t *var);
 
 #define CF_HTML_DIR_TYPE_NOARG  1
 #define CF_HTML_DIR_TYPE_ARG    2
@@ -29,13 +29,13 @@ typedef int (*t_directive_validator)(t_configuration *dc,t_configuration *vc,con
 
 void cf_htmllib_init(void);
 
-int cf_html_register_directive(const u_char *name,t_directive_filter filter,int type);
-int cf_html_register_validator(const u_char *name,t_directive_validator filter,int type);
-int cf_html_register_textfilter(const u_char *text,t_directive_filter filter);
-void msg_to_html(t_cl_thread *thread,const u_char *msg,t_string *content,t_string *cite,u_char *quote_chars,int max_sig_lines,int show_sig);
-int cf_validate_msg(t_cl_thread *thread,const u_char *msg,t_cf_tpl_variable *var);
+int cf_html_register_directive(const u_char *name,directive_filter_t filter,int type);
+int cf_html_register_validator(const u_char *name,directive_validator_t filter,int type);
+int cf_html_register_textfilter(const u_char *text,directive_filter_t filter);
+void msg_to_html(cl_thread_t *thread,const u_char *msg,string_t *content,string_t *cite,u_char *quote_chars,int max_sig_lines,int show_sig);
+int cf_validate_msg(cl_thread_t *thread,const u_char *msg,cf_tpl_variable_t *var);
 
-int cf_gen_threadlist(t_cl_thread *thread,t_cf_hash *head,t_string *threadlist,const u_char *tplname,const u_char *type,const u_char *linktpl,int mode);
+int cf_gen_threadlist(cl_thread_t *thread,cf_hash_t *head,string_t *threadlist,const u_char *tplname,const u_char *type,const u_char *linktpl,int mode);
 
 #endif
 

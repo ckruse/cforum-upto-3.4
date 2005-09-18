@@ -44,13 +44,13 @@ static u_char *flt_nested_pt_tpl = NULL;
 static u_char *flt_nested_fn     = NULL;
 
 /* {{{ flt_nested_make_hierarchical */
-void flt_nested_make_hierarchical(t_configuration *vc,t_cf_template *tpl,t_cl_thread *thread,t_hierarchical_node *msg,t_cf_hash *head,int first,int ShowInvisible,int utf8,t_cf_tpl_variable *hash,t_name_value *cs,t_name_value *df,t_name_value *locale,t_name_value *qc,t_name_value *ms,t_name_value *ss) {
+void flt_nested_make_hierarchical(configuration_t *vc,cf_template_t *tpl,cl_thread_t *thread,hierarchical_node_t *msg,cf_hash_t *head,int first,int ShowInvisible,int utf8,cf_tpl_variable_t *hash,name_value_t *cs,name_value_t *df,name_value_t *locale,name_value_t *qc,name_value_t *ms,name_value_t *ss) {
   size_t len,msgcntlen,i;
   u_char *msgcnt,*tmp,buff[512];
-  t_cf_tpl_variable my_hash,subposts;
-  t_hierarchical_node *msg1;
+  cf_tpl_variable_t my_hash,subposts;
+  hierarchical_node_t *msg1;
 
-  t_string content;
+  string_t content;
 
   cf_tpl_var_init(hash,TPL_VARIABLE_HASH);
 
@@ -127,9 +127,9 @@ void flt_nested_make_hierarchical(t_configuration *vc,t_cf_template *tpl,t_cl_th
 }
 /* }}} */
 
-void flt_nested_start_hierarchical(t_configuration *vc,t_cf_hash *head,t_cf_template *tpl,t_cl_thread *thread,int ShowInvisible,int utf8,t_cf_tpl_variable *hash,t_name_value *cs,t_name_value *df,t_name_value *locale,t_name_value *qc,t_name_value *ms,t_name_value *ss) {
-  t_cf_tpl_variable ary,l_hash;
-  t_hierarchical_node *ht = thread->ht,*ht1;
+void flt_nested_start_hierarchical(configuration_t *vc,cf_hash_t *head,cf_template_t *tpl,cl_thread_t *thread,int ShowInvisible,int utf8,cf_tpl_variable_t *hash,name_value_t *cs,name_value_t *df,name_value_t *locale,name_value_t *qc,name_value_t *ms,name_value_t *ss) {
+  cf_tpl_variable_t ary,l_hash;
+  hierarchical_node_t *ht = thread->ht,*ht1;
   size_t i;
   int did_push = 0,first = 1;
 
@@ -177,14 +177,14 @@ void flt_nested_start_hierarchical(t_configuration *vc,t_cf_hash *head,t_cf_temp
 
 /* {{{ flt_nested_execute_filter */
 
-int flt_nested_execute_filter(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cl_thread *thread,t_cf_template *tpl) {
-  t_cf_tpl_variable hash;
+int flt_nested_execute_filter(cf_hash_t *head,configuration_t *dc,configuration_t *vc,cl_thread_t *thread,cf_template_t *tpl) {
+  cf_tpl_variable_t hash;
 
   u_char *qchars,*UserName,*forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
-  t_name_value *cs,*st,*qc,*ms,*ss,*locale,*df,*dft,
+  name_value_t *cs,*st,*qc,*ms,*ss,*locale,*df,*dft,
     *rm = cfg_get_first_value(vc,forum_name,"ReadMode"),*lt,*fbase,*ps,*reg;
   size_t qclen;
-  t_string threadlist;
+  string_t threadlist;
   int utf8,ShowInvisible;
   cf_readmode_t *rm_infos = cf_hash_get(GlobalValues,"RM",2);
 
@@ -248,11 +248,11 @@ int flt_nested_execute_filter(t_cf_hash *head,t_configuration *dc,t_configuratio
 /* }}} */
 
 /* {{{ flt_nested_rm_collector */
-int flt_nested_rm_collector(t_cf_hash *head,t_configuration *dc,t_configuration *vc,cf_readmode_t *rm_infos) {
+int flt_nested_rm_collector(cf_hash_t *head,configuration_t *dc,configuration_t *vc,cf_readmode_t *rm_infos) {
   u_char *fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
 
-  t_name_value *rm = cfg_get_first_value(vc,fn,"ReadMode");
-  t_name_value *v;
+  name_value_t *rm = cfg_get_first_value(vc,fn,"ReadMode");
+  name_value_t *v;
 
   u_char buff[256];
 
@@ -291,7 +291,7 @@ int flt_nested_rm_collector(t_cf_hash *head,t_configuration *dc,t_configuration 
 /* }}} */
 
 /* {{{ flt_nested_handle */
-int flt_nested_handle(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
+int flt_nested_handle(configfile_t *cfile,conf_opt_t *opt,const u_char *context,u_char **args,size_t argnum) {
   if(flt_nested_fn == NULL) flt_nested_fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   if(!context || cf_strcmp(flt_nested_fn,context) != 0) return 0;
 
@@ -308,18 +308,18 @@ int flt_nested_handle(t_configfile *cfile,t_conf_opt *opt,const u_char *context,
 }
 /* }}} */
 
-t_conf_opt flt_nested_config[] = {
+conf_opt_t flt_nested_config[] = {
   { "TemplateForumNested", flt_nested_handle,  CFG_OPT_CONFIG|CFG_OPT_LOCAL, NULL },
   { NULL, NULL, 0, NULL }
 };
 
-t_handler_config flt_nested_handlers[] = {
+handler_config_t flt_nested_handlers[] = {
   { RM_COLLECTORS_HANDLER, flt_nested_rm_collector },
   { POSTING_HANDLER,       flt_nested_execute_filter },
   { 0, NULL }
 };
 
-t_module_config flt_nested = {
+module_config_t flt_nested = {
   MODULE_MAGIC_COOKIE,
   flt_nested_config,
   flt_nested_handlers,

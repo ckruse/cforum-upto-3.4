@@ -44,9 +44,9 @@ static int LinkInvisible = 0;
 static u_char *flt_link_fn = NULL;
 
 /* {{{ flt_link_get_previous */
-t_message *flt_link_get_previous(t_message *msg) {
-  t_mod_api is_visited;
-  t_message *tmp = NULL;
+message_t *flt_link_get_previous(message_t *msg) {
+  mod_api_t is_visited;
+  message_t *tmp = NULL;
   int si = cf_hash_get(GlobalValues,"ShowInvisible",13) != NULL;
 
   if(msg->prev) {
@@ -68,9 +68,9 @@ t_message *flt_link_get_previous(t_message *msg) {
 /* }}} */
 
 /* {{{ flt_link_get_next */
-t_message *flt_link_get_next(t_message *msg) {
-  t_message *tmp;
-  t_mod_api is_visited = cf_get_mod_api_ent("is_visited");
+message_t *flt_link_get_next(message_t *msg) {
+  message_t *tmp;
+  mod_api_t is_visited = cf_get_mod_api_ent("is_visited");
   int si = cf_hash_get(GlobalValues,"ShowInvisible",13) != NULL;
 
   if(msg->next) {
@@ -88,8 +88,8 @@ t_message *flt_link_get_next(t_message *msg) {
 /* }}} */
 
 /* {{{ flt_link_get_last */
-t_message *flt_link_get_last(t_cl_thread *thread) {
-  t_message *msg = NULL;
+message_t *flt_link_get_last(cl_thread_t *thread) {
+  message_t *msg = NULL;
   thread->messages->prev = NULL;
   int si = cf_hash_get(GlobalValues,"ShowInvisible",13) != NULL;
 
@@ -99,7 +99,7 @@ t_message *flt_link_get_last(t_cl_thread *thread) {
 /* }}} */
 
 /* {{{ flt_link_getlink */
-void flt_link_getlink(t_string *str,u_int64_t tid,u_int64_t mid,u_char *forum_name) {
+void flt_link_getlink(string_t *str,u_int64_t tid,u_int64_t mid,u_char *forum_name) {
   str->content  = cf_get_link(NULL,tid,mid);
   str->reserved = str->len = strlen(str->content);
   str->reserved += 1;
@@ -107,11 +107,11 @@ void flt_link_getlink(t_string *str,u_int64_t tid,u_int64_t mid,u_char *forum_na
 /* }}} */
 
 /* {{{ flt_link_set_links_post */
-int flt_link_set_links_post(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cl_thread *thread,t_cf_template *tpl) {
+int flt_link_set_links_post(cf_hash_t *head,configuration_t *dc,configuration_t *vc,cl_thread_t *thread,cf_template_t *tpl) {
   u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
-  t_message *msg;
-  t_string str;
-  t_name_value *cs = cfg_get_first_value(&fo_default_conf,forum_name,"ExternCharset"),
+  message_t *msg;
+  string_t str;
+  name_value_t *cs = cfg_get_first_value(&fo_default_conf,forum_name,"ExternCharset"),
     *rm = cfg_get_first_value(vc,forum_name,"ReadMode");
 
   /* user doesn't want <link> tags */
@@ -157,7 +157,7 @@ int flt_link_set_links_post(t_cf_hash *head,t_configuration *dc,t_configuration 
 /* }}} */
 
 /* {{{ flt_link_handle_conf */
-int flt_link_handle_conf(t_configfile *cfg,t_conf_opt *entry,const u_char *context,u_char **args,size_t argnum) {
+int flt_link_handle_conf(configfile_t *cfg,conf_opt_t *entry,const u_char *context,u_char **args,size_t argnum) {
   if(flt_link_fn == NULL) flt_link_fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   if(!context || cf_strcmp(flt_link_fn,context) != 0) return 0;
 
@@ -175,19 +175,19 @@ int flt_link_handle_conf(t_configfile *cfg,t_conf_opt *entry,const u_char *conte
 }
 /* }}} */
 
-t_conf_opt flt_link_config[] = {
+conf_opt_t flt_link_config[] = {
   { "SetLinkTags",     flt_link_handle_conf,  CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL,  NULL },
   { "LinkNoVisited",   flt_link_handle_conf,  CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL,  NULL },
   { "LinkInvisible",   flt_link_handle_conf,  CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL,  NULL },
   { NULL, NULL, 0, NULL }
 };
 
-t_handler_config flt_link_handlers[] = {
+handler_config_t flt_link_handlers[] = {
   { POSTING_HANDLER,   flt_link_set_links_post },
   { 0, NULL }
 };
 
-t_module_config flt_link = {
+module_config_t flt_link = {
   MODULE_MAGIC_COOKIE,
   flt_link_config,
   flt_link_handlers,

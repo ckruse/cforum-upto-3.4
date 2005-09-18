@@ -25,7 +25,7 @@
 typedef struct s_scheme_list {
   u_char scheme[20]; /**< The name of the scheme */
   int (*validator)(const u_char *); /**< Pointer to the validation function */
-} t_scheme_list;
+} scheme_list_t;
 
 /**
  * General link checking function. Tries to get the scheme and calls the

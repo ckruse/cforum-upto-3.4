@@ -61,21 +61,21 @@
  * Function for displaying the user the 'Ok, posting has been processed' site
  * \param p The message struct
  */
-void display_finishing_screen(t_message *p) {
-  t_cf_template tpl;
+void display_finishing_screen(message_t *p) {
+  cf_template_t tpl;
   u_char tplname[256],*forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10),*uname = cf_hash_get(GlobalValues,"UserName",8);
-  t_name_value *tt = cfg_get_first_value(&fo_post_conf,forum_name,"OkTemplate");
-  t_name_value *cs = cfg_get_first_value(&fo_default_conf,forum_name,"ExternCharset");;
-  t_name_value *qc = cfg_get_first_value(&fo_post_conf,forum_name,"QuotingChars");
-  t_name_value *ps = cfg_get_first_value(&fo_default_conf,forum_name,uname ? "UPostScript" : "PostScript");
-  t_name_value *fb = cfg_get_first_value(&fo_default_conf,forum_name,uname ? "UBaseURL" : "BaseURL");
-  t_name_value *df = cfg_get_first_value(&fo_post_conf,forum_name,"DateFormat");
-  t_name_value *lc = cfg_get_first_value(&fo_default_conf,forum_name,"DateLocale");
+  name_value_t *tt = cfg_get_first_value(&fo_post_conf,forum_name,"OkTemplate");
+  name_value_t *cs = cfg_get_first_value(&fo_default_conf,forum_name,"ExternCharset");;
+  name_value_t *qc = cfg_get_first_value(&fo_post_conf,forum_name,"QuotingChars");
+  name_value_t *ps = cfg_get_first_value(&fo_default_conf,forum_name,uname ? "UPostScript" : "PostScript");
+  name_value_t *fb = cfg_get_first_value(&fo_default_conf,forum_name,uname ? "UBaseURL" : "BaseURL");
+  name_value_t *df = cfg_get_first_value(&fo_post_conf,forum_name,"DateFormat");
+  name_value_t *lc = cfg_get_first_value(&fo_default_conf,forum_name,"DateLocale");
 
   size_t len;
   u_char *val;
-  t_cl_thread thr;
-  t_string content;
+  cl_thread_t thr;
+  string_t content;
 
   if(!tt) {
     printf("Status: 500 Internal Server Error\015\012\015\012");
@@ -126,28 +126,28 @@ void display_finishing_screen(t_message *p) {
 /* }}} */
 
 /* {{{ display_posting_form */
-void display_posting_form(t_cf_hash *head,t_message *p,t_cf_tpl_variable *var) {
+void display_posting_form(cf_hash_t *head,message_t *p,cf_tpl_variable_t *var) {
   /* display him the fucking formular */
-  t_cf_template tpl;
+  cf_template_t tpl;
   u_char tplname[256],*forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10),*uname = cf_hash_get(GlobalValues,"UserName",8);
-  t_name_value *tt  = cfg_get_first_value(&fo_post_conf,forum_name,"ThreadTemplate");
-  t_name_value *cs  = cfg_get_first_value(&fo_default_conf,forum_name,"ExternCharset");
-  t_name_value *cats = cfg_get_first_value(&fo_default_conf,forum_name,"Categories");
-  t_name_value *qc = cfg_get_first_value(&fo_post_conf,forum_name,"QuotingChars");
-  t_name_value *ps = cfg_get_first_value(&fo_default_conf,forum_name,uname ? "UPostScript" : "PostScript");
-  t_name_value *fb = cfg_get_first_value(&fo_default_conf,forum_name,uname ? "UBaseURL" : "BaseURL");
+  name_value_t *tt  = cfg_get_first_value(&fo_post_conf,forum_name,"ThreadTemplate");
+  name_value_t *cs  = cfg_get_first_value(&fo_default_conf,forum_name,"ExternCharset");
+  name_value_t *cats = cfg_get_first_value(&fo_default_conf,forum_name,"Categories");
+  name_value_t *qc = cfg_get_first_value(&fo_post_conf,forum_name,"QuotingChars");
+  name_value_t *ps = cfg_get_first_value(&fo_default_conf,forum_name,uname ? "UPostScript" : "PostScript");
+  name_value_t *fb = cfg_get_first_value(&fo_default_conf,forum_name,uname ? "UBaseURL" : "BaseURL");
   size_t len,i;
   u_char *val;
   u_char *cat = NULL,*tmp;
-  t_cf_tpl_variable array;
+  cf_tpl_variable_t array;
   u_char buff[256];
 
   u_char *qchars;
   size_t qclen;
   int utf8;
 
-  t_cf_hash_entry *ent;
-  t_cf_cgi_param *param;
+  cf_hash_t_entry *ent;
+  cf_cgi_param_t *param;
 
   utf8 = cf_strcmp(cs->values[0],"UTF-8") == 0;
 
@@ -212,7 +212,7 @@ void display_posting_form(t_cf_hash *head,t_message *p,t_cf_tpl_variable *var) {
     for(i=0;i<hashsize(head->tablesize);i++) {
       if(head->table[i]) {
         for(ent = head->table[i];ent;ent=ent->next) {
-          for(param = (t_cf_cgi_param *)ent->data;param;param=param->next) {
+          for(param = (cf_cgi_param_t *)ent->data;param;param=param->next) {
             if(param->value) {
               /* we don't want to have empty URLs */
               len = strlen(param->name);
@@ -261,17 +261,17 @@ void display_posting_form(t_cf_hash *head,t_message *p,t_cf_tpl_variable *var) {
  * \param field_name The name of the field containing &#255;
  * \return 0 on success, -1 on failure
  */
-int normalize_cgi_variables(t_cf_hash *head,const u_char *field_name) {
+int normalize_cgi_variables(cf_hash_t *head,const u_char *field_name) {
   size_t flen,len,i;
   u_char *field = cf_cgi_get(head,(u_char *)field_name),*forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   register u_char *ptr;
   u_char c;
   u_char *converted;
-  t_name_value *cs = cfg_get_first_value(&fo_default_conf,forum_name,"ExternCharset");
-  t_cf_cgi_param *param;
+  name_value_t *cs = cfg_get_first_value(&fo_default_conf,forum_name,"ExternCharset");
+  cf_cgi_param_t *param;
   char *buff;
-  t_string str;
-  t_cf_hash_keylist *key;
+  string_t str;
+  cf_hash_t_keylist *key;
   u_int32_t num;
 
   if(!field) return -1;
@@ -449,11 +449,11 @@ int normalize_cgi_variables(t_cf_hash *head,const u_char *field_name) {
  * \param head The cgi hash
  * \return -1 on failure, 0 on success
  */
-int validate_cgi_variables(t_cf_hash *head) {
+int validate_cgi_variables(cf_hash_t *head) {
   u_char *value,*forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
-  t_name_value *cfg;
-  t_cf_list_head *list;
-  t_cf_list_element *elem;
+  name_value_t *cfg;
+  cf_list_head_t *list;
+  cf_list_element_t *elem;
   pcre *regexp;
   u_char *error;
   int erroffset;
@@ -464,7 +464,7 @@ int validate_cgi_variables(t_cf_hash *head) {
   /* {{{ check if every needed field exists */
   if((list = cfg_get_value(&fo_post_conf,forum_name,"FieldNeeded")) != NULL) {
     for(elem = list->elements;elem;elem=elem->next) {
-      cfg = (t_name_value *)elem->data;
+      cfg = (name_value_t *)elem->data;
 
       if((value = cf_cgi_get(head,cfg->values[0])) == NULL || *value == '\0') {
         /*
@@ -483,7 +483,7 @@ int validate_cgi_variables(t_cf_hash *head) {
   /* {{{ check if every field is valid in length */
   if((list = cfg_get_value(&fo_post_conf,forum_name,"FieldConfig")) != NULL) {
     for(elem=list->elements;elem;elem=elem->next) {
-      cfg = (t_name_value *)elem->data;
+      cfg = (name_value_t *)elem->data;
 
       if((value = cf_cgi_get(head,cfg->values[0])) != NULL) {
         maxlen = minlen = 0;
@@ -510,7 +510,7 @@ int validate_cgi_variables(t_cf_hash *head) {
   /* {{{ Check if every field is valid by validation function */
   if((list = cfg_get_value(&fo_post_conf,forum_name,"FieldValidate")) != NULL) {
     for(elem=list->elements;elem;elem=elem->next) {
-      cfg = (t_name_value *)elem->data;
+      cfg = (name_value_t *)elem->data;
 
       if((value = cf_cgi_get(head,cfg->values[0])) != NULL) {
         /* {{{ ignore default values for URLs */
@@ -562,15 +562,15 @@ int validate_cgi_variables(t_cf_hash *head) {
 }
 /* }}} */
 
-/* {{{ get_message_url */
-int get_message_url(const u_char *msgstr,t_name_value **v) {
+/* {{{ gemessage_t_url */
+int gemessage_t_url(const u_char *msgstr,name_value_t **v) {
   u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
-  t_name_value *ent;
-  t_cf_list_element *elem;
-  t_cf_list_head *list = cfg_get_value(&fo_post_conf,forum_name,"Image");
+  name_value_t *ent;
+  cf_list_element_t *elem;
+  cf_list_head_t *list = cfg_get_value(&fo_post_conf,forum_name,"Image");
 
   for(elem=list->elements;elem;elem=elem->next) {
-    ent = (t_name_value *)elem->data;
+    ent = (name_value_t *)elem->data;
 
     if(cf_strcasecmp(ent->values[0],msgstr) == 0) {
       *v = ent;
@@ -583,12 +583,12 @@ int get_message_url(const u_char *msgstr,t_name_value **v) {
 /* }}} */
 
 /* {{{ body_plain2coded */
-t_string *body_plain2coded(const u_char *text) {
+string_t *body_plain2coded(const u_char *text) {
   u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   u_char *body;
-  t_string *str = fo_alloc(NULL,1,sizeof(*str),FO_ALLOC_CALLOC);
+  string_t *str = fo_alloc(NULL,1,sizeof(*str),FO_ALLOC_CALLOC);
   u_char *ptr,*end,*tmp,*qchars;
-  t_name_value *v;
+  name_value_t *v;
   size_t len;
   int sig = 0;
 
@@ -630,7 +630,7 @@ t_string *body_plain2coded(const u_char *text) {
           if(*end == ']') {
             tmp  = strndup(ptr+5,end-ptr-5);
 
-            if(get_message_url(tmp,&v) == 0) {
+            if(gemessage_t_url(tmp,&v) == 0) {
               str_chars_append(str,"[image:",7);
               str_chars_append(str,v->values[1],strlen(v->values[1]));
               str_chars_append(str,"@alt=",5);
@@ -718,8 +718,8 @@ u_char *get_remote_addr(void) {
 /* }}} */
 
 /* {{{ handle_post_command */
-int handle_post_command(t_configfile *cfile,const u_char *context,u_char *name,u_char **args,size_t argnum) {
-  t_conf_opt opt;
+int handle_post_command(configfile_t *cfile,const u_char *context,u_char *name,u_char **args,size_t argnum) {
+  conf_opt_t opt;
   int ret;
 
   opt.name  = strdup(name);
@@ -734,8 +734,8 @@ int handle_post_command(t_configfile *cfile,const u_char *context,u_char *name,u
 }
 /* }}} */
 
-/* {{{ get_thread */
-int get_thread(t_cl_thread *thr,t_cf_hash *head,int overwritten) {
+/* {{{ gethread_t */
+int gethread_t(cl_thread_t *thr,cf_hash_t *head,int overwritten) {
   u_char *tidmid,*val;
   u_int64_t tid,mid;
   #ifndef CF_SHARED_MEM
@@ -827,21 +827,21 @@ int main(int argc,char *argv[],char *env[]) {
 
   int ret;
   u_char  *ucfg,*val,buff[256],*forum_name;
-  t_array *cfgfiles;
-  t_cf_hash *head;
-  t_configfile conf,dconf;
-  t_name_value *cs = NULL,*cfg_val;
+  array_t *cfgfiles;
+  cf_hash_t *head;
+  configfile_t conf,dconf;
+  name_value_t *cs = NULL,*cfg_val;
   u_char *UserName;
   u_char *fname;
-  t_cl_thread thr;
-  t_message *p;
+  cl_thread_t thr;
+  message_t *p;
   u_char *link;
 
-  t_cf_tpl_variable var;
+  cf_tpl_variable_t var;
 
   size_t len;
 
-  t_string *str,str1;
+  string_t *str,str1;
 
   u_char *tidmid;
   u_int64_t tid = 0,mid = 0;
@@ -966,7 +966,7 @@ int main(int argc,char *argv[],char *env[]) {
       /* {{{ ok, user gave us variables -- lets normalize them */
       *ErrorString = '\0';
       if(normalize_cgi_variables(head,"qchar") != 0) {
-        if(get_thread(&thr,head,0) == -1) {
+        if(gethread_t(&thr,head,0) == -1) {
           if(*ErrorString == '\0') strcpy(ErrorString,"E_manipulated");
           display_posting_form(head,NULL,NULL);
         }
@@ -982,7 +982,7 @@ int main(int argc,char *argv[],char *env[]) {
 
       /* {{{ everything seems to be fine, so lets validate user input */
       if(validate_cgi_variables(head) != 0) {
-        if(get_thread(&thr,head,1) == -1) display_posting_form(head,NULL,NULL);
+        if(gethread_t(&thr,head,1) == -1) display_posting_form(head,NULL,NULL);
         else {
           *ErrorString = '\0';
           display_posting_form(head,thr.threadmsg,NULL);
@@ -1005,7 +1005,7 @@ int main(int argc,char *argv[],char *env[]) {
         if((ret = cf_validate_msg(NULL,str->content,&var)) == FLT_ERROR) {
           cf_cgi_set(head,"validate","no");
 
-          if(get_thread(&thr,head,1) == -1) display_posting_form(head,NULL,&var);
+          if(gethread_t(&thr,head,1) == -1) display_posting_form(head,NULL,&var);
           else display_posting_form(head,thr.threadmsg,&var);
 
           return EXIT_SUCCESS;
@@ -1239,7 +1239,7 @@ int main(int argc,char *argv[],char *env[]) {
 
           if(cfg_val && cf_strcmp(cfg_val->values[0],"yes") == 0) {
             link = cf_get_link(rm_infos.posting_uri[UserName?1:0],tid,mid);
-            printf("Status: 302 Moved Temporarily\015\012Location: %s\015\012\015\012",link);
+            cf_http_redirect_with_nice_uri(link,0);
             free(link);
           }
           else display_finishing_screen(p);

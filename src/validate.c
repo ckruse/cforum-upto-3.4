@@ -35,7 +35,7 @@
 static int is_valid_http_link_check(const u_char *link);
 
 /* {{{ scheme_list */
-static const t_scheme_list scheme_list[] = {
+static const scheme_list_t scheme_list[] = {
   { "http",     is_valid_http_link_check },
   { "https",    is_valid_http_link_check },
   { "mailto",   is_valid_mailto_link },

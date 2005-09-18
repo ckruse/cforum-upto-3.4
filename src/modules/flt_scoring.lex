@@ -49,10 +49,10 @@ struct s_scoring_filter {
   pcre_extra *regex_extra;
 };
 
-static t_string flt_scoring_str        = { 0, 0, 0, NULL };
+static string_t flt_scoring_str        = STRING_INITIALIZER;
 static int      flt_scoring_number     = 0;
 
-static t_array flt_scoring_ary         = { 0, 0, 0, NULL, NULL };
+static array_t flt_scoring_ary         = ARRAY_INITIALIZER(0,NULL);
 static int     flt_scoring_hide_score  = 0;
 static int     flt_scoring_hide_score_set = 0;
 static int     flt_scoring_min_val     = 0;
@@ -162,7 +162,7 @@ size_t flt_scoring_calc_col(u_char buff[],int score) {
 /* }}} */
 
 /* {{{ flt_scoring_execute */
-int flt_scoring_execute(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_message *msg,u_int64_t tid,int mode) {
+int flt_scoring_execute(cf_hash_t *head,configuration_t *dc,configuration_t *vc,message_t *msg,u_int64_t tid,int mode) {
   int res = 0;
   size_t i;
   struct s_scoring_filter *flt;
@@ -214,7 +214,7 @@ int flt_scoring_execute(t_cf_hash *head,t_configuration *dc,t_configuration *vc,
 /* }}} */
 
 /* {{{ flt_scoring_parse */
-int flt_scoring_parse(t_configfile *cf,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
+int flt_scoring_parse(configfile_t *cf,conf_opt_t *opt,const u_char *context,u_char **args,size_t argnum) {
   u_char *error;
   struct s_scoring_filter filter;
   int err_offset,ret;
@@ -262,7 +262,7 @@ int flt_scoring_parse(t_configfile *cf,t_conf_opt *opt,const u_char *context,u_c
 /* }}} */
 
 /* {{{ flt_scoring_cols */
-int flt_scoring_cols(t_configfile *cf,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
+int flt_scoring_cols(configfile_t *cf,conf_opt_t *opt,const u_char *context,u_char **args,size_t argnum) {
   u_char *arg;
   size_t len;
   u_char *ptr, *col;
@@ -310,7 +310,7 @@ int flt_scoring_cols(t_configfile *cf,t_conf_opt *opt,const u_char *context,u_ch
 /* }}} */
 
 /* {{{ flt_scoring_hide */
-int flt_scoring_hide(t_configfile *cf,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
+int flt_scoring_hide(configfile_t *cf,conf_opt_t *opt,const u_char *context,u_char **args,size_t argnum) {
   if(flt_scoring_fn == NULL) flt_scoring_fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   if(!context || cf_strcmp(flt_scoring_fn,context) != 0) return 0;
 
@@ -321,7 +321,7 @@ int flt_scoring_hide(t_configfile *cf,t_conf_opt *opt,const u_char *context,u_ch
 /* }}} */
 
 /* {{{ flt_scoring_vals */
-int flt_scoring_vals(t_configfile *cf,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
+int flt_scoring_vals(configfile_t *cf,conf_opt_t *opt,const u_char *context,u_char **args,size_t argnum) {
   if(flt_scoring_fn == NULL) flt_scoring_fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   if(!context || cf_strcmp(flt_scoring_fn,context) != 0) return 0;
 
@@ -333,7 +333,7 @@ int flt_scoring_vals(t_configfile *cf,t_conf_opt *opt,const u_char *context,u_ch
 /* }}} */
 
 /* {{{ flt_scoring_ignore */
-int flt_scoring_ignore(t_configfile *cf,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
+int flt_scoring_ignore(configfile_t *cf,conf_opt_t *opt,const u_char *context,u_char **args,size_t argnum) {
   if(flt_scoring_fn == NULL) flt_scoring_fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   if(!context || cf_strcmp(flt_scoring_fn,context) != 0) return 0;
 
@@ -357,7 +357,7 @@ void flt_scoring_finish(void) {
 }
 /* }}} */
 
-t_conf_opt flt_scoring_config[] = {
+conf_opt_t flt_scoring_config[] = {
   { "ScoringFilter",          flt_scoring_parse,  CFG_OPT_CONFIG|CFG_OPT_USER, NULL },
   { "ScoringHideScore",       flt_scoring_hide,   CFG_OPT_CONFIG|CFG_OPT_USER, NULL },
   { "ScoringMaxValue",        flt_scoring_vals,   CFG_OPT_CONFIG|CFG_OPT_USER, NULL },
@@ -369,12 +369,12 @@ t_conf_opt flt_scoring_config[] = {
   { NULL, NULL, 0, NULL }
 };
 
-t_handler_config flt_scoring_handlers[] = {
+handler_config_t flt_scoring_handlers[] = {
   { VIEW_LIST_HANDLER,    flt_scoring_execute },
   { 0, NULL }
 };
 
-t_module_config flt_scoring = {
+module_config_t flt_scoring = {
   MODULE_MAGIC_COOKIE,
   flt_scoring_config,
   flt_scoring_handlers,

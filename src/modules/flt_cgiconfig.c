@@ -43,14 +43,14 @@
 /* }}} */
 
 /* {{{ flt_cgiconfig_post */
-int flt_cgiconfig_post(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cl_thread *thread,t_cf_template *tpl) {
+int flt_cgiconfig_post(cf_hash_t *head,configuration_t *dc,configuration_t *vc,cl_thread_t *thread,cf_template_t *tpl) {
   u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   u_char *UserName = cf_hash_get(GlobalValues,"UserName",8);
   u_char *link,*tmp = NULL;
 
   size_t l;
 
-  t_name_value *cs = cfg_get_first_value(dc,forum_name,"ExternCharset");
+  name_value_t *cs = cfg_get_first_value(dc,forum_name,"ExternCharset");
   cf_readmode_t *rm = cf_hash_get(GlobalValues,"RM",2);
 
   /* {{{ ShowThread links */
@@ -94,8 +94,8 @@ int flt_cgiconfig_post(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t
 /* }}} */
 
 /* {{{ flt_cgiconfig_init_handler */
-int flt_cgiconfig_init_handler(t_cf_hash *head,t_configuration *dc,t_configuration *vc) {
-  t_name_value *v;
+int flt_cgiconfig_init_handler(cf_hash_t *head,configuration_t *dc,configuration_t *vc) {
+  name_value_t *v;
   u_char *val,*forum_name;
 
   if(head) {
@@ -144,17 +144,17 @@ int flt_cgiconfig_init_handler(t_cf_hash *head,t_configuration *dc,t_configurati
 }
 /* }}} */
 
-t_conf_opt flt_cgiconfig_config[] = {
+conf_opt_t flt_cgiconfig_config[] = {
   { NULL, NULL, 0, NULL }
 };
 
-t_handler_config flt_cgiconfig_handlers[] = {
+handler_config_t flt_cgiconfig_handlers[] = {
   { POSTING_HANDLER,      flt_cgiconfig_post },
   { INIT_HANDLER,         flt_cgiconfig_init_handler },
   { 0, NULL }
 };
 
-t_module_config flt_cgiconfig = {
+module_config_t flt_cgiconfig = {
   MODULE_MAGIC_COOKIE,
   flt_cgiconfig_config,
   flt_cgiconfig_handlers,

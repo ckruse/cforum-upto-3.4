@@ -37,9 +37,9 @@ static int    ThreadReturnAnchor = 0;
 static u_char *flt_tra_fn = NULL;
 
 /* {{{ flt_threadreturnanchor_post */
-int flt_threadreturnanchor_post(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cl_thread *thread,t_cf_template *tpl) {
-  const t_cf_tpl_variable *path;
-  t_string new_path;
+int flt_threadreturnanchor_post(cf_hash_t *head,configuration_t *dc,configuration_t *vc,cl_thread_t *thread,cf_template_t *tpl) {
+  const cf_tpl_variable_t *path;
+  string_t new_path;
   char buf[50];
   size_t len;
 
@@ -48,7 +48,7 @@ int flt_threadreturnanchor_post(t_cf_hash *head,t_configuration *dc,t_configurat
     if (!path) return 1;
 
     str_init(&new_path);
-    str_str_set(&new_path,(t_string *)&path->data.d_string);
+    str_str_set(&new_path,(string_t *)&path->data.d_string);
     str_char_append(&new_path,'#');
     len = snprintf(buf, 50, "t%llu", thread->tid);
     str_chars_append(&new_path,buf,len);
@@ -63,7 +63,7 @@ int flt_threadreturnanchor_post(t_cf_hash *head,t_configuration *dc,t_configurat
 /* }}} */
 
 /* {{{ flt_threadreturnanchor_handle */
-int flt_threadreturnanchor_handle(t_configfile *cf,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
+int flt_threadreturnanchor_handle(configfile_t *cf,conf_opt_t *opt,const u_char *context,u_char **args,size_t argnum) {
   if(!flt_tra_fn) flt_tra_fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   if(!context || cf_strcmp(flt_tra_fn,context) != 0) return 0;
 
@@ -73,17 +73,17 @@ int flt_threadreturnanchor_handle(t_configfile *cf,t_conf_opt *opt,const u_char 
 }
 /* }}} */
 
-t_conf_opt flt_threadreturnanchor_config[] = {
+conf_opt_t flt_threadreturnanchor_config[] = {
   { "ThreadReturnAnchor", flt_threadreturnanchor_handle, CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
   { NULL, NULL, 0, NULL }
 };
 
-t_handler_config flt_threadreturnanchor_handlers[] = {
+handler_config_t flt_threadreturnanchor_handlers[] = {
   { POSTING_HANDLER,   flt_threadreturnanchor_post },
   { 0, NULL }
 };
 
-t_module_config flt_threadreturnanchor = {
+module_config_t flt_threadreturnanchor = {
   MODULE_MAGIC_COOKIE,
   flt_threadreturnanchor_config,
   flt_threadreturnanchor_handlers,

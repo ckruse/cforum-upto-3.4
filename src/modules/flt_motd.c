@@ -45,12 +45,12 @@ static u_char *MOTD_File = NULL;
 static u_char *flt_motd_fn = NULL;
 
 /* {{{ flt_motd_execute */
-int flt_motd_execute(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cf_template *begin,t_cf_template *end) {
+int flt_motd_execute(cf_hash_t *head,configuration_t *dc,configuration_t *vc,cf_template_t *begin,cf_template_t *end) {
   FILE *fd;
   struct stat st;
   u_char *txt;
   u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
-  t_name_value *cs = cfg_get_first_value(dc,forum_name,"ExternCharset");
+  name_value_t *cs = cfg_get_first_value(dc,forum_name,"ExternCharset");
 
   if(MOTD_File && MOTD_enable) {
     if(stat(MOTD_File,&st) != -1) {
@@ -71,7 +71,7 @@ int flt_motd_execute(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_c
 /* }}} */
 
 /* {{{ flt_motd_handle */
-int flt_motd_handle(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
+int flt_motd_handle(configfile_t *cfile,conf_opt_t *opt,const u_char *context,u_char **args,size_t argnum) {
   if(flt_motd_fn == NULL) flt_motd_fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   if(!context || cf_strcmp(flt_motd_fn,context) != 0) return 0;
 
@@ -86,18 +86,18 @@ void flt_motd_cleanup(void) {
   if(MOTD_File) free(MOTD_File);
 }
 
-t_conf_opt flt_motd_config[] = {
+conf_opt_t flt_motd_config[] = {
   { "MotdFile",   flt_motd_handle, CFG_OPT_CONFIG|CFG_OPT_LOCAL, NULL },
   { "EnableMotd", flt_motd_handle, CFG_OPT_USER|CFG_OPT_CONFIG|CFG_OPT_LOCAL, NULL },
   { NULL, NULL, 0, NULL }
 };
 
-t_handler_config flt_motd_handlers[] = {
+handler_config_t flt_motd_handlers[] = {
   { VIEW_INIT_HANDLER, flt_motd_execute },
   { 0, NULL }
 };
 
-t_module_config flt_motd = {
+module_config_t flt_motd = {
   MODULE_MAGIC_COOKIE,
   flt_motd_config,
   flt_motd_handlers,

@@ -92,11 +92,11 @@ int is_id(const u_char *id) {
 /* }}} */
 
 /* {{{ send_ok_output */
-void send_ok_output(t_cf_hash *head,t_name_value *cs) {
-  t_name_value *fbase;
-  t_name_value *cfg_tpl;
+void send_ok_output(cf_hash_t *head,name_value_t *cs) {
+  name_value_t *fbase;
+  name_value_t *cfg_tpl;
   u_char tpl_name[256];
-  t_cf_template tpl;
+  cf_template_t tpl;
   u_char *uname = cf_hash_get(GlobalValues,"UserName",8);
   u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   u_char *link,
@@ -136,7 +136,7 @@ void send_ok_output(t_cf_hash *head,t_name_value *cs) {
 /**
  * Dummy function, for ignoring unknown directives
  */
-int ignre(t_configfile *cf,const u_char *context,u_char *name,u_char **args,size_t argnum) {
+int ignre(configfile_t *cf,const u_char *context,u_char *name,u_char **args,size_t argnum) {
   return 0;
 }
 
@@ -155,21 +155,21 @@ int main(int argc,char *argv[],char *env[]) {
   };
 
   int sock,ret;
-  t_array *cfgfiles;
-  t_configfile dconf,conf,vconf;
+  array_t *cfgfiles;
+  configfile_t dconf,conf,vconf;
   u_char *fname,*ctid,*cmid,*a,buff[512],*uname,*ucfg,*mode = NULL,*line;
-  t_cf_hash *head;
+  cf_hash_t *head;
   size_t len;
   DB *db;
   DBT key,data;
-  t_name_value *dbname,*cs,*send204;
+  name_value_t *dbname,*cs,*send204;
   int fd;
   u_char *forum_name;
   rline_t rsd;
 
   size_t i;
-  t_filter_begin exec;
-  t_handler_config *handler;
+  filter_begin_t exec;
+  handler_config_t *handler;
   
   cf_readmode_t rm_infos;
 
@@ -225,7 +225,7 @@ int main(int argc,char *argv[],char *env[]) {
     for(i=0;i<Modules[AUTH_HANDLER].elements && ret == FLT_DECLINE;i++) {
       handler = array_element_at(&Modules[AUTH_HANDLER],i);
 
-      exec = (t_filter_begin)handler->func;
+      exec = (filter_begin_t)handler->func;
       ret = exec(head,&fo_default_conf,&fo_vote_conf);
     }
   }

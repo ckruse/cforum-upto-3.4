@@ -44,15 +44,15 @@ struct sockaddr_un;
 /* }}} */
 
 /* {{{ flt_voting_handler */
-int flt_voting_handler(int sockfd,t_forum *forum,const u_char **tokens,int tnum,rline_t *tsd) {
-  t_cf_hash *infos;
+int flt_voting_handler(int sockfd,forum_t *forum,const u_char **tokens,int tnum,rline_t *tsd) {
+  cf_hash_t *infos;
   u_char *ln = NULL,*tmp,*ctid,*cmid;
   u_int64_t tid,mid;
   int err = 0;
-  t_thread *t;
-  t_posting *p;
+  thread_t *t;
+  posting_t *p;
   long llen;
-  t_string str;
+  string_t str;
 
   if(tnum != 2) return FLT_DECLINE;
 
@@ -182,16 +182,16 @@ int flt_voting_register_handlers(int sock) {
   return FLT_OK;
 }
 
-t_conf_opt flt_voting_config[] = {
+conf_opt_t flt_voting_config[] = {
   { NULL, NULL, 0, NULL }
 };
 
-t_handler_config flt_voting_handlers[] = {
+handler_config_t flt_voting_handlers[] = {
   { INIT_HANDLER, flt_voting_register_handlers },
   { 0, NULL }
 };
 
-t_module_config flt_voting = {
+module_config_t flt_voting = {
   MODULE_MAGIC_COOKIE,
   flt_voting_config,
   flt_voting_handlers,

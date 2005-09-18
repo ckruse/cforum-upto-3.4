@@ -41,12 +41,12 @@
 
 /* {{{ cf_get_threadlist */
 #ifndef CF_SHARED_MEM
-int cf_get_threadlist(t_array *ary,int sock,rline_t *tsd)
+int cf_get_threadlist(array_t *ary,int sock,rline_t *tsd)
 #else
-int cf_get_threadlist(t_array *ary,void *ptr)
+int cf_get_threadlist(array_t *ary,void *ptr)
 #endif
 {
-  t_cl_thread thread;
+  cl_thread_t thread;
   array_init(ary,sizeof(thread),(void (*)(void *))cf_cleanup_thread);
 
   #ifndef CF_SHARED_MEM
@@ -65,12 +65,12 @@ int cf_get_threadlist(t_array *ary,void *ptr)
 
 
 /* {{{ cf_get_next_thread_through_sock */
-int cf_get_next_thread_through_sock(int sock,rline_t *tsd,t_cl_thread *thr) {
+int cf_get_next_thread_through_sock(int sock,rline_t *tsd,cl_thread_t *thr) {
   u_char *line,*chtmp;
   int shallRun = 1;
-  t_message *x;
+  message_t *x;
   int ok = 0;
-  t_cf_post_flag flag;
+  cf_post_flag_t flag;
 
   memset(thr,0,sizeof(*thr));
 
@@ -85,7 +85,7 @@ int cf_get_next_thread_through_sock(int sock,rline_t *tsd,t_cl_thread *thr) {
       else if(cf_strncmp(line,"THREAD t",8) == 0) {
         chtmp = strstr(line,"m");
 
-        thr->messages           = fo_alloc(NULL,1,sizeof(t_message),FO_ALLOC_CALLOC);
+        thr->messages           = fo_alloc(NULL,1,sizeof(message_t),FO_ALLOC_CALLOC);
         thr->last               = thr->messages;
         thr->newest             = thr->messages;
         thr->last->mid          = str_to_u_int64(chtmp+1);
@@ -99,12 +99,12 @@ int cf_get_next_thread_through_sock(int sock,rline_t *tsd,t_cl_thread *thr) {
         x = thr->last;
 
         if(thr->last) {
-          thr->last->next = fo_alloc(NULL,1,sizeof(t_message),FO_ALLOC_CALLOC);
+          thr->last->next = fo_alloc(NULL,1,sizeof(message_t),FO_ALLOC_CALLOC);
           thr->last->next->prev = thr->last;
           thr->last       = thr->last->next;
         }
         else {
-          thr->messages = fo_alloc(NULL,1,sizeof(t_message),FO_ALLOC_CALLOC);
+          thr->messages = fo_alloc(NULL,1,sizeof(message_t),FO_ALLOC_CALLOC);
           thr->last     = thr->messages;
         }
 
@@ -171,13 +171,13 @@ int cf_get_next_thread_through_sock(int sock,rline_t *tsd,t_cl_thread *thr) {
 
 /* {{{ cf_get_next_thread_through_shm */
 #ifdef CF_SHARED_MEM
-void *cf_get_next_thread_through_shm(void *shm_ptr,t_cl_thread *thr) {
+void *cf_get_next_thread_through_shm(void *shm_ptr,cl_thread_t *thr) {
   register void *ptr = shm_ptr;
   u_int32_t post,i,val,val1;
   struct shmid_ds shm_buf;
   void *ptr1 = cf_get_shm_ptr();
   u_int32_t msglen;
-  t_cf_post_flag flag;
+  cf_post_flag_t flag;
 
   memset(thr,0,sizeof(*thr));
 
@@ -205,9 +205,9 @@ void *cf_get_next_thread_through_shm(void *shm_ptr,t_cl_thread *thr) {
   ptr += sizeof(u_int32_t);
 
   for(post = 0;post < msglen;++post) {
-    if(thr->last == NULL) thr->messages = thr->last = fo_alloc(NULL,1,sizeof(t_message),FO_ALLOC_CALLOC);
+    if(thr->last == NULL) thr->messages = thr->last = fo_alloc(NULL,1,sizeof(message_t),FO_ALLOC_CALLOC);
     else {
-      thr->last->next = fo_alloc(NULL,1,sizeof(t_message),FO_ALLOC_CALLOC);
+      thr->last->next = fo_alloc(NULL,1,sizeof(message_t),FO_ALLOC_CALLOC);
       thr->last->next->prev = thr->last;
       thr->last       = thr->last->next;
     }
@@ -366,10 +366,10 @@ void *cf_get_next_thread_through_shm(void *shm_ptr,t_cl_thread *thr) {
 /* }}} */
 
 /* {{{ cf_get_message_through_sock */
-int cf_get_message_through_sock(int sock,rline_t *tsd,t_cl_thread *thr,u_int64_t tid,u_int64_t mid,int del) {
+int cf_get_message_through_sock(int sock,rline_t *tsd,cl_thread_t *thr,u_int64_t tid,u_int64_t mid,int del) {
   size_t len;
   u_char buff[128],*line;
-  t_message *msg;
+  message_t *msg;
   u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
 
   memset(thr,0,sizeof(*thr));
@@ -438,12 +438,12 @@ int cf_get_message_through_sock(int sock,rline_t *tsd,t_cl_thread *thr,u_int64_t
 
 /* {{{ cf_get_message_through_shm */
 #ifdef CF_SHARED_MEM
-int cf_get_message_through_shm(void *shm_ptr,t_cl_thread *thr,u_int64_t tid,u_int64_t mid,int del) {
+int cf_get_message_through_shm(void *shm_ptr,cl_thread_t *thr,u_int64_t tid,u_int64_t mid,int del) {
   struct shmid_ds shm_buf;
   register void *ptr1;
   u_int64_t val = 0;
   size_t posts,post,x,flagnum;
-  t_message *msg;
+  message_t *msg;
 
   if(shmctl(shm_id,IPC_STAT,&shm_buf) != 0) {
     strcpy(ErrorString,"E_CONFIG_ERR");

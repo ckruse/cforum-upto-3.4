@@ -48,7 +48,7 @@
  * \param uri The URI of the entry
  * \param fname The target string
  */
-void cf_cache_genname(const u_char *base,const u_char *uri,t_string *fname) {
+void cf_cache_genname(const u_char *base,const u_char *uri,string_t *fname) {
   str_init(fname);
   str_char_set(fname,base,strlen(base));
 
@@ -61,7 +61,7 @@ void cf_cache_genname(const u_char *base,const u_char *uri,t_string *fname) {
 /* {{{ cf_cache_outdated */
 int cf_cache_outdated(const u_char *base,const u_char *uri,const u_char *file) {
   struct stat st1,st2;
-  t_string fname;
+  string_t fname;
 
   cf_cache_genname(base,uri,&fname);
 
@@ -82,7 +82,7 @@ int cf_cache_outdated(const u_char *base,const u_char *uri,const u_char *file) {
 /* {{{ cf_cache_outdated_date */
 int cf_cache_outdated_date(const u_char *base,const u_char *uri,time_t date) {
   struct stat st1;
-  t_string fname;
+  string_t fname;
 
   cf_cache_genname(base,uri,&fname);
 
@@ -133,7 +133,7 @@ int cf_cache_create_path(u_char *path) {
 int cf_cache(const u_char *base,const u_char *uri,const u_char *content,size_t len,int gzip) {
   FILE *fd;
   gzFile gzfd;
-  t_string fname;
+  string_t fname;
   char buff[5] = "wb";
 
   cf_cache_genname(base,uri,&fname);
@@ -166,16 +166,16 @@ int cf_cache(const u_char *base,const u_char *uri,const u_char *content,size_t l
 /* }}} */
 
 /* {{{ cf_get_cache */
-t_cache_entry *cf_get_cache(u_char *base,u_char *uri,int gzip) {
+cache_entry_t *cf_get_cache(u_char *base,u_char *uri,int gzip) {
   int fd;
-  t_string fname;
+  string_t fname;
   void *ptr;
-  t_cache_entry *ent = NULL;
+  cache_entry_t *ent = NULL;
   struct stat st;
   gzFile gzfd;
   char buff[BUFSIZ];
   int status;
-  t_string tmp;
+  string_t tmp;
 
   cf_cache_genname(base,uri,&fname);
 
@@ -226,7 +226,7 @@ t_cache_entry *cf_get_cache(u_char *base,u_char *uri,int gzip) {
 /* }}} */
 
 /* {{{ cf_cache_destroy */
-void cf_cache_destroy(t_cache_entry *ent) {
+void cf_cache_destroy(cache_entry_t *ent) {
   if(ent->fd != -1) {
     munmap(ent->ptr,ent->size);
     close(ent->fd);

@@ -53,7 +53,7 @@ static u_char *flt_posting_tpl = NULL;
 static u_char *flt_posting_fn = NULL;
 
 /* {{{ flt_posting_replace_placeholders */
-void flt_posting_replace_placeholders(const u_char *str,t_string *appender,t_cl_thread *thread,t_name_value *cs) {
+void flt_posting_replace_placeholders(const u_char *str,string_t *appender,cl_thread_t *thread,name_value_t *cs) {
   register u_char *ptr = (u_char *)str;
   register u_char *ptr1 = NULL;
   u_char *name,*tmp;
@@ -101,13 +101,13 @@ void flt_posting_replace_placeholders(const u_char *str,t_string *appender,t_cl_
 /* }}} */
 
 /* {{{ flt_posting_execute_filter */
-int flt_posting_execute_filter(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cl_thread *thread,t_cf_template *tpl) {
+int flt_posting_execute_filter(cf_hash_t *head,configuration_t *dc,configuration_t *vc,cl_thread_t *thread,cf_template_t *tpl) {
   u_char buff[256],*tmp,*qchars,*msgcnt,*UserName,*forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
-  t_name_value *ps,*v,*cs = cfg_get_first_value(dc,forum_name,"ExternCharset"),*dq,*st,*qc,*ms,*ss,*locale,*df,*rm = cfg_get_first_value(vc,forum_name,"ReadMode");
+  name_value_t *ps,*v,*cs = cfg_get_first_value(dc,forum_name,"ExternCharset"),*dq,*st,*qc,*ms,*ss,*locale,*df,*rm = cfg_get_first_value(vc,forum_name,"ReadMode");
   int utf8;
   size_t len,qclen,msgcntlen;
-  t_string cite,content,threadlist;
-  t_cf_tpl_variable hash;
+  string_t cite,content,threadlist;
+  cf_tpl_variable_t hash;
   cf_readmode_t *rm_infos = cf_hash_get(GlobalValues,"RM",2);
 
   /* {{{ standard variables, set always, mode doesn't matter */
@@ -187,7 +187,7 @@ int flt_posting_execute_filter(t_cf_hash *head,t_configuration *dc,t_configurati
    * If yes, set some variables
    */
   if(thread->threadmsg != thread->messages) {
-    t_message *msg;
+    message_t *msg;
     if((msg = cf_msg_get_parent(thread->threadmsg)) != NULL) {
       tmp = cf_general_get_time(df->values[0],locale->values[0],&len,&msg->date);
 
@@ -252,14 +252,14 @@ int flt_posting_execute_filter(t_cf_hash *head,t_configuration *dc,t_configurati
 /* }}} */
 
 /* {{{ flt_posting_post_display */
-int flt_posting_post_display(t_cf_hash *head,t_configuration *dc,t_configuration *pc,t_cf_template *tpl,t_message *p) {
+int flt_posting_post_display(cf_hash_t *head,configuration_t *dc,configuration_t *pc,cf_template_t *tpl,message_t *p) {
   u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
-  t_name_value *v;
-  t_name_value *cs = cfg_get_first_value(dc,forum_name,"ExternCharset");
-  t_name_value *qc = cfg_get_first_value(pc,forum_name,"QuotingChars");
-  t_string body,tmp;
+  name_value_t *v;
+  name_value_t *cs = cfg_get_first_value(dc,forum_name,"ExternCharset");
+  name_value_t *qc = cfg_get_first_value(pc,forum_name,"QuotingChars");
+  string_t body,tmp;
 
-  t_cl_thread thr;
+  cl_thread_t thr;
 
   if(head) {
     /* set if none of the values have been given */
@@ -322,9 +322,9 @@ int flt_posting_post_display(t_cf_hash *head,t_configuration *dc,t_configuration
 /* }}} */
 
 /* {{{ pre and post content filters */
-int flt_posting_post_cnt(t_configuration *dc,t_configuration *vc,t_cl_thread *thr,t_string *content,t_string *cite,const u_char *qchars) {
+int flt_posting_post_cnt(configuration_t *dc,configuration_t *vc,cl_thread_t *thr,string_t *content,string_t *cite,const u_char *qchars) {
   u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
-  t_name_value *cs;
+  name_value_t *cs;
   u_char *tmp;
 
   if(cite) {
@@ -351,9 +351,9 @@ int flt_posting_post_cnt(t_configuration *dc,t_configuration *vc,t_cl_thread *th
   return FLT_DECLINE;
 }
 
-int flt_posting_pre_cnt(t_configuration *dc,t_configuration *vc,t_cl_thread *thr,t_string *content,t_string *cite,const u_char *qchars) {
+int flt_posting_pre_cnt(configuration_t *dc,configuration_t *vc,cl_thread_t *thr,string_t *content,string_t *cite,const u_char *qchars) {
   u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
-  t_name_value *cs;
+  name_value_t *cs;
   u_char *tmp;
 
   if(cite) {
@@ -373,9 +373,9 @@ int flt_posting_pre_cnt(t_configuration *dc,t_configuration *vc,t_cl_thread *thr
 /* }}} */
 
 /* {{{ flt_posting_rm_collector */
-int flt_posting_rm_collector(t_cf_hash *head,t_configuration *dc,t_configuration *vc,cf_readmode_t *rm_infos) {
-  t_name_value *rm;
-  t_name_value *v;
+int flt_posting_rm_collector(cf_hash_t *head,configuration_t *dc,configuration_t *vc,cf_readmode_t *rm_infos) {
+  name_value_t *rm;
+  name_value_t *v;
 
   u_char buff[256];
 
@@ -417,7 +417,7 @@ int flt_posting_rm_collector(t_cf_hash *head,t_configuration *dc,t_configuration
 /* }}} */
 
 /* {{{ flt_posting_handle_greet */
-int flt_posting_handle_greet(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
+int flt_posting_handle_greet(configfile_t *cfile,conf_opt_t *opt,const u_char *context,u_char **args,size_t argnum) {
   u_char *tmp;
 
   if(flt_posting_fn == NULL) flt_posting_fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
@@ -443,7 +443,7 @@ int flt_posting_handle_greet(t_configfile *cfile,t_conf_opt *opt,const u_char *c
 /* }}} */
 
 /* {{{ flt_posting_handle_box */
-int flt_posting_handle_box(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
+int flt_posting_handle_box(configfile_t *cfile,conf_opt_t *opt,const u_char *context,u_char **args,size_t argnum) {
   if(flt_posting_fn == NULL) flt_posting_fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   if(!context || cf_strcmp(flt_posting_fn,context) != 0) return 0;
 
@@ -463,7 +463,7 @@ int flt_posting_handle_box(t_configfile *cfile,t_conf_opt *opt,const u_char *con
 /* }}} */
 
 /* {{{ flt_posting_handle_actpcol */
-int flt_posting_handle_actpcol(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
+int flt_posting_handle_actpcol(configfile_t *cfile,conf_opt_t *opt,const u_char *context,u_char **args,size_t argnum) {
   if(flt_posting_fn == NULL) flt_posting_fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   if(!context || cf_strcmp(flt_posting_fn,context) != 0) return 0;
 
@@ -477,7 +477,7 @@ int flt_posting_handle_actpcol(t_configfile *cfile,t_conf_opt *opt,const u_char 
 }
 /* }}} */
 
-int flt_posting_handle_tpl(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
+int flt_posting_handle_tpl(configfile_t *cfile,conf_opt_t *opt,const u_char *context,u_char **args,size_t argnum) {
   if(flt_posting_fn == NULL) flt_posting_fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   if(!context || cf_strcmp(flt_posting_fn,context) != 0) return 0;
 
@@ -497,7 +497,7 @@ void flt_posting_cleanup(void) {
 }
 /* }}} */
 
-t_conf_opt flt_posting_config[] = {
+conf_opt_t flt_posting_config[] = {
   { "Hi",                 flt_posting_handle_greet,    CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
   { "Bye",                flt_posting_handle_greet,    CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
   { "Signature",          flt_posting_handle_greet,    CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
@@ -507,7 +507,7 @@ t_conf_opt flt_posting_config[] = {
   { NULL, NULL, 0, NULL }
 };
 
-t_handler_config flt_posting_handlers[] = {
+handler_config_t flt_posting_handlers[] = {
   { RM_COLLECTORS_HANDLER, flt_posting_rm_collector },
   { POSTING_HANDLER,       flt_posting_execute_filter },
   { PRE_CONTENT_FILTER,    flt_posting_pre_cnt },
@@ -516,7 +516,7 @@ t_handler_config flt_posting_handlers[] = {
   { 0, NULL }
 };
 
-t_module_config flt_posting = {
+module_config_t flt_posting = {
   MODULE_MAGIC_COOKIE,
   flt_posting_config,
   flt_posting_handlers,

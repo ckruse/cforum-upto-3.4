@@ -19,13 +19,13 @@
 #include "parsetpl.h"
 
 /* {{{ dereference_variable */
-int dereference_variable(t_string *out_str,t_token *var,t_array *data,t_string *c_var) {
+int dereference_variable(string_t *out_str,token_t *var,array_t *data,string_t *c_var) {
   int level, is_hash;
   char buf[20];
-  t_string *arrayidx;
-  t_token *token;
+  string_t *arrayidx;
+  token_t *token;
   
-  str_cstr_append(out_str,"v = (t_cf_tpl_variable *)cf_tpl_getvar(tpl,\"");
+  str_cstr_append(out_str,"v = (cf_tpl_variable_t *)cf_tpl_getvar(tpl,\"");
   str_chars_append(out_str,var->data->content+1,var->data->len-1);
   str_cstr_append(out_str,"\");\n");
   token = NULL;
@@ -33,16 +33,16 @@ int dereference_variable(t_string *out_str,t_token *var,t_array *data,t_string *
 
   // get array indexes
   while(data->elements) {
-    token = (t_token *)array_element_at(data,0);
+    token = (token_t *)array_element_at(data,0);
     if(token->type != PARSETPL_TOK_ARRAYSTART) break;
 
-    token = (t_token *)array_shift(data);
+    token = (token_t *)array_shift(data);
     destroy_token(token);
     free(token);
 
     if(!data->elements) return PARSETPL_ERR_INVALIDTAG;
 
-    token = (t_token *)array_shift(data);
+    token = (token_t *)array_shift(data);
     if((token->type != PARSETPL_TOK_STRING && token->type != PARSETPL_TOK_INTEGER) || !data->elements) {
       destroy_token(token);
       free(token);
@@ -53,7 +53,7 @@ int dereference_variable(t_string *out_str,t_token *var,t_array *data,t_string *
     else is_hash = 1;
 
     arrayidx = token->data; free(token);
-    token = (t_token *)array_shift(data);
+    token = (token_t *)array_shift(data);
 
     if(token->type != PARSETPL_TOK_ARRAYEND) {
       destroy_token(token);
@@ -68,7 +68,7 @@ int dereference_variable(t_string *out_str,t_token *var,t_array *data,t_string *
 
     if(is_hash) {
       str_cstr_append(out_str,"if(v && v->type == TPL_VARIABLE_HASH) {\n");
-      str_cstr_append(out_str,"v = (t_cf_tpl_variable *)cf_hash_get(v->data.d_hash,\"");
+      str_cstr_append(out_str,"v = (cf_tpl_variable_t *)cf_hash_get(v->data.d_hash,\"");
       append_escaped_string(out_str,arrayidx);
       str_cstr_append(out_str,"\",");
       snprintf(buf,19,"%ld",arrayidx->len);
@@ -76,7 +76,7 @@ int dereference_variable(t_string *out_str,t_token *var,t_array *data,t_string *
     }
     else {
       str_cstr_append(out_str,"if(v && v->type == TPL_VARIABLE_ARRAY) {\n");
-      str_cstr_append(out_str,"v = (t_cf_tpl_variable *)array_element_at(&v->data.d_array,");
+      str_cstr_append(out_str,"v = (cf_tpl_variable_t *)array_element_at(&v->data.d_array,");
       str_str_append(out_str,arrayidx);
     }
 
@@ -96,9 +96,9 @@ int dereference_variable(t_string *out_str,t_token *var,t_array *data,t_string *
 /* }}} */
 
 /* {{{ dereference_iterator */
-int dereference_iterator(t_string *out_str,t_token *var,t_array *data,t_string *c_var) {
+int dereference_iterator(string_t *out_str,token_t *var,array_t *data,string_t *c_var) {
   long idx = -1;
-  t_token *token;
+  token_t *token;
   char idxbuf[20];
   char idx2buf[20];
 
@@ -106,16 +106,16 @@ int dereference_iterator(t_string *out_str,t_token *var,t_array *data,t_string *
 
   // get array indexes
   while(data->elements) {
-    token = (t_token *)array_element_at(data,0);
+    token = (token_t *)array_element_at(data,0);
     if(token->type != PARSETPL_TOK_ARRAYSTART) break;
 
-    token = (t_token *)array_shift(data);
+    token = (token_t *)array_shift(data);
     destroy_token(token);
     free(token);
 
     if(!data->elements) return PARSETPL_ERR_INVALIDTAG;
 
-    token = (t_token *)array_shift(data);
+    token = (token_t *)array_shift(data);
     if(token->type != PARSETPL_TOK_INTEGER || !data->elements) {
       destroy_token(token);
       free(token);
@@ -123,7 +123,7 @@ int dereference_iterator(t_string *out_str,t_token *var,t_array *data,t_string *
     }
 
     idx   = strtol(token->data->content,NULL,10); free(token);
-    token = (t_token *)array_shift(data);
+    token = (token_t *)array_shift(data);
 
     if(token->type != PARSETPL_TOK_ARRAYEND) {
       destroy_token(token);

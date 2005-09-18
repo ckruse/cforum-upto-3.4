@@ -35,8 +35,8 @@
 
 
 /* {{{ cf_msg_get_first_visible */
-t_message *cf_msg_get_first_visible(t_message *msg) {
-  register t_message *msg1;
+message_t *cf_msg_get_first_visible(message_t *msg) {
+  register message_t *msg1;
 
   if(msg->may_show && msg->invisible == 0) return msg;
   for(msg1=msg;msg1;msg1=msg1->next) {
@@ -48,9 +48,9 @@ t_message *cf_msg_get_first_visible(t_message *msg) {
 /* }}} */
 
 /* {{{ cf_msg_ht_get_first_visible */
-t_hierarchical_node *cf_msg_ht_get_first_visible(t_hierarchical_node *msg) {
+hierarchical_node_t *cf_msg_ht_get_first_visible(hierarchical_node_t *msg) {
   size_t i;
-  t_hierarchical_node *val;
+  hierarchical_node_t *val;
 
   for(i=0;i<msg->childs.elements;++i) {
     val = array_element_at(&msg->childs,i);
@@ -65,9 +65,9 @@ t_hierarchical_node *cf_msg_ht_get_first_visible(t_hierarchical_node *msg) {
 /* }}} */
 
 /* {{{ cf_msg_filter_invisible */
-void _cf_msg_filter_invisible(t_hierarchical_node *ht,t_hierarchical_node *ary,int si) {
+void _cf_msg_filter_invisible(hierarchical_node_t *ht,hierarchical_node_t *ary,int si) {
   size_t i;
-  t_hierarchical_node *ht1,ary1;
+  hierarchical_node_t *ht1,ary1;
 
   for(i=0;i<ht->childs.elements;++i) {
     ht1 = array_element_at(&ht->childs,i);
@@ -83,7 +83,7 @@ void _cf_msg_filter_invisible(t_hierarchical_node *ht,t_hierarchical_node *ary,i
 }
 /* }}} */
 
-void cf_msg_filter_invisible(t_hierarchical_node *ht,t_hierarchical_node *ary,int si) {
+void cf_msg_filter_invisible(hierarchical_node_t *ht,hierarchical_node_t *ary,int si) {
   array_init(&ary->childs,sizeof(*ary),NULL);
 
   if(si || (ht->msg->invisible == 0 && ht->msg->may_show)) ary->msg = ht->msg;
@@ -93,7 +93,7 @@ void cf_msg_filter_invisible(t_hierarchical_node *ht,t_hierarchical_node *ary,in
 }
 
 /* {{{ cf_msg_delete_subtree */
-t_message *cf_msg_delete_subtree(t_message *msg) {
+message_t *cf_msg_delete_subtree(message_t *msg) {
   int lvl = msg->level;
 
   for(msg=msg->next;msg && msg->level > lvl;msg=msg->next) msg->may_show = 0;
@@ -103,7 +103,7 @@ t_message *cf_msg_delete_subtree(t_message *msg) {
 /* }}} */
 
 /* {{{ cf_msg_next_subtree */
-t_message *cf_msg_next_subtree(t_message *msg) {
+message_t *cf_msg_next_subtree(message_t *msg) {
   int lvl = msg->level;
 
   for(msg=msg->next;msg && msg->level > lvl;msg=msg->next);
@@ -113,7 +113,7 @@ t_message *cf_msg_next_subtree(t_message *msg) {
 /* }}} */
 
 /* {{{ cf_msg_prev_subtree */
-t_message *cf_msg_prev_subtree(t_message *msg) {
+message_t *cf_msg_prev_subtree(message_t *msg) {
   int lvl = msg->level;
 
   for(msg=msg->prev;msg && msg->level > lvl;msg=msg->prev);
@@ -123,8 +123,8 @@ t_message *cf_msg_prev_subtree(t_message *msg) {
 /* }}} */
 
 /* {{{ cf_msg_get_parent */
-t_message *cf_msg_get_parent(t_message *tmsg) {
-  t_message *msg = NULL;
+message_t *cf_msg_get_parent(message_t *tmsg) {
+  message_t *msg = NULL;
 
   for(msg=tmsg;msg;msg=msg->prev) {
     if(msg->level == tmsg->level - 1) return msg;
@@ -135,7 +135,7 @@ t_message *cf_msg_get_parent(t_message *tmsg) {
 /* }}} */
 
 /* {{{ cf_msg_has_answers */
-int cf_msg_has_answers(t_message *msg) {
+int cf_msg_has_answers(message_t *msg) {
   int lvl = msg->level;
   int ShowInvisible = cf_hash_get(GlobalValues,"ShowInvisible",13) == NULL ? 0 : 1;
 
@@ -169,7 +169,7 @@ int cf_msg_has_answers(t_message *msg) {
 
 /* {{{ cf_destroy_flag */
 void cf_destroy_flag(void *data) {
-  t_cf_post_flag *flag = (t_cf_post_flag *)data;
+  cf_post_flag_t *flag = (cf_post_flag_t *)data;
 
   free(flag->name);
   free(flag->val);
@@ -177,9 +177,9 @@ void cf_destroy_flag(void *data) {
 /* }}} */
 
 /* {{{ _cf_cleanup_hierarchical */
-void _cf_cleanup_hierarchical(t_hierarchical_node *n) {
+void _cf_cleanup_hierarchical(hierarchical_node_t *n) {
   size_t i;
-  t_hierarchical_node *tmp;
+  hierarchical_node_t *tmp;
 
   for(i=0;i<n->childs.elements;++i) {
     tmp = array_element_at(&n->childs,i);
@@ -191,7 +191,7 @@ void _cf_cleanup_hierarchical(t_hierarchical_node *n) {
 /* }}} */
 
 /* {{{ cf_cleanup_message */
-void cf_cleanup_message(t_message *msg) {
+void cf_cleanup_message(message_t *msg) {
   str_cleanup(&msg->author);
   str_cleanup(&msg->subject);
 
@@ -206,8 +206,8 @@ void cf_cleanup_message(t_message *msg) {
 /* }}} */
 
 /* {{{ cf_cleanup_thread */
-void cf_cleanup_thread(t_cl_thread *thr) {
-  t_message *msg = thr->messages,*last = thr->messages;
+void cf_cleanup_thread(cl_thread_t *thr) {
+  message_t *msg = thr->messages,*last = thr->messages;
 
   _cf_cleanup_hierarchical(thr->ht);
   free(thr->ht);
@@ -222,10 +222,10 @@ void cf_cleanup_thread(t_cl_thread *thr) {
 /* }}} */
 
 /* {{{ cf_msg_build_hierarchical_structure */
-t_message *cf_msg_build_hierarchical_structure(t_hierarchical_node *parent,t_message *msg) {
-  t_message *m;
+message_t *cf_msg_build_hierarchical_structure(hierarchical_node_t *parent,message_t *msg) {
+  message_t *m;
   int lvl;
-  t_hierarchical_node h;
+  hierarchical_node_t h;
 
   m   = msg;
   lvl = m->level;
@@ -249,10 +249,10 @@ t_message *cf_msg_build_hierarchical_structure(t_hierarchical_node *parent,t_mes
 /* }}} */
 
 /* {{{ cf_msg_do_linearize */
-t_message *cf_msg_do_linearize(t_hierarchical_node *node) {
+message_t *cf_msg_do_linearize(hierarchical_node_t *node) {
   size_t i;
-  t_message *p;
-  t_hierarchical_node *tmp,*tmp1;
+  message_t *p;
+  hierarchical_node_t *tmp,*tmp1;
 
   if(node->childs.elements) {
     tmp = array_element_at(&node->childs,0);
@@ -295,8 +295,8 @@ t_message *cf_msg_do_linearize(t_hierarchical_node *node) {
 /* }}} */
 
 /* {{{ cf_msg_linearize */
-void cf_msg_linearize(t_cl_thread *thr,t_hierarchical_node *h) {
-  t_message *p,*p1;
+void cf_msg_linearize(cl_thread_t *thr,hierarchical_node_t *h) {
+  message_t *p,*p1;
 
   cf_msg_do_linearize(h);
 

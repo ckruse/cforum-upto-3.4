@@ -33,7 +33,7 @@
 /* }}} */
 
 /* {{{ str_init */
-void str_init(t_string *str) {
+void str_init(string_t *str) {
   str->len      = 0;
   str->reserved = 0;
   str->growth   = CF_BUFSIZ;
@@ -42,7 +42,7 @@ void str_init(t_string *str) {
 /* }}} */
 
 /* {{{ str_init_growth */
-void str_init_growth(t_string *str,unsigned growth) {
+void str_init_growth(string_t *str,unsigned growth) {
   str->len      = 0;
   str->reserved = 0;
   str->growth   = growth;
@@ -51,7 +51,7 @@ void str_init_growth(t_string *str,unsigned growth) {
 /* }}} */
 
 /* {{{ str_cleanup */
-void str_cleanup(t_string *str) {
+void str_cleanup(string_t *str) {
   str->len      = 0;
   str->reserved = 0;
 
@@ -62,7 +62,7 @@ void str_cleanup(t_string *str) {
 /* }}} */
 
 /* {{{ str_char_append */
-size_t str_char_append(t_string *str,const u_char content) {
+size_t str_char_append(string_t *str,const u_char content) {
   if(str->growth == 0) str->growth = CF_BUFSIZ;
 
   if(str->len + 1 >= str->reserved) {
@@ -79,7 +79,7 @@ size_t str_char_append(t_string *str,const u_char content) {
 /* }}} */
 
 /* {{{ str_chars_append */
-size_t str_chars_append(t_string *str,const u_char *content,size_t length) {
+size_t str_chars_append(string_t *str,const u_char *content,size_t length) {
   size_t len;
 
   if(str->growth == 0) str->growth = CF_BUFSIZ;
@@ -101,7 +101,7 @@ size_t str_chars_append(t_string *str,const u_char *content,size_t length) {
 /* }}} */
 
 /* {{{ str_equal_string */
-int str_equal_string(const t_string *str1,const t_string *str2) {
+int str_equal_string(const string_t *str1,const string_t *str2) {
   register u_char *ptr1 = str1->content,*ptr2 = str2->content;
   register size_t i;
 
@@ -116,7 +116,7 @@ int str_equal_string(const t_string *str1,const t_string *str2) {
 /* }}} */
 
 /* {{{ str_equal_chars */
-int str_equal_chars(const t_string *str1,const u_char *str2, size_t len) {
+int str_equal_chars(const string_t *str1,const u_char *str2, size_t len) {
   register size_t i = 0;
   register u_char *ptr1 = str1->content,*ptr2 = (u_char *)str2;
 
@@ -131,25 +131,25 @@ int str_equal_chars(const t_string *str1,const u_char *str2, size_t len) {
 /* }}} */
 
 /* {{{ str_str_append */
-size_t str_str_append(t_string *str,t_string *content) {
+size_t str_str_append(string_t *str,string_t *content) {
   return str_chars_append(str,content->content,content->len);
 }
 /* }}} */
 
 /* {{{ str_cstr_append */
-size_t str_cstr_append(t_string *str,const u_char *content) {
+size_t str_cstr_append(string_t *str,const u_char *content) {
   return str_chars_append(str,content,strlen(content));
 }
 /* }}} */
 
 /* {{{ str_cstr_set */
-int str_cstr_set(t_string *str,const u_char *content) {
+int str_cstr_set(string_t *str,const u_char *content) {
   return str_char_set(str,content,strlen(content));
 }
 /* }}} */
 
 /* {{{ str_char_set */
-size_t str_char_set(t_string *str,const u_char *content,size_t length) {
+size_t str_char_set(string_t *str,const u_char *content,size_t length) {
   size_t len;
 
   if(str->growth == 0) str->growth = CF_BUFSIZ;
@@ -171,7 +171,7 @@ size_t str_char_set(t_string *str,const u_char *content,size_t length) {
 /* }}} */
 
 /* {{{ str_str_set */
-size_t str_str_set(t_string *str,t_string *set) {
+size_t str_str_set(string_t *str,string_t *set) {
   return str_char_set(str,set->content,set->len);
 }
 /* }}} */

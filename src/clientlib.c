@@ -63,11 +63,11 @@
 /* }}} */
 
 /* user authentification */
-t_cf_hash *GlobalValues = NULL;
+cf_hash_t *GlobalValues = NULL;
 
-t_cf_hash *APIEntries = NULL;
+cf_hash_t *APIEntries = NULL;
 
-static t_cf_list_head uri_flags;
+static cf_list_head_t uri_flags;
 
 /* error string */
 u_char ErrorString[50];
@@ -83,7 +83,7 @@ int   shm_lock_sem  = -1;   /**< semaphore showing which shared memory segment w
 
 void *cf_reget_shm_ptr(void) {
   u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
-  t_name_value *shm  = cfg_get_first_value(&fo_default_conf,forum_name,"SharedMemIds");
+  name_value_t *shm  = cfg_get_first_value(&fo_default_conf,forum_name,"SharedMemIds");
   unsigned short val;
 
   if(shm_ptr) {
@@ -110,7 +110,7 @@ void *cf_reget_shm_ptr(void) {
 
 void *cf_get_shm_ptr(void) {
   u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
-  t_name_value *shm  = cfg_get_first_value(&fo_default_conf,forum_name,"SharedMemIds");
+  name_value_t *shm  = cfg_get_first_value(&fo_default_conf,forum_name,"SharedMemIds");
   unsigned short val;
 
   if(shm_lock_sem == -1) {
@@ -155,7 +155,7 @@ u_char *cf_get_uconf_name(const u_char *uname) {
   u_char *path,*name;
   u_char *ptr;
   struct stat sb;
-  t_name_value *confpath = cfg_get_first_value(&fo_default_conf,forum_name,"ConfigDirectory");
+  name_value_t *confpath = cfg_get_first_value(&fo_default_conf,forum_name,"ConfigDirectory");
 
   if(!uname) return NULL;
 
@@ -190,7 +190,7 @@ u_char *cf_get_uconf_name(const u_char *uname) {
 int cf_socket_setup(void) {
   int sock;
   struct sockaddr_un addr;
-  t_name_value *sockpath = cfg_get_first_value(&fo_default_conf,NULL,"SocketName");
+  name_value_t *sockpath = cfg_get_first_value(&fo_default_conf,NULL,"SocketName");
 
   if(sockpath) {
     memset(&addr,0,sizeof(addr));
@@ -220,15 +220,15 @@ int cf_socket_setup(void) {
 void cf_gen_tpl_name(u_char *buff,size_t len,const u_char *name) {
   u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
 
-  t_name_value *vn = cfg_get_first_value(&fo_default_conf,forum_name,"TemplateMode");
-  t_name_value *lang = cfg_get_first_value(&fo_default_conf,forum_name,"Language");
+  name_value_t *vn = cfg_get_first_value(&fo_default_conf,forum_name,"TemplateMode");
+  name_value_t *lang = cfg_get_first_value(&fo_default_conf,forum_name,"Language");
 
   snprintf(buff,len,name,lang->values[0],vn->values[0]);
 }
 /* }}} */
 
 /* {{{ cf_set_variable */
-void cf_set_variable(t_cf_template *tpl,t_name_value *cs,u_char *vname,const u_char *val,size_t len,int html) {
+void cf_set_variable(cf_template_t *tpl,name_value_t *cs,u_char *vname,const u_char *val,size_t len,int html) {
   u_char *tmp;
   size_t len1;
 
@@ -275,7 +275,7 @@ void cf_set_variable(t_cf_template *tpl,t_name_value *cs,u_char *vname,const u_c
 /* }}} */
 
 /* {{{ cf_set_variable_hash */
-void cf_set_variable_hash(t_cf_tpl_variable *hash,t_name_value *cs,u_char *key,const u_char *val,size_t len,int html) {
+void cf_set_variable_hash(cf_tpl_variable_t *hash,name_value_t *cs,u_char *key,const u_char *val,size_t len,int html) {
   u_char *tmp;
   size_t len1;
 
@@ -325,19 +325,19 @@ void cf_set_variable_hash(t_cf_tpl_variable *hash,t_name_value *cs,u_char *key,c
 /* {{{ cf_error_message */
 void cf_error_message(const u_char *err,FILE *out, ...) {
   u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
-  t_name_value *v = cfg_get_first_value(&fo_default_conf,forum_name,"ErrorTemplate");
-  t_name_value *db = cfg_get_first_value(&fo_default_conf,forum_name,"MessagesDatabase");
-  t_name_value *lang = cfg_get_first_value(&fo_default_conf,forum_name,"Language");
-  t_name_value *cs = cfg_get_first_value(&fo_default_conf,forum_name,"ExternCharset");
-  t_name_value *vs = cfg_get_first_value(&fo_default_conf,forum_name,cf_hash_get(GlobalValues,"UserName",8) ? "UBaseURL" : "BaseURL");
-  t_cf_template tpl;
+  name_value_t *v = cfg_get_first_value(&fo_default_conf,forum_name,"ErrorTemplate");
+  name_value_t *db = cfg_get_first_value(&fo_default_conf,forum_name,"MessagesDatabase");
+  name_value_t *lang = cfg_get_first_value(&fo_default_conf,forum_name,"Language");
+  name_value_t *cs = cfg_get_first_value(&fo_default_conf,forum_name,"ExternCharset");
+  name_value_t *vs = cfg_get_first_value(&fo_default_conf,forum_name,cf_hash_get(GlobalValues,"UserName",8) ? "UBaseURL" : "BaseURL");
+  cf_template_t tpl;
   u_char tplname[256];
   u_char errname[256];
   va_list ap;
 
   u_char *buff = NULL,ibuff[256];
   register u_char *ptr;
-  t_string msg;
+  string_t msg;
 
   int ivar,ret;
   u_char *svar;
@@ -437,13 +437,13 @@ void cf_error_message(const u_char *err,FILE *out, ...) {
 /* {{{ cf_get_error_message */
 u_char *cf_get_error_message(const u_char *err,size_t *len, ...) {
   u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
-  t_name_value *db = cfg_get_first_value(&fo_default_conf,forum_name,"MessagesDatabase");
-  t_name_value *lang = cfg_get_first_value(&fo_default_conf,forum_name,"Language");
+  name_value_t *db = cfg_get_first_value(&fo_default_conf,forum_name,"MessagesDatabase");
+  name_value_t *lang = cfg_get_first_value(&fo_default_conf,forum_name,"Language");
   va_list ap;
 
   u_char *buff = NULL,ibuff[256],errname[256];
   register u_char *ptr;
-  t_string msg;
+  string_t msg;
 
   int ivar,ret;
   u_char *svar;
@@ -533,7 +533,7 @@ void cf_add_static_uri_flag(const u_char *name,const u_char *value,int encode) {
 /* {{{ cf_remove_static_uri_flag */
 void cf_remove_static_uri_flag(const u_char *name) {
   cf_uri_flag_t *flag;
-  t_cf_list_element *elem;
+  cf_list_element_t *elem;
 
   for(elem=uri_flags.elements;elem;elem=elem->next) {
     flag = (cf_uri_flag_t *)elem->data;
@@ -553,12 +553,12 @@ void cf_remove_static_uri_flag(const u_char *name) {
 /* {{{ cf_get_link */
 u_char *cf_get_link(const u_char *link,u_int64_t tid,u_int64_t mid) {
   register const u_char *ptr;
-  t_string buff;
+  string_t buff;
   u_char *tmp;
   int qm = 0,run = 1;
   cf_readmode_t *rm;
   cf_uri_flag_t *flag;
-  t_cf_list_element *elem;
+  cf_list_element_t *elem;
 
   str_init_growth(&buff,128);
 
@@ -659,13 +659,13 @@ u_char *cf_get_link(const u_char *link,u_int64_t tid,u_int64_t mid) {
 /* {{{ cf_advanced_get_link */
 u_char *cf_advanced_get_link(const u_char *link,u_int64_t tid,u_int64_t mid,u_char *anchor,size_t plen,size_t *l,...) {
   register const u_char *ptr;
-  t_string buff;
+  string_t buff;
   int qm = 0,run = 1;
   u_char *name,*value,*tmp;
   size_t i;
   va_list ap;
   cf_uri_flag_t *flag;
-  t_cf_list_element *elem;
+  cf_list_element_t *elem;
 
   str_init_growth(&buff,128);
 
@@ -804,12 +804,12 @@ u_char *cf_general_get_time(u_char *fmt,u_char *locale,int *len,time_t *date) {
 
 
 /* {{{ cf_flag_by_name */
-t_cf_post_flag *cf_flag_by_name(t_cf_list_head *flags,const u_char *name) {
-  t_cf_list_element *elem;
-  t_cf_post_flag *flag;
+cf_post_flag_t *cf_flag_by_name(cf_list_head_t *flags,const u_char *name) {
+  cf_list_element_t *elem;
+  cf_post_flag_t *flag;
 
   for(elem=flags->elements;elem;elem=elem->next) {
-    flag = (t_cf_post_flag *)elem->data;
+    flag = (cf_post_flag_t *)elem->data;
     if(cf_strcmp(flag->name,name) == 0) return flag;
   }
 
@@ -819,9 +819,9 @@ t_cf_post_flag *cf_flag_by_name(t_cf_list_head *flags,const u_char *name) {
 
 
 /* {{{ cf_register_mod_api_ent */
-int cf_register_mod_api_ent(const u_char *mod_name,const u_char *unique_identifier,t_mod_api func) {
+int cf_register_mod_api_ent(const u_char *mod_name,const u_char *unique_identifier,mod_api_t func) {
   size_t len2 = strlen(unique_identifier);
-  t_mod_api_ent *ent;
+  mod_api_ent_t *ent;
 
   if((ent = cf_hash_get(APIEntries,(u_char *)unique_identifier,len2)) != NULL) {
     if(cf_strcmp(ent->mod_name,mod_name)) {
@@ -848,7 +848,7 @@ int cf_register_mod_api_ent(const u_char *mod_name,const u_char *unique_identifi
 /* {{{ cf_unregister_mod_api_ent */
 int cf_unregister_mod_api_ent(const u_char *unid) {
   size_t len1 = strlen(unid);
-  t_mod_api_ent *ent;
+  mod_api_ent_t *ent;
 
   if((ent = cf_hash_get(APIEntries,(u_char *)unid,len1)) == NULL) {
     return -1;
@@ -860,8 +860,8 @@ int cf_unregister_mod_api_ent(const u_char *unid) {
 /* }}} */
 
 /* {{{ cf_get_mod_api_ent */
-t_mod_api cf_get_mod_api_ent(const u_char *unid) {
-  t_mod_api_ent *ent;
+mod_api_t cf_get_mod_api_ent(const u_char *unid) {
+  mod_api_ent_t *ent;
   size_t len1 = strlen(unid);
 
   if((ent = cf_hash_get(APIEntries,(u_char *)unid,len1)) == NULL) {
@@ -880,7 +880,7 @@ t_mod_api cf_get_mod_api_ent(const u_char *unid) {
  * \param elem The element
  */
 void cf_api_destroy_entry(void *elem) {
-  t_mod_api_ent *a = (t_mod_api_ent *)elem;
+  mod_api_ent_t *a = (mod_api_ent_t *)elem;
   free(a->mod_name);
   free(a->unique_identifier);
 }

@@ -54,40 +54,40 @@ struct sockaddr_un;
 /** The URL of the selfforum DTD */
 #define FORUM_DTD "http://wwwtech.de/cforum/download/cforum-3.dtd"
 
-static int sort_threads  = 0;
+static int sorthread_ts  = 0;
 static int sort_messages = 0;
 
-void flt_xmlstorage_create_threadtree(t_forum *forum,t_thread *thread,t_posting *post,GdomeNode *msg_elem_index,GdomeNode *msg_elem_thread,short level);
-void flt_xmlstorage_handle_header(t_posting *p,GdomeNode *n);
+void flt_xmlstorage_create_threadtree(forum_t *forum,thread_t *thread,posting_t *post,GdomeNode *msg_elem_index,GdomeNode *msg_elem_thread,short level);
+void flt_xmlstorage_handle_header(posting_t *p,GdomeNode *n);
 
 /* {{{ flt_xmlstorage_cmp_thread */
 int flt_xmlstorage_cmp_thread(const void *a,const void *b) {
-  t_thread *ta = *((t_thread **)a);
-  t_thread *tb = *((t_thread **)b);
+  thread_t *ta = *((thread_t **)a);
+  thread_t *tb = *((thread_t **)b);
 
-  if(ta->tid > tb->tid) return sort_threads == CF_SORT_ASCENDING ? 1 : -1;
-  else return sort_threads == CF_SORT_ASCENDING ? -1 : 1;
+  if(ta->tid > tb->tid) return sorthread_ts == CF_SORT_ASCENDING ? 1 : -1;
+  else return sorthread_ts == CF_SORT_ASCENDING ? -1 : 1;
 }
 /* }}} */
 
 /* {{{ struct s_h_p */
 /** This struct is used to sort the thread list. It contains a hierarchical structure. */
 typedef struct s_h_p {
-  t_posting *node; /**< The pointer to the posting */
+  posting_t *node; /**< The pointer to the posting */
   long len; /**< The number of postings in this hierarchy level */
   struct s_h_p *childs; /**< The answers to this posting */
-} t_h_p;
+} h_p_t;
 /* }}} */
 
 /* {{{ flt_xmlstorage_hirarchy_them */
 /**
  * Insert the postings to a hierarchy level. This function works recursively.
- * \param parent The parent t_h_p structure
+ * \param parent The parent h_p_t structure
  * \param pst The posting pointer
  * \return The pointer to the next posting in a hierarchy level smaller or equal to ours.
  */
-t_posting *flt_xmlstorage_hirarchy_them(t_h_p *parent,t_posting *pst) {
-  t_posting *p;
+posting_t *flt_xmlstorage_hirarchy_them(h_p_t *parent,posting_t *pst) {
+  posting_t *p;
   int lvl;
 
   p   = pst;
@@ -95,8 +95,8 @@ t_posting *flt_xmlstorage_hirarchy_them(t_h_p *parent,t_posting *pst) {
 
   while(p) {
     if(p->level == lvl) {
-      parent->childs = fo_alloc(parent->childs,parent->len+1, sizeof(t_h_p),FO_ALLOC_REALLOC);
-      memset(&parent->childs[parent->len],0,sizeof(t_h_p));
+      parent->childs = fo_alloc(parent->childs,parent->len+1, sizeof(h_p_t),FO_ALLOC_REALLOC);
+      memset(&parent->childs[parent->len],0,sizeof(h_p_t));
 
       parent->childs[parent->len++].node = p;
       p = p->next;
@@ -116,9 +116,9 @@ t_posting *flt_xmlstorage_hirarchy_them(t_h_p *parent,t_posting *pst) {
  * \param low The lower frontier of the field
  * \param high The higher frontier of the field
  */
-void flt_xmlstorage_quicksort_posts(t_h_p *list,long low,long high) {
+void flt_xmlstorage_quicksort_posts(h_p_t *list,long low,long high) {
   long i = low,j = high;
-  t_h_p *pivot,tmp;
+  h_p_t *pivot,tmp;
 
   pivot = &list[(low+high)/2];
 
@@ -142,9 +142,9 @@ void flt_xmlstorage_quicksort_posts(t_h_p *list,long low,long high) {
 /* {{{ flt_xmlstorage_sort_them */
 /**
  * Sorting function.
- * \param node The t_h_p structure node
+ * \param node The h_p_t structure node
  */
-void flt_xmlstorage_sort_them(t_h_p *node) {
+void flt_xmlstorage_sort_them(h_p_t *node) {
   long i;
 
   if(node->len) {
@@ -161,9 +161,9 @@ void flt_xmlstorage_sort_them(t_h_p *node) {
 /* {{{ flt_xmlstorage_free_structs */
 /**
  * This function cleans up a hierarchical structure
- * \param node The t_h_p node
+ * \param node The h_p_t node
  */
-void flt_xmlstorage_free_structs(t_h_p *node) {
+void flt_xmlstorage_free_structs(h_p_t *node) {
   long i;
 
   if(node->len) {
@@ -179,13 +179,13 @@ void flt_xmlstorage_free_structs(t_h_p *node) {
 /* {{{ flt_xmlstorage_serialize_them */
 /**
  * This function serializes a hierarchical structure into a flat chain
- * \param node The t_h_p node
+ * \param node The h_p_t node
  * \param sort The sorting direction
  * \return A posting in this or lower than this hierarchy level
  */
-t_posting *flt_xmlstorage_serialize_them(t_h_p *node) {
+posting_t *flt_xmlstorage_serialize_them(h_p_t *node) {
   long i;
-  t_posting *p;
+  posting_t *p;
 
   if(sort_messages == CF_SORT_ASCENDING) {
     if(node->len) {
@@ -256,10 +256,10 @@ t_posting *flt_xmlstorage_serialize_them(t_h_p *node) {
 }
 /* }}} */
 
-/* {{{ flt_xmlstorage_sort_messages */
-void flt_xmlstorage_sort_messages(t_thread *thread) {
-  t_h_p *first = fo_alloc(NULL,1,sizeof(*first),FO_ALLOC_CALLOC);
-  t_posting *p,*p1;
+/* {{{ flt_xmlstorage_sormessage_ts */
+void flt_xmlstorage_sormessage_ts(thread_t *thread) {
+  h_p_t *first = fo_alloc(NULL,1,sizeof(*first),FO_ALLOC_CALLOC);
+  posting_t *p,*p1;
 
   if(thread->postings->next) {
     first->node = thread->postings;
@@ -286,16 +286,16 @@ void flt_xmlstorage_sort_messages(t_thread *thread) {
 /* }}} */
 
 /* {{{ flt_xmlstorage_make_forumtree */
-int flt_xmlstorage_make_forumtree(t_forum *forum) {
-  t_name_value *p = cfg_get_first_value(&fo_default_conf,forum->name,"MessagePath");
-  t_name_value *sort_t = cfg_get_first_value(&fo_server_conf,forum->name,"SortThreads");
-  t_name_value *sort_m = cfg_get_first_value(&fo_server_conf,forum->name,"SortMessages");
-  t_string path;
+int flt_xmlstorage_make_forumtree(forum_t *forum) {
+  name_value_t *p = cfg_get_first_value(&fo_default_conf,forum->name,"MessagePath");
+  name_value_t *sort_t = cfg_get_first_value(&fo_server_conf,forum->name,"SortThreads");
+  name_value_t *sort_m = cfg_get_first_value(&fo_server_conf,forum->name,"SortMessages");
+  string_t path;
 
   u_char *ctid;
   unsigned long length = 0,i;
-  t_thread *thread;
-  t_array ary;
+  thread_t *thread;
+  array_t ary;
   u_char buff[50];
 
   GdomeException e;
@@ -311,7 +311,7 @@ int flt_xmlstorage_make_forumtree(t_forum *forum) {
 
   array_init(&ary,sizeof(thread),NULL);
 
-  sort_threads  = cf_strcmp(sort_t->values[0],"ascending") == 0 ? CF_SORT_ASCENDING : CF_SORT_DESCENDING;
+  sorthread_ts  = cf_strcmp(sort_t->values[0],"ascending") == 0 ? CF_SORT_ASCENDING : CF_SORT_DESCENDING;
   sort_messages = cf_strcmp(sort_m->values[0],"ascending") == 0 ? CF_SORT_ASCENDING : CF_SORT_DESCENDING;
 
   str_init(&path);
@@ -393,7 +393,7 @@ int flt_xmlstorage_make_forumtree(t_forum *forum) {
   array_sort(&ary,flt_xmlstorage_cmp_thread);
 
   for(i=0;i<ary.elements;i++) {
-    thread = *((t_thread **)array_element_at(&ary,i));
+    thread = *((thread_t **)array_element_at(&ary,i));
 
     if(forum->threads.last == NULL) {
       forum->threads.last = thread;
@@ -407,7 +407,7 @@ int flt_xmlstorage_make_forumtree(t_forum *forum) {
     }
 
     /* sort messages */
-    flt_xmlstorage_sort_messages(thread);
+    flt_xmlstorage_sormessage_ts(thread);
   }
 
   array_destroy(&ary);
@@ -416,8 +416,8 @@ int flt_xmlstorage_make_forumtree(t_forum *forum) {
 }
 /* }}} */
 
-/* {{{ flt_xmlstorage_get_message_node */
-GdomeNode *flt_xmlstorage_get_message_node(GdomeNode *parent,const u_char *mid) {
+/* {{{ flt_xmlstorage_gemessage_t_node */
+GdomeNode *flt_xmlstorage_gemessage_t_node(GdomeNode *parent,const u_char *mid) {
   GdomeException e;
   GdomeDOMString *str = gdome_str_mkref("Message");
   GdomeNodeList *nl_ind = gdome_el_getElementsByTagName((GdomeElement *)parent,str,&e);
@@ -448,7 +448,7 @@ GdomeNode *flt_xmlstorage_get_message_node(GdomeNode *parent,const u_char *mid) 
 /* }}} */
 
 /* {{{ flt_xmlstorage_create_threadtree */
-void flt_xmlstorage_create_threadtree(t_forum *forum,t_thread *thread,t_posting *post,GdomeNode *msg_elem_index,GdomeNode *msg_elem_thread,short level) {
+void flt_xmlstorage_create_threadtree(forum_t *forum,thread_t *thread,posting_t *post,GdomeNode *msg_elem_index,GdomeNode *msg_elem_thread,short level) {
   u_char *unid  = xml_get_attribute(msg_elem_index,"unid");
   u_char *cmid  = xml_get_attribute(msg_elem_thread,"id");
   u_char *invi  = xml_get_attribute(msg_elem_thread,"invisible");
@@ -465,7 +465,7 @@ void flt_xmlstorage_create_threadtree(t_forum *forum,t_thread *thread,t_posting 
   GdomeNode *n,*msg_ind;
   GdomeDOMString *name;
 
-  t_posting *p;
+  posting_t *p;
 
   ++thread->posts;
 
@@ -512,7 +512,7 @@ void flt_xmlstorage_create_threadtree(t_forum *forum,t_thread *thread,t_posting 
     }
     else if(cf_strcmp(name->str,"Message") == 0) {
       cmid = xml_get_attribute(n,"id");
-      if((msg_ind = flt_xmlstorage_get_message_node(msg_elem_index,cmid)) == NULL) {
+      if((msg_ind = flt_xmlstorage_gemessage_t_node(msg_elem_index,cmid)) == NULL) {
         cf_log(CF_ERR|CF_FLSH,__FILE__,__LINE__,"error getting index element in thread %llu, message %llu\n",thread->tid,post->mid);
         exit(-1);
       }
@@ -537,7 +537,7 @@ void flt_xmlstorage_create_threadtree(t_forum *forum,t_thread *thread,t_posting 
 /* }}} */
 
 /* {{{ flt_xmlstorage_handle_header */
-void flt_xmlstorage_handle_header(t_posting *p,GdomeNode *n) {
+void flt_xmlstorage_handle_header(posting_t *p,GdomeNode *n) {
   GdomeException exc;
   u_char *tmp,*ls;
 
@@ -559,7 +559,7 @@ void flt_xmlstorage_handle_header(t_posting *p,GdomeNode *n) {
 
   unsigned long len,i;
 
-  t_posting_flag flag;
+  posting_flag_t flag;
 
   ls = xml_get_attribute(date,"longSec");
   p->date          = strtol(ls,NULL,10);
@@ -626,13 +626,13 @@ void flt_xmlstorage_handle_header(t_posting *p,GdomeNode *n) {
 /* }}} */
 
 /* {{{ flt_xmlstorage_stringify_posting */
-t_posting *flt_xmlstorage_stringify_posting(GdomeDocument *doc1,GdomeElement *t1,GdomeDocument *doc2,GdomeElement *t2,t_posting *p) {
+posting_t *flt_xmlstorage_stringify_posting(GdomeDocument *doc1,GdomeElement *t1,GdomeDocument *doc2,GdomeElement *t2,posting_t *p) {
   int lvl = p->level;
   GdomeException e;
-  t_string mstr;
+  string_t mstr;
 
-  t_cf_list_element *elem;
-  t_posting_flag *flag;
+  cf_list_element_t *elem;
+  posting_flag_t *flag;
 
   GdomeDOMString *str;
   GdomeCDATASection *cd;
@@ -804,7 +804,7 @@ t_posting *flt_xmlstorage_stringify_posting(GdomeDocument *doc1,GdomeElement *t1
   gdome_el_appendChild(header2,(GdomeNode *)flags2,&e);
 
   for(elem=p->flags.elements;elem;elem=elem->next) {
-    flag = (t_posting_flag *)elem->data;
+    flag = (posting_flag_t *)elem->data;
 
     elem1 = xml_create_element(doc1,"Flag");
     xml_set_attribute(elem1,"name",flag->name);
@@ -866,13 +866,13 @@ t_posting *flt_xmlstorage_stringify_posting(GdomeDocument *doc1,GdomeElement *t1
 /* }}} */
 
 /* {{{ flt_xmlstorage_thread2xml */
-GdomeDocument *flt_xmlstorage_thread2xml(GdomeDOMImplementation *impl,GdomeDocument *doc1,t_thread *t) {
+GdomeDocument *flt_xmlstorage_thread2xml(GdomeDOMImplementation *impl,GdomeDocument *doc1,thread_t *t) {
   GdomeException e;
   GdomeDocument *doc2   = xml_create_doc(impl,"Forum",FORUM_DTD);
   GdomeElement *thread1 = xml_create_element(doc1,"Thread");
   GdomeElement *thread2 = xml_create_element(doc2,"Thread");
   GdomeElement *root;
-  t_string str;
+  string_t str;
 
   str_init_growth(&str,10);
   str_char_append(&str,'t');
@@ -900,19 +900,19 @@ GdomeDocument *flt_xmlstorage_thread2xml(GdomeDOMImplementation *impl,GdomeDocum
 /* }}} */
 
 /* {{{ flt_xmlstorage_threadlist_writer */
-int flt_xmlstorage_threadlist_writer(t_forum *forum) {
-  t_thread *t;
+int flt_xmlstorage_threadlist_writer(forum_t *forum) {
+  thread_t *t;
   u_int64_t ltid,lmid;
   u_char buff[256];
   pid_t pid;
 
-  t_name_value *mpath = cfg_get_first_value(&fo_default_conf,forum->name,"MessagePath");
+  name_value_t *mpath = cfg_get_first_value(&fo_default_conf,forum->name,"MessagePath");
 
   GdomeException e;
   GdomeDOMImplementation *impl;
   GdomeDocument *doc,*doc_thread;
   GdomeElement *elm;
-  t_string str;
+  string_t str;
 
   /* we have to fork() because of the fucking memory leaks... */
   pid = fork();
@@ -1009,12 +1009,12 @@ int flt_xmlstorage_threadlist_writer(t_forum *forum) {
 /* }}} */
 
 /* {{{ flt_xmlstorage_archive_threads */
-int flt_xmlstorage_archive_threads(t_forum *forum,t_thread **threads,size_t len) {
+int flt_xmlstorage_archive_threads(forum_t *forum,thread_t **threads,size_t len) {
   pid_t pid;
   size_t i;
 
   u_char buff[512];
-  t_string str;
+  string_t str;
 
   GdomeException e;
   GdomeDOMImplementation *impl;
@@ -1025,7 +1025,7 @@ int flt_xmlstorage_archive_threads(t_forum *forum,t_thread **threads,size_t len)
 
   unsigned long olen = 0;
 
-  t_name_value *path,*mpath;
+  name_value_t *path,*mpath;
 
   pid = fork();
   switch(pid) {
@@ -1106,8 +1106,8 @@ int flt_xmlstorage_archive_threads(t_forum *forum,t_thread **threads,size_t len)
 /* }}} */
 
 /* {{{ flt_xmlstorage_remove_thread */
-int flt_xmlstorage_remove_thread(t_forum *forum,t_thread *thr) {
-  t_name_value *mpath = cfg_get_first_value(&fo_default_conf,forum->name,"MessagePath");
+int flt_xmlstorage_remove_thread(forum_t *forum,thread_t *thr) {
+  name_value_t *mpath = cfg_get_first_value(&fo_default_conf,forum->name,"MessagePath");
   u_char buff[512];
 
   snprintf(buff,512,"%s/t%llu.xml",mpath->values[0],thr->tid);
@@ -1117,13 +1117,13 @@ int flt_xmlstorage_remove_thread(t_forum *forum,t_thread *thr) {
 }
 /* }}} */
 
-t_conf_opt flt_xmlstorage_config[] = {
+conf_opt_t flt_xmlstorage_config[] = {
   { "MessagePath", handle_command, CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_default_conf },
   { "ArchivePath", handle_command, CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_default_conf },
   { NULL, NULL, 0, NULL }
 };
 
-t_handler_config flt_xmlstorage_handlers[] = {
+handler_config_t flt_xmlstorage_handlers[] = {
   { DATA_LOADING_HANDLER,   flt_xmlstorage_make_forumtree },
   { THRDLST_WRITE_HANDLER,  flt_xmlstorage_threadlist_writer },
   { ARCHIVE_THREAD_HANDLER, flt_xmlstorage_archive_threads },
@@ -1131,7 +1131,7 @@ t_handler_config flt_xmlstorage_handlers[] = {
   { 0, NULL }
 };
 
-t_module_config flt_xmlstorage = {
+module_config_t flt_xmlstorage = {
   MODULE_MAGIC_COOKIE,
   flt_xmlstorage_config,
   flt_xmlstorage_handlers,

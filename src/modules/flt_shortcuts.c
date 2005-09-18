@@ -76,7 +76,7 @@ static flt_shortcuts_t flt_shortcuts_postingtable[] = {
 static u_char *flt_shortcuts_fn = NULL;
 
 /* {{{ flt_shortcuts_sc_to_js */
-void flt_shortcuts_sc_to_js(t_string *js,flt_shortcuts_t *cut) {
+void flt_shortcuts_sc_to_js(string_t *js,flt_shortcuts_t *cut) {
   int first = 0;
 
   str_chars_append(js,"register_keybinding(flt_shortcuts_keystable,'",45);
@@ -109,9 +109,9 @@ void flt_shortcuts_sc_to_js(t_string *js,flt_shortcuts_t *cut) {
 /* }}} */
 
 /* {{{ flt_shortcuts_threadlist */
-int flt_shortcuts_threadlist(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cf_template *begin,t_cf_template *end) {
+int flt_shortcuts_threadlist(cf_hash_t *head,configuration_t *dc,configuration_t *vc,cf_template_t *begin,cf_template_t *end) {
   int i = 0;
-  t_string jscode;
+  string_t jscode;
 
   if(flt_shortcuts_activate == 0) return FLT_DECLINE;
 
@@ -133,9 +133,9 @@ int flt_shortcuts_threadlist(t_cf_hash *head,t_configuration *dc,t_configuration
 /* }}} */
 
 /* {{{ flt_shortcuts_posting */
-int flt_shortcuts_posting(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cl_thread *thr,t_cf_template *tpl) {
+int flt_shortcuts_posting(cf_hash_t *head,configuration_t *dc,configuration_t *vc,cl_thread_t *thr,cf_template_t *tpl) {
   int i = 0;
-  t_string jscode;
+  string_t jscode;
 
   if(flt_shortcuts_activate == 0) return FLT_DECLINE;
 
@@ -197,7 +197,7 @@ void flt_shortcuts_parser(const u_char *text,flt_shortcuts_t *shortcut) {
 /* }}} */
 
 /* {{{ flt_shortcuts_handle */
-int flt_shortcuts_handle(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
+int flt_shortcuts_handle(configfile_t *cfile,conf_opt_t *opt,const u_char *context,u_char **args,size_t argnum) {
   size_t i;
 
   if(flt_shortcuts_fn == NULL) flt_shortcuts_fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
@@ -231,20 +231,20 @@ int flt_shortcuts_handle(t_configfile *cfile,t_conf_opt *opt,const u_char *conte
 }
 /* }}} */
 
-t_conf_opt flt_shortcuts_config[] = {
+conf_opt_t flt_shortcuts_config[] = {
   { "ShortcutsActivate",    flt_shortcuts_handle, CFG_OPT_USER|CFG_OPT_CONFIG|CFG_OPT_LOCAL, NULL },
   { "ShortcutsThreadlist",  flt_shortcuts_handle, CFG_OPT_USER|CFG_OPT_CONFIG|CFG_OPT_LOCAL, NULL },
   { "ShortcutsPosting",     flt_shortcuts_handle, CFG_OPT_USER|CFG_OPT_CONFIG|CFG_OPT_LOCAL, NULL },
   { NULL, NULL, 0, NULL }
 };
 
-t_handler_config flt_shortcuts_handlers[] = {
+handler_config_t flt_shortcuts_handlers[] = {
   { VIEW_INIT_HANDLER, flt_shortcuts_threadlist },
   { POSTING_HANDLER,   flt_shortcuts_posting },
   { 0, NULL }
 };
 
-t_module_config flt_shortcuts = {
+module_config_t flt_shortcuts = {
   MODULE_MAGIC_COOKIE,
   flt_shortcuts_config,
   flt_shortcuts_handlers,

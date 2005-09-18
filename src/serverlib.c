@@ -62,10 +62,10 @@
 
 /* {{{ cf_setup_shared_mem */
 #ifdef CF_SHARED_MEM
-void cf_setup_shared_mem(t_forum *forum) {
+void cf_setup_shared_mem(forum_t *forum) {
   union semun smn;
   unsigned short x = 0;
-  t_name_value *v = cfg_get_first_value(&fo_default_conf,forum->name,"SharedMemIds");
+  name_value_t *v = cfg_get_first_value(&fo_default_conf,forum->name,"SharedMemIds");
 
   if((forum->shm.sem = semget(atoi(v->values[2]),1,S_IRWXU|S_IRWXG|S_IRWXO|IPC_CREAT)) == -1) {
     cf_log(CF_ERR,__FILE__,__LINE__,"semget: %s\n",strerror(errno));
@@ -93,8 +93,8 @@ void cf_setup_shared_mem(t_forum *forum) {
 /* }}} */
 
 /* {{{ cf_register_forum */
-t_forum *cf_register_forum(const u_char *name) {
-  t_forum *forum = fo_alloc(NULL,1,sizeof(*forum),FO_ALLOC_MALLOC);
+forum_t *cf_register_forum(const u_char *name) {
+  forum_t *forum = fo_alloc(NULL,1,sizeof(*forum),FO_ALLOC_MALLOC);
 
   forum->name = strdup(name);
   forum->cache.fresh = forum->locked = 0;
@@ -135,7 +135,7 @@ t_forum *cf_register_forum(const u_char *name) {
 /* }}} */
 
 /* {{{ cf_destroy_forum */
-void cf_destroy_forum(t_forum *forum) {
+void cf_destroy_forum(forum_t *forum) {
   #ifdef CF_SHARED_MEM
   int i;
   #endif
@@ -176,7 +176,7 @@ void cf_destroy_forum(t_forum *forum) {
 void cf_log(int mode,const u_char *file,unsigned int line,const u_char *format, ...) {
   u_char str[300];
   int status;
-  t_name_value *v;
+  name_value_t *v;
   time_t t;
   struct tm *tm;
   int sz;
@@ -254,11 +254,11 @@ void cf_log(int mode,const u_char *file,unsigned int line,const u_char *format, 
 /* }}} */
 
 /* {{{ cf_load_data */
-int cf_load_data(t_forum *forum) {
+int cf_load_data(forum_t *forum) {
   int ret = FLT_DECLINE;
   size_t i;
-  t_data_loading_filter fkt;
-  t_handler_config *handler;
+  data_loading_filter_t fkt;
+  handler_config_t *handler;
 
   /* all references to this thread are released, so run the archiver plugins */
   if(Modules[DATA_LOADING_HANDLER].elements) {
@@ -266,7 +266,7 @@ int cf_load_data(t_forum *forum) {
 
     for(i=0;i<Modules[DATA_LOADING_HANDLER].elements && ret == FLT_DECLINE;i++) {
       handler = array_element_at(&Modules[DATA_LOADING_HANDLER],i);
-      fkt     = (t_data_loading_filter)handler->func;
+      fkt     = (data_loading_filter_t)handler->func;
       ret     = fkt(forum);
     }
   }
@@ -276,7 +276,7 @@ int cf_load_data(t_forum *forum) {
 /* }}} */
 
 /* {{{ cf_cleanup_posting */
-void cf_cleanup_posting(t_posting *p) {
+void cf_cleanup_posting(posting_t *p) {
   if(p->user.name.len)  str_cleanup(&p->user.name);
   if(p->subject.len)    str_cleanup(&p->subject);
   if(p->unid.len)       str_cleanup(&p->unid);
@@ -293,8 +293,8 @@ void cf_cleanup_posting(t_posting *p) {
 /* }}} */
 
 /* {{{ cf_cleanup_thread */
-void cf_cleanup_thread(t_thread *t) {
-  t_posting *p,*p1;
+void cf_cleanup_thread(thread_t *t) {
+  posting_t *p,*p1;
 
   for(p=t->postings;p;p=p1) {
     cf_cleanup_posting(p);
@@ -308,8 +308,8 @@ void cf_cleanup_thread(t_thread *t) {
 /* }}} */
 
 /* {{{ cf_cleanup_forumtree */
-void cf_cleanup_forumtree(t_forum *forum) {
-  t_thread *t,*t1;
+void cf_cleanup_forumtree(forum_t *forum) {
+  thread_t *t,*t1;
 
   for(t=forum->threads.list;t;t=t1) {
     cf_cleanup_thread(t);
@@ -322,8 +322,8 @@ void cf_cleanup_forumtree(t_forum *forum) {
 /* {{{ cf_periodical_worker */
 void *cf_periodical_worker(void *arg) {
   unsigned long rs = 0;
-  t_cf_list_element *elem;
-  t_periodical *per;
+  cf_list_element_t *elem;
+  periodical_t *per;
 
   cf_log(CF_DBG|CF_FLSH,__FILE__,__LINE__,"Periodical worker startet...\n");
 
@@ -332,7 +332,7 @@ void *cf_periodical_worker(void *arg) {
     ++rs;
 
     for(elem=head.periodicals.elements;elem;elem=elem->next) {
-      per = (t_periodical *)elem->data;
+      per = (periodical_t *)elem->data;
       if(rs % per->periode == 0 && rs >= per->periode) per->worker();
     }
 
@@ -340,7 +340,7 @@ void *cf_periodical_worker(void *arg) {
   }
 
   for(elem=head.periodicals.elements;elem;elem=elem->next) {
-    per = (t_periodical *)elem->data;
+    per = (periodical_t *)elem->data;
     per->worker();
   }
 
@@ -360,10 +360,10 @@ void cf_io_worker(void) {
 
 /* {{{ cf_worker */
 void *cf_worker(void *arg) {
-  t_cf_list_element *selfelem,*lclient;
+  cf_list_element_t *selfelem,*lclient;
   pthread_t thread,self;
   struct timespec timeout;
-  t_cf_client *client;
+  cf_client_t *client;
 
 
   /* {{{ get our list element */
@@ -418,7 +418,7 @@ void *cf_worker(void *arg) {
 
         CF_UM(&head.clients.lock);
 
-        client = (t_cf_client *)lclient->data;
+        client = (cf_client_t *)lclient->data;
         if(client->worker) client->worker(client->sock);
         else {
           cf_log(CF_ERR,__FILE__,__LINE__,"Client without worker?!\n");
@@ -442,7 +442,7 @@ void *cf_worker(void *arg) {
 /* {{{ cf_setup_socket */
 int cf_setup_socket(struct sockaddr_un *addr) {
   int sock;
-  t_name_value *sockpath = cfg_get_first_value(&fo_default_conf,NULL,"SocketName");
+  name_value_t *sockpath = cfg_get_first_value(&fo_default_conf,NULL,"SocketName");
 
   if((sock = socket(AF_LOCAL,SOCK_STREAM,0)) == -1) {
     cf_log(CF_ERR,__FILE__,__LINE__,"socket: %s\n",strerror(errno));
@@ -479,8 +479,8 @@ int cf_setup_socket(struct sockaddr_un *addr) {
 /* }}} */
 
 /* {{{ cf_push_server */
-void cf_push_server(int sockfd,struct sockaddr *addr,size_t size,t_worker handler) {
-  t_server srv;
+void cf_push_server(int sockfd,struct sockaddr *addr,size_t size,worker_t handler) {
+  server_t srv;
 
   srv.sock   = sockfd;
   srv.size   = size;
@@ -494,10 +494,10 @@ void cf_push_server(int sockfd,struct sockaddr *addr,size_t size,t_worker handle
 /* }}} */
 
 /* {{{ cf_push_client */
-int cf_push_client(int connfd,t_worker handler,int spare_threads,int max_threads,pthread_attr_t *attr) {
+int cf_push_client(int connfd,worker_t handler,int spare_threads,int max_threads,pthread_attr_t *attr) {
   int status,num;
   pthread_t thread;
-  t_cf_client client;
+  cf_client_t client;
 
   client.worker = handler;
   client.sock   = connfd;
@@ -551,7 +551,7 @@ int cf_push_client(int connfd,t_worker handler,int spare_threads,int max_threads
 /* }}} */
 
 /* {{{ cf_register_protocol_handler */
-int cf_register_protocol_handler(u_char *handler_hook,t_server_protocol_handler handler) {
+int cf_register_protocol_handler(u_char *handler_hook,server_protocol_handler_t handler) {
   CF_RW_WR(&head.lock);
 
   if(head.protocol_handlers == NULL) {
@@ -573,7 +573,7 @@ int cf_register_protocol_handler(u_char *handler_hook,t_server_protocol_handler 
 /* }}} */
 
 /* {{{ cf_register_thread */
-void cf_register_thread(t_forum *forum,t_thread *t) {
+void cf_register_thread(forum_t *forum,thread_t *t) {
   CF_RW_WR(&forum->threads.lock);
   if(!forum->threads.threads) forum->threads.threads = cf_hash_new(NULL);
 
@@ -584,7 +584,7 @@ void cf_register_thread(t_forum *forum,t_thread *t) {
 /* }}} */
 
 /* {{{ cf_unregister_thread */
-void cf_unregister_thread(t_forum *forum,t_thread *t) {
+void cf_unregister_thread(forum_t *forum,thread_t *t) {
   cf_log(CF_DBG,__FILE__,__LINE__,"unregistering thread %llu...\n",t->tid);
 
   CF_RW_WR(&forum->threads.lock);
@@ -594,7 +594,7 @@ void cf_unregister_thread(t_forum *forum,t_thread *t) {
 /* }}} */
 
 /* {{{ cf_remove_thread */
-void cf_remove_thread(t_forum *forum,t_thread *t) {
+void cf_remove_thread(forum_t *forum,thread_t *t) {
   CF_RW_WR(&t->lock);
   if(t->prev) {
     CF_RW_WR(&t->prev->lock);
@@ -661,8 +661,8 @@ void cf_cftp_handler(int sockfd) {
   rline_t      *tsd        = fo_alloc(NULL,1,sizeof(*tsd),FO_ALLOC_CALLOC);
   u_char *line  = NULL,**tokens;
   int   locked = 0,tnum = 0;
-  t_forum *forum = NULL;
-  t_server_protocol_handler handler;
+  forum_t *forum = NULL;
+  server_protocol_handler_t handler;
   int ret;
 
 
@@ -726,8 +726,8 @@ void cf_cftp_handler(int sockfd) {
           /* {{{ delete a thread */
           else if(cf_strcmp(tokens[0],"DELETE") == 0) {
             u_int64_t tid,mid;
-            t_thread *t;
-            t_posting *p;
+            thread_t *t;
+            posting_t *p;
             int lvl;
             u_char *ln = readline(sockfd,tsd);
 
@@ -783,8 +783,8 @@ void cf_cftp_handler(int sockfd) {
           /* {{{ undelete a thread */
           else if(cf_strcmp(tokens[0],"UNDELETE") == 0) {
             u_int64_t tid,mid;
-            t_thread *t;
-            t_posting *p;
+            thread_t *t;
+            posting_t *p;
             int lvl;
             u_char *ln = readline(sockfd,tsd);
 
@@ -910,8 +910,8 @@ void cf_cftp_handler(int sockfd) {
 /* }}} */
 
 /* {{{ cf_get_posting */
-t_posting *cf_get_posting(t_thread *t,u_int64_t mid) {
-  t_posting *p;
+posting_t *cf_get_posting(thread_t *t,u_int64_t mid) {
+  posting_t *p;
 
   CF_RW_RD(&t->lock);
 
@@ -924,8 +924,8 @@ t_posting *cf_get_posting(t_thread *t,u_int64_t mid) {
 /* }}} */
 
 /* {{{ cf_get_thread */
-t_thread *cf_get_thread(t_forum *forum,u_int64_t tid) {
-  t_thread **t = NULL;
+thread_t *cf_get_thread(forum_t *forum,u_int64_t tid) {
+  thread_t **t = NULL;
 
   CF_RW_RD(&forum->threads.lock);
   if(forum->threads.threads) t = cf_hash_get(forum->threads.threads,(u_char *)&tid,sizeof(tid));
@@ -936,12 +936,12 @@ t_thread *cf_get_thread(t_forum *forum,u_int64_t tid) {
 /* }}} */
 
 /* {{{ cf_get_flag_by_name */
-t_posting_flag *cf_get_flag_by_name(t_cf_list_head *flags,const u_char *name) {
-  t_cf_list_element *elem;
-  t_posting_flag *flag;
+posting_flag_t *cf_get_flag_by_name(cf_list_head_t *flags,const u_char *name) {
+  cf_list_element_t *elem;
+  posting_flag_t *flag;
 
   for(elem=flags->elements;elem;elem=elem->next) {
-    flag = (t_posting_flag *)elem->data;
+    flag = (posting_flag_t *)elem->data;
     if(cf_strcmp(flag->name,name) == 0) return flag;
   }
 
@@ -950,14 +950,14 @@ t_posting_flag *cf_get_flag_by_name(t_cf_list_head *flags,const u_char *name) {
 /* }}} */
 
 /* {{{ cf_send_posting */
-void cf_send_posting(t_forum *forum,int sock,u_int64_t tid,u_int64_t mid,int invisible) {
-  t_thread *t = cf_get_thread(forum,tid);
-  t_posting *p = NULL;
-  t_string bff;
+void cf_send_posting(forum_t *forum,int sock,u_int64_t tid,u_int64_t mid,int invisible) {
+  thread_t *t = cf_get_thread(forum,tid);
+  posting_t *p = NULL;
+  string_t bff;
   int first = 1;
 
-  t_cf_list_element *elem;
-  t_posting_flag *flag;
+  cf_list_element_t *elem;
+  posting_flag_t *flag;
 
   if(!t) {
     writen(sock,"404 Thread not found\n",21);
@@ -1010,7 +1010,7 @@ void cf_send_posting(t_forum *forum,int sock,u_int64_t tid,u_int64_t mid,int inv
 
     /* {{{ serialize flags */
     for(elem=p->flags.elements;elem;elem=elem->next) {
-      flag = (t_posting_flag *)elem->data;
+      flag = (posting_flag_t *)elem->data;
       str_chars_append(&bff,"Flag:",5);
       str_chars_append(&bff,flag->name,strlen(flag->name));
       str_char_append(&bff,'=');
@@ -1084,11 +1084,11 @@ void cf_send_posting(t_forum *forum,int sock,u_int64_t tid,u_int64_t mid,int inv
 /* }}} */
 
 /* {{{ cf_read_posting */
-int cf_read_posting(t_forum *forum,t_posting *p,int sock,rline_t *tsd) {
+int cf_read_posting(forum_t *forum,posting_t *p,int sock,rline_t *tsd) {
   u_char *line = NULL;
   u_char *ptr;
   unsigned long llen;
-  t_posting_flag flag;
+  posting_flag_t flag;
 
   do {
     line = readline(sock,tsd);
@@ -1168,11 +1168,11 @@ int cf_read_posting(t_forum *forum,t_posting *p,int sock,rline_t *tsd) {
 /* }}} */
 
 /* {{{ cf_remove_flags */
-int cf_remove_flags(int sockfd,rline_t *tsd,t_posting *p1) {
+int cf_remove_flags(int sockfd,rline_t *tsd,posting_t *p1) {
   size_t len,i;
   u_char *line,**list;
-  t_posting_flag *flagp;
-  t_cf_list_element *elem;
+  posting_flag_t *flagp;
+  cf_list_element_t *elem;
 
   if((line = readline(sockfd,tsd)) != NULL) {
     line[tsd->rl_len-1] = '\0';
@@ -1183,7 +1183,7 @@ int cf_remove_flags(int sockfd,rline_t *tsd,t_posting *p1) {
         cf_log(CF_DBG,__FILE__,__LINE__,"removing flag %s\n",list[i]);
 
         for(elem=p1->flags.elements;elem;elem=elem->next) {
-          flagp = (t_posting_flag *)elem->data;
+          flagp = (posting_flag_t *)elem->data;
           if(cf_strcmp(flagp->name,list[i]) == 0) {
             cf_list_delete(&p1->flags,elem);
 
@@ -1209,9 +1209,9 @@ int cf_remove_flags(int sockfd,rline_t *tsd,t_posting *p1) {
 /* }}} */
 
 /* {{{ cf_read_flags */
-int cf_read_flags(int sockfd,rline_t *tsd,t_posting *p) {
+int cf_read_flags(int sockfd,rline_t *tsd,posting_t *p) {
   u_char *line,*ptr;
-  t_posting_flag flag,*flagp;
+  posting_flag_t flag,*flagp;
 
   while((line = readline(sockfd,tsd)) != NULL) {
     line[tsd->rl_len-1] = '\0';
@@ -1253,7 +1253,7 @@ int cf_read_flags(int sockfd,rline_t *tsd,t_posting *p) {
 
 /* {{{ cf_destroy_flag */
 void cf_destroy_flag(void *data) {
-  t_posting_flag *flag = (t_posting_flag *)data;
+  posting_flag_t *flag = (posting_flag_t *)data;
   free(flag->name);
   free(flag->val);
 }
@@ -1261,12 +1261,12 @@ void cf_destroy_flag(void *data) {
 
 /* {{{ cf_generate_cache */
 void *cf_generate_cache(void *arg) {
-  t_forum *forum = (t_forum *)arg;
-  t_name_value *forums;
+  forum_t *forum = (forum_t *)arg;
+  name_value_t *forums;
   size_t i = 0;
 
 #ifndef CF_SHARED_MEM
-  t_string str1,str2;
+  string_t str1,str2;
 
   /* {{{ make cache for only one forum */
   if(forum) {
@@ -1342,14 +1342,14 @@ void *cf_generate_cache(void *arg) {
 /* }}} */
 
 /* {{{ cf_generate_list */
-void cf_generate_list(t_forum *forum,t_string *str,int del) {
+void cf_generate_list(forum_t *forum,string_t *str,int del) {
   int did = 0;
-  t_thread *t,*t1;
+  thread_t *t,*t1;
   int first;
-  t_posting *p;
+  posting_t *p;
 
-  t_cf_list_element *elem;
-  t_posting_flag *flag;
+  cf_list_element_t *elem;
+  posting_flag_t *flag;
 
   str_chars_append(str,"200 Ok\n",7);
 
@@ -1386,7 +1386,7 @@ void cf_generate_list(t_forum *forum,t_string *str,int del) {
 
       /* {{{ serialize flags */
       for(elem=p->flags.elements;elem;elem=elem->next) {
-        flag = (t_posting_flag *)elem->data;
+        flag = (posting_flag_t *)elem->data;
         str_chars_append(str,"Flag:",5);
         str_chars_append(str,flag->name,strlen(flag->name));
         str_char_append(str,'=');
@@ -1471,15 +1471,15 @@ void *cf_shmat(int shmid,void *addr,int shmflag) {
 /* }}} */
 
 /* {{{ cf_shm_flags ------DEEP MAGIC!-------- */
-void cf_shm_flags(t_posting *p,t_mem_pool *pool) {
-  t_cf_list_element *elem;
+void cf_shm_flags(posting_t *p,mem_pool_t *pool) {
+  cf_list_element_t *elem;
   u_int32_t val = 0;
 
   for(elem=p->flags.elements;elem;elem=elem->next,++val);
   mem_append(pool,&val,sizeof(val));
 
   for(elem=p->flags.elements;elem;elem=elem->next) {
-    t_posting_flag *flag = (t_posting_flag *)elem->data;
+    posting_flag_t *flag = (posting_flag_t *)elem->data;
 
     val = strlen(flag->name);
     mem_append(pool,&val,sizeof(val));
@@ -1493,11 +1493,11 @@ void cf_shm_flags(t_posting *p,t_mem_pool *pool) {
 /* }}} */
 
 /* {{{ cf_generate_shared_memory */
-void cf_generate_shared_memory(t_forum *forum) {
-  t_mem_pool pool;
-  t_thread *t,*t1;
-  t_posting *p;
-  t_name_value *v = cfg_get_first_value(&fo_default_conf,forum->name,"SharedMemIds");
+void cf_generate_shared_memory(forum_t *forum) {
+  mem_pool_t pool;
+  thread_t *t,*t1;
+  posting_t *p;
+  name_value_t *v = cfg_get_first_value(&fo_default_conf,forum->name,"SharedMemIds");
   u_int32_t val;
   time_t tm = time(NULL);
   unsigned short semval;

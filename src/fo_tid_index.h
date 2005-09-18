@@ -27,7 +27,7 @@ typedef struct s_mid_index {
   int32_t month;    /**< month of the index entry */
   u_int64_t start;  /**< start thread id */ 
   u_int64_t end;    /**< end thread id */
-} t_tid_index;
+} tid_index_t;
 
 #endif
 

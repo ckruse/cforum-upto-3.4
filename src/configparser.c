@@ -48,19 +48,19 @@
  *
  ***/
 
-t_configuration fo_default_conf;
-t_configuration fo_server_conf;
-t_configuration fo_view_conf;
-t_configuration fo_arcview_conf;
-t_configuration fo_post_conf;
-t_configuration fo_vote_conf;
-t_configuration fo_feeds_conf;
-t_configuration fo_userconf_conf;
+configuration_t fo_default_conf;
+configuration_t fo_server_conf;
+configuration_t fo_view_conf;
+configuration_t fo_arcview_conf;
+configuration_t fo_post_conf;
+configuration_t fo_vote_conf;
+configuration_t fo_feeds_conf;
+configuration_t fo_userconf_conf;
 
-t_array Modules[MOD_MAX+1];
+array_t Modules[MOD_MAX+1];
 
 /* {{{ forum default config options */
-t_conf_opt default_options[] = {
+conf_opt_t default_options[] = {
   { "ExternCharset",            handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_default_conf },
   { "TemplateMode",             handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_default_conf },
   { "XHTMLMode",                handle_command,   CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_UNIQUE|CFG_OPT_LOCAL, &fo_default_conf },
@@ -102,7 +102,7 @@ t_conf_opt default_options[] = {
 /* }}} */
 
 /* {{{ fo_view config options */
-t_conf_opt fo_view_options[] = {
+conf_opt_t fo_view_options[] = {
   { "DoQuote",                    handle_command,   CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_UNIQUE|CFG_OPT_LOCAL, &fo_view_conf },
   { "QuotingChars",               handle_command,   CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_NEEDED|CFG_OPT_UNIQUE|CFG_OPT_LOCAL, &fo_view_conf },
   { "ReadMode",                   handle_command,   CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_NEEDED|CFG_OPT_UNIQUE|CFG_OPT_LOCAL, &fo_view_conf },
@@ -132,7 +132,7 @@ t_conf_opt fo_view_options[] = {
 /* }}} */
 
 /* {{{ fo_post configuration options */
-t_conf_opt fo_post_options[] = {
+conf_opt_t fo_post_options[] = {
   { "ReadMode",                   handle_command,   CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_NEEDED|CFG_OPT_UNIQUE|CFG_OPT_LOCAL, &fo_post_conf },
 
   { "FieldConfig",               handle_command,   CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_post_conf },
@@ -153,7 +153,7 @@ t_conf_opt fo_post_options[] = {
 /* }}} */
 
 /* {{{ fo_server config options */
-t_conf_opt fo_server_options[] = {
+conf_opt_t fo_server_options[] = {
   { "RunArchiver",          handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_GLOBAL, &fo_server_conf },
   { "ErrorLog",             handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_GLOBAL, &fo_server_conf },
   { "StdLog",               handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_GLOBAL, &fo_server_conf },
@@ -179,7 +179,7 @@ t_conf_opt fo_server_options[] = {
 /* }}} */
 
 /* {{{ fo_arcview viewer options */
-t_conf_opt fo_arcview_options[] = {
+conf_opt_t fo_arcview_options[] = {
   { "SortYearList",            handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL,   &fo_arcview_conf },
   { "SortMonthList",           handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL,   &fo_arcview_conf },
   { "SortThreadList",          handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL,   &fo_arcview_conf },
@@ -201,7 +201,7 @@ t_conf_opt fo_arcview_options[] = {
 /* }}} */
 
 /* {{{ fo_vote options */
-t_conf_opt fo_vote_options[] = {
+conf_opt_t fo_vote_options[] = {
   { "VotingDatabase",  handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL,               &fo_vote_conf },
   { "Send204",         handle_command,   CFG_OPT_UNIQUE|CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL,  &fo_vote_conf },
   { "OkTemplate",      handle_command,   CFG_OPT_CONFIG|CFG_OPT_NEEDED|CFG_OPT_LOCAL,               &fo_vote_conf },
@@ -211,7 +211,7 @@ t_conf_opt fo_vote_options[] = {
 /* }}} */
 
 /* {{{ fo_feeds_options */
-t_conf_opt fo_feeds_options[] = {
+conf_opt_t fo_feeds_options[] = {
   { "DateLocaleEn",         handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_feeds_conf },
   { "AtomTitle",            handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_feeds_conf },
   { "AtomTagline",          handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_feeds_conf },
@@ -228,7 +228,7 @@ t_conf_opt fo_feeds_options[] = {
 /* }}} */
 
 /* {{{ fo_userconf_options */
-t_conf_opt fo_userconf_options[] = {
+conf_opt_t fo_userconf_options[] = {
   { "MinLength",       handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_userconf_conf },
   { "MaxLength",       handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_userconf_conf },
   { "MinVal",          handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_userconf_conf },
@@ -253,10 +253,10 @@ t_conf_opt fo_userconf_options[] = {
  * the pathes to the configuration files
  *
  */
-t_array *get_conf_file(const u_char **which,size_t llen) {
-  t_array *ary = fo_alloc(NULL,1,sizeof(*ary),FO_ALLOC_CALLOC);
+array_t *get_conf_file(const u_char **which,size_t llen) {
+  array_t *ary = fo_alloc(NULL,1,sizeof(*ary),FO_ALLOC_CALLOC);
   u_char *env;
-  t_string file;
+  string_t file;
   size_t len;
   struct stat st;
   size_t i;
@@ -308,7 +308,7 @@ t_array *get_conf_file(const u_char **which,size_t llen) {
 int parse_args(u_char *fname,u_char *line,u_char ***args,int lnum) {
   register u_char *ptr = line;
   int len = -1,run;
-  t_string argument;
+  string_t argument;
 
   *args = NULL;
 
@@ -376,7 +376,7 @@ void destroy_str_ptr(void *tmp) {
 /* }}} */
 
 /* {{{ read_config */
-int read_config(t_configfile *conf,t_take_default deflt,int mode) {
+int read_config(configfile_t *conf,t_take_default deflt,int mode) {
   int fd = open(conf->filename,O_RDONLY);
   u_char *buff,buff1[512];
   u_char *ptr,*ptr1;
@@ -384,15 +384,15 @@ int read_config(t_configfile *conf,t_take_default deflt,int mode) {
   u_char *directive_name;
   u_char **args;
   int i,found,fatal = 0;
-  t_conf_opt *opt;
+  conf_opt_t *opt;
   unsigned int linenum = 0;
   int argnum;
-  t_cf_list_element *lelem;
+  cf_list_element_t *lelem;
   u_char *context = NULL;
-  t_string mpath;
+  string_t mpath;
   size_t len,j;
-  t_cf_hash *hsh;
-  t_array ary;
+  cf_hash_t *hsh;
+  array_t ary;
   int noload = mode & CFG_MODE_NOLOAD;
 
   mode &= ~CFG_MODE_NOLOAD;
@@ -691,7 +691,7 @@ int read_config(t_configfile *conf,t_take_default deflt,int mode) {
 
   if(mode != CFG_MODE_USER) {
     for(lelem=conf->options_list.elements;lelem;lelem = lelem->next) {
-      opt = (t_conf_opt *)lelem->data;
+      opt = (conf_opt_t *)lelem->data;
       if(opt->flags & CFG_OPT_NEEDED) {
         if(opt->flags & mode) {
           /* ah, this directive has to be in every context */
@@ -726,19 +726,19 @@ int read_config(t_configfile *conf,t_take_default deflt,int mode) {
 /* }}} */
 
 /* {{{ cfg_compare */
-int cfg_compare(t_cf_tree_dataset *dt1,t_cf_tree_dataset *dt2) {
+int cfg_compare(cf_tree_dataset_t *dt1,cf_tree_dataset_t *dt2) {
   return strcmp(dt1->key,dt2->key);
 }
 /* }}} */
 
 /* {{{ add_module */
-int add_module(t_configfile *cfile,const u_char *path,const u_char *name) {
-  t_array *modules = Modules;
+int add_module(configfile_t *cfile,const u_char *path,const u_char *name) {
+  array_t *modules = Modules;
   void *mod = dlopen(path,RTLD_LAZY);
   void *mod_cfg_p;
   char *error;
-  t_module module = { NULL, NULL, NULL };
-  t_module_config *mod_cfg;
+  module_t module = { NULL, NULL, NULL };
+  module_config_t *mod_cfg;
   int i;
 
 
@@ -746,7 +746,7 @@ int add_module(t_configfile *cfile,const u_char *path,const u_char *name) {
     mod_cfg_p = dlsym(mod,name);
 
     if((error = (u_char *)dlerror()) == NULL) {
-      mod_cfg = (t_module_config *)mod_cfg_p;
+      mod_cfg = (module_config_t *)mod_cfg_p;
 
       if(!mod_cfg_p) {
         fprintf(stderr,"ERROR: cannot load plugin configuration!\n");
@@ -773,7 +773,7 @@ int add_module(t_configfile *cfile,const u_char *path,const u_char *name) {
       if(mod_cfg->cfgopts) cfg_register_options(cfile,mod_cfg->cfgopts);
 
       /* register the module in the module list */
-      if(!modules[0].element_size) array_init(&modules[0],sizeof(t_module),cfg_destroy_module);
+      if(!modules[0].element_size) array_init(&modules[0],sizeof(module_t),cfg_destroy_module);
 
       module.module = mod;
       module.cfg    = mod_cfg;
@@ -782,7 +782,7 @@ int add_module(t_configfile *cfile,const u_char *path,const u_char *name) {
 
       /* register all handlers */
       for(i=0;mod_cfg->handlers[i].handler;i++) {
-        if(!modules[mod_cfg->handlers[i].handler].element_size) array_init(&modules[mod_cfg->handlers[i].handler],sizeof(t_handler_config),NULL);
+        if(!modules[mod_cfg->handlers[i].handler].element_size) array_init(&modules[mod_cfg->handlers[i].handler],sizeof(handler_config_t),NULL);
 
         array_push(&modules[mod_cfg->handlers[i].handler],&mod_cfg->handlers[i]);
       }
@@ -804,7 +804,7 @@ int add_module(t_configfile *cfile,const u_char *path,const u_char *name) {
 
 /* {{{ destroy_directive */
 void destroy_directive(void *arg) {
-  t_name_value *val = (t_name_value *)arg;
+  name_value_t *val = (name_value_t *)arg;
   size_t i;
 
   free(val->name);
@@ -814,8 +814,8 @@ void destroy_directive(void *arg) {
 /* }}} */
 
 /* {{{ destroy_directive_list */
-void destroy_directive_list(t_cf_tree_dataset *dt) {
-  t_cf_list_head *head = (t_cf_list_head *)dt->data;
+void destroy_directive_list(cf_tree_dataset_t *dt) {
+  cf_list_head_t *head = (cf_list_head_t *)dt->data;
 
   cf_list_destroy(head,destroy_directive);
 
@@ -826,7 +826,7 @@ void destroy_directive_list(t_cf_tree_dataset *dt) {
 
 /* {{{ destroy_forums_list */
 void destroy_forums_list(void *data) {
-  t_internal_config *config = (t_internal_config *)data;
+  internal_config_t *config = (internal_config_t *)data;
 
   free(config->name);
   cf_tree_destroy(&config->directives);
@@ -835,16 +835,16 @@ void destroy_forums_list(void *data) {
 /* }}} */
 
 /* {{{ handle_command */
-int handle_command(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
-  t_configuration *conf = (t_configuration *)opt->data;
-  t_name_value tmp,*tmp1;
-  t_cf_tree_dataset dt;
-  t_cf_tree *tr;
-  const t_cf_tree_dataset *dt1;
-  t_cf_list_head *head;
+int handle_command(configfile_t *cfile,conf_opt_t *opt,const u_char *context,u_char **args,size_t argnum) {
+  configuration_t *conf = (configuration_t *)opt->data;
+  name_value_t tmp,*tmp1;
+  cf_tree_dataset_t dt;
+  cf_tree_t *tr;
+  const cf_tree_dataset_t *dt1;
+  cf_list_head_t *head;
   size_t i;
-  t_cf_list_element *elem;
-  t_internal_config *icfg = NULL;
+  cf_list_element_t *elem;
+  internal_config_t *icfg = NULL;
 
   tmp.values = args;
   tmp.valnum = argnum;
@@ -854,7 +854,7 @@ int handle_command(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_c
 
   if(context) {
     for(elem=conf->forums.elements;elem;elem=elem->next,icfg=NULL) {
-      icfg = (t_internal_config *)elem->data;
+      icfg = (internal_config_t *)elem->data;
       if(cf_strcmp(icfg->name,context) == 0) break;
     }
 
@@ -900,7 +900,7 @@ int handle_command(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_c
 /* }}} */
 
 /* {{{ cfg_cleanup */
-void cfg_cleanup(t_configuration *cfg) {
+void cfg_cleanup(configuration_t *cfg) {
   cf_tree_destroy(&cfg->global_directives);
   cf_list_destroy(&cfg->forums,destroy_forums_list);
 }
@@ -908,7 +908,7 @@ void cfg_cleanup(t_configuration *cfg) {
 
 /* {{{ cfg_destroy_module */
 void cfg_destroy_module(void *element) {
-  t_module *mod = (t_module *)element;
+  module_t *mod = (module_t *)element;
 
   if(mod->module) {
     if(mod->cfg->finish) mod->cfg->finish();
@@ -920,12 +920,12 @@ void cfg_destroy_module(void *element) {
 /* {{{ cleanup_modules
  * Returns: nothing
  * Parameters:
- *   - t_module *mod   the module structure
+ *   - module_t *mod   the module structure
  *
  * this function cleans up the modules
  *
  */
-void cleanup_modules(t_array *modules) {
+void cleanup_modules(array_t *modules) {
   int i;
 
   for(i=0;i<=MOD_MAX;++i) {
@@ -935,19 +935,19 @@ void cleanup_modules(t_array *modules) {
 /* }}} */
 
 /* {{{ cfg_get_first_value */
-t_name_value *cfg_get_first_value(t_configuration *cfg,const u_char *context,const u_char *name) {
-  const t_cf_tree_dataset *dt;
-  t_cf_tree_dataset dt1;
-  t_cf_list_head *head;
-  t_cf_tree *tr;
-  t_cf_list_element *elem;
-  t_internal_config *icfg = NULL;
+name_value_t *cfg_get_first_value(configuration_t *cfg,const u_char *context,const u_char *name) {
+  const cf_tree_dataset_t *dt;
+  cf_tree_dataset_t dt1;
+  cf_list_head_t *head;
+  cf_tree_t *tr;
+  cf_list_element_t *elem;
+  internal_config_t *icfg = NULL;
 
   dt1.key = (void *)name;
 
   if(context) {
     for(elem=cfg->forums.elements;elem;elem=elem->next,icfg=NULL) {
-      icfg = (t_internal_config *)elem->data;
+      icfg = (internal_config_t *)elem->data;
       if(cf_strcmp(icfg->name,context) == 0) break;
     }
 
@@ -968,18 +968,18 @@ t_name_value *cfg_get_first_value(t_configuration *cfg,const u_char *context,con
 /* }}} */
 
 /* {{{ cfg_get_value */
-t_cf_list_head *cfg_get_value(t_configuration *cfg,const u_char *context,const u_char *name) {
-  const t_cf_tree_dataset *dt;
-  t_cf_tree_dataset dt1;
-  t_cf_list_element *elem;
-  t_internal_config *icfg = NULL;
-  t_cf_tree *tr;
+cf_list_head_t *cfg_get_value(configuration_t *cfg,const u_char *context,const u_char *name) {
+  const cf_tree_dataset_t *dt;
+  cf_tree_dataset_t dt1;
+  cf_list_element_t *elem;
+  internal_config_t *icfg = NULL;
+  cf_tree_t *tr;
 
   dt1.key = (void *)name;
 
   if(context) {
     for(elem=cfg->forums.elements;elem;elem=elem->next,icfg=NULL) {
-      icfg = (t_internal_config *)elem->data;
+      icfg = (internal_config_t *)elem->data;
       if(cf_strcmp(icfg->name,context) == 0) break;
     }
 
@@ -996,7 +996,7 @@ t_cf_list_head *cfg_get_value(t_configuration *cfg,const u_char *context,const u
 /* }}} */
 
 /* {{{ cfg_init_file */
-void cfg_init_file(t_configfile *conf,u_char *filename) {
+void cfg_init_file(configfile_t *conf,u_char *filename) {
   conf->filename = strdup(filename);
   conf->options  = cf_hash_new(NULL);
   cf_list_init(&conf->options_list);
@@ -1004,7 +1004,7 @@ void cfg_init_file(t_configfile *conf,u_char *filename) {
 /* }}} */
 
 /* {{{ cfg_register_options */
-int cfg_register_options(t_configfile *conf,t_conf_opt *opts) {
+int cfg_register_options(configfile_t *conf,conf_opt_t *opts) {
   int i;
 
   for(i=0;opts[i].name;i++) {
@@ -1028,7 +1028,7 @@ int cfg_register_options(t_configfile *conf,t_conf_opt *opts) {
 /* }}} */
 
 /* {{{ cfg_cleanup_file */
-void cfg_cleanup_file(t_configfile *conf) {
+void cfg_cleanup_file(configfile_t *conf) {
   cf_hash_destroy(conf->options);
   cf_list_destroy(&conf->options_list,NULL);
   free(conf->filename);

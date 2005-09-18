@@ -103,10 +103,10 @@ int flt_extern_set_us_up_the_socket(struct sockaddr_in *addr) {
 /* }}} */
 
 /* {{{ flt_extern_send_list */
-void flt_extern_send_list(t_forum *forum,int sock,time_t date) {
-  t_string str;
-  t_thread *t,*t1;
-  t_posting *p;
+void flt_extern_send_list(forum_t *forum,int sock,time_t date) {
+  string_t str;
+  thread_t *t,*t1;
+  posting_t *p;
   char buff[256];
   size_t n;
   int first;
@@ -196,10 +196,10 @@ void flt_extern_handle_request(int sock) {
   int selected = 0;
   u_int64_t tid,mid;
   u_char buff[256];
-  t_string str;
-  t_thread *t,*t1;
-  t_posting *p;
-  t_forum *forum = NULL;
+  string_t str;
+  thread_t *t,*t1;
+  posting_t *p;
+  forum_t *forum = NULL;
 
   size_t len;
 
@@ -357,7 +357,7 @@ void flt_extern_cleanup(void) {
 }
 
 /* {{{ flt_extern_handle */
-int flt_extern_handle(t_configfile *cf,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
+int flt_extern_handle(configfile_t *cf,conf_opt_t *opt,const u_char *context,u_char **args,size_t argnum) {
   if(cf_strcmp(opt->name,"ExternPort") == 0)           Extern_port      = atoi(args[0]);
   else if(cf_strcmp(opt->name,"ExternInterface") == 0) Extern_interface = strdup(args[0]);
 
@@ -365,18 +365,18 @@ int flt_extern_handle(t_configfile *cf,t_conf_opt *opt,const u_char *context,u_c
 }
 /* }}} */
 
-t_conf_opt flt_extern_config[] = {
+conf_opt_t flt_extern_config[] = {
   { "ExternPort",      flt_extern_handle, CFG_OPT_CONFIG|CFG_OPT_NEEDED|CFG_OPT_GLOBAL, NULL },
   { "ExternInterface", flt_extern_handle, CFG_OPT_CONFIG|CFG_OPT_GLOBAL,                NULL },
   { NULL, NULL, 0, NULL }
 };
 
-t_handler_config flt_extern_handlers[] = {
+handler_config_t flt_extern_handlers[] = {
   { INIT_HANDLER,            flt_extern_register_server   },
   { 0, NULL }
 };
 
-t_module_config flt_extern = {
+module_config_t flt_extern = {
   MODULE_MAGIC_COOKIE,
   flt_extern_config,
   flt_extern_handlers,

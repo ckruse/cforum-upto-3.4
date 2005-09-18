@@ -10,11 +10,11 @@ EXTRA_DIST=HTTPAuth.pm \
 	Setvalue.pm
 
 install-data-local:
-	if test ! -d $(libdir)/cforum/Plugins; then \
-		$(MKDIR) -p $(libdir)/cforum/Plugins; \
+	if test ! -d $(DESTDIR)$(pkglibdir)/Plugins; then \
+		$(MKDIR) -p $(DESTDIR)$(pkglibdir)/Plugins; \
 	fi; \
 	for file in $(EXTRA_DIST); do \
-	  $(INSTALL_DATA) $$file $(libdir)/cforum/Plugins/$$file; \
+	  $(INSTALL_DATA) $$file $(DESTDIR)$(pkglibdir)/Plugins/$$file; \
 	done
 
 

@@ -34,7 +34,7 @@
 #ifndef DOXYGEN
 /* {{{ cf_tpl_cleanup_var */
 void cf_tpl_cleanup_var(void *data) {
-  t_cf_tpl_variable *v = (t_cf_tpl_variable *)data;
+  cf_tpl_variable_t *v = (cf_tpl_variable_t *)data;
 
   cf_tpl_var_destroy(v);
 }
@@ -42,7 +42,7 @@ void cf_tpl_cleanup_var(void *data) {
 #endif
 
 /* {{{ cf_tpl_init */
-int cf_tpl_init(t_cf_template *tpl,const u_char *fname) {
+int cf_tpl_init(cf_template_t *tpl,const u_char *fname) {
   if(fname) {
     if((tpl->tpl = dlopen(fname,RTLD_LAZY)) == NULL) {
       fprintf(stderr,"%s\n",dlerror());
@@ -65,10 +65,10 @@ int cf_tpl_init(t_cf_template *tpl,const u_char *fname) {
 /* }}} */
 
 /* {{{ cf_tpl_copyvars */
-void cf_tpl_copyvars(t_cf_template *dst,t_cf_template *src, int clone) {
-  t_cf_tpl_variable *tmp_var;
+void cf_tpl_copyvars(cf_template_t *dst,cf_template_t *src, int clone) {
+  cf_tpl_variable_t *tmp_var;
   long is_arrayref;
-  t_cf_hash_keylist *key;
+  cf_hash_t_keylist *key;
 
   for(key=src->varlist->keys.elems;key;key=key->next) {
     if((tmp_var = cf_hash_get(src->varlist,key->key,strlen(key->key))) == NULL) continue;
@@ -90,13 +90,13 @@ void cf_tpl_copyvars(t_cf_template *dst,t_cf_template *src, int clone) {
 /* }}} */
 
 /* {{{ cf_tpl_setvar */
-void cf_tpl_setvar(t_cf_template *tpl,const u_char *vname,t_cf_tpl_variable *var) {
+void cf_tpl_setvar(cf_template_t *tpl,const u_char *vname,cf_tpl_variable_t *var) {
   int tmp = 0;
 
   if(var->temporary) tmp = 1;
 
   var->temporary = 0;
-  cf_hash_set(tpl->varlist,(u_char *)vname,strlen(vname),var,sizeof(t_cf_tpl_variable));
+  cf_hash_set(tpl->varlist,(u_char *)vname,strlen(vname),var,sizeof(cf_tpl_variable_t));
 
   // cleanup if it's temporary
   if(tmp) free(var); // don't destroy the var, only free it
@@ -104,12 +104,12 @@ void cf_tpl_setvar(t_cf_template *tpl,const u_char *vname,t_cf_tpl_variable *var
 /* }}} */
 
 /* {{{ cf_tpl_setvalue */
-void cf_tpl_setvalue(t_cf_template *tpl,const u_char *vname,unsigned short type,...) {
+void cf_tpl_setvalue(cf_template_t *tpl,const u_char *vname,unsigned short type,...) {
   va_list ap;
   signed long int_value;
   const u_char *string_value;
   int string_len;
-  t_cf_tpl_variable var;
+  cf_tpl_variable_t var;
   
   va_start(ap,type);
   switch(type) {
@@ -143,8 +143,8 @@ void cf_tpl_setvalue(t_cf_template *tpl,const u_char *vname,unsigned short type,
 /* }}} */
 
 /* {{{ cf_tpl_appendvalue */
-int cf_tpl_appendvalue(t_cf_template *tpl,const u_char *vname,const u_char *value,int len) {
-  t_cf_tpl_variable *var = (t_cf_tpl_variable *)cf_hash_get(tpl->varlist,(u_char*)vname,strlen(vname));
+int cf_tpl_appendvalue(cf_template_t *tpl,const u_char *vname,const u_char *value,int len) {
+  cf_tpl_variable_t *var = (cf_tpl_variable_t *)cf_hash_get(tpl->varlist,(u_char*)vname,strlen(vname));
 
   if(var && var->type == TPL_VARIABLE_STRING) {
     str_chars_append(&var->data.d_string,value,len);
@@ -156,13 +156,13 @@ int cf_tpl_appendvalue(t_cf_template *tpl,const u_char *vname,const u_char *valu
 /* }}} */
 
 /* {{{ cf_tpl_freevar */
-void cf_tpl_freevar(t_cf_template *tpl,const u_char *vname) {
+void cf_tpl_freevar(cf_template_t *tpl,const u_char *vname) {
   cf_hash_entry_delete(tpl->varlist,(u_char *)vname,strlen(vname));
 }
 /* }}} */
 
 /* {{{ cf_tpl_var_init */
-void cf_tpl_var_init(t_cf_tpl_variable *var,unsigned short type) {
+void cf_tpl_var_init(cf_tpl_variable_t *var,unsigned short type) {
   var->type      = type;
   var->temporary = 0;
   var->arrayref  = 0;
@@ -177,7 +177,7 @@ void cf_tpl_var_init(t_cf_tpl_variable *var,unsigned short type) {
       break;
 
     case TPL_VARIABLE_ARRAY:
-      array_init(&var->data.d_array,sizeof(t_cf_tpl_variable),cf_tpl_cleanup_var);
+      array_init(&var->data.d_array,sizeof(cf_tpl_variable_t),cf_tpl_cleanup_var);
       break;
 
     case TPL_VARIABLE_HASH:
@@ -192,7 +192,7 @@ void cf_tpl_var_init(t_cf_tpl_variable *var,unsigned short type) {
 /* }}} */
 
 /* {{{ cf_tpl_var_destroy */
-void cf_tpl_var_destroy(t_cf_tpl_variable *var) {
+void cf_tpl_var_destroy(cf_tpl_variable_t *var) {
   // if this is a variable created in a foreach loop => do nothing
   if(var->arrayref) return;
 
@@ -217,7 +217,7 @@ void cf_tpl_var_destroy(t_cf_tpl_variable *var) {
 /* }}} */
 
 /* {{{ cf_tpl_var_setvalue */
-void cf_tpl_var_setvalue(t_cf_tpl_variable *var,...) {
+void cf_tpl_var_setvalue(cf_tpl_variable_t *var,...) {
   va_list ap;
   int string_len;
   long int_value;
@@ -251,8 +251,8 @@ void cf_tpl_var_setvalue(t_cf_tpl_variable *var,...) {
 /* }}} */
 
 /* {{{ cf_tpl_var_convert */
-t_cf_tpl_variable *cf_tpl_var_convert(t_cf_tpl_variable *dest,t_cf_tpl_variable *src,unsigned short new_type) {
-  t_cf_tpl_variable *var;
+cf_tpl_variable_t *cf_tpl_var_convert(cf_tpl_variable_t *dest,cf_tpl_variable_t *src,unsigned short new_type) {
+  cf_tpl_variable_t *var;
   u_char intbuf[20]; /* this will not be longer than 20 digits */
 
   if(!src) return NULL;
@@ -261,7 +261,7 @@ t_cf_tpl_variable *cf_tpl_var_convert(t_cf_tpl_variable *dest,t_cf_tpl_variable 
   if(new_type != TPL_VARIABLE_STRING && new_type != TPL_VARIABLE_INT) return NULL;
   if(src->type != TPL_VARIABLE_STRING && src->type != TPL_VARIABLE_INT && src->type != TPL_VARIABLE_ARRAY && src->type != TPL_VARIABLE_HASH) return NULL;
 
-  if(!dest) var = fo_alloc(NULL,sizeof(t_cf_tpl_variable),1,FO_ALLOC_MALLOC);
+  if(!dest) var = fo_alloc(NULL,sizeof(cf_tpl_variable_t),1,FO_ALLOC_MALLOC);
   else var = dest;
 
   cf_tpl_var_init(var,new_type);
@@ -320,14 +320,14 @@ t_cf_tpl_variable *cf_tpl_var_convert(t_cf_tpl_variable *dest,t_cf_tpl_variable 
 /* }}} */
 
 /* {{{ cf_tpl_var_clone */
-t_cf_tpl_variable *cf_tpl_var_clone(t_cf_tpl_variable *var) {
-  t_cf_hash_keylist *key;
-  t_cf_tpl_variable *new_var, *tmp_var;
+cf_tpl_variable_t *cf_tpl_var_clone(cf_tpl_variable_t *var) {
+  cf_hash_t_keylist *key;
+  cf_tpl_variable_t *new_var, *tmp_var;
   size_t i;
   
   if(!var || (var->type != TPL_VARIABLE_STRING && var->type != TPL_VARIABLE_INT && var->type != TPL_VARIABLE_ARRAY && var->type != TPL_VARIABLE_HASH)) return NULL;
   
-  new_var = (t_cf_tpl_variable *)fo_alloc(NULL,sizeof(t_cf_tpl_variable),1,FO_ALLOC_MALLOC);
+  new_var = (cf_tpl_variable_t *)fo_alloc(NULL,sizeof(cf_tpl_variable_t),1,FO_ALLOC_MALLOC);
   cf_tpl_var_init(new_var,var->type);
   
   switch(var->type) {
@@ -341,7 +341,7 @@ t_cf_tpl_variable *cf_tpl_var_clone(t_cf_tpl_variable *var) {
 
     case TPL_VARIABLE_ARRAY:
       for(i = 0; i < var->data.d_array.elements; i++) {
-        if((tmp_var = cf_tpl_var_clone((t_cf_tpl_variable *)array_element_at(&var->data.d_array,i))) == NULL) {
+        if((tmp_var = cf_tpl_var_clone((cf_tpl_variable_t *)array_element_at(&var->data.d_array,i))) == NULL) {
           cf_tpl_var_destroy(new_var);
           free(new_var);
           return NULL;
@@ -373,7 +373,7 @@ t_cf_tpl_variable *cf_tpl_var_clone(t_cf_tpl_variable *var) {
 /* }}} */
 
 /* {{{ cf_tpl_var_add */
-void cf_tpl_var_add(t_cf_tpl_variable *var,t_cf_tpl_variable *element) {
+void cf_tpl_var_add(cf_tpl_variable_t *var,cf_tpl_variable_t *element) {
   int tmp = 0;
 
   if(var->type != TPL_VARIABLE_ARRAY) return;
@@ -388,12 +388,12 @@ void cf_tpl_var_add(t_cf_tpl_variable *var,t_cf_tpl_variable *element) {
 /* }}} */
 
 /* {{{ cf_tpl_var_addvalue */
-void cf_tpl_var_addvalue(t_cf_tpl_variable *array_var,unsigned short type,...) {
+void cf_tpl_var_addvalue(cf_tpl_variable_t *array_var,unsigned short type,...) {
   va_list ap;
   signed long int_value;
   const u_char *string_value;
   int string_len;
-  t_cf_tpl_variable var;
+  cf_tpl_variable_t var;
   
   va_start(ap,type);
 
@@ -427,14 +427,14 @@ void cf_tpl_var_addvalue(t_cf_tpl_variable *array_var,unsigned short type,...) {
 /* }}} */
 
 /* {{{ cf_tpl_hashvar_set */
-void cf_tpl_hashvar_set(t_cf_tpl_variable *var,const u_char *key,t_cf_tpl_variable *element) {
+void cf_tpl_hashvar_set(cf_tpl_variable_t *var,const u_char *key,cf_tpl_variable_t *element) {
   int tmp = 0;
 
   if(var->type != TPL_VARIABLE_HASH) return;
   if(element->temporary) tmp = 1;
 
   element->temporary = 0;
-  cf_hash_set(var->data.d_hash,(u_char *)key,strlen(key),element,sizeof(t_cf_tpl_variable));
+  cf_hash_set(var->data.d_hash,(u_char *)key,strlen(key),element,sizeof(cf_tpl_variable_t));
 
   // cleanup if it's temporary
   if(tmp) free(element); // don't destroy the var, only free it
@@ -442,12 +442,12 @@ void cf_tpl_hashvar_set(t_cf_tpl_variable *var,const u_char *key,t_cf_tpl_variab
 /* }}} */
 
 /* {{{ cf_tpl_hashvar_setvalue */
-void cf_tpl_hashvar_setvalue(t_cf_tpl_variable *hash_var,const u_char *key,unsigned short type,...) {
+void cf_tpl_hashvar_setvalue(cf_tpl_variable_t *hash_var,const u_char *key,unsigned short type,...) {
   va_list ap;
   signed long int_value;
   const u_char *string_value;
   int string_len;
-  t_cf_tpl_variable var;
+  cf_tpl_variable_t var;
   
   va_start(ap,type);
 
@@ -481,29 +481,29 @@ void cf_tpl_hashvar_setvalue(t_cf_tpl_variable *hash_var,const u_char *key,unsig
 /* }}} */
 
 /* {{{ cf_tpl_parse */
-void cf_tpl_parse(t_cf_template *tpl) {
+void cf_tpl_parse(cf_template_t *tpl) {
   void *pa = dlsym(tpl->tpl,"parse");
 
   if(pa) {
-    t_parse x = (t_parse)pa;
+    parse_t x = (parse_t)pa;
     x(tpl);
   }
 }
 /* }}} */
 
 /* {{{ cf_tpl_parse_to_mem */
-void cf_tpl_parse_to_mem(t_cf_template *tpl) {
+void cf_tpl_parse_to_mem(cf_template_t *tpl) {
   void *pa = dlsym(tpl->tpl,"parse_to_mem");
 
   if(pa) {
-    t_parse_mem x = (t_parse_mem)pa;
+    parse_mem_t x = (parse_mem_t)pa;
     x(tpl);
   }
 }
 /* }}} */
 
 /* {{{ cf_tpl_finish */
-void cf_tpl_finish(t_cf_template *tpl) {
+void cf_tpl_finish(cf_template_t *tpl) {
   if(tpl->tpl) dlclose(tpl->tpl);
 
   str_cleanup(&tpl->parsed);
@@ -512,10 +512,10 @@ void cf_tpl_finish(t_cf_template *tpl) {
 /* }}} */
 
 /* {{{ cf_tpl_getvar */
-const t_cf_tpl_variable *cf_tpl_getvar(t_cf_template *tpl,const u_char *name) {
-  t_cf_tpl_variable *var = (t_cf_tpl_variable *)cf_hash_get(tpl->varlist,(u_char *)name,strlen(name));
+const cf_tpl_variable_t *cf_tpl_getvar(cf_template_t *tpl,const u_char *name) {
+  cf_tpl_variable_t *var = (cf_tpl_variable_t *)cf_hash_get(tpl->varlist,(u_char *)name,strlen(name));
 
-  return (const t_cf_tpl_variable *)var;
+  return (const cf_tpl_variable_t *)var;
 }
 /* }}} */
 

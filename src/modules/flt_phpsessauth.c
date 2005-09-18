@@ -87,7 +87,7 @@ int flt_psa_parser_readarray(const u_char *start,long elems,u_char **end) {
 /* }}} */
 
 /* {{{ flt_psa_parser */
-int flt_psa_parser(t_cf_hash *hash,u_char **pos) {
+int flt_psa_parser(cf_hash_t *hash,u_char **pos) {
   register u_char *ptr = *pos;
   u_char *start,*name,*cval;
   double dval;
@@ -150,9 +150,9 @@ int flt_psa_parser(t_cf_hash *hash,u_char **pos) {
 
 /* {{{ flt_phpsessauth_getvar */
 u_char *flt_phpsessauth_getvar(const u_char *vname) {
-  t_string path;
+  string_t path;
   int fd,rc;
-  t_cf_hash *hash = cf_hash_new(NULL);
+  cf_hash_t *hash = cf_hash_new(NULL);
   u_char *start,*ptr,*name = NULL;
   struct stat st;
 
@@ -212,11 +212,11 @@ u_char *flt_phpsessauth_getvar(const u_char *vname) {
 /* }}} */
 
 /* {{{ flt_httpauth_run */
-int flt_phpsessauth_run(t_cf_hash *head,t_configuration *dc,t_configuration *vc) {
+int flt_phpsessauth_run(cf_hash_t *head,configuration_t *dc,configuration_t *vc) {
   u_char *fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
-  t_name_value *v = cfg_get_first_value(dc,fn,"AuthMode");
+  name_value_t *v = cfg_get_first_value(dc,fn,"AuthMode");
   u_char *name = NULL,*path;
-  t_cf_hash *cookies;
+  cf_hash_t *cookies;
 
   if(!flt_phpsessauth_vname) return FLT_DECLINE;
   if(!v || !v->values[0] || cf_strcmp(v->values[0],"phpsess") != 0) return FLT_DECLINE;
@@ -250,7 +250,7 @@ int flt_phpsessauth_run(t_cf_hash *head,t_configuration *dc,t_configuration *vc)
 /* }}} */
 
 /* {{{ flt_phpsessauth_handle */
-int flt_phpsessauth_handle(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
+int flt_phpsessauth_handle(configfile_t *cfile,conf_opt_t *opt,const u_char *context,u_char **args,size_t argnum) {
   if(flt_phpsessauth_fn == NULL) flt_phpsessauth_fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   if(!context || cf_strcmp(flt_phpsessauth_fn,context) != 0) return 0;
 
@@ -277,19 +277,19 @@ void flt_phpsessauth_cleanup(void) {
   if(flt_phpsessauth_sessname) free(flt_phpsessauth_sessname);
 }
 
-t_conf_opt flt_phpsessauth_config[] = {
+conf_opt_t flt_phpsessauth_config[] = {
   { "SessionName",  flt_phpsessauth_handle, CFG_OPT_CONFIG|CFG_OPT_LOCAL|CFG_OPT_NEEDED, NULL },
   { "SessionPath",  flt_phpsessauth_handle, CFG_OPT_CONFIG|CFG_OPT_LOCAL, NULL },
   { "SessionVName", flt_phpsessauth_handle, CFG_OPT_CONFIG|CFG_OPT_LOCAL|CFG_OPT_NEEDED, NULL },
   { NULL, NULL, 0, NULL }
 };
 
-t_handler_config flt_phpsessauth_handlers[] = {
+handler_config_t flt_phpsessauth_handlers[] = {
   { AUTH_HANDLER, flt_phpsessauth_run },
   { 0, NULL }
 };
 
-t_module_config flt_phpsessauth = {
+module_config_t flt_phpsessauth = {
   MODULE_MAGIC_COOKIE,
   flt_phpsessauth_config,
   flt_phpsessauth_handlers,

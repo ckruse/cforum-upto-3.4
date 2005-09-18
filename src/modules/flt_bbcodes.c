@@ -41,7 +41,7 @@
 /* }}} */
 
 /* {{{ flt_bbcodes_execute_b */
-int flt_bbcodes_execute_b(t_configuration *fdc,t_configuration *fvc,t_cl_thread *thread,const u_char *directive,const u_char **parameters,size_t plen,t_string *bco,t_string *bci,t_string *content,t_string *cite,const u_char *qchars,int sig) {
+int flt_bbcodes_execute_b(configuration_t *fdc,configuration_t *fvc,cl_thread_t *thread,const u_char *directive,const u_char **parameters,size_t plen,string_t *bco,string_t *bci,string_t *content,string_t *cite,const u_char *qchars,int sig) {
   str_chars_append(bco,"<strong>",8);
   str_str_append(bco,content);
   str_chars_append(bco,"</strong>",9);
@@ -57,7 +57,7 @@ int flt_bbcodes_execute_b(t_configuration *fdc,t_configuration *fvc,t_cl_thread 
 /* }}} */
 
 /* {{{ flt_bbcodes_execute_i */
-int flt_bbcodes_execute_i(t_configuration *fdc,t_configuration *fvc,t_cl_thread *thread,const u_char *directive,const u_char **parameters,size_t plen,t_string *bco,t_string *bci,t_string *content,t_string *cite,const u_char *qchars,int sig) {
+int flt_bbcodes_execute_i(configuration_t *fdc,configuration_t *fvc,cl_thread_t *thread,const u_char *directive,const u_char **parameters,size_t plen,string_t *bco,string_t *bci,string_t *content,string_t *cite,const u_char *qchars,int sig) {
   str_chars_append(bco,"<em>",4);
   str_str_append(bco,content);
   str_chars_append(bco,"</em>",5);
@@ -73,7 +73,7 @@ int flt_bbcodes_execute_i(t_configuration *fdc,t_configuration *fvc,t_cl_thread 
 /* }}} */
 
 /* {{{ flt_bbcodes_execute_u */
-int flt_bbcodes_execute_u(t_configuration *fdc,t_configuration *fvc,t_cl_thread *thread,const u_char *directive,const u_char **parameters,size_t plen,t_string *bco,t_string *bci,t_string *content,t_string *cite,const u_char *qchars,int sig) {
+int flt_bbcodes_execute_u(configuration_t *fdc,configuration_t *fvc,cl_thread_t *thread,const u_char *directive,const u_char **parameters,size_t plen,string_t *bco,string_t *bci,string_t *content,string_t *cite,const u_char *qchars,int sig) {
   str_chars_append(bco,"<span class=\"underlined\">",25);
   str_str_append(bco,content);
   str_chars_append(bco,"</span>",7);
@@ -89,7 +89,7 @@ int flt_bbcodes_execute_u(t_configuration *fdc,t_configuration *fvc,t_cl_thread 
 /* }}} */
 
 /* {{{ flt_bbcodes_execute_q */
-int flt_bbcodes_execute_q(t_configuration *fdc,t_configuration *fvc,t_cl_thread *thread,const u_char *directive,const u_char **parameters,size_t plen,t_string *bco,t_string *bci,t_string *content,t_string *cite,const u_char *qchars,int sig) {
+int flt_bbcodes_execute_q(configuration_t *fdc,configuration_t *fvc,cl_thread_t *thread,const u_char *directive,const u_char **parameters,size_t plen,string_t *bco,string_t *bci,string_t *content,string_t *cite,const u_char *qchars,int sig) {
   str_chars_append(bco,"<q>",25);
   str_str_append(bco,content);
   str_chars_append(bco,"</q>",7);
@@ -114,7 +114,7 @@ int flt_bbcodes_execute_q(t_configuration *fdc,t_configuration *fvc,t_cl_thread 
 }
 /* }}} */
 
-int flt_bbcodes_init(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc) {
+int flt_bbcodes_init(cf_hash_t *cgi,configuration_t *dc,configuration_t *vc) {
   cf_html_register_directive("b",flt_bbcodes_execute_b,CF_HTML_DIR_TYPE_NOARG|CF_HTML_DIR_TYPE_BLOCK);
   cf_html_register_directive("i",flt_bbcodes_execute_i,CF_HTML_DIR_TYPE_NOARG|CF_HTML_DIR_TYPE_BLOCK);
   cf_html_register_directive("u",flt_bbcodes_execute_u,CF_HTML_DIR_TYPE_NOARG|CF_HTML_DIR_TYPE_BLOCK);
@@ -125,16 +125,16 @@ int flt_bbcodes_init(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc) {
 }
 
 
-t_conf_opt flt_bbcodes_config[] = {
+conf_opt_t flt_bbcodes_config[] = {
   { NULL, NULL, 0, NULL }
 };
 
-t_handler_config flt_bbcodes_handlers[] = {
+handler_config_t flt_bbcodes_handlers[] = {
   { INIT_HANDLER, flt_bbcodes_init },
   { 0, NULL }
 };
 
-t_module_config flt_bbcodes = {
+module_config_t flt_bbcodes = {
   MODULE_MAGIC_COOKIE,
   flt_bbcodes_config,
   flt_bbcodes_handlers,

@@ -22,15 +22,15 @@
 #define SCHEDULING SCHED_OTHER
 
 
-/* {{{ t_head */
+/* {{{ head_t */
 /** This is the structure for the global 'I contain all necessary information' variable */
 typedef struct s_head {
   /** The read-write-lock */
-  t_cf_rwlock lock;
+  cf_rwlock_t lock;
 
   /** We wanna save the workers to pthread_join them at shutdown */
   struct {
-    t_cf_rw_list_head list;
+    cf_rw_list_head_t list;
     int num;
   } workers;
 
@@ -51,37 +51,37 @@ typedef struct s_head {
    */
   struct {
     int num;
-    t_cf_list_head list;
-    t_cf_mutex lock;
-    t_cf_cond cond;
+    cf_list_head_t list;
+    cf_mutex_t lock;
+    cf_cond_t cond;
   } clients;
 
   struct {
     /**
      * The mutex to synchronize access to the server sockets
      */
-    t_cf_mutex lock;
+    cf_mutex_t lock;
 
     /** the Server sockets */
-    t_cf_list_head list;
+    cf_list_head_t list;
   } servers;
 
   /** jobs to run periodical */
-  t_cf_list_head periodicals;
+  cf_list_head_t periodicals;
 
   /** This hash contains all the CFTP protocol handlers */
-  t_cf_hash *protocol_handlers;
+  cf_hash_t *protocol_handlers;
 
   /** This hash contains all forums */
-  t_cf_hash *forums;
+  cf_hash_t *forums;
 
-} t_head;
+} head_t;
 /* }}} */
 
 extern int    RUN; /**< Shall the server still run or shall we shutdown? */
-extern t_head head; /**< The head variable. Contains all neccessary information about the server. */
+extern head_t head; /**< The head variable. Contains all neccessary information about the server. */
 
-typedef int (*t_server_init_filter)(int); /**< Used for server initialization plugins */
+typedef int (*server_init_filter_t)(int); /**< Used for server initialization plugins */
 
 #endif
 

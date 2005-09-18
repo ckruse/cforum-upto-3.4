@@ -35,16 +35,16 @@
 /* }}} */
 
 /* {{{ cf_run_view_list_handlers */
-int cf_run_view_list_handlers(t_message *p,t_cf_hash *head,u_int64_t tid,int mode) {
+int cf_run_view_list_handlers(message_t *p,cf_hash_t *head,u_int64_t tid,int mode) {
   int ret = FLT_OK;
-  t_handler_config *handler;
+  handler_config_t *handler;
   size_t i;
-  t_filter_list_posting fkt;
+  filter_list_posting_t fkt;
 
   if(Modules[VIEW_LIST_HANDLER].elements) {
     for(i=0;i<Modules[VIEW_LIST_HANDLER].elements && (ret == FLT_OK || ret == FLT_DECLINE);i++) {
       handler = array_element_at(&Modules[VIEW_LIST_HANDLER],i);
-      fkt     = (t_filter_list_posting)handler->func;
+      fkt     = (filter_list_posting_t)handler->func;
       ret     = fkt(head,&fo_default_conf,&fo_view_conf,p,tid,mode);
     }
   }
@@ -54,16 +54,16 @@ int cf_run_view_list_handlers(t_message *p,t_cf_hash *head,u_int64_t tid,int mod
 /* }}} */
 
 /* {{{ cf_run_view_handlers */
-int cf_run_view_handlers(t_cl_thread *thr,t_cf_hash *head,int mode) {
+int cf_run_view_handlers(cl_thread_t *thr,cf_hash_t *head,int mode) {
   int    ret = FLT_OK;
-  t_handler_config *handler;
+  handler_config_t *handler;
   size_t i;
-  t_filter_list fkt;
+  filter_list_t fkt;
 
   if(Modules[VIEW_HANDLER].elements) {
     for(i=0;i<Modules[VIEW_HANDLER].elements && (ret == FLT_OK || ret == FLT_DECLINE);i++) {
       handler = array_element_at(&Modules[VIEW_HANDLER],i);
-      fkt     = (t_filter_list)handler->func;
+      fkt     = (filter_list_t)handler->func;
       ret     = fkt(head,&fo_default_conf,&fo_view_conf,thr,mode);
     }
   }
@@ -73,16 +73,16 @@ int cf_run_view_handlers(t_cl_thread *thr,t_cf_hash *head,int mode) {
 /* }}} */
 
 /* {{{ cf_run_posting_handlers */
-int cf_run_posting_handlers(t_cf_hash *head,t_cl_thread *thr,t_cf_template *tpl,t_configuration *vc) {
+int cf_run_posting_handlers(cf_hash_t *head,cl_thread_t *thr,cf_template_t *tpl,configuration_t *vc) {
   int ret = FLT_OK;
-  t_handler_config *handler;
+  handler_config_t *handler;
   size_t i;
-  t_filter_posting fkt;
+  filter_posting_t fkt;
 
   if(Modules[POSTING_HANDLER].elements) {
     for(i=0;i<Modules[POSTING_HANDLER].elements && (ret == FLT_OK || ret == FLT_DECLINE);i++) {
       handler = array_element_at(&Modules[POSTING_HANDLER],i);
-      fkt     = (t_filter_posting)handler->func;
+      fkt     = (filter_posting_t)handler->func;
       ret     = fkt(head,&fo_default_conf,vc,thr,tpl);
     }
   }
@@ -92,16 +92,16 @@ int cf_run_posting_handlers(t_cf_hash *head,t_cl_thread *thr,t_cf_template *tpl,
 /* }}} */
 
 /* {{{ cf_run_404_handlers */
-int cf_run_404_handlers(t_cf_hash *head,u_int64_t tid,u_int64_t mid) {
+int cf_run_404_handlers(cf_hash_t *head,u_int64_t tid,u_int64_t mid) {
   int ret = FLT_OK;
-  t_handler_config *handler;
+  handler_config_t *handler;
   size_t i;
-  t_filter_404_handler fkt;
+  filter_404_handler_t fkt;
 
   if(Modules[HANDLE_404_HANDLER].elements) {
     for(i=0;i<Modules[HANDLE_404_HANDLER].elements && (ret == FLT_OK || ret == FLT_DECLINE);i++) {
       handler = array_element_at(&Modules[HANDLE_404_HANDLER],i);
-      fkt     = (t_filter_404_handler)handler->func;
+      fkt     = (filter_404_handler_t)handler->func;
       ret     = fkt(head,&fo_default_conf,&fo_view_conf,tid,mid);
     }
   }
@@ -111,16 +111,16 @@ int cf_run_404_handlers(t_cf_hash *head,u_int64_t tid,u_int64_t mid) {
 /* }}} */
 
 /* {{{ cf_run_init_handlers */
-int cf_run_init_handlers(t_cf_hash *head) {
-  t_filter_begin exec;
+int cf_run_init_handlers(cf_hash_t *head) {
+  filter_begin_t exec;
   size_t i;
-  t_handler_config *handler;
+  handler_config_t *handler;
   int ret = FLT_DECLINE;
 
   if(Modules[INIT_HANDLER].elements) {
     for(i=0;i<Modules[INIT_HANDLER].elements && (ret == FLT_OK || ret == FLT_DECLINE);i++) {
       handler = array_element_at(&Modules[INIT_HANDLER],i);
-      exec    = (t_filter_begin)handler->func;
+      exec    = (filter_begin_t)handler->func;
       ret     = exec(head,&fo_default_conf,&fo_view_conf);
     }
   }
@@ -130,11 +130,11 @@ int cf_run_init_handlers(t_cf_hash *head) {
 /* }}} */
 
 /* {{{ cf_run_auth_handlers */
-int cf_run_auth_handlers(t_cf_hash *head) {
+int cf_run_auth_handlers(cf_hash_t *head) {
   size_t i;
   int ret = FLT_DECLINE;
-  t_filter_begin func;
-  t_handler_config *handler;
+  filter_begin_t func;
+  handler_config_t *handler;
 
 
   if(Modules[AUTH_HANDLER].elements) {
@@ -142,7 +142,7 @@ int cf_run_auth_handlers(t_cf_hash *head) {
 
     for(i=0;i<Modules[AUTH_HANDLER].elements && ret == FLT_DECLINE;i++) {
       handler = array_element_at(&Modules[AUTH_HANDLER],i);
-      func    = (t_filter_begin)handler->func;
+      func    = (filter_begin_t)handler->func;
       ret     = func(head,&fo_default_conf,&fo_view_conf);
     }
   }
@@ -153,20 +153,20 @@ int cf_run_auth_handlers(t_cf_hash *head) {
 
 /* {{{ cf_run_connect_init_handlers */
 #ifdef CF_SHARED_MEM
-int cf_run_connect_init_handlers(t_cf_hash *head,void *sock)
+int cf_run_connect_init_handlers(cf_hash_t *head,void *sock)
 #else
-int cf_run_connect_init_handlers(t_cf_hash *head,int sock)
+int cf_run_connect_init_handlers(cf_hash_t *head,int sock)
 #endif
 {
-  t_handler_config *handler;
-  t_filter_connect exec;
+  handler_config_t *handler;
+  connect_filter_t exec;
   size_t i;
   int ext = FLT_OK,ret = FLT_DECLINE;
 
   if(Modules[CONNECT_INIT_HANDLER].elements) {
     for(i=0;i<Modules[CONNECT_INIT_HANDLER].elements;i++) {
       handler = array_element_at(&Modules[CONNECT_INIT_HANDLER],i);
-      exec    = (t_filter_connect)handler->func;
+      exec    = (connect_filter_t)handler->func;
       ret     = exec(head,&fo_default_conf,&fo_view_conf,sock);
 
       if(ret == FLT_EXIT) ext = FLT_EXIT;
@@ -179,20 +179,20 @@ int cf_run_connect_init_handlers(t_cf_hash *head,int sock)
 
 /* {{{ cf_run_sorting_handlers */
 #ifdef CF_SHARED_MEM
-int cf_run_sorting_handlers(t_cf_hash *head,void *ptr,t_array *threads)
+int cf_run_sorting_handlers(cf_hash_t *head,void *ptr,array_t *threads)
 #else
-int cf_run_sorting_handlers(t_cf_hash *head,int sock,rline_t *tsd,t_array *threads)
+int cf_run_sorting_handlers(cf_hash_t *head,int sock,rline_t *tsd,array_t *threads)
 #endif
 {
-  t_handler_config *handler;
-  t_sorting_handler exec;
+  handler_config_t *handler;
+  sorting_handler_t exec;
   size_t i;
   int ret = FLT_DECLINE;
 
   if(Modules[SORTING_HANDLER].elements) {
     for(i=0;i<Modules[SORTING_HANDLER].elements && ret == FLT_DECLINE;i++) {
       handler = array_element_at(&Modules[SORTING_HANDLER],i);
-      exec    = (t_sorting_handler)handler->func;
+      exec    = (sorting_handler_t)handler->func;
 
       #ifdef CF_SHARED_MEM
       ret     = exec(head,&fo_default_conf,&fo_view_conf,ptr,threads);
@@ -208,20 +208,20 @@ int cf_run_sorting_handlers(t_cf_hash *head,int sock,rline_t *tsd,t_array *threa
 
 /* {{{ cf_run_thread_sorting_handlers */
 #ifdef CF_SHARED_MEM
-int cf_run_thread_sorting_handlers(t_cf_hash *head,void *ptr,t_cl_thread *thread)
+int cf_run_thread_sorting_handlers(cf_hash_t *head,void *ptr,cl_thread_t *thread)
 #else
-int cf_run_thread_sorting_handlers(t_cf_hash *head,int sock,rline_t *tsd,t_cl_thread *thread)
+int cf_run_thread_sorting_handlers(cf_hash_t *head,int sock,rline_t *tsd,cl_thread_t *thread)
 #endif
 {
-  t_handler_config *handler;
-  t_thread_sorting_handler exec;
+  handler_config_t *handler;
+  thread_sorting_handler_t exec;
   size_t i;
   int ret = FLT_DECLINE;
 
   if(Modules[THREAD_SORTING_HANDLER].elements) {
     for(i=0;i<Modules[THREAD_SORTING_HANDLER].elements && ret == FLT_DECLINE;i++) {
       handler = array_element_at(&Modules[THREAD_SORTING_HANDLER],i);
-      exec    = (t_thread_sorting_handler)handler->func;
+      exec    = (thread_sorting_handler_t)handler->func;
 
       #ifdef CF_SHARED_MEM
       ret     = exec(head,&fo_default_conf,&fo_view_conf,ptr,thread);
@@ -236,16 +236,16 @@ int cf_run_thread_sorting_handlers(t_cf_hash *head,int sock,rline_t *tsd,t_cl_th
 /* }}} */
 
 /* {{{ cf_run_view_init_handlers */
-int cf_run_view_init_handlers(t_cf_hash *head,t_cf_template *tpl_begin,t_cf_template *tpl_end) {
-  t_handler_config *handler;
-  t_filter_init_view fkt;
+int cf_run_view_init_handlers(cf_hash_t *head,cf_template_t *tpl_begin,cf_template_t *tpl_end) {
+  handler_config_t *handler;
+  filter_init_view_t fkt;
   size_t i;
   int ret = FLT_DECLINE;
 
   if(Modules[VIEW_INIT_HANDLER].elements) {
     for(i=0;i<Modules[VIEW_INIT_HANDLER].elements;i++) {
       handler = array_element_at(&Modules[VIEW_INIT_HANDLER],i);
-      fkt     = (t_filter_init_view)handler->func;
+      fkt     = (filter_init_view_t)handler->func;
       ret     = fkt(head,&fo_default_conf,&fo_view_conf,tpl_begin,tpl_end);
     }
   }
@@ -256,20 +256,20 @@ int cf_run_view_init_handlers(t_cf_hash *head,t_cf_template *tpl_begin,t_cf_temp
 
 /* {{{ cf_run_after_post_filters */
 #ifdef CF_SHARED_MEM
-void cf_run_after_post_handlers(t_cf_hash *head,t_message *p,u_int64_t tid,void *shm,int sock)
+void cf_run_after_post_handlers(cf_hash_t *head,message_t *p,u_int64_t tid,void *shm,int sock)
 #else
-void cf_run_after_post_handlers(t_cf_hash *head,t_message *p,u_int64_t tid,int sock)
+void cf_run_after_post_handlers(cf_hash_t *head,message_t *p,u_int64_t tid,int sock)
 #endif
 {
   int ret = FLT_OK;
-  t_handler_config *handler;
+  handler_config_t *handler;
   size_t i;
-  t_after_post_filter fkt;
+  after_post_filter_t fkt;
 
   if(Modules[AFTER_POST_HANDLER].elements) {
     for(i=0;i<Modules[AFTER_POST_HANDLER].elements && (ret == FLT_OK || ret == FLT_DECLINE);i++) {
       handler = array_element_at(&Modules[AFTER_POST_HANDLER],i);
-      fkt     = (t_after_post_filter)handler->func;
+      fkt     = (after_post_filter_t)handler->func;
 
       #ifdef CF_SHARED_MEM
       ret     = fkt(head,&fo_default_conf,&fo_post_conf,p,tid,sock,shm);
@@ -283,15 +283,15 @@ void cf_run_after_post_handlers(t_cf_hash *head,t_message *p,u_int64_t tid,int s
 
 /* {{{ cf_run_post_filters */
 #ifdef CF_SHARED_MEM
-int cf_run_post_filters(t_cf_hash *head,t_message *p,t_cl_thread *thr,void *ptr,int sock)
+int cf_run_post_filters(cf_hash_t *head,message_t *p,cl_thread_t *thr,void *ptr,int sock)
 #else
-int cf_run_post_filters(t_cf_hash *head,t_message *p,t_cl_thread *thr,int sock)
+int cf_run_post_filters(cf_hash_t *head,message_t *p,cl_thread_t *thr,int sock)
 #endif
 {
   int ret = FLT_OK;
-  t_handler_config *handler;
+  handler_config_t *handler;
   size_t i;
-  t_new_post_filter fkt;
+  new_post_filter_t fkt;
   int fupto = 0;
 
   if(head) fupto = cf_cgi_get(head,"fupto") != NULL;
@@ -299,7 +299,7 @@ int cf_run_post_filters(t_cf_hash *head,t_message *p,t_cl_thread *thr,int sock)
   if(Modules[NEW_POST_HANDLER].elements) {
     for(i=0;i<Modules[NEW_POST_HANDLER].elements && (ret == FLT_OK || ret == FLT_DECLINE);i++) {
       handler = array_element_at(&Modules[NEW_POST_HANDLER],i);
-      fkt     = (t_new_post_filter)handler->func;
+      fkt     = (new_post_filter_t)handler->func;
       #ifdef CF_SHARED_MEM
       ret     = fkt(head,&fo_default_conf,&fo_post_conf,p,thr,ptr,sock,fupto);
       #else
@@ -313,16 +313,16 @@ int cf_run_post_filters(t_cf_hash *head,t_message *p,t_cl_thread *thr,int sock)
 /* }}} */
 
 /* {{{ cf_run_post_display_handlers */
-int cf_run_post_display_handlers(t_cf_hash *head,t_cf_template *tpl,t_message *p) {
+int cf_run_post_display_handlers(cf_hash_t *head,cf_template_t *tpl,message_t *p) {
   int ret = FLT_OK;
-  t_handler_config *handler;
+  handler_config_t *handler;
   size_t i;
-  t_post_display_filter fkt;
+  post_display_filter_t fkt;
 
   if(Modules[POST_DISPLAY_HANDLER].elements) {
     for(i=0;i<Modules[POST_DISPLAY_HANDLER].elements;++i) {
       handler = array_element_at(&Modules[POST_DISPLAY_HANDLER],i);
-      fkt     = (t_post_display_filter)handler->func;
+      fkt     = (post_display_filter_t)handler->func;
       ret     = fkt(head,&fo_default_conf,&fo_post_conf,tpl,p);
     }
   }
@@ -332,16 +332,16 @@ int cf_run_post_display_handlers(t_cf_hash *head,t_cf_template *tpl,t_message *p
 /* }}} */
 
 /* {{{ cf_run_perpost_var_handlers */
-int cf_run_perpost_var_handlers(t_cf_hash *head,t_cl_thread *thread,t_message *msg,t_cf_tpl_variable *hash) {
+int cf_run_perpost_var_handlers(cf_hash_t *head,cl_thread_t *thread,message_t *msg,cf_tpl_variable_t *hash) {
   int ret = FLT_OK;
-  t_handler_config *handler;
+  handler_config_t *handler;
   size_t i;
-  t_filter_perpost_var fkt;
+  filter_perpost_var_t fkt;
 
   if(Modules[PERPOST_VAR_HANDLER].elements) {
     for(i=0;i<Modules[PERPOST_VAR_HANDLER].elements && (ret == FLT_OK || ret == FLT_DECLINE);i++) {
       handler = array_element_at(&Modules[PERPOST_VAR_HANDLER],i);
-      fkt     = (t_filter_perpost_var)handler->func;
+      fkt     = (filter_perpost_var_t)handler->func;
       ret     = fkt(head,&fo_default_conf,&fo_view_conf,thread,msg,hash);
     }
   }
@@ -351,9 +351,9 @@ int cf_run_perpost_var_handlers(t_cf_hash *head,t_cl_thread *thread,t_message *m
 /* }}} */
 
 /* {{{ cf_run_readmode_collectors */
-int cf_run_readmode_collectors(t_cf_hash *head,t_configuration *vc,cf_readmode_t *rm_infos) {
+int cf_run_readmode_collectors(cf_hash_t *head,configuration_t *vc,cf_readmode_t *rm_infos) {
   int ret = FLT_DECLINE,ext = FLT_EXIT;
-  t_handler_config *handler;
+  handler_config_t *handler;
   size_t i;
   cf_readmode_collector_t fkt;
 

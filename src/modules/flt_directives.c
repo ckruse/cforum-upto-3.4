@@ -56,7 +56,7 @@ static int flt_directives_rpl           = 0;
 typedef struct {
   u_char *id;
   u_char *uri;
-} t_flt_directives_ref_uri;
+} flt_directives_ref_uri_t;
 
 
 #define FLT_DIRECTIVES_TOK_TITLE  0
@@ -66,16 +66,16 @@ typedef struct {
 typedef struct {
   int type;
   u_char *tok;
-} t_flt_directives_lt_tok;
+} flt_directives_lt_tok_t;
 
 typedef struct {
   pcre *re;
   pcre_extra *extra;
 } flt_directives_re;
 
-static t_array flt_directives_ref_uris = { 0, 0, 0, NULL, NULL };
-static t_array flt_directives_lt_toks  = { 0, 0, 0, NULL, NULL };
-static t_array flt_directives_puris = { 0, 0, 0, NULL, NULL };
+static array_t flt_directives_ref_uris = { 0, 0, 0, NULL, NULL };
+static array_t flt_directives_lt_toks  = { 0, 0, 0, NULL, NULL };
+static array_t flt_directives_puris = { 0, 0, 0, NULL, NULL };
 
 static u_char *flt_directives_fname = NULL;
 
@@ -139,7 +139,7 @@ int flt_directives_is_valid_pref(const u_char *parameter,u_char **tmp,u_char **t
 
 /* {{{ flt_directives_is_relative_uri */
 int flt_directives_is_relative_uri(const u_char *tmp,size_t len) {
-  t_string str;
+  string_t str;
   int ret = 0;
 
   str_init(&str);
@@ -155,7 +155,7 @@ int flt_directives_is_relative_uri(const u_char *tmp,size_t len) {
 /* }}} */
 
 /* {{{ flt_directives_replace */
-void flt_directives_replace(t_string *content,const u_char *str,const u_char *uri,size_t ulen,const u_char *escaped,size_t eulen,const u_char *title,size_t tlen) {
+void flt_directives_replace(string_t *content,const u_char *str,const u_char *uri,size_t ulen,const u_char *escaped,size_t eulen,const u_char *title,size_t tlen) {
   register u_char *ptr;
 
   for(ptr=(u_char *)str;*ptr;++ptr) {
@@ -187,20 +187,20 @@ void flt_directives_replace(t_string *content,const u_char *str,const u_char *ur
 /* }}} */
 
 /* {{{ flt_directives_generate_uri */
-void flt_directives_generate_uri(const u_char *uri,const u_char *title,t_string *content,t_string *cite,int sig,t_configuration *dc,t_configuration *vc,int icons) {
+void flt_directives_generate_uri(const u_char *uri,const u_char *title,string_t *content,string_t *cite,int sig,configuration_t *dc,configuration_t *vc,int icons) {
   u_char *tmp1,*tmp2 = NULL,*hostname;
   size_t len = 0,len1 = 0,len2,i;
-  t_flt_directives_lt_tok *tok;
+  flt_directives_lt_tok_t *tok;
   u_char *new_uri = NULL;
-  t_handler_config *handler;
-  t_filter_urlrewrite fkt;
+  handler_config_t *handler;
+  filter_urlrewrite_t fkt;
   int ret = FLT_DECLINE;
 
   uri = strdup(uri);
   if(Modules[URL_REWRITE_HANDLER].elements) {
     for(i=0;i<Modules[URL_REWRITE_HANDLER].elements && ret == FLT_DECLINE;++i) {
       handler = array_element_at(&Modules[URL_REWRITE_HANDLER],i);
-      fkt     = (t_filter_urlrewrite)handler->func;
+      fkt     = (filter_urlrewrite_t)handler->func;
       ret     = fkt(dc,vc,uri,&new_uri);
     }
 
@@ -309,16 +309,16 @@ void flt_directives_generate_uri(const u_char *uri,const u_char *title,t_string 
 /* }}} */
 
 /* {{{ flt_directives_execute */
-int flt_directives_execute(t_configuration *fdc,t_configuration *fvc,t_cl_thread *thread,const u_char *directive,const u_char **parameters,size_t plen,t_string *bco,t_string *bci,t_string *content,t_string *cite,const u_char *qchars,int sig) {
+int flt_directives_execute(configuration_t *fdc,configuration_t *fvc,cl_thread_t *thread,const u_char *directive,const u_char **parameters,size_t plen,string_t *bco,string_t *bci,string_t *content,string_t *cite,const u_char *qchars,int sig) {
   u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   size_t len = 0,i,len1 = 0;
-  t_name_value *xhtml = cfg_get_first_value(fdc,forum_name,"XHTMLMode");
+  name_value_t *xhtml = cfg_get_first_value(fdc,forum_name,"XHTMLMode");
   u_int64_t tid,mid;
   u_char *ptr,*tmp,*tmp1 = NULL,**list = NULL,*title_alt = NULL,*tmp2 = NULL,*uname = cf_hash_get(GlobalValues,"UserName",8);
   cf_readmode_t *rm = cf_hash_get(GlobalValues,"RM",2);
-  t_flt_directives_ref_uri *uri;
+  flt_directives_ref_uri_t *uri;
   int go = 1;
-  t_string tmpstr;
+  string_t tmpstr;
   u_char *parameter = (u_char *)parameters[0];
 
   //if(!parameter) return FLT_DECLINE;
@@ -581,12 +581,12 @@ int flt_directives_is_unwanted(const u_char *link,size_t len) {
 /* }}} */
 
 /* {{{ flt_directives_validate */
-int flt_directives_validate(t_configuration *fdc,t_configuration *fvc,const u_char *directive,const u_char **parameters,size_t plen,t_cf_tpl_variable *var) {
+int flt_directives_validate(configuration_t *fdc,configuration_t *fvc,const u_char *directive,const u_char **parameters,size_t plen,cf_tpl_variable_t *var) {
   u_char *parameter = (u_char *)parameters[0];
 
   u_char *tmp1,*tmp2,*ptr,**list,*err;
 
-  t_flt_directives_ref_uri *uri;
+  flt_directives_ref_uri_t *uri;
 
   size_t len,i;
   u_int64_t tid,mid;
@@ -794,8 +794,8 @@ int flt_directives_parse_link_for_pref(const u_char *link,u_int64_t *tid,u_int64
 /* }}} */
 
 /* {{{ flt_directives_rewrite */
-int flt_directives_rewrite(t_cf_hash *head,t_configuration *dc,t_configuration *pc,t_message *p,t_cl_thread *thr,int sock,int mode) {
-  t_string new_content;
+int flt_directives_rewrite(cf_hash_t *head,configuration_t *dc,configuration_t *pc,message_t *p,cl_thread_t *thr,int sock,int mode) {
+  string_t new_content;
   register u_char *ptr;
   u_char *safe,*link,*title;
   u_int64_t tid,mid;
@@ -847,7 +847,7 @@ int flt_directives_rewrite(t_cf_hash *head,t_configuration *dc,t_configuration *
 /* }}} */
 
 /* {{{ flt_directives_suial_set */
-int flt_directives_suial_set(t_cf_hash *head,t_configuration *dc,t_configuration *vc,t_cl_thread *thread,t_message *msg,t_cf_tpl_variable *hash) {
+int flt_directives_suial_set(cf_hash_t *head,configuration_t *dc,configuration_t *vc,cl_thread_t *thread,message_t *msg,cf_tpl_variable_t *hash) {
   if(flt_directives_suial == 0) cf_tpl_hashvar_setvalue(hash,"showimage",TPL_VARIABLE_INT,1);
   if(flt_directives_link) cf_tpl_hashvar_setvalue(hash,"target",TPL_VARIABLE_STRING,flt_directives_link,strlen(flt_directives_link));
   return FLT_OK;
@@ -855,7 +855,7 @@ int flt_directives_suial_set(t_cf_hash *head,t_configuration *dc,t_configuration
 /* }}} */
 
 /* {{{ flt_directives_init */
-int flt_directives_init(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc) {
+int flt_directives_init(cf_hash_t *cgi,configuration_t *dc,configuration_t *vc) {
   cf_html_register_directive("link",flt_directives_execute,CF_HTML_DIR_TYPE_ARG|CF_HTML_DIR_TYPE_INLINE);
   cf_html_register_directive("pref",flt_directives_execute,CF_HTML_DIR_TYPE_ARG|CF_HTML_DIR_TYPE_INLINE);
   cf_html_register_directive("ref",flt_directives_execute,CF_HTML_DIR_TYPE_ARG|CF_HTML_DIR_TYPE_INLINE);
@@ -873,7 +873,7 @@ int flt_directives_init(t_cf_hash *cgi,t_configuration *dc,t_configuration *vc) 
 /* }}} */
 
 /* {{{ directive handlers */
-int flt_directives_handle_rpl(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
+int flt_directives_handle_rpl(configfile_t *cfile,conf_opt_t *opt,const u_char *context,u_char **args,size_t argnum) {
   if(flt_directives_fname == NULL) flt_directives_fname = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   if(!context || cf_strcmp(context,flt_directives_fname) != 0) return 0;
 
@@ -882,7 +882,7 @@ int flt_directives_handle_rpl(t_configfile *cfile,t_conf_opt *opt,const u_char *
   return 0;
 }
 
-int flt_directives_handle_uwl(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
+int flt_directives_handle_uwl(configfile_t *cfile,conf_opt_t *opt,const u_char *context,u_char **args,size_t argnum) {
   size_t i;
 
   if(flt_directives_fname == NULL) flt_directives_fname = cf_hash_get(GlobalValues,"FORUM_NAME",10);
@@ -899,7 +899,7 @@ int flt_directives_handle_uwl(t_configfile *cfile,t_conf_opt *opt,const u_char *
   return -1;
 }
 
-int flt_directives_handle_lit(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
+int flt_directives_handle_lit(configfile_t *cfile,conf_opt_t *opt,const u_char *context,u_char **args,size_t argnum) {
   if(flt_directives_fname == NULL) flt_directives_fname = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   if(!context || cf_strcmp(context,flt_directives_fname) != 0) return 0;
 
@@ -908,7 +908,7 @@ int flt_directives_handle_lit(t_configfile *cfile,t_conf_opt *opt,const u_char *
   return 0;
 }
 
-int flt_directives_handle_icons(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
+int flt_directives_handle_icons(configfile_t *cfile,conf_opt_t *opt,const u_char *context,u_char **args,size_t argnum) {
   if(flt_directives_fname == NULL) flt_directives_fname = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   if(!context || cf_strcmp(context,flt_directives_fname) != 0) return 0;
 
@@ -918,7 +918,7 @@ int flt_directives_handle_icons(t_configfile *cfile,t_conf_opt *opt,const u_char
   return 0;
 }
 
-int flt_directives_handle_suial(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
+int flt_directives_handle_suial(configfile_t *cfile,conf_opt_t *opt,const u_char *context,u_char **args,size_t argnum) {
   if(flt_directives_fname == NULL) flt_directives_fname = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   if(!context || cf_strcmp(context,flt_directives_fname) != 0) return 0;
 
@@ -927,7 +927,7 @@ int flt_directives_handle_suial(t_configfile *cfile,t_conf_opt *opt,const u_char
   return 0;
 }
 
-int flt_directives_handle_wbl(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
+int flt_directives_handle_wbl(configfile_t *cfile,conf_opt_t *opt,const u_char *context,u_char **args,size_t argnum) {
   if(flt_directives_fname == NULL) flt_directives_fname = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   if(!context || cf_strcmp(context,flt_directives_fname) != 0) return 0;
 
@@ -936,7 +936,7 @@ int flt_directives_handle_wbl(t_configfile *cfile,t_conf_opt *opt,const u_char *
   return 0;
 }
 
-int flt_directives_handle_purl(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
+int flt_directives_handle_purl(configfile_t *cfile,conf_opt_t *opt,const u_char *context,u_char **args,size_t argnum) {
   pcre *re;
   pcre_extra *extra;
   u_char *error = NULL;
@@ -968,7 +968,7 @@ int flt_directives_handle_purl(t_configfile *cfile,t_conf_opt *opt,const u_char 
   return 0;
 }
 
-int flt_directives_handle_iframe(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
+int flt_directives_handle_iframe(configfile_t *cfile,conf_opt_t *opt,const u_char *context,u_char **args,size_t argnum) {
   if(flt_directives_fname == NULL) flt_directives_fname = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   if(!context || cf_strcmp(context,flt_directives_fname) != 0) return 0;
 
@@ -976,7 +976,7 @@ int flt_directives_handle_iframe(t_configfile *cfile,t_conf_opt *opt,const u_cha
   return 0;
 }
 
-int flt_directives_handle_image(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
+int flt_directives_handle_image(configfile_t *cfile,conf_opt_t *opt,const u_char *context,u_char **args,size_t argnum) {
   if(flt_directives_fname == NULL) flt_directives_fname = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   if(!context || cf_strcmp(context,flt_directives_fname) != 0) return 0;
 
@@ -984,7 +984,7 @@ int flt_directives_handle_image(t_configfile *cfile,t_conf_opt *opt,const u_char
   return 0;
 }
 
-int flt_directives_handle_link(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
+int flt_directives_handle_link(configfile_t *cfile,conf_opt_t *opt,const u_char *context,u_char **args,size_t argnum) {
   if(flt_directives_fname == NULL) flt_directives_fname = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   if(!context || cf_strcmp(context,flt_directives_fname) != 0) return 0;
 
@@ -1001,13 +1001,13 @@ int flt_directives_handle_link(t_configfile *cfile,t_conf_opt *opt,const u_char 
 }
 
 void flt_directives_cleanup_entry(void *e) {
-  t_flt_directives_ref_uri *uri = (t_flt_directives_ref_uri *)e;
+  flt_directives_ref_uri_t *uri = (flt_directives_ref_uri_t *)e;
   free(uri->uri);
   free(uri->id);
 }
 
-int flt_directives_handle_ref(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
-  t_flt_directives_ref_uri uri;
+int flt_directives_handle_ref(configfile_t *cfile,conf_opt_t *opt,const u_char *context,u_char **args,size_t argnum) {
+  flt_directives_ref_uri_t uri;
 
   if(flt_directives_fname == NULL) flt_directives_fname = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   if(!context || cf_strcmp(context,flt_directives_fname) != 0) return 0;
@@ -1022,7 +1022,7 @@ int flt_directives_handle_ref(t_configfile *cfile,t_conf_opt *opt,const u_char *
   return 0;
 }
 
-int flt_directives_handle_rel(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
+int flt_directives_handle_rel(configfile_t *cfile,conf_opt_t *opt,const u_char *context,u_char **args,size_t argnum) {
   if(flt_directives_fname == NULL) flt_directives_fname = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   if(!context || cf_strcmp(context,flt_directives_fname) != 0) return 0;
 
@@ -1031,10 +1031,10 @@ int flt_directives_handle_rel(t_configfile *cfile,t_conf_opt *opt,const u_char *
   return 0;
 }
 
-int flt_directives_handle_lt(t_configfile *cfile,t_conf_opt *opt,const u_char *context,u_char **args,size_t argnum) {
+int flt_directives_handle_lt(configfile_t *cfile,conf_opt_t *opt,const u_char *context,u_char **args,size_t argnum) {
   u_char *ptr;
-  t_string str;
-  t_flt_directives_lt_tok tok;
+  string_t str;
+  flt_directives_lt_tok_t tok;
 
   if(flt_directives_fname == NULL) flt_directives_fname = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   if(!context || cf_strcmp(context,flt_directives_fname) != 0) return 0;
@@ -1112,7 +1112,7 @@ void flt_directives_cleanup(void) {
 }
 /* }}} */
 
-t_conf_opt flt_directives_config[] = {
+conf_opt_t flt_directives_config[] = {
   { "PostingUrl",           flt_directives_handle_purl,     CFG_OPT_CONFIG|CFG_OPT_LOCAL,               NULL },
   { "ShowIframeAsLink",     flt_directives_handle_iframe,   CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL,  NULL },
   { "ShowImageAsLink",      flt_directives_handle_image,    CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL,  NULL },
@@ -1130,14 +1130,14 @@ t_conf_opt flt_directives_config[] = {
   { NULL, NULL, 0, NULL }
 };
 
-t_handler_config flt_directives_handlers[] = {
+handler_config_t flt_directives_handlers[] = {
   { PERPOST_VAR_HANDLER, flt_directives_suial_set },
   { INIT_HANDLER,        flt_directives_init },
   { NEW_POST_HANDLER,    flt_directives_rewrite },
   { 0, NULL }
 };
 
-t_module_config flt_directives = {
+module_config_t flt_directives = {
   MODULE_MAGIC_COOKIE,
   flt_directives_config,
   flt_directives_handlers,

@@ -44,9 +44,9 @@
 
 /* {{{ flt_checkregisteredname_execute */
 #ifdef CF_SHARED_MEM
-int flt_checkregisteredname_execute(t_cf_hash *head,t_configuration *dc,t_configuration *pc,t_message *p,t_cl_thread *thr,void *ptr,int sock,int mode)
+int flt_checkregisteredname_execute(cf_hash_t *head,configuration_t *dc,configuration_t *pc,message_t *p,cl_thread_t *thr,void *ptr,int sock,int mode)
 #else
-int flt_checkregisteredname_execute(t_cf_hash *head,t_configuration *dc,t_configuration *pc,t_message *p,t_cl_thread *thr,int sock,int mode)
+int flt_checkregisteredname_execute(cf_hash_t *head,configuration_t *dc,configuration_t *pc,message_t *p,cl_thread_t *thr,int sock,int mode)
 #endif
 {
   u_char *username = cf_hash_get(GlobalValues,"UserName",8);
@@ -55,7 +55,7 @@ int flt_checkregisteredname_execute(t_cf_hash *head,t_configuration *dc,t_config
 
   rline_t rsd;
 
-  t_string str;
+  string_t str;
 
   if(!head) return FLT_DECLINE;
   memset(&rsd,0,sizeof(rsd));
@@ -97,16 +97,16 @@ int flt_checkregisteredname_execute(t_cf_hash *head,t_configuration *dc,t_config
 }
 /* }}} */
 
-t_conf_opt flt_checkregisteredname_config[] = {
+conf_opt_t flt_checkregisteredname_config[] = {
   { NULL, NULL, 0, NULL }
 };
 
-t_handler_config flt_checkregisteredname_handlers[] = {
+handler_config_t flt_checkregisteredname_handlers[] = {
   { NEW_POST_HANDLER,  flt_checkregisteredname_execute },
   { 0, NULL }
 };
 
-t_module_config flt_checkregisteredname = {
+module_config_t flt_checkregisteredname = {
   MODULE_MAGIC_COOKIE,
   flt_checkregisteredname_config,
   flt_checkregisteredname_handlers,
