@@ -10,33 +10,46 @@
 
 #define CF_UCONF_FLAG_INVISIBLE 0x01
 
+/** This structure contains the user configuration */
 typedef struct {
-  array_t directives;
+  array_t directives; /**< This is the array of directives */
 } uconf_userconfig_t;
 
+/** This structure contains a directive with all information of the modules.de.xml */
 typedef struct {
-  u_char *name;
-  u_char *access;
+  u_char *name; /**< The name of the directive */
+  u_char *access; /**< */
 
-  int flags;
-  int argnum;
+  int flags; /**< This variable contains the flags for this directive, i.e. CF_UCONF_FLAG_INVISIBLE */
+  int argnum; /**< The number of arguments of this directive */
 
-  array_t arguments;
+  array_t arguments; /**< The arguments of this directive */
 } uconf_directive_t;
 
+/** This struct defines the arguments */
 typedef struct {
-  u_char *param;
-  u_char *ifnotcommitted;
-  u_char *deflt;
-  u_char *parse;
-  u_char *val;
+  u_char *param; /**< The name of the CGI param */
+  u_char *ifnotcommitted; /**< The value which should be set if it was not committed */
+  u_char *deflt; /**< The default value */
+  u_char *parse; /**< The parse type (i.e. date) */
+  u_char *val; /**< The value */
 
-  int validation_type;
-  u_char *validation;
+  int validation_type; /**< The validation type; if != 0, should be validated by type */
+  u_char *validation; /**< The validation regex or the validation type */
 
-  u_char *error;
+  u_char *error; /**< The error message string */
 } uconf_argument_t;
 
+typedef struct {
+  u_char *directive;
+  u_char *param;
+  u_char *error;
+} uconf_error_t;
+
+/**
+ * This function reads the modules XML file, parses all information and saves it in a uconf_userconfig_t structure
+ * \return NULL if failure, pointer to uconf_userconfig_t on success
+ */
 uconf_userconfig_t *cf_uconf_read_modxml();
 
 void cf_uconf_destroy_argument(uconf_argument_t *argument);

@@ -5,5 +5,5 @@ EXTRA_DIST=ForumUtils.pm
 
 install-data-local:
 	for file in $(EXTRA_DIST); do \
-	  $(INSTALL_DATA) $$file $(libdir)/cforum/$$file; \
+	  $(INSTALL_DATA) $$file $(DESTDIR)$(pkglibdir)/$$file; \
 	done

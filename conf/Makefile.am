@@ -22,12 +22,12 @@ EXTRA_DIST=fo_admin.conf \
 
 
 install-data-local:
-	if test ! -d $(sysconfdir)/cforum; then \
-		$(MKDIR) -p $(sysconfdir)/cforum; \
+	if test ! -d $(DESTDIR)$(sysconfdir)/cforum; then \
+		$(MKDIR) -p $(DESTDIR)$(sysconfdir)/cforum; \
 	fi; \
 	for file in $(EXTRA_DIST); do \
-	  if test ! -f $(sysconfdir)/cforum/$$file; then \
-		  $(INSTALL_DATA) $$file $(sysconfdir)/cforum/$$file; \
+	  if test ! -f $(DESTDIR)$(sysconfdir)/cforum/$$file; then \
+		  $(INSTALL_DATA) $$file $(DESTDIR)$(sysconfdir)/cforum/$$file; \
 		fi; \
 	done
 
