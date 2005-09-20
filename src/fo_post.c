@@ -146,7 +146,7 @@ void display_posting_form(cf_hash_t *head,message_t *p,cf_tpl_variable_t *var) {
   size_t qclen;
   int utf8;
 
-  cf_hash_t_entry *ent;
+  cf_hash_keylist_t *key;
   cf_cgi_param_t *param;
 
   utf8 = cf_strcmp(cs->values[0],"UTF-8") == 0;
@@ -209,21 +209,17 @@ void display_posting_form(cf_hash_t *head,message_t *p,cf_tpl_variable_t *var) {
 
   /* {{{ set cgi variables */
   if(head) {
-    for(i=0;i<hashsize(head->tablesize);i++) {
-      if(head->table[i]) {
-        for(ent = head->table[i];ent;ent=ent->next) {
-          for(param = (cf_cgi_param_t *)ent->data;param;param=param->next) {
-            if(param->value) {
-              /* we don't want to have empty URLs */
-              len = strlen(param->name);
-              if(cf_strcasecmp(param->name+len-3,"Url") == 0) {
-                if(cf_strcmp(param->value,"http://") == 0) continue;
-              }
-
-              if(cf_strncmp(param->name,"ne_",3) == 0) cf_set_variable(&tpl,cs,param->name+3,param->value,strlen(param->value),0);
-              else cf_set_variable(&tpl,cs,param->name,param->value,strlen(param->value),1);
-            }
+    for(key=head->keys.elems;key;key=key->next) {
+      for(param = cf_hash_get(head,key->key,strlen(key->key));param;param=param->next) {
+        if(param->value) {
+          /* we don't want to have empty URLs */
+          len = strlen(param->name);
+          if(cf_strcasecmp(param->name+len-3,"Url") == 0) {
+            if(cf_strcmp(param->value,"http://") == 0) continue;
           }
+
+          if(cf_strncmp(param->name,"ne_",3) == 0) cf_set_variable(&tpl,cs,param->name+3,param->value,strlen(param->value),0);
+          else cf_set_variable(&tpl,cs,param->name,param->value,strlen(param->value),1);
         }
       }
     }
@@ -271,7 +267,7 @@ int normalize_cgi_variables(cf_hash_t *head,const u_char *field_name) {
   cf_cgi_param_t *param;
   char *buff;
   string_t str;
-  cf_hash_t_keylist *key;
+  cf_hash_keylist_t *key;
   u_int32_t num;
 
   if(!field) return -1;

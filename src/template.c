@@ -68,7 +68,7 @@ int cf_tpl_init(cf_template_t *tpl,const u_char *fname) {
 void cf_tpl_copyvars(cf_template_t *dst,cf_template_t *src, int clone) {
   cf_tpl_variable_t *tmp_var;
   long is_arrayref;
-  cf_hash_t_keylist *key;
+  cf_hash_keylist_t *key;
 
   for(key=src->varlist->keys.elems;key;key=key->next) {
     if((tmp_var = cf_hash_get(src->varlist,key->key,strlen(key->key))) == NULL) continue;
@@ -321,7 +321,7 @@ cf_tpl_variable_t *cf_tpl_var_convert(cf_tpl_variable_t *dest,cf_tpl_variable_t 
 
 /* {{{ cf_tpl_var_clone */
 cf_tpl_variable_t *cf_tpl_var_clone(cf_tpl_variable_t *var) {
-  cf_hash_t_keylist *key;
+  cf_hash_keylist_t *key;
   cf_tpl_variable_t *new_var, *tmp_var;
   size_t i;
   

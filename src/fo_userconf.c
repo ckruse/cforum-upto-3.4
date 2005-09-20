@@ -374,7 +374,7 @@ u_char *normalize_params(cf_hash_t *head,const u_char *name) {
   u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10),*converted,*val,c;
   register u_char *ptr;
   name_value_t *cs = cfg_get_first_value(&fo_default_conf,forum_name,"ExternCharset");
-  cf_hash_t_keylist *key;
+  cf_hash_keylist_t *key;
   cf_cgi_param_t *param;
   size_t flen;
 

@@ -40,12 +40,12 @@ typedef           u_char     ub1;   /**< unified character format */
 /**
  * This is a destructor function type. This function type is used to destroy hash elements.
  */
-typedef void (*cf_hash_t_cleanup)(void *);
+typedef void (*cf_hash_cleanup_t)(void *);
 
 typedef struct s_cf_hash_keylist {
   u_char *key;
   struct s_cf_hash_keylist *next,*prev;
-} cf_hash_t_keylist;
+} cf_hash_keylist_t;
 
 /**
  * this struct is used to store a hashtable entry.
@@ -65,18 +65,18 @@ typedef struct s_cf_hashentry {
    */
   struct s_cf_hashentry *next;
 
-  cf_hash_t_keylist *keyelem;
+  cf_hash_keylist_t *keyelem;
 
   /**
    * This is the pointer to the previous value. Because we cannot avoid double hash values, we have a
    * linked list of entries.
    */
   struct s_cf_hashentry *prev;
-} cf_hash_t_entry;
+} cf_hash_entry_t;
 
 typedef struct {
-  cf_hash_t_keylist *elems,*last;
-} cf_hash_t_keylishead_t;
+  cf_hash_keylist_t *elems,*last;
+} cf_hash_keylist_head_t;
 
 /**
  *
@@ -102,26 +102,26 @@ typedef struct s_cf_hash {
    * For element cleanups we need a callback function. This callback function
    * has to cleanup the structure we saved.
    */
-  cf_hash_t_cleanup destroy;
+  cf_hash_cleanup_t destroy;
 
-  cf_hash_t_keylishead_t keys;
+  cf_hash_keylist_head_t keys;
 
   /**
    * We save only pointers because in each element we have a
    * linked list of elements
    */
-  cf_hash_t_entry **table;
+  cf_hash_entry_t **table;
 } cf_hash_t;
 
 /**
  * this macro is used to make shorten indexes easier. It calculates the number of entries at the given table size
  */
-#define hashsize(n) ((ub4)1<<(n))
+#define cf_hashsize(n) ((ub4)1<<(n))
 
 /**
  * this macro is used to calculate the number of bytes used for keys in the actual table size.
  */
-#define hashmask(n) (hashsize(n)-1)
+#define cf_hashmask(n) (cf_hashsize(n)-1)
 
 /**
  *  This function is used to generate a hash sum from a given key.
@@ -130,7 +130,7 @@ typedef struct s_cf_hash {
  * \param level  The entropy level. It is used to mix a little bit random into the keys. Not used by this hash table library.
  * \return the hash sum
  */
-ub4 lookup(register ub1 *k, register ub4 length, register ub4 level);
+ub4 cf_lookup(register ub1 *k, register ub4 length, register ub4 level);
 
 /**
  * This function constructs a new hash. It expects a pointer to a
@@ -143,7 +143,7 @@ ub4 lookup(register ub1 *k, register ub4 length, register ub4 level);
  * \param cl The destructor for a data entry of the hash table. If the function pointer is NULL, no cleanup function will be called.
  * \return It returns the new created hash table object on success or NULL on failure
  */
-cf_hash_t *cf_hash_new(cf_hash_t_cleanup cl);
+cf_hash_t *cf_hash_new(cf_hash_cleanup_t cl);
 
 /**
  * This function saves a hash entry with the given key in the hash

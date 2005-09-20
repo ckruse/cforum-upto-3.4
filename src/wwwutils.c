@@ -72,7 +72,6 @@ cf_http_response_t *cf_http_simple_get_uri(const u_char *uri) {
   u_char *cwd,*absolute_url,*name,*value;
   HTRequest *request;
   HTChunk *chunk = NULL;
-  u_char *string = NULL;
   HTResponse *response;
   HTParentAnchor *panch;
 

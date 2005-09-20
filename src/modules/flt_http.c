@@ -224,7 +224,7 @@ int flt_http_execute(cf_hash_t *head,configuration_t *dc,configuration_t *vc,voi
   u_char *lm;
   int ret;
   cf_hash_t *header_table = cf_hash_new(NULL);
-  cf_hash_t_keylist *key;
+  cf_hash_keylist_t *key;
 
   /* {{{ http header management */
   ret = flt_http_header_callbacks(head,header_table,dc,vc,sock);

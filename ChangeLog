@@ -1,3 +1,11 @@
+2005-09-20 Christian Kruse <ckruse@wwwtech.de>
+	* src/modules/flt_spellcheck.c, src/modules/flt_http.c, src/hashlib.c,
+		src/hashlib.h, src/template.c, src/wwwutils.c, src/fo_userconf.c,
+		src/fo_post.c: Fixed seval typos in hashlib datatypes
+	* src/hashlib.[ch]: Renamed some functions ans symbols because of possible
+		name clashing with libxml2
+	* src/fo_post.c: Optimization, now setting CGI variables uses keylist, too
+
 2005-09-18 Christian Kruse <ckruse@wwwtech.de>
 	* src/userconf.[ch], src/fo_userconf.c: More developement
 
