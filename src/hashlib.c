@@ -98,9 +98,9 @@
  * mod a prime (mod is sooo slow!).  If you need less than 32 bits,
  * use a bitmask.  For example, if you need only 10 bits, do
  *
- * h = (h & hashmask(10));
+ * h = (h & cf_hashmask(10));
  *
- * In which case, the hash table should have hashsize(10) elements.
+ * In which case, the hash table should have cf_hashsize(10) elements.
  *
  * If you are hashing n strings (ub1 **)k, do it like this:
  *  for (i=0, h=0; i<n; ++i) h = lookup( k[i], len[i], h);
@@ -173,9 +173,9 @@ ub4 lookup(register ub1 *k,register ub4 length,register ub4 level) {
  * If the function pointer is NULL, no cleanup function will be called.
  *
  */
-cf_hash_t *cf_hash_new(cf_hash_t_cleanup cl) {
+cf_hash_t *cf_hash_new(cf_hash_cleanup_t cl) {
   cf_hash_t *hsh = malloc(sizeof(cf_hash_t));
-  ub4 elems = hashsize(CF_HASH_SIZE);
+  ub4 elems = cf_hashsize(CF_HASH_SIZE);
 
   if(!hsh) return NULL;
 
@@ -197,7 +197,7 @@ cf_hash_t *cf_hash_new(cf_hash_t_cleanup cl) {
    * this *sucks*. It costs a lot of time, but we need it because
    * we have to know if an element is set or not
    */
-  hsh->table     = calloc(elems,sizeof(cf_hash_t_entry **));
+  hsh->table     = calloc(elems,sizeof(cf_hash_entry_t **));
 
   hsh->destroy   = cl;
 
@@ -220,9 +220,9 @@ cf_hash_t *cf_hash_new(cf_hash_t_cleanup cl) {
  *
  * This function is private!
  */
-cf_hash_t_entry *_cf_hash_save(cf_hash_t *hsh,unsigned char *key,size_t keylen,void *data,size_t datalen,ub4 hashval) {
-  cf_hash_t_entry *ent = malloc(sizeof(cf_hash_t_entry));
-  cf_hash_t_keylist *akt = NULL;
+cf_hash_entry_t *_cf_hash_save(cf_hash_t *hsh,unsigned char *key,size_t keylen,void *data,size_t datalen,ub4 hashval) {
+  cf_hash_entry_t *ent = malloc(sizeof(cf_hash_entry_t));
+  cf_hash_keylist_t *akt = NULL;
 
   if(!ent) return NULL;
 
@@ -302,21 +302,21 @@ cf_hash_t_entry *_cf_hash_save(cf_hash_t *hsh,unsigned char *key,size_t keylen,v
  */
 void _cf_hash_split(cf_hash_t *hsh,unsigned char *key,size_t keylen,void *data,size_t datalen,ub4 hval) {
   ub4 elems,oelems,i,hval_short;
-  cf_hash_t_entry *elem,*elem1;
+  cf_hash_entry_t *elem,*elem1;
 
-  oelems = hashsize(hsh->tablesize);
-  elems  = hashsize(++(hsh->tablesize));
+  oelems = cf_hashsize(hsh->tablesize);
+  elems  = cf_hashsize(++(hsh->tablesize));
 
   /*
    * first, we have to reallocate the hashtable. This is expensive enough...
    */
-  hsh->table = realloc(hsh->table,elems * sizeof(cf_hash_t_entry **));
+  hsh->table = realloc(hsh->table,elems * sizeof(cf_hash_entry_t **));
 
   /*
    * But this is not enough. We also have to set the second
    * half to NULL *grr* this is *very* expensive.
    */
-  memset(&hsh->table[oelems],0,oelems * sizeof(cf_hash_t_entry **));
+  memset(&hsh->table[oelems],0,oelems * sizeof(cf_hash_entry_t **));
 
   /*
    * But as if this is not enough, we have to re-structure the complete
@@ -395,7 +395,7 @@ void _cf_hash_split(cf_hash_t *hsh,unsigned char *key,size_t keylen,void *data,s
 /* {{{ cf_hash_set */
 int cf_hash_set(cf_hash_t *hsh,unsigned char *key,size_t keylen,void *data,size_t datalen) {
   ub4 hval,hval_short;
-  cf_hash_t_entry *ent,*prev;
+  cf_hash_entry_t *ent,*prev;
 
   /*
    * generate the hash value
@@ -406,7 +406,7 @@ int cf_hash_set(cf_hash_t *hsh,unsigned char *key,size_t keylen,void *data,size_
    * because we need no 32 bit hash values (a hashtable of
    * a size of 32 bit is definitely a *very* to big!)
    */
-  hval_short = hval & hashmask(hsh->tablesize);
+  hval_short = hval & cf_hashmask(hsh->tablesize);
 
   ent = hsh->table[hval_short];
 
@@ -436,7 +436,7 @@ int cf_hash_set(cf_hash_t *hsh,unsigned char *key,size_t keylen,void *data,size_
     /*
      * phew... I *really* hope this case happens not very often.
      */
-    if(hsh->elements >= hashsize(hsh->tablesize)) _cf_hash_split(hsh,key,keylen,data,datalen,hval);
+    if(hsh->elements >= cf_hashsize(hsh->tablesize)) _cf_hash_split(hsh,key,keylen,data,datalen,hval);
     else {
       prev->next       = _cf_hash_save(hsh,key,keylen,data,datalen,hval);
       prev->next->prev = prev;
@@ -457,7 +457,7 @@ int cf_hash_set(cf_hash_t *hsh,unsigned char *key,size_t keylen,void *data,size_
 /* {{{ cf_hash_set_static */
 int cf_hash_set_static(cf_hash_t *hsh,unsigned char *key,size_t keylen,void *data) {
   ub4 hval,hval_short;
-  cf_hash_t_entry *ent,*prev;
+  cf_hash_entry_t *ent,*prev;
 
   /*
    * generate the hash value
@@ -468,7 +468,7 @@ int cf_hash_set_static(cf_hash_t *hsh,unsigned char *key,size_t keylen,void *dat
    * because we need no 32 bit hash values (a hashtable of
    * a size of 32 bit is definitely a *very* to big!)
    */
-  hval_short = hval & hashmask(hsh->tablesize);
+  hval_short = hval & cf_hashmask(hsh->tablesize);
 
   ent = hsh->table[hval_short];
 
@@ -497,7 +497,7 @@ int cf_hash_set_static(cf_hash_t *hsh,unsigned char *key,size_t keylen,void *dat
     /*
      * phew... I *really* hope this case happens not very often.
      */
-    if(hsh->elements >= hashsize(hsh->tablesize)) _cf_hash_split(hsh,key,keylen,data,0,hval);
+    if(hsh->elements >= cf_hashsize(hsh->tablesize)) _cf_hash_split(hsh,key,keylen,data,0,hval);
     else {
       prev->next       = _cf_hash_save(hsh,key,keylen,data,0,hval);
       prev->next->prev = prev;
@@ -518,10 +518,10 @@ int cf_hash_set_static(cf_hash_t *hsh,unsigned char *key,size_t keylen,void *dat
 /* {{{ cf_hash_get */
 void *cf_hash_get(cf_hash_t *hsh,unsigned char *key,size_t keylen) {
   ub4 hval,hval_short;
-  cf_hash_t_entry *ent;
+  cf_hash_entry_t *ent;
 
   hval       = lookup(key,keylen,0);
-  hval_short = hval & hashmask(hsh->tablesize);
+  hval_short = hval & cf_hashmask(hsh->tablesize);
 
   if(hsh->table[hval_short]) {
     for(ent = hsh->table[hval_short];ent && (ent->hashval != hval || ent->keylen != keylen || memcmp(ent->key,key,keylen) != 0);ent=ent->next);
@@ -536,10 +536,10 @@ void *cf_hash_get(cf_hash_t *hsh,unsigned char *key,size_t keylen) {
 /* {{{ cf_hash_entry_delete */
 int cf_hash_entry_delete(cf_hash_t *hsh,unsigned char *key,size_t keylen) {
   ub4 hval,hval_short;
-  cf_hash_t_entry *ent;
+  cf_hash_entry_t *ent;
 
   hval       = lookup(key,keylen,0);
-  hval_short = hval & hashmask(hsh->tablesize);
+  hval_short = hval & cf_hashmask(hsh->tablesize);
 
   if(hsh->table[hval_short]) {
     for(ent = hsh->table[hval_short];ent && (ent->hashval != hval || ent->keylen != keylen || memcmp(ent->key,key,keylen) != 0);ent=ent->next);
@@ -574,15 +574,15 @@ int cf_hash_entry_delete(cf_hash_t *hsh,unsigned char *key,size_t keylen) {
 
 /* {{{ cf_hash_destroy() */
 void cf_hash_destroy(cf_hash_t *hsh) {
-  cf_hash_t_keylist *key,*key1;
+  cf_hash_keylist_t *key,*key1;
   ub4 hval,hval_short;
-  cf_hash_t_entry *ent;
+  cf_hash_entry_t *ent;
   size_t keylen;
 
   for(key=hsh->keys.elems;key;key=key1) {
     keylen     = strlen(key->key);
     hval       = lookup(key->key,keylen,0);
-    hval_short = hval & hashmask(hsh->tablesize);
+    hval_short = hval & cf_hashmask(hsh->tablesize);
 
     key1 = key->next;
 

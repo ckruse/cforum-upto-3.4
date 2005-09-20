@@ -90,7 +90,7 @@ int flt_spellcheck_execute(cf_hash_t *head,configuration_t *dc,configuration_t *
   string_t *ptmp;
   FILE *ispell_read;
   
-  cf_hash_t_entry *ent;
+  cf_hash_entry_t *ent;
   cf_cgi_param_t *param;
   name_value_t *v;
   

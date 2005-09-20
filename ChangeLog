@@ -1,31 +1,8 @@
-2005-09-18 Christian Kruse <ckruse@wwwtech.de>
-	* *: Merged back changes from trunk branch
-
-2005-09-17 Christian Kruse <ckruse@wwwtech.de>
-	* src/utils.c: Removed redirect_with_nice_uri(), moved it to wwwutils.c
-	* src/utils.h: Added wwwutils definitions
-	* src/modules/flt_threadreturnanchor.c: Fixed some typos caused by changed
-		datatype names
-	* src/modules/flt_scoring.lex: Moved to new datatype names, I forgot most of
-		the changes at this file
-	* src/swig/Makefile.in: Deactivated SWIG default compilation, now you have to
-		type "make swig" to create SWIG modules
-	* src/wwwutils.c: Added utilities to handle HTTP and WWW exercises
-	* src/Makefile.am: Added wwwutils.c
-	* configure.in: libwww is no longer optional now
-	* src/modules/Makefile.am: Now flt_remotesignature doesn't need to be linked
-		against libwww
-	* src/modules/flt_handle404.c, src/modules/flt_xmlarc.c, src/fo_post.c,
-		src/fo_arcview.c, src/fo_threadlookup.c, src/modules/flt_remotesignature.c:
-		Now using wwwutils
-
-2005-09-10 Christian Kruse <ckruse@wwwtech.de>
-	* *: Unified datatype naming conversions. <typename>_t is now obligation for
-		type names
-
-2005-09-08 Christian Kruse <ckruse@wwwtech.de>
-	* src/utils.h: Bugfix in ARRAY_INITIALIZER macro
-	* src/modules/flt_directives.c: Bugfix in image handling
-	* src/fo_vote.c: Bugfix for #55
-	* src/htmllib.c: Bugfix for #62
+2005-09-20 Christian Kruse <ckruse@wwwtech.de>
+	* src/modules/flt_spellcheck.c, src/modules/flt_http.c, src/hashlib.c,
+		src/hashlib.h, src/template.c, src/wwwutils.c, src/fo_userconf.c,
+		src/fo_post.c: Fixed seval typos in hashlib datatypes
+	* src/hashlib.[ch]: Renamed some functions ans symbols because of possible
+		name clashing with libxml2
+	* src/fo_post.c: Optimization, now setting CGI variables uses keylist, too
 
