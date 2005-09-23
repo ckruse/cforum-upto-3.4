@@ -542,4 +542,22 @@ u_char *cf_write_uconf(const u_char *filename,uconf_userconfig_t *merged) {
 }
 /* }}} */
 
+static cf_hash_t *action_handlers = NULL;
+
+/* {{{ uconf_register_action_handler */
+int uconf_register_action_handler(u_char *name,uconf_action_handler_t action) {
+  if(action_handlers == NULL) action_handlers = cf_hash_new(NULL);
+  if(cf_hash_get(action_handlers,name,strlen(name)) != NULL) return -1;
+
+  cf_hash_set_static(action_handlers,name,strlen(name),action);
+}
+/* }}} */
+
+/* {{{ uconf_get_action_handler */
+uconf_action_handler_t uconf_get_action_handler(u_char *name) {
+  if(action_handlers == NULL) return NULL;
+  return cf_hash_get(action_handlers,name,strlen(name));
+}
+/* }}} */
+
 /* eof */

@@ -1,5 +1,6 @@
 2005-09-23 Christian Kruse <ckruse@wwwtech.de>
-	* src/modules/Makefile.am: Added flt_niceuserconf to mandatory plugins
+	* src/modules/Makefile.am: Added flt_niceuserconf to mandatory plugins, added
+		flt_importexport to optional plugins
 	* src/modules/flt_niceuserconf.c: Added plugin for nicer user config
 	* src/defines.h: Added hooks for user config (UCONF_DISPLAY_HANDLER,
 		UCONF_WRITE_HANDLER)
@@ -7,6 +8,8 @@
 		types
 	* src/handlerrunners.c: Added handler runners for user config
 	* src/fo_userconf.c: Added plugins
+	* configure.in: Added flt_importexport
+	* src/modules/flt_importexport.c: Plugin to import/export a user config
 
 2005-09-20 Christian Kruse <ckruse@wwwtech.de>
 	* src/modules/flt_spellcheck.c, src/modules/flt_http.c, src/hashlib.c,

@@ -126,10 +126,6 @@ int flt_niceuserconf_transformer(cf_hash_t *cgi,configuration_t *dc,configuratio
 }
 /* }}} */
 
-conf_opt_t flt_niceuserconf_config[] = {
-  { NULL, NULL, 0, NULL }
-};
-
 handler_config_t flt_niceuserconf_handlers[] = {
   { UCONF_DISPLAY_HANDLER,  flt_niceuserconf_nicevalues },
   { UCONF_WRITE_HANDLER,    flt_niceuserconf_transformer },

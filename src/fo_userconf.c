@@ -505,6 +505,27 @@ int add_view_directive(configfile_t *cfile,const u_char *context,u_char *name,u_
 }
 /* }}} */
 
+/* {{{ add_uconf_directive */
+int add_uconf_directive(configfile_t *cfile,const u_char *context,u_char *name,u_char **args,size_t argnum) {
+  conf_opt_t opt;
+  int ret;
+
+  u_char *fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
+
+  opt.name   = strdup(name);
+  opt.data   = &fo_userconf_conf;
+  opt.flags  = CFG_OPT_LOCAL;
+
+  opt.flags |= CFG_OPT_USER|CFG_OPT_CONFIG;
+
+  ret = handle_command(NULL,&opt,fn,args,argnum);
+
+  if(ret != -1) free(opt.name);
+
+  return ret;
+}
+/* }}} */
+
 /**
  * Dummy function, for ignoring unknown directives
  */
@@ -536,6 +557,8 @@ int main(int argc,char *argv[],char *env[]) {
   name_value_t *cs;
 
   int ret;
+
+  uconf_action_handler_t actionhndl;
   /* }}} */
 
   /* {{{ set signal handler for bad signals (for error reporting) */
@@ -605,7 +628,7 @@ int main(int argc,char *argv[],char *env[]) {
   free(conf.filename);
   conf.filename = ucfg;
 
-  if(read_config(&conf,ignre,CFG_MODE_USER) != 0) {
+  if(read_config(&conf,add_uconf_directive,CFG_MODE_USER) != 0) {
     fprintf(stderr,"config file error!\n");
 
     cfg_cleanup_file(&conf);
@@ -615,25 +638,30 @@ int main(int argc,char *argv[],char *env[]) {
   }
   /* }}} */
 
-  if(head && cf_cgi_get(head,"cs") != NULL) {
-    if((err = normalize_params(head,"cs")) != NULL) {
-      printf("Status: 500 Internal Server Error\015\012Status: text/html; charset=%s\015\012\015\012",cs->values[0]);
-      cf_error_message(err,NULL);
-      return EXIT_SUCCESS;
-    }
-  }
+  ret = cf_run_init_handlers(head);
 
-  if(head) {
-    if((action = cf_cgi_get(head,"a")) == NULL) show_edit_content(head,NULL,NULL,0,NULL);
-    else {
-      if(cf_strcmp(action,"save") == 0) do_save(head);
-      else {
-        /* TODO: check if action is registered */
-        show_edit_content(head,NULL,NULL,0,NULL);
+  if(ret != FLT_EXIT) {
+    if(head && cf_cgi_get(head,"cs") != NULL) {
+      if((err = normalize_params(head,"cs")) != NULL) {
+        printf("Status: 500 Internal Server Error\015\012Status: text/html; charset=%s\015\012\015\012",cs->values[0]);
+        cf_error_message(err,NULL);
+        return EXIT_SUCCESS;
       }
     }
+
+    if(head) {
+      if((action = cf_cgi_get(head,"a")) == NULL) show_edit_content(head,NULL,NULL,0,NULL);
+      else {
+        if(cf_strcmp(action,"save") == 0) do_save(head);
+        else if((actionhndl = uconf_get_action_handler(action)) != NULL) actionhndl(head,&fo_default_conf,&fo_userconf_conf);
+        else {
+          /* TODO: check if action is registered */
+          show_edit_content(head,NULL,NULL,0,NULL);
+        }
+      }
+    }
+    else show_edit_content(head,NULL,NULL,0,NULL);
   }
-  else show_edit_content(head,NULL,NULL,0,NULL);
 
   if(head) cf_hash_destroy(head);
 

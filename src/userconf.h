@@ -61,9 +61,15 @@ uconf_userconfig_t *cf_uconf_merge_config(cf_hash_t *head,configuration_t *confi
 u_char *cf_write_uconf(const u_char *filename,uconf_userconfig_t *merged);
 
 int cf_run_uconf_write_handlers(cf_hash_t *cgi,configuration_t *dc,configuration_t *uc,configuration_t *oldconf,uconf_userconfig_t *newconf);
+void cf_run_uconf_display_handlers(cf_hash_t *cgi,configuration_t *dc,configuration_t *uc,cf_template_t *tpl,configuration_t *user);
 
 typedef int (*uconf_write_filter_t)(cf_hash_t *cgi,configuration_t *dc,configuration_t *uc,configuration_t *oldconf,uconf_userconfig_t *newconf);
 typedef int (*uconf_display_filter_t)(cf_hash_t *cgi,configuration_t *dc,configuration_t *uc,cf_template_t *tpl,configuration_t *uconf);
+
+typedef void (*uconf_action_handler_t)(cf_hash_t *cgi,configuration_t *dc,configuration_t *uc);
+
+int uconf_register_action_handler(u_char *name,uconf_action_handler_t action);
+uconf_action_handler_t uconf_get_action_handler(u_char *name);
 
 #endif
 
