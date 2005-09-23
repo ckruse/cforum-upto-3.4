@@ -65,7 +65,7 @@ void flt_importexport_export(cf_hash_t *cgi,configuration_t *dc,configuration_t 
   }
 
   str_init(&str);
-  str_cstr_set(&str,"<CFConfig version=\"0.1\">\n");
+  str_cstr_set(&str,"<!DOCTYPE CFConfig SYSTEM \"http://wwwtech.de/cforum/download/cfconfig-0.1.dtd\">\n<CFConfig version=\"0.1\">\n");
 
   for(i=0;i<modxml->directives.elements;++i) {
     directive = array_element_at(&modxml->directives,i);
