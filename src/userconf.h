@@ -60,6 +60,11 @@ void cf_uconf_to_html(string_t *str);
 uconf_userconfig_t *cf_uconf_merge_config(cf_hash_t *head,configuration_t *config,array_t *errormessages,int touch_committed);
 u_char *cf_write_uconf(const u_char *filename,uconf_userconfig_t *merged);
 
+int cf_run_uconf_write_handlers(cf_hash_t *cgi,configuration_t *dc,configuration_t *uc,configuration_t *oldconf,uconf_userconfig_t *newconf);
+
+typedef int (*uconf_write_filter_t)(cf_hash_t *cgi,configuration_t *dc,configuration_t *uc,configuration_t *oldconf,uconf_userconfig_t *newconf);
+typedef int (*uconf_display_filter_t)(cf_hash_t *cgi,configuration_t *dc,configuration_t *uc,cf_template_t *tpl,configuration_t *uconf);
+
 #endif
 
 /* eof */

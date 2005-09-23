@@ -1,3 +1,13 @@
+2005-09-23 Christian Kruse <ckruse@wwwtech.de>
+	* src/modules/Makefile.am: Added flt_niceuserconf to mandatory plugins
+	* src/modules/flt_niceuserconf.c: Added plugin for nicer user config
+	* src/defines.h: Added hooks for user config (UCONF_DISPLAY_HANDLER,
+		UCONF_WRITE_HANDLER)
+	* src/userconf.h: Added handler runner prototypes, added plugin function
+		types
+	* src/handlerrunners.c: Added handler runners for user config
+	* src/fo_userconf.c: Added plugins
+
 2005-09-20 Christian Kruse <ckruse@wwwtech.de>
 	* src/modules/flt_spellcheck.c, src/modules/flt_http.c, src/hashlib.c,
 		src/hashlib.h, src/template.c, src/wwwutils.c, src/fo_userconf.c,

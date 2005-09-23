@@ -32,6 +32,7 @@
 #include "charconvert.h"
 #include "clientlib.h"
 #include "cfcgi.h"
+#include "userconf.h"
 /* }}} */
 
 /* {{{ cf_run_view_list_handlers */
@@ -366,6 +367,41 @@ int cf_run_readmode_collectors(cf_hash_t *head,configuration_t *vc,cf_readmode_t
   }
 
   return ext;
+}
+/* }}} */
+
+/* {{{ cf_run_uconf_write_handlers */
+int cf_run_uconf_write_handlers(cf_hash_t *cgi,configuration_t *dc,configuration_t *uc,configuration_t *oldconf,uconf_userconfig_t *newconf) {
+  int ret = FLT_OK;
+  handler_config_t *handler;
+  size_t i;
+  uconf_write_filter_t fkt;
+
+  if(Modules[UCONF_WRITE_HANDLER].elements) {
+    for(i=0;i<Modules[UCONF_WRITE_HANDLER].elements && ret != FLT_EXIT;++i) {
+      handler = array_element_at(&Modules[UCONF_WRITE_HANDLER],i);
+      fkt     = (uconf_write_filter_t)handler->func;
+      ret     = fkt(cgi,dc,uc,oldconf,newconf);
+    }
+  }
+
+  return ret;
+}
+/* }}} */
+
+/* {{{ cf_run_uconf_display_handlers */
+void cf_run_uconf_display_handlers(cf_hash_t *cgi,configuration_t *dc,configuration_t *uc,cf_template_t *tpl,configuration_t *user) {
+  handler_config_t *handler;
+  size_t i;
+  uconf_display_filter_t fkt;
+
+  if(Modules[UCONF_DISPLAY_HANDLER].elements) {
+    for(i=0;i<Modules[UCONF_DISPLAY_HANDLER].elements;++i) {
+      handler = array_element_at(&Modules[UCONF_DISPLAY_HANDLER],i);
+      fkt     = (uconf_display_filter_t)handler->func;
+      fkt(cgi,dc,uc,tpl,user);
+    }
+  }
 }
 /* }}} */
 

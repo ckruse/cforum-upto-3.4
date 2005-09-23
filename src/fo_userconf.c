@@ -85,6 +85,7 @@ void sighandler(int segnum) {
 int cfg_compare(cf_tree_dataset_t *dt1,cf_tree_dataset_t *dt2);
 void destroy_directive_list(cf_tree_dataset_t *dt);
 
+static int inited = 0;
 configuration_t glob_config;
 
 /* {{{ handle_userconf_command */
@@ -129,28 +130,29 @@ void show_edit_content(cf_hash_t *head,const u_char *msg,const u_char *source,in
 
   size_t i,j;
 
-  cf_tree_init(&glob_config.global_directives,cfg_compare,destroy_directive_list);
-  cf_list_init(&glob_config.forums);
-
   if((uname = cf_hash_get(GlobalValues,"UserName",8)) == NULL) {
     printf("Status: 403 Forbidden\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
     cf_error_message("E_MUST_AUTH",NULL);
     return;
   }
 
-  if((ucfg = cf_get_uconf_name(uname)) == NULL) {
-    printf("Status: 403 Forbidden\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
-    cf_error_message("E_MUST_AUTH",NULL);
-    return;
-  }
+  if(inited == 0) {
+    if((ucfg = cf_get_uconf_name(uname)) == NULL) {
+      printf("Status: 403 Forbidden\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
+      cf_error_message("E_MUST_AUTH",NULL);
+      return;
+    }
 
-  cfg_init_file(&config,ucfg);
-  free(ucfg);
+    cfg_init_file(&config,ucfg);
+    free(ucfg);
 
-  if(read_config(&config,handle_userconf_command,CFG_MODE_USER) != 0) {
-    printf("Status: 500 Internal Server Error\015\012COntent-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
-    cf_error_message("E_CONFIG_BROKEN",NULL);
-    return;
+    if(read_config(&config,handle_userconf_command,CFG_MODE_USER) != 0) {
+      printf("Status: 500 Internal Server Error\015\012COntent-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
+      cf_error_message("E_CONFIG_BROKEN",NULL);
+      return;
+    }
+
+    inited = 1;
   }
 
   if((modxml = cf_uconf_read_modxml()) == NULL) {
@@ -309,6 +311,8 @@ void show_edit_content(cf_hash_t *head,const u_char *msg,const u_char *source,in
     cf_tpl_setvalue(&tpl,"error",TPL_VARIABLE_INT,1);
   }
 
+  cf_run_uconf_display_handlers(head,&fo_default_conf,&fo_userconf_conf,&tpl,&glob_config);
+
   printf("Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
   cf_tpl_parse(&tpl);
 
@@ -318,6 +322,7 @@ void show_edit_content(cf_hash_t *head,const u_char *msg,const u_char *source,in
 }
 /* }}} */
 
+/* {{{ do_save */
 void do_save(cf_hash_t *head) {
   uconf_userconfig_t *merged;
   u_char *msg,*uname,*ucfg, *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);;
@@ -346,9 +351,17 @@ void do_save(cf_hash_t *head) {
     return;
   }
 
+  inited = 1;
+
   memset(&errmsgs,0,sizeof(errmsgs));
   if((merged = cf_uconf_merge_config(head,&glob_config,&errmsgs,1)) != NULL) {
-    /* TODO: run plugins */
+    if(cf_run_uconf_write_handlers(head,&fo_default_conf,&fo_userconf_conf,&glob_config,merged) == FLT_EXIT) {
+      cf_uconf_cleanup_modxml(merged);
+      free(merged);
+      cfg_cleanup_file(&config);
+      free(ucfg);
+      return;
+    }
 
     if((msg = cf_write_uconf(ucfg,merged)) != NULL) cf_error_message(msg,NULL,strerror(errno));
     else show_edit_content(head,NULL,"cgi",1,NULL);
@@ -366,8 +379,8 @@ void do_save(cf_hash_t *head) {
 
   cfg_cleanup_file(&config);
   free(ucfg);
-
 }
+/* }}} */
 
 /* {{{ normalize_params */
 u_char *normalize_params(cf_hash_t *head,const u_char *name) {
@@ -535,6 +548,9 @@ int main(int argc,char *argv[],char *env[]) {
   cf_init();
   init_modules();
   cfg_init();
+
+  cf_tree_init(&glob_config.global_directives,cfg_compare,destroy_directive_list);
+  cf_list_init(&glob_config.forums);
 
   forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   head       = cf_cgi_new();
