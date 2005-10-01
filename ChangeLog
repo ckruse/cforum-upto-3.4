@@ -1,3 +1,7 @@
+2005-10-01 Christian Kruse <ckruse@wwwtech.de>
+	* conf/fo_view.conf.in: Removed some old config values
+	* src/swig/CForum-Template/Makefile.PL.in: Bugfix for datatypes
+
 2005-09-23 Christian Kruse <ckruse@wwwtech.de>
 	* src/modules/Makefile.am: Added flt_niceuserconf to mandatory plugins, added
 		flt_importexport to optional plugins
