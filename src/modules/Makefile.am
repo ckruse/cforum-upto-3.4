@@ -62,6 +62,10 @@ pkglib_LTLIBRARIES+=flt_http.la
 flt_http_la_SOURCES=flt_http.c
 flt_http_la_LDFLAGS=-module -export-dynamic -avoid-version
 
+pkglib_LTLIBRARIES+=flt_niceuserconf.la
+flt_niceuserconf_la_SOURCES=flt_niceuserconf.c
+flt_niceuserconf_la_LDFLAGS=-module -export-dynamic -avoid-version
+
 
 # optional modules
 EXTRA_LTLIBRARIES=flt_basic.la
@@ -256,6 +260,10 @@ flt_shortcuts_la_LDFLAGS=-module -export-dynamic -avoid-version -rpath '$(pkglib
 EXTRA_LTLIBRARIES+=flt_bbcodes.la
 flt_bbcodes_la_SOURCES=flt_bbcodes.c
 flt_bbcodes_la_LDFLAGS=-module -export-dynamic -avoid-version -rpath '$(pkglibdir)'
+
+EXTRA_LTLIBRARIES+=flt_importexport.la
+flt_importexport_la_SOURCES=flt_importexport.c
+flt_importexport_la_LDFLAGS=-module -export-dynamic -avoid-version -rpath '$(pkglibdir)'
 
 
 pkglib_LTLIBRARIES+=${OPTIONAL_MODULES}

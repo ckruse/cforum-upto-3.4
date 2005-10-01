@@ -73,8 +73,10 @@
 #define PERPOST_VAR_HANDLER     24
 #define RM_COLLECTORS_HANDLER   25
 #define REMOVE_THREAD_HANDLER   26
+#define UCONF_WRITE_HANDLER     27
+#define UCONF_DISPLAY_HANDLER   28
 
-#define MOD_MAX                 26 /**< The maximum hook value. */
+#define MOD_MAX                 28 /**< The maximum hook value. */
 
 #define FLT_OK       0 /**< Returned by a plugin function if everything as ok. */
 #define FLT_DECLINE -1 /**< Returned by a plugin function if this request is not for the plugin. */
