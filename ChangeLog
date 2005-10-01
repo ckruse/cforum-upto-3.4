@@ -1,8 +1,9 @@
-2005-10-01 Christian Seiler <self@christian-seiler.de>
-	scripts/fo_userconf.in: fixed datatype
-
 2005-10-01 Christian Kruse <ckruse@wwwtech.de>
 	* *: Merged back changes from trunk
+
+2005-10-01 Christian Seiler <self@christian-seiler.de>
+	* src/wwwutils.c: Bugfix in cf_http_redirect_with_nice_uri
+	* scripts/fo_userconf.in: fixed datatype
 
 2005-10-01 Christian Kruse <ckruse@wwwtech.de>
 	* conf/fo_view.conf.in: Removed some old config values

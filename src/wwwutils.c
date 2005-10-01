@@ -263,9 +263,19 @@ void cf_http_redirect_with_nice_uri(const u_char *ruri,int perm) {
 
     str_char_append(&uri,'/');
     slash = 1;
+
+    ptr = (u_char *)ruri;
+  }
+  else if(cf_strncmp(ruri,"http://",7) == 0) {
+    str_chars_append(&uri,"http://",7);
+    ptr = (u_char *)ruri + 7 * sizeof(u_char);
+  }
+  else {
+    str_chars_append(&uri,"https://",8);
+    ptr = (u_char *)ruri + 8 * sizeof(u_char);
   }
 
-  for(ptr=(u_char *)ruri;*ptr;++ptr) {
+  for(;*ptr;++ptr) {
     switch(*ptr) {
       case '/':
         if(slash == 0) str_char_append(&uri,'/');
