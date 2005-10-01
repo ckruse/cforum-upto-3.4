@@ -1,4 +1,7 @@
 2005-10-01 Christian Kruse <ckruse@wwwtech.de>
+	* src/wwwutils.c: Bugfix in cf_http_redirect_with_nice_uri
+
+2005-10-01 Christian Kruse <ckruse@wwwtech.de>
 	* conf/fo_view.conf.in: Removed some old config values
 	* src/swig/CForum-Template/Makefile.PL.in: Bugfix for datatypes
 
