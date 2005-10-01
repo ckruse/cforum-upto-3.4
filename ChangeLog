@@ -1,4 +1,4 @@
-2005-10-01 Christian Kruse <ckruse@wwwtech.de>
+2005-10-01 Christian Seiler <self@christian-seiler.de>
 	* src/wwwutils.c: Bugfix in cf_http_redirect_with_nice_uri
 
 2005-10-01 Christian Kruse <ckruse@wwwtech.de>
