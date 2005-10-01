@@ -174,7 +174,7 @@ sub generate_edit_output {
 
   my $is_admin         = is_admin($fo_default_conf,$UserName) || 0;
 
-  my $categories = new CForum::Template::t_cf_tpl_variable($CForum::Template::TPL_VARIABLE_ARRAY);
+  my $categories = new CForum::Template::cf_tpl_variable_t($CForum::Template::TPL_VARIABLE_ARRAY);
   my @cats = get_conf_val($fo_default_conf,$Forum,'Categories');
 
   $categories->addvalue($_) foreach @cats;
