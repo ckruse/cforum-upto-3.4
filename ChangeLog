@@ -1,3 +1,6 @@
+2005-10-07 Christian Seiler <self@christian-seiler.de>
+	* src/perl/Plugins/UserconfCategories.pm: fixed datatype
+
 2005-10-01 Christian Kruse <ckruse@wwwtech.de>
 	* *: Merged back changes from trunk
 

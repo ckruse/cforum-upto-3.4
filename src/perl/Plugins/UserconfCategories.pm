@@ -40,7 +40,7 @@ sub execute {
   my $cats = get_conf_val($user_config,'global','ShowCategories');
 
   if($cats) {
-    my $catsvar = new CForum::Template::t_cf_tpl_variable($CForum::Template::TPL_VARIABLE_ARRAY);
+    my $catsvar = new CForum::Template::cf_tpl_variable_t($CForum::Template::TPL_VARIABLE_ARRAY);
     my @catsary = split /,/,$cats;
 
     $catsvar->addvalue($_) foreach @catsary;
@@ -49,7 +49,7 @@ sub execute {
 
   $cats = get_conf_val($user_config,'global','HighlightCategories');
   if($cats) {
-    my $catsvar = new CForum::Template::t_cf_tpl_variable($CForum::Template::TPL_VARIABLE_ARRAY);
+    my $catsvar = new CForum::Template::cf_tpl_variable_t($CForum::Template::TPL_VARIABLE_ARRAY);
     my @catsary = split /,/,$cats;
 
     $catsvar->addvalue($_) foreach @catsary;
