@@ -107,7 +107,7 @@ int flt_spellcheck_execute(cf_hash_t *head,configuration_t *dc,configuration_t *
   
   if(cf_cgi_get(head,"spellcheck_ok")) {
     array_init(&replacements,sizeof(flt_spellcheck_replacement_t),NULL);
-    for(i=0;(size_t)i<hashsize(head->tablesize);i++) {
+    for(i=0;(size_t)i<cf_hashsize(head->tablesize);i++) {
       if(!head->table[i]) continue;
 
       for(ent = head->table[i];ent;ent=ent->next) {
