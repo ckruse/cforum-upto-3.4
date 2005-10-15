@@ -62,11 +62,6 @@ pkglib_LTLIBRARIES+=flt_http.la
 flt_http_la_SOURCES=flt_http.c
 flt_http_la_LDFLAGS=-module -export-dynamic -avoid-version
 
-pkglib_LTLIBRARIES+=flt_niceuserconf.la
-flt_niceuserconf_la_SOURCES=flt_niceuserconf.c
-flt_niceuserconf_la_LDFLAGS=-module -export-dynamic -avoid-version
-
-
 # optional modules
 EXTRA_LTLIBRARIES=flt_basic.la
 flt_basic_la_SOURCES=flt_basic.c
