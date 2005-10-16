@@ -317,6 +317,14 @@ int cf_uconf_copy_values(configuration_t *config,uconf_directive_t *directive,uc
 }
 /* }}} */
 
+/* {{{ cf_uconf_cleanup_err */
+void cf_uconf_cleanup_err(uconf_error_t *err) {
+  if(err->directive) free(err->directive);
+  if(err->param) free(err->param);
+  if(err->error) free(err->error);
+}
+/* }}} */
+
 /* {{{ cf_uconf_merge_config */
 uconf_userconfig_t *cf_uconf_merge_config(cf_hash_t *head,configuration_t *config,array_t *errormessages,int touch_committed) {
   uconf_userconfig_t *modxml = cf_uconf_read_modxml(),*merged;
@@ -324,10 +332,12 @@ uconf_userconfig_t *cf_uconf_merge_config(cf_hash_t *head,configuration_t *confi
   uconf_argument_t *arg,my_arg;
   cf_cgi_param_t *mult;
   size_t i,j,len;
-  string_t str,str1;
+  string_t str;
   name_value_t *val;
   time_t t;
   u_char buff[512];
+
+  uconf_error_t our_err;
 
   pcre *regexp;
   u_char *error;
@@ -341,7 +351,7 @@ uconf_userconfig_t *cf_uconf_merge_config(cf_hash_t *head,configuration_t *confi
 
   merged = fo_alloc(NULL,1,sizeof(*merged),FO_ALLOC_MALLOC);
   array_init(&merged->directives,sizeof(my_directive),(void (*)(void *))cf_uconf_destroy_directive);
-  array_init(errormessages,sizeof(str1),(void (*)(void *))str_cleanup);
+  array_init(errormessages,sizeof(our_err),(void (*)(void *))cf_uconf_cleanup_err);
 
   for(didit=0,i=0;i<modxml->directives.elements;++i,didit=0) {
     directive = array_element_at(&modxml->directives,i);
@@ -375,34 +385,42 @@ uconf_userconfig_t *cf_uconf_merge_config(cf_hash_t *head,configuration_t *confi
           if(arg->validation_type) {
             if(cf_strcmp(arg->validation,"email") == 0) {
               if(is_valid_mailaddress(str.content) == -1) {
-                str_init_growth(&str1,128);
-                str_cstr_set(&str1,arg->error);
+                our_err.error     = strdup(arg->error);
+                our_err.param     = strdup(arg->param);
+                our_err.directive = strdup(directive->name);
+
                 err_occured = 1;
-                array_push(errormessages,&str1);
+                array_push(errormessages,&our_err);
               }
             }
             else if(cf_strcmp(arg->validation,"http-url") == 0) {
               if(is_valid_http_link(str.content,0) == -1) {
-                str_init_growth(&str1,128);
-                str_cstr_set(&str1,arg->error);
+                our_err.error     = strdup(arg->error);
+                our_err.param     = strdup(arg->param);
+                our_err.directive = strdup(directive->name);
+
                 err_occured = 1;
-                array_push(errormessages,&str1);
+                array_push(errormessages,&our_err);
               }
             }
             else if(cf_strcmp(arg->validation,"http-url-strict") == 0) {
               if(is_valid_http_link(str.content,1) == -1) {
-                str_init_growth(&str1,128);
-                str_cstr_set(&str1,arg->error);
+                our_err.error     = strdup(arg->error);
+                our_err.param     = strdup(arg->param);
+                our_err.directive = strdup(directive->name);
+
                 err_occured = 1;
-                array_push(errormessages,&str1);
+                array_push(errormessages,&our_err);
               }
             }
             else if(cf_strcmp(arg->validation,"url") == 0) {
               if(is_valid_link(str.content) == -1) {
-                str_init_growth(&str1,128);
-                str_cstr_set(&str1,arg->error);
+                our_err.error     = strdup(arg->error);
+                our_err.param     = strdup(arg->param);
+                our_err.directive = strdup(directive->name);
+
                 err_occured = 1;
-                array_push(errormessages,&str1);
+                array_push(errormessages,&our_err);
               }
             }
           }
@@ -411,17 +429,22 @@ uconf_userconfig_t *cf_uconf_merge_config(cf_hash_t *head,configuration_t *confi
           else {
             if((regexp = pcre_compile(arg->validation,0,(const char **)&error,&erroffset,NULL)) == NULL) {
               fprintf(stderr,"Error in pattern '%s': %s\n",arg->validation,error);
-              str_init_growth(&str1,128);
-              str_cstr_set(&str1,arg->error);
+
+              our_err.error     = strdup(arg->error);
+              our_err.param     = strdup(arg->param);
+              our_err.directive = strdup(directive->name);
+
               err_occured = 1;
-              array_push(errormessages,&str1);
+              array_push(errormessages,&our_err);
             }
 
             if(regexp && pcre_exec(regexp,NULL,str.content,str.len,0,0,NULL,0) < 0) {
-              str_init_growth(&str1,128);
-              str_cstr_set(&str1,arg->error);
+              our_err.error     = strdup(arg->error);
+              our_err.param     = strdup(arg->param);
+              our_err.directive = strdup(directive->name);
+
               err_occured = 1;
-              array_push(errormessages,&str1);
+              array_push(errormessages,&our_err);
             }
 
             if(regexp) pcre_free(regexp);
@@ -473,8 +496,8 @@ uconf_userconfig_t *cf_uconf_merge_config(cf_hash_t *head,configuration_t *confi
 }
 /* }}} */
 
-/* {{{ uconf_append_escaped */
-void uconf_append_escaped(string_t *str,const u_char *val) {
+/* {{{ _uconf_append_escaped */
+static void _uconf_append_escaped(string_t *str,const u_char *val) {
   register u_char *ptr;
 
   for(ptr=(u_char *)val;*ptr;++ptr) {
@@ -521,7 +544,7 @@ u_char *cf_write_uconf(const u_char *filename,uconf_userconfig_t *merged) {
 
       if(arg->val) {
         str_chars_append(&str," \"",2);
-        uconf_append_escaped(&str,arg->val);
+        _uconf_append_escaped(&str,arg->val);
         str_char_append(&str,'"');
       }
     }
@@ -550,6 +573,8 @@ int uconf_register_action_handler(u_char *name,uconf_action_handler_t action) {
   if(cf_hash_get(action_handlers,name,strlen(name)) != NULL) return -1;
 
   cf_hash_set_static(action_handlers,name,strlen(name),action);
+
+  return 0;
 }
 /* }}} */
 
@@ -557,6 +582,26 @@ int uconf_register_action_handler(u_char *name,uconf_action_handler_t action) {
 uconf_action_handler_t uconf_get_action_handler(u_char *name) {
   if(action_handlers == NULL) return NULL;
   return cf_hash_get(action_handlers,name,strlen(name));
+}
+/* }}} */
+
+/* {{{ uconf_get_conf_val */
+const u_char *uconf_get_conf_val(uconf_userconfig_t *uconf,const u_char *name,int argnum) {
+  uconf_directive_t *directive;
+  uconf_argument_t *arg;
+  size_t i;
+
+  for(i=0;i<uconf->directives.elements;++i) {
+    directive = array_element_at(&uconf->directives,i);
+
+    if(cf_strcmp(directive->name,name) == 0) {
+      arg = array_element_at(&directive->arguments,argnum);
+
+      if(arg) return arg->val;
+    }
+  }
+
+  return NULL;
 }
 /* }}} */
 

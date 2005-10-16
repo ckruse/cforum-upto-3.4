@@ -1,3 +1,30 @@
+2005-10-16 Christian Kruse <ckruse@wwwtech.de>
+	* conf/modules.de.xml: Fixed regexes so that they are compatible to regexes in
+		JS
+	* conf/patterns/java.pat: Bugfix in comment handling, multiline comments are
+		really multiline now.
+	* configure.in: Added flt_jsvalidation.c
+	* src/clientlib.[ch]: Added cf_add_variable()
+	* src/modules/flt_registerednames.c: Corrected error handing, now you can
+		distinguish between error (500) and auth required (504).
+	* src/modules/flt_checkregisteredname.c: Added code to register and unregister
+		names
+	* src/modules/flt_niceuserconf.c: Smaller bugfixes in template variable setting
+	* src/modules/flt_importexport.c: Added code; but not yet finished!
+	* src/modules/Makefile.am: Added flt_jsvalidation
+	* src/userconf.[ch]: Added uconf_get_conf_val()
+	* src/validate.c: Fixed several bugs; BUT we still have to fix the bug in
+		is_valid_file_link()!
+	* src/fo_userconf.c: Bugfixes in template variable setting
+	* src/fo_userconf.h: Added show_edit_content() prototype
+	* src/serverutils.c: Bugfix, added #include <pthread.h>
+	* scripts/nameprep_normalization_tables.js, scripts/nameprep_folding.js,
+		scripts/nameprep_normalizer.js, scripts/idna.js,
+		scripts/nameprep_properties.js, scripts/nameprep_inversions.js,
+		scripts/punycode.js, scripts/forum.js,
+		scripts/nameprep_casefolding_tables.js: Added IDNA implementation in JS to
+		validate user input by JS
+
 2005-10-14 Christian Seiler <self@christian-seiler.de>
 	* src/modules/flt_spellcheck.c: Change hashsize() -> cf_hashsize()
 

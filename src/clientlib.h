@@ -323,6 +323,7 @@ void cf_gen_tpl_name(u_char *buff,size_t len,const u_char *name);
  */
 void cf_set_variable(cf_template_t *tpl,name_value_t *cs,u_char *vname,const u_char *val,size_t len,int html);
 
+void cf_add_variable(cf_tpl_variable_t *ary,name_value_t *cs,const u_char *val,size_t len,int html);
 void cf_set_variable_hash(cf_tpl_variable_t *hash,name_value_t *cs,u_char *key,const u_char *val,size_t len,int html);
 
 

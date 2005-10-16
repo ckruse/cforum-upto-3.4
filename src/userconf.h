@@ -71,6 +71,7 @@ typedef void (*uconf_action_handler_t)(cf_hash_t *cgi,configuration_t *dc,config
 int uconf_register_action_handler(u_char *name,uconf_action_handler_t action);
 uconf_action_handler_t uconf_get_action_handler(u_char *name);
 
+const u_char *uconf_get_conf_val(uconf_userconfig_t *uconf,const u_char *name,int argnum);
 #endif
 
 /* eof */

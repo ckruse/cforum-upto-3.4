@@ -123,6 +123,7 @@ int flt_registerednames_handler(int connfd,forum_t *forum,const u_char **tokens,
   DBT key,data;
   int ret;
   names_db_t *ndb = cf_hash_get(flt_rn_namesdb,forum->name,strlen(forum->name));
+  int status;
 
   memset(&key,0,sizeof(key));
   memset(&data,0,sizeof(data));
@@ -172,6 +173,8 @@ int flt_registerednames_handler(int connfd,forum_t *forum,const u_char **tokens,
             else writen(connfd,"504 Auth required\n",18);
           }
         }
+        /* }}} */
+        /* {{{ AUTH DELETE */
         else if(cf_strncmp(tokens[1],"DELETE",6) == 0) {
           names[0] = flt_registerednames_transform(cf_hash_get(infos,"Name",4));
           pass     = cf_hash_get(infos,"Pass",4);
@@ -180,19 +183,22 @@ int flt_registerednames_handler(int connfd,forum_t *forum,const u_char **tokens,
             writen(connfd,"504 Auth required\n",18);
           }
           else {
-            if(tnum != 3 && flt_registerednames_check_auth(ndb,names[0],pass) != 0) {
-              writen(connfd,"504 Auth required\n",18);
+            if(tnum != 3 && (status = flt_registerednames_check_auth(ndb,names[0],pass)) != 0) {
+              if(status == -1) writen(connfd,"500 Internal Error\n",19);
+              else writen(connfd,"504 Auth required\n",18);
             }
             else {
               key.data = names[0];
               key.size = strlen(names[0]);
               if((ret = ndb->NamesDB->del(ndb->NamesDB,NULL,&key,0)) != 0) {
-                if(ret != DB_NOTFOUND) cf_log(CF_ERR,__FILE__,__LINE__,"DB->del: %s\n",db_strerror(ret));
-                writen(connfd,"504 Auth required\n",18);
+                if(ret != DB_NOTFOUND) {
+                  cf_log(CF_ERR,__FILE__,__LINE__,"DB->del: %s\n",db_strerror(ret));
+                  writen(connfd,"500 Internal Error\n",19);
+                }
+                /* key could not be found, so deletion was successful */
+                else writen(connfd,"200 Ok\n",7);
               }
-              else {
-                writen(connfd,"200 Ok\n",7);
-              }
+              else writen(connfd,"200 Ok\n",7);
             }
           }
         }
@@ -208,21 +214,19 @@ int flt_registerednames_handler(int connfd,forum_t *forum,const u_char **tokens,
           }
           else {
             if(names[0]) {
-              if(flt_registerednames_check_auth(ndb,names[0],pass) == 0) {
+              if((status = flt_registerednames_check_auth(ndb,names[0],pass)) == 0) {
                 /* check if registered and set auth */
                 key.data = names[1];
                 key.size = strlen(names[1]);
 
-                if((ret = ndb->NamesDB->get(ndb->NamesDB,NULL,&key,&data,0)) == 0) {
-                  writen(connfd,"504 Auth required\n",18);
-                }
+                if((ret = ndb->NamesDB->get(ndb->NamesDB,NULL,&key,&data,0)) == 0) writen(connfd,"504 Auth required\n",18);
                 else {
                   if(ret == DB_NOTFOUND) {
                     data.data = pass;
                     data.size = strlen(pass)+1; // don't forget the terminating \0
                     if((ret = ndb->NamesDB->put(ndb->NamesDB,NULL,&key,&data,0)) != 0) {
                       cf_log(CF_ERR,__FILE__,__LINE__,"DB->put: %s\n",db_strerror(ret));
-                      writen(connfd,"504 Auth required\n",18);
+                      writen(connfd,"500 Internal Error\n",19);
                     }
                     else {
                       writen(connfd,"200 Ok\n",7);
@@ -237,12 +241,13 @@ int flt_registerednames_handler(int connfd,forum_t *forum,const u_char **tokens,
                   }
                   else {
                     cf_log(CF_ERR,__FILE__,__LINE__,"DB->get: %s\n",db_strerror(ret));
-                    writen(connfd,"504 Auth required\n",18);
+                    writen(connfd,"500 Internal Error\n",19);
                   }
                 }
               }
               else {
-                writen(connfd,"504 Auth required\n",18);
+                if(status == -1) writen(connfd,"500 Internal Error\n",19);
+                else writen(connfd,"504 Auth required\n",18);
               }
             }
             else {
@@ -251,7 +256,8 @@ int flt_registerednames_handler(int connfd,forum_t *forum,const u_char **tokens,
               key.size = strlen(names[1]);
 
               if((ret = ndb->NamesDB->get(ndb->NamesDB,NULL,&key,&data,0)) == 0) {
-                writen(connfd,"504 Auth required\n",18);
+                if(cf_strcmp(data.data,pass) == 0) writen(connfd,"200 Ok\n",7); /* he tried to re-register */
+                else writen(connfd,"504 Auth required\n",18);
               }
               else {
                 if(ret == DB_NOTFOUND) {
@@ -259,15 +265,13 @@ int flt_registerednames_handler(int connfd,forum_t *forum,const u_char **tokens,
                   data.size = strlen(pass)+1;
                   if((ret = ndb->NamesDB->put(ndb->NamesDB,NULL,&key,&data,0)) != 0) {
                     cf_log(CF_ERR,__FILE__,__LINE__,"DB->put: %s\n",db_strerror(ret));
-                    writen(connfd,"504 Auth required\n",18);
+                    writen(connfd,"500 Internal Error\n",19);
                   }
-                  else {
-                    writen(connfd,"200 Ok\n",7);
-                  }
+                  else writen(connfd,"200 Ok\n",7);
                 }
                 else {
                   cf_log(CF_ERR,__FILE__,__LINE__,"DB->get: %s\n",db_strerror(ret));
-                  writen(connfd,"504 Auth required\n",18);
+                  writen(connfd,"500 Internal Error\n",18);
                 }
               }
             }

@@ -46,7 +46,7 @@ void flt_niceuserconf_nicevalues(cf_hash_t *cgi,configuration_t *dc,configuratio
   u_char *fn = cf_hash_get(GlobalValues,"FORUM_NAME",10),**list;
   register u_char *ptr;
 
-  name_value_t *values;
+  name_value_t *values,*cs = cfg_get_first_value(&fo_default_conf,fn,"ExternCharset");
   cf_tpl_variable_t var;
   size_t i,len;
   string_t str;
@@ -56,7 +56,7 @@ void flt_niceuserconf_nicevalues(cf_hash_t *cgi,configuration_t *dc,configuratio
     len = split(values->values[0],",",&list);
 
     for(i=0;i<len;++i) {
-      cf_tpl_var_addvalue(&var,TPL_VARIABLE_STRING,list[i],strlen(list[i]));
+      cf_add_variable(&var,cs,list[i],strlen(list[i]),1);
       free(list[i]);
     }
 
@@ -71,7 +71,7 @@ void flt_niceuserconf_nicevalues(cf_hash_t *cgi,configuration_t *dc,configuratio
       else str_char_append(&str,*ptr);
     }
 
-    cf_tpl_setvalue(tpl,"blacklist",TPL_VARIABLE_STRING,str.content,str.len);
+    cf_set_variable(tpl,cs,"blacklist",str.content,str.len,1);
     str_cleanup(&str);
   }
 
@@ -82,7 +82,7 @@ void flt_niceuserconf_nicevalues(cf_hash_t *cgi,configuration_t *dc,configuratio
       else str_char_append(&str,*ptr);
     }
 
-    cf_tpl_setvalue(tpl,"whitelst",TPL_VARIABLE_STRING,str.content,str.len);
+    cf_set_variable(tpl,cs,"whitelst",str.content,str.len,1);
     str_cleanup(&str);
   }
 }

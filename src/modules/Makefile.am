@@ -265,6 +265,9 @@ EXTRA_LTLIBRARIES+=flt_importexport.la
 flt_importexport_la_SOURCES=flt_importexport.c
 flt_importexport_la_LDFLAGS=-module -export-dynamic -avoid-version -rpath '$(pkglibdir)'
 
+EXTRA_LTLIBRARIES+=flt_jsvalidation.la
+flt_jsvalidation_la_SOURCES=flt_jsvalidation.c
+flt_jsvalidation_la_LDFLAGS=-module -export-dynamic -avoid-version -rpath '$(pkglibdir)'
 
 pkglib_LTLIBRARIES+=${OPTIONAL_MODULES}
 

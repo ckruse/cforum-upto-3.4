@@ -27,6 +27,8 @@
 #include <string.h>
 #include <sys/types.h>
 
+#include <unistd.h>
+
 #include <time.h>
 
 #include <errno.h>
@@ -40,6 +42,8 @@
 #include "clientlib.h"
 #include "htmllib.h"
 #include "fo_post.h"
+#include "userconf.h"
+#include "fo_userconf.h"
 /* }}} */
 
 /* {{{ flt_checkregisteredname_execute */
@@ -97,12 +101,260 @@ int flt_checkregisteredname_execute(cf_hash_t *head,configuration_t *dc,configur
 }
 /* }}} */
 
+int flt_checkregisteredname_register(cf_hash_t *cgi,configuration_t *dc,configuration_t *uc,configuration_t *oldconf,uconf_userconfig_t *newconf) {
+  u_char
+    buff[512],
+    *line,
+    *oldname = NULL,*newname,*oldregistered = NULL,*newregistered,
+    *fn = cf_hash_get(GlobalValues,"FORUM_NAME",10),
+    *uname = cf_hash_get(GlobalValues,"UserName",8);
+
+  name_value_t *cs = cfg_get_first_value(dc,fn,"ExternCharset"),*on,*or;
+  int sock,status,doer;
+  size_t len;
+  rline_t tsd;
+  string_t str;
+
+  if(!uname) return FLT_DECLINE; /* cannot happen, but who knows... */
+
+  if((sock = cf_socket_setup()) < 0) {
+    printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
+    show_edit_content(cgi,"E_NO_CONN","cgi",0,NULL);
+    return FLT_EXIT;
+  }
+
+  memset(&tsd,0,sizeof(tsd));
+
+  /* {{{ select right forum */
+  len = snprintf(buff,512,"SELECT %s\n",fn);
+  writen(sock,buff,len);
+
+  line = readline(sock,&tsd);
+  if(!line || atoi(line) != 200) {
+    printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
+    if(!line) show_edit_content(cgi,"E_NO_CONN","cgi",0,NULL);
+    else {
+      snprintf(buff,512,"E_FO_%d",atoi(line));
+      show_edit_content(cgi,buff,"cgi",0,NULL);
+    }
+
+    return FLT_EXIT;
+  }
+  /* }}} */
+
+  free(line);
+
+  on            = cfg_get_first_value(oldconf,fn,"Name");
+  or            = cfg_get_first_value(oldconf,fn,"RegisteredName");
+  newname       = (u_char *)uconf_get_conf_val(newconf,"Name",0);
+  newregistered = (u_char *)uconf_get_conf_val(newconf,"RegisteredName",0);
+
+  if(on) oldname = on->values[0];
+  if(or) oldregistered = or->values[0];
+
+  printf("Content-Type: text/html\n\n");
+
+  /* in this case we don't need to do anything: nothing changed */
+  if(oldregistered && cf_strcmp(oldregistered,"yes") == 0 && newregistered && cf_strcmp(newregistered,"yes") == 0 && oldname && newname && cf_strcmp(oldname,newname) == 0) return FLT_OK;
+
+  /* {{{ oldregistered and newregistered set, but either newname or oldname is not set or unequal */
+  else if(oldregistered && cf_strcmp(oldregistered,"yes") == 0 && newregistered && cf_strcmp(newregistered,"yes") == 0) {
+    str_init_growth(&str,512);
+
+    /* {{{ we shall register a new name but the new name is not given; so just unregister old name */
+    if(oldname && !newname) {
+      str_char_set(&str,"AUTH DELETE\nName: ",18);
+      str_cstr_append(&str,oldname);
+      str_chars_append(&str,"\nPass: ",7);
+      str_cstr_append(&str,uname);
+      str_chars_append(&str,"\n\n",2);
+    }
+    /* }}} */
+    /* {{{ we shall change name registration */
+    else if(oldname && newname) {
+      str_char_set(&str,"AUTH SET\nName: ",15);
+      str_cstr_append(&str,oldname);
+      str_chars_append(&str,"\nNew-Name: ",11);
+      str_cstr_append(&str,newname);
+      str_chars_append(&str,"\nPass: ",7);
+      str_cstr_append(&str,uname);
+      str_chars_append(&str,"\n\n",2);
+    }
+    /* }}} */
+    /* {{{ oldname not set, register new one */
+    else {
+      str_char_set(&str,"AUTH SET\nNew-Name: ",19);
+      str_cstr_append(&str,newname);
+      str_chars_append(&str,"\nPass: ",7);
+      str_cstr_append(&str,uname);
+      str_chars_append(&str,"\n\n",2);
+    }
+    /* }}} */
+
+    writen(sock,str.content,str.len);
+    str_cleanup(&str);
+
+    if((line = readline(sock,&tsd)) == NULL) {
+      close(sock);
+      printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
+      show_edit_content(cgi,"E_NO_CONN","cgi",0,NULL);
+      return FLT_EXIT;
+    }
+
+    if((status = atoi(line)) != 200) {
+      free(line);
+      close(sock);
+
+      if(status == 500) {
+        printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
+        show_edit_content(cgi,"E_FO_500","cgi",0,NULL);
+      }
+      else {
+        printf("Status: 401 Auth Required\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
+        show_edit_content(cgi,"E_FO_504","cgi",0,NULL);
+      }
+
+      return FLT_EXIT;
+    }
+
+    free(line);
+    close(sock);
+    return FLT_OK;
+  }
+  /* }}} */
+
+  /* {{{ oldregistered and newregistered set, but one of them is "no" */
+  else if(oldregistered && newregistered) {
+    doer = 0;
+    str_init_growth(&str,512);
+
+    /* {{{ delete old registration */
+    if(cf_strcmp(oldregistered,"yes") == 0 && cf_strcmp(newregistered,"no") == 0 && oldname) {
+      doer = 1;
+      str_char_set(&str,"AUTH DELETE\nName: ",18);
+      str_cstr_append(&str,oldname);
+      str_chars_append(&str,"\nPass: ",7);
+      str_cstr_append(&str,uname);
+      str_chars_append(&str,"\n\n",2);
+    }
+    /* }}} */
+    else if(cf_strcmp(oldregistered,"no") == 0 && cf_strcmp(newregistered,"yes") == 0 && newname) {
+      doer = 1;
+      str_char_set(&str,"AUTH SET\nNew-Name: ",19);
+      str_cstr_append(&str,newname);
+      str_chars_append(&str,"\nPass: ",7);
+      str_cstr_append(&str,uname);
+      str_chars_append(&str,"\n\n",2);
+    }
+
+    if(doer) {
+      writen(sock,str.content,str.len);
+      str_cleanup(&str);
+
+      if((line = readline(sock,&tsd)) == NULL) {
+        close(sock);
+        printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
+        show_edit_content(cgi,"E_NO_CONN","cgi",0,NULL);
+        return FLT_EXIT;
+      }
+
+      if((status = atoi(line)) != 200) {
+        free(line);
+        close(sock);
+
+        if(status == 500) {
+          printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
+          show_edit_content(cgi,"E_FO_500","cgi",0,NULL);
+        }
+        else {
+          printf("Status: 401 Auth Required\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
+          show_edit_content(cgi,"E_FO_504","cgi",0,NULL);
+        }
+
+        return FLT_EXIT;
+      }
+
+      free(line);
+    }
+
+    close(sock);
+    return FLT_OK;
+  }
+  /* }}} */
+
+  /* {{{ either oldregistered or newregistered not set */
+  else {
+    doer = 0;
+    str_init_growth(&str,512);
+
+    /* {{{ delete old auth */
+    if(oldregistered && !newregistered && cf_strcmp(oldregistered,"yes") == 0 && oldname) {
+      doer = 1;
+      str_char_set(&str,"AUTH DELETE\nName: ",18);
+      str_cstr_append(&str,oldname);
+      str_chars_append(&str,"\nPass: ",7);
+      str_cstr_append(&str,uname);
+      str_chars_append(&str,"\n\n",2);
+    }
+    /* }}} */
+    /* {{{ set new auth */
+    else if(!oldregistered && newregistered && cf_strcmp(newregistered,"yes") == 0 && newname) {
+      doer = 1;
+      str_char_set(&str,"AUTH SET\nNew-Name: ",19);
+      str_cstr_append(&str,newname);
+      str_chars_append(&str,"\nPass: ",7);
+      str_cstr_append(&str,uname);
+      str_chars_append(&str,"\n\n",2);
+    }
+    /* }}} */
+
+    if(doer) {
+      writen(sock,str.content,str.len);
+      str_cleanup(&str);
+
+      if((line = readline(sock,&tsd)) == NULL) {
+        close(sock);
+        printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
+        show_edit_content(cgi,"E_NO_CONN","cgi",0,NULL);
+        return FLT_EXIT;
+      }
+
+      if((status = atoi(line)) != 200) {
+        free(line);
+        close(sock);
+
+        if(status == 500) {
+          printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
+          show_edit_content(cgi,"E_FO_500","cgi",0,NULL);
+        }
+        else {
+          printf("Status: 401 Auth Required\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
+          show_edit_content(cgi,"E_FO_504","cgi",0,NULL);
+        }
+
+        return FLT_EXIT;
+      }
+
+      free(line);
+    }
+
+    close(sock);
+    return FLT_OK;
+  }
+  /* }}} */
+
+  printf("this is it\n");
+
+  return FLT_DECLINE;
+}
+
 conf_opt_t flt_checkregisteredname_config[] = {
   { NULL, NULL, 0, NULL }
 };
 
 handler_config_t flt_checkregisteredname_handlers[] = {
-  { NEW_POST_HANDLER,  flt_checkregisteredname_execute },
+  { NEW_POST_HANDLER,    flt_checkregisteredname_execute },
+  { UCONF_WRITE_HANDLER, flt_checkregisteredname_register },
   { 0, NULL }
 };
 

@@ -17,6 +17,7 @@
 #include <errno.h>
 
 #include <sys/time.h>
+#include <pthread.h>
 
 #include "cf_pthread.h"
 

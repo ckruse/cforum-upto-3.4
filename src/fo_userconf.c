@@ -122,13 +122,15 @@ void show_edit_content(cf_hash_t *head,const u_char *msg,const u_char *source,in
   uconf_argument_t *arg;
   name_value_t *value;
   cf_cgi_param_t *mult;
-  string_t val,*emsg;
-  cf_tpl_variable_t array,errmsgs;
+  string_t val;
+  cf_tpl_variable_t array,errmsgs,var1;
   int utf8 = cf_strcmp(cs->values[0],"UTF-8") == 0;
   struct tm tm;
   time_t tval;
 
   size_t i,j;
+
+  uconf_error_t *error;
 
   if((uname = cf_hash_get(GlobalValues,"UserName",8)) == NULL) {
     printf("Status: 403 Forbidden\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
@@ -163,7 +165,7 @@ void show_edit_content(cf_hash_t *head,const u_char *msg,const u_char *source,in
 
   cf_gen_tpl_name(tplname,256,tplnv->values[0]);
   if(cf_tpl_init(&tpl,tplname) != 0) {
-    printf("Status: 500 Internal Server Error\015\012\015\012");
+    printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
     cf_error_message("E_TPL_NOT_FOUND",NULL);
     return;
   }
@@ -303,8 +305,14 @@ void show_edit_content(cf_hash_t *head,const u_char *msg,const u_char *source,in
     cf_tpl_var_init(&errmsgs,TPL_VARIABLE_ARRAY);
 
     for(i=0;i<errors->elements;++i) {
-      emsg = array_element_at(errors,i);
-      cf_tpl_var_addvalue(&errmsgs,TPL_VARIABLE_STRING,emsg->content,emsg->len);
+      error = array_element_at(errors,i);
+
+      cf_tpl_var_init(&var1,TPL_VARIABLE_ARRAY);
+      cf_add_variable(&var1,cs,error->directive,strlen(error->directive),1);
+      cf_add_variable(&var1,cs,error->param,strlen(error->param),1);
+      cf_add_variable(&var1,cs,error->error,strlen(error->error),1);
+
+      cf_tpl_var_add(&errmsgs,&var1);
     }
 
     cf_tpl_setvar(&tpl,"errmsgs",&errmsgs);
@@ -654,10 +662,7 @@ int main(int argc,char *argv[],char *env[]) {
       else {
         if(cf_strcmp(action,"save") == 0) do_save(head);
         else if((actionhndl = uconf_get_action_handler(action)) != NULL) actionhndl(head,&fo_default_conf,&fo_userconf_conf);
-        else {
-          /* TODO: check if action is registered */
-          show_edit_content(head,NULL,NULL,0,NULL);
-        }
+        else show_edit_content(head,NULL,NULL,0,NULL);
       }
     }
     else show_edit_content(head,NULL,NULL,0,NULL);

@@ -27,6 +27,7 @@ block "onelinecomment"
 end
 
 block "comment"
+  lineend stay
   onstring "*/" pop
 end
 
