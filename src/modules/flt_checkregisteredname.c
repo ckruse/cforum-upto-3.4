@@ -152,8 +152,6 @@ int flt_checkregisteredname_register(cf_hash_t *cgi,configuration_t *dc,configur
   if(on) oldname = on->values[0];
   if(or) oldregistered = or->values[0];
 
-  printf("Content-Type: text/html\n\n");
-
   /* in this case we don't need to do anything: nothing changed */
   if(oldregistered && cf_strcmp(oldregistered,"yes") == 0 && newregistered && cf_strcmp(newregistered,"yes") == 0 && oldname && newname && cf_strcmp(oldname,newname) == 0) return FLT_OK;
 
@@ -342,8 +340,6 @@ int flt_checkregisteredname_register(cf_hash_t *cgi,configuration_t *dc,configur
     return FLT_OK;
   }
   /* }}} */
-
-  printf("this is it\n");
 
   return FLT_DECLINE;
 }
