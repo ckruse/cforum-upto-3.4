@@ -83,7 +83,7 @@ int   shm_lock_sem  = -1;   /**< semaphore showing which shared memory segment w
 
 void *cf_reget_shm_ptr(void) {
   u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
-  name_value_t *shm  = cfg_get_first_value(&fo_default_conf,forum_name,"SharedMemIds");
+  cf_name_value_t *shm  = cf_cfg_get_first_value(&fo_default_conf,forum_name,"SharedMemIds");
   unsigned short val;
 
   if(shm_ptr) {
@@ -110,7 +110,7 @@ void *cf_reget_shm_ptr(void) {
 
 void *cf_get_shm_ptr(void) {
   u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
-  name_value_t *shm  = cfg_get_first_value(&fo_default_conf,forum_name,"SharedMemIds");
+  cf_name_value_t *shm  = cf_cfg_get_first_value(&fo_default_conf,forum_name,"SharedMemIds");
   unsigned short val;
 
   if(shm_lock_sem == -1) {
@@ -155,7 +155,7 @@ u_char *cf_get_uconf_name(const u_char *uname) {
   u_char *path,*name;
   u_char *ptr;
   struct stat sb;
-  name_value_t *confpath = cfg_get_first_value(&fo_default_conf,forum_name,"ConfigDirectory");
+  cf_name_value_t *confpath = cf_cfg_get_first_value(&fo_default_conf,forum_name,"ConfigDirectory");
 
   if(!uname) return NULL;
 
@@ -168,7 +168,7 @@ u_char *cf_get_uconf_name(const u_char *uname) {
     }
   }
 
-  path = fo_alloc(NULL,strlen(confpath->values[0]) + strlen(name) + 12,1,FO_ALLOC_MALLOC);
+  path = cf_alloc(NULL,strlen(confpath->values[0]) + strlen(name) + 12,1,CF_ALLOC_MALLOC);
 
   sprintf(path,"%s%c/%c/%c/%s.conf",confpath->values[0],name[0],name[1],name[2],name);
 
@@ -190,7 +190,7 @@ u_char *cf_get_uconf_name(const u_char *uname) {
 int cf_socket_setup(void) {
   int sock;
   struct sockaddr_un addr;
-  name_value_t *sockpath = cfg_get_first_value(&fo_default_conf,NULL,"SocketName");
+  cf_name_value_t *sockpath = cf_cfg_get_first_value(&fo_default_conf,NULL,"SocketName");
 
   if(sockpath) {
     memset(&addr,0,sizeof(addr));
@@ -220,15 +220,15 @@ int cf_socket_setup(void) {
 void cf_gen_tpl_name(u_char *buff,size_t len,const u_char *name) {
   u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
 
-  name_value_t *vn = cfg_get_first_value(&fo_default_conf,forum_name,"TemplateMode");
-  name_value_t *lang = cfg_get_first_value(&fo_default_conf,forum_name,"Language");
+  cf_name_value_t *vn = cf_cfg_get_first_value(&fo_default_conf,forum_name,"TemplateMode");
+  cf_name_value_t *lang = cf_cfg_get_first_value(&fo_default_conf,forum_name,"Language");
 
   snprintf(buff,len,name,lang->values[0],vn->values[0]);
 }
 /* }}} */
 
 /* {{{ cf_set_variable */
-void cf_set_variable(cf_template_t *tpl,name_value_t *cs,u_char *vname,const u_char *val,size_t len,int html) {
+void cf_set_variable(cf_template_t *tpl,cf_name_value_t *cs,u_char *vname,const u_char *val,size_t len,int html) {
   u_char *tmp;
   size_t len1;
 
@@ -275,7 +275,7 @@ void cf_set_variable(cf_template_t *tpl,name_value_t *cs,u_char *vname,const u_c
 /* }}} */
 
 /* {{{ cf_add_variable */
-void cf_add_variable(cf_tpl_variable_t *ary,name_value_t *cs,const u_char *val,size_t len,int html) {
+void cf_add_variable(cf_tpl_variable_t *ary,cf_name_value_t *cs,const u_char *val,size_t len,int html) {
   u_char *tmp;
   size_t len1;
 
@@ -322,7 +322,7 @@ void cf_add_variable(cf_tpl_variable_t *ary,name_value_t *cs,const u_char *val,s
 /* }}} */
 
 /* {{{ cf_set_variable_hash */
-void cf_set_variable_hash(cf_tpl_variable_t *hash,name_value_t *cs,u_char *key,const u_char *val,size_t len,int html) {
+void cf_set_variable_hash(cf_tpl_variable_t *hash,cf_name_value_t *cs,u_char *key,const u_char *val,size_t len,int html) {
   u_char *tmp;
   size_t len1;
 
@@ -372,11 +372,11 @@ void cf_set_variable_hash(cf_tpl_variable_t *hash,name_value_t *cs,u_char *key,c
 /* {{{ cf_error_message */
 void cf_error_message(const u_char *err,FILE *out, ...) {
   u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
-  name_value_t *v = cfg_get_first_value(&fo_default_conf,forum_name,"ErrorTemplate");
-  name_value_t *db = cfg_get_first_value(&fo_default_conf,forum_name,"MessagesDatabase");
-  name_value_t *lang = cfg_get_first_value(&fo_default_conf,forum_name,"Language");
-  name_value_t *cs = cfg_get_first_value(&fo_default_conf,forum_name,"ExternCharset");
-  name_value_t *vs = cfg_get_first_value(&fo_default_conf,forum_name,cf_hash_get(GlobalValues,"UserName",8) ? "UBaseURL" : "BaseURL");
+  cf_name_value_t *v = cf_cfg_get_first_value(&fo_default_conf,forum_name,"ErrorTemplate");
+  cf_name_value_t *db = cf_cfg_get_first_value(&fo_default_conf,forum_name,"MessagesDatabase");
+  cf_name_value_t *lang = cf_cfg_get_first_value(&fo_default_conf,forum_name,"Language");
+  cf_name_value_t *cs = cf_cfg_get_first_value(&fo_default_conf,forum_name,"ExternCharset");
+  cf_name_value_t *vs = cf_cfg_get_first_value(&fo_default_conf,forum_name,cf_hash_get(GlobalValues,"UserName",8) ? "UBaseURL" : "BaseURL");
   cf_template_t tpl;
   u_char tplname[256];
   u_char errname[256];
@@ -384,7 +384,7 @@ void cf_error_message(const u_char *err,FILE *out, ...) {
 
   u_char *buff = NULL,ibuff[256];
   register u_char *ptr;
-  string_t msg;
+  cf_string_t msg;
 
   int ivar,ret;
   u_char *svar;
@@ -399,7 +399,7 @@ void cf_error_message(const u_char *err,FILE *out, ...) {
     if(cf_tpl_init(&tpl,tplname) == 0) {
       cf_set_variable(&tpl,cs,"forumbase",vs->values[0],strlen(vs->values[0]),1);
 
-      str_init(&msg);
+      cf_str_init(&msg);
 
       if(Msgs == NULL) {
         if((ret = db_create(&Msgs,NULL,0)) == 0) {
@@ -433,34 +433,34 @@ void cf_error_message(const u_char *err,FILE *out, ...) {
 
             switch(*ptr) {
               case '%':
-                str_char_append(&msg,*ptr);
+                cf_str_char_append(&msg,*ptr);
                 break;
 
               case 's':
                 svar = va_arg(ap,u_char *);
-                str_chars_append(&msg,svar,strlen(svar));
+                cf_str_chars_append(&msg,svar,strlen(svar));
                 break;
 
               case 'd':
                 ivar = va_arg(ap,int);
                 size = snprintf(ibuff,50,"%d",ivar);
-                str_chars_append(&msg,ibuff,50);
+                cf_str_chars_append(&msg,ibuff,50);
                 break;
 
               default:
-                str_char_append(&msg,*ptr);
+                cf_str_char_append(&msg,*ptr);
                 break;
             }
           }
           else {
-            str_char_append(&msg,*ptr);
+            cf_str_char_append(&msg,*ptr);
           }
         }
 
         va_end(ap);
 
         cf_set_variable(&tpl,cs,"error",msg.content,msg.len,1);
-        str_cleanup(&msg);
+        cf_str_cleanup(&msg);
         free(buff);
 
         if(out) {
@@ -484,13 +484,13 @@ void cf_error_message(const u_char *err,FILE *out, ...) {
 /* {{{ cf_get_error_message */
 u_char *cf_get_error_message(const u_char *err,size_t *len, ...) {
   u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
-  name_value_t *db = cfg_get_first_value(&fo_default_conf,forum_name,"MessagesDatabase");
-  name_value_t *lang = cfg_get_first_value(&fo_default_conf,forum_name,"Language");
+  cf_name_value_t *db = cf_cfg_get_first_value(&fo_default_conf,forum_name,"MessagesDatabase");
+  cf_name_value_t *lang = cf_cfg_get_first_value(&fo_default_conf,forum_name,"Language");
   va_list ap;
 
   u_char *buff = NULL,ibuff[256],errname[256];
   register u_char *ptr;
-  string_t msg;
+  cf_string_t msg;
 
   int ivar,ret;
   u_char *svar;
@@ -499,7 +499,7 @@ u_char *cf_get_error_message(const u_char *err,size_t *len, ...) {
 
   DBT key,value;
 
-  str_init(&msg);
+  cf_str_init(&msg);
 
   if(Msgs == NULL) {
     if((ret = db_create(&Msgs,NULL,0)) == 0) {
@@ -533,26 +533,26 @@ u_char *cf_get_error_message(const u_char *err,size_t *len, ...) {
 
       switch(*ptr) {
         case '%':
-          str_char_append(&msg,*ptr);
+          cf_str_char_append(&msg,*ptr);
           break;
 
         case 's':
           svar = va_arg(ap,u_char *);
-          str_chars_append(&msg,svar,strlen(svar));
+          cf_str_chars_append(&msg,svar,strlen(svar));
           break;
 
         case 'd':
           ivar = va_arg(ap,int);
           size = snprintf(ibuff,50,"%d",ivar);
-          str_chars_append(&msg,ibuff,50);
+          cf_str_chars_append(&msg,ibuff,50);
           break;
 
         default:
-          str_char_append(&msg,*ptr);
+          cf_str_char_append(&msg,*ptr);
           break;
       }
     }
-    else str_char_append(&msg,*ptr);
+    else cf_str_char_append(&msg,*ptr);
   }
 
 
@@ -600,14 +600,14 @@ void cf_remove_static_uri_flag(const u_char *name) {
 /* {{{ cf_get_link */
 u_char *cf_get_link(const u_char *link,u_int64_t tid,u_int64_t mid) {
   register const u_char *ptr;
-  string_t buff;
+  cf_string_t buff;
   u_char *tmp;
   int qm = 0,run = 1;
   cf_readmode_t *rm;
   cf_uri_flag_t *flag;
   cf_list_element_t *elem;
 
-  str_init_growth(&buff,128);
+  cf_str_init_growth(&buff,128);
 
   if(link == NULL)  {
     rm = cf_hash_get(GlobalValues,"RM",2);
@@ -621,14 +621,14 @@ u_char *cf_get_link(const u_char *link,u_int64_t tid,u_int64_t mid) {
     switch(*ptr) {
       case '%':
         if(*(ptr+1) == 't') {
-          u_int64_to_str(&buff,tid);
+          cf_uint64_to_str(&buff,tid);
           ptr += 1;
         }
         else if(*(ptr+1) == 'm') {
-          u_int64_to_str(&buff,mid);
+          cf_uint64_to_str(&buff,mid);
           ptr += 1;
         }
-        else str_char_append(&buff,*ptr);
+        else cf_str_char_append(&buff,*ptr);
         break;
 
       case '#':
@@ -641,7 +641,7 @@ u_char *cf_get_link(const u_char *link,u_int64_t tid,u_int64_t mid) {
         qm = 1;
 
       default:
-        str_char_append(&buff,*ptr);
+        cf_str_char_append(&buff,*ptr);
     }
   }
   /* }}} */
@@ -650,27 +650,27 @@ u_char *cf_get_link(const u_char *link,u_int64_t tid,u_int64_t mid) {
   for(elem=uri_flags.elements;elem;elem=elem->next) {
     flag = (cf_uri_flag_t *)elem->data;
 
-    if(qm) str_char_append(&buff,'&');
+    if(qm) cf_str_char_append(&buff,'&');
     else {
-      str_char_append(&buff,'?');
+      cf_str_char_append(&buff,'?');
       qm = 1;
     }
 
     if(flag->encode) {
       tmp = cf_cgi_url_encode(flag->name,strlen(flag->name));
-      str_chars_append(&buff,tmp,strlen(tmp));
+      cf_str_chars_append(&buff,tmp,strlen(tmp));
       free(tmp);
 
-      str_char_append(&buff,'=');
+      cf_str_char_append(&buff,'=');
 
       tmp = cf_cgi_url_encode(flag->val,strlen(flag->val));
-      str_chars_append(&buff,tmp,strlen(tmp));
+      cf_str_chars_append(&buff,tmp,strlen(tmp));
       free(tmp);
     }
     else {
-      str_chars_append(&buff,flag->name,strlen(flag->name));
-      str_char_append(&buff,'=');
-      str_chars_append(&buff,flag->val,strlen(flag->val));
+      cf_str_chars_append(&buff,flag->name,strlen(flag->name));
+      cf_str_char_append(&buff,'=');
+      cf_str_chars_append(&buff,flag->val,strlen(flag->val));
     }
   }
   /* }}} */
@@ -681,19 +681,19 @@ u_char *cf_get_link(const u_char *link,u_int64_t tid,u_int64_t mid) {
       switch(*ptr) {
         case '%':
           if(*(ptr+1) == 't') {
-            u_int64_to_str(&buff,tid);
+            cf_uint64_to_str(&buff,tid);
             ptr += 1;
           }
           else if(*(ptr+1) == 'm') {
-            u_int64_to_str(&buff,mid);
+            cf_uint64_to_str(&buff,mid);
             ptr += 1;
           }
-          else str_char_append(&buff,*ptr);
+          else cf_str_char_append(&buff,*ptr);
 
           break;
 
         default:
-          str_char_append(&buff,*ptr);
+          cf_str_char_append(&buff,*ptr);
       }
     }
   }
@@ -706,7 +706,7 @@ u_char *cf_get_link(const u_char *link,u_int64_t tid,u_int64_t mid) {
 /* {{{ cf_advanced_get_link */
 u_char *cf_advanced_get_link(const u_char *link,u_int64_t tid,u_int64_t mid,u_char *anchor,size_t plen,size_t *l,...) {
   register const u_char *ptr;
-  string_t buff;
+  cf_string_t buff;
   int qm = 0,run = 1;
   u_char *name,*value,*tmp;
   size_t i;
@@ -714,21 +714,21 @@ u_char *cf_advanced_get_link(const u_char *link,u_int64_t tid,u_int64_t mid,u_ch
   cf_uri_flag_t *flag;
   cf_list_element_t *elem;
 
-  str_init_growth(&buff,128);
+  cf_str_init_growth(&buff,128);
 
   /* {{{ work on link template */
   for(ptr=link;*ptr && run;++ptr) {
     switch(*ptr) {
       case '%':
         if(*(ptr+1) == 't') {
-          u_int64_to_str(&buff,tid);
+          cf_uint64_to_str(&buff,tid);
           ptr += 1;
         }
         else if(*(ptr+1) == 'm') {
-          u_int64_to_str(&buff,mid);
+          cf_uint64_to_str(&buff,mid);
           ptr += 1;
         }
-        else str_char_append(&buff,*ptr);
+        else cf_str_char_append(&buff,*ptr);
 
         break;
       case '#':
@@ -740,7 +740,7 @@ u_char *cf_advanced_get_link(const u_char *link,u_int64_t tid,u_int64_t mid,u_ch
       case '?':
         qm = 1;
       default:
-        str_char_append(&buff,*ptr);
+        cf_str_char_append(&buff,*ptr);
     }
   }
   /* }}} */
@@ -755,14 +755,14 @@ u_char *cf_advanced_get_link(const u_char *link,u_int64_t tid,u_int64_t mid,u_ch
     value = cf_cgi_url_encode(tmp,strlen(tmp));
 
     if(qm == 0) {
-      str_char_append(&buff,'?');
+      cf_str_char_append(&buff,'?');
       qm = 1;
     }
-    else str_char_append(&buff,'&');
+    else cf_str_char_append(&buff,'&');
 
-    str_chars_append(&buff,name,strlen(name));
-    str_char_append(&buff,'=');
-    str_chars_append(&buff,value,strlen(value));
+    cf_str_chars_append(&buff,name,strlen(name));
+    cf_str_char_append(&buff,'=');
+    cf_str_chars_append(&buff,value,strlen(value));
 
     free(name);
     free(value);
@@ -774,31 +774,31 @@ u_char *cf_advanced_get_link(const u_char *link,u_int64_t tid,u_int64_t mid,u_ch
   for(elem=uri_flags.elements;elem;elem=elem->next) {
     flag = (cf_uri_flag_t *)elem->data;
 
-    str_char_append(&buff,'&');
+    cf_str_char_append(&buff,'&');
 
     if(flag->encode) {
       tmp = cf_cgi_url_encode(flag->name,strlen(flag->name));
-      str_chars_append(&buff,tmp,strlen(tmp));
+      cf_str_chars_append(&buff,tmp,strlen(tmp));
       free(tmp);
 
-      str_char_append(&buff,'=');
+      cf_str_char_append(&buff,'=');
 
       tmp = cf_cgi_url_encode(flag->val,strlen(flag->val));
-      str_chars_append(&buff,tmp,strlen(tmp));
+      cf_str_chars_append(&buff,tmp,strlen(tmp));
       free(tmp);
     }
     else {
-      str_chars_append(&buff,flag->name,strlen(flag->name));
-      str_char_append(&buff,'=');
-      str_chars_append(&buff,flag->val,strlen(flag->val));
+      cf_str_chars_append(&buff,flag->name,strlen(flag->name));
+      cf_str_char_append(&buff,'=');
+      cf_str_chars_append(&buff,flag->val,strlen(flag->val));
     }
   }
   /* }}} */
 
   /* {{{ append anchor */
   if(anchor) {
-    str_char_append(&buff,'#');
-    str_chars_append(&buff,anchor,strlen(anchor));
+    cf_str_char_append(&buff,'#');
+    cf_str_chars_append(&buff,anchor,strlen(anchor));
   }
   /* }}} */
 
@@ -808,19 +808,19 @@ u_char *cf_advanced_get_link(const u_char *link,u_int64_t tid,u_int64_t mid,u_ch
       switch(*ptr) {
         case '%':
           if(*(ptr+1) == 't') {
-            u_int64_to_str(&buff,tid);
+            cf_uint64_to_str(&buff,tid);
             ptr += 1;
           }
           else if(*(ptr+1) == 'm') {
-            u_int64_to_str(&buff,mid);
+            cf_uint64_to_str(&buff,mid);
             ptr += 1;
           }
-          else str_char_append(&buff,*ptr);
+          else cf_str_char_append(&buff,*ptr);
 
           break;
 
         default:
-          str_char_append(&buff,*ptr);
+          cf_str_char_append(&buff,*ptr);
       }
     }
   }
@@ -840,7 +840,7 @@ u_char *cf_general_get_time(u_char *fmt,u_char *locale,int *len,time_t *date) {
   if(!setlocale(LC_TIME,locale)) return NULL;
 
   ln    = strlen(fmt) + 256;
-  buff  = fo_alloc(NULL,ln,1,FO_ALLOC_MALLOC);
+  buff  = cf_alloc(NULL,ln,1,CF_ALLOC_MALLOC);
   tptr  = localtime(date);
 
   *len = strftime(buff,ln,fmt,tptr);
@@ -878,7 +878,7 @@ int cf_register_mod_api_ent(const u_char *mod_name,const u_char *unique_identifi
     ent->function          = func;
   }
   else {
-    ent                    = fo_alloc(NULL,1,sizeof(*ent),FO_ALLOC_MALLOC);
+    ent                    = cf_alloc(NULL,1,sizeof(*ent),CF_ALLOC_MALLOC);
     ent->mod_name          = strdup(mod_name);
     ent->unique_identifier = strdup(unique_identifier);
     ent->function          = func;

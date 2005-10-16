@@ -61,7 +61,7 @@ void flt_category_parse_list(u_char *vips,cf_hash_t *hash) {
 /* }}} */
 
 /* {{{ flt_category_execute_filter */
-int flt_category_execute_filter(cf_hash_t *head,configuration_t *dc,configuration_t *vc,message_t *msg,u_int64_t tid,int mode) {
+int flt_category_execute_filter(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t *vc,message_t *msg,u_int64_t tid,int mode) {
   if(!flt_category_cats || (mode & CF_MODE_POST)) return FLT_DECLINE;
   if((mode & CF_MODE_THREADVIEW) && flt_category_hide_in_thread == 0) return FLT_DECLINE;
 
@@ -74,7 +74,7 @@ int flt_category_execute_filter(cf_hash_t *head,configuration_t *dc,configuratio
 /* }}} */
 
 /* {{{ flt_category_handle_command */
-int flt_category_handle_command(configfile_t *cf,conf_opt_t *opt,const u_char *context,u_char **args,size_t argnum) {
+int flt_category_handle_command(cf_configfile_t *cf,cf_conf_opt_t *opt,const u_char *context,u_char **args,size_t argnum) {
   if(flt_category_fn == NULL) flt_category_fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   if(!context || cf_strcmp(flt_category_fn,context) != 0) return 0;
 
@@ -100,18 +100,18 @@ void flt_category_finish(void) {
 }
 /* }}} */
 
-conf_opt_t flt_category_config[] = {
-  { "ShowCategories",             flt_category_handle_command, CFG_OPT_USER|CFG_OPT_CONFIG|CFG_OPT_LOCAL, NULL },
-  { "HideCategoriesInThreadView", flt_category_handle_command, CFG_OPT_USER|CFG_OPT_CONFIG|CFG_OPT_LOCAL, NULL },
+cf_conf_opt_t flt_category_config[] = {
+  { "ShowCategories",             flt_category_handle_command, CF_CFG_OPT_USER|CF_CFG_OPT_CONFIG|CF_CFG_OPT_LOCAL, NULL },
+  { "HideCategoriesInThreadView", flt_category_handle_command, CF_CFG_OPT_USER|CF_CFG_OPT_CONFIG|CF_CFG_OPT_LOCAL, NULL },
   { NULL, NULL, 0, NULL }
 };
 
-handler_config_t flt_category_handlers[] = {
+cf_handler_config_t flt_category_handlers[] = {
   { VIEW_LIST_HANDLER, flt_category_execute_filter },
   { 0, NULL }
 };
 
-module_config_t flt_category = {
+cf_module_config_t flt_category = {
   MODULE_MAGIC_COOKIE,
   flt_category_config,
   flt_category_handlers,

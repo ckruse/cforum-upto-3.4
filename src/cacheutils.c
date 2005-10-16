@@ -48,29 +48,29 @@
  * \param uri The URI of the entry
  * \param fname The target string
  */
-void cf_cache_genname(const u_char *base,const u_char *uri,string_t *fname) {
-  str_init(fname);
-  str_char_set(fname,base,strlen(base));
+void cf_cache_genname(const u_char *base,const u_char *uri,cf_string_t *fname) {
+  cf_str_init(fname);
+  cf_str_char_set(fname,base,strlen(base));
 
-  if(*(fname->content+fname->len-1) != '/') str_char_append(fname,'/');
-  str_chars_append(fname,uri,strlen(uri));
-  if(*(fname->content+fname->len-1) == '/') str_chars_append(fname,"idx",3);
+  if(*(fname->content+fname->len-1) != '/') cf_str_char_append(fname,'/');
+  cf_str_chars_append(fname,uri,strlen(uri));
+  if(*(fname->content+fname->len-1) == '/') cf_str_chars_append(fname,"idx",3);
 }
 /* }}} */
 
 /* {{{ cf_cache_outdated */
 int cf_cache_outdated(const u_char *base,const u_char *uri,const u_char *file) {
   struct stat st1,st2;
-  string_t fname;
+  cf_string_t fname;
 
   cf_cache_genname(base,uri,&fname);
 
   if(stat(fname.content,&st1) == -1) {
-    str_cleanup(&fname);
+    cf_str_cleanup(&fname);
     return -1;
   }
 
-  str_cleanup(&fname);
+  cf_str_cleanup(&fname);
 
   if(stat(file,&st2) == -1) return -1;
   if(st1.st_mtime >= st2.st_mtime) return 0;
@@ -82,16 +82,16 @@ int cf_cache_outdated(const u_char *base,const u_char *uri,const u_char *file) {
 /* {{{ cf_cache_outdated_date */
 int cf_cache_outdated_date(const u_char *base,const u_char *uri,time_t date) {
   struct stat st1;
-  string_t fname;
+  cf_string_t fname;
 
   cf_cache_genname(base,uri,&fname);
 
   if(stat(fname.content,&st1) == -1) {
-    str_cleanup(&fname);
+    cf_str_cleanup(&fname);
     return -1;
   }
 
-  str_cleanup(&fname);
+  cf_str_cleanup(&fname);
 
   if(st1.st_mtime >= date) return 0;
 
@@ -133,7 +133,7 @@ int cf_cache_create_path(u_char *path) {
 int cf_cache(const u_char *base,const u_char *uri,const u_char *content,size_t len,int gzip) {
   FILE *fd;
   gzFile gzfd;
-  string_t fname;
+  cf_string_t fname;
   char buff[5] = "wb";
 
   cf_cache_genname(base,uri,&fname);
@@ -146,7 +146,7 @@ int cf_cache(const u_char *base,const u_char *uri,const u_char *content,size_t l
       if((gzfd = gzopen(fname.content,buff)) != NULL) {
         gzwrite(gzfd,(void *)content,len);
         gzclose(gzfd);
-        str_cleanup(&fname);
+        cf_str_cleanup(&fname);
         return 0;
       }
     }
@@ -154,68 +154,68 @@ int cf_cache(const u_char *base,const u_char *uri,const u_char *content,size_t l
       if((fd = fopen(fname.content,"w")) != NULL) {
         fwrite(content,1,len,fd);
         fclose(fd);
-        str_cleanup(&fname);
+        cf_str_cleanup(&fname);
         return 0;
       }
     }
   }
 
-  str_cleanup(&fname);
+  cf_str_cleanup(&fname);
   return -1;
 }
 /* }}} */
 
 /* {{{ cf_get_cache */
-cache_entry_t *cf_get_cache(u_char *base,u_char *uri,int gzip) {
+cf_cache_entry_t *cf_get_cache(u_char *base,u_char *uri,int gzip) {
   int fd;
-  string_t fname;
+  cf_string_t fname;
   void *ptr;
-  cache_entry_t *ent = NULL;
+  cf_cache_entry_t *ent = NULL;
   struct stat st;
   gzFile gzfd;
   char buff[BUFSIZ];
   int status;
-  string_t tmp;
+  cf_string_t tmp;
 
   cf_cache_genname(base,uri,&fname);
 
   if(stat(fname.content,&st) == -1) {
-    str_cleanup(&fname);
+    cf_str_cleanup(&fname);
     return NULL;
   }
 
   if(gzip) {
     if((gzfd = gzopen(fname.content,"rb")) != NULL) {
-      str_init(&tmp);
+      cf_str_init(&tmp);
 
       while((status = gzread(gzfd,buff,BUFSIZ)) > 0) {
-        str_chars_append(&tmp,buff,status);
+        cf_str_chars_append(&tmp,buff,status);
       }
 
       gzclose(gzfd);
 
       if(status != -1) {
-        ent = fo_alloc(NULL,1,sizeof(*ent),FO_ALLOC_MALLOC);
+        ent = cf_alloc(NULL,1,sizeof(*ent),CF_ALLOC_MALLOC);
         ent->fd   = -1;
         ent->ptr  = tmp.content;
         ent->size = tmp.len;
       }
-      else str_cleanup(&tmp);
+      else cf_str_cleanup(&tmp);
     }
   }
   else {
     if((fd = open(fname.content,O_RDONLY)) == -1) {
-      str_cleanup(&fname);
+      cf_str_cleanup(&fname);
       return NULL;
     }
 
     if((caddr_t)(ptr = mmap(0,st.st_size,PROT_READ,MAP_FILE|MAP_SHARED,fd,0)) == (caddr_t)-1) {
       close(fd);
-      str_cleanup(&fname);
+      cf_str_cleanup(&fname);
       return NULL;
     }
 
-    ent = fo_alloc(NULL,1,sizeof(*ent),FO_ALLOC_MALLOC);
+    ent = cf_alloc(NULL,1,sizeof(*ent),CF_ALLOC_MALLOC);
     ent->fd   = fd;
     ent->ptr  = ptr;
     ent->size = st.st_size;
@@ -226,14 +226,12 @@ cache_entry_t *cf_get_cache(u_char *base,u_char *uri,int gzip) {
 /* }}} */
 
 /* {{{ cf_cache_destroy */
-void cf_cache_destroy(cache_entry_t *ent) {
+void cf_cache_destroy(cf_cache_entry_t *ent) {
   if(ent->fd != -1) {
     munmap(ent->ptr,ent->size);
     close(ent->fd);
   }
-  else {
-    free(ent->ptr);
-  }
+  else free(ent->ptr);
 
   free(ent);
 }

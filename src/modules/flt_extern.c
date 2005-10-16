@@ -104,15 +104,15 @@ int flt_extern_set_us_up_the_socket(struct sockaddr_in *addr) {
 
 /* {{{ flt_extern_send_list */
 void flt_extern_send_list(forum_t *forum,int sock,time_t date) {
-  string_t str;
+  cf_string_t str;
   thread_t *t,*t1;
   posting_t *p;
   char buff[256];
   size_t n;
   int first;
 
-  str_init(&str);
-  str_chars_append(&str,"200 Ok\n",7);
+  cf_str_init(&str);
+  cf_str_chars_append(&str,"200 Ok\n",7);
 
   CF_RW_RD(&forum->threads.lock);
   t = forum->threads.list;
@@ -133,45 +133,45 @@ void flt_extern_send_list(forum_t *forum,int sock,time_t date) {
         /* thread/posting header */
         if(first) {
           first = 0;
-          str_chars_append(&str,"THREAD t",8);
-          u_int64_to_str(&str,t->tid);
-          str_chars_append(&str," m",2);
-          u_int64_to_str(&str,p->mid);
-          str_char_append(&str,'\n');
+          cf_str_chars_append(&str,"THREAD t",8);
+          cf_uint64_to_str(&str,t->tid);
+          cf_str_chars_append(&str," m",2);
+          cf_uint64_to_str(&str,p->mid);
+          cf_str_char_append(&str,'\n');
         }
         else {
-          str_chars_append(&str,"MSG m",5);
-          u_int64_to_str(&str,p->mid);
-          str_char_append(&str,'\n');
+          cf_str_chars_append(&str,"MSG m",5);
+          cf_uint64_to_str(&str,p->mid);
+          cf_str_char_append(&str,'\n');
         }
 
-        str_chars_append(&str,buff,n);
+        cf_str_chars_append(&str,buff,n);
 
         /* author */
-        str_chars_append(&str,"Author:",7);
-        str_chars_append(&str,p->user.name.content,p->user.name.len);
+        cf_str_chars_append(&str,"Author:",7);
+        cf_str_chars_append(&str,p->user.name.content,p->user.name.len);
 
         /* subject */
-        str_chars_append(&str,"\nSubject:",9);
-        str_chars_append(&str,p->subject.content,p->subject.len);
+        cf_str_chars_append(&str,"\nSubject:",9);
+        cf_str_chars_append(&str,p->subject.content,p->subject.len);
 
         /* category */
         if(p->category.len) {
-          str_chars_append(&str,"\nCategory:",10);
-          str_chars_append(&str,p->category.content,p->category.len);
+          cf_str_chars_append(&str,"\nCategory:",10);
+          cf_str_chars_append(&str,p->category.content,p->category.len);
         }
 
         /* date */
-        str_chars_append(&str,"\nDate:",6);
-        u_int32_to_str(&str,(u_int32_t)p->date);
-        str_char_append(&str,'\n');
+        cf_str_chars_append(&str,"\nDate:",6);
+        cf_uint32_to_str(&str,(u_int32_t)p->date);
+        cf_str_char_append(&str,'\n');
 
         /* level */
-        str_chars_append(&str,"Level:",6);
-        u_int16_to_str(&str,p->level);
-        str_char_append(&str,'\n');
+        cf_str_chars_append(&str,"Level:",6);
+        cf_uint16_to_str(&str,p->level);
+        cf_str_char_append(&str,'\n');
 
-        str_chars_append(&str,"END\n",4);
+        cf_str_chars_append(&str,"END\n",4);
       }
     }
 
@@ -179,10 +179,10 @@ void flt_extern_send_list(forum_t *forum,int sock,time_t date) {
     CF_RW_UN(&t->lock);
   }
 
-  str_char_append(&str,'\n');
+  cf_str_char_append(&str,'\n');
 
   writen(sock,str.content,str.len);
-  str_cleanup(&str);
+  cf_str_cleanup(&str);
 }
 /* }}} */
 
@@ -196,7 +196,7 @@ void flt_extern_handle_request(int sock) {
   int selected = 0;
   u_int64_t tid,mid;
   u_char buff[256];
-  string_t str;
+  cf_string_t str;
   thread_t *t,*t1;
   posting_t *p;
   forum_t *forum = NULL;
@@ -271,7 +271,7 @@ void flt_extern_handle_request(int sock) {
             if(tnum < 3) writen(sock,"501 Thread id or message id missing\n",36);
             else if(tnum > 4) writen(sock,"500 Syntax error\n",17);
             else {
-              tid = str_to_u_int64(tokens[2]+1);
+              tid = cf_str_to_uint64(tokens[2]+1);
               mid = 0;
 
               /*
@@ -279,7 +279,7 @@ void flt_extern_handle_request(int sock) {
                * we use 0 to indicate that we want to get the whole
                * thread
                */
-              if(tnum == 4) mid = str_to_u_int64(tokens[3]+1);
+              if(tnum == 4) mid = cf_str_to_uint64(tokens[3]+1);
 
               cf_send_posting(forum,sock,tid,mid,0);
             }
@@ -298,8 +298,8 @@ void flt_extern_handle_request(int sock) {
 
           /* {{{ GET MIDLIST */
           else if(cf_strcmp(tokens[1],"MIDLIST") == 0) {
-            str_init(&str);
-            str_chars_append(&str,"200 List Follows\n",17);
+            cf_str_init(&str);
+            cf_str_chars_append(&str,"200 List Follows\n",17);
 
             CF_RW_RD(&forum->threads.lock);
             t = forum->threads.list;
@@ -309,19 +309,19 @@ void flt_extern_handle_request(int sock) {
               CF_RW_RD(&t->lock);
 
               for(p=t->postings;p;p=p->next) {
-                str_char_append(&str,'m');
-                u_int64_to_str(&str,p->mid);
-                str_char_append(&str,'\n');
+                cf_str_char_append(&str,'m');
+                cf_uint64_to_str(&str,p->mid);
+                cf_str_char_append(&str,'\n');
               }
 
               t1 = t->next;
               CF_RW_UN(&t->lock);
             }
 
-            str_char_append(&str,'\n');
+            cf_str_char_append(&str,'\n');
 
             writen(sock,str.content,str.len);
-            str_cleanup(&str);
+            cf_str_cleanup(&str);
           }
           /* }}} */
         }
@@ -341,7 +341,7 @@ void flt_extern_handle_request(int sock) {
 
 /* {{{ flt_extern_register_server */
 int flt_extern_register_server(int sock) {
-  Extern_addr = fo_alloc(NULL,1,sizeof(*Extern_addr),FO_ALLOC_CALLOC);
+  Extern_addr = cf_alloc(NULL,1,sizeof(*Extern_addr),CF_ALLOC_CALLOC);
   sock        = flt_extern_set_us_up_the_socket(Extern_addr);
 
   if(sock < 0) return FLT_EXIT;
@@ -357,7 +357,7 @@ void flt_extern_cleanup(void) {
 }
 
 /* {{{ flt_extern_handle */
-int flt_extern_handle(configfile_t *cf,conf_opt_t *opt,const u_char *context,u_char **args,size_t argnum) {
+int flt_extern_handle(cf_configfile_t *cf,cf_conf_opt_t *opt,const u_char *context,u_char **args,size_t argnum) {
   if(cf_strcmp(opt->name,"ExternPort") == 0)           Extern_port      = atoi(args[0]);
   else if(cf_strcmp(opt->name,"ExternInterface") == 0) Extern_interface = strdup(args[0]);
 
@@ -365,18 +365,18 @@ int flt_extern_handle(configfile_t *cf,conf_opt_t *opt,const u_char *context,u_c
 }
 /* }}} */
 
-conf_opt_t flt_extern_config[] = {
-  { "ExternPort",      flt_extern_handle, CFG_OPT_CONFIG|CFG_OPT_NEEDED|CFG_OPT_GLOBAL, NULL },
-  { "ExternInterface", flt_extern_handle, CFG_OPT_CONFIG|CFG_OPT_GLOBAL,                NULL },
+cf_conf_opt_t flt_extern_config[] = {
+  { "ExternPort",      flt_extern_handle, CF_CFG_OPT_CONFIG|CF_CFG_OPT_NEEDED|CF_CFG_OPT_GLOBAL, NULL },
+  { "ExternInterface", flt_extern_handle, CF_CFG_OPT_CONFIG|CF_CFG_OPT_GLOBAL,                NULL },
   { NULL, NULL, 0, NULL }
 };
 
-handler_config_t flt_extern_handlers[] = {
+cf_handler_config_t flt_extern_handlers[] = {
   { INIT_HANDLER,            flt_extern_register_server   },
   { 0, NULL }
 };
 
-module_config_t flt_extern = {
+cf_module_config_t flt_extern = {
   MODULE_MAGIC_COOKIE,
   flt_extern_config,
   flt_extern_handlers,

@@ -107,7 +107,7 @@ int flt_psa_parser(cf_hash_t *hash,u_char **pos) {
         len  = strtol(ptr,(char **)&start,10);
         ptr  = start + 2;
 
-        cval = memdup(ptr,len+1);
+        cval = cf_memdup(ptr,len+1);
         cval[len] = '\0';
         cf_hash_set(hash,name,strlen(name),cval,len+1);
 
@@ -150,44 +150,44 @@ int flt_psa_parser(cf_hash_t *hash,u_char **pos) {
 
 /* {{{ flt_phpsessauth_getvar */
 u_char *flt_phpsessauth_getvar(const u_char *vname) {
-  string_t path;
+  cf_string_t path;
   int fd,rc;
   cf_hash_t *hash = cf_hash_new(NULL);
   u_char *start,*ptr,*name = NULL;
   struct stat st;
 
-  str_init_growth(&path,128);
-  if(flt_phpsessauth_sesspath) str_char_set(&path,flt_phpsessauth_sesspath,strlen(flt_phpsessauth_sesspath));
-  else str_char_set(&path,"/tmp",4);
+  cf_str_init_growth(&path,128);
+  if(flt_phpsessauth_sesspath) cf_str_char_set(&path,flt_phpsessauth_sesspath,strlen(flt_phpsessauth_sesspath));
+  else cf_str_char_set(&path,"/tmp",4);
 
-  str_chars_append(&path,"/sess_",6);
-  str_chars_append(&path,flt_phpsessauth_sid,strlen(flt_phpsessauth_sid));
+  cf_str_chars_append(&path,"/sess_",6);
+  cf_str_chars_append(&path,flt_phpsessauth_sid,strlen(flt_phpsessauth_sid));
 
   /* {{{ open file and map it into our memory */
   if((fd = open(path.content,O_RDONLY)) == -1) {
     fprintf(stderr,"flt_phpsessauth: open: could not open file '%s': %s\n",path.content,strerror(errno));
-    str_cleanup(&path);
+    cf_str_cleanup(&path);
     return NULL;
   }
 
   if(stat(path.content,&st) == -1) {
     fprintf(stderr,"flt_phpsessauth: stat: could not stat file '%s': %s\n",path.content,strerror(errno));
     close(fd);
-    str_cleanup(&path);
+    cf_str_cleanup(&path);
     return NULL;
   }
 
   if(st.st_size == 0) {
     fprintf(stderr,"flt_phpsessauth: file '%s' is empty!\n",path.content);
     close(fd);
-    str_cleanup(&path);
+    cf_str_cleanup(&path);
     return NULL;
   }
 
   if((caddr_t)(ptr = start = mmap(0,st.st_size+1,PROT_READ,MAP_FILE|MAP_SHARED,fd,0)) == (caddr_t)-1) {
     fprintf(stderr,"flt_phpsessauth: mmap: could not map file '%s': %s\n",path.content,strerror(errno));
     close(fd);
-    str_cleanup(&path);
+    cf_str_cleanup(&path);
     return NULL;
   }
   /* }}} */
@@ -196,7 +196,7 @@ u_char *flt_phpsessauth_getvar(const u_char *vname) {
 
   munmap(start,st.st_size);
   close(fd);
-  str_cleanup(&path);
+  cf_str_cleanup(&path);
 
   if(rc != 0) {
     cf_hash_destroy(hash);
@@ -212,9 +212,9 @@ u_char *flt_phpsessauth_getvar(const u_char *vname) {
 /* }}} */
 
 /* {{{ flt_httpauth_run */
-int flt_phpsessauth_run(cf_hash_t *head,configuration_t *dc,configuration_t *vc) {
+int flt_phpsessauth_run(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t *vc) {
   u_char *fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
-  name_value_t *v = cfg_get_first_value(dc,fn,"AuthMode");
+  cf_name_value_t *v = cf_cfg_get_first_value(dc,fn,"AuthMode");
   u_char *name = NULL,*path;
   cf_hash_t *cookies;
 
@@ -250,7 +250,7 @@ int flt_phpsessauth_run(cf_hash_t *head,configuration_t *dc,configuration_t *vc)
 /* }}} */
 
 /* {{{ flt_phpsessauth_handle */
-int flt_phpsessauth_handle(configfile_t *cfile,conf_opt_t *opt,const u_char *context,u_char **args,size_t argnum) {
+int flt_phpsessauth_handle(cf_configfile_t *cfile,cf_conf_opt_t *opt,const u_char *context,u_char **args,size_t argnum) {
   if(flt_phpsessauth_fn == NULL) flt_phpsessauth_fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   if(!context || cf_strcmp(flt_phpsessauth_fn,context) != 0) return 0;
 
@@ -277,19 +277,19 @@ void flt_phpsessauth_cleanup(void) {
   if(flt_phpsessauth_sessname) free(flt_phpsessauth_sessname);
 }
 
-conf_opt_t flt_phpsessauth_config[] = {
-  { "SessionName",  flt_phpsessauth_handle, CFG_OPT_CONFIG|CFG_OPT_LOCAL|CFG_OPT_NEEDED, NULL },
-  { "SessionPath",  flt_phpsessauth_handle, CFG_OPT_CONFIG|CFG_OPT_LOCAL, NULL },
-  { "SessionVName", flt_phpsessauth_handle, CFG_OPT_CONFIG|CFG_OPT_LOCAL|CFG_OPT_NEEDED, NULL },
+cf_conf_opt_t flt_phpsessauth_config[] = {
+  { "SessionName",  flt_phpsessauth_handle, CF_CFG_OPT_CONFIG|CF_CFG_OPT_LOCAL|CF_CFG_OPT_NEEDED, NULL },
+  { "SessionPath",  flt_phpsessauth_handle, CF_CFG_OPT_CONFIG|CF_CFG_OPT_LOCAL, NULL },
+  { "SessionVName", flt_phpsessauth_handle, CF_CFG_OPT_CONFIG|CF_CFG_OPT_LOCAL|CF_CFG_OPT_NEEDED, NULL },
   { NULL, NULL, 0, NULL }
 };
 
-handler_config_t flt_phpsessauth_handlers[] = {
+cf_handler_config_t flt_phpsessauth_handlers[] = {
   { AUTH_HANDLER, flt_phpsessauth_run },
   { 0, NULL }
 };
 
-module_config_t flt_phpsessauth = {
+cf_module_config_t flt_phpsessauth = {
   MODULE_MAGIC_COOKIE,
   flt_phpsessauth_config,
   flt_phpsessauth_handlers,

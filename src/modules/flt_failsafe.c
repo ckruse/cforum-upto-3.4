@@ -213,7 +213,7 @@ int flt_failsafe_post_handler(forum_t *forum,u_int64_t tid,posting_t *p) {
 int flt_failsafe_init(int main_socket) {
   FILE *fd;
   struct stat st;
-  name_value_t *forums = cfg_get_first_value(&fo_server_conf,NULL,"Forums");
+  cf_name_value_t *forums = cf_cfg_get_first_value(&fo_server_conf,NULL,"Forums");
   size_t i;
   cf_failsafe_t *fl;
 
@@ -242,7 +242,7 @@ int flt_failsafe_init(int main_socket) {
 /* }}} */
 
 /* {{{ flt_failsafe_handle_command */
-int flt_failsafe_handle_command(configfile_t *cf,conf_opt_t *opt,const u_char *context,u_char **args,size_t argnum) {
+int flt_failsafe_handle_command(cf_configfile_t *cf,cf_conf_opt_t *opt,const u_char *context,u_char **args,size_t argnum) {
   cf_failsafe_t *fl,fl1;
   u_char buff[512];
 
@@ -276,12 +276,12 @@ void flt_failsafe_cleanup(void) {
 }
 /* }}} */
 
-conf_opt_t flt_failsafe_config[] = {
-  { "BackupFile", flt_failsafe_handle_command, CFG_OPT_CONFIG|CFG_OPT_NEEDED|CFG_OPT_LOCAL, NULL },
+cf_conf_opt_t flt_failsafe_config[] = {
+  { "BackupFile", flt_failsafe_handle_command, CF_CFG_OPT_CONFIG|CF_CFG_OPT_NEEDED|CF_CFG_OPT_LOCAL, NULL },
   { NULL, NULL, 0, NULL }
 };
 
-handler_config_t flt_failsafe_handlers[] = {
+cf_handler_config_t flt_failsafe_handlers[] = {
   { INIT_HANDLER,       flt_failsafe_init           },
   { NEW_POST_HANDLER,   flt_failsafe_post_handler   },
   { NEW_THREAD_HANDLER, flt_failsafe_thread_handler },
@@ -289,7 +289,7 @@ handler_config_t flt_failsafe_handlers[] = {
   { 0, NULL }
 };
 
-module_config_t flt_failsafe = {
+cf_module_config_t flt_failsafe = {
   MODULE_MAGIC_COOKIE,
   flt_failsafe_config,
   flt_failsafe_handlers,

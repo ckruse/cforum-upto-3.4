@@ -49,31 +49,31 @@ static u_char *flt_preview_fn = NULL;
 
 /* {{{ flt_preview_execute */
 #ifdef CF_SHARED_MEM
-int flt_preview_execute(cf_hash_t *head,configuration_t *dc,configuration_t *pc,message_t *p,cl_thread_t *thr,void *ptr,int sock,int mode)
+int flt_preview_execute(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t *pc,message_t *p,cl_thread_t *thr,void *ptr,int sock,int mode)
 #else
-int flt_preview_execute(cf_hash_t *head,configuration_t *dc,configuration_t *pc,message_t *p,cl_thread_t *thr,int sock,int mode)
+int flt_preview_execute(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t *pc,message_t *p,cl_thread_t *thr,int sock,int mode)
 #endif
 {
   u_char *date;
   size_t len;
-  name_value_t *v;
+  cf_name_value_t *v;
   u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
-  string_t cnt;
+  cf_string_t cnt;
 
   if(head) {
     if(cf_cgi_get(head,"preview")) {
-      v = cfg_get_first_value(dc,forum_name,"DateLocale");
+      v = cf_cfg_get_first_value(dc,forum_name,"DateLocale");
 
       date = cf_general_get_time(flt_preview_datefmt,v->values[0],&len,&p->date);
       cf_cgi_set(head,"date",date);
       free(date);
 
-      v = cfg_get_first_value(pc,forum_name,"QuotingChars");
-      str_init(&cnt);
+      v = cf_cfg_get_first_value(pc,forum_name,"QuotingChars");
+      cf_str_init(&cnt);
       msg_to_html(NULL,p->content.content,&cnt,NULL,v->values[0],-1,1);
 
       cf_cgi_set(head,"ne_message",cnt.content);
-      str_cleanup(&cnt);
+      cf_str_cleanup(&cnt);
 
       if(cf_cgi_get(head,"preview") != NULL) {
         cf_cgi_set(head,"genprev","1");
@@ -93,7 +93,7 @@ int flt_preview_execute(cf_hash_t *head,configuration_t *dc,configuration_t *pc,
 /* }}} */
 
 /* {{{ flt_preview_variables */
-int flt_preview_variables(cf_hash_t *head,configuration_t *dc,configuration_t *vc,cl_thread_t *thread,cf_template_t *tpl) {
+int flt_preview_variables(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t *vc,cl_thread_t *thread,cf_template_t *tpl) {
 
   if(flt_preview_gen_prev) {
     if(flt_preview_is_preview == 0) cf_tpl_setvalue(tpl,"preview",TPL_VARIABLE_STRING,"1",1);
@@ -106,12 +106,12 @@ int flt_preview_variables(cf_hash_t *head,configuration_t *dc,configuration_t *v
 }
 /* }}} */
 
-int flt_preview_variables_posting(cf_hash_t *head,configuration_t *dc,configuration_t *pc,cf_template_t *tpl) {
+int flt_preview_variables_posting(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t *pc,cf_template_t *tpl) {
   return flt_preview_variables(NULL,NULL,NULL,NULL,tpl);
 }
 
 /* {{{ flt_preview_cmd */
-int flt_preview_cmd(configfile_t *cfile,conf_opt_t *opt,const u_char *context,u_char **args,size_t argnum) {
+int flt_preview_cmd(cf_configfile_t *cfile,cf_conf_opt_t *opt,const u_char *context,u_char **args,size_t argnum) {
   if(flt_preview_fn == NULL) flt_preview_fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   if(!context || cf_strcmp(flt_preview_fn,context) != 0) return 0;
 
@@ -131,21 +131,21 @@ int flt_preview_cmd(configfile_t *cfile,conf_opt_t *opt,const u_char *context,u_
 }
 /* }}} */
 
-conf_opt_t flt_preview_config[] = {
-  { "PreviewDateFormat", flt_preview_cmd, CFG_OPT_CONFIG|CFG_OPT_LOCAL, NULL },
-  { "GeneratePreview",   flt_preview_cmd, CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
-  { "PreviewSwitchType", flt_preview_cmd, CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
+cf_conf_opt_t flt_preview_config[] = {
+  { "PreviewDateFormat", flt_preview_cmd, CF_CFG_OPT_CONFIG|CF_CFG_OPT_LOCAL, NULL },
+  { "GeneratePreview",   flt_preview_cmd, CF_CFG_OPT_CONFIG|CF_CFG_OPT_USER|CF_CFG_OPT_LOCAL, NULL },
+  { "PreviewSwitchType", flt_preview_cmd, CF_CFG_OPT_CONFIG|CF_CFG_OPT_USER|CF_CFG_OPT_LOCAL, NULL },
   { NULL, NULL, 0, NULL }
 };
 
-handler_config_t flt_preview_handlers[] = {
+cf_handler_config_t flt_preview_handlers[] = {
   { NEW_POST_HANDLER,     flt_preview_execute },
   { POSTING_HANDLER,      flt_preview_variables },
   { POST_DISPLAY_HANDLER, flt_preview_variables_posting },
   { 0, NULL }
 };
 
-module_config_t flt_preview = {
+cf_module_config_t flt_preview = {
   MODULE_MAGIC_COOKIE,
   flt_preview_config,
   flt_preview_handlers,

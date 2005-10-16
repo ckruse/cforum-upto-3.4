@@ -108,12 +108,12 @@ cf_http_response_t *cf_http_simple_get_uri(const u_char *uri) {
 
   /* If chunk != NULL then we have the data */
   if (chunk) {
-    rsp          = fo_alloc(NULL,1,sizeof(*rsp),FO_ALLOC_MALLOC);
+    rsp          = cf_alloc(NULL,1,sizeof(*rsp),CF_ALLOC_MALLOC);
     rsp->reason  = NULL;
     rsp->status  = 0;
     rsp->headers = cf_hash_new(NULL);
 
-    str_init(&rsp->content);
+    cf_str_init(&rsp->content);
 
     if((response = HTRequest_response(request)) != NULL) rsp->reason = strdup(HTResponse_reason(response));
 
@@ -192,12 +192,12 @@ cf_http_response_t *cf_http_simple_post_uri(const u_char *uri,const u_char *post
   if(status == YES) {
     HTEventList_loop(request);
 
-    rsp          = fo_alloc(NULL,1,sizeof(*rsp),FO_ALLOC_MALLOC);
+    rsp          = cf_alloc(NULL,1,sizeof(*rsp),CF_ALLOC_MALLOC);
     rsp->reason  = NULL;
     rsp->status  = 0;
     rsp->headers = cf_hash_new(NULL);
 
-    str_init(&rsp->content);
+    cf_str_init(&rsp->content);
 
     if((response = HTRequest_response(request)) != NULL) rsp->reason = strdup(HTResponse_reason(response));
 
@@ -233,7 +233,7 @@ void cf_http_destroy_response(cf_http_response_t *rsp) {
   if(rsp->reason) free(rsp->reason);
   if(rsp->headers) cf_hash_destroy(rsp->headers);
 
-  str_cleanup(&rsp->content);
+  cf_str_cleanup(&rsp->content);
 }
 /* }}} */
 
@@ -241,49 +241,49 @@ void cf_http_destroy_response(cf_http_response_t *rsp) {
 void cf_http_redirect_with_nice_uri(const u_char *ruri,int perm) {
   u_char *tmp,*port,*https;
   register u_char *ptr;
-  string_t uri;
+  cf_string_t uri;
   int slash = 0;
 
-  str_init_growth(&uri,256);
+  cf_str_init_growth(&uri,256);
 
   if(cf_strncmp(ruri,"http://",7) != 0 && cf_strncmp(ruri,"https://",8) != 0) {
     port  = getenv("SERVER_PORT");
     https = getenv("HTTPS");
 
-    if(https || cf_strncmp(port,"443",3) == 0) str_chars_append(&uri,"https://",8);
-    else str_chars_append(&uri,"http://",7);
+    if(https || cf_strncmp(port,"443",3) == 0) cf_str_chars_append(&uri,"https://",8);
+    else cf_str_chars_append(&uri,"http://",7);
 
     tmp = getenv("SERVER_NAME");
-    str_chars_append(&uri,tmp,strlen(tmp));
+    cf_str_chars_append(&uri,tmp,strlen(tmp));
 
     if(cf_strcmp(port,"80") != 0 && cf_strcmp(port,"443") != 0) {
-      str_char_append(&uri,':');
-      str_chars_append(&uri,tmp,strlen(tmp));
+      cf_str_char_append(&uri,':');
+      cf_str_chars_append(&uri,tmp,strlen(tmp));
     }
 
-    str_char_append(&uri,'/');
+    cf_str_char_append(&uri,'/');
     slash = 1;
 
     ptr = (u_char *)ruri;
   }
   else if(cf_strncmp(ruri,"http://",7) == 0) {
-    str_chars_append(&uri,"http://",7);
+    cf_str_chars_append(&uri,"http://",7);
     ptr = (u_char *)ruri + 7 * sizeof(u_char);
   }
   else {
-    str_chars_append(&uri,"https://",8);
+    cf_str_chars_append(&uri,"https://",8);
     ptr = (u_char *)ruri + 8 * sizeof(u_char);
   }
 
   for(;*ptr;++ptr) {
     switch(*ptr) {
       case '/':
-        if(slash == 0) str_char_append(&uri,'/');
+        if(slash == 0) cf_str_char_append(&uri,'/');
         slash = 1;
         break;
       default:
         slash = 0;
-        str_char_append(&uri,*ptr);
+        cf_str_char_append(&uri,*ptr);
     }
   }
 

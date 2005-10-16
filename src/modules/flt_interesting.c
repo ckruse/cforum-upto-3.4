@@ -50,7 +50,7 @@ static u_char *flt_interesting_fname    = NULL;
 static DB     *flt_interesting_db       = NULL;
 
 /* {{{ flt_interesting_init_handler */
-int flt_interesting_init_handler(cf_hash_t *cgi,configuration_t *dc,configuration_t *vc) {
+int flt_interesting_init_handler(cf_hash_t *cgi,cf_configuration_t *dc,cf_configuration_t *vc) {
   int ret,fd;
 
   if(flt_interesting_file) {
@@ -83,9 +83,9 @@ int flt_interesting_init_handler(cf_hash_t *cgi,configuration_t *dc,configuratio
 
 /* {{{ flt_interesting_mark_thread */
 #ifndef CF_SHARED_MEM
-int flt_interesting_mark_thread(cf_hash_t *head,configuration_t *dc,configuration_t *vc,int sock)
+int flt_interesting_mark_thread(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t *vc,int sock)
 #else
-int flt_interesting_mark_thread(cf_hash_t *head,configuration_t *dc,configuration_t *vc,void *sock)
+int flt_interesting_mark_thread(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t *vc,void *sock)
 #endif
 {
   u_char *a;
@@ -103,7 +103,7 @@ int flt_interesting_mark_thread(cf_hash_t *head,configuration_t *dc,configuratio
         if((parm = cf_cgi_get_multiple(head,"mit")) != NULL) {
           /* {{{ put tids to database */
           for(;parm;parm=parm->next) {
-            tid = str_to_u_int64(parm->value);
+            tid = cf_str_to_uint64(parm->value);
 
             if(tid) {
               memset(&key,0,sizeof(key));
@@ -144,7 +144,7 @@ int flt_interesting_mark_thread(cf_hash_t *head,configuration_t *dc,configuratio
         if((parm = cf_cgi_get_multiple(head,"mit")) != NULL) {
           /* {{{ put tids to database */
           for(;parm;parm=parm->next) {
-            tid = str_to_u_int64(parm->value);
+            tid = cf_str_to_uint64(parm->value);
 
             if(tid) {
               memset(&key,0,sizeof(key));
@@ -189,20 +189,20 @@ int flt_interesting_mark_thread(cf_hash_t *head,configuration_t *dc,configuratio
 
 /* {{{ flt_interesting_mark_thread_on_post */
 #ifdef CF_SHARED_MEM
-int flt_interesting_mark_thread_on_post(cf_hash_t *head,configuration_t *dc,configuration_t *pc,message_t *p,u_int64_t tid,int sock,void *shm)
+int flt_interesting_mark_thread_on_post(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t *pc,message_t *p,u_int64_t tid,int sock,void *shm)
 #else
-int flt_interesting_mark_thread_on_post(cf_hash_t *head,configuration_t *dc,configuration_t *pc,message_t *p,u_int64_t tid,int sock)
+int flt_interesting_mark_thread_on_post(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t *pc,message_t *p,u_int64_t tid,int sock)
 #endif
 {
-  string_t buff;
+  cf_string_t buff;
   DBT key,data;
   char one[] = "1";
   int ret;
 
   if(!flt_interesting_mop || !tid || !flt_interesting_db || !flt_interesting_file || cf_hash_get(GlobalValues,"UserName",8) == NULL) return FLT_DECLINE;
 
-  str_init_growth(&buff,120);
-  u_int64_to_str(&buff,tid);
+  cf_str_init_growth(&buff,120);
+  cf_uint64_to_str(&buff,tid);
 
   memset(&key,0,sizeof(key));
   memset(&data,0,sizeof(data));
@@ -220,8 +220,8 @@ int flt_interesting_mark_thread_on_post(cf_hash_t *head,configuration_t *dc,conf
 /* }}} */
 
 /* {{{ flt_interesting_mark_interesting */
-int flt_interesting_mark_interesting(cf_hash_t *head,configuration_t *dc,configuration_t *vc,cl_thread_t *thread,int mode) {
-  name_value_t *url;
+int flt_interesting_mark_interesting(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t *vc,cl_thread_t *thread,int mode) {
+  cf_name_value_t *url;
   u_char *UserName = cf_hash_get(GlobalValues,"UserName",8);
   u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   DBT key,data;
@@ -230,7 +230,7 @@ int flt_interesting_mark_interesting(cf_hash_t *head,configuration_t *dc,configu
   message_t *msg;
 
   if(UserName) {
-    url = cfg_get_first_value(dc,forum_name,"UBaseURL");
+    url = cf_cfg_get_first_value(dc,forum_name,"UBaseURL");
     msg = cf_msg_get_first_visible(thread->messages);
 
     /* run only in threadlist mode and only in pre mode */
@@ -265,7 +265,7 @@ int flt_interesting_mark_interesting(cf_hash_t *head,configuration_t *dc,configu
 /* }}} */
 
 /* {{{ flt_interesting_colors */
-int flt_interesting_colors(cf_hash_t *head,configuration_t *dc,configuration_t *vc,cf_template_t *begin,cf_template_t *end) {
+int flt_interesting_colors(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t *vc,cf_template_t *begin,cf_template_t *end) {
   if(flt_interesting_cols[0] || flt_interesting_cols[1]) {
     cf_tpl_setvalue(begin,"interesting_cols",TPL_VARIABLE_INT,1);
 
@@ -280,16 +280,16 @@ int flt_interesting_colors(cf_hash_t *head,configuration_t *dc,configuration_t *
 /* }}} */
 
 /* {{{ flt_interesting_colors_post */
-int flt_interesting_colors_post(cf_hash_t *head,configuration_t *dc,configuration_t *vc,cl_thread_t *thread,cf_template_t *tpl) {
+int flt_interesting_colors_post(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t *vc,cl_thread_t *thread,cf_template_t *tpl) {
   return flt_interesting_colors(head,dc,vc,tpl,NULL);
 }
 /* }}} */
 
 /* {{{ flt_interesting_validate */
 #ifndef CF_SHARED_MEM
-int flt_interesting_validate(cf_hash_t *head,configuration_t *dc,configuration_t *vc,time_t last_modified,int sock)
+int flt_interesting_validate(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t *vc,time_t last_modified,int sock)
 #else
-int flt_interesting_validate(cf_hash_t *head,configuration_t *dc,configuration_t *vc,time_t last_modified,void *sock)
+int flt_interesting_validate(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t *vc,time_t last_modified,void *sock)
 #endif
 {
   struct stat st;
@@ -312,9 +312,9 @@ int flt_interesting_validate(cf_hash_t *head,configuration_t *dc,configuration_t
 
 /* {{{ flt_interesting_lm */
 #ifndef CF_SHARED_MEM
-time_t flt_interesting_lm(cf_hash_t *head,configuration_t *dc,configuration_t *vc,int sock)
+time_t flt_interesting_lm(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t *vc,int sock)
 #else
-time_t flt_interesting_lm(cf_hash_t *head,configuration_t *dc,configuration_t *vc,void *sock)
+time_t flt_interesting_lm(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t *vc,void *sock)
 #endif
 {
   struct stat st;
@@ -332,7 +332,7 @@ time_t flt_interesting_lm(cf_hash_t *head,configuration_t *dc,configuration_t *v
 
 
 /* {{{ flt_interesting_handle */
-int flt_interesting_handle(configfile_t *cf,conf_opt_t *opt,const u_char *context,u_char **args,size_t argnum) {
+int flt_interesting_handle(cf_configfile_t *cf,cf_conf_opt_t *opt,const u_char *context,u_char **args,size_t argnum) {
   if(flt_interesting_fname == NULL) flt_interesting_fname = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   if(!context || cf_strcmp(flt_interesting_fname,context) != 0) return 0;
 
@@ -361,15 +361,15 @@ void flt_interesting_cleanup(void) {
 }
 /* }}} */
 
-conf_opt_t flt_interesting_config[] = {
-  { "InterestingFile",         flt_interesting_handle, CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
-  { "Interesting204",          flt_interesting_handle, CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
-  { "InterestingMarkOwnPosts", flt_interesting_handle, CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
-  { "InterestingColors",       flt_interesting_handle, CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
+cf_conf_opt_t flt_interesting_config[] = {
+  { "InterestingFile",         flt_interesting_handle, CF_CFG_OPT_USER|CF_CFG_OPT_LOCAL, NULL },
+  { "Interesting204",          flt_interesting_handle, CF_CFG_OPT_USER|CF_CFG_OPT_LOCAL, NULL },
+  { "InterestingMarkOwnPosts", flt_interesting_handle, CF_CFG_OPT_USER|CF_CFG_OPT_LOCAL, NULL },
+  { "InterestingColors",       flt_interesting_handle, CF_CFG_OPT_USER|CF_CFG_OPT_LOCAL, NULL },
   { NULL, NULL, 0, NULL }
 };
 
-handler_config_t flt_interesting_handlers[] = {
+cf_handler_config_t flt_interesting_handlers[] = {
   { INIT_HANDLER,         flt_interesting_init_handler },
   { CONNECT_INIT_HANDLER, flt_interesting_mark_thread },
   { VIEW_INIT_HANDLER,    flt_interesting_colors },
@@ -379,7 +379,7 @@ handler_config_t flt_interesting_handlers[] = {
   { 0, NULL }
 };
 
-module_config_t flt_interesting = {
+cf_module_config_t flt_interesting = {
   MODULE_MAGIC_COOKIE,
   flt_interesting_config,
   flt_interesting_handlers,

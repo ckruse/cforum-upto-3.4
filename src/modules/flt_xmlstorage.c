@@ -95,7 +95,7 @@ posting_t *flt_xmlstorage_hirarchy_them(h_p_t *parent,posting_t *pst) {
 
   while(p) {
     if(p->level == lvl) {
-      parent->childs = fo_alloc(parent->childs,parent->len+1, sizeof(h_p_t),FO_ALLOC_REALLOC);
+      parent->childs = cf_alloc(parent->childs,parent->len+1, sizeof(h_p_t),CF_ALLOC_REALLOC);
       memset(&parent->childs[parent->len],0,sizeof(h_p_t));
 
       parent->childs[parent->len++].node = p;
@@ -258,7 +258,7 @@ posting_t *flt_xmlstorage_serialize_them(h_p_t *node) {
 
 /* {{{ flt_xmlstorage_sormessage_ts */
 void flt_xmlstorage_sormessage_ts(thread_t *thread) {
-  h_p_t *first = fo_alloc(NULL,1,sizeof(*first),FO_ALLOC_CALLOC);
+  h_p_t *first = cf_alloc(NULL,1,sizeof(*first),CF_ALLOC_CALLOC);
   posting_t *p,*p1;
 
   if(thread->postings->next) {
@@ -287,15 +287,15 @@ void flt_xmlstorage_sormessage_ts(thread_t *thread) {
 
 /* {{{ flt_xmlstorage_make_forumtree */
 int flt_xmlstorage_make_forumtree(forum_t *forum) {
-  name_value_t *p = cfg_get_first_value(&fo_default_conf,forum->name,"MessagePath");
-  name_value_t *sort_t = cfg_get_first_value(&fo_server_conf,forum->name,"SortThreads");
-  name_value_t *sort_m = cfg_get_first_value(&fo_server_conf,forum->name,"SortMessages");
-  string_t path;
+  cf_name_value_t *p = cf_cfg_get_first_value(&fo_default_conf,forum->name,"MessagePath");
+  cf_name_value_t *sort_t = cf_cfg_get_first_value(&fo_server_conf,forum->name,"SortThreads");
+  cf_name_value_t *sort_m = cf_cfg_get_first_value(&fo_server_conf,forum->name,"SortMessages");
+  cf_string_t path;
 
   u_char *ctid;
   unsigned long length = 0,i;
   thread_t *thread;
-  array_t ary;
+  cf_array_t ary;
   u_char buff[50];
 
   GdomeException e;
@@ -309,16 +309,16 @@ int flt_xmlstorage_make_forumtree(forum_t *forum) {
   di = gdome_di_mkref();
   thread_str = gdome_str_mkref("Thread");
 
-  array_init(&ary,sizeof(thread),NULL);
+  cf_array_init(&ary,sizeof(thread),NULL);
 
   sorthread_ts  = cf_strcmp(sort_t->values[0],"ascending") == 0 ? CF_SORT_ASCENDING : CF_SORT_DESCENDING;
   sort_messages = cf_strcmp(sort_m->values[0],"ascending") == 0 ? CF_SORT_ASCENDING : CF_SORT_DESCENDING;
 
-  str_init(&path);
-  str_char_set(&path,p->values[0],strlen(p->values[0]));
+  cf_str_init(&path);
+  cf_str_char_set(&path,p->values[0],strlen(p->values[0]));
 
-  if(path.content[path.len-1] != '/') str_char_append(&path,'/');
-  str_chars_append(&path,"forum.xml",9);
+  if(path.content[path.len-1] != '/') cf_str_char_append(&path,'/');
+  cf_str_chars_append(&path,"forum.xml",9);
 
   if((doc_index = gdome_di_createDocFromURI(di,path.content,0,&e)) == NULL) {
     cf_log(CF_ERR|CF_FLSH,__FILE__,__LINE__,"error loading file (%s)!\n",path.content);
@@ -330,12 +330,12 @@ int flt_xmlstorage_make_forumtree(forum_t *forum) {
   root_element = gdome_doc_documentElement(doc_index,&e);
 
   if((ctid = xml_get_attribute((GdomeNode *)root_element,"lastThread")) != NULL) {
-    forum->threads.last_tid = str_to_u_int64(ctid+1);
+    forum->threads.last_tid = cf_str_to_uint64(ctid+1);
     free(ctid);
   }
 
   if((ctid = xml_get_attribute((GdomeNode *)root_element,"lastMessage")) != NULL) {
-    forum->threads.last_mid = str_to_u_int64(ctid+1);
+    forum->threads.last_mid = cf_str_to_uint64(ctid+1);
     free(ctid);
   }
 
@@ -348,8 +348,8 @@ int flt_xmlstorage_make_forumtree(forum_t *forum) {
     n    = gdome_nl_item(nl,i,&e);
     ctid = xml_get_attribute(n,"id");
 
-    str_chars_append(&path,ctid,strlen(ctid));
-    str_chars_append(&path,".xml",4);
+    cf_str_chars_append(&path,ctid,strlen(ctid));
+    cf_str_chars_append(&path,".xml",4);
     if((doc_thread = gdome_di_createDocFromURI(di,path.content,0,&e)) == NULL) {
       cf_log(CF_ERR|CF_FLSH,__FILE__,__LINE__,"error loading file (%s)!\n",path.content);
       exit(-1);
@@ -361,13 +361,13 @@ int flt_xmlstorage_make_forumtree(forum_t *forum) {
     n1   = xml_get_first_element_by_name(root,"Message");
     n2   = xml_get_first_element_by_name(n,"Message");
 
-    thread           = fo_alloc(NULL,1,sizeof(*thread),FO_ALLOC_CALLOC);
-    thread->tid      = str_to_u_int64(ctid+1);
-    thread->postings = fo_alloc(NULL,1,sizeof(*thread->postings),FO_ALLOC_CALLOC);
+    thread           = cf_alloc(NULL,1,sizeof(*thread),CF_ALLOC_CALLOC);
+    thread->tid      = cf_str_to_uint64(ctid+1);
+    thread->postings = cf_alloc(NULL,1,sizeof(*thread->postings),CF_ALLOC_CALLOC);
     thread->last     = thread->postings;
 
     flt_xmlstorage_create_threadtree(forum,thread,thread->postings,n2,n1,0);
-    array_push(&ary,&thread);
+    cf_array_push(&ary,&thread);
 
     cf_register_thread(forum,thread);
 
@@ -388,12 +388,12 @@ int flt_xmlstorage_make_forumtree(forum_t *forum) {
   gdome_doc_unref(doc_index,&e);
   gdome_di_unref(di,&e);
 
-  str_cleanup(&path);
+  cf_str_cleanup(&path);
 
-  array_sort(&ary,flt_xmlstorage_cmp_thread);
+  cf_array_sort(&ary,flt_xmlstorage_cmp_thread);
 
   for(i=0;i<ary.elements;i++) {
-    thread = *((thread_t **)array_element_at(&ary,i));
+    thread = *((thread_t **)cf_array_element_at(&ary,i));
 
     if(forum->threads.last == NULL) {
       forum->threads.last = thread;
@@ -410,7 +410,7 @@ int flt_xmlstorage_make_forumtree(forum_t *forum) {
     flt_xmlstorage_sormessage_ts(thread);
   }
 
-  array_destroy(&ary);
+  cf_array_destroy(&ary);
 
   return FLT_OK;
 }
@@ -471,7 +471,7 @@ void flt_xmlstorage_create_threadtree(forum_t *forum,thread_t *thread,posting_t 
 
   post->unid.content = unid;
   post->unid.len   = post->unid.reserved = strlen(unid);
-  post->mid        = str_to_u_int64(cmid+1);
+  post->mid        = cf_str_to_uint64(cmid+1);
   post->invisible  = atoi(invi);
   post->votes_good = strtoul(vgood,NULL,10);
   post->votes_bad  = strtoul(vbad,NULL,10);
@@ -518,7 +518,7 @@ void flt_xmlstorage_create_threadtree(forum_t *forum,thread_t *thread,posting_t 
       }
       free(cmid);
 
-      p = fo_alloc(NULL,1,sizeof(*p),FO_ALLOC_CALLOC);
+      p = cf_alloc(NULL,1,sizeof(*p),CF_ALLOC_CALLOC);
       if(thread->last != NULL) thread->last->next = p;
 
       p->prev      = thread->last;
@@ -566,34 +566,34 @@ void flt_xmlstorage_handle_header(posting_t *p,GdomeNode *n) {
   free(ls);
 
   tmp = xml_get_node_value(a_name);
-  str_char_set(&p->user.name,tmp,strlen(tmp));
+  cf_str_char_set(&p->user.name,tmp,strlen(tmp));
   free(tmp);
 
   tmp = xml_get_node_value(subject);
-  str_char_set(&p->subject,tmp,strlen(tmp));
+  cf_str_char_set(&p->subject,tmp,strlen(tmp));
   free(tmp);
 
   tmp = xml_get_node_value(category);
   if(tmp) {
-    str_char_set(&p->category,tmp,strlen(tmp));
+    cf_str_char_set(&p->category,tmp,strlen(tmp));
     free(tmp);
   }
 
   tmp = xml_get_node_value(a_email);
   if(tmp) {
-    str_char_set(&p->user.email,tmp,strlen(tmp));
+    cf_str_char_set(&p->user.email,tmp,strlen(tmp));
     free(tmp);
   }
 
   tmp = xml_get_node_value(a_hp);
   if(tmp) {
-    str_char_set(&p->user.hp,tmp,strlen(tmp));
+    cf_str_char_set(&p->user.hp,tmp,strlen(tmp));
     free(tmp);
   }
 
   tmp = xml_get_node_value(a_img);
   if(tmp) {
-    str_char_set(&p->user.img,tmp,strlen(tmp));
+    cf_str_char_set(&p->user.img,tmp,strlen(tmp));
     free(tmp);
   }
 
@@ -629,7 +629,7 @@ void flt_xmlstorage_handle_header(posting_t *p,GdomeNode *n) {
 posting_t *flt_xmlstorage_stringify_posting(GdomeDocument *doc1,GdomeElement *t1,GdomeDocument *doc2,GdomeElement *t2,posting_t *p) {
   int lvl = p->level;
   GdomeException e;
-  string_t mstr;
+  cf_string_t mstr;
 
   cf_list_element_t *elem;
   posting_flag_t *flag;
@@ -665,9 +665,9 @@ posting_t *flt_xmlstorage_stringify_posting(GdomeDocument *doc1,GdomeElement *t1
   xml_set_attribute(m1,"invisible",p->invisible ? "1" : "0");
   xml_set_attribute(m2,"invisible",p->invisible ? "1" : "0");
 
-  str_init_growth(&mstr,20);
-  str_char_append(&mstr,'m');
-  u_int64_to_str(&mstr,p->mid);
+  cf_str_init_growth(&mstr,20);
+  cf_str_char_append(&mstr,'m');
+  cf_uint64_to_str(&mstr,p->mid);
 
   xml_set_attribute(m1,"id",mstr.content);
 
@@ -677,18 +677,18 @@ posting_t *flt_xmlstorage_stringify_posting(GdomeDocument *doc1,GdomeElement *t1
   xml_set_attribute(m2,"id",mstr.content);
   xml_set_attribute(m2,"ip",p->user.ip.content);
 
-  str_cleanup(&mstr);
+  cf_str_cleanup(&mstr);
 
   /* voting attributes */
-  u_int32_to_str(&mstr,p->votes_good);
+  cf_uint32_to_str(&mstr,p->votes_good);
   xml_set_attribute(m1,"votingGood",mstr.content);
   xml_set_attribute(m2,"votingGood",mstr.content);
-  str_cleanup(&mstr);
+  cf_str_cleanup(&mstr);
 
-  u_int32_to_str(&mstr,p->votes_bad);
+  cf_uint32_to_str(&mstr,p->votes_bad);
   xml_set_attribute(m1,"votingBad",mstr.content);
   xml_set_attribute(m2,"votingBad",mstr.content);
-  str_cleanup(&mstr);
+  cf_str_cleanup(&mstr);
   /* }}} */
 
   /* {{{ name */
@@ -787,10 +787,10 @@ posting_t *flt_xmlstorage_stringify_posting(GdomeDocument *doc1,GdomeElement *t1
   elem1 = xml_create_element(doc1,"Date");
   elem2 = xml_create_element(doc2,"Date");
 
-  u_int32_to_str(&mstr,(u_int32_t)p->date);
+  cf_uint32_to_str(&mstr,(u_int32_t)p->date);
   xml_set_attribute(elem1,"longSec",mstr.content);
   xml_set_attribute(elem2,"longSec",mstr.content);
-  str_cleanup(&mstr);
+  cf_str_cleanup(&mstr);
 
   gdome_el_appendChild(header1,(GdomeNode *)elem1,&e);
   gdome_el_appendChild(header2,(GdomeNode *)elem2,&e);
@@ -872,15 +872,15 @@ GdomeDocument *flt_xmlstorage_thread2xml(GdomeDOMImplementation *impl,GdomeDocum
   GdomeElement *thread1 = xml_create_element(doc1,"Thread");
   GdomeElement *thread2 = xml_create_element(doc2,"Thread");
   GdomeElement *root;
-  string_t str;
+  cf_string_t str;
 
-  str_init_growth(&str,10);
-  str_char_append(&str,'t');
-  u_int64_to_str(&str,t->tid);
+  cf_str_init_growth(&str,10);
+  cf_str_char_append(&str,'t');
+  cf_uint64_to_str(&str,t->tid);
 
   xml_set_attribute(thread1,"id",str.content);
   xml_set_attribute(thread2,"id",str.content);
-  str_cleanup(&str);
+  cf_str_cleanup(&str);
 
   flt_xmlstorage_stringify_posting(doc1,thread1,doc2,thread2,t->postings);
 
@@ -906,13 +906,13 @@ int flt_xmlstorage_threadlist_writer(forum_t *forum) {
   u_char buff[256];
   pid_t pid;
 
-  name_value_t *mpath = cfg_get_first_value(&fo_default_conf,forum->name,"MessagePath");
+  cf_name_value_t *mpath = cf_cfg_get_first_value(&fo_default_conf,forum->name,"MessagePath");
 
   GdomeException e;
   GdomeDOMImplementation *impl;
   GdomeDocument *doc,*doc_thread;
   GdomeElement *elm;
-  string_t str;
+  cf_string_t str;
 
   /* we have to fork() because of the fucking memory leaks... */
   pid = fork();
@@ -948,30 +948,30 @@ int flt_xmlstorage_threadlist_writer(forum_t *forum) {
 
   cf_log(CF_DBG,__FILE__,__LINE__,"tid %llu, mid: %llu\n",ltid,lmid);
 
-  str_init_growth(&str,10);
+  cf_str_init_growth(&str,10);
 
   if(ltid) {
-    str_char_append(&str,'t');
-    u_int64_to_str(&str,ltid);
+    cf_str_char_append(&str,'t');
+    cf_uint64_to_str(&str,ltid);
     xml_set_attribute(elm,"lastThread",str.content);
-    str_cleanup(&str);
+    cf_str_cleanup(&str);
   }
 
   if(lmid) {
-    str_char_append(&str,'m');
-    u_int64_to_str(&str,lmid);
+    cf_str_char_append(&str,'m');
+    cf_uint64_to_str(&str,lmid);
     xml_set_attribute(elm,"lastMessage",str.content);
-    str_cleanup(&str);
+    cf_str_cleanup(&str);
   }
 
   for(;t;t=t->next) {
     doc_thread = flt_xmlstorage_thread2xml(impl,doc,t);
 
     /* save doc to file... */
-    str_cstr_append(&str,mpath->values[0]);
-    str_char_append(&str,'t');
-    u_int64_to_str(&str,t->tid);
-    str_chars_append(&str,".xml",4);
+    cf_str_cstr_append(&str,mpath->values[0]);
+    cf_str_char_append(&str,'t');
+    cf_uint64_to_str(&str,t->tid);
+    cf_str_chars_append(&str,".xml",4);
     cf_log(CF_DBG,__FILE__,__LINE__,"save file: %s\n",str.content);
     if(!gdome_di_saveDocToFile(impl,doc_thread,str.content,0,&e)) {
       cf_log(CF_ERR|CF_FLSH,__FILE__,__LINE__,"ERROR! COULD NOT WRITE XML FILE! Trying to write it to /tmp/%s/t%llu.xml\n",forum->name,t->tid);
@@ -984,11 +984,11 @@ int flt_xmlstorage_threadlist_writer(forum_t *forum) {
     }
 
     gdome_doc_unref(doc_thread,&e);
-    str_cleanup(&str);
+    cf_str_cleanup(&str);
   }
 
-  str_cstr_append(&str,mpath->values[0]);
-  str_chars_append(&str,"/forum.xml",10);
+  cf_str_cstr_append(&str,mpath->values[0]);
+  cf_str_chars_append(&str,"/forum.xml",10);
   if(!gdome_di_saveDocToFile(impl,doc,str.content,0,&e)) {
     cf_log(CF_ERR|CF_FLSH,__FILE__,__LINE__,"ERROR! COULD NOT WRITE XML FILE! Trying to write it to /tmp/%s/forum.xml\n",forum->name);
 
@@ -998,7 +998,7 @@ int flt_xmlstorage_threadlist_writer(forum_t *forum) {
     gdome_di_saveDocToFile(impl,doc,buff,0,&e);
   }
 
-  str_cleanup(&str);
+  cf_str_cleanup(&str);
 
   gdome_el_unref(elm,&e);
   gdome_doc_unref(doc,&e);
@@ -1014,7 +1014,7 @@ int flt_xmlstorage_archive_threads(forum_t *forum,thread_t **threads,size_t len)
   size_t i;
 
   u_char buff[512];
-  string_t str;
+  cf_string_t str;
 
   GdomeException e;
   GdomeDOMImplementation *impl;
@@ -1025,7 +1025,7 @@ int flt_xmlstorage_archive_threads(forum_t *forum,thread_t **threads,size_t len)
 
   unsigned long olen = 0;
 
-  name_value_t *path,*mpath;
+  cf_name_value_t *path,*mpath;
 
   pid = fork();
   switch(pid) {
@@ -1039,19 +1039,19 @@ int flt_xmlstorage_archive_threads(forum_t *forum,thread_t **threads,size_t len)
       return FLT_OK;
   }
 
-  path  = cfg_get_first_value(&fo_default_conf,forum->name,"ArchivePath");
-  mpath = cfg_get_first_value(&fo_default_conf,forum->name,"MessagePath");
+  path  = cf_cfg_get_first_value(&fo_default_conf,forum->name,"ArchivePath");
+  mpath = cf_cfg_get_first_value(&fo_default_conf,forum->name,"MessagePath");
   impl  = gdome_di_mkref();
 
-  str_init(&str);
+  cf_str_init(&str);
 
   for(i=0;i<len;++i) {
     localtime_r(&threads[i]->postings->date,&t);
-    str_cstr_append(&str,path->values[0]);
-    str_char_append(&str,'/');
-    u_int16_to_str(&str,(u_int16_t)(t.tm_year+1900));
-    str_char_append(&str,'/');
-    u_int16_to_str(&str,(u_int16_t)(t.tm_mon+1));
+    cf_str_cstr_append(&str,path->values[0]);
+    cf_str_char_append(&str,'/');
+    cf_uint16_to_str(&str,(u_int16_t)(t.tm_year+1900));
+    cf_str_char_append(&str,'/');
+    cf_uint16_to_str(&str,(u_int16_t)(t.tm_mon+1));
 
     if(stat(str.content,&st) == -1) {
       if(cf_make_path(str.content,0755) != 0) {
@@ -1062,7 +1062,7 @@ int flt_xmlstorage_archive_threads(forum_t *forum,thread_t **threads,size_t len)
       doc = xml_create_doc(impl,"Forum",FORUM_DTD);
     }
     else {
-      str_chars_append(&str,"/index.xml",10);
+      cf_str_chars_append(&str,"/index.xml",10);
       if((doc = gdome_di_createDocFromURI(impl,str.content,0,&e)) == NULL) {
         cf_log(CF_ERR|CF_FLSH,__FILE__,__LINE__,"ERROR PARSING INDEX DOCUMENT! (%s)\n",buff);
         exit(-1);
@@ -1073,9 +1073,9 @@ int flt_xmlstorage_archive_threads(forum_t *forum,thread_t **threads,size_t len)
     doc_thread = flt_xmlstorage_thread2xml(impl,doc,threads[i]);
 
     olen = str.len;
-    str_chars_append(&str,"/t",2);
-    u_int64_to_str(&str,threads[i]->tid);
-    str_chars_append(&str,".xml",4);
+    cf_str_chars_append(&str,"/t",2);
+    cf_uint64_to_str(&str,threads[i]->tid);
+    cf_str_chars_append(&str,".xml",4);
 
     if(!gdome_di_saveDocToFile(impl,doc_thread,str.content,0,&e)) {
       cf_log(CF_ERR|CF_FLSH,__FILE__,__LINE__,"ERROR! COULD NOT WRITE XML FILE! Trying to write it to /tmp/%s/archive/t%llu.xml\n",forum->name,threads[i]->tid);
@@ -1088,10 +1088,10 @@ int flt_xmlstorage_archive_threads(forum_t *forum,thread_t **threads,size_t len)
     }
 
     str.len = olen;
-    str_chars_append(&str,"/index.xml",10);
+    cf_str_chars_append(&str,"/index.xml",10);
     if(!gdome_di_saveDocToFile(impl,doc,str.content,0,&e)) cf_log(CF_ERR|CF_FLSH,__FILE__,__LINE__,"ERROR! COULD NOT WRITE INDEX XML FILE!\n",forum->name,threads[i]->tid);
 
-    str_cleanup(&str);
+    cf_str_cleanup(&str);
 
     gdome_doc_unref(doc_thread,&e);
     gdome_doc_unref(doc,&e);
@@ -1107,7 +1107,7 @@ int flt_xmlstorage_archive_threads(forum_t *forum,thread_t **threads,size_t len)
 
 /* {{{ flt_xmlstorage_remove_thread */
 int flt_xmlstorage_remove_thread(forum_t *forum,thread_t *thr) {
-  name_value_t *mpath = cfg_get_first_value(&fo_default_conf,forum->name,"MessagePath");
+  cf_name_value_t *mpath = cf_cfg_get_first_value(&fo_default_conf,forum->name,"MessagePath");
   u_char buff[512];
 
   snprintf(buff,512,"%s/t%llu.xml",mpath->values[0],thr->tid);
@@ -1117,13 +1117,13 @@ int flt_xmlstorage_remove_thread(forum_t *forum,thread_t *thr) {
 }
 /* }}} */
 
-conf_opt_t flt_xmlstorage_config[] = {
-  { "MessagePath", handle_command, CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_default_conf },
-  { "ArchivePath", handle_command, CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_default_conf },
+cf_conf_opt_t flt_xmlstorage_config[] = {
+  { "MessagePath", cf_handle_command, CF_CFG_OPT_NEEDED|CF_CFG_OPT_CONFIG|CF_CFG_OPT_LOCAL, &fo_default_conf },
+  { "ArchivePath", cf_handle_command, CF_CFG_OPT_NEEDED|CF_CFG_OPT_CONFIG|CF_CFG_OPT_LOCAL, &fo_default_conf },
   { NULL, NULL, 0, NULL }
 };
 
-handler_config_t flt_xmlstorage_handlers[] = {
+cf_handler_config_t flt_xmlstorage_handlers[] = {
   { DATA_LOADING_HANDLER,   flt_xmlstorage_make_forumtree },
   { THRDLST_WRITE_HANDLER,  flt_xmlstorage_threadlist_writer },
   { ARCHIVE_THREAD_HANDLER, flt_xmlstorage_archive_threads },
@@ -1131,7 +1131,7 @@ handler_config_t flt_xmlstorage_handlers[] = {
   { 0, NULL }
 };
 
-module_config_t flt_xmlstorage = {
+cf_module_config_t flt_xmlstorage = {
   MODULE_MAGIC_COOKIE,
   flt_xmlstorage_config,
   flt_xmlstorage_handlers,

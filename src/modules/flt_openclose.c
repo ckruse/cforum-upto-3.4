@@ -47,7 +47,7 @@ static u_char *flt_oc_fn        = NULL;
 
 
 /* {{{ flt_oc_opendb */
-int flt_oc_opendb(cf_hash_t *cgi,configuration_t *dc,configuration_t *vc) {
+int flt_oc_opendb(cf_hash_t *cgi,cf_configuration_t *dc,cf_configuration_t *vc) {
   int ret,fd;
 
   if(flt_oc_dbfile) {
@@ -80,9 +80,9 @@ int flt_oc_opendb(cf_hash_t *cgi,configuration_t *dc,configuration_t *vc) {
 
 /* {{{ flt_oc_exec_xmlhttp */
 #ifndef CF_SHARED_MEM
-int flt_oc_exec_xmlhttp(cf_hash_t *cgi,configuration_t *dc,configuration_t *vc,int sock)
+int flt_oc_exec_xmlhttp(cf_hash_t *cgi,cf_configuration_t *dc,cf_configuration_t *vc,int sock)
 #else
-int flt_oc_exec_xmlhttp(cf_hash_t *cgi,configuration_t *dc,configuration_t *vc,void *shm)
+int flt_oc_exec_xmlhttp(cf_hash_t *cgi,cf_configuration_t *dc,cf_configuration_t *vc,void *shm)
 #endif
 {
   u_char *val,buff[512];
@@ -96,7 +96,7 @@ int flt_oc_exec_xmlhttp(cf_hash_t *cgi,configuration_t *dc,configuration_t *vc,v
   if(cgi == NULL || flt_oc_dbfile == NULL) return FLT_DECLINE;
 
   if((val = cf_cgi_get(cgi,"a")) != NULL && (cf_strcmp(val,"open") == 0 || cf_strcmp(val,"close") == 0)) {
-    if((val = cf_cgi_get(cgi,"oc_t")) != NULL && (tid = str_to_u_int64(val)) != 0) {
+    if((val = cf_cgi_get(cgi,"oc_t")) != NULL && (tid = cf_str_to_uint64(val)) != 0) {
       /* {{{ put tid to database or remove it from database */
       len = snprintf(buff,512,"%llu",tid);
 
@@ -125,11 +125,11 @@ int flt_oc_exec_xmlhttp(cf_hash_t *cgi,configuration_t *dc,configuration_t *vc,v
 /* }}} */
 
 /* {{{ flt_oc_execute_filter */
-int flt_oc_execute_filter(cf_hash_t *head,configuration_t *dc,configuration_t *vc,cl_thread_t *thread,int mode) {
+int flt_oc_execute_filter(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t *vc,cl_thread_t *thread,int mode) {
   u_char *UserName = cf_hash_get(GlobalValues,"UserName",8);
   u_char buff[512];
   size_t i;
-  name_value_t *vs;
+  cf_name_value_t *vs;
   message_t *msg;
   mod_api_t is_visited;
 
@@ -140,7 +140,7 @@ int flt_oc_execute_filter(cf_hash_t *head,configuration_t *dc,configuration_t *v
   if(flt_oc_dbfile == NULL) return FLT_DECLINE;
   if(flt_oc_fn == NULL) flt_oc_fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
 
-  vs = cfg_get_first_value(dc,flt_oc_fn,UserName ? "UBaseURL" : "BaseURL");
+  vs = cf_cfg_get_first_value(dc,flt_oc_fn,UserName ? "UBaseURL" : "BaseURL");
   cf_tpl_hashvar_setvalue(&thread->messages->hashvar,"openclose",TPL_VARIABLE_INT,1);
 
   i = snprintf(buff,512,"t%llu",thread->tid);
@@ -220,7 +220,7 @@ int flt_oc_execute_filter(cf_hash_t *head,configuration_t *dc,configuration_t *v
 /* }}} */
 
 /* {{{ flt_oc_set_js */
-int flt_oc_set_js(cf_hash_t *head,configuration_t *dc,configuration_t *vc,cf_template_t *begin,cf_template_t *end) {
+int flt_oc_set_js(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t *vc,cf_template_t *begin,cf_template_t *end) {
   /* user wants to use java script */
   if(UseJavaScript) {
     cf_tpl_setvalue(begin,"UseJavaScript",TPL_VARIABLE_INT,1);
@@ -234,9 +234,9 @@ int flt_oc_set_js(cf_hash_t *head,configuration_t *dc,configuration_t *vc,cf_tem
 
 /* {{{ flt_oc_validate */
 #ifndef CF_SHARED_MEM
-int flt_oc_validate(cf_hash_t *cgi,configuration_t *dc,configuration_t *vc,time_t last_modified,int sock)
+int flt_oc_validate(cf_hash_t *cgi,cf_configuration_t *dc,cf_configuration_t *vc,time_t last_modified,int sock)
 #else
-int flt_oc_validate(cf_hash_t *cgi,configuration_t *dc,configuration_t *vc,time_t last_modified,void *sock)
+int flt_oc_validate(cf_hash_t *cgi,cf_configuration_t *dc,cf_configuration_t *vc,time_t last_modified,void *sock)
 #endif
 {
   u_char *val;
@@ -244,7 +244,7 @@ int flt_oc_validate(cf_hash_t *cgi,configuration_t *dc,configuration_t *vc,time_
   if(cgi) {
     if((val = cf_cgi_get(cgi,"a")) != NULL) {
       if((val = cf_cgi_get(cgi,"oc_t")) != NULL) {
-        if(str_to_u_int64(val) != 0) return FLT_EXIT;
+        if(cf_str_to_uint64(val) != 0) return FLT_EXIT;
       }
     }
   }
@@ -255,7 +255,7 @@ int flt_oc_validate(cf_hash_t *cgi,configuration_t *dc,configuration_t *vc,time_
 
 
 /* {{{ flt_oc_get_conf */
-int flt_oc_get_conf(configfile_t *cfile,conf_opt_t *opt,const u_char *context,u_char **args,size_t argnum) {
+int flt_oc_get_conf(cf_configfile_t *cfile,cf_conf_opt_t *opt,const u_char *context,u_char **args,size_t argnum) {
   if(flt_oc_fn == NULL) flt_oc_fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   if(!context || cf_strcmp(flt_oc_fn,context) != 0) return 0;
 
@@ -275,15 +275,15 @@ void flt_oc_cleanup(void) {
 }
 /* }}} */
 
-conf_opt_t flt_openclose_config[] = {
-  { "ThreadsOpenByDefault", flt_oc_get_conf, CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
-  { "UseJavaScript",        flt_oc_get_conf, CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
-  { "OpenThreadIfNew",      flt_oc_get_conf, CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
-  { "OcDbFile",             flt_oc_get_conf, CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
+cf_conf_opt_t flt_openclose_config[] = {
+  { "ThreadsOpenByDefault", flt_oc_get_conf, CF_CFG_OPT_CONFIG|CF_CFG_OPT_USER|CF_CFG_OPT_LOCAL, NULL },
+  { "UseJavaScript",        flt_oc_get_conf, CF_CFG_OPT_CONFIG|CF_CFG_OPT_USER|CF_CFG_OPT_LOCAL, NULL },
+  { "OpenThreadIfNew",      flt_oc_get_conf, CF_CFG_OPT_CONFIG|CF_CFG_OPT_USER|CF_CFG_OPT_LOCAL, NULL },
+  { "OcDbFile",             flt_oc_get_conf, CF_CFG_OPT_USER|CF_CFG_OPT_LOCAL, NULL },
   { NULL, NULL, 0, NULL }
 };
 
-handler_config_t flt_openclose_handlers[] = {
+cf_handler_config_t flt_openclose_handlers[] = {
   { INIT_HANDLER,         flt_oc_opendb },
   { CONNECT_INIT_HANDLER, flt_oc_exec_xmlhttp },
   { VIEW_HANDLER,         flt_oc_execute_filter },
@@ -291,7 +291,7 @@ handler_config_t flt_openclose_handlers[] = {
   { 0, NULL }
 };
 
-module_config_t flt_openclose = {
+cf_module_config_t flt_openclose = {
   MODULE_MAGIC_COOKIE,
   flt_openclose_config,
   flt_openclose_handlers,

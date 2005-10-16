@@ -41,13 +41,13 @@ static u_char *flt_noanonymous_fn = NULL;
 static int flt_noanonymous_cfg = 0;
 
 /* {{{ flt_noanonymous_run */
-int flt_noanonymous_run(cf_hash_t *cgi,configuration_t *dc,configuration_t *vc) {
-  name_value_t *cs;
+int flt_noanonymous_run(cf_hash_t *cgi,cf_configuration_t *dc,cf_configuration_t *vc) {
+  cf_name_value_t *cs;
   if(flt_noanonymous_cfg == 0 || flt_noanonymous_cfg == FLT_NA_POST) return FLT_DECLINE;
 
   if(cf_hash_get(GlobalValues,"UserName",8) != NULL) return FLT_OK;
 
-  cs = cfg_get_first_value(dc,flt_noanonymous_fn,"ExternCharset");
+  cs = cf_cfg_get_first_value(dc,flt_noanonymous_fn,"ExternCharset");
   printf("Status: 403 Forbidden\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
   cf_error_message("E_noanonymous_read",NULL);
 
@@ -57,17 +57,17 @@ int flt_noanonymous_run(cf_hash_t *cgi,configuration_t *dc,configuration_t *vc) 
 
 /* {{{ flt_noanonymous_post */
 #ifdef CF_SHARED_MEM
-int flt_noanonymous_post(cf_hash_t *head,configuration_t *dc,configuration_t *pc,message_t *p,void *ptr,int sock,int mode)
+int flt_noanonymous_post(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t *pc,message_t *p,void *ptr,int sock,int mode)
 #else
-int flt_noanonymous_post(cf_hash_t *head,configuration_t *dc,configuration_t *pc,message_t *p,int sock,int mode)
+int flt_noanonymous_post(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t *pc,message_t *p,int sock,int mode)
 #endif
 {
-  name_value_t *cs;
+  cf_name_value_t *cs;
   if(flt_noanonymous_cfg == 0) return FLT_DECLINE;
 
   if(cf_hash_get(GlobalValues,"UserName",8) != NULL) return FLT_OK;
 
-  cs = cfg_get_first_value(dc,flt_noanonymous_fn,"ExternCharset");
+  cs = cf_cfg_get_first_value(dc,flt_noanonymous_fn,"ExternCharset");
   printf("Status: 403 Forbidden\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
   if(flt_noanonymous_cfg == FLT_NA_POST) cf_error_message("E_noanonymous_post",NULL);
   else cf_error_message("E_noanonymous_read",NULL);
@@ -77,7 +77,7 @@ int flt_noanonymous_post(cf_hash_t *head,configuration_t *dc,configuration_t *pc
 /* }}} */
 
 /* {{{ flt_noanonymous_handle */
-int flt_noanonymous_handle(configfile_t *cfile,conf_opt_t *opt,const u_char *context,u_char **args,size_t argnum) {
+int flt_noanonymous_handle(cf_configfile_t *cfile,cf_conf_opt_t *opt,const u_char *context,u_char **args,size_t argnum) {
   if(flt_noanonymous_fn == NULL) flt_noanonymous_fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   if(!context || cf_strcmp(flt_noanonymous_fn,context) != 0) return 0;
 
@@ -87,18 +87,18 @@ int flt_noanonymous_handle(configfile_t *cfile,conf_opt_t *opt,const u_char *con
 }
 /* }}} */
 
-conf_opt_t flt_noanonymous_config[] = {
-  { "NoAnonymous",  flt_noanonymous_handle,  CFG_OPT_CONFIG|CFG_OPT_LOCAL, NULL },
+cf_conf_opt_t flt_noanonymous_config[] = {
+  { "NoAnonymous",  flt_noanonymous_handle,  CF_CFG_OPT_CONFIG|CF_CFG_OPT_LOCAL, NULL },
   { NULL, NULL, 0, NULL }
 };
 
-handler_config_t flt_noanonymous_handlers[] = {
+cf_handler_config_t flt_noanonymous_handlers[] = {
   { INIT_HANDLER,     flt_noanonymous_run },
   { NEW_POST_HANDLER, flt_noanonymous_post },
   { 0, NULL }
 };
 
-module_config_t flt_noanonymous = {
+cf_module_config_t flt_noanonymous = {
   MODULE_MAGIC_COOKIE,
   flt_noanonymous_config,
   flt_noanonymous_handlers,

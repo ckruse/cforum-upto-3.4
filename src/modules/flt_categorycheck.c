@@ -40,13 +40,13 @@
 /* }}} */
 
 #ifdef CF_SHARED_MEM
-int flt_categorycheck_execute(cf_hash_t *head,configuration_t *dc,configuration_t *pc,message_t *p,cl_thread_t *thr,void *ptr,int sock,int mode)
+int flt_categorycheck_execute(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t *pc,message_t *p,cl_thread_t *thr,void *ptr,int sock,int mode)
 #else
-int flt_categorycheck_execute(cf_hash_t *head,configuration_t *dc,configuration_t *pc,message_t *p,cl_thread_t *thr,int sock,int mode)
+int flt_categorycheck_execute(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t *pc,message_t *p,cl_thread_t *thr,int sock,int mode)
 #endif
 {
   u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
-  name_value_t *v = cfg_get_first_value(&fo_default_conf,forum_name,"Categories");
+  cf_name_value_t *v = cf_cfg_get_first_value(&fo_default_conf,forum_name,"Categories");
   size_t i;
 
   if(!p->category.len) return FLT_DECLINE;
@@ -60,16 +60,16 @@ int flt_categorycheck_execute(cf_hash_t *head,configuration_t *dc,configuration_
 }
 
 
-conf_opt_t flt_categorycheck_config[] = {
+cf_conf_opt_t flt_categorycheck_config[] = {
   { NULL, NULL, 0, NULL }
 };
 
-handler_config_t flt_categorycheck_handlers[] = {
+cf_handler_config_t flt_categorycheck_handlers[] = {
   { NEW_POST_HANDLER, flt_categorycheck_execute },
   { 0, NULL }
 };
 
-module_config_t flt_categorycheck = {
+cf_module_config_t flt_categorycheck = {
   MODULE_MAGIC_COOKIE,
   flt_categorycheck_config,
   flt_categorycheck_handlers,

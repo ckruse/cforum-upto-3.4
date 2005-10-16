@@ -47,14 +47,14 @@ struct {
 static u_char *flt_basic_fn = NULL;
 
 /* {{{ flt_basic_execute */
-int flt_basic_execute(cf_hash_t *head,configuration_t *dc,configuration_t *vc,cf_template_t *begin,cf_template_t *end) {
+int flt_basic_execute(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t *vc,cf_template_t *begin,cf_template_t *end) {
   u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
-  name_value_t *ubase = cfg_get_first_value(dc,forum_name,"UBaseURL");
-  name_value_t *cs = cfg_get_first_value(dc,forum_name,"ExternCharset");
+  cf_name_value_t *ubase = cf_cfg_get_first_value(dc,forum_name,"UBaseURL");
+  cf_name_value_t *cs = cf_cfg_get_first_value(dc,forum_name,"ExternCharset");
   u_char *UserName = cf_hash_get(GlobalValues,"UserName",8);
-  name_value_t *dflt = cfg_get_first_value(vc,forum_name,"DateFormatLoadTime");
-  name_value_t *loc = cfg_get_first_value(dc,forum_name,"DateLocale");
-  name_value_t *ucfg;
+  cf_name_value_t *dflt = cf_cfg_get_first_value(vc,forum_name,"DateFormatLoadTime");
+  cf_name_value_t *loc = cf_cfg_get_first_value(dc,forum_name,"DateLocale");
+  cf_name_value_t *ucfg;
 
   u_char buff[20];
   time_t tm  = time(NULL);
@@ -66,7 +66,7 @@ int flt_basic_execute(cf_hash_t *head,configuration_t *dc,configuration_t *vc,cf
   cf_set_variable(end,cs,"ubase",ubase->values[0],strlen(ubase->values[0]),1);
 
   if(UserName) {
-    ucfg = cfg_get_first_value(dc,forum_name,"UserConfig");
+    ucfg = cf_cfg_get_first_value(dc,forum_name,"UserConfig");
 
     cf_tpl_setvalue(begin,"authed",TPL_VARIABLE_STRING,"1",1);
     cf_tpl_setvalue(end,"authed",TPL_VARIABLE_STRING,"1",1);
@@ -101,7 +101,7 @@ int flt_basic_execute(cf_hash_t *head,configuration_t *dc,configuration_t *vc,cf
     return FLT_OK;
   }
   else {
-    ucfg = cfg_get_first_value(dc,forum_name,"UserRegister");
+    ucfg = cf_cfg_get_first_value(dc,forum_name,"UserRegister");
     cf_set_variable(begin,cs,"userconfig",ucfg->values[0],strlen(ucfg->values[0]),1);
     cf_set_variable(end,cs,"userconfig",ucfg->values[0],strlen(ucfg->values[0]),1);
   }
@@ -111,9 +111,9 @@ int flt_basic_execute(cf_hash_t *head,configuration_t *dc,configuration_t *vc,cf
 /* }}} */
 
 /* {{{ flt_basic_handle_posting */
-int flt_basic_handle_posting(cf_hash_t *head,configuration_t *dc,configuration_t *vc,cl_thread_t *thr,cf_template_t *tpl) {
+int flt_basic_handle_posting(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t *vc,cl_thread_t *thr,cf_template_t *tpl) {
   u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
-  name_value_t *cs = cfg_get_first_value(dc,forum_name,"ExternCharset");
+  cf_name_value_t *cs = cf_cfg_get_first_value(dc,forum_name,"ExternCharset");
   u_char *UserName = cf_hash_get(GlobalValues,"UserName",8);
 
   if(UserName) {
@@ -135,9 +135,9 @@ int flt_basic_handle_posting(cf_hash_t *head,configuration_t *dc,configuration_t
 /* }}} */
 
 /* {{{ flt_basic_set_target */
-int flt_basic_set_target(cf_hash_t *head,configuration_t *dc,configuration_t *vc,message_t *msg,u_int64_t tid,int mode) {
+int flt_basic_set_target(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t *vc,message_t *msg,u_int64_t tid,int mode) {
   u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
-  name_value_t *cs = cfg_get_first_value(dc,forum_name,"ExternCharset");
+  cf_name_value_t *cs = cf_cfg_get_first_value(dc,forum_name,"ExternCharset");
 
   if(Cfg.BaseTarget && *Cfg.BaseTarget && mode == 0) {
     cf_set_variable_hash(&msg->hashvar,cs,"target",Cfg.BaseTarget,strlen(Cfg.BaseTarget),1);
@@ -149,7 +149,7 @@ int flt_basic_set_target(cf_hash_t *head,configuration_t *dc,configuration_t *vc
 /* }}} */
 
 /* {{{ flt_basic_handle_command */
-int flt_basic_handle_command(configfile_t *cfile,conf_opt_t *opt,const u_char *context,u_char **args,size_t argnum) {
+int flt_basic_handle_command(cf_configfile_t *cfile,cf_conf_opt_t *opt,const u_char *context,u_char **args,size_t argnum) {
   if(flt_basic_fn == NULL) flt_basic_fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   if(!context || cf_strcmp(flt_basic_fn,context) != 0) return 0;
 
@@ -194,24 +194,24 @@ void flt_basic_cleanup(void) {
 }
 /* }}} */
 
-conf_opt_t flt_basic_config[] = {
-  { "FontColor",  flt_basic_handle_command, CFG_OPT_USER|CFG_OPT_CONFIG|CFG_OPT_LOCAL, NULL },
-  { "FontSize",   flt_basic_handle_command, CFG_OPT_USER|CFG_OPT_CONFIG|CFG_OPT_LOCAL, NULL },
-  { "FontFamily", flt_basic_handle_command, CFG_OPT_USER|CFG_OPT_CONFIG|CFG_OPT_LOCAL, NULL },
-  { "AutoReload", flt_basic_handle_command, CFG_OPT_USER|CFG_OPT_CONFIG|CFG_OPT_LOCAL, NULL },
-  { "BaseTarget", flt_basic_handle_command, CFG_OPT_USER|CFG_OPT_CONFIG|CFG_OPT_LOCAL, NULL },
-  { "QuoteColor", flt_basic_handle_command, CFG_OPT_USER|CFG_OPT_CONFIG|CFG_OPT_LOCAL, NULL },
+cf_conf_opt_t flt_basic_config[] = {
+  { "FontColor",  flt_basic_handle_command, CF_CFG_OPT_USER|CF_CFG_OPT_CONFIG|CF_CFG_OPT_LOCAL, NULL },
+  { "FontSize",   flt_basic_handle_command, CF_CFG_OPT_USER|CF_CFG_OPT_CONFIG|CF_CFG_OPT_LOCAL, NULL },
+  { "FontFamily", flt_basic_handle_command, CF_CFG_OPT_USER|CF_CFG_OPT_CONFIG|CF_CFG_OPT_LOCAL, NULL },
+  { "AutoReload", flt_basic_handle_command, CF_CFG_OPT_USER|CF_CFG_OPT_CONFIG|CF_CFG_OPT_LOCAL, NULL },
+  { "BaseTarget", flt_basic_handle_command, CF_CFG_OPT_USER|CF_CFG_OPT_CONFIG|CF_CFG_OPT_LOCAL, NULL },
+  { "QuoteColor", flt_basic_handle_command, CF_CFG_OPT_USER|CF_CFG_OPT_CONFIG|CF_CFG_OPT_LOCAL, NULL },
   { NULL, NULL, 0, NULL }
 };
 
-handler_config_t flt_basic_handlers[] = {
+cf_handler_config_t flt_basic_handlers[] = {
   { VIEW_INIT_HANDLER, flt_basic_execute        },
   { POSTING_HANDLER,   flt_basic_handle_posting },
   { VIEW_LIST_HANDLER, flt_basic_set_target     },
   { 0, NULL }
 };
 
-module_config_t flt_basic = {
+cf_module_config_t flt_basic = {
   MODULE_MAGIC_COOKIE,
   flt_basic_config,
   flt_basic_handlers,

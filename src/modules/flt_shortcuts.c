@@ -76,47 +76,47 @@ static flt_shortcuts_t flt_shortcuts_postingtable[] = {
 static u_char *flt_shortcuts_fn = NULL;
 
 /* {{{ flt_shortcuts_sc_to_js */
-void flt_shortcuts_sc_to_js(string_t *js,flt_shortcuts_t *cut) {
+void flt_shortcuts_sc_to_js(cf_string_t *js,flt_shortcuts_t *cut) {
   int first = 0;
 
-  str_chars_append(js,"register_keybinding(flt_shortcuts_keystable,'",45);
-  str_char_append(js,cut->shortcut);
-  str_chars_append(js,"',",2);
+  cf_str_chars_append(js,"register_keybinding(flt_shortcuts_keystable,'",45);
+  cf_str_char_append(js,cut->shortcut);
+  cf_str_chars_append(js,"',",2);
 
   if(cut->modifiers & FLT_SHORTCUTS_MOD_SHIFT) {
     first = 1;
-    str_chars_append(js,"MODIFIER_SHIFT",14);
+    cf_str_chars_append(js,"MODIFIER_SHIFT",14);
   }
 
   if(cut->modifiers & FLT_SHORTCUTS_MOD_ALT) {
-    if(first == 1) str_char_append(js,'|');
+    if(first == 1) cf_str_char_append(js,'|');
     first = 1;
-    str_chars_append(js,"MODIFIER_ALT",12);
+    cf_str_chars_append(js,"MODIFIER_ALT",12);
   }
 
   if(cut->modifiers & FLT_SHORTCUTS_MOD_CTL) {
-    if(first == 1) str_char_append(js,'|');
+    if(first == 1) cf_str_char_append(js,'|');
     first = 1;
-    str_chars_append(js,"MODIFIER_CTL",12);
+    cf_str_chars_append(js,"MODIFIER_CTL",12);
   }
 
-  if(first == 0) str_char_append(js,'0');
+  if(first == 0) cf_str_char_append(js,'0');
 
-  str_char_append(js,',');
-  str_cstr_append(js,cut->fname);
-  str_chars_append(js,");\n",3);
+  cf_str_char_append(js,',');
+  cf_str_cstr_append(js,cut->fname);
+  cf_str_chars_append(js,");\n",3);
 }
 /* }}} */
 
 /* {{{ flt_shortcuts_threadlist */
-int flt_shortcuts_threadlist(cf_hash_t *head,configuration_t *dc,configuration_t *vc,cf_template_t *begin,cf_template_t *end) {
+int flt_shortcuts_threadlist(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t *vc,cf_template_t *begin,cf_template_t *end) {
   int i = 0;
-  string_t jscode;
+  cf_string_t jscode;
 
   if(flt_shortcuts_activate == 0) return FLT_DECLINE;
 
-  str_init(&jscode);
-  str_char_set(&jscode,"flt_shortcuts_keystable = new Array();\n",39);
+  cf_str_init(&jscode);
+  cf_str_char_set(&jscode,"flt_shortcuts_keystable = new Array();\n",39);
 
   /* generate keybindings table */
   for(i=0;i<FLT_SHORTCUTS_THREADLISTTABLE_LENGTH;++i) {
@@ -126,21 +126,21 @@ int flt_shortcuts_threadlist(cf_hash_t *head,configuration_t *dc,configuration_t
   }
 
   if(jscode.len) cf_tpl_setvalue(begin,"shortcuts",TPL_VARIABLE_STRING,jscode.content,jscode.len);
-  str_cleanup(&jscode);
+  cf_str_cleanup(&jscode);
 
   return FLT_DECLINE;
 }
 /* }}} */
 
 /* {{{ flt_shortcuts_posting */
-int flt_shortcuts_posting(cf_hash_t *head,configuration_t *dc,configuration_t *vc,cl_thread_t *thr,cf_template_t *tpl) {
+int flt_shortcuts_posting(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t *vc,cl_thread_t *thr,cf_template_t *tpl) {
   int i = 0;
-  string_t jscode;
+  cf_string_t jscode;
 
   if(flt_shortcuts_activate == 0) return FLT_DECLINE;
 
-  str_init(&jscode);
-  str_char_set(&jscode,"flt_shortcuts_keystable = new Array();\n",39);
+  cf_str_init(&jscode);
+  cf_str_char_set(&jscode,"flt_shortcuts_keystable = new Array();\n",39);
 
   /* generate keybindings table */
   for(i=0;i<FLT_SHORTCUTS_POSTINGTABLE_LENGTH;++i) {
@@ -150,7 +150,7 @@ int flt_shortcuts_posting(cf_hash_t *head,configuration_t *dc,configuration_t *v
   }
 
   if(jscode.len) cf_tpl_setvalue(tpl,"shortcuts",TPL_VARIABLE_STRING,jscode.content,jscode.len);
-  str_cleanup(&jscode);
+  cf_str_cleanup(&jscode);
 
   return FLT_DECLINE;
 }
@@ -197,7 +197,7 @@ void flt_shortcuts_parser(const u_char *text,flt_shortcuts_t *shortcut) {
 /* }}} */
 
 /* {{{ flt_shortcuts_handle */
-int flt_shortcuts_handle(configfile_t *cfile,conf_opt_t *opt,const u_char *context,u_char **args,size_t argnum) {
+int flt_shortcuts_handle(cf_configfile_t *cfile,cf_conf_opt_t *opt,const u_char *context,u_char **args,size_t argnum) {
   size_t i;
 
   if(flt_shortcuts_fn == NULL) flt_shortcuts_fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
@@ -231,20 +231,20 @@ int flt_shortcuts_handle(configfile_t *cfile,conf_opt_t *opt,const u_char *conte
 }
 /* }}} */
 
-conf_opt_t flt_shortcuts_config[] = {
-  { "ShortcutsActivate",    flt_shortcuts_handle, CFG_OPT_USER|CFG_OPT_CONFIG|CFG_OPT_LOCAL, NULL },
-  { "ShortcutsThreadlist",  flt_shortcuts_handle, CFG_OPT_USER|CFG_OPT_CONFIG|CFG_OPT_LOCAL, NULL },
-  { "ShortcutsPosting",     flt_shortcuts_handle, CFG_OPT_USER|CFG_OPT_CONFIG|CFG_OPT_LOCAL, NULL },
+cf_conf_opt_t flt_shortcuts_config[] = {
+  { "ShortcutsActivate",    flt_shortcuts_handle, CF_CFG_OPT_USER|CF_CFG_OPT_CONFIG|CF_CFG_OPT_LOCAL, NULL },
+  { "ShortcutsThreadlist",  flt_shortcuts_handle, CF_CFG_OPT_USER|CF_CFG_OPT_CONFIG|CF_CFG_OPT_LOCAL, NULL },
+  { "ShortcutsPosting",     flt_shortcuts_handle, CF_CFG_OPT_USER|CF_CFG_OPT_CONFIG|CF_CFG_OPT_LOCAL, NULL },
   { NULL, NULL, 0, NULL }
 };
 
-handler_config_t flt_shortcuts_handlers[] = {
+cf_handler_config_t flt_shortcuts_handlers[] = {
   { VIEW_INIT_HANDLER, flt_shortcuts_threadlist },
   { POSTING_HANDLER,   flt_shortcuts_posting },
   { 0, NULL }
 };
 
-module_config_t flt_shortcuts = {
+cf_module_config_t flt_shortcuts = {
   MODULE_MAGIC_COOKIE,
   flt_shortcuts_config,
   flt_shortcuts_handlers,

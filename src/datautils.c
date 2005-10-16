@@ -32,8 +32,8 @@
 #include "utils.h"
 /* }}} */
 
-/* {{{ str_to_u_int64 */
-u_int64_t str_to_u_int64(register const u_char *ptr) {
+/* {{{ cf_str_to_uint64 */
+u_int64_t cf_str_to_uint64(register const u_char *ptr) {
   u_int64_t retval = 0;
 
   for(;*ptr && isdigit(*ptr);++ptr) retval = retval * 10 + *ptr - '0';
@@ -42,14 +42,14 @@ u_int64_t str_to_u_int64(register const u_char *ptr) {
 }
 /* }}} */
 
-/* {{{ u_int64_to_str */
-void u_int64_to_str(string_t *str, u_int64_t num) {
+/* {{{ cf_uint64_to_str */
+void cf_uint64_to_str(cf_string_t *str, u_int64_t num) {
   register u_char *ptr1,*ptr2,tmp;
   size_t i = 0;
 
   if(num) {
     while(num) {
-      str_char_append(str,'0' + (num % 10));
+      cf_str_char_append(str,'0' + (num % 10));
       num /= 10;
       ++i;
     }
@@ -61,18 +61,18 @@ void u_int64_to_str(string_t *str, u_int64_t num) {
       *ptr2 = tmp;
     }
   }
-  else str_char_append(str,'0');
+  else cf_str_char_append(str,'0');
 }
 /* }}} */
 
-/* {{{ u_int16_to_str */
-void u_int16_to_str(string_t *str, u_int16_t num) {
+/* {{{ cf_uint16_to_str */
+void cf_uint16_to_str(cf_string_t *str, u_int16_t num) {
   register u_char *ptr1,*ptr2,tmp;
   size_t i = 0;
 
   if(num) {
     while(num) {
-      str_char_append(str,'0' + (num % 10));
+      cf_str_char_append(str,'0' + (num % 10));
       num /= 10;
       ++i;
     }
@@ -84,18 +84,18 @@ void u_int16_to_str(string_t *str, u_int16_t num) {
       *ptr2 = tmp;
     }
   }
-  else str_char_append(str,'0');
+  else cf_str_char_append(str,'0');
 }
 /* }}} */
 
-/* {{{ ulong_to_str */
-void u_int32_to_str(string_t *str, u_int32_t num) {
+/* {{{ cf_uint32_to_str */
+void cf_uint32_to_str(cf_string_t *str, u_int32_t num) {
   register u_char *ptr1,*ptr2,tmp;
   size_t i = 0;
 
   if(num) {
     while(num) {
-      str_char_append(str,'0' + (num % 10));
+      cf_str_char_append(str,'0' + (num % 10));
       num /= 10;
       ++i;
     }
@@ -107,7 +107,7 @@ void u_int32_to_str(string_t *str, u_int32_t num) {
       *ptr2 = tmp;
     }
   }
-  else str_char_append(str,'0');
+  else cf_str_char_append(str,'0');
 }
 /* }}} */
 

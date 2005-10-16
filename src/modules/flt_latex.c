@@ -66,37 +66,37 @@ static struct {
 /* {{{ flt_latex_create_cache */
 int flt_latex_create_cache(const u_char *cnt,size_t len,const u_char *our_sum,int elatex) {
   FILE *fd;
-  string_t path,document;
+  cf_string_t path,document;
   size_t mylen;
   pid_t pid;
   int status,fds[2];
   struct stat st;
 
   /* {{{ check if png file already exists */
-  str_init_growth(&path,128);
-  str_char_set(&path,flt_latex_cfg.cache_path,strlen(flt_latex_cfg.cache_path));
-  str_char_append(&path,'/');
-  str_chars_append(&path,our_sum,32);
-  str_chars_append(&path,".png",4);
+  cf_str_init_growth(&path,128);
+  cf_str_char_set(&path,flt_latex_cfg.cache_path,strlen(flt_latex_cfg.cache_path));
+  cf_str_char_append(&path,'/');
+  cf_str_chars_append(&path,our_sum,32);
+  cf_str_chars_append(&path,".png",4);
 
   if(stat(path.content,&st) == 0) {
-    str_cleanup(&path);
+    cf_str_cleanup(&path);
     return 0;
   }
-  str_cleanup(&path);
+  cf_str_cleanup(&path);
   /* }}} */
 
   setenv("PATH",flt_latex_cfg.path_env,1);
 
   /* {{{ create path */
-  str_init_growth(&path,128);
-  str_char_set(&path,flt_latex_cfg.tmp_path,strlen(flt_latex_cfg.tmp_path));
-  str_char_append(&path,'/');
-  str_chars_append(&path,our_sum,32);
-  str_char_append(&path,'/');
+  cf_str_init_growth(&path,128);
+  cf_str_char_set(&path,flt_latex_cfg.tmp_path,strlen(flt_latex_cfg.tmp_path));
+  cf_str_char_append(&path,'/');
+  cf_str_chars_append(&path,our_sum,32);
+  cf_str_char_append(&path,'/');
 
   if(cf_make_path(path.content,0755) != 0) {
-    str_cleanup(&path);
+    cf_str_cleanup(&path);
     return -1;
   }
   /* }}} */
@@ -104,26 +104,26 @@ int flt_latex_create_cache(const u_char *cnt,size_t len,const u_char *our_sum,in
   mylen = path.len;
 
   /* {{{ create latex document and write it to the file */
-  str_init(&document);
-  str_chars_append(&document,"\\documentclass[12pt]{article}\n\\usepackage{ucs}\n\\usepackage[utf8x]{inputenc}\n\\nonstopmode\n\\usepackage{amsmath}\n\\usepackage{amsfonts}\n\\usepackage{amssymb}\n\\pagestyle{empty}\n\n\\begin{document}\n\n",190);
+  cf_str_init(&document);
+  cf_str_chars_append(&document,"\\documentclass[12pt]{article}\n\\usepackage{ucs}\n\\usepackage[utf8x]{inputenc}\n\\nonstopmode\n\\usepackage{amsmath}\n\\usepackage{amsfonts}\n\\usepackage{amssymb}\n\\pagestyle{empty}\n\n\\begin{document}\n\n",190);
 
-  if(elatex == 0) str_chars_append(&document,"\\[",2);
-  str_chars_append(&document,cnt,len);
-  if(elatex == 0) str_chars_append(&document,"\n\\]",3);
-  str_chars_append(&document,"\n\\end{document}\n",16);
+  if(elatex == 0) cf_str_chars_append(&document,"\\[",2);
+  cf_str_chars_append(&document,cnt,len);
+  if(elatex == 0) cf_str_chars_append(&document,"\n\\]",3);
+  cf_str_chars_append(&document,"\n\\end{document}\n",16);
 
-  str_chars_append(&path,"file.tex",8);
+  cf_str_chars_append(&path,"file.tex",8);
   if((fd = fopen(path.content,"w")) == NULL) {
     path.content[mylen-1] = '\0';
     rmdir(path.content);
-    str_cleanup(&path);
-    str_cleanup(&document);
+    cf_str_cleanup(&path);
+    cf_str_cleanup(&document);
     return -1;
   }
   fwrite(document.content,document.len,1,fd);
   fclose(fd);
 
-  str_cleanup(&document);
+  cf_str_cleanup(&document);
   /* }}} */
 
   path.len = mylen;
@@ -134,7 +134,7 @@ int flt_latex_create_cache(const u_char *cnt,size_t len,const u_char *our_sum,in
     case -1:
       fprintf(stderr,"flt_latex: fork() error: %s\n",strerror(errno));
       cf_remove_recursive(path.content);
-      str_cleanup(&path);
+      cf_str_cleanup(&path);
       return -1;
 
     case 0:
@@ -157,7 +157,7 @@ int flt_latex_create_cache(const u_char *cnt,size_t len,const u_char *our_sum,in
   if(WEXITSTATUS(status) != 0) {
     fprintf(stderr,"flt_latex: execlp(%s)'s exit status is not 0 but %d!\n",flt_latex_cfg.tex,WEXITSTATUS(status));
     cf_remove_recursive(path.content);
-    str_cleanup(&path);
+    cf_str_cleanup(&path);
     return -1;
   }
   /* }}} */
@@ -167,7 +167,7 @@ int flt_latex_create_cache(const u_char *cnt,size_t len,const u_char *our_sum,in
     case -1:
       fprintf(stderr,"flt_latex: fork() error: %s\n",strerror(errno));
       cf_remove_recursive(path.content);
-      str_cleanup(&path);
+      cf_str_cleanup(&path);
       return -1;
 
     case 0:
@@ -185,11 +185,11 @@ int flt_latex_create_cache(const u_char *cnt,size_t len,const u_char *our_sum,in
           close(STDOUT_FILENO);
           close(fds[1]);
 
-          str_cleanup(&path);
-          str_char_set(&path,flt_latex_cfg.cache_path,strlen(flt_latex_cfg.cache_path));
-          str_char_append(&path,'/');
-          str_chars_append(&path,our_sum,32);
-          str_chars_append(&path,".png",4);
+          cf_str_cleanup(&path);
+          cf_str_char_set(&path,flt_latex_cfg.cache_path,strlen(flt_latex_cfg.cache_path));
+          cf_str_char_append(&path,'/');
+          cf_str_chars_append(&path,our_sum,32);
+          cf_str_chars_append(&path,".png",4);
 
           if(execlp(flt_latex_cfg.convert,flt_latex_cfg.convert,"-quality","100","-density","120","ps:-",path.content,NULL) == -1) {
             fprintf(stderr,"flt_latex: execlp: could not execlp '%s': %s\n",flt_latex_cfg.convert,strerror(errno));
@@ -223,13 +223,13 @@ int flt_latex_create_cache(const u_char *cnt,size_t len,const u_char *our_sum,in
   if(WEXITSTATUS(status) != 0) {
     fprintf(stderr,"flt_latex: execlp(%s)'s exit status is not 0 but %d!\n",flt_latex_cfg.tex,WEXITSTATUS(status));
     cf_remove_recursive(path.content);
-    str_cleanup(&path);
+    cf_str_cleanup(&path);
     return -1;
   }
   /* }}} */
 
   cf_remove_recursive(path.content);
-  str_cleanup(&path);
+  cf_str_cleanup(&path);
 
   return 0;
 }
@@ -250,39 +250,39 @@ void flt_latex_create_md5_sum(u_char *str,size_t len,u_char *res) {
 /* {{{ flt_latex_filter */
 u_char *flt_latex_filter(const u_char *cnt,size_t *len) {
   u_char *val;
-  string_t str;
+  cf_string_t str;
   register u_char *ptr;
 
-  str_init(&str);
+  cf_str_init(&str);
 
   for(ptr=(u_char *)cnt;*ptr;++ptr) {
     switch(*ptr) {
       case '<':
-        if(cf_strncmp(ptr,"<br>",4) == 0 || cf_strncmp(ptr,"<br />",6) == 0) str_char_append(&str,'\n');
+        if(cf_strncmp(ptr,"<br>",4) == 0 || cf_strncmp(ptr,"<br />",6) == 0) cf_str_char_append(&str,'\n');
         for(;*ptr && *ptr != '>';++ptr);
         continue;
       case '\\':
         if(cf_strncmp(ptr,"\\include",8) == 0 || cf_strncmp(ptr,"\\newcommand",11) == 0 || cf_strncmp(ptr,"\\renewcommand",13) == 0) {
-          str_cleanup(&str);
+          cf_str_cleanup(&str);
           return NULL;
         }
       default:
-        str_char_append(&str,*ptr);
+        cf_str_char_append(&str,*ptr);
     }
   }
 
   val = htmlentities_decode(str.content,len);
-  str_cleanup(&str);
+  cf_str_cleanup(&str);
 
   return val;
 }
 /* }}} */
 
 /* {{{ flt_latex_execute */
-int flt_latex_execute(configuration_t *fdc,configuration_t *fvc,cl_thread_t *thread,const u_char *directive,const u_char **parameters,size_t plen,string_t *bco,string_t *bci,string_t *content,string_t *cite,const u_char *qchars,int sig) {
+int flt_latex_execute(cf_configuration_t *fdc,cf_configuration_t *fvc,cl_thread_t *thread,const u_char *directive,const u_char **parameters,size_t plen,cf_string_t *bco,cf_string_t *bci,cf_string_t *content,cf_string_t *cite,const u_char *qchars,int sig) {
   u_char *fn;
   u_char sum[33];
-  name_value_t *xhtml;
+  cf_name_value_t *xhtml;
   size_t len;
   u_char *my_cnt;
 
@@ -293,7 +293,7 @@ int flt_latex_execute(configuration_t *fdc,configuration_t *fvc,cl_thread_t *thr
   }
 
   fn     =  cf_hash_get(GlobalValues,"FORUM_NAME",10);
-  xhtml  = cfg_get_first_value(fdc,fn,"XHTMLMode");
+  xhtml  = cf_cfg_get_first_value(fdc,fn,"XHTMLMode");
 
   flt_latex_create_md5_sum(my_cnt,len,sum);
 
@@ -304,28 +304,28 @@ int flt_latex_execute(configuration_t *fdc,configuration_t *fvc,cl_thread_t *thr
 
   if(bci) {
     if(cf_strcmp(directive,"elatex") == 0) {
-      str_chars_append(bci,"[elatex]",8);
-      str_str_append(bci,cite);
-      str_chars_append(bci,"[/elatex]",9);
+      cf_str_chars_append(bci,"[elatex]",8);
+      cf_str_str_append(bci,cite);
+      cf_str_chars_append(bci,"[/elatex]",9);
     }
     else {
-      str_chars_append(bci,"[latex]",7);
-      str_str_append(bci,cite);
-      str_chars_append(bci,"[/latex]",8);
+      cf_str_chars_append(bci,"[latex]",7);
+      cf_str_str_append(bci,cite);
+      cf_str_chars_append(bci,"[/latex]",8);
     }
   }
 
-  str_chars_append(bco,"<img src=\"",10);
-  str_chars_append(bco,flt_latex_cfg.uri,strlen(flt_latex_cfg.uri));
-  str_chars_append(bco,sum,32);
-  str_chars_append(bco,".png\" alt=\"",11);
-  str_str_append(bco,content);
-  str_chars_append(bco,"\" title=\"",9);
-  str_str_append(bco,content);
-  str_char_append(bco,'"');
+  cf_str_chars_append(bco,"<img src=\"",10);
+  cf_str_chars_append(bco,flt_latex_cfg.uri,strlen(flt_latex_cfg.uri));
+  cf_str_chars_append(bco,sum,32);
+  cf_str_chars_append(bco,".png\" alt=\"",11);
+  cf_str_str_append(bco,content);
+  cf_str_chars_append(bco,"\" title=\"",9);
+  cf_str_str_append(bco,content);
+  cf_str_char_append(bco,'"');
 
-  if(*xhtml->values[0] == 'y') str_chars_append(bco," />",3);
-  else str_char_append(bco,'>');
+  if(*xhtml->values[0] == 'y') cf_str_chars_append(bco," />",3);
+  else cf_str_char_append(bco,'>');
 
   free(my_cnt);
 
@@ -333,7 +333,7 @@ int flt_latex_execute(configuration_t *fdc,configuration_t *fvc,cl_thread_t *thr
 }
 /* }}} */
 
-int flt_latex_init(cf_hash_t *cgi,configuration_t *dc,configuration_t *vc) {
+int flt_latex_init(cf_hash_t *cgi,cf_configuration_t *dc,cf_configuration_t *vc) {
   cf_html_register_directive("latex",flt_latex_execute,CF_HTML_DIR_TYPE_ARG|CF_HTML_DIR_TYPE_BLOCK);
   cf_html_register_directive("elatex",flt_latex_execute,CF_HTML_DIR_TYPE_ARG|CF_HTML_DIR_TYPE_BLOCK);
 
@@ -341,7 +341,7 @@ int flt_latex_init(cf_hash_t *cgi,configuration_t *dc,configuration_t *vc) {
 }
 
 /* {{{ flt_latex_handle */
-int flt_latex_handle(configfile_t *cfile,conf_opt_t *opt,const u_char *context,u_char **args,size_t argnum) {
+int flt_latex_handle(cf_configfile_t *cfile,cf_conf_opt_t *opt,const u_char *context,u_char **args,size_t argnum) {
   u_char *fn;
 
   if(cf_strcmp(opt->name,"LatexCachePath") == 0) {
@@ -397,24 +397,24 @@ int flt_latex_handle(configfile_t *cfile,conf_opt_t *opt,const u_char *context,u
 }
 /* }}} */
 
-conf_opt_t flt_latex_config[] = {
-  { "LatexTmpPath",     flt_latex_handle, CFG_OPT_CONFIG|CFG_OPT_GLOBAL|CFG_OPT_NEEDED, NULL },
-  { "LatexTeXPath",     flt_latex_handle, CFG_OPT_CONFIG|CFG_OPT_GLOBAL|CFG_OPT_NEEDED, NULL },
-  { "LatexConvertPath", flt_latex_handle, CFG_OPT_CONFIG|CFG_OPT_GLOBAL|CFG_OPT_NEEDED, NULL },
-  { "LatexDvipsPath",   flt_latex_handle, CFG_OPT_CONFIG|CFG_OPT_GLOBAL|CFG_OPT_NEEDED, NULL },
-  { "LatexPathEnv",     flt_latex_handle, CFG_OPT_CONFIG|CFG_OPT_GLOBAL|CFG_OPT_NEEDED, NULL },
-  { "LatexCachePath",   flt_latex_handle, CFG_OPT_CONFIG|CFG_OPT_LOCAL|CFG_OPT_NEEDED,  NULL },
-  { "LatexUri",         flt_latex_handle, CFG_OPT_CONFIG|CFG_OPT_LOCAL|CFG_OPT_NEEDED,  NULL },
-  { "LatexMode",        flt_latex_handle, CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL,    NULL },
+cf_conf_opt_t flt_latex_config[] = {
+  { "LatexTmpPath",     flt_latex_handle, CF_CFG_OPT_CONFIG|CF_CFG_OPT_GLOBAL|CF_CFG_OPT_NEEDED, NULL },
+  { "LatexTeXPath",     flt_latex_handle, CF_CFG_OPT_CONFIG|CF_CFG_OPT_GLOBAL|CF_CFG_OPT_NEEDED, NULL },
+  { "LatexConvertPath", flt_latex_handle, CF_CFG_OPT_CONFIG|CF_CFG_OPT_GLOBAL|CF_CFG_OPT_NEEDED, NULL },
+  { "LatexDvipsPath",   flt_latex_handle, CF_CFG_OPT_CONFIG|CF_CFG_OPT_GLOBAL|CF_CFG_OPT_NEEDED, NULL },
+  { "LatexPathEnv",     flt_latex_handle, CF_CFG_OPT_CONFIG|CF_CFG_OPT_GLOBAL|CF_CFG_OPT_NEEDED, NULL },
+  { "LatexCachePath",   flt_latex_handle, CF_CFG_OPT_CONFIG|CF_CFG_OPT_LOCAL|CF_CFG_OPT_NEEDED,  NULL },
+  { "LatexUri",         flt_latex_handle, CF_CFG_OPT_CONFIG|CF_CFG_OPT_LOCAL|CF_CFG_OPT_NEEDED,  NULL },
+  { "LatexMode",        flt_latex_handle, CF_CFG_OPT_CONFIG|CF_CFG_OPT_USER|CF_CFG_OPT_LOCAL,    NULL },
   { NULL, NULL, 0, NULL }
 };
 
-handler_config_t flt_latex_handlers[] = {
+cf_handler_config_t flt_latex_handlers[] = {
   { INIT_HANDLER, flt_latex_init },
   { 0, NULL }
 };
 
-module_config_t flt_latex = {
+cf_module_config_t flt_latex = {
   MODULE_MAGIC_COOKIE,
   flt_latex_config,
   flt_latex_handlers,

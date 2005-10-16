@@ -71,9 +71,9 @@ int flt_admin_is_admin(const u_char *name) {
 
 /* {{{ flt_admin_gogogo */
 #ifndef CF_SHARED_MEM
-int flt_admin_gogogo(cf_hash_t *cgi,configuration_t *dc,configuration_t *vc,int sock)
+int flt_admin_gogogo(cf_hash_t *cgi,cf_configuration_t *dc,cf_configuration_t *vc,int sock)
 #else
-int flt_admin_gogogo(cf_hash_t *cgi,configuration_t *dc,configuration_t *vc,void *ptr)
+int flt_admin_gogogo(cf_hash_t *cgi,cf_configuration_t *dc,cf_configuration_t *vc,void *ptr)
 #endif
 {
   #ifdef CF_SHARED_MEM
@@ -97,7 +97,7 @@ int flt_admin_gogogo(cf_hash_t *cgi,configuration_t *dc,configuration_t *vc,void
     mid = cf_cgi_get(cgi,"m");
 
     if(!tid || !mid) return FLT_DECLINE;
-    if(str_to_u_int64(tid) == 0 || str_to_u_int64(mid) == 0) return FLT_DECLINE;
+    if(cf_str_to_uint64(tid) == 0 || cf_str_to_uint64(mid) == 0) return FLT_DECLINE;
 
     memset(&rl,0,sizeof(rl));
 
@@ -142,7 +142,7 @@ int flt_admin_gogogo(cf_hash_t *cgi,configuration_t *dc,configuration_t *vc,void
     ptr = cf_reget_shm_ptr();
     #endif
 
-    itid = str_to_u_int64(tid);
+    itid = cf_str_to_uint64(tid);
 
     #ifdef CF_SHARED_MEM
     writen(sock,"QUIT\n",5);
@@ -167,13 +167,13 @@ int flt_admin_gogogo(cf_hash_t *cgi,configuration_t *dc,configuration_t *vc,void
 /* }}} */
 
 /* {{{ flt_admin_setvars */
-int flt_admin_setvars(cf_hash_t *cgi,configuration_t *dc,configuration_t *vc,cf_template_t *top,cf_template_t *down) {
+int flt_admin_setvars(cf_hash_t *cgi,cf_configuration_t *dc,cf_configuration_t *vc,cf_template_t *top,cf_template_t *down) {
   u_char *msg,buff[256];
   size_t len,len1;
   u_char *UserName = cf_hash_get(GlobalValues,"UserName",8);
   int ShowInvisible = cf_hash_get(GlobalValues,"ShowInvisible",13) != NULL;
   u_char *fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
-  name_value_t *usejs = cfg_get_first_value(&fo_view_conf,fn,"AdminUseJS");
+  cf_name_value_t *usejs = cf_cfg_get_first_value(&fo_view_conf,fn,"AdminUseJS");
 
   if(flt_admin_is_admin(UserName)) {
     cf_tpl_setvalue(top,"admin",TPL_VARIABLE_INT,1);
@@ -200,7 +200,7 @@ int flt_admin_setvars(cf_hash_t *cgi,configuration_t *dc,configuration_t *vc,cf_
 /* }}} */
 
 /* {{{ flt_admin_posting_setvars */
-int flt_admin_posting_setvars(cf_hash_t *head,configuration_t *dc,configuration_t *vc,cl_thread_t *thread,cf_template_t *tpl) {
+int flt_admin_posting_setvars(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t *vc,cl_thread_t *thread,cf_template_t *tpl) {
   u_char *UserName = cf_hash_get(GlobalValues,"UserName",8);
   int ShowInvisible = cf_hash_get(GlobalValues,"ShowInvisible",13) != NULL;
 
@@ -217,7 +217,7 @@ int flt_admin_posting_setvars(cf_hash_t *head,configuration_t *dc,configuration_
 /* }}} */
 
 /* {{{ flt_admin_setvars_thread */
-int flt_admin_setvars_thread(cf_hash_t *head,configuration_t *dc,configuration_t *vc,cl_thread_t *thread,message_t *msg,cf_tpl_variable_t *hash) {
+int flt_admin_setvars_thread(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t *vc,cl_thread_t *thread,message_t *msg,cf_tpl_variable_t *hash) {
   u_char *UserName = cf_hash_get(GlobalValues,"UserName",8);
   int si = cf_hash_get(GlobalValues,"ShowInvisible",13) != NULL;
 
@@ -234,16 +234,16 @@ int flt_admin_setvars_thread(cf_hash_t *head,configuration_t *dc,configuration_t
 /* }}} */
 
 /* {{{ flt_admin_init */
-int flt_admin_init(cf_hash_t *cgi,configuration_t *dc,configuration_t *vc) {
+int flt_admin_init(cf_hash_t *cgi,cf_configuration_t *dc,cf_configuration_t *vc) {
   u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
-  name_value_t *v = cfg_get_first_value(dc,forum_name,"Administrators");
+  cf_name_value_t *v = cf_cfg_get_first_value(dc,forum_name,"Administrators");
   u_char *val = NULL;
   u_char *UserName = cf_hash_get(GlobalValues,"UserName",8);
 
   cf_register_mod_api_ent("flt_admin","is_admin",(mod_api_t)flt_admin_is_admin);
 
   if(!UserName) return FLT_DECLINE;
-  if(v) flt_admin_AdminNum = split(v->values[0],",",&flt_admin_Admins);
+  if(v) flt_admin_AdminNum = cf_split(v->values[0],",",&flt_admin_Admins);
 
   if(!cgi)      return FLT_DECLINE;
 
@@ -261,14 +261,14 @@ int flt_admin_init(cf_hash_t *cgi,configuration_t *dc,configuration_t *vc) {
 /* }}} */
 
 /* {{{ flt_admin_posthandler */
-int flt_admin_posthandler(cf_hash_t *cgi,configuration_t *dc,configuration_t *vc,message_t *msg,u_int64_t tid,int mode) {
+int flt_admin_posthandler(cf_hash_t *cgi,cf_configuration_t *dc,cf_configuration_t *vc,message_t *msg,u_int64_t tid,int mode) {
   u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);  
   u_char *link;
   size_t l;
   u_char *UserName = cf_hash_get(GlobalValues,"UserName",8);
   int ShowInvisible = cf_hash_get(GlobalValues,"ShowInvisible",13) != NULL;
   cf_readmode_t *rm = cf_hash_get(GlobalValues,"RM",2);
-  name_value_t *usejs = cfg_get_first_value(&fo_view_conf,forum_name,"AdminUseJS");
+  cf_name_value_t *usejs = cf_cfg_get_first_value(&fo_view_conf,forum_name,"AdminUseJS");
 
   if(!UserName) return FLT_DECLINE;
 
@@ -313,9 +313,9 @@ void flt_admin_finish(void) {
 
 /* {{{ flt_admin_validator */
 #ifndef CF_SHARED_MEM
-int flt_admin_validator(cf_hash_t *head,configuration_t *dc,configuration_t *vc,time_t last_modified,int sock)
+int flt_admin_validator(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t *vc,time_t last_modified,int sock)
 #else
-int flt_admin_validator(cf_hash_t *head,configuration_t *dc,configuration_t *vc,time_t last_modified,void *sock)
+int flt_admin_validator(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t *vc,time_t last_modified,void *sock)
 #endif
 {
   u_char *UserName = cf_hash_get(GlobalValues,"UserName",8);
@@ -328,9 +328,9 @@ int flt_admin_validator(cf_hash_t *head,configuration_t *dc,configuration_t *vc,
 
 /* {{{ flt_admin_lm */
 #ifndef CF_SHARED_MEM
-time_t flt_admin_lm(cf_hash_t *head,configuration_t *dc,configuration_t *vc,int sock)
+time_t flt_admin_lm(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t *vc,int sock)
 #else
-time_t flt_admin_lm(cf_hash_t *head,configuration_t *dc,configuration_t *vc,void *sock)
+time_t flt_admin_lm(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t *vc,void *sock)
 #endif
 {
   u_char *UserName = cf_hash_get(GlobalValues,"UserName",8);
@@ -342,7 +342,7 @@ time_t flt_admin_lm(cf_hash_t *head,configuration_t *dc,configuration_t *vc,void
 /* }}} */
 
 /* {{{ flt_admin_handle */
-int flt_admin_handle(configfile_t *cfile,conf_opt_t *opt,const u_char *context,u_char **args,size_t argnum) {
+int flt_admin_handle(cf_configfile_t *cfile,cf_conf_opt_t *opt,const u_char *context,u_char **args,size_t argnum) {
   if(flt_admin_fn == NULL) flt_admin_fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   if(!context || cf_strcmp(flt_admin_fn,context) != 0) return 0;
 
@@ -352,12 +352,12 @@ int flt_admin_handle(configfile_t *cfile,conf_opt_t *opt,const u_char *context,u
 }
 /* }}} */
 
-conf_opt_t flt_admin_config[] = {
-  { "AdminSend204", flt_admin_handle, CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
+cf_conf_opt_t flt_admin_config[] = {
+  { "AdminSend204", flt_admin_handle, CF_CFG_OPT_USER|CF_CFG_OPT_LOCAL, NULL },
   { NULL, NULL, 0, NULL }
 };
 
-handler_config_t flt_admin_handlers[] = {
+cf_handler_config_t flt_admin_handlers[] = {
   { CONNECT_INIT_HANDLER, flt_admin_gogogo },
   { INIT_HANDLER,         flt_admin_init },
   { VIEW_INIT_HANDLER,    flt_admin_setvars },
@@ -367,7 +367,7 @@ handler_config_t flt_admin_handlers[] = {
   { 0, NULL }
 };
 
-module_config_t flt_admin = {
+cf_module_config_t flt_admin = {
   MODULE_MAGIC_COOKIE,
   flt_admin_config,
   flt_admin_handlers,

@@ -41,13 +41,13 @@ static u_char *flt_list_fn = NULL;
 static u_char *flt_list_tpl = NULL;
 
 /* {{{ flt_list_execute_filter */
-int flt_list_execute_filter(cf_hash_t *head,configuration_t *dc,configuration_t *vc,cl_thread_t *thread,cf_template_t *tpl) {
+int flt_list_execute_filter(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t *vc,cl_thread_t *thread,cf_template_t *tpl) {
   cf_tpl_variable_t array,hash;
 
   u_char *qchars,*UserName,*tmp,*msgcnt,buff[256],*forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
-  name_value_t *cs,*st,*qc,*ms,*ss,*locale,*df,*dft,*rm = cfg_get_first_value(vc,forum_name,"ReadMode"),*lt;
+  cf_name_value_t *cs,*st,*qc,*ms,*ss,*locale,*df,*dft,*rm = cf_cfg_get_first_value(vc,forum_name,"ReadMode"),*lt;
   size_t len,qclen,msgcntlen;
-  string_t content,threadlist;
+  cf_string_t content,threadlist;
   int utf8,ShowInvisible;
   message_t *msg;
   cf_readmode_t *rm_infos = cf_hash_get(GlobalValues,"RM",2);
@@ -59,15 +59,15 @@ int flt_list_execute_filter(cf_hash_t *head,configuration_t *dc,configuration_t 
   UserName = cf_hash_get(GlobalValues,"UserName",8);
   ShowInvisible = cf_hash_get(GlobalValues,"ShowInvisible",13) == NULL ? 0 : 1;
 
-  cs = cfg_get_first_value(dc,forum_name,"ExternCharset");
-  st = cfg_get_first_value(vc,forum_name,"ShowThread");
-  qc = cfg_get_first_value(vc,forum_name,"QuotingChars");
-  ms = cfg_get_first_value(vc,forum_name,"MaxSigLines");
-  ss = cfg_get_first_value(vc,forum_name,"ShowSig");
-  locale = cfg_get_first_value(dc,forum_name,"DateLocale");
-  df = cfg_get_first_value(vc,forum_name,"DateFormatThreadView");
-  dft = cfg_get_first_value(vc,forum_name,"DateFormatThreadList");
-  lt = cfg_get_first_value(dc,forum_name,UserName ? "UPostingURL_List" : "PostingURL_List");
+  cs = cf_cfg_get_first_value(dc,forum_name,"ExternCharset");
+  st = cf_cfg_get_first_value(vc,forum_name,"ShowThread");
+  qc = cf_cfg_get_first_value(vc,forum_name,"QuotingChars");
+  ms = cf_cfg_get_first_value(vc,forum_name,"MaxSigLines");
+  ss = cf_cfg_get_first_value(vc,forum_name,"ShowSig");
+  locale = cf_cfg_get_first_value(dc,forum_name,"DateLocale");
+  df = cf_cfg_get_first_value(vc,forum_name,"DateFormatThreadView");
+  dft = cf_cfg_get_first_value(vc,forum_name,"DateFormatThreadList");
+  lt = cf_cfg_get_first_value(dc,forum_name,UserName ? "UPostingURL_List" : "PostingURL_List");
 
   utf8 = cf_strcmp(cs->values[0],"UTF-8") == 0;
   /* }}} */
@@ -105,7 +105,7 @@ int flt_list_execute_filter(cf_hash_t *head,configuration_t *dc,configuration_t 
         msgcntlen = msg->content.len;
       }
 
-      str_init(&content);
+      cf_str_init(&content);
 
       msg_to_html(
         thread,
@@ -120,7 +120,7 @@ int flt_list_execute_filter(cf_hash_t *head,configuration_t *dc,configuration_t 
       cf_tpl_hashvar_setvalue(&hash,"message",TPL_VARIABLE_STRING,content.content,content.len);
       /* }}} */
 
-      str_cleanup(&content);
+      cf_str_cleanup(&content);
       free(msgcnt);
 
       len = snprintf(buff,256,"%llu",thread->tid);
@@ -138,7 +138,7 @@ int flt_list_execute_filter(cf_hash_t *head,configuration_t *dc,configuration_t 
   if(cf_strcmp(st->values[0],"none") != 0) {
     cf_gen_threadlist(thread,head,&threadlist,rm_infos->thread_posting_tpl,st->values[0],lt->values[0],CF_MODE_THREADVIEW);
     cf_tpl_setvalue(tpl,"threadlist",TPL_VARIABLE_STRING,threadlist.content,threadlist.len);
-    str_cleanup(&threadlist);
+    cf_str_cleanup(&threadlist);
   }
 
   return FLT_OK;
@@ -146,32 +146,32 @@ int flt_list_execute_filter(cf_hash_t *head,configuration_t *dc,configuration_t 
 /* }}} */
 
 /* {{{ flt_list_rm_collector */
-int flt_list_rm_collector(cf_hash_t *head,configuration_t *dc,configuration_t *vc,cf_readmode_t *rm_infos) {
+int flt_list_rm_collector(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t *vc,cf_readmode_t *rm_infos) {
   u_char *fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
 
-  name_value_t *rm = cfg_get_first_value(vc,fn,"ReadMode");
-  name_value_t *v;
+  cf_name_value_t *rm = cf_cfg_get_first_value(vc,fn,"ReadMode");
+  cf_name_value_t *v;
 
   u_char buff[256];
 
   if(cf_strcmp(rm->values[0],"list") == 0) {
-    v = cfg_get_first_value(dc,fn,"PostingURL_List");
+    v = cf_cfg_get_first_value(dc,fn,"PostingURL_List");
     rm_infos->posting_uri[0] = v->values[0];
 
-    v = cfg_get_first_value(dc,fn,"UPostingURL_List");
+    v = cf_cfg_get_first_value(dc,fn,"UPostingURL_List");
     rm_infos->posting_uri[1] = v->values[0];
 
-    if((v = cfg_get_first_value(vc,fn,"TemplateForumBegin")) != NULL) {
+    if((v = cf_cfg_get_first_value(vc,fn,"TemplateForumBegin")) != NULL) {
       cf_gen_tpl_name(buff,256,v->values[0]);
       rm_infos->pre_threadlist_tpl = strdup(buff);
     }
 
-    if((v = cfg_get_first_value(vc,fn,"TemplateForumThread")) != NULL) {
+    if((v = cf_cfg_get_first_value(vc,fn,"TemplateForumThread")) != NULL) {
       cf_gen_tpl_name(buff,256,v->values[0]);
       rm_infos->thread_posting_tpl = rm_infos->threadlist_thread_tpl = strdup(buff);
     }
 
-    if((v = cfg_get_first_value(vc,fn,"TemplateForumEnd")) != NULL) {
+    if((v = cf_cfg_get_first_value(vc,fn,"TemplateForumEnd")) != NULL) {
       cf_gen_tpl_name(buff,256,v->values[0]);
       rm_infos->post_threadlist_tpl = strdup(buff);
     }
@@ -188,7 +188,7 @@ int flt_list_rm_collector(cf_hash_t *head,configuration_t *dc,configuration_t *v
 }
 /* }}} */
 
-int flt_list_handle(configfile_t *cfile,conf_opt_t *opt,const u_char *context,u_char **args,size_t argnum) {
+int flt_list_handle(cf_configfile_t *cfile,cf_conf_opt_t *opt,const u_char *context,u_char **args,size_t argnum) {
   if(flt_list_fn == NULL) flt_list_fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   if(!context || cf_strcmp(flt_list_fn,context) != 0) return 0;
 
@@ -198,18 +198,18 @@ int flt_list_handle(configfile_t *cfile,conf_opt_t *opt,const u_char *context,u_
   return 0;
 }
 
-conf_opt_t flt_list_config[] = {
-  { "TemplateForumList", flt_list_handle, CFG_OPT_CONFIG|CFG_OPT_LOCAL, NULL },
+cf_conf_opt_t flt_list_config[] = {
+  { "TemplateForumList", flt_list_handle, CF_CFG_OPT_CONFIG|CF_CFG_OPT_LOCAL, NULL },
   { NULL, NULL, 0, NULL }
 };
 
-handler_config_t flt_list_handlers[] = {
+cf_handler_config_t flt_list_handlers[] = {
   { RM_COLLECTORS_HANDLER, flt_list_rm_collector },
   { POSTING_HANDLER,       flt_list_execute_filter },
   { 0, NULL }
 };
 
-module_config_t flt_list = {
+cf_module_config_t flt_list = {
   MODULE_MAGIC_COOKIE,
   flt_list_config,
   flt_list_handlers,

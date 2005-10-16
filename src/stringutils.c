@@ -32,8 +32,8 @@
 #include "utils.h"
 /* }}} */
 
-/* {{{ str_init */
-void str_init(string_t *str) {
+/* {{{ cf_str_init */
+void cf_str_init(cf_string_t *str) {
   str->len      = 0;
   str->reserved = 0;
   str->growth   = CF_BUFSIZ;
@@ -41,8 +41,8 @@ void str_init(string_t *str) {
 }
 /* }}} */
 
-/* {{{ str_init_growth */
-void str_init_growth(string_t *str,unsigned growth) {
+/* {{{ cf_str_init_growth */
+void cf_str_init_growth(cf_string_t *str,unsigned growth) {
   str->len      = 0;
   str->reserved = 0;
   str->growth   = growth;
@@ -50,8 +50,8 @@ void str_init_growth(string_t *str,unsigned growth) {
 }
 /* }}} */
 
-/* {{{ str_cleanup */
-void str_cleanup(string_t *str) {
+/* {{{ cf_str_cleanup */
+void cf_str_cleanup(cf_string_t *str) {
   str->len      = 0;
   str->reserved = 0;
 
@@ -61,13 +61,13 @@ void str_cleanup(string_t *str) {
 }
 /* }}} */
 
-/* {{{ str_char_append */
-size_t str_char_append(string_t *str,const u_char content) {
+/* {{{ cf_str_char_append */
+size_t cf_str_char_append(cf_string_t *str,const u_char content) {
   if(str->growth == 0) str->growth = CF_BUFSIZ;
 
   if(str->len + 1 >= str->reserved) {
     str->reserved += str->growth;
-    str->content   = fo_alloc(str->content,(size_t)str->reserved,1,FO_ALLOC_REALLOC);
+    str->content   = cf_alloc(str->content,(size_t)str->reserved,1,CF_ALLOC_REALLOC);
   }
 
   str->content[str->len] = content;
@@ -78,8 +78,8 @@ size_t str_char_append(string_t *str,const u_char content) {
 }
 /* }}} */
 
-/* {{{ str_chars_append */
-size_t str_chars_append(string_t *str,const u_char *content,size_t length) {
+/* {{{ cf_str_chars_append */
+size_t cf_str_chars_append(cf_string_t *str,const u_char *content,size_t length) {
   size_t len;
 
   if(str->growth == 0) str->growth = CF_BUFSIZ;
@@ -89,7 +89,7 @@ size_t str_chars_append(string_t *str,const u_char *content,size_t length) {
     if(length >= len) len += length;
 
     str->reserved += len;
-    str->content   = fo_alloc(str->content,(size_t)str->reserved,1,FO_ALLOC_REALLOC);
+    str->content   = cf_alloc(str->content,(size_t)str->reserved,1,CF_ALLOC_REALLOC);
   }
 
   memcpy(&str->content[str->len],content,length);
@@ -100,8 +100,8 @@ size_t str_chars_append(string_t *str,const u_char *content,size_t length) {
 }
 /* }}} */
 
-/* {{{ str_equal_string */
-int str_equal_string(const string_t *str1,const string_t *str2) {
+/* {{{ cf_str_equal_string */
+int cf_str_equal_string(const cf_string_t *str1,const cf_string_t *str2) {
   register u_char *ptr1 = str1->content,*ptr2 = str2->content;
   register size_t i;
 
@@ -115,8 +115,8 @@ int str_equal_string(const string_t *str1,const string_t *str2) {
 }
 /* }}} */
 
-/* {{{ str_equal_chars */
-int str_equal_chars(const string_t *str1,const u_char *str2, size_t len) {
+/* {{{ cf_str_equal_chars */
+int cf_str_equal_chars(const cf_string_t *str1,const u_char *str2, size_t len) {
   register size_t i = 0;
   register u_char *ptr1 = str1->content,*ptr2 = (u_char *)str2;
 
@@ -130,26 +130,26 @@ int str_equal_chars(const string_t *str1,const u_char *str2, size_t len) {
 }
 /* }}} */
 
-/* {{{ str_str_append */
-size_t str_str_append(string_t *str,string_t *content) {
-  return str_chars_append(str,content->content,content->len);
+/* {{{ cf_str_str_append */
+size_t cf_str_str_append(cf_string_t *str,cf_string_t *content) {
+  return cf_str_chars_append(str,content->content,content->len);
 }
 /* }}} */
 
-/* {{{ str_cstr_append */
-size_t str_cstr_append(string_t *str,const u_char *content) {
-  return str_chars_append(str,content,strlen(content));
+/* {{{ cf_str_cstr_append */
+size_t cf_str_cstr_append(cf_string_t *str,const u_char *content) {
+  return cf_str_chars_append(str,content,strlen(content));
 }
 /* }}} */
 
-/* {{{ str_cstr_set */
-int str_cstr_set(string_t *str,const u_char *content) {
-  return str_char_set(str,content,strlen(content));
+/* {{{ cf_str_cstr_set */
+int cf_str_cstr_set(cf_string_t *str,const u_char *content) {
+  return cf_str_char_set(str,content,strlen(content));
 }
 /* }}} */
 
-/* {{{ str_char_set */
-size_t str_char_set(string_t *str,const u_char *content,size_t length) {
+/* {{{ cf_str_char_set */
+size_t cf_str_char_set(cf_string_t *str,const u_char *content,size_t length) {
   size_t len;
 
   if(str->growth == 0) str->growth = CF_BUFSIZ;
@@ -159,7 +159,7 @@ size_t str_char_set(string_t *str,const u_char *content,size_t length) {
     if(length >= len) len += length;
 
     str->reserved  = len;
-    str->content   = fo_alloc(str->content,len,1,FO_ALLOC_REALLOC);
+    str->content   = cf_alloc(str->content,len,1,CF_ALLOC_REALLOC);
   }
 
   memcpy(str->content,content,length);
@@ -170,9 +170,9 @@ size_t str_char_set(string_t *str,const u_char *content,size_t length) {
 }
 /* }}} */
 
-/* {{{ str_str_set */
-size_t str_str_set(string_t *str,string_t *set) {
-  return str_char_set(str,set->content,set->len);
+/* {{{ cf_str_str_set */
+size_t cf_str_str_set(cf_string_t *str,cf_string_t *set) {
+  return cf_str_char_set(str,set->content,set->len);
 }
 /* }}} */
 
@@ -180,7 +180,7 @@ size_t str_str_set(string_t *str,string_t *set) {
 /* {{{ strdup */
 u_char *strdup(const u_char *str) {
   size_t len = strlen(str);
-  u_char *buff = fo_alloc(NULL,1,len+1,FO_ALLOC_MALLOC);
+  u_char *buff = cf_alloc(NULL,1,len+1,CF_ALLOC_MALLOC);
 
   memcpy(buff,str,len+1);
 
@@ -192,7 +192,7 @@ u_char *strdup(const u_char *str) {
 #ifdef NOSTRNDUP
 /* {{{ strndup */
 u_char *strndup(const u_char *str,size_t len) {
-  u_char *buff = fo_alloc(NULL,1,len+1,FO_ALLOC_MALLOC);
+  u_char *buff = cf_alloc(NULL,1,len+1,CF_ALLOC_MALLOC);
 
   memcpy(buff,str,len);
   buff[len-1] = '\0';
@@ -305,18 +305,18 @@ int cf_isspace(u_int32_t num) {
 }
 /* }}} */
 
-/* {{{ split
+/* {{{ cf_split
  * Returns: long       the length of the list
  * Parameters:
- *   - const u_char *big     the string to split
- *   - const u_char *small   the string where to split
+ *   - const u_char *big     the string to cf_split
+ *   - const u_char *small   the string where to cf_split
  *   - u_char ***list        the list
  *
  * This function splits a string into pieces
  *
  */
-size_t split(const u_char *big,const u_char *small,u_char ***ulist) {
-  u_char **list  = fo_alloc(NULL,PRERESERVE,sizeof(*list),FO_ALLOC_MALLOC);
+size_t cf_split(const u_char *big,const u_char *small,u_char ***ulist) {
+  u_char **list  = cf_alloc(NULL,PRERESERVE,sizeof(*list),CF_ALLOC_MALLOC);
   u_char  *pos   = (u_char *)big,*pre = (u_char *)big;
   size_t len   = 0;
   size_t reser = PRERESERVE;
@@ -329,14 +329,14 @@ size_t split(const u_char *big,const u_char *small,u_char ***ulist) {
 
     if(len >= reser) {
       reser += PRERESERVE;
-      list = fo_alloc(list,reser,sizeof(*list),FO_ALLOC_REALLOC);
+      list = cf_alloc(list,reser,sizeof(*list),CF_ALLOC_REALLOC);
     }
 
     pre    = pos+slen;
     *pos++ = *small;
   }
 
-  if(len >= reser) list = fo_alloc(list,++reser,sizeof(*list),FO_ALLOC_REALLOC);
+  if(len >= reser) list = cf_alloc(list,++reser,sizeof(*list),CF_ALLOC_REALLOC);
   list[len++] = strdup(pre);
 
   *ulist = list;
@@ -345,9 +345,9 @@ size_t split(const u_char *big,const u_char *small,u_char ***ulist) {
 }
 /* }}} */
 
-/* {{{ nsplit */
-size_t nsplit(const u_char *big,const u_char *small,u_char ***ulist,size_t max) {
-  u_char **list  = fo_alloc(NULL,PRERESERVE,sizeof(*list),FO_ALLOC_MALLOC);
+/* {{{ cf_nsplit */
+size_t cf_nsplit(const u_char *big,const u_char *small,u_char ***ulist,size_t max) {
+  u_char **list  = cf_alloc(NULL,PRERESERVE,sizeof(*list),CF_ALLOC_MALLOC);
   u_char  *pos   = (u_char *)big,*pre = (u_char *)big;
   size_t len   = 0;
   size_t reser = PRERESERVE;
@@ -360,7 +360,7 @@ size_t nsplit(const u_char *big,const u_char *small,u_char ***ulist,size_t max) 
 
     if(len >= reser) {
       reser += PRERESERVE;
-      list = fo_alloc(list,reser,sizeof(*list),FO_ALLOC_REALLOC);
+      list = cf_alloc(list,reser,sizeof(*list),CF_ALLOC_REALLOC);
     }
 
     pre    = pos+slen;
@@ -369,7 +369,7 @@ size_t nsplit(const u_char *big,const u_char *small,u_char ***ulist,size_t max) 
   }
 
   if(len + 1 <= max) {
-    if(len >= reser) list = fo_alloc(list,++reser,sizeof(*list),FO_ALLOC_REALLOC);
+    if(len >= reser) list = cf_alloc(list,++reser,sizeof(*list),CF_ALLOC_REALLOC);
     list[len++] = strdup(pre);
   }
 

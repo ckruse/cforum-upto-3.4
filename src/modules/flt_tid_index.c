@@ -48,13 +48,13 @@ struct sockaddr_un;
 
 /* {{{ flt_tidx_module */
 int flt_tidx_module(forum_t *forum,thread_t *thr) {
-  name_value_t *v = cfg_get_first_value(&fo_default_conf,forum->name,"ThreadIndexFile");
+  cf_name_value_t *v = cf_cfg_get_first_value(&fo_default_conf,forum->name,"ThreadIndexFile");
   struct stat st;
   struct tm t;
   DB *db;
   DBT key,data;
   int ret;
-  string_t str;
+  cf_string_t str;
   u_char buff[256];
   u_char tid[50];
   size_t len,tlen;
@@ -114,10 +114,10 @@ int flt_tidx_module(forum_t *forum,thread_t *thr) {
     }
   }
   else {
-    str_init(&str);
-    str_chars_append(&str,data.data,data.size);
-    str_char_append(&str,'\0');
-    str_chars_append(&str,buff,len);
+    cf_str_init(&str);
+    cf_str_chars_append(&str,data.data,data.size);
+    cf_str_char_append(&str,'\0');
+    cf_str_chars_append(&str,buff,len);
 
     memset(&data,0,sizeof(data));
 
@@ -131,7 +131,7 @@ int flt_tidx_module(forum_t *forum,thread_t *thr) {
       return FLT_DECLINE;
     }
 
-    str_cleanup(&str);
+    cf_str_cleanup(&str);
   }
 
   db->close(db,0);
@@ -140,16 +140,16 @@ int flt_tidx_module(forum_t *forum,thread_t *thr) {
 }
 /* }}} */
 
-conf_opt_t flt_tid_index_config[] = {
+cf_conf_opt_t flt_tid_index_config[] = {
   { NULL, NULL, 0, NULL }
 };
 
-handler_config_t flt_tid_index_handlers[] = {
+cf_handler_config_t flt_tid_index_handlers[] = {
   { ARCHIVE_HANDLER, flt_tidx_module },
   { 0, NULL }
 };
 
-module_config_t flt_tid_index = {
+cf_module_config_t flt_tid_index = {
   MODULE_MAGIC_COOKIE,
   flt_tid_index_config,
   flt_tid_index_handlers,

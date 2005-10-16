@@ -140,7 +140,7 @@ typedef struct s_flt_macro_macro {
 
 static char     *MacroFilesDirectory = NULL;
 static long      lineno              = 0;
-static string_t  string              = { 0, 0, NULL };
+static cf_string_t  string              = { 0, 0, NULL };
 
 
 #ifdef _FLT_MACRO_TEST
@@ -195,17 +195,17 @@ static const char *flt_macro_get_error_message(int errnum) {
 
 \" {
   if(string.content) free(string.content);
-  str_init(&string);
+  cf_str_init(&string);
   yy_push_state(STRING);
 }
 
 <STRING>{
-  \\n                 str_char_append(&string,'\n');
-  \\t                 str_char_append(&string,'\t');
-  \\r                 str_char_append(&string,'\r');
-  \\0[0-7]{1,3}       str_char_append(&string,(char)strtol(yytext,NULL,8));
-  \\x[0-9A-Fa-f]{1,2} str_char_append(&string,(char)strtol(yytext,NULL,15));
-  \\\"                str_char_append(&string,'"');
+  \\n                 cf_str_char_append(&string,'\n');
+  \\t                 cf_str_char_append(&string,'\t');
+  \\r                 cf_str_char_append(&string,'\r');
+  \\0[0-7]{1,3}       cf_str_char_append(&string,(char)strtol(yytext,NULL,8));
+  \\x[0-9A-Fa-f]{1,2} cf_str_char_append(&string,(char)strtol(yytext,NULL,15));
+  \\\"                cf_str_char_append(&string,'"');
   \"                  {
     yy_pop_state();
     return FLT_MACRO_TOK_STRING;
@@ -213,7 +213,7 @@ static const char *flt_macro_get_error_message(int errnum) {
   <<EOF>> {
     return FLT_MACRO_ERR_UNTERMINATEDSTRING;
   }
-  .                   str_char_append(&string,*yytext);
+  .                   cf_str_char_append(&string,*yytext);
 }
 
 [0-9]+"."[0-9]+  return FLT_MACRO_TOK_FLOAT;
@@ -474,7 +474,7 @@ t_handler_config flt_macro_handlers[] = {
   { 0, NULL }
 };
 
-module_config_t flt_basic = {
+cf_module_config_t flt_basic = {
   flt_macro_config,
   flt_macro_handlers,
   flt_macro_cleanup

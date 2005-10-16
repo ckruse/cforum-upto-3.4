@@ -63,11 +63,11 @@ void flt_registerednames_cleanup_hash(void *arg) {
 u_char *flt_registerednames_transform(const u_char *val) {
   register u_char *ptr = (u_char *)val;
   register int ws = 0;
-  string_t str;
+  cf_string_t str;
 
   if(!ptr) return NULL;
 
-  str_init(&str);
+  cf_str_init(&str);
 
   /* jump over leading whitespaces */
   for(;*ptr && isspace(*ptr);++ptr);
@@ -75,12 +75,12 @@ u_char *flt_registerednames_transform(const u_char *val) {
   for(;*ptr;++ptr) {
     /* we want &nbsp; as a whitespace, too */
     if(isspace(*ptr) || (*ptr == 0xC2 && *ptr == 0xA0)) {
-      if(ws == 0) str_char_append(&str,' ');
+      if(ws == 0) cf_str_char_append(&str,' ');
       ws = 1;
     }
     else {
       ws = 0;
-      str_char_append(&str,tolower(*ptr));
+      cf_str_char_append(&str,tolower(*ptr));
     }
   }
 
@@ -317,7 +317,7 @@ int flt_registerednames_handler(int connfd,forum_t *forum,const u_char **tokens,
 int flt_registerednames_init_module(int sock) {
   int ret;
   names_db_t *ndb;
-  name_value_t *forums = cfg_get_first_value(&fo_server_conf,NULL,"Forums");
+  cf_name_value_t *forums = cf_cfg_get_first_value(&fo_server_conf,NULL,"Forums");
   size_t i;
 
   if(!flt_rn_namesdb) {
@@ -351,7 +351,7 @@ int flt_registerednames_init_module(int sock) {
 /* }}} */
 
 /* {{{ flt_registerednames_handle_command */
-int flt_registerednames_handle_command(configfile_t *cf,conf_opt_t *opt,const u_char *context,u_char **args,size_t argnum) {
+int flt_registerednames_handle_command(cf_configfile_t *cf,cf_conf_opt_t *opt,const u_char *context,u_char **args,size_t argnum) {
   names_db_t *ndb,ndb1;
 
   if(flt_rn_namesdb == NULL) flt_rn_namesdb = cf_hash_new(flt_registerednames_cleanup_hash);
@@ -381,17 +381,17 @@ void flt_registerednames_cleanup(void) {
   if(flt_rn_namesdb) cf_hash_destroy(flt_rn_namesdb);
 }
 
-conf_opt_t flt_registerednames_config[] = {
-  { "AuthNames", flt_registerednames_handle_command, CFG_OPT_CONFIG|CFG_OPT_NEEDED|CFG_OPT_LOCAL, NULL },
+cf_conf_opt_t flt_registerednames_config[] = {
+  { "AuthNames", flt_registerednames_handle_command, CF_CFG_OPT_CONFIG|CF_CFG_OPT_NEEDED|CF_CFG_OPT_LOCAL, NULL },
   { NULL, NULL, 0, NULL }
 };
 
-handler_config_t flt_registerednames_handlers[] = {
+cf_handler_config_t flt_registerednames_handlers[] = {
   { INIT_HANDLER,            flt_registerednames_init_module   },
   { 0, NULL }
 };
 
-module_config_t flt_registerednames = {
+cf_module_config_t flt_registerednames = {
   MODULE_MAGIC_COOKIE,
   flt_registerednames_config,
   flt_registerednames_handlers,

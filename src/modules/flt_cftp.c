@@ -44,8 +44,8 @@ struct sockaddr_un;
 /* }}} */
 
 int flt_cftp_handler(int sockfd,forum_t *forum,const u_char **tokens,int tnum,rline_t *tsd) {
-  name_value_t *sort_t_v = cfg_get_first_value(&fo_server_conf,forum->name,"SortThreads"),
-               *sort_m_v = cfg_get_first_value(&fo_server_conf,forum->name,"SortMessages");
+  cf_name_value_t *sort_t_v = cf_cfg_get_first_value(&fo_server_conf,forum->name,"SortThreads"),
+               *sort_m_v = cf_cfg_get_first_value(&fo_server_conf,forum->name,"SortMessages");
 
   int sort_m = cf_strcmp(sort_m_v->values[0],"ascending") == 0 ? CF_SORT_ASCENDING : CF_SORT_DESCENDING,
       sort_t = cf_strcmp(sort_t_v->values[0],"ascending") == 0 ? CF_SORT_ASCENDING : CF_SORT_DESCENDING,
@@ -56,7 +56,7 @@ int flt_cftp_handler(int sockfd,forum_t *forum,const u_char **tokens,int tnum,rl
          err = 0,
          one = 1;
 
-  handler_config_t *handler;
+  cf_handler_config_t *handler;
 
   u_int64_t tid,
             mid;
@@ -68,7 +68,7 @@ int flt_cftp_handler(int sockfd,forum_t *forum,const u_char **tokens,int tnum,rl
             *p1,
             *p2;
 
-  string_t str;
+  cf_string_t str;
   u_char buff[512];
   srv_new_post_filter_t pfkt;
   srv_new_thread_filter_t tfkt;
@@ -98,8 +98,8 @@ int flt_cftp_handler(int sockfd,forum_t *forum,const u_char **tokens,int tnum,rl
           writen(sockfd,"500 Syntax error\n",17);
         }
         else {
-          tid = str_to_u_int64(tokens[2]+1),
-          mid = str_to_u_int64(tokens[3]+1);
+          tid = cf_str_to_uint64(tokens[2]+1),
+          mid = cf_str_to_uint64(tokens[3]+1);
 
           cf_send_posting(forum,sockfd,tid,mid,tnum == 5 && cf_strcmp(tokens[4],"invisible=1") == 0);
         }
@@ -121,8 +121,8 @@ int flt_cftp_handler(int sockfd,forum_t *forum,const u_char **tokens,int tnum,rl
 
       /* {{{ GET MIDLIST */
       else if(cf_strcmp(tokens[1],"MIDLIST") == 0) {
-        str_init(&str);
-        str_chars_append(&str,"200 List Follows\n",17);
+        cf_str_init(&str);
+        cf_str_chars_append(&str,"200 List Follows\n",17);
 
         CF_RW_RD(&forum->threads.lock);
         t = forum->threads.list;
@@ -132,26 +132,26 @@ int flt_cftp_handler(int sockfd,forum_t *forum,const u_char **tokens,int tnum,rl
           CF_RW_RD(&t->lock);
 
           for(p=t->postings;p;p=p->next) {
-            str_char_append(&str,'m');
-            u_int64_to_str(&str,p->mid);
-            str_char_append(&str,'\n');
+            cf_str_char_append(&str,'m');
+            cf_uint64_to_str(&str,p->mid);
+            cf_str_char_append(&str,'\n');
           }
 
           t1 = t->next;
           CF_RW_UN(&t->lock);
         }
 
-        str_char_append(&str,'\n');
+        cf_str_char_append(&str,'\n');
 
         writen(sockfd,str.content,str.len);
-        str_cleanup(&str);
+        cf_str_cleanup(&str);
       }
       /* }}} */
 
       /* {{{ GET TIDLIST */
       else if(cf_strcmp(tokens[1],"TIDLIST") == 0) {
-        str_init(&str);
-        str_chars_append(&str,"200 List Follows\n",17);
+        cf_str_init(&str);
+        cf_str_chars_append(&str,"200 List Follows\n",17);
 
         CF_RW_RD(&forum->threads.lock);
         t = forum->threads.list;
@@ -160,18 +160,18 @@ int flt_cftp_handler(int sockfd,forum_t *forum,const u_char **tokens,int tnum,rl
         for(;t;t=t1) {
           CF_RW_RD(&t->lock);
 
-          str_char_append(&str,'t');
-          u_int64_to_str(&str,t->tid);
-          str_char_append(&str,'\n');
+          cf_str_char_append(&str,'t');
+          cf_uint64_to_str(&str,t->tid);
+          cf_str_char_append(&str,'\n');
 
           t1 = t->next;
           CF_RW_UN(&t->lock);
         }
 
-        str_char_append(&str,'\n');
+        cf_str_char_append(&str,'\n');
 
         writen(sockfd,str.content,str.len);
-        str_cleanup(&str);
+        cf_str_cleanup(&str);
       }
       /* }}} */
 
@@ -185,7 +185,7 @@ int flt_cftp_handler(int sockfd,forum_t *forum,const u_char **tokens,int tnum,rl
   else if(cf_strcmp(tokens[0],"STAT") == 0) {
     /* {{{ STAT THREAD */
     if(tnum == 3 && cf_strcmp(tokens[1],"THREAD") == 0) {
-      tid = str_to_u_int64(tokens[2]+1);
+      tid = cf_str_to_uint64(tokens[2]+1);
 
       if(cf_get_thread(forum,tid)) {
         writen(sockfd,"200 Exists\n",11);
@@ -198,8 +198,8 @@ int flt_cftp_handler(int sockfd,forum_t *forum,const u_char **tokens,int tnum,rl
 
     /* {{{ STAT POST */
     else if(tnum == 4 && cf_strcmp(tokens[1],"POST") == 0) {
-      tid = str_to_u_int64(tokens[2]+1);
-      mid = str_to_u_int64(tokens[3]+1);
+      tid = cf_str_to_uint64(tokens[2]+1);
+      mid = cf_str_to_uint64(tokens[3]+1);
 
       if((t = cf_get_thread(forum,tid)) != NULL) {
         if(cf_get_posting(t,mid)) writen(sockfd,"200 Posting exists\n",19);
@@ -221,15 +221,15 @@ int flt_cftp_handler(int sockfd,forum_t *forum,const u_char **tokens,int tnum,rl
 
     /* {{{ POST ANSWER */
     if(cf_strcmp(tokens[1],"ANSWER") == 0) {
-      p = fo_alloc(NULL,1,sizeof(posting_t),FO_ALLOC_CALLOC);
+      p = cf_alloc(NULL,1,sizeof(posting_t),CF_ALLOC_CALLOC);
 
       if(tnum != 4) {
         writen(sockfd,"500 Sorry\n",10);
         cf_log(CF_ERR,__FILE__,__LINE__,"Bad request\n");
       }
       else {
-        tid = str_to_u_int64(tokens[2]+2);
-        mid = str_to_u_int64(tokens[3]+2);
+        tid = cf_str_to_uint64(tokens[2]+2);
+        mid = cf_str_to_uint64(tokens[3]+2);
 
         t  = cf_get_thread(forum,tid);
 
@@ -305,19 +305,19 @@ int flt_cftp_handler(int sockfd,forum_t *forum,const u_char **tokens,int tnum,rl
                 CF_UM(&forum->uniques.lock);
 
                 /* {{{ create answer */
-                str_init_growth(&str,128);
-                str_chars_append(&str,"200 Ok\nTid: ",12);
-                u_int64_to_str(&str,t->tid);
-                str_chars_append(&str,"\nMid: ",6);
-                u_int64_to_str(&str,p->mid);
-                str_chars_append(&str,"\n\n",2);
+                cf_str_init_growth(&str,128);
+                cf_str_chars_append(&str,"200 Ok\nTid: ",12);
+                cf_uint64_to_str(&str,t->tid);
+                cf_str_chars_append(&str,"\nMid: ",6);
+                cf_uint64_to_str(&str,p->mid);
+                cf_str_chars_append(&str,"\n\n",2);
                 writen(sockfd,str.content,str.len);
-                str_cleanup(&str);
+                cf_str_cleanup(&str);
                 /* }}} */
 
                 if(Modules[NEW_POST_HANDLER].elements) {
                   for(i=0;i<Modules[NEW_POST_HANDLER].elements;i++) {
-                    handler = array_element_at(&Modules[NEW_POST_HANDLER],i);
+                    handler = cf_array_element_at(&Modules[NEW_POST_HANDLER],i);
                     pfkt    = (srv_new_post_filter_t)handler->func;
                     ret     = pfkt(forum,t->tid,p);
                   }
@@ -345,8 +345,8 @@ int flt_cftp_handler(int sockfd,forum_t *forum,const u_char **tokens,int tnum,rl
 
     /* {{{ POST THREAD */
     else if(cf_strcmp(tokens[1],"THREAD") == 0) {
-      p = fo_alloc(NULL,1,sizeof(*p),FO_ALLOC_CALLOC);
-      t = fo_alloc(NULL,1,sizeof(*t),FO_ALLOC_CALLOC);
+      p = cf_alloc(NULL,1,sizeof(*p),CF_ALLOC_CALLOC);
+      t = cf_alloc(NULL,1,sizeof(*t),CF_ALLOC_CALLOC);
 
       if(cf_read_posting(forum,p,sockfd,tsd)) {
         CF_RW_RD(&forum->threads.lock);
@@ -409,7 +409,7 @@ int flt_cftp_handler(int sockfd,forum_t *forum,const u_char **tokens,int tnum,rl
 
           if(Modules[NEW_THREAD_HANDLER].elements) {
             for(i=0;i<Modules[NEW_THREAD_HANDLER].elements;i++) {
-              handler = array_element_at(&Modules[NEW_THREAD_HANDLER],i);
+              handler = cf_array_element_at(&Modules[NEW_THREAD_HANDLER],i);
               tfkt    = (srv_new_thread_filter_t)handler->func;
               ret     = tfkt(forum,t);
             }
@@ -419,14 +419,14 @@ int flt_cftp_handler(int sockfd,forum_t *forum,const u_char **tokens,int tnum,rl
           CF_RW_UN(&t->lock);
 
           /* {{{ create answer */
-          str_init_growth(&str,128);
-          str_chars_append(&str,"200 Ok\nTid: ",12);
-          u_int64_to_str(&str,t->tid);
-          str_chars_append(&str,"\nMid: ",6);
-          u_int64_to_str(&str,p->mid);
-          str_chars_append(&str,"\n\n",2);
+          cf_str_init_growth(&str,128);
+          cf_str_chars_append(&str,"200 Ok\nTid: ",12);
+          cf_uint64_to_str(&str,t->tid);
+          cf_str_chars_append(&str,"\nMid: ",6);
+          cf_uint64_to_str(&str,p->mid);
+          cf_str_chars_append(&str,"\n\n",2);
           writen(sockfd,str.content,str.len);
-          str_cleanup(&str);
+          cf_str_cleanup(&str);
           /* }}} */
 
           cf_generate_cache(forum);
@@ -458,8 +458,8 @@ int flt_cftp_handler(int sockfd,forum_t *forum,const u_char **tokens,int tnum,rl
         return FLT_OK;
       }
 
-      tid = str_to_u_int64(tokens[2]+1);
-      mid = str_to_u_int64(tokens[3]+1);
+      tid = cf_str_to_uint64(tokens[2]+1);
+      mid = cf_str_to_uint64(tokens[3]+1);
 
       t  = cf_get_thread(forum,tid);
 
@@ -496,8 +496,8 @@ int flt_cftp_handler(int sockfd,forum_t *forum,const u_char **tokens,int tnum,rl
         return FLT_OK;
       }
 
-      tid = str_to_u_int64(tokens[2]+1);
-      mid = str_to_u_int64(tokens[3]+1);
+      tid = cf_str_to_uint64(tokens[2]+1);
+      mid = cf_str_to_uint64(tokens[3]+1);
 
       t  = cf_get_thread(forum,tid);
 
@@ -554,16 +554,16 @@ int flt_cftp_register_handlers(int sock) {
   return FLT_OK;
 }
 
-conf_opt_t flt_cftp_config[] = {
+cf_conf_opt_t flt_cftp_config[] = {
   { NULL, NULL, 0, NULL }
 };
 
-handler_config_t flt_cftp_handlers[] = {
+cf_handler_config_t flt_cftp_handlers[] = {
   { INIT_HANDLER,            flt_cftp_register_handlers   },
   { 0, NULL }
 };
 
-module_config_t flt_cftp = {
+cf_module_config_t flt_cftp = {
   MODULE_MAGIC_COOKIE,
   flt_cftp_config,
   flt_cftp_handlers,

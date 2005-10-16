@@ -94,7 +94,7 @@ cf_hash_t *cf_cgi_new(void) {
     }
 
     trash = 1;
-    data  = fo_alloc(NULL,len + 1,1,FO_ALLOC_MALLOC);
+    data  = cf_alloc(NULL,len + 1,1,CF_ALLOC_MALLOC);
 
     fread(data,1,len,stdin);
     data[len] = '\0';
@@ -118,12 +118,12 @@ cf_hash_t *cf_cgi_new(void) {
 /* }}} */
 
 /* {{{ cf_cgi_parse_path_info */
-void cf_cgi_parse_path_info(array_t *ary) {
+void cf_cgi_parse_path_info(cf_array_t *ary) {
   u_char *data = getenv("PATH_INFO");
   register u_char *ptr = (u_char *)data+1;
   u_char *start = data,*name = NULL;
 
-  array_init(ary,sizeof(char **),NULL);
+  cf_array_init(ary,sizeof(char **),NULL);
 
   if(!data) return;
 
@@ -132,7 +132,7 @@ void cf_cgi_parse_path_info(array_t *ary) {
       if(*ptr == '/') {
         if(start) {
           name = strndup(start+1,ptr-start-1);
-          array_push(ary,&name);
+          cf_array_push(ary,&name);
           start = ptr;
         }
         else {
@@ -143,7 +143,7 @@ void cf_cgi_parse_path_info(array_t *ary) {
 
     if(*start != '/') {
       name = strdup(start+1);
-      array_push(ary,&name);
+      cf_array_push(ary,&name);
     }
   }
 }
@@ -257,7 +257,7 @@ void cf_cgi_parse_cookies(cf_hash_t *hash) {
  *
  */
 u_char *cf_cgi_url_decode(const u_char *str,size_t len) {
-  u_char *ret = fo_alloc(NULL,len + 1,1,FO_ALLOC_MALLOC); /* the new string can be as long as the old (but not longer) */
+  u_char *ret = cf_alloc(NULL,len + 1,1,CF_ALLOC_MALLOC); /* the new string can be as long as the old (but not longer) */
   register u_char *ptr1,*ptr2;
   u_char ptr3[3] = { '\0','\0','\0' };
 
@@ -294,7 +294,7 @@ u_char *cf_cgi_url_decode(const u_char *str,size_t len) {
  */
 u_char *cf_cgi_url_encode(const u_char *str,size_t len) {
   long nlen = 3 * len + 1; /* new string can max 3x longer than old string (plus 0-byte) */
-  u_char *nstr = fo_alloc(NULL,nlen,1,FO_ALLOC_MALLOC);
+  u_char *nstr = cf_alloc(NULL,nlen,1,CF_ALLOC_MALLOC);
   register u_char *ptr1,*ptr2;
 
   for(ptr1=(u_char *)str,ptr2=nstr;*ptr1;ptr2++,ptr1++) {
@@ -336,7 +336,7 @@ int _cf_cgi_save_param(cf_hash_t *hash,u_char *name,int namlen,u_char *value) {
 
   ent = cf_hash_get(hash,name,namlen);
   if(!ent) {
-    ent        = fo_alloc(NULL,1,sizeof(cf_cgi_param_t),FO_ALLOC_CALLOC);
+    ent        = cf_alloc(NULL,1,sizeof(cf_cgi_param_t),CF_ALLOC_CALLOC);
 
     ent->name  = name;
     ent->value = value;
@@ -349,7 +349,7 @@ int _cf_cgi_save_param(cf_hash_t *hash,u_char *name,int namlen,u_char *value) {
     ent = cf_hash_get(hash,name,strlen(name));
   }
   else {
-    ent1            = fo_alloc(NULL,1,sizeof(cf_cgi_param_t),FO_ALLOC_CALLOC);
+    ent1            = cf_alloc(NULL,1,sizeof(cf_cgi_param_t),CF_ALLOC_CALLOC);
 
     ent1->name  = name;
     ent1->value = value;
@@ -528,7 +528,7 @@ u_int32_t cf_cgi_path_info_parsed(u_char ***infos) {
     for(prev=ptr=path+1;*ptr;ptr++) {
       if(*ptr == '/') {
         *ptr        = '\0';
-        list        = fo_alloc(list,++len,sizeof(char **),FO_ALLOC_REALLOC);
+        list        = cf_alloc(list,++len,sizeof(char **),CF_ALLOC_REALLOC);
         list[len-1] = cf_cgi_url_decode(prev,ptr-prev);
         prev        = ptr+1;
         *ptr        = '/';

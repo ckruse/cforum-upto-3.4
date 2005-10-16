@@ -125,21 +125,21 @@ long flt_http_get_lm(void *ptr) {
 
 /* {{{ flt_http_validate_cache */
 #ifndef CF_SHARED_MEM
-int flt_http_validate_cache(cf_hash_t *head,configuration_t *dc,configuration_t *vc,time_t lm,int sock) {
+int flt_http_validate_cache(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t *vc,time_t lm,int sock) {
 #else
-int flt_http_validate_cache(cf_hash_t *head,configuration_t *dc,configuration_t *vc,time_t lm,void *sock) {
+int flt_http_validate_cache(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t *vc,time_t lm,void *sock) {
 #endif
-  module_t *mod;
-  cache_revalidator_t fkt;
+  cf_module_t *mod;
+  cf_cache_revalidator_t fkt;
   size_t i;
   int ret = FLT_DECLINE;
 
   if(Modules[0].elements) {
     for(i=0;i<Modules[0].elements && (ret == FLT_OK || ret == FLT_DECLINE);i++) {
-      mod = array_element_at(&Modules[0],i);
+      mod = cf_array_element_at(&Modules[0],i);
 
       if(mod->cfg->revalidator) {
-        fkt     = (cache_revalidator_t)mod->cfg->revalidator;
+        fkt     = (cf_cache_revalidator_t)mod->cfg->revalidator;
         ret     = fkt(head,dc,vc,lm,sock);
       }
     }
@@ -151,21 +151,21 @@ int flt_http_validate_cache(cf_hash_t *head,configuration_t *dc,configuration_t 
 
 /* {{{ flt_http_header_callbacks */
 #ifndef CF_SHARED_MEM
-int flt_http_header_callbacks(cf_hash_t *head,cf_hash_t *header_table,configuration_t *dc,configuration_t *vc,int sock) {
+int flt_http_header_callbacks(cf_hash_t *head,cf_hash_t *header_table,cf_configuration_t *dc,cf_configuration_t *vc,int sock) {
 #else
-int flt_http_header_callbacks(cf_hash_t *head,cf_hash_t *header_table,configuration_t *dc,configuration_t *vc,void *sock) {
+int flt_http_header_callbacks(cf_hash_t *head,cf_hash_t *header_table,cf_configuration_t *dc,cf_configuration_t *vc,void *sock) {
 #endif
-  module_t *mod;
-  head_ter_hook fkt;
+  cf_module_t *mod;
+  cf_header_hook_t fkt;
   size_t i;
   int ret = FLT_DECLINE;
   int retret = FLT_OK;
 
   if(Modules[0].elements) {
     for(i=0;i<Modules[0].elements;i++) {
-      mod = array_element_at(&Modules[0],i);
+      mod = cf_array_element_at(&Modules[0],i);
       if(mod->cfg->header_hook) {
-        fkt = (head_ter_hook)mod->cfg->header_hook;
+        fkt = (cf_header_hook_t)mod->cfg->header_hook;
         ret = fkt(head,header_table,dc,vc,sock);
 
         if(ret == FLT_EXIT) retret = FLT_EXIT;
@@ -179,20 +179,20 @@ int flt_http_header_callbacks(cf_hash_t *head,cf_hash_t *header_table,configurat
 
 /* {{{ flt_http_lm_callbacks */
 #ifndef CF_SHARED_MEM
-time_t flt_http_lm_callbacks(cf_hash_t *head,configuration_t *dc,configuration_t *vc,int sock,time_t t1) {
+time_t flt_http_lm_callbacks(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t *vc,int sock,time_t t1) {
 #else
-time_t flt_http_lm_callbacks(cf_hash_t *head,configuration_t *dc,configuration_t *vc,void *sock,time_t t1) {
+time_t flt_http_lm_callbacks(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t *vc,void *sock,time_t t1) {
 #endif
-  module_t *mod;
-  last_modified_t fkt;
+  cf_module_t *mod;
+  cf_last_modified_t fkt;
   size_t i;
   time_t ret;
 
   if(Modules[0].elements) {
     for(i=0;i<Modules[0].elements;i++) {
-      mod = array_element_at(&Modules[0],i);
+      mod = cf_array_element_at(&Modules[0],i);
       if(mod->cfg->last_modified) {
-        fkt = (last_modified_t)mod->cfg->last_modified;
+        fkt = (cf_last_modified_t)mod->cfg->last_modified;
         ret = fkt(head,dc,vc,sock);
 
         if(ret == (time_t)-1) continue;
@@ -212,9 +212,9 @@ time_t flt_http_lm_callbacks(cf_hash_t *head,configuration_t *dc,configuration_t
 
 /* {{{ flt_http_execute */
 #ifndef CF_SHARED_MEM
-int flt_http_execute(cf_hash_t *head,configuration_t *dc,configuration_t *vc,int sock)
+int flt_http_execute(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t *vc,int sock)
 #else
-int flt_http_execute(cf_hash_t *head,configuration_t *dc,configuration_t *vc,void *sock)
+int flt_http_execute(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t *vc,void *sock)
 #endif
 {
   u_char buff[100];
@@ -288,7 +288,7 @@ int flt_http_execute(cf_hash_t *head,configuration_t *dc,configuration_t *vc,voi
 /* }}} */
 
 /* {{{ flt_http_handle_command */
-int flt_http_handle_command(configfile_t *cfile,conf_opt_t *opt,const u_char *context,u_char **args,size_t argnum) {
+int flt_http_handle_command(cf_configfile_t *cfile,cf_conf_opt_t *opt,const u_char *context,u_char **args,size_t argnum) {
   u_char *ptr = NULL;
 
   if(!flt_http_fn) flt_http_fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
@@ -329,9 +329,9 @@ int flt_http_handle_command(configfile_t *cfile,conf_opt_t *opt,const u_char *co
 
 /* {{{ flt_http_sehead_ters */
 #ifndef CF_SHARED_MEM
-int flt_http_sehead_ters(cf_hash_t *cgi,cf_hash_t *header_table,configuration_t *dc,configuration_t *vc,int sock) {
+int flt_http_sehead_ters(cf_hash_t *cgi,cf_hash_t *header_table,cf_configuration_t *dc,cf_configuration_t *vc,int sock) {
 #else
-int flt_http_sehead_ters(cf_hash_t *cgi,cf_hash_t *header_table,configuration_t *dc,configuration_t *vc,void *sock) {
+int flt_http_sehead_ters(cf_hash_t *cgi,cf_hash_t *header_table,cf_configuration_t *dc,cf_configuration_t *vc,void *sock) {
 #endif
   char buff[BUFSIZ];
   size_t len;
@@ -358,9 +358,9 @@ int flt_http_sehead_ters(cf_hash_t *cgi,cf_hash_t *header_table,configuration_t 
 
 /* {{{ flt_http_validate */
 #ifndef CF_SHARED_MEM
-int flt_http_validate(cf_hash_t *head,configuration_t *dc,configuration_t *vc,time_t last_modified,int sock) {
+int flt_http_validate(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t *vc,time_t last_modified,int sock) {
 #else
-int flt_http_validate(cf_hash_t *head,configuration_t *dc,configuration_t *vc,time_t last_modified,void *sock) {
+int flt_http_validate(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t *vc,time_t last_modified,void *sock) {
 #endif
   u_char *uname = cf_hash_get(GlobalValues,"UserName",8);
   u_char *uconffile = NULL;
@@ -389,9 +389,9 @@ int flt_http_validate(cf_hash_t *head,configuration_t *dc,configuration_t *vc,ti
 
 /* {{{ flt_http_lm */
 #ifndef CF_SHARED_MEM
-time_t flt_http_lm(cf_hash_t *head,configuration_t *dc,configuration_t *vc,int sock) {
+time_t flt_http_lm(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t *vc,int sock) {
 #else
-time_t flt_http_lm(cf_hash_t *head,configuration_t *dc,configuration_t *vc,void *sock) {
+time_t flt_http_lm(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t *vc,void *sock) {
 #endif
   u_char *uname = cf_hash_get(GlobalValues,"UserName",8);
   u_char *uconffile = NULL;
@@ -411,19 +411,19 @@ time_t flt_http_lm(cf_hash_t *head,configuration_t *dc,configuration_t *vc,void 
 }
 /* }}} */
 
-conf_opt_t flt_http_config[] = {
-  { "SendLastModified",        flt_http_handle_command, CFG_OPT_CONFIG|CFG_OPT_LOCAL, NULL },
-  { "SendExpires",             flt_http_handle_command, CFG_OPT_CONFIG|CFG_OPT_LOCAL, NULL },
-  { "HandleLastModifiedSince", flt_http_handle_command, CFG_OPT_CONFIG|CFG_OPT_LOCAL, NULL },
+cf_conf_opt_t flt_http_config[] = {
+  { "SendLastModified",        flt_http_handle_command, CF_CFG_OPT_CONFIG|CF_CFG_OPT_LOCAL, NULL },
+  { "SendExpires",             flt_http_handle_command, CF_CFG_OPT_CONFIG|CF_CFG_OPT_LOCAL, NULL },
+  { "HandleLastModifiedSince", flt_http_handle_command, CF_CFG_OPT_CONFIG|CF_CFG_OPT_LOCAL, NULL },
   { NULL, NULL, 0, NULL }
 };
 
-handler_config_t flt_http_handlers[] = {
+cf_handler_config_t flt_http_handlers[] = {
   { CONNECT_INIT_HANDLER, flt_http_execute },
   { 0, NULL }
 };
 
-module_config_t flt_http = {
+cf_module_config_t flt_http = {
   MODULE_MAGIC_COOKIE,
   flt_http_config,
   flt_http_handlers,

@@ -169,9 +169,9 @@ int cf_tree_insert(cf_tree_t *tree,cf_tree_node_t **n, cf_tree_dataset_t *d) {
   if(!n) n = &tree->root;
 
   if(!(*n)) {
-    *n = fo_alloc(NULL,1,sizeof(*tree->root),FO_ALLOC_CALLOC);
+    *n = cf_alloc(NULL,1,sizeof(*tree->root),CF_ALLOC_CALLOC);
 
-    (*n)->d   = memdup(d,sizeof(*d));
+    (*n)->d   = cf_memdup(d,sizeof(*d));
     (*n)->bal = 0;
 
     return 1;

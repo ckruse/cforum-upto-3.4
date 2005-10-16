@@ -168,7 +168,7 @@ u_char *charset_convert(const u_char *toencode,size_t in_len,const u_char *from_
   out_left = in_len + 32; /* avoids realloc() in most cases */
   out_size = 0;
   bsz      = out_left;
-  out_buf  = fo_alloc(NULL,bsz+1,1,FO_ALLOC_MALLOC);
+  out_buf  = cf_alloc(NULL,bsz+1,1,CF_ALLOC_MALLOC);
   out_p    = out_buf;
 
   while(in_left > 0) {
@@ -179,8 +179,8 @@ u_char *charset_convert(const u_char *toencode,size_t in_len,const u_char *from_
         /* converted string is longer than out buffer */
         bsz += in_len;
 
-        /* tmp_buf cannot be NULL because if memory allocation failes, fo_alloc calls exit() */
-        tmp_buf = (u_char *)fo_alloc(out_buf, bsz+1,1,FO_ALLOC_REALLOC);
+        /* tmp_buf cannot be NULL because if memory allocation failes, cf_alloc calls exit() */
+        tmp_buf = (u_char *)cf_alloc(out_buf, bsz+1,1,CF_ALLOC_REALLOC);
 
         out_buf  = tmp_buf;
         out_p    = out_buf + out_size;
@@ -230,13 +230,13 @@ u_int32_t get_named_entity(const u_char *entity) {
 /* {{{ htmlentities_decode */
 u_char *htmlentities_decode(const u_char *string,size_t *slen) {
   u_char *ptr;
-  string_t new_str;
+  cf_string_t new_str;
   u_int32_t num;
 
   u_char buff[8],*val,*safe;
   int len;
 
-  str_init(&new_str);
+  cf_str_init(&new_str);
   memset(buff,0,sizeof(buff));
 
   if(!string) return NULL;
@@ -251,18 +251,18 @@ u_char *htmlentities_decode(const u_char *string,size_t *slen) {
         else num = strtol(ptr+2,(char **)&ptr,10);
 
         if(num == 0) {
-          str_char_append(&new_str,*safe);
+          cf_str_char_append(&new_str,*safe);
           ptr = safe;
           continue;
         }
 
         if((len = unicode_to_utf8(num,buff,7)) == EINVAL) {
-          str_char_append(&new_str,*safe);
+          cf_str_char_append(&new_str,*safe);
           ptr = safe;
           continue;
         }
 
-        str_chars_append(&new_str,buff,len);
+        cf_str_chars_append(&new_str,buff,len);
       }
       else {
         for(safe=ptr,val=ptr+1;*ptr && *ptr != ';';++ptr);
@@ -271,25 +271,25 @@ u_char *htmlentities_decode(const u_char *string,size_t *slen) {
         free(val);
 
         if(num == 0) {
-          str_char_append(&new_str,*safe);
+          cf_str_char_append(&new_str,*safe);
           ptr = safe;
           continue;
         }
 
         if((len = unicode_to_utf8(num,buff,7)) == EINVAL) {
-          str_char_append(&new_str,*safe);
+          cf_str_char_append(&new_str,*safe);
           ptr = safe;
           continue;
         }
 
-        str_chars_append(&new_str,buff,len);
+        cf_str_chars_append(&new_str,buff,len);
       }
     }
-    else str_char_append(&new_str,*ptr);
+    else cf_str_char_append(&new_str,*ptr);
   }
 
   if(slen) *slen = new_str.len;
-  return fo_alloc(new_str.content,new_str.len+1,1,FO_ALLOC_REALLOC);
+  return cf_alloc(new_str.content,new_str.len+1,1,CF_ALLOC_REALLOC);
 }
 /* }}} */
 
@@ -303,9 +303,9 @@ u_char *htmlentities_decode(const u_char *string,size_t *slen) {
  */
 u_char *htmlentities(const u_char *string,int sq) {
   register u_char *ptr;
-  string_t new_str;
+  cf_string_t new_str;
 
-  str_init(&new_str);
+  cf_str_init(&new_str);
 
   if(!string) {
     return NULL;
@@ -314,32 +314,32 @@ u_char *htmlentities(const u_char *string,int sq) {
   for(ptr=(u_char *)string;*ptr;ptr++) {
     switch(*ptr) {
       case '>':
-        str_chars_append(&new_str,"&gt;",4);
+        cf_str_chars_append(&new_str,"&gt;",4);
         break;
       case '<':
-        str_chars_append(&new_str,"&lt;",4);
+        cf_str_chars_append(&new_str,"&lt;",4);
         break;
       case '&':
-        str_chars_append(&new_str,"&amp;",5);
+        cf_str_chars_append(&new_str,"&amp;",5);
         break;
       case '"':
-        str_chars_append(&new_str,"&quot;",6);
+        cf_str_chars_append(&new_str,"&quot;",6);
         break;
       case '\'':
         if(sq) {
-          str_chars_append(&new_str,"&#39;",5);
+          cf_str_chars_append(&new_str,"&#39;",5);
         }
         else {
-          str_char_append(&new_str,*ptr);
+          cf_str_char_append(&new_str,*ptr);
         }
         break;
       default:
-        str_char_append(&new_str,*ptr);
+        cf_str_char_append(&new_str,*ptr);
         break;
     }
   }
 
-  return fo_alloc(new_str.content,new_str.len+1,1,FO_ALLOC_REALLOC);
+  return cf_alloc(new_str.content,new_str.len+1,1,CF_ALLOC_REALLOC);
 }
 /* }}} */
 
@@ -398,7 +398,7 @@ size_t print_htmlentities_encoded(const u_char *string,int sq,FILE *handle) {
 u_char *htmlentities_charset_convert(const u_char *toencode, const u_char *from, const u_char *to,size_t *outlen,int sq) {
   register u_char *ptr;
   u_char *in_ptr,*entity,buff[15];
-  string_t new_str;
+  cf_string_t new_str;
 
   iconv_t cd;
   size_t in_left, out_size, out_left,in_len,elen;
@@ -413,32 +413,32 @@ u_char *htmlentities_charset_convert(const u_char *toencode, const u_char *from,
   }
 
   /* first phase: encode html active characters */
-  str_init(&new_str);
+  cf_str_init(&new_str);
 
   for(ptr=(u_char *)toencode;*ptr;ptr++) {
     switch(*ptr) {
       case '>':
-        str_chars_append(&new_str,"&gt;",4);
+        cf_str_chars_append(&new_str,"&gt;",4);
         break;
       case '<':
-        str_chars_append(&new_str,"&lt;",4);
+        cf_str_chars_append(&new_str,"&lt;",4);
         break;
       case '&':
-        str_chars_append(&new_str,"&amp;",5);
+        cf_str_chars_append(&new_str,"&amp;",5);
         break;
       case '"':
-        str_chars_append(&new_str,"&quot;",6);
+        cf_str_chars_append(&new_str,"&quot;",6);
         break;
       case '\'':
         if(sq) {
-          str_chars_append(&new_str,"&#39;",5);
+          cf_str_chars_append(&new_str,"&#39;",5);
         }
         else {
-          str_char_append(&new_str,*ptr);
+          cf_str_char_append(&new_str,*ptr);
         }
         break;
       default:
-        str_char_append(&new_str,*ptr);
+        cf_str_char_append(&new_str,*ptr);
         break;
     }
   }
@@ -450,7 +450,7 @@ u_char *htmlentities_charset_convert(const u_char *toencode, const u_char *from,
   out_left = in_len + 32; /* avoids realloc() in most cases */
   out_size = 0;
   bsz      = out_left;
-  out_buf  = fo_alloc(NULL,bsz+1,1,FO_ALLOC_MALLOC);
+  out_buf  = cf_alloc(NULL,bsz+1,1,CF_ALLOC_MALLOC);
   out_p    = out_buf;
 
   while(in_left > 0) {
@@ -461,8 +461,8 @@ u_char *htmlentities_charset_convert(const u_char *toencode, const u_char *from,
         /* converted string is longer than out buffer */
         bsz += in_len;
 
-        /* tmp_buf cannot be NULL because if memory allocation failes, fo_alloc calls exit() */
-        tmp_buf = (u_char *)fo_alloc(out_buf, bsz+1,1,FO_ALLOC_REALLOC);
+        /* tmp_buf cannot be NULL because if memory allocation failes, cf_alloc calls exit() */
+        tmp_buf = (u_char *)cf_alloc(out_buf, bsz+1,1,CF_ALLOC_REALLOC);
 
         out_buf  = tmp_buf;
         out_p    = out_buf + out_size;
@@ -472,7 +472,7 @@ u_char *htmlentities_charset_convert(const u_char *toencode, const u_char *from,
       else if(errno == EILSEQ) {
         /* ok, we got an illegal sequence... lets convert it to an entity */
         if((ret = utf8_to_unicode(in_ptr,in_left,&unicode)) <= 0) {
-          str_cleanup(&new_str);
+          cf_str_cleanup(&new_str);
           free(out_buf);
           return NULL;
         }
@@ -480,8 +480,8 @@ u_char *htmlentities_charset_convert(const u_char *toencode, const u_char *from,
         /* longest entity is about 19 bytes; we need more space if buffer is shorter */
         if(out_left < 20) {
           bsz += in_len;
-          /* tmp_buf cannot be NULL because if memory allocation failes, fo_alloc calls exit() */
-          tmp_buf = (u_char *)fo_alloc(out_buf, bsz+1,1,FO_ALLOC_REALLOC);
+          /* tmp_buf cannot be NULL because if memory allocation failes, cf_alloc calls exit() */
+          tmp_buf = (u_char *)cf_alloc(out_buf, bsz+1,1,CF_ALLOC_REALLOC);
 
           out_buf  = tmp_buf;
           out_p    = out_buf + out_size;
@@ -520,7 +520,7 @@ u_char *htmlentities_charset_convert(const u_char *toencode, const u_char *from,
   }
 
   iconv_close(cd);
-  str_cleanup(&new_str);
+  cf_str_cleanup(&new_str);
 
   if(result == (size_t)(-1)) {
     free(out_buf);
@@ -558,7 +558,7 @@ u_char *charset_convert_entities(const u_char *toencode, size_t in_len,const u_c
   out_left = in_len + 32; /* avoids realloc() in most cases */
   out_size = 0;
   bsz      = out_left;
-  out_buf  = fo_alloc(NULL,bsz+1,1,FO_ALLOC_MALLOC);
+  out_buf  = cf_alloc(NULL,bsz+1,1,CF_ALLOC_MALLOC);
   out_p    = out_buf;
 
   while(in_left > 0) {
@@ -569,8 +569,8 @@ u_char *charset_convert_entities(const u_char *toencode, size_t in_len,const u_c
         /* converted string is longer than out buffer */
         bsz += in_len;
 
-        /* tmp_buf cannot be NULL because if memory allocation failes, fo_alloc calls exit() */
-        tmp_buf = (u_char *)fo_alloc(out_buf, bsz+1,1,FO_ALLOC_REALLOC);
+        /* tmp_buf cannot be NULL because if memory allocation failes, cf_alloc calls exit() */
+        tmp_buf = (u_char *)cf_alloc(out_buf, bsz+1,1,CF_ALLOC_REALLOC);
 
         out_buf  = tmp_buf;
         out_p    = out_buf + out_size;
@@ -587,8 +587,8 @@ u_char *charset_convert_entities(const u_char *toencode, size_t in_len,const u_c
         /* longest entity is about 19 bytes; we need more space if buffer is shorter */
         if(out_left < 20) {
           bsz += in_len;
-          /* tmp_buf cannot be NULL because if memory allocation failes, fo_alloc calls exit() */
-          tmp_buf = (u_char *)fo_alloc(out_buf, bsz+1,1,FO_ALLOC_REALLOC);
+          /* tmp_buf cannot be NULL because if memory allocation failes, cf_alloc calls exit() */
+          tmp_buf = (u_char *)cf_alloc(out_buf, bsz+1,1,CF_ALLOC_REALLOC);
 
           out_buf  = tmp_buf;
           out_p    = out_buf + out_size;

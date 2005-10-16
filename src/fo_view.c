@@ -50,7 +50,7 @@
 /**
  * Dummy function, for ignoring unknown directives
  */
-int ignre(configfile_t *cfile,const u_char *context,u_char *name,u_char **args,size_t len) {
+int ignre(cf_configfile_t *cfile,const u_char *context,u_char *name,u_char **args,size_t len) {
   return 0;
 }
 
@@ -63,11 +63,11 @@ void show_xmlhttp_thread(cf_hash_t *head,void *shm_ptr,u_int64_t tid,u_int64_t m
 {
   int ret;
   u_char fo_thread_tplname[256],buff[512],*line = NULL,*UserName = cf_hash_get(GlobalValues,"UserName",8);
-  name_value_t *fo_thread_tpl,*cs;
+  cf_name_value_t *fo_thread_tpl,*cs;
   u_char *fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   int show_invi = cf_hash_get(GlobalValues,"ShowInvisible",13) != NULL;
   cl_thread_t thread;
-  string_t str;
+  cf_string_t str;
   size_t len;
   rline_t tsd;
   cf_readmode_t *rm = cf_hash_get(GlobalValues,"RM",2);
@@ -78,8 +78,8 @@ void show_xmlhttp_thread(cf_hash_t *head,void *shm_ptr,u_int64_t tid,u_int64_t m
 
   memset(&tsd,0,sizeof(tsd));
 
-  fo_thread_tpl = cfg_get_first_value(&fo_view_conf,fn,"TemplateForumThread");
-  cs            = cfg_get_first_value(&fo_default_conf,fn,"ExternCharset");
+  fo_thread_tpl = cf_cfg_get_first_value(&fo_view_conf,fn,"TemplateForumThread");
+  cs            = cf_cfg_get_first_value(&fo_default_conf,fn,"ExternCharset");
 
   cf_gen_tpl_name(fo_thread_tplname,256,fo_thread_tpl->values[0]);
 
@@ -124,11 +124,11 @@ void show_xmlhttp_thread(cf_hash_t *head,void *shm_ptr,u_int64_t tid,u_int64_t m
   #endif
   #endif
 
-  str_init(&str);
+  cf_str_init(&str);
   if(cf_gen_threadlist(&thread,head,&str,rm->threadlist_thread_tpl,"full",rm->posting_uri[UserName?1:0],CF_MODE_THREADLIST) != FLT_EXIT) {
     printf("Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
     fwrite(str.content,1,str.len,stdout);
-    str_cleanup(&str);
+    cf_str_cleanup(&str);
   }
   else {
     printf("Status: 500 Internal Server Error\015\012Content-Type: text/html\015\012\015\012");
@@ -157,14 +157,14 @@ void show_posting(cf_hash_t *head,void *shm_ptr,u_int64_t tid,u_int64_t mid)
     *UserName = cf_hash_get(GlobalValues,"UserName",8),
     *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
 
-  name_value_t *tm  = cfg_get_first_value(&fo_view_conf,forum_name,"ThreadMode"),
-    *rm             = cfg_get_first_value(&fo_view_conf,forum_name,"ReadMode"),
-    *cs             = cfg_get_first_value(&fo_default_conf,forum_name,"ExternCharset"),
+  cf_name_value_t *tm  = cf_cfg_get_first_value(&fo_view_conf,forum_name,"ThreadMode"),
+    *rm             = cf_cfg_get_first_value(&fo_view_conf,forum_name,"ReadMode"),
+    *cs             = cf_cfg_get_first_value(&fo_default_conf,forum_name,"ExternCharset"),
     *fbase          = NULL,
-    *name           = cfg_get_first_value(&fo_view_conf,NULL,"Name"),
-    *email          = cfg_get_first_value(&fo_view_conf,NULL,"EMail"),
-    *hpurl          = cfg_get_first_value(&fo_view_conf,NULL,"HomepageUrl"),
-    *imgurl         = cfg_get_first_value(&fo_view_conf,NULL,"ImageUrl"),
+    *name           = cf_cfg_get_first_value(&fo_view_conf,NULL,"Name"),
+    *email          = cf_cfg_get_first_value(&fo_view_conf,NULL,"EMail"),
+    *hpurl          = cf_cfg_get_first_value(&fo_view_conf,NULL,"HomepageUrl"),
+    *imgurl         = cf_cfg_get_first_value(&fo_view_conf,NULL,"ImageUrl"),
     *ps = NULL,
     *reg = NULL;
 
@@ -224,14 +224,14 @@ void show_posting(cf_hash_t *head,void *shm_ptr,u_int64_t tid,u_int64_t mid)
 
   UserName = cf_hash_get(GlobalValues,"UserName",8);
   if(UserName) {
-    fbase = cfg_get_first_value(&fo_default_conf,forum_name,"UBaseURL");
-    ps = cfg_get_first_value(&fo_default_conf,forum_name,"UPostScript");
-    reg = cfg_get_first_value(&fo_default_conf,forum_name,"UserConfig");
+    fbase = cf_cfg_get_first_value(&fo_default_conf,forum_name,"UBaseURL");
+    ps = cf_cfg_get_first_value(&fo_default_conf,forum_name,"UPostScript");
+    reg = cf_cfg_get_first_value(&fo_default_conf,forum_name,"UserConfig");
   }
   else {
-    fbase = cfg_get_first_value(&fo_default_conf,forum_name,"BaseURL");
-    ps = cfg_get_first_value(&fo_default_conf,forum_name,"PostScript");
-    reg = cfg_get_first_value(&fo_default_conf,forum_name,"UserRegister");
+    fbase = cf_cfg_get_first_value(&fo_default_conf,forum_name,"BaseURL");
+    ps = cf_cfg_get_first_value(&fo_default_conf,forum_name,"PostScript");
+    reg = cf_cfg_get_first_value(&fo_default_conf,forum_name,"UserRegister");
   }
 
   tmp = cf_get_link(fbase->values[0],0,0);
@@ -298,11 +298,11 @@ void show_threadlist(void *shm_ptr,cf_hash_t *head)
     *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10),
     *UserName = cf_hash_get(GlobalValues,"UserName",8);
 
-  name_value_t *cs = cfg_get_first_value(&fo_default_conf,forum_name,"ExternCharset"),
+  cf_name_value_t *cs = cf_cfg_get_first_value(&fo_default_conf,forum_name,"ExternCharset"),
     *fbase         = NULL,
     *pbase         = NULL,
-    *time_fmt      = cfg_get_first_value(&fo_view_conf,forum_name,"DateFormatLoadTime"),
-    *time_lc       = cfg_get_first_value(&fo_default_conf,forum_name,"DateLocale");
+    *time_fmt      = cf_cfg_get_first_value(&fo_view_conf,forum_name,"DateFormatLoadTime"),
+    *time_lc       = cf_cfg_get_first_value(&fo_default_conf,forum_name,"DateLocale");
 
   cf_template_t tpl_begin,tpl_end;
 
@@ -311,12 +311,12 @@ void show_threadlist(void *shm_ptr,cf_hash_t *head)
   size_t i;
   int del = cf_hash_get(GlobalValues,"ShowInvisible",13) == NULL ? CF_KILL_DELETED : CF_KEEP_DELETED;
 
-  string_t tlist;
+  cf_string_t tlist;
 
   cf_readmode_t *rm = cf_hash_get(GlobalValues,"RM",2);
 
   #ifndef CF_NO_SORTING
-  array_t threads;
+  cf_array_t threads;
   #endif
   /* }}} */
 
@@ -374,8 +374,8 @@ void show_threadlist(void *shm_ptr,cf_hash_t *head)
    */
   else {
     /* {{{ more initialization */
-    fbase    = cfg_get_first_value(&fo_default_conf,forum_name,UserName ? "UBaseURL" : "BaseURL");
-    pbase    = cfg_get_first_value(&fo_default_conf,forum_name,UserName ? "UPostScript" : "PostScript");
+    fbase    = cf_cfg_get_first_value(&fo_default_conf,forum_name,UserName ? "UBaseURL" : "BaseURL");
+    pbase    = cf_cfg_get_first_value(&fo_default_conf,forum_name,UserName ? "UPostScript" : "PostScript");
 
     if(cf_tpl_init(&tpl_begin,rm->pre_threadlist_tpl) != 0) {
       printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
@@ -435,9 +435,9 @@ void show_threadlist(void *shm_ptr,cf_hash_t *head)
     {
       if(thread.messages) {
         if((thread.messages->invisible == 0 && thread.messages->may_show) || del == CF_KEEP_DELETED) {
-          str_init(&tlist);
+          cf_str_init(&tlist);
           if(cf_gen_threadlist(&thread,head,&tlist,rm->threadlist_thread_tpl,"full",rm->posting_uri[UserName?1:0],CF_MODE_THREADLIST) != FLT_EXIT) fwrite(tlist.content,1,tlist.len,stdout);
-          str_cleanup(&tlist);
+          cf_str_cleanup(&tlist);
           cf_cleanup_thread(&thread);
         }
       }
@@ -465,16 +465,16 @@ void show_threadlist(void *shm_ptr,cf_hash_t *head)
       #endif
 
       for(i=0;i<threads.elements;++i) {
-        threadp = array_element_at(&threads,i);
+        threadp = cf_array_element_at(&threads,i);
 
         if((threadp->messages->invisible == 0 && threadp->messages->may_show) || del == CF_KEEP_DELETED) {
-          str_init(&tlist);
+          cf_str_init(&tlist);
           if(cf_gen_threadlist(threadp,head,&tlist,rm->threadlist_thread_tpl,"full",rm->posting_uri[UserName?1:0],CF_MODE_THREADLIST) != FLT_EXIT) fwrite(tlist.content,1,tlist.len,stdout);
-          str_cleanup(&tlist);
+          cf_str_cleanup(&tlist);
         }
       }
 
-      array_destroy(&threads);
+      cf_array_destroy(&threads);
     }
     #endif
 
@@ -552,11 +552,11 @@ int main(int argc,char *argv[],char *env[]) {
 
   int ret;
   u_char  *ucfg,*m  = NULL,*t = NULL,*UserName,*fname,*mode = NULL;
-  array_t *cfgfiles;
+  cf_array_t *cfgfiles;
   cf_hash_t *head;
-  configfile_t conf,dconf;
-  name_value_t *cs = NULL;
-  name_value_t *pt;
+  cf_configfile_t conf,dconf;
+  cf_name_value_t *cs = NULL;
+  cf_name_value_t *pt;
   u_char *forum_name = NULL;
 
   cf_readmode_t rm_infos;
@@ -572,12 +572,12 @@ int main(int argc,char *argv[],char *env[]) {
   /* }}} */
 
   /* {{{ initialization */
-  if((cfgfiles = get_conf_file(wanted,2)) == NULL) {
+  if((cfgfiles = cf_get_conf_file(wanted,2)) == NULL) {
     fprintf(stderr,"Could not find configuration files...\n");
     return EXIT_FAILURE;
   }
 
-  cfg_init();
+  cf_cfg_init();
   init_modules();
   cf_init();
   cf_htmllib_init();
@@ -592,22 +592,22 @@ int main(int argc,char *argv[],char *env[]) {
   /* }}} */
 
   /* {{{ read configuration */
-  fname = *((u_char **)array_element_at(cfgfiles,0));
-  cfg_init_file(&dconf,fname);
+  fname = *((u_char **)cf_array_element_at(cfgfiles,0));
+  cf_cfg_init_file(&dconf,fname);
   free(fname);
 
-  fname = *((u_char **)array_element_at(cfgfiles,1));
-  cfg_init_file(&conf,fname);
+  fname = *((u_char **)cf_array_element_at(cfgfiles,1));
+  cf_cfg_init_file(&conf,fname);
   free(fname);
 
-  cfg_register_options(&dconf,default_options);
-  cfg_register_options(&conf,fo_view_options);
+  cf_cfg_register_options(&dconf,default_options);
+  cf_cfg_register_options(&conf,fo_view_options);
 
-  if(read_config(&dconf,NULL,CFG_MODE_CONFIG) != 0 || read_config(&conf,NULL,CFG_MODE_CONFIG) != 0) {
+  if(cf_read_config(&dconf,NULL,CF_CFG_MODE_CONFIG) != 0 || cf_read_config(&conf,NULL,CF_CFG_MODE_CONFIG) != 0) {
     fprintf(stderr,"config file error!\n");
 
-    cfg_cleanup_file(&conf);
-    cfg_cleanup_file(&dconf);
+    cf_cfg_cleanup_file(&conf);
+    cf_cfg_cleanup_file(&dconf);
 
     return EXIT_FAILURE;
   }
@@ -617,41 +617,41 @@ int main(int argc,char *argv[],char *env[]) {
   if((forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10)) == NULL) {
     fprintf(stderr,"Could not get forum name!");
 
-    cfg_cleanup_file(&conf);
-    cfg_cleanup_file(&dconf);
+    cf_cfg_cleanup_file(&conf);
+    cf_cfg_cleanup_file(&dconf);
 
-    cfg_destroy();
+    cf_cfg_destroy();
     cf_fini();
 
     return EXIT_FAILURE;
   }
 
-  if(cfg_get_first_value(&fo_default_conf,forum_name,"ThreadIndexFile") == NULL) {
+  if(cf_cfg_get_first_value(&fo_default_conf,forum_name,"ThreadIndexFile") == NULL) {
     fprintf(stderr,"Have no context for forum %s in default configuration file!\n",forum_name);
 
-    cfg_cleanup_file(&conf);
-    cfg_cleanup_file(&dconf);
+    cf_cfg_cleanup_file(&conf);
+    cf_cfg_cleanup_file(&dconf);
 
-    cfg_destroy();
+    cf_cfg_destroy();
     cf_fini();
 
     return EXIT_FAILURE;
   }
 
-  if(cfg_get_first_value(&fo_view_conf,forum_name,"ParamType") == NULL) {
+  if(cf_cfg_get_first_value(&fo_view_conf,forum_name,"ParamType") == NULL) {
     fprintf(stderr,"Have no context for forum %s in fo_view configuration file!\n",forum_name);
 
-    cfg_cleanup_file(&conf);
-    cfg_cleanup_file(&dconf);
+    cf_cfg_cleanup_file(&conf);
+    cf_cfg_cleanup_file(&dconf);
 
-    cfg_destroy();
+    cf_cfg_destroy();
     cf_fini();
 
     return EXIT_FAILURE;
   }
   /* }}} */
 
-  pt = cfg_get_first_value(&fo_view_conf,forum_name,"ParamType");
+  pt = cf_cfg_get_first_value(&fo_view_conf,forum_name,"ParamType");
   head = cf_cgi_new();
   if(*pt->values[0] == 'P') cf_cgi_parse_path_info_nv(head);
 
@@ -666,13 +666,13 @@ int main(int argc,char *argv[],char *env[]) {
       free(conf.filename);
       conf.filename = ucfg;
 
-      if(read_config(&conf,ignre,CFG_MODE_USER) != 0) {
+      if(cf_read_config(&conf,ignre,CF_CFG_MODE_USER) != 0) {
         fprintf(stderr,"config file error!\n");
 
-        cfg_cleanup_file(&conf);
-        cfg_cleanup_file(&dconf);
+        cf_cfg_cleanup_file(&conf);
+        cf_cfg_cleanup_file(&dconf);
 
-        cfg_destroy();
+        cf_cfg_destroy();
         cf_fini();
 
         return EXIT_FAILURE;
@@ -684,7 +684,7 @@ int main(int argc,char *argv[],char *env[]) {
   /* run init handlers */
   if(ret != FLT_EXIT) ret = cf_run_init_handlers(head);
 
-  cs = cfg_get_first_value(&fo_default_conf,forum_name,"ExternCharset");
+  cs = cf_cfg_get_first_value(&fo_default_conf,forum_name,"ExternCharset");
 
   /* {{{ get readmode information */
   if(ret != FLT_EXIT) {
@@ -727,8 +727,8 @@ int main(int argc,char *argv[],char *env[]) {
         mode = cf_cgi_get(head,"mode");
       }
 
-      if(t) tid = str_to_u_int64(t);
-      if(m) mid = str_to_u_int64(m);
+      if(t) tid = cf_str_to_uint64(t);
+      if(m) mid = cf_str_to_uint64(m);
 
       if(mode && cf_strcmp(mode,"xmlhttp") == 0 && t) {
         show_xmlhttp_thread(head,sock,tid,mid);
@@ -746,15 +746,15 @@ int main(int argc,char *argv[],char *env[]) {
   }
 
   /* cleanup source */
-  cfg_cleanup_file(&dconf);
-  cfg_cleanup_file(&conf);
+  cf_cfg_cleanup_file(&dconf);
+  cf_cfg_cleanup_file(&conf);
 
-  array_destroy(cfgfiles);
+  cf_array_destroy(cfgfiles);
   free(cfgfiles);
 
-  cleanup_modules(Modules);
+  cf_cleanup_modules(Modules);
   cf_fini();
-  cfg_destroy();
+  cf_cfg_destroy();
 
   if(head) cf_hash_destroy(head);
 

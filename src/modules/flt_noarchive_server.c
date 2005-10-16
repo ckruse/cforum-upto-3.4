@@ -50,16 +50,16 @@ int flt_noarchive_server_exec(forum_t *forum,thread_t *thread) {
   return FLT_DECLINE;
 }
 
-conf_opt_t flt_noarchive_server_config[] = {
+cf_conf_opt_t flt_noarchive_server_config[] = {
   { NULL, NULL, 0, NULL }
 };
 
-handler_config_t flt_noarchive_server_handlers[] = {
+cf_handler_config_t flt_noarchive_server_handlers[] = {
   { ARCHIVE_HANDLER, flt_noarchive_server_exec },
   { 0, NULL }
 };
 
-module_config_t flt_noarchive_server = {
+cf_module_config_t flt_noarchive_server = {
   MODULE_MAGIC_COOKIE,
   flt_noarchive_server_config,
   flt_noarchive_server_handlers,

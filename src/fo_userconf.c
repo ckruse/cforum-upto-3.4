@@ -82,23 +82,23 @@ void sighandler(int segnum) {
 }
 /* }}} */
 
-int cfg_compare(cf_tree_dataset_t *dt1,cf_tree_dataset_t *dt2);
+int cf_cfg_compare(cf_tree_dataset_t *dt1,cf_tree_dataset_t *dt2);
 void destroy_directive_list(cf_tree_dataset_t *dt);
 
 static int inited = 0;
-configuration_t glob_config;
+cf_configuration_t glob_config;
 
 /* {{{ handle_userconf_command */
-int handle_userconf_command(configfile_t *cfile,const u_char *context,u_char *name,u_char **args,size_t argnum) {
-  conf_opt_t opt;
+int handle_userconf_command(cf_configfile_t *cfile,const u_char *context,u_char *name,u_char **args,size_t argnum) {
+  cf_conf_opt_t opt;
   int ret;
   u_char *fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
 
   opt.name  = strdup(name);
   opt.data  = &glob_config;
-  opt.flags = CFG_OPT_LOCAL|CFG_OPT_USER|CFG_OPT_CONFIG;
+  opt.flags = CF_CFG_OPT_LOCAL|CF_CFG_OPT_USER|CF_CFG_OPT_CONFIG;
 
-  ret = handle_command(NULL,&opt,fn,args,argnum);
+  ret = cf_handle_command(NULL,&opt,fn,args,argnum);
 
   if(ret != -1) free(opt.name);
 
@@ -107,22 +107,22 @@ int handle_userconf_command(configfile_t *cfile,const u_char *context,u_char *na
 /* }}} */
 
 /* {{{ show_edit_content */
-void show_edit_content(cf_hash_t *head,const u_char *msg,const u_char *source,int saved,array_t *errors) {
+void show_edit_content(cf_hash_t *head,const u_char *msg,const u_char *source,int saved,cf_array_t *errors) {
   u_char tplname[256],*ucfg,*uname,*fn = cf_hash_get(GlobalValues,"FORUM_NAME",10),*tmp,buff[256];
 
-  name_value_t *cval,
-    *cs = cfg_get_first_value(&fo_default_conf,fn,"ExternCharset"),
-    *tplnv = cfg_get_first_value(&fo_userconf_conf,fn,"Edit"),
-    *cats = cfg_get_first_value(&fo_default_conf,fn,"Categories");
+  cf_name_value_t *cval,
+    *cs = cf_cfg_get_first_value(&fo_default_conf,fn,"ExternCharset"),
+    *tplnv = cf_cfg_get_first_value(&fo_userconf_conf,fn,"Edit"),
+    *cats = cf_cfg_get_first_value(&fo_default_conf,fn,"Categories");
 
-  configfile_t config;
+  cf_configfile_t config;
   uconf_userconfig_t *modxml;
   cf_template_t tpl;
   uconf_directive_t *directive;
   uconf_argument_t *arg;
-  name_value_t *value;
+  cf_name_value_t *value;
   cf_cgi_param_t *mult;
-  string_t val;
+  cf_string_t val;
   cf_tpl_variable_t array,errmsgs,var1;
   int utf8 = cf_strcmp(cs->values[0],"UTF-8") == 0;
   struct tm tm;
@@ -145,10 +145,10 @@ void show_edit_content(cf_hash_t *head,const u_char *msg,const u_char *source,in
       return;
     }
 
-    cfg_init_file(&config,ucfg);
+    cf_cfg_init_file(&config,ucfg);
     free(ucfg);
 
-    if(read_config(&config,handle_userconf_command,CFG_MODE_USER) != 0) {
+    if(cf_read_config(&config,handle_userconf_command,CF_CFG_MODE_USER) != 0) {
       printf("Status: 500 Internal Server Error\015\012COntent-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
       cf_error_message("E_CONFIG_BROKEN",NULL);
       return;
@@ -171,15 +171,15 @@ void show_edit_content(cf_hash_t *head,const u_char *msg,const u_char *source,in
   }
 
   for(i=0;i<modxml->directives.elements;++i) {
-    directive = array_element_at(&modxml->directives,i);
+    directive = cf_array_element_at(&modxml->directives,i);
     if(directive->flags & CF_UCONF_FLAG_INVISIBLE) continue;
 
     /* {{{ get value in hierarchy */
     if((source && cf_strcmp(source,"cgi") != 0) || !source) {
-      if((value = cfg_get_first_value(&glob_config,fn,directive->name)) == NULL) {
-        if((value = cfg_get_first_value(&fo_userconf_conf,fn,directive->name)) == NULL) {
-          if((value = cfg_get_first_value(&fo_view_conf,fn,directive->name)) == NULL) {
-            value = cfg_get_first_value(&fo_default_conf,fn,directive->name);
+      if((value = cf_cfg_get_first_value(&glob_config,fn,directive->name)) == NULL) {
+        if((value = cf_cfg_get_first_value(&fo_userconf_conf,fn,directive->name)) == NULL) {
+          if((value = cf_cfg_get_first_value(&fo_view_conf,fn,directive->name)) == NULL) {
+            value = cf_cfg_get_first_value(&fo_default_conf,fn,directive->name);
           }
         }
       }
@@ -188,10 +188,10 @@ void show_edit_content(cf_hash_t *head,const u_char *msg,const u_char *source,in
     /* }}} */
 
     for(j=0;j<directive->arguments.elements;++j) {
-      arg = array_element_at(&directive->arguments,j);
+      arg = cf_array_element_at(&directive->arguments,j);
 
       /* {{{ set value */
-      str_init(&val);
+      cf_str_init(&val);
       if(source) {
         /*
          * Source is set, so we check: if it is CGI, we take our value from the CGI
@@ -200,22 +200,22 @@ void show_edit_content(cf_hash_t *head,const u_char *msg,const u_char *source,in
          */
         if(cf_strcmp(source,"cgi") == 0) {
           if(head && (mult = cf_cgi_get_multiple(head,arg->param)) != NULL && mult->value && *mult->value) {
-            str_char_set(&val,mult->value,strlen(mult->value));
+            cf_str_char_set(&val,mult->value,strlen(mult->value));
 
             for(mult=mult->next;mult;mult=mult->next) {
-              str_char_append(&val,',');
-              str_cstr_append(&val,mult->value);
+              cf_str_char_append(&val,',');
+              cf_str_cstr_append(&val,mult->value);
             }
           }
-          else if(arg->ifnotcommitted) str_char_set(&val,arg->ifnotcommitted,strlen(arg->ifnotcommitted));
+          else if(arg->ifnotcommitted) cf_str_char_set(&val,arg->ifnotcommitted,strlen(arg->ifnotcommitted));
         }
         /*
          * Ok, source is config, check if config has the specific
          * value (j < valnum) and set it to the template
          */
         else {
-          if(value && j < value->valnum) str_char_set(&val,value->values[j],strlen(value->values[j]));
-          else if(arg->deflt) str_char_set(&val,arg->deflt,strlen(arg->deflt));
+          if(value && j < value->valnum) cf_str_char_set(&val,value->values[j],strlen(value->values[j]));
+          else if(arg->deflt) cf_str_char_set(&val,arg->deflt,strlen(arg->deflt));
         }
       }
       else {
@@ -225,11 +225,11 @@ void show_edit_content(cf_hash_t *head,const u_char *msg,const u_char *source,in
          * if the specific config value exists.
          */
         if(head && (mult = cf_cgi_get_multiple(head,arg->param)) != NULL) {
-          str_char_set(&val,mult->value,strlen(mult->value));
+          cf_str_char_set(&val,mult->value,strlen(mult->value));
 
           for(mult=mult->next;mult;mult=mult->next) {
-            str_char_append(&val,',');
-            str_cstr_append(&val,mult->value);
+            cf_str_char_append(&val,',');
+            cf_str_cstr_append(&val,mult->value);
           }
         }
         else {
@@ -237,8 +237,8 @@ void show_edit_content(cf_hash_t *head,const u_char *msg,const u_char *source,in
            * A value for this config directive has not been
            * committed by CGI, so set it by config if exists
            */
-          if(value && j < value->valnum) str_char_set(&val,value->values[j],strlen(value->values[j]));
-          else if(arg->deflt) str_char_set(&val,arg->deflt,strlen(arg->deflt));
+          if(value && j < value->valnum) cf_str_char_set(&val,value->values[j],strlen(value->values[j]));
+          else if(arg->deflt) cf_str_char_set(&val,arg->deflt,strlen(arg->deflt));
         }
       }
       /* }}} */
@@ -250,11 +250,11 @@ void show_edit_content(cf_hash_t *head,const u_char *msg,const u_char *source,in
           tval = (time_t)strtoul(val.content,NULL,10);
           localtime_r(&tval,&tm);
           j = snprintf(buff,256,"%02d. %02d. %4d %02d:%02d:%02d",tm.tm_mday,tm.tm_mon+1,tm.tm_year+1900,tm.tm_hour,tm.tm_min,tm.tm_sec);
-          str_char_set(&val,buff,j);
+          cf_str_char_set(&val,buff,j);
         }
 
         cf_set_variable(&tpl,cs,arg->param,val.content,val.len,1);
-        str_cleanup(&val);
+        cf_str_cleanup(&val);
       }
     }
   }
@@ -289,14 +289,14 @@ void show_edit_content(cf_hash_t *head,const u_char *msg,const u_char *source,in
   if(saved) cf_tpl_setvalue(&tpl,"save",TPL_VARIABLE_INT,1);
   if(cf_hash_get(GlobalValues,"is_admin",8) != NULL) cf_tpl_setvalue(&tpl,"save",TPL_VARIABLE_INT,1);
 
-  cval = cfg_get_first_value(&fo_default_conf,fn,"UBaseURL");
+  cval = cf_cfg_get_first_value(&fo_default_conf,fn,"UBaseURL");
   cf_set_variable(&tpl,cs,"forumbase",cval->values[0],strlen(cval->values[0]),1);
 
-  cval = cfg_get_first_value(&fo_default_conf,fn,"UserConfig");
+  cval = cf_cfg_get_first_value(&fo_default_conf,fn,"UserConfig");
   cf_set_variable(&tpl,cs,"userconfig",cval->values[0],strlen(cval->values[0]),1);
   cf_set_variable(&tpl,cs,"script",cval->values[0],strlen(cval->values[0]),1);
 
-  cval = cfg_get_first_value(&fo_default_conf,fn,"UserManagement");
+  cval = cf_cfg_get_first_value(&fo_default_conf,fn,"UserManagement");
   cf_set_variable(&tpl,cs,"usermanagement",cval->values[0],strlen(cval->values[0]),1);
 
   cf_set_variable(&tpl,cs,"charset",cs->values[0],strlen(cs->values[0]),1);
@@ -305,7 +305,7 @@ void show_edit_content(cf_hash_t *head,const u_char *msg,const u_char *source,in
     cf_tpl_var_init(&errmsgs,TPL_VARIABLE_ARRAY);
 
     for(i=0;i<errors->elements;++i) {
-      error = array_element_at(errors,i);
+      error = cf_array_element_at(errors,i);
 
       cf_tpl_var_init(&var1,TPL_VARIABLE_ARRAY);
       cf_add_variable(&var1,cs,error->directive,strlen(error->directive),1);
@@ -326,7 +326,7 @@ void show_edit_content(cf_hash_t *head,const u_char *msg,const u_char *source,in
 
   cf_tpl_finish(&tpl);
   cf_uconf_cleanup_modxml(modxml);
-  cfg_cleanup_file(&config);
+  cf_cfg_cleanup_file(&config);
 }
 /* }}} */
 
@@ -334,9 +334,9 @@ void show_edit_content(cf_hash_t *head,const u_char *msg,const u_char *source,in
 void do_save(cf_hash_t *head) {
   uconf_userconfig_t *merged;
   u_char *msg,*uname,*ucfg, *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);;
-  configfile_t config;
-  name_value_t *cs = cfg_get_first_value(&fo_default_conf,forum_name,"ExternCharset");
-  array_t errmsgs;
+  cf_configfile_t config;
+  cf_name_value_t *cs = cf_cfg_get_first_value(&fo_default_conf,forum_name,"ExternCharset");
+  cf_array_t errmsgs;
 
   if((uname = cf_hash_get(GlobalValues,"UserName",8)) == NULL) {
     printf("Status: 403 Forbidden\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
@@ -350,9 +350,9 @@ void do_save(cf_hash_t *head) {
     return;
   }
 
-  cfg_init_file(&config,ucfg);
+  cf_cfg_init_file(&config,ucfg);
 
-  if(read_config(&config,handle_userconf_command,CFG_MODE_USER) != 0) {
+  if(cf_read_config(&config,handle_userconf_command,CF_CFG_MODE_USER) != 0) {
     printf("Status: 500 Internal Server Error\015\012COntent-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
     cf_error_message("E_CONFIG_BROKEN",NULL);
     free(ucfg);
@@ -366,7 +366,7 @@ void do_save(cf_hash_t *head) {
     if(cf_run_uconf_write_handlers(head,&fo_default_conf,&fo_userconf_conf,&glob_config,merged) == FLT_EXIT) {
       cf_uconf_cleanup_modxml(merged);
       free(merged);
-      cfg_cleanup_file(&config);
+      cf_cfg_cleanup_file(&config);
       free(ucfg);
       return;
     }
@@ -376,16 +376,16 @@ void do_save(cf_hash_t *head) {
 
     cf_uconf_cleanup_modxml(merged);
     free(merged);
-    cfg_cleanup_file(&config);
+    cf_cfg_cleanup_file(&config);
     free(ucfg);
     return;
   }
   else {
     show_edit_content(head,NULL,"cgi",0,&errmsgs);
-    array_destroy(&errmsgs);
+    cf_array_destroy(&errmsgs);
   }
 
-  cfg_cleanup_file(&config);
+  cf_cfg_cleanup_file(&config);
   free(ucfg);
 }
 /* }}} */
@@ -394,12 +394,12 @@ void do_save(cf_hash_t *head) {
 u_char *normalize_params(cf_hash_t *head,const u_char *name) {
   u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10),*converted,*val,c;
   register u_char *ptr;
-  name_value_t *cs = cfg_get_first_value(&fo_default_conf,forum_name,"ExternCharset");
+  cf_name_value_t *cs = cf_cfg_get_first_value(&fo_default_conf,forum_name,"ExternCharset");
   cf_hash_keylist_t *key;
   cf_cgi_param_t *param;
   size_t flen;
 
-  string_t str;
+  cf_string_t str;
 
 
   if((val = cf_cgi_get(head,(u_char *)name)) == NULL) return "E_manipulated";
@@ -412,23 +412,23 @@ u_char *normalize_params(cf_hash_t *head,const u_char *name) {
         if((converted = charset_convert(param->value,strlen(param->value),cs->values[0],"UTF-8",NULL)) == NULL) return "E_manipulated";
 
         /* {{{ remove unicode whitespaces */
-        str_init(&str);
+        cf_str_init(&str);
         for(ptr=converted;*ptr;++ptr) {
           // \xC2\xA0 is nbsp
           if(cf_strncmp(ptr,"\xC2\xA0",2) == 0) {
-            str_char_append(&str,' ');
+            cf_str_char_append(&str,' ');
             ++ptr;
           }
           // \xE2\x80[\x80-\x8B\xA8-\xAF] are unicode whitespaces
           else if(cf_strncmp(ptr,"\xE2\x80",2) == 0) {
             c = *(ptr+3);
             if((c >= 0x80 && c <= 0x8B) || (c >= 0xA8 && c <= 0xAF)) {
-              str_char_append(&str,' ');
+              cf_str_char_append(&str,' ');
               ptr += 2;
             }
-            else str_char_append(&str,*ptr);
+            else cf_str_char_append(&str,*ptr);
           }
-          else str_char_append(&str,*ptr);
+          else cf_str_char_append(&str,*ptr);
         }
         /* }}} */
 
@@ -447,23 +447,23 @@ u_char *normalize_params(cf_hash_t *head,const u_char *name) {
         if(is_valid_utf8_string(param->value,strlen(param->value)) != 0) return "E_manipulated";
 
         /* {{{ removed unicode whitespaces */
-        str_init(&str);
+        cf_str_init(&str);
         for(ptr=param->value;*ptr;++ptr) {
           // \xC2\xA0 is nbsp
           if(cf_strncmp(ptr,"\xC2\xA0",2) == 0) {
-            str_char_append(&str,' ');
+            cf_str_char_append(&str,' ');
             ++ptr;
           }
           // \xE2\x80[\x80-\x8B\xA8-\xAF] are unicode whitespaces
           else if(cf_strncmp(ptr,"\xE2\x80",2) == 0) {
             c = *(ptr+3);
             if((c >= 0x80 && c <= 0x8B) || (c >= 0xA8 && c <= 0xAF)) {
-              str_char_append(&str,' ');
+              cf_str_char_append(&str,' ');
               ptr += 2;
             }
-            else str_char_append(&str,*ptr);
+            else cf_str_char_append(&str,*ptr);
           }
-          else str_char_append(&str,*ptr);
+          else cf_str_char_append(&str,*ptr);
         }
         /* }}} */
 
@@ -478,7 +478,7 @@ u_char *normalize_params(cf_hash_t *head,const u_char *name) {
   if((val = cf_cgi_get(head,(u_char *)name)) != NULL) {
     flen  = strlen(val);
 
-    converted = fo_alloc(NULL,1,flen-2,FO_ALLOC_MALLOC);
+    converted = cf_alloc(NULL,1,flen-2,CF_ALLOC_MALLOC);
 
     /* strip character from field */
     memcpy(converted,val+2,flen-2);
@@ -494,18 +494,18 @@ u_char *normalize_params(cf_hash_t *head,const u_char *name) {
 /* }}} */
 
 /* {{{ add_view_directive */
-int add_view_directive(configfile_t *cfile,const u_char *context,u_char *name,u_char **args,size_t argnum) {
-  conf_opt_t opt;
+int add_view_directive(cf_configfile_t *cfile,const u_char *context,u_char *name,u_char **args,size_t argnum) {
+  cf_conf_opt_t opt;
   int ret;
 
   opt.name   = strdup(name);
   opt.data   = &fo_view_conf;
-  if(context) opt.flags = CFG_OPT_LOCAL;
-  else opt.flags = CFG_OPT_GLOBAL;
+  if(context) opt.flags = CF_CFG_OPT_LOCAL;
+  else opt.flags = CF_CFG_OPT_GLOBAL;
 
-  opt.flags |= CFG_OPT_USER|CFG_OPT_CONFIG;
+  opt.flags |= CF_CFG_OPT_USER|CF_CFG_OPT_CONFIG;
 
-  ret = handle_command(NULL,&opt,context,args,argnum);
+  ret = cf_handle_command(NULL,&opt,context,args,argnum);
 
   if(ret != -1) free(opt.name);
 
@@ -514,19 +514,19 @@ int add_view_directive(configfile_t *cfile,const u_char *context,u_char *name,u_
 /* }}} */
 
 /* {{{ add_uconf_directive */
-int add_uconf_directive(configfile_t *cfile,const u_char *context,u_char *name,u_char **args,size_t argnum) {
-  conf_opt_t opt;
+int add_uconf_directive(cf_configfile_t *cfile,const u_char *context,u_char *name,u_char **args,size_t argnum) {
+  cf_conf_opt_t opt;
   int ret;
 
   u_char *fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
 
   opt.name   = strdup(name);
   opt.data   = &fo_userconf_conf;
-  opt.flags  = CFG_OPT_LOCAL;
+  opt.flags  = CF_CFG_OPT_LOCAL;
 
-  opt.flags |= CFG_OPT_USER|CFG_OPT_CONFIG;
+  opt.flags |= CF_CFG_OPT_USER|CF_CFG_OPT_CONFIG;
 
-  ret = handle_command(NULL,&opt,fn,args,argnum);
+  ret = cf_handle_command(NULL,&opt,fn,args,argnum);
 
   if(ret != -1) free(opt.name);
 
@@ -537,7 +537,7 @@ int add_uconf_directive(configfile_t *cfile,const u_char *context,u_char *name,u
 /**
  * Dummy function, for ignoring unknown directives
  */
-int ignre(configfile_t *cf,const u_char *context,u_char *name,u_char **args,size_t argnum) {
+int ignre(cf_configfile_t *cf,const u_char *context,u_char *name,u_char **args,size_t argnum) {
   return 0;
 }
 
@@ -559,10 +559,10 @@ int main(int argc,char *argv[],char *env[]) {
 
   u_char *forum_name,*fname,*uname,*err,*action,*ucfg;
 
-  array_t *cfgfiles;
-  configfile_t dconf,conf,vconf;
+  cf_array_t *cfgfiles;
+  cf_configfile_t dconf,conf,vconf;
 
-  name_value_t *cs;
+  cf_name_value_t *cs;
 
   int ret;
 
@@ -578,46 +578,46 @@ int main(int argc,char *argv[],char *env[]) {
 
   cf_init();
   init_modules();
-  cfg_init();
+  cf_cfg_init();
 
-  cf_tree_init(&glob_config.global_directives,cfg_compare,destroy_directive_list);
+  cf_tree_init(&glob_config.global_directives,cf_cfg_compare,destroy_directive_list);
   cf_list_init(&glob_config.forums);
 
   forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   head       = cf_cgi_new();
 
   /* {{{ read config files */
-  if((cfgfiles = get_conf_file(wanted,3)) == NULL) {
+  if((cfgfiles = cf_get_conf_file(wanted,3)) == NULL) {
     fprintf(stderr,"Could not find config files!\n");
     return EXIT_FAILURE;
   }
 
-  fname = *((u_char **)array_element_at(cfgfiles,0));
-  cfg_init_file(&dconf,fname);
+  fname = *((u_char **)cf_array_element_at(cfgfiles,0));
+  cf_cfg_init_file(&dconf,fname);
   free(fname);
 
-  fname = *((u_char **)array_element_at(cfgfiles,1));
-  cfg_init_file(&conf,fname);
+  fname = *((u_char **)cf_array_element_at(cfgfiles,1));
+  cf_cfg_init_file(&conf,fname);
   free(fname);
 
-  fname = *((u_char **)array_element_at(cfgfiles,2));
-  cfg_init_file(&vconf,fname);
+  fname = *((u_char **)cf_array_element_at(cfgfiles,2));
+  cf_cfg_init_file(&vconf,fname);
   free(fname);
 
-  cfg_register_options(&dconf,default_options);
-  cfg_register_options(&conf,fo_userconf_options);
-  cfg_register_options(&vconf,fo_view_options);
+  cf_cfg_register_options(&dconf,default_options);
+  cf_cfg_register_options(&conf,fo_userconf_options);
+  cf_cfg_register_options(&vconf,fo_view_options);
 
-  if(read_config(&dconf,NULL,CFG_MODE_CONFIG) != 0 || read_config(&conf,NULL,CFG_MODE_CONFIG) != 0 || read_config(&vconf,add_view_directive,CFG_MODE_CONFIG|CFG_MODE_NOLOAD) != 0) {
+  if(cf_read_config(&dconf,NULL,CF_CFG_MODE_CONFIG) != 0 || cf_read_config(&conf,NULL,CF_CFG_MODE_CONFIG) != 0 || cf_read_config(&vconf,add_view_directive,CF_CFG_MODE_CONFIG|CF_CFG_MODE_NOLOAD) != 0) {
     fprintf(stderr,"config file error!\n");
-    cfg_cleanup_file(&dconf);
-    cfg_cleanup_file(&conf);
+    cf_cfg_cleanup_file(&dconf);
+    cf_cfg_cleanup_file(&conf);
     return EXIT_FAILURE;
   }
   /* }}} */
 
   /* first action: authorization modules */
-  cs  = cfg_get_first_value(&fo_default_conf,forum_name,"ExternCharset");
+  cs  = cf_cfg_get_first_value(&fo_default_conf,forum_name,"ExternCharset");
   ret = cf_run_auth_handlers(head);
 
   if((uname = cf_hash_get(GlobalValues,"UserName",8)) == NULL) {
@@ -636,11 +636,11 @@ int main(int argc,char *argv[],char *env[]) {
   free(conf.filename);
   conf.filename = ucfg;
 
-  if(read_config(&conf,add_uconf_directive,CFG_MODE_USER) != 0) {
+  if(cf_read_config(&conf,add_uconf_directive,CF_CFG_MODE_USER) != 0) {
     fprintf(stderr,"config file error!\n");
 
-    cfg_cleanup_file(&conf);
-    cfg_cleanup_file(&dconf);
+    cf_cfg_cleanup_file(&conf);
+    cf_cfg_cleanup_file(&dconf);
 
     return EXIT_FAILURE;
   }
@@ -671,15 +671,15 @@ int main(int argc,char *argv[],char *env[]) {
   if(head) cf_hash_destroy(head);
 
   /* cleanup source */
-  cfg_cleanup_file(&dconf);
-  cfg_cleanup_file(&conf);
+  cf_cfg_cleanup_file(&dconf);
+  cf_cfg_cleanup_file(&conf);
 
-  array_destroy(cfgfiles);
+  cf_array_destroy(cfgfiles);
   free(cfgfiles);
 
-  cleanup_modules(Modules);
+  cf_cleanup_modules(Modules);
   cf_fini();
-  cfg_destroy();
+  cf_cfg_destroy();
 
   return EXIT_SUCCESS;
 }

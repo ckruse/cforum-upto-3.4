@@ -83,7 +83,7 @@
 #define FLT_EXIT    -2 /**< Context dependend. */
 #define FLT_ERROR   -3 /**< Error value */
 
-#define init_modules() memset(&Modules,0,(MOD_MAX+1) * sizeof(array_t)) /**< Initialization macro for the plugins */
+#define init_modules() memset(&Modules,0,(MOD_MAX+1) * sizeof(cf_array_t)) /**< Initialization macro for the plugins */
 
 #define CF_KILL_DELETED 0 /**< kill deleted messages constant */
 #define CF_KEEP_DELETED 1 /**< keep deleted messages constant */

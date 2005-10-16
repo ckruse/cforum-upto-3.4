@@ -101,12 +101,12 @@ int is_thread(const char *path) {
  * \param month The month
  */
 void index_month(char *year,char *month) {
-  name_value_t *apath = cfg_get_first_value(&fo_server_conf,forum_name,"ArchivePath");
+  cf_name_value_t *apath = cf_cfg_get_first_value(&fo_server_conf,forum_name,"ArchivePath");
   char path[256],path1[256],ym[256];
   struct stat st;
   DBT key,data;
   size_t ym_len,len;
-  string_t str;
+  cf_string_t str;
   int ret;
   u_int64_t x;
   u_char y[50];
@@ -127,21 +127,21 @@ void index_month(char *year,char *month) {
 
   memset(&key,0,sizeof(key));
   memset(&data,0,sizeof(data));
-  str_init(&str);
+  cf_str_init(&str);
 
   while((ent = readdir(m)) != NULL) {
     if(is_thread(ent->d_name) == -1) continue;
 
-    x   = str_to_u_int64(ent->d_name+1);
+    x   = cf_str_to_uint64(ent->d_name+1);
     len = snprintf(y,50,"%llu",x);
 
     key.data = y;
     key.size = len;
 
     if(Tdb->get(Tdb,NULL,&key,&data,0) == 0) {
-      str_chars_append(&str,data.data,data.size);
-      str_char_append(&str,'\0');
-      str_chars_append(&str,ym,ym_len);
+      cf_str_chars_append(&str,data.data,data.size);
+      cf_str_char_append(&str,'\0');
+      cf_str_chars_append(&str,ym,ym_len);
 
       data.data = str.content;
       data.size = str.len + 1;
@@ -152,7 +152,7 @@ void index_month(char *year,char *month) {
         exit(-1);
       }
 
-      str_cleanup(&str);
+      cf_str_cleanup(&str);
     }
     else {
       data.data = ym;
@@ -175,7 +175,7 @@ void index_month(char *year,char *month) {
  * \param year The year
  */
 void do_year(char *year) {
-  name_value_t *apath = cfg_get_first_value(&fo_server_conf,forum_name,"ArchivePath");
+  cf_name_value_t *apath = cf_cfg_get_first_value(&fo_server_conf,forum_name,"ArchivePath");
   char path[256];
 
   DIR *months;
@@ -201,7 +201,7 @@ void do_year(char *year) {
 /**
  * Dummy function, for ignoring unknown directives
  */
-int ignre(configfile_t *cfile,const u_char *context,u_char *name,u_char **args,size_t len) {
+int ignre(cf_configfile_t *cfile,const u_char *context,u_char *name,u_char **args,size_t len) {
   return 0;
 }
 
@@ -226,8 +226,8 @@ void usage(void) {
 }
 /* }}} */
 
-conf_opt_t extra_opts[] = {
-  { "ArchivePath", handle_command, CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_server_conf },
+cf_conf_opt_t extra_opts[] = {
+  { "ArchivePath", cf_handle_command, CF_CFG_OPT_NEEDED|CF_CFG_OPT_CONFIG|CF_CFG_OPT_LOCAL, &fo_server_conf },
   { NULL, NULL, 0, NULL }
 };
 
@@ -238,10 +238,10 @@ conf_opt_t extra_opts[] = {
  * \param envp Environment vector
  */
 int main(int argc,char *argv[],char *envp[]) {
-  array_t *cfgfiles;
+  cf_array_t *cfgfiles;
   u_char *file;
-  configfile_t sconf,dconf;
-  name_value_t *ent,*idxfile;
+  cf_configfile_t sconf,dconf;
+  cf_name_value_t *ent,*idxfile;
   char c;
 
   DIR *years;
@@ -281,38 +281,38 @@ int main(int argc,char *argv[],char *envp[]) {
     usage();
   }
 
-  cfg_init();
+  cf_cfg_init();
 
   /* {{{ configuration files */
-  if((cfgfiles = get_conf_file(wanted,2)) == NULL) {
+  if((cfgfiles = cf_get_conf_file(wanted,2)) == NULL) {
     fprintf(stderr,"error getting config files\n");
     return EXIT_FAILURE;
   }
 
-  file = *((u_char **)array_element_at(cfgfiles,0));
-  cfg_init_file(&sconf,file);
+  file = *((u_char **)cf_array_element_at(cfgfiles,0));
+  cf_cfg_init_file(&sconf,file);
   free(file);
 
-  file = *((u_char **)array_element_at(cfgfiles,1));
-  cfg_init_file(&dconf,file);
+  file = *((u_char **)cf_array_element_at(cfgfiles,1));
+  cf_cfg_init_file(&dconf,file);
   free(file);
 
 
-  cfg_register_options(&dconf,default_options);
-  cfg_register_options(&sconf,fo_server_options);
-  cfg_register_options(&sconf,extra_opts);
+  cf_cfg_register_options(&dconf,default_options);
+  cf_cfg_register_options(&sconf,fo_server_options);
+  cf_cfg_register_options(&sconf,extra_opts);
 
-  if(read_config(&dconf,NULL,CFG_MODE_CONFIG) != 0 || read_config(&sconf,ignre,CFG_MODE_CONFIG|CFG_MODE_NOLOAD)) {
+  if(cf_read_config(&dconf,NULL,CF_CFG_MODE_CONFIG) != 0 || cf_read_config(&sconf,ignre,CF_CFG_MODE_CONFIG|CF_CFG_MODE_NOLOAD)) {
     fprintf(stderr,"config file error!\n");
 
-    cfg_cleanup_file(&dconf);
+    cf_cfg_cleanup_file(&dconf);
 
     return EXIT_FAILURE;
   }
   /* }}} */
 
-  ent = cfg_get_first_value(&fo_server_conf,forum_name,"ArchivePath");
-  idxfile = cfg_get_first_value(&fo_default_conf,forum_name,"ThreadIndexFile");
+  ent = cf_cfg_get_first_value(&fo_server_conf,forum_name,"ArchivePath");
+  idxfile = cf_cfg_get_first_value(&fo_default_conf,forum_name,"ThreadIndexFile");
 
   /* {{{ open database */
   if((ret = db_create(&Tdb,NULL,0)) != 0) {
@@ -343,10 +343,10 @@ int main(int argc,char *argv[],char *envp[]) {
   if(Tdb) Tdb->close(Tdb,0);
   /* }}} */
 
-  cfg_cleanup(&fo_default_conf);
-  cfg_cleanup_file(&dconf);
+  cf_cfg_cleanup(&fo_default_conf);
+  cf_cfg_cleanup_file(&dconf);
 
-  array_destroy(cfgfiles);
+  cf_array_destroy(cfgfiles);
   free(cfgfiles);
 
   return EXIT_SUCCESS;

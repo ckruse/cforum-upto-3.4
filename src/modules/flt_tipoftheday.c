@@ -41,7 +41,7 @@ static int TOTD_Activate = 0;
 static u_char *TOTD_fn = NULL;
 
 /* {{{ flt_tipoftheday_execute */
-int flt_tipoftheday_execute(cf_hash_t *cgi,configuration_t *dc,configuration_t *vc,cf_template_t *top,cf_template_t *down) {
+int flt_tipoftheday_execute(cf_hash_t *cgi,cf_configuration_t *dc,cf_configuration_t *vc,cf_template_t *top,cf_template_t *down) {
   FILE *fd;
   u_char *line = NULL;
   u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
@@ -49,7 +49,7 @@ int flt_tipoftheday_execute(cf_hash_t *cgi,configuration_t *dc,configuration_t *
   size_t bufflen = 0;
   u_int32_t num,offset;
   int chosen;
-  name_value_t *cs;
+  cf_name_value_t *cs;
 
   srand(getpid() ^ time(NULL));
 
@@ -66,7 +66,7 @@ int flt_tipoftheday_execute(cf_hash_t *cgi,configuration_t *dc,configuration_t *
       if((fd = fopen(TOTD_File,"r")) != NULL) {
         if(fseek(fd,(long)offset,SEEK_SET) != -1) {
           if((linelen = getline((char **)&line,&bufflen,fd)) != -1) {
-            cs = cfg_get_first_value(dc,forum_name,"ExternCharset");
+            cs = cf_cfg_get_first_value(dc,forum_name,"ExternCharset");
             cf_set_variable(top,cs,"tipoftheday",line,linelen-1,0);
 
             free(line);
@@ -83,7 +83,7 @@ int flt_tipoftheday_execute(cf_hash_t *cgi,configuration_t *dc,configuration_t *
 /* }}} */
 
 /* {{{ flt_tipoftheday_confighandler */
-int flt_tipoftheday_confighandler(configfile_t *cf,conf_opt_t *opt,const u_char *context,u_char **args,size_t argnum) {
+int flt_tipoftheday_confighandler(cf_configfile_t *cf,cf_conf_opt_t *opt,const u_char *context,u_char **args,size_t argnum) {
   if(!TOTD_fn) TOTD_fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   if(!context || cf_strcmp(TOTD_fn,context) != 0) return 0;
 
@@ -108,19 +108,19 @@ void flt_tipoftheday_cleanup(void) {
 }
 /* }}} */
 
-conf_opt_t flt_tipoftheday_config[] = {
-  { "TipOfTheDayFile",     flt_tipoftheday_confighandler, CFG_OPT_CONFIG|CFG_OPT_LOCAL, NULL },
-  { "TipOfTheDayActivate", flt_tipoftheday_confighandler, CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
-  { "TipOfTheDayIndex",    flt_tipoftheday_confighandler, CFG_OPT_CONFIG|CFG_OPT_LOCAL, NULL },
+cf_conf_opt_t flt_tipoftheday_config[] = {
+  { "TipOfTheDayFile",     flt_tipoftheday_confighandler, CF_CFG_OPT_CONFIG|CF_CFG_OPT_LOCAL, NULL },
+  { "TipOfTheDayActivate", flt_tipoftheday_confighandler, CF_CFG_OPT_CONFIG|CF_CFG_OPT_USER|CF_CFG_OPT_LOCAL, NULL },
+  { "TipOfTheDayIndex",    flt_tipoftheday_confighandler, CF_CFG_OPT_CONFIG|CF_CFG_OPT_LOCAL, NULL },
   { NULL, NULL, 0, NULL }
 };
 
-handler_config_t flt_tipoftheday_handlers[] = {
+cf_handler_config_t flt_tipoftheday_handlers[] = {
   { VIEW_INIT_HANDLER,    flt_tipoftheday_execute },
   { 0, NULL }
 };
 
-module_config_t flt_tipoftheday = {
+cf_module_config_t flt_tipoftheday = {
   MODULE_MAGIC_COOKIE,
   flt_tipoftheday_config,
   flt_tipoftheday_handlers,

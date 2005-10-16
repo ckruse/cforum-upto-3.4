@@ -51,12 +51,12 @@ static u_char *flt_amsql_fn = NULL;
 static MYSQL *flt_amsql_dbh = NULL;
 
 /* {{{ flt_admin_mysql_init */
-int flt_admin_mysql_init(cf_hash_t *cgi,configuration_t *dc,configuration_t *vc) {
+int flt_admin_mysql_init(cf_hash_t *cgi,cf_configuration_t *dc,cf_configuration_t *vc) {
   MYSQL *ret;
   MYSQL_RES *result;
   MYSQL_ROW row;
 
-  string_t query;
+  cf_string_t query;
   u_char *buff,*uname = cf_hash_get(GlobalValues,"UserName",8);
   unsigned int len;
 
@@ -70,31 +70,31 @@ int flt_admin_mysql_init(cf_hash_t *cgi,configuration_t *dc,configuration_t *vc)
   /* }}} */
 
   /* {{{ create query */
-  str_init_growth(&query,128);
-  str_char_set(&query,"SELECT ",7);
-  str_chars_append(&query,flt_amsql_field,strlen(flt_amsql_field));
-  str_chars_append(&query," FROM ",6);
-  str_chars_append(&query,flt_amsql_table,strlen(flt_amsql_table));
-  str_chars_append(&query," WHERE ",7);
-  str_chars_append(&query,flt_amsql_wfield,strlen(flt_amsql_wfield));
-  str_chars_append(&query," = '",4);
+  cf_str_init_growth(&query,128);
+  cf_str_char_set(&query,"SELECT ",7);
+  cf_str_chars_append(&query,flt_amsql_field,strlen(flt_amsql_field));
+  cf_str_chars_append(&query," FROM ",6);
+  cf_str_chars_append(&query,flt_amsql_table,strlen(flt_amsql_table));
+  cf_str_chars_append(&query," WHERE ",7);
+  cf_str_chars_append(&query,flt_amsql_wfield,strlen(flt_amsql_wfield));
+  cf_str_chars_append(&query," = '",4);
 
   len  = strlen(uname);
-  buff = fo_alloc(NULL,1,len * 2 + 1,FO_ALLOC_MALLOC);
+  buff = cf_alloc(NULL,1,len * 2 + 1,CF_ALLOC_MALLOC);
   len  = mysql_real_escape_string(flt_amsql_dbh,buff,uname,len);
 
-  str_chars_append(&query,buff,len);
+  cf_str_chars_append(&query,buff,len);
   free(buff);
 
-  str_char_append(&query,'\'');
+  cf_str_char_append(&query,'\'');
   /* }}} */
 
   if(mysql_real_query(flt_amsql_dbh,query.content,query.len) != 0) {
-    str_cleanup(&query);
+    cf_str_cleanup(&query);
     return FLT_DECLINE;
   }
 
-  str_cleanup(&query);
+  cf_str_cleanup(&query);
 
   if((result = mysql_store_result(flt_amsql_dbh)) == NULL) return FLT_DECLINE;
 
@@ -116,7 +116,7 @@ int flt_admin_mysql_init(cf_hash_t *cgi,configuration_t *dc,configuration_t *vc)
 /* }}} */
 
 /* {{{ flt_admin_mysql_handle */
-int flt_admin_mysql_handle(configfile_t *cfile,conf_opt_t *opt,const u_char *context,u_char **args,size_t argnum) {
+int flt_admin_mysql_handle(cf_configfile_t *cfile,cf_conf_opt_t *opt,const u_char *context,u_char **args,size_t argnum) {
   if(flt_amsql_fn == NULL) flt_amsql_fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   if(!context || cf_strcmp(flt_amsql_fn,context) != 0) return 0;
 
@@ -173,26 +173,26 @@ void flt_admin_mysql_cleanup(void) {
 }
 /* }}} */
 
-conf_opt_t flt_admin_mysql_config[] = {
-  { "MysqlHost",       flt_admin_mysql_handle, CFG_OPT_CONFIG|CFG_OPT_LOCAL, NULL },
-  { "MysqlUser",       flt_admin_mysql_handle, CFG_OPT_CONFIG|CFG_OPT_LOCAL, NULL },
-  { "MysqlPasswd",     flt_admin_mysql_handle, CFG_OPT_CONFIG|CFG_OPT_LOCAL, NULL },
-  { "MysqlDb",         flt_admin_mysql_handle, CFG_OPT_CONFIG|CFG_OPT_LOCAL|CFG_OPT_NEEDED, NULL },
-  { "MysqlSocket",     flt_admin_mysql_handle, CFG_OPT_CONFIG|CFG_OPT_LOCAL, NULL },
-  { "MysqlTable",      flt_admin_mysql_handle, CFG_OPT_CONFIG|CFG_OPT_LOCAL|CFG_OPT_NEEDED, NULL },
-  { "MysqlField",      flt_admin_mysql_handle, CFG_OPT_CONFIG|CFG_OPT_LOCAL|CFG_OPT_NEEDED, NULL },
-  { "MysqlWhereField", flt_admin_mysql_handle, CFG_OPT_CONFIG|CFG_OPT_LOCAL|CFG_OPT_NEEDED, NULL },
-  { "MysqlPort",       flt_admin_mysql_handle, CFG_OPT_CONFIG|CFG_OPT_LOCAL, NULL },
+cf_conf_opt_t flt_admin_mysql_config[] = {
+  { "MysqlHost",       flt_admin_mysql_handle, CF_CFG_OPT_CONFIG|CF_CFG_OPT_LOCAL, NULL },
+  { "MysqlUser",       flt_admin_mysql_handle, CF_CFG_OPT_CONFIG|CF_CFG_OPT_LOCAL, NULL },
+  { "MysqlPasswd",     flt_admin_mysql_handle, CF_CFG_OPT_CONFIG|CF_CFG_OPT_LOCAL, NULL },
+  { "MysqlDb",         flt_admin_mysql_handle, CF_CFG_OPT_CONFIG|CF_CFG_OPT_LOCAL|CF_CFG_OPT_NEEDED, NULL },
+  { "MysqlSocket",     flt_admin_mysql_handle, CF_CFG_OPT_CONFIG|CF_CFG_OPT_LOCAL, NULL },
+  { "MysqlTable",      flt_admin_mysql_handle, CF_CFG_OPT_CONFIG|CF_CFG_OPT_LOCAL|CF_CFG_OPT_NEEDED, NULL },
+  { "MysqlField",      flt_admin_mysql_handle, CF_CFG_OPT_CONFIG|CF_CFG_OPT_LOCAL|CF_CFG_OPT_NEEDED, NULL },
+  { "MysqlWhereField", flt_admin_mysql_handle, CF_CFG_OPT_CONFIG|CF_CFG_OPT_LOCAL|CF_CFG_OPT_NEEDED, NULL },
+  { "MysqlPort",       flt_admin_mysql_handle, CF_CFG_OPT_CONFIG|CF_CFG_OPT_LOCAL, NULL },
 
   { NULL, NULL, 0, NULL }
 };
 
-handler_config_t flt_admin_mysql_handlers[] = {
+cf_handler_config_t flt_admin_mysql_handlers[] = {
   { INIT_HANDLER,  flt_admin_mysql_init },
   { 0, NULL }
 };
 
-module_config_t flt_admin_mysql = {
+cf_module_config_t flt_admin_mysql = {
   MODULE_MAGIC_COOKIE,
   flt_admin_mysql_config,
   flt_admin_mysql_handlers,

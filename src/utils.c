@@ -37,7 +37,7 @@
 #include "utils.h"
 /* }}} */
 
-/* {{{ transform_date
+/* {{{ cf_transform_date
  * Returns: time_t          the timestamp or (time_t)0
  * Parameters:
  *   - const u_char *datestr the date string
@@ -45,10 +45,10 @@
  * This function tries to create a timestamp from dd.mm.yyyy[ hh:mm[:ss]]
  *
  */
-time_t transform_date(const u_char *datestr) {
+time_t cf_transform_date(const u_char *datestr) {
   struct tm t;
   u_char *ptr,*before;                     /* two pointers to work with */
-  u_char *str = fo_alloc(NULL,strlen(datestr)+1,1,FO_ALLOC_MALLOC); /* we need a copy of the string (we cannot change a const u_char *) */
+  u_char *str = cf_alloc(NULL,strlen(datestr)+1,1,CF_ALLOC_MALLOC); /* we need a copy of the string (we cannot change a const u_char *) */
 
   (void)strcpy(str,datestr);
   ptr = before = str;
@@ -135,8 +135,8 @@ time_t transform_date(const u_char *datestr) {
 }
 /* }}} */
 
-/* {{{ gen_unid */
-int gen_unid(u_char *buff,int maxlen) {
+/* {{{ cf_gen_unid */
+int cf_gen_unid(u_char *buff,int maxlen) {
   int i,l;
   u_char *remaddr = getenv("REMOTE_ADDR");
   static const u_char chars[] = "AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz0123456789_-";
@@ -254,14 +254,14 @@ ssize_t getline(char **lineptr,size_t *n,FILE *stream) {
  *
  */
 ssize_t getdelim(char **lineptr,size_t *n,int delim,FILE *stream) {
-  string_t buf;
+  cf_string_t buf;
   register u_char c;
 
-  str_init(&buf);
+  cf_str_init(&buf);
 
   while(!feof(stream) && !ferror(stream)) {
     c = fgetc(stream);
-    str_char_append(&buf,c);
+    cf_str_char_append(&buf,c);
 
     if(c == delim) break;
   }
@@ -279,7 +279,7 @@ ssize_t getdelim(char **lineptr,size_t *n,int delim,FILE *stream) {
 #endif
 
 /* {{{ cf_timegm, from timegm(3) of glibc */
-time_t cf_timegm (struct tm *tm) {
+time_t cf_timegm(struct tm *tm) {
   time_t ret;
   char *tz;
 

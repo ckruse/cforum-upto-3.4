@@ -47,14 +47,14 @@
 
 /* {{{ flt_remotesignature_execute */
 #ifdef CF_SHARED_MEM
-int flt_remotesignature_execute(cf_hash_t *head,configuration_t *dc,configuration_t *pc,message_t *p,cl_thread_t *thr,void *mptr,int sock,int mode)
+int flt_remotesignature_execute(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t *pc,message_t *p,cl_thread_t *thr,void *mptr,int sock,int mode)
 #else
-int flt_remotesignature_execute(cf_hash_t *head,configuration_t *dc,configuration_t *pc,message_t *p,cl_thread_t *thr,int sock,int mode)
+int flt_remotesignature_execute(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t *pc,message_t *p,cl_thread_t *thr,int sock,int mode)
 #endif
 {
   u_char *rs = strstr(p->content.content,"[remote-signature:"),*tmp,*url,*bottom;
   register u_char *ptr;
-  string_t *str;
+  cf_string_t *str;
   cf_http_response_t *rsp;
 
   if(rs) {
@@ -78,11 +78,11 @@ int flt_remotesignature_execute(cf_hash_t *head,configuration_t *dc,configuratio
           if(str) {
             if(is_valid_utf8_string(str->content,str->len) == 0) {
               p->content.len = rs-p->content.content;
-              str_str_append(&p->content,str);
-              str_chars_append(&p->content,bottom,strlen(bottom));
+              cf_str_str_append(&p->content,str);
+              cf_str_chars_append(&p->content,bottom,strlen(bottom));
             }
 
-            str_cleanup(str);
+            cf_str_cleanup(str);
             free(str);
           }
         }
@@ -97,16 +97,16 @@ int flt_remotesignature_execute(cf_hash_t *head,configuration_t *dc,configuratio
 }
 /* }}} */
 
-conf_opt_t flt_remotesignature_config[] = {
+cf_conf_opt_t flt_remotesignature_config[] = {
   { NULL, NULL, 0, NULL }
 };
 
-handler_config_t flt_remotesignature_handlers[] = {
+cf_handler_config_t flt_remotesignature_handlers[] = {
   { NEW_POST_HANDLER, flt_remotesignature_execute },
   { 0, NULL }
 };
 
-module_config_t flt_remotesignature = {
+cf_module_config_t flt_remotesignature = {
   MODULE_MAGIC_COOKIE,
   flt_remotesignature_config,
   flt_remotesignature_handlers,

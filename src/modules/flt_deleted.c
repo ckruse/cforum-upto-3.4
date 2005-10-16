@@ -59,8 +59,8 @@ struct {
 static u_char *flt_deleted_fname = NULL;
 
 /* {{{ flt_deleted_execute */
-int flt_deleted_execute(cf_hash_t *head,configuration_t *dc,configuration_t *vc,cl_thread_t *thread,int mode) {
-  name_value_t *url;
+int flt_deleted_execute(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t *vc,cl_thread_t *thread,int mode) {
+  cf_name_value_t *url;
   u_char *UserName = cf_hash_get(GlobalValues,"UserName",8);
   u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   DBT key,data;
@@ -70,7 +70,7 @@ int flt_deleted_execute(cf_hash_t *head,configuration_t *dc,configuration_t *vc,
   message_t *msg;
 
   if(UserName) {
-    url = cfg_get_first_value(dc,forum_name,"UBaseURL");
+    url = cf_cfg_get_first_value(dc,forum_name,"UBaseURL");
     msg = cf_msg_get_first_visible(thread->messages);
 
     /* run only in threadlist mode and only in pre mode */
@@ -129,7 +129,7 @@ int flt_deleted_execute(cf_hash_t *head,configuration_t *dc,configuration_t *vc,
 /* }}} */
 
 /* {{{ flt_deleted_pl_filter */
-int flt_deleted_pl_filter(cf_hash_t *head,configuration_t *dc,configuration_t *vc,message_t *msg,u_int64_t tid,int mode) {
+int flt_deleted_pl_filter(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t *vc,message_t *msg,u_int64_t tid,int mode) {
   long i;
 
   if(Cfg.BLlen) {
@@ -166,9 +166,9 @@ int flt_deleted_pl_filter(cf_hash_t *head,configuration_t *dc,configuration_t *v
 
 /* {{{ flt_deleted_del_thread */
 #ifndef CF_SHARED_MEM
-int flt_deleted_del_thread(cf_hash_t *head,configuration_t *dc,configuration_t *vc,int sock)
+int flt_deleted_del_thread(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t *vc,int sock)
 #else
-int flt_deleted_del_thread(cf_hash_t *head,configuration_t *dc,configuration_t *vc,void *sock)
+int flt_deleted_del_thread(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t *vc,void *sock)
 #endif
 {
   u_char *a;
@@ -189,7 +189,7 @@ int flt_deleted_del_thread(cf_hash_t *head,configuration_t *dc,configuration_t *
         if((parm = cf_cgi_get_multiple(head,"dt")) != NULL) {
           /* {{{ put tids to database */
           for(;parm;parm=parm->next) {
-            tid = str_to_u_int64(parm->value);
+            tid = cf_str_to_uint64(parm->value);
 
             if(tid) {
               memset(&key,0,sizeof(key));
@@ -232,7 +232,7 @@ int flt_deleted_del_thread(cf_hash_t *head,configuration_t *dc,configuration_t *
       else if(cf_strcmp(a,"u") == 0) {
         if((tmp = cf_cgi_get(head,"dt")) != NULL) {
           /* {{{ remove tid from database */
-          if((tid = str_to_u_int64(tmp)) > 0) {
+          if((tid = cf_str_to_uint64(tmp)) > 0) {
             memset(&key,0,sizeof(key));
 
             /* we transform the value again to a string because there could be trash in it... */
@@ -259,7 +259,7 @@ int flt_deleted_del_thread(cf_hash_t *head,configuration_t *dc,configuration_t *
 /* }}} */
 
 /* {{{ flt_del_init_handler */
-int flt_del_init_handler(cf_hash_t *cgi,configuration_t *dc,configuration_t *vc) {
+int flt_del_init_handler(cf_hash_t *cgi,cf_configuration_t *dc,cf_configuration_t *vc) {
   int ret,fd;
 
   if(Cfg.DeletedFile) {
@@ -291,7 +291,7 @@ int flt_del_init_handler(cf_hash_t *cgi,configuration_t *dc,configuration_t *vc)
 /* }}} */
 
 /* {{{ flt_deleted_view_init_handler */
-int flt_del_view_init_handler(cf_hash_t *head,configuration_t *dc,configuration_t *vc,cf_template_t *begin,cf_template_t *end) {
+int flt_del_view_init_handler(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t *vc,cf_template_t *begin,cf_template_t *end) {
   u_char *val;
 
   if(Cfg.DeletedFile) {
@@ -309,7 +309,7 @@ int flt_del_view_init_handler(cf_hash_t *head,configuration_t *dc,configuration_
 /* }}} */
 
 /* {{{ flt_del_handle_command */
-int flt_del_handle_command(configfile_t *cf,conf_opt_t *opt,const u_char *context,u_char **args,size_t argnum) {
+int flt_del_handle_command(cf_configfile_t *cf,cf_conf_opt_t *opt,const u_char *context,u_char **args,size_t argnum) {
   long i;
   if(flt_deleted_fname == NULL) flt_deleted_fname = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   if(!context || cf_strcmp(flt_deleted_fname,context) != 0) return 0;
@@ -320,7 +320,7 @@ int flt_del_handle_command(configfile_t *cf,conf_opt_t *opt,const u_char *contex
       free(Cfg.BlackList);
     }
 
-    Cfg.BLlen = split(args[0],",",&Cfg.BlackList);
+    Cfg.BLlen = cf_split(args[0],",",&Cfg.BlackList);
   }
   else if(cf_strcmp(opt->name,"ShowBlacklistFollowups") == 0) {
     Cfg.FollowUps = cf_strcasecmp(args[0],"yes") == 0;
@@ -371,9 +371,9 @@ void flt_del_cleanup(void) {
 
 /* {{{ flt_deleted_validate */
 #ifndef CF_SHARED_MEM
-int flt_deleted_validate(cf_hash_t *head,configuration_t *dc,configuration_t *vc,time_t last_modified,int sock)
+int flt_deleted_validate(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t *vc,time_t last_modified,int sock)
 #else
-int flt_deleted_validate(cf_hash_t *head,configuration_t *dc,configuration_t *vc,time_t last_modified,void *sock)
+int flt_deleted_validate(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t *vc,time_t last_modified,void *sock)
 #endif
 {
   struct stat st;
@@ -396,9 +396,9 @@ int flt_deleted_validate(cf_hash_t *head,configuration_t *dc,configuration_t *vc
 
 /* {{{ flt_deleted_lm */
 #ifndef CF_SHARED_MEM
-time_t flt_deleted_lm(cf_hash_t *head,configuration_t *dc,configuration_t *vc,int sock)
+time_t flt_deleted_lm(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t *vc,int sock)
 #else
-time_t flt_deleted_lm(cf_hash_t *head,configuration_t *dc,configuration_t *vc,void *sock)
+time_t flt_deleted_lm(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t *vc,void *sock)
 #endif
 {
   struct stat st;
@@ -415,20 +415,20 @@ time_t flt_deleted_lm(cf_hash_t *head,configuration_t *dc,configuration_t *vc,vo
 }
 /* }}} */
 
-conf_opt_t flt_deleted_config[] = {
-  { "BlackList",               flt_del_handle_command, CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
-  { "ShowBlacklistFollowups",  flt_del_handle_command, CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
-  { "BlacklistInThreadview",   flt_del_handle_command, CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
-  { "ShowFrom",                flt_del_handle_command, CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
-  { "ShowUntil",               flt_del_handle_command, CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
-  { "DeletedFile",             flt_del_handle_command, CFG_OPT_USER|CFG_OPT_NEEDED|CFG_OPT_LOCAL, NULL },
-  { "DeletedUseCheckboxes",    flt_del_handle_command, CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
-  { "DelThreadResponse204",    flt_del_handle_command, CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
-  { "DeletedUseXMLHttp",       flt_del_handle_command, CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
+cf_conf_opt_t flt_deleted_config[] = {
+  { "BlackList",               flt_del_handle_command, CF_CFG_OPT_CONFIG|CF_CFG_OPT_USER|CF_CFG_OPT_LOCAL, NULL },
+  { "ShowBlacklistFollowups",  flt_del_handle_command, CF_CFG_OPT_CONFIG|CF_CFG_OPT_USER|CF_CFG_OPT_LOCAL, NULL },
+  { "BlacklistInThreadview",   flt_del_handle_command, CF_CFG_OPT_CONFIG|CF_CFG_OPT_USER|CF_CFG_OPT_LOCAL, NULL },
+  { "ShowFrom",                flt_del_handle_command, CF_CFG_OPT_CONFIG|CF_CFG_OPT_USER|CF_CFG_OPT_LOCAL, NULL },
+  { "ShowUntil",               flt_del_handle_command, CF_CFG_OPT_CONFIG|CF_CFG_OPT_USER|CF_CFG_OPT_LOCAL, NULL },
+  { "DeletedFile",             flt_del_handle_command, CF_CFG_OPT_USER|CF_CFG_OPT_NEEDED|CF_CFG_OPT_LOCAL, NULL },
+  { "DeletedUseCheckboxes",    flt_del_handle_command, CF_CFG_OPT_CONFIG|CF_CFG_OPT_USER|CF_CFG_OPT_LOCAL, NULL },
+  { "DelThreadResponse204",    flt_del_handle_command, CF_CFG_OPT_CONFIG|CF_CFG_OPT_USER|CF_CFG_OPT_LOCAL, NULL },
+  { "DeletedUseXMLHttp",       flt_del_handle_command, CF_CFG_OPT_CONFIG|CF_CFG_OPT_USER|CF_CFG_OPT_LOCAL, NULL },
   { NULL, NULL, 0, NULL }
 };
 
-handler_config_t flt_deleted_handlers[] = {
+cf_handler_config_t flt_deleted_handlers[] = {
   { VIEW_INIT_HANDLER,    flt_del_view_init_handler },
   { INIT_HANDLER,         flt_del_init_handler      },
   { CONNECT_INIT_HANDLER, flt_deleted_del_thread    },
@@ -437,7 +437,7 @@ handler_config_t flt_deleted_handlers[] = {
   { 0, NULL }
 };
 
-module_config_t flt_deleted = {
+cf_module_config_t flt_deleted = {
   MODULE_MAGIC_COOKIE,
   flt_deleted_config,
   flt_deleted_handlers,

@@ -34,7 +34,7 @@ typedef struct s_cf_template {
   void *tpl; /**< A pointer to the template file (by dlopen) */
   u_char *filename; /**< The filename of the template */
 
-  string_t parsed; /**< A string structure containing the parsed content */
+  cf_string_t parsed; /**< A string structure containing the parsed content */
   cf_hash_t *varlist; /**< A hash containing the variables */
 
 } cf_template_t;
@@ -45,9 +45,9 @@ typedef struct s_cf_template {
 typedef struct s_cf_tpl_variable {
   unsigned short type; /**< The type of the variable (string, int, array) */
   union {
-    string_t d_string; /**< String data */
+    cf_string_t d_string; /**< String data */
     signed long d_int; /**< Integer data */
-    array_t d_array; /**< Array data */
+    cf_array_t d_array; /**< Array data */
     cf_hash_t *d_hash; /**< Hash data */
   } data; /**< The actual template data */
   
@@ -147,7 +147,7 @@ void cf_tpl_var_add(cf_tpl_variable_t *var,cf_tpl_variable_t *element);
  * \param var The array variable structure
  * \param type The type of the element to add
  */
-void cf_tpl_var_addvalue(cf_tpl_variable_t *array_var,unsigned short type,...);
+void cf_tpl_var_addvalue(cf_tpl_variable_t *cf_array_var,unsigned short type,...);
 
 /**
  * This function sets an element of a hash
@@ -163,7 +163,7 @@ void cf_tpl_hashvar_set(cf_tpl_variable_t *var,const u_char *key,cf_tpl_variable
  * \param key The key of the element
  * \param type The type of the element to set
  */
-void cf_tpl_hashvar_setvalue(cf_tpl_variable_t *array_var,const u_char *key,unsigned short type,...);
+void cf_tpl_hashvar_setvalue(cf_tpl_variable_t *cf_array_var,const u_char *key,unsigned short type,...);
 
 /**
  * This function will parse a template file and print out the parsed content. No memory is allocated, this

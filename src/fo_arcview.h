@@ -22,9 +22,9 @@ typedef int (*is_valid_year_t)(const u_char *);
 typedef int (*is_valid_month_t)(const u_char *,const u_char *);
 typedef int (*is_valid_thread_t)(const u_char *,const u_char *,const u_char *);
 
-typedef array_t *(*get_years_t)(void);
-typedef array_t *(*get_monthlist_t)(const u_char *);
-typedef array_t *(*get_threadlist_t)(const u_char *,const u_char *);
+typedef cf_array_t *(*get_years_t)(void);
+typedef cf_array_t *(*get_monthlist_t)(const u_char *);
+typedef cf_array_t *(*get_threadlist_t)(const u_char *,const u_char *);
 typedef cl_thread_t *(*get_thread_t)(const u_char *,const u_char *,const u_char *);
 
 typedef time_t (*month_last_modified_t)(const u_char *,const u_char *);

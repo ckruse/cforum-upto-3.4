@@ -50,7 +50,7 @@ static u_char *flt_syntax_patterns_dir = NULL;
 typedef struct {
   u_char *name;
 
-  array_t list;
+  cf_array_t list;
 } flt_syntax_list_t;
 
 typedef struct {
@@ -62,25 +62,25 @@ typedef struct {
   int type;
   int start;
 
-  array_t args;
-  array_t pregs;
+  cf_array_t args;
+  cf_array_t pregs;
 } flt_syntax_statement_t;
 
 typedef struct {
   u_char *name;
   int le_behavior;
-  array_t statement;
+  cf_array_t statement;
 } flt_syntax_block_t;
 
 typedef struct {
   u_char *start;
   u_char *lang;
 
-  array_t lists;
-  array_t blocks;
+  cf_array_t lists;
+  cf_array_t blocks;
 } flt_syntax_pattern_file_t;
 
-static array_t flt_syntax_files;
+static cf_array_t flt_syntax_files;
 static int flt_syntax_active = 0;
 static int flt_syntax_alreadyerr = 0;
 static size_t flt_syntax_tabsreplace = 8;
@@ -105,7 +105,7 @@ static size_t flt_syntax_tabsreplace = 8;
 #define FLT_SYNTAX_ONREGEXP_AFTER_BACKREF 0x16
 
 /* {{{ flt_syntax_read_string */
-int flt_syntax_read_string(const u_char *begin,u_char **pos,string_t *str) {
+int flt_syntax_read_string(const u_char *begin,u_char **pos,cf_string_t *str) {
   register u_char *ptr;
 
   for(ptr=(u_char *)begin;*ptr;++ptr) {
@@ -113,13 +113,13 @@ int flt_syntax_read_string(const u_char *begin,u_char **pos,string_t *str) {
       case '\\':
         switch(*(ptr+1)) {
           case 'n':
-            str_char_append(str,'\n');
+            cf_str_char_append(str,'\n');
             break;
           case 't':
-            str_char_append(str,'\t');
+            cf_str_char_append(str,'\t');
             break;
           default:
-            str_char_append(str,*(ptr+1));
+            cf_str_char_append(str,*(ptr+1));
         }
         ++ptr;
         break;
@@ -129,7 +129,7 @@ int flt_syntax_read_string(const u_char *begin,u_char **pos,string_t *str) {
         return 0;
 
       default:
-        str_char_append(str,*ptr);
+        cf_str_char_append(str,*ptr);
     }
   }
 
@@ -138,7 +138,7 @@ int flt_syntax_read_string(const u_char *begin,u_char **pos,string_t *str) {
 /* }}} */
 
 /* {{{ flt_syntax_next_token */
-int flt_syntax_next_token(const u_char *line,u_char **pos,string_t *str) {
+int flt_syntax_next_token(const u_char *line,u_char **pos,cf_string_t *str) {
   u_char *ptr;
 
   for(ptr=(u_char *)(*pos?*pos:line);*ptr && isspace(*ptr);++ptr);
@@ -157,7 +157,7 @@ int flt_syntax_next_token(const u_char *line,u_char **pos,string_t *str) {
       return FLT_SYNTAX_TOK_EQ;
 
     default:
-      for(;*ptr && !isspace(*ptr);++ptr) str_char_append(str,*ptr);
+      for(;*ptr && !isspace(*ptr);++ptr) cf_str_char_append(str,*ptr);
       *pos = ptr;
       return FLT_SYNTAX_TOK_KEY;
   }
@@ -169,10 +169,10 @@ int flt_syntax_next_token(const u_char *line,u_char **pos,string_t *str) {
 /* {{{ flt_syntax_read_list */
 int flt_syntax_read_list(const u_char *pos,flt_syntax_list_t *list) {
   register u_char *ptr;
-  string_t str;
+  cf_string_t str;
 
-  array_init(&list->list,sizeof(str),NULL);
-  str_init(&str);
+  cf_array_init(&list->list,sizeof(str),NULL);
+  cf_str_init(&str);
 
   for(ptr=(u_char *)pos;isspace(*ptr);++ptr);
   if(*ptr != '"') return 1;
@@ -182,13 +182,13 @@ int flt_syntax_read_list(const u_char *pos,flt_syntax_list_t *list) {
       case '\\':
         switch(*(ptr+1)) {
           case 'n':
-            str_char_append(&str,'\n');
+            cf_str_char_append(&str,'\n');
             break;
           case 't':
-            str_char_append(&str,'\t');
+            cf_str_char_append(&str,'\t');
             break;
           default:
-            str_char_append(&str,*(ptr+1));
+            cf_str_char_append(&str,*(ptr+1));
         }
         ++ptr;
         continue;
@@ -198,12 +198,12 @@ int flt_syntax_read_list(const u_char *pos,flt_syntax_list_t *list) {
           fprintf(stderr,"flt_syntax: Error reading list, str.content is NULL! ptr: %s\n",ptr);
           return -1;
         }
-        array_push(&list->list,&str);
-        str_init(&str);
+        cf_array_push(&list->list,&str);
+        cf_str_init(&str);
         break;
 
       default:
-        str_char_append(&str,*ptr);
+        cf_str_char_append(&str,*ptr);
     }
   }
 
@@ -211,17 +211,17 @@ int flt_syntax_read_list(const u_char *pos,flt_syntax_list_t *list) {
     fprintf(stderr,"flt_syntax: Error reading list, str.content is NULL at end of list!\n");
     return -1;
   }
-  array_push(&list->list,&str);
+  cf_array_push(&list->list,&str);
 
   return 0;
 }
 /* }}} */
 
-int flt_syntax_my_cmp(const string_t *a,const string_t *b) {
+int flt_syntax_my_cmp(const cf_string_t *a,const cf_string_t *b) {
   return strcasecmp(a->content,b->content);
 }
 
-int flt_syntax_my_scmp(const u_char *a,const string_t *b) {
+int flt_syntax_my_scmp(const u_char *a,const cf_string_t *b) {
   return strcasecmp(a,b->content);
 }
 
@@ -232,7 +232,7 @@ int flt_syntax_load(const u_char *path,const u_char *lang) {
   u_char *line = NULL,*pos,*error;
   size_t buflen = 0;
   int state = FLT_SYNTAX_GLOBAL,offset,type,tb = 0,lineno = 0;
-  string_t str,*tmpstr;
+  cf_string_t str,*tmpstr;
   flt_syntax_preg_t preg;
 
   flt_syntax_pattern_file_t file;
@@ -247,12 +247,12 @@ int flt_syntax_load(const u_char *path,const u_char *lang) {
 
   file.start = NULL;
   file.lang  = strdup(lang);
-  array_init(&file.lists,sizeof(flt_syntax_list_t),NULL);
-  array_init(&file.blocks,sizeof(flt_syntax_block_t),NULL);
+  cf_array_init(&file.lists,sizeof(flt_syntax_list_t),NULL);
+  cf_array_init(&file.blocks,sizeof(flt_syntax_block_t),NULL);
 
   while((len = getline((char **)&line,&buflen,fd)) > 0) {
     lineno++;
-    str_init(&str);
+    cf_str_init(&str);
 
     pos  = NULL;
     type = flt_syntax_next_token(line,&pos,&str);
@@ -266,7 +266,7 @@ int flt_syntax_load(const u_char *path,const u_char *lang) {
       }
       /* {{{ start = "key" */
       if(cf_strcmp(str.content,"start") == 0) {
-        str_cleanup(&str);
+        cf_str_cleanup(&str);
 
         if((type = flt_syntax_next_token(line,&pos,&str)) != FLT_SYNTAX_TOK_EQ) {
           fprintf(stderr,"flt_syntax: after start we got no eqal at line %d!\n",lineno);
@@ -278,21 +278,21 @@ int flt_syntax_load(const u_char *path,const u_char *lang) {
         }
 
         file.start = str.content;
-        str_init(&str);
+        cf_str_init(&str);
       }
       /* }}} */
       /* {{{ list "name" = "value,value" */
       else if(cf_strcmp(str.content,"list") == 0) {
         memset(&list,0,sizeof(list));
 
-        str_cleanup(&str);
+        cf_str_cleanup(&str);
         if((type = flt_syntax_next_token(line,&pos,&str)) != FLT_SYNTAX_TOK_STR) {
           fprintf(stderr,"flt_syntax: after list we got no list name at line %d!\n",lineno);
           return 1;
         }
 
         list.name = str.content;
-        str_init(&str);
+        cf_str_init(&str);
 
         if((type = flt_syntax_next_token(line,&pos,&str)) != FLT_SYNTAX_TOK_EQ) {
           fprintf(stderr,"flt_syntax: after list we got no eqal at line %d!\n",lineno);
@@ -304,14 +304,14 @@ int flt_syntax_load(const u_char *path,const u_char *lang) {
         }
 
         /* we sort them to be able to search faster in it */
-        array_sort(&list.list,(int (*)(const void *,const void *))flt_syntax_my_cmp);
-        array_push(&file.lists,&list);
+        cf_array_sort(&list.list,(int (*)(const void *,const void *))flt_syntax_my_cmp);
+        cf_array_push(&file.lists,&list);
       }
       /* }}} */
       /* {{{ block "name" */
       else if(cf_strcmp(str.content,"block") == 0) {
-        array_init(&block.statement,sizeof(flt_syntax_statement_t),NULL);
-        str_cleanup(&str);
+        cf_array_init(&block.statement,sizeof(flt_syntax_statement_t),NULL);
+        cf_str_cleanup(&str);
 
         if((type = flt_syntax_next_token(line,&pos,&str)) != FLT_SYNTAX_TOK_STR) {
           fprintf(stderr,"flt_syntax: after block we got no block name at line %d!\n",lineno);
@@ -319,7 +319,7 @@ int flt_syntax_load(const u_char *path,const u_char *lang) {
         }
 
         block.name = str.content;
-        str_init(&str);
+        cf_str_init(&str);
 
         state = FLT_SYNTAX_BLOCK;
       }
@@ -338,7 +338,7 @@ int flt_syntax_load(const u_char *path,const u_char *lang) {
       memset(&statement,0,sizeof(statement));
 
       if(cf_strcmp(str.content,"lineend") == 0) {
-        str_cleanup(&str);
+        cf_str_cleanup(&str);
 
         if((type = flt_syntax_next_token(line,&pos,&str)) != FLT_SYNTAX_TOK_KEY) {
           fprintf(stderr,"flt_syntax: after lineend we got no keyword at line %d!\n",lineno);
@@ -347,9 +347,9 @@ int flt_syntax_load(const u_char *path,const u_char *lang) {
         block.le_behavior = cf_strcmp(str.content,"stay") == 0 ? FLT_SYNTAX_STAY : FLT_SYNTAX_POP;
       }
       else if(cf_strcmp(str.content,"end") == 0) {
-        str_cleanup(&str);
+        cf_str_cleanup(&str);
         state = FLT_SYNTAX_GLOBAL;
-        array_push(&file.blocks,&block);
+        cf_array_push(&file.blocks,&block);
       }
 
       /* {{{ onstring <zeichenkette> <neuer-block> <span-klasse> */
@@ -357,7 +357,7 @@ int flt_syntax_load(const u_char *path,const u_char *lang) {
         if(cf_strcmp(str.content,"onstring_start") == 0) statement.start = 1;
         else statement.start = 0;
 
-        str_cleanup(&str);
+        cf_str_cleanup(&str);
 
         if((type = flt_syntax_next_token(line,&pos,&str)) != FLT_SYNTAX_TOK_STR) {
           fprintf(stderr,"flt_syntax: after onstring we got no string at line %d!\n",lineno);
@@ -365,34 +365,34 @@ int flt_syntax_load(const u_char *path,const u_char *lang) {
         }
 
         statement.type = FLT_SYNTAX_ONSTRING;
-        array_init(&statement.args,sizeof(string_t),NULL);
+        cf_array_init(&statement.args,sizeof(cf_string_t),NULL);
 
-        array_push(&statement.args,&str);
-        str_init(&str);
+        cf_array_push(&statement.args,&str);
+        cf_str_init(&str);
 
         type = flt_syntax_next_token(line,&pos,&str);
         if(type == FLT_SYNTAX_TOK_KEY) {
-          array_push(&statement.args,&str);
+          cf_array_push(&statement.args,&str);
           tb = type;
         }
         else if(type != FLT_SYNTAX_TOK_STR) {
           fprintf(stderr,"flt_syntax: after onstring we got no block name at line %d!\n",lineno);
           return 1;
         }
-        else array_push(&statement.args,&str);
+        else cf_array_push(&statement.args,&str);
 
-        str_init(&str);
+        cf_str_init(&str);
         if((type = flt_syntax_next_token(line,&pos,&str)) != FLT_SYNTAX_TOK_STR) {
-          tmpstr = array_element_at(&statement.args,1);
+          tmpstr = cf_array_element_at(&statement.args,1);
           if(tb != FLT_SYNTAX_TOK_KEY || cf_strcmp(tmpstr->content,"highlight") == 0) {
             fprintf(stderr,"flt_syntax: after onstring we got no span class name at line %d!\n",lineno);
             return 1;
           }
         }
 
-        if(str.len) array_push(&statement.args,&str);
-        str_init(&str);
-        array_push(&block.statement,&statement);
+        if(str.len) cf_array_push(&statement.args,&str);
+        cf_str_init(&str);
+        cf_array_push(&block.statement,&statement);
       }
       /* }}} */
       /* {{{ onstringlist <listen-name> <neuer-block> <span-klasse> */
@@ -400,42 +400,42 @@ int flt_syntax_load(const u_char *path,const u_char *lang) {
         if(cf_strcmp(str.content,"onstringlist_start") == 0) statement.start = 1;
         else statement.start = 0;
 
-        str_cleanup(&str);
+        cf_str_cleanup(&str);
 
         statement.type = FLT_SYNTAX_ONSTRINGLIST;
-        array_init(&statement.args,sizeof(string_t),NULL);
+        cf_array_init(&statement.args,sizeof(cf_string_t),NULL);
 
         if((type = flt_syntax_next_token(line,&pos,&str)) != FLT_SYNTAX_TOK_STR) {
           fprintf(stderr,"flt_syntax: after onstringlist we got no list name at line %d!\n",lineno);
           return 1;
         }
 
-        array_push(&statement.args,&str);
-        str_init(&str);
+        cf_array_push(&statement.args,&str);
+        cf_str_init(&str);
 
         type = flt_syntax_next_token(line,&pos,&str);
         if(type == FLT_SYNTAX_TOK_KEY) {
-          array_push(&statement.args,&str);
+          cf_array_push(&statement.args,&str);
           tb = type;
         }
         else if(type != FLT_SYNTAX_TOK_STR) {
           fprintf(stderr,"flt_syntax: after onstringlist we got no block name at line %d!\n",lineno);
           return 1;
         }
-        else array_push(&statement.args,&str);
+        else cf_array_push(&statement.args,&str);
 
-        str_init(&str);
+        cf_str_init(&str);
         if((type = flt_syntax_next_token(line,&pos,&str)) != FLT_SYNTAX_TOK_STR) {
-          tmpstr = array_element_at(&statement.args,1);
+          tmpstr = cf_array_element_at(&statement.args,1);
           if(tb != FLT_SYNTAX_TOK_KEY || cf_strcmp(tmpstr->content,"highlight") == 0) {
             fprintf(stderr,"flt_syntax: after onstringlist we got no span class name at line %d!\n",lineno);
             return 1;
           }
         }
 
-        if(str.len) array_push(&statement.args,&str);
-        str_init(&str);
-        array_push(&block.statement,&statement);
+        if(str.len) cf_array_push(&statement.args,&str);
+        cf_str_init(&str);
+        cf_array_push(&block.statement,&statement);
       }
       /* }}} */
       /* {{{ onregexp <regexp> <neuer-block> <span-klasse> */
@@ -443,7 +443,7 @@ int flt_syntax_load(const u_char *path,const u_char *lang) {
         if(cf_strcmp(str.content,"onregexp_start") == 0) statement.start = 1;
         else statement.start = 0;
 
-        str_cleanup(&str);
+        cf_str_cleanup(&str);
         statement.type = FLT_SYNTAX_ONREGEXP;
 
         if((type = flt_syntax_next_token(line,&pos,&str)) != FLT_SYNTAX_TOK_STR) {
@@ -462,36 +462,36 @@ int flt_syntax_load(const u_char *path,const u_char *lang) {
           }
         }
 
-        str_cleanup(&str);
-        array_init(&statement.pregs,sizeof(preg),NULL);
-        array_push(&statement.pregs,&preg);
+        cf_str_cleanup(&str);
+        cf_array_init(&statement.pregs,sizeof(preg),NULL);
+        cf_array_push(&statement.pregs,&preg);
 
-        array_init(&statement.args,sizeof(string_t),NULL);
+        cf_array_init(&statement.args,sizeof(cf_string_t),NULL);
 
         type = flt_syntax_next_token(line,&pos,&str);
         if(type == FLT_SYNTAX_TOK_KEY) {
-          array_push(&statement.args,&str);
+          cf_array_push(&statement.args,&str);
           tb = type;
         }
         else if(type != FLT_SYNTAX_TOK_STR) {
           fprintf(stderr,"flt_syntax: after onregexp we got no block name at line %d!\n",lineno);
           return 1;
         }
-        else array_push(&statement.args,&str);
+        else cf_array_push(&statement.args,&str);
 
-        str_init(&str);
+        cf_str_init(&str);
         if((type = flt_syntax_next_token(line,&pos,&str)) != FLT_SYNTAX_TOK_STR) {
-          tmpstr = array_element_at(&statement.args,0);
+          tmpstr = cf_array_element_at(&statement.args,0);
           if(tb != FLT_SYNTAX_TOK_KEY || cf_strcmp(tmpstr->content,"highlight") == 0) {
             fprintf(stderr,"flt_syntax: after onregexp we got no span class name at line %d!\n",lineno);
             return 1;
           }
         }
 
-        if(str.len) array_push(&statement.args,&str);
+        if(str.len) cf_array_push(&statement.args,&str);
 
-        str_init(&str);
-        array_push(&block.statement,&statement);
+        cf_str_init(&str);
+        cf_array_push(&block.statement,&statement);
       }
       /* }}} */
       /* {{{ onregexp_backref <pattern> <block> <backreference number> <span-klasse> */
@@ -499,7 +499,7 @@ int flt_syntax_load(const u_char *path,const u_char *lang) {
         if(cf_strcmp(str.content,"onregexp_backref_start") == 0) statement.start = 1;
         else statement.start = 0;
 
-        str_cleanup(&str);
+        cf_str_cleanup(&str);
         statement.type = FLT_SYNTAX_ONREGEXP_BACKREF;
 
         if((type = flt_syntax_next_token(line,&pos,&str)) != FLT_SYNTAX_TOK_STR) {
@@ -518,34 +518,34 @@ int flt_syntax_load(const u_char *path,const u_char *lang) {
           }
         }
 
-        str_cleanup(&str);
-        array_init(&statement.pregs,sizeof(preg),NULL);
-        array_push(&statement.pregs,&preg);
+        cf_str_cleanup(&str);
+        cf_array_init(&statement.pregs,sizeof(preg),NULL);
+        cf_array_push(&statement.pregs,&preg);
 
-        array_init(&statement.args,sizeof(string_t),NULL);
+        cf_array_init(&statement.args,sizeof(cf_string_t),NULL);
 
         if((type = flt_syntax_next_token(line,&pos,&str)) != FLT_SYNTAX_TOK_STR) {
           fprintf(stderr,"flt_syntax: after onregexp_backref we got no block name at line %d!\n",lineno);
           return 1;
         }
-        array_push(&statement.args,&str),
-        str_init(&str);
+        cf_array_push(&statement.args,&str),
+        cf_str_init(&str);
 
         if((type = flt_syntax_next_token(line,&pos,&str)) != FLT_SYNTAX_TOK_KEY) {
           fprintf(stderr,"flt_syntax: after onregexp_after we got no reference number at line %d!\n",lineno);
           return 1;
         }
-        array_push(&statement.args,&str);
-        str_init(&str);
+        cf_array_push(&statement.args,&str);
+        cf_str_init(&str);
 
         if((type = flt_syntax_next_token(line,&pos,&str)) != FLT_SYNTAX_TOK_STR) {
           fprintf(stderr,"flt_syntax: after onregexp_after we got no span class name at line %d!\n",lineno);
           return 1;
         }
-        array_push(&statement.args,&str);
-        str_init(&str);
+        cf_array_push(&statement.args,&str);
+        cf_str_init(&str);
 
-        array_push(&block.statement,&statement);
+        cf_array_push(&block.statement,&statement);
       }
       /* }}} */
       /* {{{ onregexpafter <vorher-regexp> <regexp-zu-matchen> <neuer-block> <span-klasse> */
@@ -553,7 +553,7 @@ int flt_syntax_load(const u_char *path,const u_char *lang) {
         if(cf_strcmp(str.content,"onregexpafter_start") == 0) statement.start = 1;
         else statement.start = 0;
 
-        str_cleanup(&str);
+        cf_str_cleanup(&str);
         statement.type = FLT_SYNTAX_ONREGEXP_AFTER;
 
         if((type = flt_syntax_next_token(line,&pos,&str)) != FLT_SYNTAX_TOK_STR) {
@@ -571,9 +571,9 @@ int flt_syntax_load(const u_char *path,const u_char *lang) {
           }
         }
 
-        str_cleanup(&str);
-        array_init(&statement.pregs,sizeof(preg),NULL);
-        array_push(&statement.pregs,&preg);
+        cf_str_cleanup(&str);
+        cf_array_init(&statement.pregs,sizeof(preg),NULL);
+        cf_array_push(&statement.pregs,&preg);
 
         if((type = flt_syntax_next_token(line,&pos,&str)) != FLT_SYNTAX_TOK_STR) {
           fprintf(stderr,"flt_syntax: after onregexpafter we got no regex at line %d!\n",lineno);
@@ -590,34 +590,34 @@ int flt_syntax_load(const u_char *path,const u_char *lang) {
           }
         }
 
-        str_cleanup(&str);
-        array_push(&statement.pregs,&preg);
+        cf_str_cleanup(&str);
+        cf_array_push(&statement.pregs,&preg);
 
-        array_init(&statement.args,sizeof(string_t),NULL);
+        cf_array_init(&statement.args,sizeof(cf_string_t),NULL);
 
         type = flt_syntax_next_token(line,&pos,&str);
         if(type == FLT_SYNTAX_TOK_KEY) {
-          array_push(&statement.args,&str);
+          cf_array_push(&statement.args,&str);
           tb = type;
         }
         else if(type != FLT_SYNTAX_TOK_STR) {
           fprintf(stderr,"flt_syntax: after onregexpafter we got no block name at line %d!\n",lineno);
           return 1;
         }
-        else array_push(&statement.args,&str);
+        else cf_array_push(&statement.args,&str);
 
-        str_init(&str);
+        cf_str_init(&str);
         if((type = flt_syntax_next_token(line,&pos,&str)) != FLT_SYNTAX_TOK_STR) {
-          tmpstr = array_element_at(&statement.args,1);
+          tmpstr = cf_array_element_at(&statement.args,1);
           if(tb != FLT_SYNTAX_TOK_KEY || cf_strcmp(tmpstr->content,"highlight") == 0) {
             fprintf(stderr,"flt_syntax: after onregexpafter we got no span class name at line %d!\n",lineno);
             return 1;
           }
         }
 
-        if(str.len) array_push(&statement.args,&str);
-        str_init(&str);
-        array_push(&block.statement,&statement);
+        if(str.len) cf_array_push(&statement.args,&str);
+        cf_str_init(&str);
+        cf_array_push(&block.statement,&statement);
       }
       /* }}} */
       /* {{{ onregexpafter_backref <vorher-regexp> <regexp-zu-matchen> <neuer-block> <backref-nummer> <span-klasse> */
@@ -625,7 +625,7 @@ int flt_syntax_load(const u_char *path,const u_char *lang) {
         if(cf_strcmp(str.content,"onregexpafter_backref_start") == 0) statement.start = 1;
         else statement.start = 0;
 
-        str_cleanup(&str);
+        cf_str_cleanup(&str);
         statement.type = FLT_SYNTAX_ONREGEXP_AFTER_BACKREF;
 
         if((type = flt_syntax_next_token(line,&pos,&str)) != FLT_SYNTAX_TOK_STR) {
@@ -643,9 +643,9 @@ int flt_syntax_load(const u_char *path,const u_char *lang) {
           }
         }
 
-        str_cleanup(&str);
-        array_init(&statement.pregs,sizeof(preg),NULL);
-        array_push(&statement.pregs,&preg);
+        cf_str_cleanup(&str);
+        cf_array_init(&statement.pregs,sizeof(preg),NULL);
+        cf_array_push(&statement.pregs,&preg);
 
         if((type = flt_syntax_next_token(line,&pos,&str)) != FLT_SYNTAX_TOK_STR) {
           fprintf(stderr,"flt_syntax: after onregexpafter_backref we got no regex at line %d!\n",lineno);
@@ -662,10 +662,10 @@ int flt_syntax_load(const u_char *path,const u_char *lang) {
           }
         }
 
-        str_cleanup(&str);
-        array_push(&statement.pregs,&preg);
+        cf_str_cleanup(&str);
+        cf_array_push(&statement.pregs,&preg);
 
-        array_init(&statement.args,sizeof(string_t),NULL);
+        cf_array_init(&statement.args,sizeof(cf_string_t),NULL);
 
         type = flt_syntax_next_token(line,&pos,&str);
         if(type != FLT_SYNTAX_TOK_STR) {
@@ -673,8 +673,8 @@ int flt_syntax_load(const u_char *path,const u_char *lang) {
           return 1;
         }
 
-        array_push(&statement.args,&str);
-        str_init(&str);
+        cf_array_push(&statement.args,&str);
+        cf_str_init(&str);
 
         
         if((type = flt_syntax_next_token(line,&pos,&str)) != FLT_SYNTAX_TOK_KEY) {
@@ -682,18 +682,18 @@ int flt_syntax_load(const u_char *path,const u_char *lang) {
           return 1;
         }
 
-        array_push(&statement.args,&str);
-        str_init(&str);
+        cf_array_push(&statement.args,&str);
+        cf_str_init(&str);
 
         if((type = flt_syntax_next_token(line,&pos,&str)) != FLT_SYNTAX_TOK_STR) {
           fprintf(stderr,"flt_syntax: after onregexpafter_backref we got no span class name at line %d!\n",lineno);
           return 1;
         }
 
-        array_push(&statement.args,&str);
-        str_init(&str);
+        cf_array_push(&statement.args,&str);
+        cf_str_init(&str);
 
-        array_push(&block.statement,&statement);
+        cf_array_push(&block.statement,&statement);
       }
       /* }}} */
       else {
@@ -711,7 +711,7 @@ int flt_syntax_load(const u_char *path,const u_char *lang) {
     return 1;
   }
 
-  array_push(&flt_syntax_files,&file);
+  cf_array_push(&flt_syntax_files,&file);
 
   return 0;
 }
@@ -723,7 +723,7 @@ flt_syntax_block_t *flt_syntax_block_by_name(flt_syntax_pattern_file_t *file,con
   flt_syntax_block_t *block;
 
   for(i=0;i<file->blocks.elements;++i) {
-    block = array_element_at(&file->blocks,i);
+    block = cf_array_element_at(&file->blocks,i);
     if(cf_strcmp(block->name,name) == 0) return block;
   }
 
@@ -737,7 +737,7 @@ flt_syntax_list_t *flt_syntax_list_by_name(flt_syntax_pattern_file_t *file,const
   flt_syntax_list_t *list;
 
   for(i=0;i<file->lists.elements;++i) {
-    list = array_element_at(&file->lists,i);
+    list = cf_array_element_at(&file->lists,i);
     if(cf_strcmp(list->name,name) == 0) return list;
   }
 
@@ -746,18 +746,18 @@ flt_syntax_list_t *flt_syntax_list_by_name(flt_syntax_pattern_file_t *file,const
 /* }}} */
 
 /* {{{ flt_syntax_extra_arg */
-string_t *flt_syntax_extra_arg(string_t *str,const u_char *extra_arg) {
-  string_t *target = fo_alloc(NULL,1,sizeof(*target),FO_ALLOC_CALLOC);
+cf_string_t *flt_syntax_extra_arg(cf_string_t *str,const u_char *extra_arg) {
+  cf_string_t *target = cf_alloc(NULL,1,sizeof(*target),CF_ALLOC_CALLOC);
   register u_char *ptr;
 
   for(ptr=str->content;*ptr;++ptr) {
     if(*ptr == '$' && *(ptr+1) == '$') {
-      str_chars_append(target,extra_arg,strlen(extra_arg));
+      cf_str_chars_append(target,extra_arg,strlen(extra_arg));
       ++ptr;
       continue;
     }
 
-    str_char_append(target,*ptr);
+    cf_str_char_append(target,*ptr);
   }
 
   return target;
@@ -795,11 +795,11 @@ int flt_syntax_check_for_prev(register u_char *ptr,const u_char *begin) {
 /* }}} */
 
 /* {{{ flt_syntax_doit */
-int flt_syntax_doit(flt_syntax_pattern_file_t *file,flt_syntax_block_t *block,u_char *text,size_t len,string_t *cnt,u_char **pos,const u_char *extra_arg,int xhtml,int *pops) {
+int flt_syntax_doit(flt_syntax_pattern_file_t *file,flt_syntax_block_t *block,u_char *text,size_t len,cf_string_t *cnt,u_char **pos,const u_char *extra_arg,int xhtml,int *pops) {
   u_char *ptr,*tmpchar,*priv_extra,*begin;
   size_t i,x;
   flt_syntax_statement_t *statement;
-  string_t *str,*tmpstr;
+  cf_string_t *str,*tmpstr;
   int matched;
   flt_syntax_block_t *tmpblock;
   flt_syntax_list_t *tmplist;
@@ -832,9 +832,9 @@ int flt_syntax_doit(flt_syntax_pattern_file_t *file,flt_syntax_block_t *block,u_
 
   for(ptr=begin;*ptr;++ptr) {
     if(block->le_behavior == FLT_SYNTAX_POP && cf_strncmp(ptr,"<br",3) == 0) {
-      str_chars_append(cnt,"<br",3);
-      if(xhtml) str_chars_append(cnt," />",3);
-      else str_char_append(cnt,'>');
+      cf_str_chars_append(cnt,"<br",3);
+      if(xhtml) cf_str_chars_append(cnt," />",3);
+      else cf_str_char_append(cnt,'>');
       *pos = ptr + (xhtml ? 6 : 4);
       return 0;
     }
@@ -842,90 +842,90 @@ int flt_syntax_doit(flt_syntax_pattern_file_t *file,flt_syntax_block_t *block,u_
       for(matched=0;*ptr;++ptr) {
         if(cf_strncmp(ptr,"<code",5) == 0) {
           ++matched;
-          str_chars_append(cnt,"<code",5);
+          cf_str_chars_append(cnt,"<code",5);
           ptr += 4;
         }
         else if(cf_strncmp(ptr,"</code>",7) == 0) {
           --matched;
-          str_chars_append(cnt,"</code>",7);
+          cf_str_chars_append(cnt,"</code>",7);
           ptr += 6;
           if(matched == 0) break;
         }
-        else str_char_append(cnt,*ptr);
+        else cf_str_char_append(cnt,*ptr);
       }
 
       continue;
     }
     /* replace tabs by spaces */
     else if(*ptr == '\t' && flt_syntax_tabsreplace) {
-      for(i=0;i<flt_syntax_tabsreplace;++i) str_chars_append(cnt,"&nbsp;",6);
+      for(i=0;i<flt_syntax_tabsreplace;++i) cf_str_chars_append(cnt,"&nbsp;",6);
       continue;
     }
 
     for(i=0,matched=0;i<block->statement.elements && matched == 0;++i) {
-      statement = array_element_at(&block->statement,i);
+      statement = cf_array_element_at(&block->statement,i);
 
       if(statement->start && start == 0) continue;
 
       switch(statement->type) {
         case FLT_SYNTAX_ONSTRING:
           /* {{{ onstring */
-          tmpstr = array_element_at(&statement->args,0);
+          tmpstr = cf_array_element_at(&statement->args,0);
           if(extra_arg) tmpstr = flt_syntax_extra_arg(tmpstr,extra_arg);
 
           if(cf_strncmp(tmpstr->content,ptr,tmpstr->len) == 0) {
             matched = 1;
 
-            str = array_element_at(&statement->args,1);
+            str = cf_array_element_at(&statement->args,1);
 
             if(cf_strcmp(str->content,"highlight") == 0) {
-              str = array_element_at(&statement->args,2);
+              str = cf_array_element_at(&statement->args,2);
 
-              str_chars_append(cnt,"<span class=\"",13);
-              str_str_append(cnt,str);
-              str_chars_append(cnt,"\">",2);
+              cf_str_chars_append(cnt,"<span class=\"",13);
+              cf_str_str_append(cnt,str);
+              cf_str_chars_append(cnt,"\">",2);
 
-              str_str_append(cnt,tmpstr);
-              str_chars_append(cnt,"</span>",7);
+              cf_str_str_append(cnt,tmpstr);
+              cf_str_chars_append(cnt,"</span>",7);
 
               ptr += tmpstr->len - 1;
             }
             else if(cf_strcmp(str->content,"pop") == 0) {
-              str = array_element_at(&statement->args,2);
+              str = cf_array_element_at(&statement->args,2);
               if(str && pops) *pops = atoi(str->content) - 1;
 
               *pos = ptr + tmpstr->len;
-              str_str_append(cnt,tmpstr);
+              cf_str_str_append(cnt,tmpstr);
               if(extra_arg) {
-                str_cleanup(tmpstr);
+                cf_str_cleanup(tmpstr);
                 free(tmpstr);
               }
               return 0;
             }
             else if(cf_strcmp(str->content,"stay") == 0) {
-              str_str_append(cnt,tmpstr);
+              cf_str_str_append(cnt,tmpstr);
               ptr += tmpstr->len - 1;
             }
             else {
-              str = array_element_at(&statement->args,2);
+              str = cf_array_element_at(&statement->args,2);
 
-              str_chars_append(cnt,"<span class=\"",13);
-              str_str_append(cnt,str);
-              str_chars_append(cnt,"\">",2);
+              cf_str_chars_append(cnt,"<span class=\"",13);
+              cf_str_str_append(cnt,str);
+              cf_str_chars_append(cnt,"\">",2);
 
-              str = array_element_at(&statement->args,1);
+              str = cf_array_element_at(&statement->args,1);
               if((tmpblock = flt_syntax_block_by_name(file,str->content)) == NULL) {
                 fprintf(stderr,"flt_syntax: Could not find block %s!\n",str->content);
                 return 1;
               }
 
-              str_str_append(cnt,tmpstr);
+              cf_str_str_append(cnt,tmpstr);
 
               tmpchar = ptr + tmpstr->len;
               priv_pops = 0;
               if(flt_syntax_doit(file,tmpblock,text,len,cnt,&tmpchar,NULL,xhtml,&priv_pops) != 0) return 1;
               ptr = tmpchar - 1;
-              str_chars_append(cnt,"</span>",7);
+              cf_str_chars_append(cnt,"</span>",7);
 
               /* maybe we shall return more than one state */
               if(priv_pops > 0) {
@@ -937,7 +937,7 @@ int flt_syntax_doit(flt_syntax_pattern_file_t *file,flt_syntax_block_t *block,u_
           }
 
           if(extra_arg) {
-            str_cleanup(tmpstr);
+            cf_str_cleanup(tmpstr);
             free(tmpstr);
           }
           /* }}} */
@@ -947,7 +947,7 @@ int flt_syntax_doit(flt_syntax_pattern_file_t *file,flt_syntax_block_t *block,u_
           /* {{{ onstringlist */
           if(flt_syntax_check_for_prev(ptr,begin) != 0) continue;
 
-          str = array_element_at(&statement->args,0);
+          str = cf_array_element_at(&statement->args,0);
           if((tmplist = flt_syntax_list_by_name(file,str->content)) == NULL) {
             fprintf(stderr,"flt_syntax: could not find list %s!\n",str->content);
             return 1;
@@ -955,57 +955,57 @@ int flt_syntax_doit(flt_syntax_pattern_file_t *file,flt_syntax_block_t *block,u_
 
           tmpchar = flt_syntax_get_token(ptr);
 
-          if(tmpchar && (tmpstr = array_bsearch(&tmplist->list,tmpchar,(int (*)(const void *,const void *))flt_syntax_my_scmp)) != NULL) {
+          if(tmpchar && (tmpstr = cf_array_bsearch(&tmplist->list,tmpchar,(int (*)(const void *,const void *))flt_syntax_my_scmp)) != NULL) {
             matched = 1;
 
-            str = array_element_at(&statement->args,1);
+            str = cf_array_element_at(&statement->args,1);
             if(cf_strcmp(str->content,"highlight") == 0) {
-              str = array_element_at(&statement->args,2);
+              str = cf_array_element_at(&statement->args,2);
               
-              str_chars_append(cnt,"<span class=\"",13);
-              str_str_append(cnt,str);
-              str_chars_append(cnt,"\">",2);
+              cf_str_chars_append(cnt,"<span class=\"",13);
+              cf_str_str_append(cnt,str);
+              cf_str_chars_append(cnt,"\">",2);
 
-              str_chars_append(cnt,tmpchar,tmpstr->len);
-              str_chars_append(cnt,"</span>",7);
+              cf_str_chars_append(cnt,tmpchar,tmpstr->len);
+              cf_str_chars_append(cnt,"</span>",7);
 
               ptr += tmpstr->len - 1;
             }
             else if(cf_strcmp(str->content,"pop") == 0) {
-              str = array_element_at(&statement->args,2);
+              str = cf_array_element_at(&statement->args,2);
               if(str && pops) *pops = atoi(str->content) - 1;
 
-              str = array_element_at(&statement->args,0);
+              str = cf_array_element_at(&statement->args,0);
               *pos = ptr + str->len;
-              str_chars_append(cnt,tmpchar,tmpstr->len);
+              cf_str_chars_append(cnt,tmpchar,tmpstr->len);
               return 0;
             }
             else if(cf_strcmp(str->content,"stay") == 0) {
-              str = array_element_at(&statement->args,0);
-              str_chars_append(cnt,tmpchar,tmpstr->len);
+              str = cf_array_element_at(&statement->args,0);
+              cf_str_chars_append(cnt,tmpchar,tmpstr->len);
               ptr += tmpstr->len - 1;
             }
             else {
-              str = array_element_at(&statement->args,2);
+              str = cf_array_element_at(&statement->args,2);
 
-              str_chars_append(cnt,"<span class=\"",13);
-              str_str_append(cnt,str);
-              str_chars_append(cnt,"\">",2);
+              cf_str_chars_append(cnt,"<span class=\"",13);
+              cf_str_str_append(cnt,str);
+              cf_str_chars_append(cnt,"\">",2);
               
-              str = array_element_at(&statement->args,1);
+              str = cf_array_element_at(&statement->args,1);
               if((tmpblock = flt_syntax_block_by_name(file,str->content)) == NULL) {
                 fprintf(stderr,"flt_syntax: Could not find block %s!\n",str->content);
                 return 1;
               }
 
-              str_chars_append(cnt,tmpchar,tmpstr->len);
+              cf_str_chars_append(cnt,tmpchar,tmpstr->len);
               free(tmpchar);
 
               tmpchar = ptr + tmpstr->len;
               priv_pops = 0;
               if(flt_syntax_doit(file,tmpblock,text,len,cnt,&tmpchar,NULL,xhtml,&priv_pops) != 0) return 1;
               ptr = tmpchar - 1;
-              str_chars_append(cnt,"</span>",7);
+              cf_str_chars_append(cnt,"</span>",7);
 
               if(priv_pops > 0) {
                 if(pops) *pops = priv_pops - 1;
@@ -1022,55 +1022,55 @@ int flt_syntax_doit(flt_syntax_pattern_file_t *file,flt_syntax_block_t *block,u_
 
         case FLT_SYNTAX_ONREGEXP:
           /* {{{ onregexp */
-          tmppreg = array_element_at(&statement->pregs,0);
+          tmppreg = cf_array_element_at(&statement->pregs,0);
           if(pcre_exec(tmppreg->re,tmppreg->extra,ptr,len-(text-ptr),0,0,stdvec,12) >= 0) {
             matched = 1;
 
-            str = array_element_at(&statement->args,0);
+            str = cf_array_element_at(&statement->args,0);
             if(cf_strcmp(str->content,"highlight") == 0) {
               tmpchar = strndup(ptr+stdvec[0],stdvec[1]-stdvec[0]);
 
-              str = array_element_at(&statement->args,1);
-              str_chars_append(cnt,"<span class=\"",13);
-              str_str_append(cnt,str);
-              str_chars_append(cnt,"\">",2);
+              str = cf_array_element_at(&statement->args,1);
+              cf_str_chars_append(cnt,"<span class=\"",13);
+              cf_str_str_append(cnt,str);
+              cf_str_chars_append(cnt,"\">",2);
 
-              str_chars_append(cnt,tmpchar,stdvec[1]-stdvec[0]);
-              str_chars_append(cnt,"</span>",7);
+              cf_str_chars_append(cnt,tmpchar,stdvec[1]-stdvec[0]);
+              cf_str_chars_append(cnt,"</span>",7);
 
               ptr += stdvec[1] - stdvec[0] - 1;
             }
             else if(cf_strcmp(str->content,"pop") == 0) {
-              str = array_element_at(&statement->args,1);
+              str = cf_array_element_at(&statement->args,1);
               if(str && pops) *pops = atoi(str->content) - 1;
 
-              str_chars_append(cnt,ptr+stdvec[0],stdvec[1]-stdvec[0]);
+              cf_str_chars_append(cnt,ptr+stdvec[0],stdvec[1]-stdvec[0]);
               *pos = ptr + (stdvec[1] - stdvec[0]);
               return 0;
             }
             else if(cf_strcmp(str->content,"stay") == 0) {
-              str_chars_append(cnt,ptr+stdvec[0],stdvec[1]-stdvec[0]);
+              cf_str_chars_append(cnt,ptr+stdvec[0],stdvec[1]-stdvec[0]);
               ptr += stdvec[1] - stdvec[0];
             }
             else {
-              str = array_element_at(&statement->args,1);
+              str = cf_array_element_at(&statement->args,1);
 
-              str_chars_append(cnt,"<span class=\"",13);
-              str_str_append(cnt,str);
-              str_chars_append(cnt,"\">",2);
+              cf_str_chars_append(cnt,"<span class=\"",13);
+              cf_str_str_append(cnt,str);
+              cf_str_chars_append(cnt,"\">",2);
 
-              str = array_element_at(&statement->args,0);
+              str = cf_array_element_at(&statement->args,0);
               if((tmpblock = flt_syntax_block_by_name(file,str->content)) == NULL) {
                 fprintf(stderr,"flt_syntax: Could not find block %s!\n",str->content);
                 return 1;
               }
 
-              str_chars_append(cnt,ptr+stdvec[0],stdvec[1]-stdvec[0]);
+              cf_str_chars_append(cnt,ptr+stdvec[0],stdvec[1]-stdvec[0]);
               tmpchar = ptr + (stdvec[1] - stdvec[0]);
               priv_pops = 0;
               if(flt_syntax_doit(file,tmpblock,text,len,cnt,&tmpchar,NULL,xhtml,&priv_pops) != 0) return 1;
               ptr = tmpchar - 1;
-              str_chars_append(cnt,"</span>",7);
+              cf_str_chars_append(cnt,"</span>",7);
 
               if(priv_pops > 0) {
                 if(pops) *pops = priv_pops - 1;
@@ -1084,26 +1084,26 @@ int flt_syntax_doit(flt_syntax_pattern_file_t *file,flt_syntax_block_t *block,u_
 
         case FLT_SYNTAX_ONREGEXP_BACKREF:
           /* {{{ onregexp_backref */
-          tmppreg = array_element_at(&statement->pregs,0);
+          tmppreg = cf_array_element_at(&statement->pregs,0);
           if(pcre_exec(tmppreg->re,tmppreg->extra,ptr,len-(text-ptr),0,0,stdvec,42) >= 0) {
             matched = 1;
 
-            str = array_element_at(&statement->args,2);
+            str = cf_array_element_at(&statement->args,2);
 
-            str_chars_append(cnt,"<span class=\"",13);
-            str_str_append(cnt,str);
-            str_chars_append(cnt,"\">",2);
+            cf_str_chars_append(cnt,"<span class=\"",13);
+            cf_str_str_append(cnt,str);
+            cf_str_chars_append(cnt,"\">",2);
 
-            str = array_element_at(&statement->args,0);
+            str = cf_array_element_at(&statement->args,0);
             if((tmpblock = flt_syntax_block_by_name(file,str->content)) == NULL) {
               fprintf(stderr,"flt_syntax: Could not find block %s!\n",str->content);
               return 1;
             }
 
-            str = array_element_at(&statement->args,1);
+            str = cf_array_element_at(&statement->args,1);
 
             priv_extra = NULL;
-            str_chars_append(cnt,ptr+stdvec[0],stdvec[1]-stdvec[0]);
+            cf_str_chars_append(cnt,ptr+stdvec[0],stdvec[1]-stdvec[0]);
             tmpchar = ptr + (stdvec[1] - stdvec[0]);
 
             if(pcre_get_substring((const char *)ptr,stdvec,42,atoi(str->content),(const char **)&priv_extra) < 0) break;
@@ -1112,7 +1112,7 @@ int flt_syntax_doit(flt_syntax_pattern_file_t *file,flt_syntax_block_t *block,u_
 
             pcre_free_substring(priv_extra);
             ptr = tmpchar - 1;
-            str_chars_append(cnt,"</span>",7);
+            cf_str_chars_append(cnt,"</span>",7);
 
             if(priv_pops > 0) {
               if(pops) *pops = priv_pops - 1;
@@ -1124,61 +1124,61 @@ int flt_syntax_doit(flt_syntax_pattern_file_t *file,flt_syntax_block_t *block,u_
           break;
         case FLT_SYNTAX_ONREGEXP_AFTER:
           /* {{{ onregexpafter */
-          tmppreg = array_element_at(&statement->pregs,0);
+          tmppreg = cf_array_element_at(&statement->pregs,0);
           if(pcre_exec(tmppreg->re,tmppreg->extra,ptr,len-(text-ptr),0,0,stdvec,42) >= 0) {
             x = stdvec[1] - stdvec[0];
-            tmppreg = array_element_at(&statement->pregs,1);
+            tmppreg = cf_array_element_at(&statement->pregs,1);
 
             if(pcre_exec(tmppreg->re,tmppreg->extra,ptr+x,len-(text-ptr)-x,0,0,stdvec,42) >= 0) {
               matched = 1;
-              str_chars_append(cnt,ptr,x);
+              cf_str_chars_append(cnt,ptr,x);
               ptr += x;
 
-              str = array_element_at(&statement->args,0);
+              str = cf_array_element_at(&statement->args,0);
               if(cf_strcmp(str->content,"highlight") == 0) {
                 tmpchar = strndup(ptr+stdvec[0],stdvec[1]-stdvec[0]);
 
-                str = array_element_at(&statement->args,1);
-                str_chars_append(cnt,"<span class=\"",13);
-                str_str_append(cnt,str);
-                str_chars_append(cnt,"\">",2);
+                str = cf_array_element_at(&statement->args,1);
+                cf_str_chars_append(cnt,"<span class=\"",13);
+                cf_str_str_append(cnt,str);
+                cf_str_chars_append(cnt,"\">",2);
 
-                str_chars_append(cnt,tmpchar,stdvec[1]-stdvec[0]);
-                str_chars_append(cnt,"</span>",7);
+                cf_str_chars_append(cnt,tmpchar,stdvec[1]-stdvec[0]);
+                cf_str_chars_append(cnt,"</span>",7);
 
                 ptr += stdvec[1] - stdvec[0] - 1;
               }
               else if(cf_strcmp(str->content,"pop") == 0) {
-                str = array_element_at(&statement->args,1);
+                str = cf_array_element_at(&statement->args,1);
                 if(str && pops) *pops = atoi(str->content) - 1;
 
-                str_chars_append(cnt,ptr+stdvec[0],stdvec[1]-stdvec[0]);
+                cf_str_chars_append(cnt,ptr+stdvec[0],stdvec[1]-stdvec[0]);
                 *pos = ptr + (stdvec[1] - stdvec[0]);
                 return 0;
               }
               else if(cf_strcmp(str->content,"stay") == 0) {
-                str_chars_append(cnt,ptr+stdvec[0],stdvec[1]-stdvec[0]);
+                cf_str_chars_append(cnt,ptr+stdvec[0],stdvec[1]-stdvec[0]);
                 ptr += stdvec[1] - stdvec[0];
               }
               else {
-                str = array_element_at(&statement->args,1);
+                str = cf_array_element_at(&statement->args,1);
 
-                str_chars_append(cnt,"<span class=\"",13);
-                str_str_append(cnt,str);
-                str_chars_append(cnt,"\">",2);
+                cf_str_chars_append(cnt,"<span class=\"",13);
+                cf_str_str_append(cnt,str);
+                cf_str_chars_append(cnt,"\">",2);
 
-                str = array_element_at(&statement->args,0);
+                str = cf_array_element_at(&statement->args,0);
                 if((tmpblock = flt_syntax_block_by_name(file,str->content)) == NULL) {
                   fprintf(stderr,"flt_syntax: Could not find block %s!\n",str->content);
                   return 1;
                 }
 
-                str_chars_append(cnt,ptr+stdvec[0],stdvec[1]-stdvec[0]);
+                cf_str_chars_append(cnt,ptr+stdvec[0],stdvec[1]-stdvec[0]);
                 tmpchar = ptr + (stdvec[1] - stdvec[0]);
                 priv_pops = 0;
                 if(flt_syntax_doit(file,tmpblock,text,len,cnt,&tmpchar,NULL,xhtml,&priv_pops) != 0) return 1;
                 ptr = tmpchar - 1;
-                str_chars_append(cnt,"</span>",7);
+                cf_str_chars_append(cnt,"</span>",7);
 
                 if(priv_pops > 0) {
                   if(pops) *pops = priv_pops - 1;
@@ -1192,39 +1192,39 @@ int flt_syntax_doit(flt_syntax_pattern_file_t *file,flt_syntax_block_t *block,u_
           break;
         case FLT_SYNTAX_ONREGEXP_AFTER_BACKREF:
           /* {{{ onregexpafter_backref */
-          tmppreg = array_element_at(&statement->pregs,0);
+          tmppreg = cf_array_element_at(&statement->pregs,0);
           if(pcre_exec(tmppreg->re,tmppreg->extra,ptr,len-(text-ptr),0,0,stdvec,42) >= 0) {
             x = stdvec[1] - stdvec[0];
-            tmppreg = array_element_at(&statement->pregs,1);
+            tmppreg = cf_array_element_at(&statement->pregs,1);
 
             if(pcre_exec(tmppreg->re,tmppreg->extra,ptr+x,len-(text-ptr)-x,0,0,stdvec,42) >= 0) {
               matched = 1;
-              str_chars_append(cnt,ptr,x);
+              cf_str_chars_append(cnt,ptr,x);
               ptr += x;
 
-              str = array_element_at(&statement->args,2);
-              str_chars_append(cnt,"<span class=\"",13);
-              str_str_append(cnt,str);
-              str_chars_append(cnt,"\">",2);
+              str = cf_array_element_at(&statement->args,2);
+              cf_str_chars_append(cnt,"<span class=\"",13);
+              cf_str_str_append(cnt,str);
+              cf_str_chars_append(cnt,"\">",2);
 
               priv_extra = NULL;
-              str_chars_append(cnt,ptr+stdvec[0],stdvec[1]-stdvec[0]);
+              cf_str_chars_append(cnt,ptr+stdvec[0],stdvec[1]-stdvec[0]);
               tmpchar = ptr + (stdvec[1] - stdvec[0]);
 
-              str = array_element_at(&statement->args,0);
+              str = cf_array_element_at(&statement->args,0);
               if((tmpblock = flt_syntax_block_by_name(file,str->content)) == NULL) {
                 fprintf(stderr,"flt_syntax: Could not find block %s!\n",str->content);
                 return 1;
               }
 
-              str = array_element_at(&statement->args,1);
+              str = cf_array_element_at(&statement->args,1);
               if(pcre_get_substring((const char *)ptr,stdvec,42,atoi(str->content),(const char **)&priv_extra) < 0) break;
               priv_pops = 0;
               if(flt_syntax_doit(file,tmpblock,text,len,cnt,&tmpchar,priv_extra,xhtml,&priv_pops) != 0) return 1;
 
               pcre_free_substring(priv_extra);
               ptr = tmpchar - 1;
-              str_chars_append(cnt,"</span>",7);
+              cf_str_chars_append(cnt,"</span>",7);
 
               if(priv_pops > 0) {
                 if(pops) *pops = priv_pops - 1;
@@ -1240,14 +1240,14 @@ int flt_syntax_doit(flt_syntax_pattern_file_t *file,flt_syntax_block_t *block,u_
 
     if(matched == 0) {
       if(*ptr == '&') {
-        for(;*ptr != ';';++ptr) str_char_append(cnt,*ptr);
-        str_char_append(cnt,*ptr);
+        for(;*ptr != ';';++ptr) cf_str_char_append(cnt,*ptr);
+        cf_str_char_append(cnt,*ptr);
       }
       else if(*ptr == '<') {
-        for(;*ptr && *ptr != '>';++ptr) str_char_append(cnt,*ptr);
-        str_char_append(cnt,*ptr);
+        for(;*ptr && *ptr != '>';++ptr) cf_str_char_append(cnt,*ptr);
+        cf_str_char_append(cnt,*ptr);
       }
-      else str_char_append(cnt,*ptr);
+      else cf_str_char_append(cnt,*ptr);
     }
     else start = 0;
   }
@@ -1259,17 +1259,17 @@ int flt_syntax_doit(flt_syntax_pattern_file_t *file,flt_syntax_block_t *block,u_
 /* }}} */
 
 /* {{{ flt_syntax_highlight */
-int flt_syntax_highlight(string_t *content,string_t *bco,const u_char *lang,const u_char *fname) {
+int flt_syntax_highlight(cf_string_t *content,cf_string_t *bco,const u_char *lang,const u_char *fname) {
   u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   flt_syntax_pattern_file_t *file;
   size_t i;
   int found = 0;
-  string_t code;
+  cf_string_t code;
   u_char *pos = NULL;
-  name_value_t *xmlm = cfg_get_first_value(&fo_default_conf,forum_name,"XHTMLMode");
+  cf_name_value_t *xmlm = cf_cfg_get_first_value(&fo_default_conf,forum_name,"XHTMLMode");
 
   for(i=0;i<flt_syntax_files.elements;++i) {
-    file = array_element_at(&flt_syntax_files,i);
+    file = cf_array_element_at(&flt_syntax_files,i);
 
     if(cf_strcmp(file->lang,lang) == 0) {
       found = 1;
@@ -1279,79 +1279,79 @@ int flt_syntax_highlight(string_t *content,string_t *bco,const u_char *lang,cons
 
   if(!found) {
     if(flt_syntax_load(fname,lang) != 0) return 1;
-    file = array_element_at(&flt_syntax_files,flt_syntax_files.elements-1);
+    file = cf_array_element_at(&flt_syntax_files,flt_syntax_files.elements-1);
   }
 
-  str_init(&code);
+  cf_str_init(&code);
   if(flt_syntax_doit(file,NULL,content->content,content->len,&code,&pos,NULL,cf_strcmp(xmlm->values[0],"yes") == 0,NULL) != 0) {
-    str_cleanup(&code);
+    cf_str_cleanup(&code);
     return 1;
   }
 
-  str_chars_append(bco,"<code title=\"",13);
-  str_chars_append(bco,lang,strlen(lang));
-  str_chars_append(bco,"\" class=\"",9);
-  str_chars_append(bco,lang,strlen(lang));
-  str_chars_append(bco,"\">",2);
-  str_str_append(bco,&code);
-  str_cleanup(&code);
-  str_chars_append(bco,"</code>",7);
+  cf_str_chars_append(bco,"<code title=\"",13);
+  cf_str_chars_append(bco,lang,strlen(lang));
+  cf_str_chars_append(bco,"\" class=\"",9);
+  cf_str_chars_append(bco,lang,strlen(lang));
+  cf_str_chars_append(bco,"\">",2);
+  cf_str_str_append(bco,&code);
+  cf_str_cleanup(&code);
+  cf_str_chars_append(bco,"</code>",7);
 
   return 0;
 }
 /* }}} */
 
 /* {{{ flt_syntax_execute */
-int flt_syntax_execute(configuration_t *fdc,configuration_t *fvc,cl_thread_t *thr,const u_char *directive,const u_char **parameters,size_t plen,string_t *bco,string_t *bci,string_t *content,string_t *cite,const u_char *qchars,int sig) {
-  string_t str;
+int flt_syntax_execute(cf_configuration_t *fdc,cf_configuration_t *fvc,cl_thread_t *thr,const u_char *directive,const u_char **parameters,size_t plen,cf_string_t *bco,cf_string_t *bci,cf_string_t *content,cf_string_t *cite,const u_char *qchars,int sig) {
+  cf_string_t str;
   struct stat st;
   u_char *lang,*ptr;
 
   /* {{{ we don't know what language we got, so just put a <code> around it */
   if(flt_syntax_active == 0 || plen != 2 || cf_strcmp(parameters[0],"lang") != 0) {
-    str_chars_append(bco,"<code>",6);
-    str_str_append(bco,content);
-    str_chars_append(bco,"</code>",7);
+    cf_str_chars_append(bco,"<code>",6);
+    cf_str_str_append(bco,content);
+    cf_str_chars_append(bco,"</code>",7);
 
     if(bci) {
-      str_chars_append(bci,"[code]",6);
-      str_str_append(bci,cite);
-      str_chars_append(bci,"[/code]",7);
+      cf_str_chars_append(bci,"[code]",6);
+      cf_str_str_append(bci,cite);
+      cf_str_chars_append(bci,"[/code]",7);
     }
 
     return FLT_OK;
   }
   /* }}} */
 
-  str_init(&str);
+  cf_str_init(&str);
   for(ptr=(u_char *)parameters[1];*ptr;++ptr) {
-    if(isalnum(*ptr)) str_char_append(&str,tolower(*ptr));
+    if(isalnum(*ptr)) cf_str_char_append(&str,tolower(*ptr));
   }
   lang = str.content;
 
   /* we got a language, check if it exists */
-  str_init(&str);
-  str_char_set(&str,flt_syntax_patterns_dir,strlen(flt_syntax_patterns_dir));
-  str_char_append(&str,'/');
-  str_chars_append(&str,lang,strlen(lang));
-  str_chars_append(&str,".pat",4);
+  cf_str_init(&str);
+  cf_str_char_set(&str,flt_syntax_patterns_dir,strlen(flt_syntax_patterns_dir));
+  cf_str_char_append(&str,'/');
+  cf_str_chars_append(&str,lang,strlen(lang));
+  cf_str_chars_append(&str,".pat",4);
 
   /* {{{ language doesnt exist, put a <code> around it */
   if(stat(str.content,&st) == -1) {
-    str_chars_append(bco,"<code title=\"",13);
-    str_chars_append(bco,parameters[1],strlen(parameters[1]));
-    str_chars_append(bco,"\" class=\"",9);
-    str_chars_append(bco,parameters[1],strlen(parameters[1]));
-    str_chars_append(bco,"\">",2);
-    str_str_append(bco,content);
-    str_chars_append(bco,"</code>",7);
+    cf_str_chars_append(bco,"<code title=\"",13);
+    cf_str_chars_append(bco,parameters[1],strlen(parameters[1]));
+    cf_str_chars_append(bco,"\" class=\"",9);
+    cf_str_chars_append(bco,parameters[1],strlen(parameters[1]));
+    cf_str_chars_append(bco,"\">",2);
+    cf_str_str_append(bco,content);
+    cf_str_chars_append(bco,"</code>",7);
 
     if(bci) {
-      str_chars_append(bci,"[code lang=",11);
-      str_chars_append(bci,parameters[1],strlen(parameters[1]));
-      str_char_append(bci,']');
-      str_str_append(bci,cite);
-      str_chars_append(bci,"[/code]",7);
+      cf_str_chars_append(bci,"[code lang=",11);
+      cf_str_chars_append(bci,parameters[1],strlen(parameters[1]));
+      cf_str_char_append(bci,']');
+      cf_str_str_append(bci,cite);
+      cf_str_chars_append(bci,"[/code]",7);
     }
 
     return FLT_OK;
@@ -1360,20 +1360,20 @@ int flt_syntax_execute(configuration_t *fdc,configuration_t *fvc,cl_thread_t *th
 
   /* {{{ highlight content */
   if(flt_syntax_highlight(content,bco,lang,str.content) != 0) {
-    str_chars_append(bco,"<code title=\"",13);
-    str_chars_append(bco,parameters[1],strlen(parameters[1]));
-    str_chars_append(bco,"\" class=\"",9);
-    str_chars_append(bco,parameters[1],strlen(parameters[1]));
-    str_chars_append(bco,"\">",2);
-    str_str_append(bco,content);
-    str_chars_append(bco,"</code>",7);
+    cf_str_chars_append(bco,"<code title=\"",13);
+    cf_str_chars_append(bco,parameters[1],strlen(parameters[1]));
+    cf_str_chars_append(bco,"\" class=\"",9);
+    cf_str_chars_append(bco,parameters[1],strlen(parameters[1]));
+    cf_str_chars_append(bco,"\">",2);
+    cf_str_str_append(bco,content);
+    cf_str_chars_append(bco,"</code>",7);
 
     if(bci) {
-      str_chars_append(bci,"[code lang=",11);
-      str_chars_append(bci,parameters[1],strlen(parameters[1]));
-      str_char_append(bci,']');
-      str_str_append(bci,cite);
-      str_chars_append(bci,"[/code]",7);
+      cf_str_chars_append(bci,"[code lang=",11);
+      cf_str_chars_append(bci,parameters[1],strlen(parameters[1]));
+      cf_str_char_append(bci,']');
+      cf_str_str_append(bci,cite);
+      cf_str_chars_append(bci,"[/code]",7);
     }
 
     return FLT_OK;
@@ -1381,25 +1381,25 @@ int flt_syntax_execute(configuration_t *fdc,configuration_t *fvc,cl_thread_t *th
   /* }}} */
 
   if(bci) {
-    str_chars_append(bci,"[code lang=",11);
-    str_chars_append(bci,parameters[1],strlen(parameters[1]));
-    str_char_append(bci,']');
-    str_str_append(bci,cite);
-    str_chars_append(bci,"[/code]",7);
+    cf_str_chars_append(bci,"[code lang=",11);
+    cf_str_chars_append(bci,parameters[1],strlen(parameters[1]));
+    cf_str_char_append(bci,']');
+    cf_str_str_append(bci,cite);
+    cf_str_chars_append(bci,"[/code]",7);
   }
 
   return FLT_OK;
 }
 /* }}} */
 
-int flt_syntax_validate(configuration_t *fdc,configuration_t *fvc,const u_char *directive,const u_char **parameters,size_t plen,cf_tpl_variable_t *var) {
+int flt_syntax_validate(cf_configuration_t *fdc,cf_configuration_t *fvc,const u_char *directive,const u_char **parameters,size_t plen,cf_tpl_variable_t *var) {
   u_char *err,*lang;
   register u_char *ptr;
   size_t len;
 
   struct stat st;
 
-  string_t str;
+  cf_string_t str;
 
   if(flt_syntax_alreadyerr) return FLT_DECLINE;
 
@@ -1412,23 +1412,23 @@ int flt_syntax_validate(configuration_t *fdc,configuration_t *fvc,const u_char *
     }
   }
 
-  str_init(&str);
+  cf_str_init(&str);
   for(ptr=(u_char *)parameters[1];*ptr;++ptr) {
-    if(isalnum(*ptr)) str_char_append(&str,tolower(*ptr));
+    if(isalnum(*ptr)) cf_str_char_append(&str,tolower(*ptr));
   }
   lang = str.content;
 
   if(!lang) return FLT_DECLINE;
 
   /* we got a language, check if it exists */
-  str_init(&str);
-  str_char_set(&str,flt_syntax_patterns_dir,strlen(flt_syntax_patterns_dir));
-  str_char_append(&str,'/');
-  str_chars_append(&str,lang,strlen(lang));
-  str_chars_append(&str,".pat",4);
+  cf_str_init(&str);
+  cf_str_char_set(&str,flt_syntax_patterns_dir,strlen(flt_syntax_patterns_dir));
+  cf_str_char_append(&str,'/');
+  cf_str_chars_append(&str,lang,strlen(lang));
+  cf_str_chars_append(&str,".pat",4);
 
   if(stat(str.content,&st) == -1) {
-    str_cleanup(&str);
+    cf_str_cleanup(&str);
 
     if((err = cf_get_error_message("E_CODE_LANG",&len)) != NULL) {
       cf_tpl_var_addvalue(var,TPL_VARIABLE_STRING,err,len);
@@ -1438,24 +1438,24 @@ int flt_syntax_validate(configuration_t *fdc,configuration_t *fvc,const u_char *
     }
   }
 
-  str_cleanup(&str);
+  cf_str_cleanup(&str);
 
   return FLT_DECLINE;
 }
 
 /* {{{ flt_syntax_init */
-int flt_syntax_init(cf_hash_t *cgi,configuration_t *dc,configuration_t *vc) {
+int flt_syntax_init(cf_hash_t *cgi,cf_configuration_t *dc,cf_configuration_t *vc) {
   cf_html_register_directive("code",flt_syntax_execute,CF_HTML_DIR_TYPE_ARG|CF_HTML_DIR_TYPE_BLOCK);
   cf_html_register_validator("code",flt_syntax_validate,CF_HTML_DIR_TYPE_ARG|CF_HTML_DIR_TYPE_BLOCK);
 
-  array_init(&flt_syntax_files,sizeof(flt_syntax_pattern_file_t),NULL);
+  cf_array_init(&flt_syntax_files,sizeof(flt_syntax_pattern_file_t),NULL);
 
   return FLT_DECLINE;
 }
 /* }}} */
 
 /* {{{ flt_syntax_handle */
-int flt_syntax_handle(configfile_t *cfile,conf_opt_t *opt,const u_char *context,u_char **args,size_t argnum) {
+int flt_syntax_handle(cf_configfile_t *cfile,cf_conf_opt_t *opt,const u_char *context,u_char **args,size_t argnum) {
   u_char *fn;
 
   if(cf_strcmp(opt->name,"ActivateSyntax") == 0) {
@@ -1479,19 +1479,19 @@ void flt_syntax_cleanup(void) {
   if(flt_syntax_patterns_dir != NULL) free(flt_syntax_patterns_dir);
 }
 
-conf_opt_t flt_syntax_config[] = {
-  { "ActivateSyntax",    flt_syntax_handle, CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
-  { "ReplaceTabs",       flt_syntax_handle, CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
-  { "PatternsDirectory", flt_syntax_handle, CFG_OPT_CONFIG|CFG_OPT_GLOBAL|CFG_OPT_NEEDED,  NULL },
+cf_conf_opt_t flt_syntax_config[] = {
+  { "ActivateSyntax",    flt_syntax_handle, CF_CFG_OPT_CONFIG|CF_CFG_OPT_USER|CF_CFG_OPT_LOCAL, NULL },
+  { "ReplaceTabs",       flt_syntax_handle, CF_CFG_OPT_CONFIG|CF_CFG_OPT_USER|CF_CFG_OPT_LOCAL, NULL },
+  { "PatternsDirectory", flt_syntax_handle, CF_CFG_OPT_CONFIG|CF_CFG_OPT_GLOBAL|CF_CFG_OPT_NEEDED,  NULL },
   { NULL, NULL, 0, NULL }
 };
 
-handler_config_t flt_syntax_handlers[] = {
+cf_handler_config_t flt_syntax_handlers[] = {
   { INIT_HANDLER, flt_syntax_init },
   { 0, NULL }
 };
 
-module_config_t flt_syntax = {
+cf_module_config_t flt_syntax = {
   MODULE_MAGIC_COOKIE,
   flt_syntax_config,
   flt_syntax_handlers,

@@ -31,7 +31,7 @@
 #include "utils.h"
 /* }}} */
 
-/* {{{ ipc_dpopen
+/* {{{ cf_ipc_dpopen
  * Returns: int     -1 on failure, 0 on success
  * Parameters:
  *   - const char *filename        the filename to execute
@@ -48,7 +48,7 @@
  * descriptors for communicating with that program.
  *
  */
-int ipc_dpopen(const char *filename,char *const argv[],char *const envp[],int *result,pid_t *res_pid) {
+int cf_ipc_dpopen(const char *filename,char *const argv[],char *const envp[],int *result,pid_t *res_pid) {
   /*
    * "input" here means that the programming calling this function gets its
    * input from that pipe
@@ -107,7 +107,7 @@ int ipc_dpopen(const char *filename,char *const argv[],char *const envp[],int *r
 }
 /* }}} */
 
-/* {{{ ipc_dpclose
+/* {{{ cf_ipc_dpclose
  * Returns: int     -1 on failure, 0 on success
  * Parameters:
  *   - int *pipes                  a pointer to int[2] that contains the two
@@ -120,7 +120,7 @@ int ipc_dpopen(const char *filename,char *const argv[],char *const envp[],int *r
  * waits for the process to terminate
  *
  */
-int ipc_dpclose(int *pipes,pid_t *pid) {
+int cf_ipc_dpclose(int *pipes,pid_t *pid) {
   int res;
   if(pipes) {
     res = close(pipes[0]);

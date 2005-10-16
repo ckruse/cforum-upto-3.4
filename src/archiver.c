@@ -58,8 +58,8 @@ void cf_run_archiver(void) {
   thread_t *t,*oldest_t,*prev = NULL,**to_archive = NULL;
   long size,threadnum,pnum,max_bytes,max_threads,max_posts;
   int shall_archive = 0,len = 0,ret = FLT_OK,j,mb = 0;
-  name_value_t *max_bytes_v, *max_posts_v, *max_threads_v, *forums = cfg_get_first_value(&fo_server_conf,NULL,"Forums");
-  handler_config_t *handler;
+  cf_name_value_t *max_bytes_v, *max_posts_v, *max_threads_v, *forums = cf_cfg_get_first_value(&fo_server_conf,NULL,"Forums");
+  cf_handler_config_t *handler;
   archive_filter_t fkt;
   size_t i;
   forum_t *forum;
@@ -69,9 +69,9 @@ void cf_run_archiver(void) {
     forum = cf_hash_get(head.forums,forums->values[i],strlen(forums->values[i]));
     CF_RW_UN(&head.lock);
 
-    max_bytes_v     = cfg_get_first_value(&fo_server_conf,forum->name,"MainFileMaxBytes");
-    max_posts_v     = cfg_get_first_value(&fo_server_conf,forum->name,"MainFileMaxPostings");
-    max_threads_v   = cfg_get_first_value(&fo_server_conf,forum->name,"MainFileMaxThreads");
+    max_bytes_v     = cf_cfg_get_first_value(&fo_server_conf,forum->name,"MainFileMaxBytes");
+    max_posts_v     = cf_cfg_get_first_value(&fo_server_conf,forum->name,"MainFileMaxPostings");
+    max_threads_v   = cf_cfg_get_first_value(&fo_server_conf,forum->name,"MainFileMaxThreads");
 
     max_bytes     = strtol(max_bytes_v->values[0],NULL,10);
     max_posts     = strtol(max_posts_v->values[0],NULL,10);
@@ -132,7 +132,7 @@ void cf_run_archiver(void) {
       }
 
       if(shall_archive) {
-        to_archive        = fo_alloc(to_archive,++len,sizeof(thread_t *),FO_ALLOC_REALLOC);
+        to_archive        = cf_alloc(to_archive,++len,sizeof(thread_t *),CF_ALLOC_REALLOC);
         to_archive[len-1] = oldest_t;
 
         /*
@@ -160,7 +160,7 @@ void cf_run_archiver(void) {
           ret = FLT_OK;
 
           for(i=0;i<Modules[ARCHIVE_HANDLER].elements && (ret == FLT_DECLINE || ret == FLT_OK);i++) {
-            handler = array_element_at(&Modules[ARCHIVE_HANDLER],i);
+            handler = cf_array_element_at(&Modules[ARCHIVE_HANDLER],i);
             fkt     = (archive_filter_t)handler->func;
             ret     = fkt(forum,oldest_t);
           }
@@ -178,7 +178,7 @@ void cf_run_archiver(void) {
             free(to_archive);
             to_archive = NULL;
           }
-          else to_archive = fo_alloc(to_archive,--len,sizeof(thread_t *),FO_ALLOC_REALLOC);
+          else to_archive = cf_alloc(to_archive,--len,sizeof(thread_t *),CF_ALLOC_REALLOC);
         }
       }
 
@@ -213,14 +213,14 @@ void cf_run_archiver(void) {
 void cf_archive_threads(forum_t *forum,thread_t **to_archive,size_t len) {
   int ret;
   size_t j;
-  handler_config_t *handler;
+  cf_handler_config_t *handler;
   archive_thread_t fkt;
 
   if(Modules[ARCHIVE_THREAD_HANDLER].elements) {
     ret = FLT_DECLINE;
 
     for(j=0;j<Modules[ARCHIVE_THREAD_HANDLER].elements && ret == FLT_DECLINE;j++) {
-      handler = array_element_at(&Modules[ARCHIVE_THREAD_HANDLER],j);
+      handler = cf_array_element_at(&Modules[ARCHIVE_THREAD_HANDLER],j);
       fkt     = (archive_thread_t)handler->func;
       ret     = fkt(forum,to_archive,len);
     }
@@ -232,8 +232,8 @@ void cf_archive_threads(forum_t *forum,thread_t **to_archive,size_t len) {
 void cf_write_threadlist(forum_t *forum) {
   int ret;
   size_t i,j,k;
-  name_value_t *forums = cfg_get_first_value(&fo_server_conf,NULL,"Forums");
-  handler_config_t *handler;
+  cf_name_value_t *forums = cf_cfg_get_first_value(&fo_server_conf,NULL,"Forums");
+  cf_handler_config_t *handler;
   archive_thrdlst_writer_t fkt;
 
   if(forum) {
@@ -241,7 +241,7 @@ void cf_write_threadlist(forum_t *forum) {
       ret = FLT_DECLINE;
 
       for(i=0;i<Modules[THRDLST_WRITE_HANDLER].elements && ret == FLT_DECLINE;i++) {
-        handler = array_element_at(&Modules[THRDLST_WRITE_HANDLER],i);
+        handler = cf_array_element_at(&Modules[THRDLST_WRITE_HANDLER],i);
         fkt     = (archive_thrdlst_writer_t)handler->func;
 
         cf_log(CF_DBG|CF_FLSH,__FILE__,__LINE__,"starting disc writer\n");
@@ -250,7 +250,7 @@ void cf_write_threadlist(forum_t *forum) {
 
         if(ret == FLT_OK && Modules[THRDLST_WRITTEN_HANDLER].elements) {
           for(j=0;j<Modules[THRDLST_WRITTEN_HANDLER].elements;++j) {
-            handler = array_element_at(&Modules[THRDLST_WRITTEN_HANDLER],j);
+            handler = cf_array_element_at(&Modules[THRDLST_WRITTEN_HANDLER],j);
             fkt     = (archive_thrdlst_writer_t)handler->func;
 
             fkt(forum);
@@ -266,7 +266,7 @@ void cf_write_threadlist(forum_t *forum) {
         ret   = FLT_DECLINE;
 
         for(i=0;i<Modules[THRDLST_WRITE_HANDLER].elements && ret == FLT_DECLINE;i++) {
-          handler = array_element_at(&Modules[THRDLST_WRITE_HANDLER],i);
+          handler = cf_array_element_at(&Modules[THRDLST_WRITE_HANDLER],i);
           fkt     = (archive_thrdlst_writer_t)handler->func;
 
           cf_log(CF_DBG|CF_FLSH,__FILE__,__LINE__,"starting disc writer\n");
@@ -275,7 +275,7 @@ void cf_write_threadlist(forum_t *forum) {
 
           if(ret == FLT_OK && Modules[THRDLST_WRITTEN_HANDLER].elements) {
             for(k=0;k<Modules[THRDLST_WRITTEN_HANDLER].elements;++k) {
-              handler = array_element_at(&Modules[THRDLST_WRITTEN_HANDLER],k);
+              handler = cf_array_element_at(&Modules[THRDLST_WRITTEN_HANDLER],k);
               fkt     = (archive_thrdlst_writer_t)handler->func;
 
               fkt(forum);
@@ -298,7 +298,7 @@ int cf_archive_thread(forum_t *forum,u_int64_t tid) {
     cf_unregister_thread(forum,t);
     cf_remove_thread(forum,t);
 
-    list = fo_alloc(NULL,1,sizeof(*list),FO_ALLOC_MALLOC);
+    list = cf_alloc(NULL,1,sizeof(*list),CF_ALLOC_MALLOC);
     list[0] = t;
 
     cf_archive_threads(forum,list,1);
@@ -312,14 +312,14 @@ int cf_archive_thread(forum_t *forum,u_int64_t tid) {
 void cf_ar_remove_thread(forum_t *forum,thread_t *thr) {
   int ret;
   size_t j;
-  handler_config_t *handler;
+  cf_handler_config_t *handler;
   remove_thread_t fkt;
 
   if(Modules[REMOVE_THREAD_HANDLER].elements) {
     ret = FLT_DECLINE;
 
     for(j=0;j<Modules[REMOVE_THREAD_HANDLER].elements && ret == FLT_DECLINE;j++) {
-      handler = array_element_at(&Modules[REMOVE_THREAD_HANDLER],j);
+      handler = cf_array_element_at(&Modules[REMOVE_THREAD_HANDLER],j);
       fkt     = (remove_thread_t)handler->func;
       ret     = fkt(forum,thr);
     }

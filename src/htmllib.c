@@ -62,15 +62,15 @@ static html_tree_t *parser_tree[256];
 
 
 /* {{{ run_content_filters */
-void run_content_filters(int mode,cl_thread_t *thr,string_t *content,string_t *cite,const u_char *qchars) {
+void run_content_filters(int mode,cl_thread_t *thr,cf_string_t *content,cf_string_t *cite,const u_char *qchars) {
   int ret = FLT_OK;
-  handler_config_t *handler;
+  cf_handler_config_t *handler;
   size_t i;
   content_filter_t fkt;
 
   if(Modules[mode].elements) {
     for(i=0;i<Modules[mode].elements;i++) {
-      handler = array_element_at(&Modules[mode],i);
+      handler = cf_array_element_at(&Modules[mode],i);
       fkt     = (content_filter_t)handler->func;
       ret     = fkt(&fo_default_conf,&fo_view_conf,thr,content,cite,qchars);
     }
@@ -79,7 +79,7 @@ void run_content_filters(int mode,cl_thread_t *thr,string_t *content,string_t *c
 /* }}} */
 
 /* {{{ run_inline_directive_filters */
-int run_inline_directive_filters(cl_thread_t *thread,const u_char *directive,const u_char **parameters,string_t *content,string_t *cite,const u_char *qchars,int sig) {
+int run_inline_directive_filters(cl_thread_t *thread,const u_char *directive,const u_char **parameters,cf_string_t *content,cf_string_t *cite,const u_char *qchars,int sig) {
   directive_callback_t *cb;
 
   if((cb = cf_hash_get(registered_directives,(u_char *)directive,strlen(directive))) == NULL) return FLT_DECLINE;
@@ -114,12 +114,12 @@ static int next_line_is_no_quote_line(const u_char *ptr) {
 /* }}} */
 
 /* {{{ is_open */
-static int is_open(const u_char *name,array_t *stack) {
+static int is_open(const u_char *name,cf_array_t *stack) {
   int i;
   html_stack_elem_t *s_el;
 
   for(i=stack->elements-1;i>=0;--i) {
-    s_el = array_element_at(stack,i);
+    s_el = cf_array_element_at(stack,i);
     if(cf_strcmp(s_el->name,name) == 0) return 1;
   }
 
@@ -128,7 +128,7 @@ static int is_open(const u_char *name,array_t *stack) {
 /* }}} */
 
 /* {{{ run_block_directive_filters */
-static int run_block_directive_filters(cl_thread_t *thread,const u_char *directive,const u_char **parameters,size_t len,string_t *bcontent,string_t *bcite,string_t *content,string_t *cite,const u_char *qchars,int sig) {
+static int run_block_directive_filters(cl_thread_t *thread,const u_char *directive,const u_char **parameters,size_t len,cf_string_t *bcontent,cf_string_t *bcite,cf_string_t *content,cf_string_t *cite,const u_char *qchars,int sig) {
   directive_callback_t *cb;
 
   if((cb = cf_hash_get(registered_directives,(u_char *)directive,strlen(directive))) == NULL) return FLT_DECLINE;
@@ -150,11 +150,11 @@ static int run_validate_block_directive(const u_char *directive,const u_char **p
 /* }}} */
 
 /* {{{ parse_message */
-static u_char *parse_message(cl_thread_t *thread,u_char *start,array_t *stack,string_t *content,string_t *cite,const u_char *qchars,size_t qclen,int utf8,int xml,int max_sig_lines,int show_sig,int linebrk,int sig,int quotemode,int line) {
+static u_char *parse_message(cl_thread_t *thread,u_char *start,cf_array_t *stack,cf_string_t *content,cf_string_t *cite,const u_char *qchars,size_t qclen,int utf8,int xml,int max_sig_lines,int show_sig,int linebrk,int sig,int quotemode,int line) {
   const u_char *ptr,*tmp,*ptr1;
   int rc,run = 1,sb = 0,fail,ending,doit;
   u_char *directive,*parameter,*safe,*buff,*retval;
-  string_t d_content,d_cite,strtmp;
+  cf_string_t d_content,d_cite,strtmp;
   html_stack_elem_t stack_elem,*stack_tmp;
   html_tree_t *telem1,*telem2;
 
@@ -185,7 +185,7 @@ static u_char *parse_message(cl_thread_t *thread,u_char *start,array_t *stack,st
           directive = strndup(ptr+1,ptr1-ptr-1);
 
           if(is_open(directive,stack)) {
-            stack_tmp = array_element_at(stack,stack->elements-1);
+            stack_tmp = cf_array_element_at(stack,stack->elements-1);
 
             /* nesting is ok */
             if(cf_strcmp(stack_tmp->name,directive) == 0) {
@@ -210,15 +210,15 @@ static u_char *parse_message(cl_thread_t *thread,u_char *start,array_t *stack,st
         /* {{{ directive with argument, CForum syntax [name:argument], no ending tag */
         if(*ptr1 == ':') {
           tmp = ptr1;
-          str_init(&strtmp);
+          cf_str_init(&strtmp);
 
           /* get directive end, but accept \] as not-end */
           for(++ptr1;*ptr1 && *ptr1 != ']' && *ptr1 != '<';++ptr1) {
             if(*ptr1 == '\\' && *(ptr1+1) == ']') {
-              str_char_append(&strtmp,']');
+              cf_str_char_append(&strtmp,']');
               ++ptr1;
             }
-            else str_char_append(&strtmp,*ptr1);
+            else cf_str_char_append(&strtmp,*ptr1);
           }
 
           if(*ptr1 == ']' && strtmp.len) {
@@ -239,7 +239,7 @@ static u_char *parse_message(cl_thread_t *thread,u_char *start,array_t *stack,st
             else ptr = ptr1;
           }
           else {
-            str_cleanup(&strtmp);
+            cf_str_cleanup(&strtmp);
             ptr = safe;
             goto default_action;
           }
@@ -264,25 +264,25 @@ static u_char *parse_message(cl_thread_t *thread,u_char *start,array_t *stack,st
 
             stack_elem.begin   = (u_char *)ptr1;
             stack_elem.name    = directive;
-            stack_elem.args    = fo_alloc(NULL,1,sizeof(u_char **),FO_ALLOC_MALLOC);
+            stack_elem.args    = cf_alloc(NULL,1,sizeof(u_char **),CF_ALLOC_MALLOC);
             stack_elem.args[0] = parameter;
             stack_elem.argnum  = 1;
 
-            array_push(stack,&stack_elem);
+            cf_array_push(stack,&stack_elem);
 
-            str_init(&d_content);
-            str_init(&d_cite);
+            cf_str_init(&d_content);
+            cf_str_init(&d_cite);
 
             retval = parse_message(thread,(u_char *)ptr1+1,stack,&d_content,cite ? &d_cite : NULL,qchars,qclen,utf8,xml,max_sig_lines,show_sig,linebrk,sig,quotemode,line);
 
-            array_pop(stack);
+            cf_array_pop(stack);
 
             if(retval == NULL || d_content.len == 0) {
               /* directive is invalid, get defined state */
               free(directive);
               free(parameter);
-              str_cleanup(&d_content);
-              str_cleanup(&d_cite);
+              cf_str_cleanup(&d_content);
+              cf_str_cleanup(&d_cite);
               free(stack_elem.args);
               ptr = safe;
               goto default_action;
@@ -291,8 +291,8 @@ static u_char *parse_message(cl_thread_t *thread,u_char *start,array_t *stack,st
             /* ok, go and run directive filters */
             rc = run_block_directive_filters(thread,directive,(const u_char **)&parameter,1,content,cite,&d_content,cite ? &d_cite : NULL,qchars,sig);
 
-            str_cleanup(&d_content);
-            str_cleanup(&d_cite);
+            cf_str_cleanup(&d_content);
+            cf_str_cleanup(&d_cite);
 
             if(rc == FLT_DECLINE) {
               ptr = safe;
@@ -337,7 +337,7 @@ static u_char *parse_message(cl_thread_t *thread,u_char *start,array_t *stack,st
               goto default_action;
             }
 
-            stack_elem.args = fo_alloc(stack_elem.args,++stack_elem.argnum,sizeof(*stack_elem.args),FO_ALLOC_REALLOC);
+            stack_elem.args = cf_alloc(stack_elem.args,++stack_elem.argnum,sizeof(*stack_elem.args),CF_ALLOC_REALLOC);
             stack_elem.args[stack_elem.argnum-1] = strndup(tmp,ptr1-tmp);
 
             sb = *ptr1 == ']';
@@ -348,19 +348,19 @@ static u_char *parse_message(cl_thread_t *thread,u_char *start,array_t *stack,st
           if(!fail) {
             stack_elem.name = directive;
             stack_elem.begin = (u_char *)ptr1;
-            array_push(stack,&stack_elem);
+            cf_array_push(stack,&stack_elem);
 
-            str_init(&d_content);
-            str_init(&d_cite);
+            cf_str_init(&d_content);
+            cf_str_init(&d_cite);
 
             retval = parse_message(thread,(u_char *)ptr1+1,stack,&d_content,cite ? &d_cite : NULL,qchars,qclen,utf8,xml,max_sig_lines,show_sig,linebrk,sig,quotemode,line);
-            array_pop(stack);
+            cf_array_pop(stack);
 
             /* directive is invalid (e.g. no content, wrong nesting), get defined state */
             if(retval == NULL || d_content.len == 0) {
               free(directive);
-              str_cleanup(&d_content);
-              str_cleanup(&d_cite);
+              cf_str_cleanup(&d_content);
+              cf_str_cleanup(&d_cite);
               free(stack_elem.args);
               ptr = safe;
               goto default_action;
@@ -369,8 +369,8 @@ static u_char *parse_message(cl_thread_t *thread,u_char *start,array_t *stack,st
             /* ok, go and run directive filters */
             rc = run_block_directive_filters(thread,directive,(const u_char **)stack_elem.args,stack_elem.argnum,content,cite,&d_content,cite ? &d_cite : NULL,qchars,sig);
 
-            str_cleanup(&d_content);
-            str_cleanup(&d_cite);
+            cf_str_cleanup(&d_content);
+            cf_str_cleanup(&d_cite);
 
             if(rc == FLT_DECLINE) {
               ptr = safe;
@@ -396,20 +396,20 @@ static u_char *parse_message(cl_thread_t *thread,u_char *start,array_t *stack,st
           linebrk = 1;
           line++;
 
-          if(xml) str_chars_append(content,"<br />",6);
-          else    str_chars_append(content,"<br>",4);
+          if(xml) cf_str_chars_append(content,"<br />",6);
+          else    cf_str_chars_append(content,"<br>",4);
 
           if(sig && max_sig_lines > 0 && line >= max_sig_lines) {
             run = 0;
             break;
           }
           if(sig == 0 && cite) {
-            str_chars_append(cite,"\n",1);
-            str_chars_append(cite,qchars,qclen);
+            cf_str_chars_append(cite,"\n",1);
+            cf_str_chars_append(cite,qchars,qclen);
           }
 
           if(quotemode && next_line_is_no_quote_line(ptr+6)) {
-            str_chars_append(content,"</span>",7);
+            cf_str_chars_append(content,"</span>",7);
             quotemode = 0;
           }
 
@@ -421,17 +421,17 @@ static u_char *parse_message(cl_thread_t *thread,u_char *start,array_t *stack,st
       case 127:
         linebrk = 0;
 
-        if(!quotemode) str_chars_append(content,"<span class=\"q\">",16);
-        str_chars_append(content,qchars,qclen);
+        if(!quotemode) cf_str_chars_append(content,"<span class=\"q\">",16);
+        cf_str_chars_append(content,qchars,qclen);
         quotemode = 1;
-        if(sig == 0 && cite) str_chars_append(cite,qchars,qclen);
+        if(sig == 0 && cite) cf_str_chars_append(cite,qchars,qclen);
 
         break;
 
       case '_':
         if(cf_strncmp(ptr,"_/_SIG_/_",9) == 0) {
           if(quotemode) {
-            str_chars_append(content,"</span>",7);
+            cf_str_chars_append(content,"</span>",7);
             quotemode = 0;
           }
 
@@ -445,12 +445,12 @@ static u_char *parse_message(cl_thread_t *thread,u_char *start,array_t *stack,st
           line = 0;
 
           if(xml) {
-            str_chars_append(content,"<br /><span class=\"sig\">",24);
-            str_chars_append(content,"-- <br />",9);
+            cf_str_chars_append(content,"<br /><span class=\"sig\">",24);
+            cf_str_chars_append(content,"-- <br />",9);
           }
           else {
-            str_chars_append(content,"<br><span class=\"sig\">",22);
-            str_chars_append(content,"-- <br>",7);
+            cf_str_chars_append(content,"<br><span class=\"sig\">",22);
+            cf_str_chars_append(content,"-- <br>",7);
           }
 
           ptr += 8;
@@ -491,25 +491,25 @@ static u_char *parse_message(cl_thread_t *thread,u_char *start,array_t *stack,st
 
         if(doit) {
           ptr = safe;
-          str_chars_append(content,ptr,1);
-          if(sig == 0 && cite) str_chars_append(cite,ptr,1);
+          cf_str_chars_append(content,ptr,1);
+          if(sig == 0 && cite) cf_str_chars_append(cite,ptr,1);
         }
     }
   }
 
-  if(sig) str_chars_append(content,"</span>",7);
-  if(quotemode) str_chars_append(content,"</span>",7);
+  if(sig) cf_str_chars_append(content,"</span>",7);
+  if(quotemode) cf_str_chars_append(content,"</span>",7);
 
   return NULL;
 }
 /* }}} */
 
 /* {{{ validate_message */
-int validate_message(array_t *stack,cl_thread_t *thread,const u_char *msg,u_char **pos,cf_tpl_variable_t *var) {
+int validate_message(cf_array_t *stack,cl_thread_t *thread,const u_char *msg,u_char **pos,cf_tpl_variable_t *var) {
   const u_char *ptr,*tmp,*ptr1;
   int rc,run = 1,sb = 0,fail,ending,retval,ret = 1;
   u_char *directive,*parameter,*safe,*buff;
-  string_t strtmp;
+  cf_string_t strtmp;
   html_stack_elem_t stack_elem,*stack_tmp;
 
   for(ptr=(u_char *)msg;*ptr && run;++ptr) {
@@ -539,7 +539,7 @@ int validate_message(array_t *stack,cl_thread_t *thread,const u_char *msg,u_char
           directive = strndup(ptr+1,ptr1-ptr-1);
 
           if(is_open(directive,stack)) {
-            stack_tmp = array_element_at(stack,stack->elements-1);
+            stack_tmp = cf_array_element_at(stack,stack->elements-1);
 
             /* nesting is ok */
             if(cf_strcmp(stack_tmp->name,directive) == 0) {
@@ -565,15 +565,15 @@ int validate_message(array_t *stack,cl_thread_t *thread,const u_char *msg,u_char
         /* {{{ directive with argument, CForum syntax [name:argument], no ending tag */
         if(*ptr1 == ':') {
           tmp = ptr1;
-          str_init(&strtmp);
+          cf_str_init(&strtmp);
 
           /* get directive end, but accept \] as not-end */
           for(++ptr1;*ptr1 && *ptr1 != ']' && *ptr1 != '<';++ptr1) {
             if(*ptr1 == '\\' && *(ptr1+1) == ']') {
-              str_char_append(&strtmp,']');
+              cf_str_char_append(&strtmp,']');
               ++ptr1;
             }
-            else str_char_append(&strtmp,*ptr1);
+            else cf_str_char_append(&strtmp,*ptr1);
           }
 
           if(*ptr1 == ']') {
@@ -603,7 +603,7 @@ int validate_message(array_t *stack,cl_thread_t *thread,const u_char *msg,u_char
             if(rc == FLT_ERROR) ret = FLT_ERROR;
           }
           else {
-            str_cleanup(&strtmp);
+            cf_str_cleanup(&strtmp);
             ptr = safe;
             goto default_action;
           }
@@ -628,15 +628,15 @@ int validate_message(array_t *stack,cl_thread_t *thread,const u_char *msg,u_char
 
             stack_elem.begin   = (u_char *)ptr1;
             stack_elem.name    = directive;
-            stack_elem.args    = fo_alloc(NULL,1,sizeof(u_char **),FO_ALLOC_MALLOC);
+            stack_elem.args    = cf_alloc(NULL,1,sizeof(u_char **),CF_ALLOC_MALLOC);
             stack_elem.args[0] = parameter;
             stack_elem.argnum  = 1;
 
-            array_push(stack,&stack_elem);
+            cf_array_push(stack,&stack_elem);
 
             retval = validate_message(stack,thread,ptr1+1,(u_char **)&ptr,var);
 
-            array_pop(stack);
+            cf_array_pop(stack);
 
             if(retval == FLT_ERROR) {
               /* directive is invalid, get defined state */
@@ -701,7 +701,7 @@ int validate_message(array_t *stack,cl_thread_t *thread,const u_char *msg,u_char
               goto default_action;
             }
 
-            stack_elem.args = fo_alloc(stack_elem.args,++stack_elem.argnum,sizeof(*stack_elem.args),FO_ALLOC_REALLOC);
+            stack_elem.args = cf_alloc(stack_elem.args,++stack_elem.argnum,sizeof(*stack_elem.args),CF_ALLOC_REALLOC);
             stack_elem.args[stack_elem.argnum-1] = strndup(tmp,ptr1-tmp);
 
             sb = *ptr1 == ']';
@@ -712,11 +712,11 @@ int validate_message(array_t *stack,cl_thread_t *thread,const u_char *msg,u_char
           if(!fail) {
             stack_elem.name = directive;
             stack_elem.begin = (u_char *)ptr1;
-            array_push(stack,&stack_elem);
+            cf_array_push(stack,&stack_elem);
 
             retval = validate_message(stack,thread,ptr1+1,(u_char **)&ptr,var);
 
-            array_pop(stack);
+            cf_array_pop(stack);
 
             if(retval == FLT_ERROR) {
               /* directive is invalid, get defined state */
@@ -787,15 +787,15 @@ int cf_html_register_validator(const u_char *name,directive_validator_t filter,i
 
 /* {{{ cf_validate_msg */
 int cf_validate_msg(cl_thread_t *thread,const u_char *msg,cf_tpl_variable_t *var) {
-  array_t my_stack;
+  cf_array_t my_stack;
   int rc;
 
   if(registered_validators == NULL) registered_validators = cf_hash_new(NULL);
 
-  array_init(&my_stack,sizeof(html_stack_elem_t),NULL);
+  cf_array_init(&my_stack,sizeof(html_stack_elem_t),NULL);
   rc = validate_message(&my_stack,thread,msg,NULL,var);
 
-  array_destroy(&my_stack);
+  cf_array_destroy(&my_stack);
 
   return rc;
 }
@@ -824,15 +824,15 @@ int cf_html_register_textfilter(const u_char *text,directive_filter_t filter) {
 
   /* there isn't an entry starting with *text */
   if(parser_tree[*text] == NULL) {
-    elem     = fo_alloc(NULL,1,sizeof(*elem),FO_ALLOC_CALLOC);
+    elem     = cf_alloc(NULL,1,sizeof(*elem),CF_ALLOC_CALLOC);
     elem->c  = *text;
     parser_tree[*text] = elem;
     elem1    = elem;
 
     for(ptr=(u_char *)text+1;*ptr;++ptr) {
-      if(!elem1->nodes) elem1->nodes = fo_alloc(NULL,256,sizeof(*elem->nodes),FO_ALLOC_CALLOC);
+      if(!elem1->nodes) elem1->nodes = cf_alloc(NULL,256,sizeof(*elem->nodes),CF_ALLOC_CALLOC);
 
-      elem        = fo_alloc(NULL,1,sizeof(*elem),FO_ALLOC_CALLOC);
+      elem        = cf_alloc(NULL,1,sizeof(*elem),CF_ALLOC_CALLOC);
       elem->c     = *ptr;
       elem1->nodes[*ptr] = elem;
       elem1       = elem;
@@ -846,8 +846,8 @@ int cf_html_register_textfilter(const u_char *text,directive_filter_t filter) {
 
     for(ptr=(u_char *)text+1;*ptr;++ptr) {
       if(!elem1->nodes) {
-        elem1->nodes = fo_alloc(NULL,256,sizeof(*elem->nodes),FO_ALLOC_CALLOC);
-        elem = fo_alloc(NULL,1,sizeof(*elem),FO_ALLOC_CALLOC);
+        elem1->nodes = cf_alloc(NULL,256,sizeof(*elem->nodes),CF_ALLOC_CALLOC);
+        elem = cf_alloc(NULL,1,sizeof(*elem),CF_ALLOC_CALLOC);
         elem->c = *ptr;
         elem1->nodes[*ptr] = elem;
         elem1 = elem;
@@ -855,7 +855,7 @@ int cf_html_register_textfilter(const u_char *text,directive_filter_t filter) {
       else {
         if(elem1->nodes[*ptr]) elem1 = elem1->nodes[*ptr];
         else {
-          elem = fo_alloc(NULL,1,sizeof(*elem),FO_ALLOC_CALLOC);
+          elem = cf_alloc(NULL,1,sizeof(*elem),CF_ALLOC_CALLOC);
           elem->c = *ptr;
           elem1->nodes[*ptr] = elem;
           elem1 = elem;
@@ -874,14 +874,14 @@ int cf_html_register_textfilter(const u_char *text,directive_filter_t filter) {
 /* }}} */
 
 /* {{{ msg_to_html */
-void msg_to_html(cl_thread_t *thread,const u_char *msg,string_t *content,string_t *cite,u_char *quote_chars,int max_sig_lines,int show_sig) {
+void msg_to_html(cl_thread_t *thread,const u_char *msg,cf_string_t *content,cf_string_t *cite,u_char *quote_chars,int max_sig_lines,int show_sig) {
   u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
-  name_value_t *cs   = cfg_get_first_value(&fo_default_conf,forum_name,"ExternCharset");
-  name_value_t *xmlm = cfg_get_first_value(&fo_default_conf,forum_name,"XHTMLMode");
+  cf_name_value_t *cs   = cf_cfg_get_first_value(&fo_default_conf,forum_name,"ExternCharset");
+  cf_name_value_t *xmlm = cf_cfg_get_first_value(&fo_default_conf,forum_name,"XHTMLMode");
   u_char *qchars;
   size_t qclen;
   int utf8 = cf_strcmp(cs->values[0],"UTF-8") == 0,xml;
-  array_t my_stack;
+  cf_array_t my_stack;
 
   if(registered_directives == NULL) registered_directives = cf_hash_new(NULL);
 
@@ -895,9 +895,9 @@ void msg_to_html(cl_thread_t *thread,const u_char *msg,string_t *content,string_
   run_content_filters(PRE_CONTENT_FILTER,thread,content,cite,qchars);
 
   /* first line has no linebreak, so append quoting chars to cite */
-  if(cite) str_chars_append(cite,qchars,qclen);
+  if(cite) cf_str_chars_append(cite,qchars,qclen);
 
-  array_init(&my_stack,sizeof(html_stack_elem_t),NULL);
+  cf_array_init(&my_stack,sizeof(html_stack_elem_t),NULL);
   parse_message(thread,(u_char *)msg,&my_stack,content,cite,qchars,qclen,utf8,xml,max_sig_lines,show_sig,0,0,0,0);
 
   run_content_filters(POST_CONTENT_FILTER,thread,content,cite,qchars);
@@ -907,11 +907,11 @@ void msg_to_html(cl_thread_t *thread,const u_char *msg,string_t *content,string_
 /* }}} */
 
 /* {{{ _do_html */
-void _do_html(hierarchical_node_t *ary,cl_thread_t *thread,int ShowInvisible,const u_char *linktpl,name_value_t *cs,name_value_t *dft,name_value_t *locale) {
+void _do_html(hierarchical_node_t *ary,cl_thread_t *thread,int ShowInvisible,const u_char *linktpl,cf_name_value_t *cs,cf_name_value_t *dft,cf_name_value_t *locale) {
   size_t len,i;
   u_char *date,*link;
   cf_tpl_variable_t ary_tpl;
-  string_t tmpstr;
+  cf_string_t tmpstr;
   hierarchical_node_t *ary1;
 
   date = cf_general_get_time(dft->values[0],locale->values[0],&len,&ary->msg->date);
@@ -920,15 +920,15 @@ void _do_html(hierarchical_node_t *ary,cl_thread_t *thread,int ShowInvisible,con
   cf_set_variable_hash(&ary->msg->hashvar,cs,"author",ary->msg->author.content,ary->msg->author.len,1);
   cf_set_variable_hash(&ary->msg->hashvar,cs,"title",ary->msg->subject.content,ary->msg->subject.len,1);
 
-  str_init_growth(&tmpstr,120);
-  u_int64_to_str(&tmpstr,ary->msg->mid);
+  cf_str_init_growth(&tmpstr,120);
+  cf_uint64_to_str(&tmpstr,ary->msg->mid);
   cf_set_variable_hash(&ary->msg->hashvar,cs,"mid",tmpstr.content,tmpstr.len,0);
-  str_cleanup(&tmpstr);
+  cf_str_cleanup(&tmpstr);
 
-  str_init_growth(&tmpstr,120);
-  u_int64_to_str(&tmpstr,thread->tid);
+  cf_str_init_growth(&tmpstr,120);
+  cf_uint64_to_str(&tmpstr,thread->tid);
   cf_set_variable_hash(&ary->msg->hashvar,cs,"tid",tmpstr.content,tmpstr.len,0);
-  str_cleanup(&tmpstr);
+  cf_str_cleanup(&tmpstr);
 
   if(ary->msg->category.len) cf_set_variable_hash(&ary->msg->hashvar,cs,"category",ary->msg->category.content,ary->msg->category.len,1);
 
@@ -946,7 +946,7 @@ void _do_html(hierarchical_node_t *ary,cl_thread_t *thread,int ShowInvisible,con
     cf_tpl_var_init(&ary_tpl,TPL_VARIABLE_ARRAY);
 
     for(i=0;i<ary->childs.elements;++i) {
-      ary1 = array_element_at(&ary->childs,i);
+      ary1 = cf_array_element_at(&ary->childs,i);
 
       _do_html(ary1,thread,ShowInvisible,linktpl,cs,dft,locale);
       cf_tpl_var_add(&ary_tpl,&ary1->msg->hashvar);
@@ -959,7 +959,7 @@ void _do_html(hierarchical_node_t *ary,cl_thread_t *thread,int ShowInvisible,con
 /* }}} */
 
 /* {{{ _starthread_tlist */
-int _starthread_tlist(cl_thread_t *thread,int ShowInvisible,const u_char *linktpl,name_value_t *cs,name_value_t *dft,name_value_t *locale) {
+int _starthread_tlist(cl_thread_t *thread,int ShowInvisible,const u_char *linktpl,cf_name_value_t *cs,cf_name_value_t *dft,cf_name_value_t *locale) {
   hierarchical_node_t ary,*ary1,*tmp = NULL;
   size_t i;
   cf_tpl_variable_t tpl_ary;
@@ -976,7 +976,7 @@ int _starthread_tlist(cl_thread_t *thread,int ShowInvisible,const u_char *linktp
       cf_tpl_var_init(&tpl_ary,TPL_VARIABLE_ARRAY);
 
       for(i=0;i<ary.childs.elements;++i) {
-        ary1 = array_element_at(&ary.childs,i);
+        ary1 = cf_array_element_at(&ary.childs,i);
 
         _do_html(ary1,thread,ShowInvisible,linktpl,cs,dft,locale);
         cf_tpl_var_add(&tpl_ary,&ary1->msg->hashvar);
@@ -995,7 +995,7 @@ int _starthread_tlist(cl_thread_t *thread,int ShowInvisible,const u_char *linktp
 /* }}} */
 
 /* {{{ cf_gen_threadlist */
-int cf_gen_threadlist(cl_thread_t *thread,cf_hash_t *head,string_t *threadlist,const u_char *tplname,const u_char *type,const u_char *linktpl,int mode) {
+int cf_gen_threadlist(cl_thread_t *thread,cf_hash_t *head,cf_string_t *threadlist,const u_char *tplname,const u_char *type,const u_char *linktpl,int mode) {
   cf_template_t tpl;
   message_t *msg;
   int ShowInvisible = cf_hash_get(GlobalValues,"ShowInvisible",13) == NULL ? 0 : 1;
@@ -1004,11 +1004,11 @@ int cf_gen_threadlist(cl_thread_t *thread,cf_hash_t *head,string_t *threadlist,c
 
   int ret,level;
 
-  name_value_t *dft = cfg_get_first_value(&fo_view_conf,forum_name,"DateFormatThreadList"),
-    *locale = cfg_get_first_value(&fo_default_conf,forum_name,"DateLocale"),
-    *cs = cfg_get_first_value(&fo_default_conf,forum_name,"ExternCharset");
+  cf_name_value_t *dft = cf_cfg_get_first_value(&fo_view_conf,forum_name,"DateFormatThreadList"),
+    *locale = cf_cfg_get_first_value(&fo_default_conf,forum_name,"DateLocale"),
+    *cs = cf_cfg_get_first_value(&fo_default_conf,forum_name,"ExternCharset");
 
-  str_init(threadlist);
+  cf_str_init(threadlist);
 
   if(cf_strcmp(type,"none") != 0) {
     cf_tpl_init(&tpl,tplname);

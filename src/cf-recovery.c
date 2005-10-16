@@ -83,12 +83,12 @@ void read_posting_from_file(FILE *fd,posting_t *p) {
   fread(&flagnum,sizeof(flagnum),1,fd);
   for(i=0;i<flagnum;++i) {
     fread(&len,sizeof(len),1,fd);
-    flag.name = fo_alloc(NULL,1,len+1,FO_ALLOC_MALLOC);
+    flag.name = cf_alloc(NULL,1,len+1,CF_ALLOC_MALLOC);
     fread(flag.name,len,1,fd);
     flag.name[len] = '\0';
 
     fread(&len,sizeof(len),1,fd);
-    flag.val = fo_alloc(NULL,1,len+1,FO_ALLOC_MALLOC);
+    flag.val = cf_alloc(NULL,1,len+1,CF_ALLOC_MALLOC);
     fread(flag.val,len,1,fd);
     flag.val[len] = '\0';
 
@@ -99,7 +99,7 @@ void read_posting_from_file(FILE *fd,posting_t *p) {
   /* username */
   fread(&p->user.name.len,sizeof(p->user.name.len),1,fd);
 
-  p->user.name.content = fo_alloc(NULL,p->user.name.len+1,1,FO_ALLOC_MALLOC);
+  p->user.name.content = cf_alloc(NULL,p->user.name.len+1,1,CF_ALLOC_MALLOC);
   fread(p->user.name.content,p->user.name.len,1,fd);
   p->user.name.content[p->user.name.len] = '\0';
   p->user.name.reserved = p->user.name.len + 1;
@@ -109,7 +109,7 @@ void read_posting_from_file(FILE *fd,posting_t *p) {
   fread(&p->user.email.len,sizeof(p->user.email.len),1,fd);
 
   if(p->user.email.len) {
-    p->user.email.content = fo_alloc(NULL,p->user.email.len+1,1,FO_ALLOC_MALLOC);
+    p->user.email.content = cf_alloc(NULL,p->user.email.len+1,1,CF_ALLOC_MALLOC);
     fread(p->user.email.content,p->user.email.len,1,fd);
     p->user.email.content[p->user.email.len] = '\0';
     p->user.email.reserved = p->user.email.len + 1;
@@ -119,7 +119,7 @@ void read_posting_from_file(FILE *fd,posting_t *p) {
   /* homepage */
   fread(&p->user.hp.len,sizeof(p->user.hp.len),1,fd);
   if(p->user.hp.len) {
-    p->user.hp.content = fo_alloc(NULL,p->user.hp.len+1,1,FO_ALLOC_MALLOC);
+    p->user.hp.content = cf_alloc(NULL,p->user.hp.len+1,1,CF_ALLOC_MALLOC);
     fread(p->user.hp.content,p->user.hp.len,1,fd);
     p->user.hp.content[p->user.hp.len] = '\0';
     p->user.hp.reserved = p->user.hp.len + 1;
@@ -129,7 +129,7 @@ void read_posting_from_file(FILE *fd,posting_t *p) {
   /* image */
   fread(&p->user.img.len,sizeof(p->user.img.len),1,fd);
   if(p->user.img.len) {
-    p->user.img.content = fo_alloc(NULL,p->user.img.len+1,1,FO_ALLOC_MALLOC);
+    p->user.img.content = cf_alloc(NULL,p->user.img.len+1,1,CF_ALLOC_MALLOC);
     fread(p->user.img.content,p->user.img.len,1,fd);
     p->user.img.content[p->user.img.len] = '\0';
     p->user.img.reserved = p->user.img.len + 1;
@@ -139,21 +139,21 @@ void read_posting_from_file(FILE *fd,posting_t *p) {
 
   /* ip */
   fread(&p->user.ip.len,sizeof(p->user.ip.len),1,fd);
-  p->user.ip.content = fo_alloc(NULL,p->user.ip.len+1,1,FO_ALLOC_MALLOC);
+  p->user.ip.content = cf_alloc(NULL,p->user.ip.len+1,1,CF_ALLOC_MALLOC);
   fread(p->user.ip.content,p->user.ip.len,1,fd);
   p->user.ip.content[p->user.ip.len] = '\0';
   p->user.ip.reserved = p->user.ip.len + 1;
 
   /* unique id */
   fread(&p->unid.len,sizeof(p->unid.len),1,fd);
-  p->unid.content = fo_alloc(NULL,p->unid.len+1,1,FO_ALLOC_MALLOC);
+  p->unid.content = cf_alloc(NULL,p->unid.len+1,1,CF_ALLOC_MALLOC);
   fread(p->unid.content,p->unid.len,1,fd);
   p->unid.content[p->unid.len] = '\0';
   p->unid.reserved = p->unid.len + 1;
 
   /* subject */
   fread(&p->subject.len,sizeof(p->subject.len),1,fd);
-  p->subject.content = fo_alloc(NULL,p->subject.len+1,1,FO_ALLOC_MALLOC);
+  p->subject.content = cf_alloc(NULL,p->subject.len+1,1,CF_ALLOC_MALLOC);
   fread(p->subject.content,p->subject.len,1,fd);
   p->subject.content[p->subject.len] = '\0';
   p->subject.reserved = p->subject.len + 1;
@@ -161,7 +161,7 @@ void read_posting_from_file(FILE *fd,posting_t *p) {
   /* category */
   fread(&p->category.len,sizeof(p->category.len),1,fd);
   if(p->category.len) {
-    p->category.content = fo_alloc(NULL,p->category.len+1,1,FO_ALLOC_MALLOC);
+    p->category.content = cf_alloc(NULL,p->category.len+1,1,CF_ALLOC_MALLOC);
     fread(p->category.content,p->category.len,1,fd);
     p->category.content[p->category.len] = '\0';
     p->category.reserved = p->category.len + 1;
@@ -170,7 +170,7 @@ void read_posting_from_file(FILE *fd,posting_t *p) {
 
   /* content */
   fread(&p->content.len,sizeof(p->content.len),1,fd);
-  p->content.content = fo_alloc(NULL,p->content.len+1,1,FO_ALLOC_MALLOC);
+  p->content.content = cf_alloc(NULL,p->content.len+1,1,CF_ALLOC_MALLOC);
   fread(p->content.content,p->content.len,1,fd);
   p->content.content[p->content.len] = '\0';
   p->content.reserved = p->content.len + 1;
@@ -217,8 +217,8 @@ void usage(void) {
 }
 /* }}} */
 
-conf_opt_t extra_opts[] = {
-  { "BackupFile", handle_command, CFG_OPT_CONFIG|CFG_OPT_NEEDED|CFG_OPT_LOCAL, &fo_server_conf },
+cf_conf_opt_t extra_opts[] = {
+  { "BackupFile", cf_handle_command, CF_CFG_OPT_CONFIG|CF_CFG_OPT_NEEDED|CF_CFG_OPT_LOCAL, &fo_server_conf },
   { NULL, NULL, 0, NULL }
 };
 
@@ -230,7 +230,7 @@ int main(int argc,char *argv[]) {
   char c;
 
   u_char *file;
-  array_t *cfgfiles;
+  cf_array_t *cfgfiles;
 
   FILE *fd;
 
@@ -239,11 +239,11 @@ int main(int argc,char *argv[]) {
   thread_t *t;
   posting_t *p,*p1,*p2;
 
-  configfile_t sconf,dconf;
+  cf_configfile_t sconf,dconf;
 
   forum_t *forum;
 
-  name_value_t *v,*sort_m_v;
+  cf_name_value_t *v,*sort_m_v;
 
   struct stat st;
 
@@ -313,31 +313,31 @@ int main(int argc,char *argv[]) {
     usage();
   }
 
-  cfg_init();
+  cf_cfg_init();
 
   /* {{{ configuration files */
-  if((cfgfiles = get_conf_file(wanted,2)) == NULL) {
+  if((cfgfiles = cf_get_conf_file(wanted,2)) == NULL) {
     fprintf(stderr,"error getting config files\n");
     return EXIT_FAILURE;
   }
 
-  file = *((u_char **)array_element_at(cfgfiles,0));
-  cfg_init_file(&sconf,file);
+  file = *((u_char **)cf_array_element_at(cfgfiles,0));
+  cf_cfg_init_file(&sconf,file);
   free(file);
 
-  file = *((u_char **)array_element_at(cfgfiles,1));
-  cfg_init_file(&dconf,file);
+  file = *((u_char **)cf_array_element_at(cfgfiles,1));
+  cf_cfg_init_file(&dconf,file);
   free(file);
 
 
-  cfg_register_options(&dconf,default_options);
-  cfg_register_options(&sconf,fo_server_options);
-  cfg_register_options(&sconf,extra_opts);
+  cf_cfg_register_options(&dconf,default_options);
+  cf_cfg_register_options(&sconf,fo_server_options);
+  cf_cfg_register_options(&sconf,extra_opts);
 
-  if(read_config(&dconf,NULL,CFG_MODE_CONFIG) != 0 || read_config(&sconf,NULL,CFG_MODE_CONFIG) != 0) {
+  if(cf_read_config(&dconf,NULL,CF_CFG_MODE_CONFIG) != 0 || cf_read_config(&sconf,NULL,CF_CFG_MODE_CONFIG) != 0) {
     fprintf(stderr,"config file error!\n");
 
-    cfg_cleanup_file(&dconf);
+    cf_cfg_cleanup_file(&dconf);
 
     return EXIT_FAILURE;
   }
@@ -345,7 +345,7 @@ int main(int argc,char *argv[]) {
 
   /* {{{ check if backup file exists */
   if(bf == NULL) {
-    v = cfg_get_first_value(&fo_server_conf,forum_name,"BackupFile");
+    v = cf_cfg_get_first_value(&fo_server_conf,forum_name,"BackupFile");
     bf = strdup(v->values[0]);
   }
 
@@ -367,7 +367,7 @@ int main(int argc,char *argv[]) {
   }
   /* }}} */
 
-  sort_m_v = cfg_get_first_value(&fo_server_conf,forum_name,"SortMessages");
+  sort_m_v = cf_cfg_get_first_value(&fo_server_conf,forum_name,"SortMessages");
   sort_m = cf_strcmp(sort_m_v->values[0],"ascending") == 0 ? CF_SORT_ASCENDING : CF_SORT_DESCENDING;
 
   /* open recovery file */
@@ -400,7 +400,7 @@ int main(int argc,char *argv[]) {
     if(fread(&int64_val,sizeof(int64_val),1,fd) <= 0) break;
 
     if((t  = cf_get_thread(forum,int64_val)) == NULL) {
-      t = fo_alloc(NULL,1,sizeof(*t),FO_ALLOC_CALLOC);
+      t = cf_alloc(NULL,1,sizeof(*t),CF_ALLOC_CALLOC);
       t->tid = int64_val;
       n = 1;
     }
@@ -416,7 +416,7 @@ int main(int argc,char *argv[]) {
       continue;
     }
     else {
-      p = fo_alloc(NULL,sizeof(*p),1,FO_ALLOC_CALLOC);
+      p = cf_alloc(NULL,sizeof(*p),1,CF_ALLOC_CALLOC);
       p->mid = int64_val;
     }
 

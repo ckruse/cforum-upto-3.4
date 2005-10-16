@@ -19,30 +19,30 @@
 #include "parsetpl.h"
 
 /* {{{ dereference_variable */
-int dereference_variable(string_t *out_str,token_t *var,array_t *data,string_t *c_var) {
+int dereference_variable(cf_string_t *out_str,token_t *var,cf_array_t *data,cf_string_t *c_var) {
   int level, is_hash;
   char buf[20];
-  string_t *arrayidx;
+  cf_string_t *arrayidx;
   token_t *token;
   
-  str_cstr_append(out_str,"v = (cf_tpl_variable_t *)cf_tpl_getvar(tpl,\"");
-  str_chars_append(out_str,var->data->content+1,var->data->len-1);
-  str_cstr_append(out_str,"\");\n");
+  cf_str_cstr_append(out_str,"v = (cf_tpl_variable_t *)cf_tpl_getvar(tpl,\"");
+  cf_str_chars_append(out_str,var->data->content+1,var->data->len-1);
+  cf_str_cstr_append(out_str,"\");\n");
   token = NULL;
   level = 0;
 
   // get array indexes
   while(data->elements) {
-    token = (token_t *)array_element_at(data,0);
+    token = (token_t *)cf_array_element_at(data,0);
     if(token->type != PARSETPL_TOK_ARRAYSTART) break;
 
-    token = (token_t *)array_shift(data);
+    token = (token_t *)cf_array_shift(data);
     destroy_token(token);
     free(token);
 
     if(!data->elements) return PARSETPL_ERR_INVALIDTAG;
 
-    token = (token_t *)array_shift(data);
+    token = (token_t *)cf_array_shift(data);
     if((token->type != PARSETPL_TOK_STRING && token->type != PARSETPL_TOK_INTEGER) || !data->elements) {
       destroy_token(token);
       free(token);
@@ -53,12 +53,12 @@ int dereference_variable(string_t *out_str,token_t *var,array_t *data,string_t *
     else is_hash = 1;
 
     arrayidx = token->data; free(token);
-    token = (token_t *)array_shift(data);
+    token = (token_t *)cf_array_shift(data);
 
     if(token->type != PARSETPL_TOK_ARRAYEND) {
       destroy_token(token);
       free(token);
-      str_cleanup(arrayidx);
+      cf_str_cleanup(arrayidx);
       free(arrayidx);
       return PARSETPL_ERR_INVALIDTAG;
     }
@@ -67,36 +67,36 @@ int dereference_variable(string_t *out_str,token_t *var,array_t *data,string_t *
     free(token);
 
     if(is_hash) {
-      str_cstr_append(out_str,"if(v && v->type == TPL_VARIABLE_HASH) {\n");
-      str_cstr_append(out_str,"v = (cf_tpl_variable_t *)cf_hash_get(v->data.d_hash,\"");
+      cf_str_cstr_append(out_str,"if(v && v->type == TPL_VARIABLE_HASH) {\n");
+      cf_str_cstr_append(out_str,"v = (cf_tpl_variable_t *)cf_hash_get(v->data.d_hash,\"");
       append_escaped_string(out_str,arrayidx);
-      str_cstr_append(out_str,"\",");
+      cf_str_cstr_append(out_str,"\",");
       snprintf(buf,19,"%ld",arrayidx->len);
-      str_cstr_append(out_str,buf);
+      cf_str_cstr_append(out_str,buf);
     }
     else {
-      str_cstr_append(out_str,"if(v && v->type == TPL_VARIABLE_ARRAY) {\n");
-      str_cstr_append(out_str,"v = (cf_tpl_variable_t *)array_element_at(&v->data.d_array,");
-      str_str_append(out_str,arrayidx);
+      cf_str_cstr_append(out_str,"if(v && v->type == TPL_VARIABLE_ARRAY) {\n");
+      cf_str_cstr_append(out_str,"v = (cf_tpl_variable_t *)cf_array_element_at(&v->data.d_array,");
+      cf_str_str_append(out_str,arrayidx);
     }
 
-    str_cleanup(arrayidx);
+    cf_str_cleanup(arrayidx);
     free(arrayidx);
-    str_cstr_append(out_str,");\n");
+    cf_str_cstr_append(out_str,");\n");
     level++;
   }
 
-  str_str_append(out_str,c_var);
-  str_cstr_append(out_str," = v;\n");
+  cf_str_str_append(out_str,c_var);
+  cf_str_cstr_append(out_str," = v;\n");
 
-  for(;level > 0;level--) str_cstr_append(out_str,"}\n");
+  for(;level > 0;level--) cf_str_cstr_append(out_str,"}\n");
 
   return 0;
 }
 /* }}} */
 
 /* {{{ dereference_iterator */
-int dereference_iterator(string_t *out_str,token_t *var,array_t *data,string_t *c_var) {
+int dereference_iterator(cf_string_t *out_str,token_t *var,cf_array_t *data,cf_string_t *c_var) {
   long idx = -1;
   token_t *token;
   char idxbuf[20];
@@ -106,16 +106,16 @@ int dereference_iterator(string_t *out_str,token_t *var,array_t *data,string_t *
 
   // get array indexes
   while(data->elements) {
-    token = (token_t *)array_element_at(data,0);
+    token = (token_t *)cf_array_element_at(data,0);
     if(token->type != PARSETPL_TOK_ARRAYSTART) break;
 
-    token = (token_t *)array_shift(data);
+    token = (token_t *)cf_array_shift(data);
     destroy_token(token);
     free(token);
 
     if(!data->elements) return PARSETPL_ERR_INVALIDTAG;
 
-    token = (token_t *)array_shift(data);
+    token = (token_t *)cf_array_shift(data);
     if(token->type != PARSETPL_TOK_INTEGER || !data->elements) {
       destroy_token(token);
       free(token);
@@ -123,7 +123,7 @@ int dereference_iterator(string_t *out_str,token_t *var,array_t *data,string_t *
     }
 
     idx   = strtol(token->data->content,NULL,10); free(token);
-    token = (token_t *)array_shift(data);
+    token = (token_t *)cf_array_shift(data);
 
     if(token->type != PARSETPL_TOK_ARRAYEND) {
       destroy_token(token);
@@ -145,24 +145,24 @@ int dereference_iterator(string_t *out_str,token_t *var,array_t *data,string_t *
   snprintf(idx2buf,19,"%ld",idx*2);
 
   if(!strcmp(var->data->content,"@first")) {
-    str_str_append(out_str,c_var);
-    str_cstr_append(out_str," = (i");
-    str_cstr_append(out_str,idxbuf);
-    str_cstr_append(out_str," == 0) ? 1 : 0;\n");
+    cf_str_str_append(out_str,c_var);
+    cf_str_cstr_append(out_str," = (i");
+    cf_str_cstr_append(out_str,idxbuf);
+    cf_str_cstr_append(out_str," == 0) ? 1 : 0;\n");
   }
   else if(!strcmp(var->data->content,"@last")) {
-    str_str_append(out_str,c_var);
-    str_cstr_append(out_str," = (i");
-    str_cstr_append(out_str,idxbuf);
-    str_cstr_append(out_str," == vf");
-    str_cstr_append(out_str,idx2buf);
-    str_cstr_append(out_str,"->data.d_array.elements - 1) ? 1 : 0;\n");
+    cf_str_str_append(out_str,c_var);
+    cf_str_cstr_append(out_str," = (i");
+    cf_str_cstr_append(out_str,idxbuf);
+    cf_str_cstr_append(out_str," == vf");
+    cf_str_cstr_append(out_str,idx2buf);
+    cf_str_cstr_append(out_str,"->data.d_array.elements - 1) ? 1 : 0;\n");
   }
   else if(!strcmp(var->data->content,"@iterator")) {
-    str_str_append(out_str,c_var);
-    str_cstr_append(out_str," = i");
-    str_cstr_append(out_str,idxbuf);
-    str_cstr_append(out_str,";\n");
+    cf_str_str_append(out_str,c_var);
+    cf_str_cstr_append(out_str," = i");
+    cf_str_cstr_append(out_str,idxbuf);
+    cf_str_cstr_append(out_str,";\n");
   }
 
   return 0;

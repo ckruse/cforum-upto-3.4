@@ -40,9 +40,9 @@ void cf_list_init(cf_list_head_t *head) {
 
 /* {{{ cf_list_append */
 void cf_list_append(cf_list_head_t *head,void *data,size_t size) {
-  cf_list_element_t *elem = fo_alloc(NULL,1,sizeof(*elem),FO_ALLOC_CALLOC);
+  cf_list_element_t *elem = cf_alloc(NULL,1,sizeof(*elem),CF_ALLOC_CALLOC);
 
-  elem->data = memdup(data,size);
+  elem->data = cf_memdup(data,size);
   elem->size = size;
 
   if(head->last == NULL) {
@@ -58,7 +58,7 @@ void cf_list_append(cf_list_head_t *head,void *data,size_t size) {
 
 /* {{{ cf_list_append_static */
 void cf_list_append_static(cf_list_head_t *head,void *data,size_t size) {
-  cf_list_element_t *elem = fo_alloc(NULL,1,sizeof(*elem),FO_ALLOC_CALLOC);
+  cf_list_element_t *elem = cf_alloc(NULL,1,sizeof(*elem),CF_ALLOC_CALLOC);
 
   elem->data = data;
   elem->size = size;
@@ -77,9 +77,9 @@ void cf_list_append_static(cf_list_head_t *head,void *data,size_t size) {
 
 /* {{{ cf_list_prepend */
 void cf_list_prepend(cf_list_head_t *head,void *data,size_t size) {
-  cf_list_element_t *elem = fo_alloc(NULL,1,sizeof(*elem),FO_ALLOC_CALLOC);
+  cf_list_element_t *elem = cf_alloc(NULL,1,sizeof(*elem),CF_ALLOC_CALLOC);
 
-  elem->data = memdup(data,size);
+  elem->data = cf_memdup(data,size);
   elem->size = size;
 
   if(head->elements) {
@@ -95,7 +95,7 @@ void cf_list_prepend(cf_list_head_t *head,void *data,size_t size) {
 
 /* {{{ cf_list_prepend_static */
 void cf_list_prepend_static(cf_list_head_t *head,void *data,size_t size) {
-  cf_list_element_t *elem = fo_alloc(NULL,1,sizeof(*elem),FO_ALLOC_CALLOC);
+  cf_list_element_t *elem = cf_alloc(NULL,1,sizeof(*elem),CF_ALLOC_CALLOC);
 
   elem->data = data;
   elem->size = size;
@@ -114,9 +114,9 @@ void cf_list_prepend_static(cf_list_head_t *head,void *data,size_t size) {
 
 /* {{{ cf_list_insert */
 void cf_list_insert(cf_list_head_t *head,cf_list_element_t *prev,void *data,size_t size) {
-  cf_list_element_t *elem = fo_alloc(NULL,1,sizeof(*elem),FO_ALLOC_CALLOC);
+  cf_list_element_t *elem = cf_alloc(NULL,1,sizeof(*elem),CF_ALLOC_CALLOC);
 
-  elem->data = memdup(data,size);
+  elem->data = cf_memdup(data,size);
   elem->size = size;
 
   elem->next = prev->next;

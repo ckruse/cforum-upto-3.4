@@ -45,17 +45,17 @@ static u_char *MOTD_File = NULL;
 static u_char *flt_motd_fn = NULL;
 
 /* {{{ flt_motd_execute */
-int flt_motd_execute(cf_hash_t *head,configuration_t *dc,configuration_t *vc,cf_template_t *begin,cf_template_t *end) {
+int flt_motd_execute(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t *vc,cf_template_t *begin,cf_template_t *end) {
   FILE *fd;
   struct stat st;
   u_char *txt;
   u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
-  name_value_t *cs = cfg_get_first_value(dc,forum_name,"ExternCharset");
+  cf_name_value_t *cs = cf_cfg_get_first_value(dc,forum_name,"ExternCharset");
 
   if(MOTD_File && MOTD_enable) {
     if(stat(MOTD_File,&st) != -1) {
       if((fd = fopen(MOTD_File,"r")) != NULL) {
-        txt = fo_alloc(NULL,1,st.st_size+1,FO_ALLOC_MALLOC);
+        txt = cf_alloc(NULL,1,st.st_size+1,CF_ALLOC_MALLOC);
         fread(txt,1,st.st_size,fd);
         cf_set_variable(begin,cs,"motd",txt,st.st_size,0);
         free(txt);
@@ -71,7 +71,7 @@ int flt_motd_execute(cf_hash_t *head,configuration_t *dc,configuration_t *vc,cf_
 /* }}} */
 
 /* {{{ flt_motd_handle */
-int flt_motd_handle(configfile_t *cfile,conf_opt_t *opt,const u_char *context,u_char **args,size_t argnum) {
+int flt_motd_handle(cf_configfile_t *cfile,cf_conf_opt_t *opt,const u_char *context,u_char **args,size_t argnum) {
   if(flt_motd_fn == NULL) flt_motd_fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   if(!context || cf_strcmp(flt_motd_fn,context) != 0) return 0;
 
@@ -86,18 +86,18 @@ void flt_motd_cleanup(void) {
   if(MOTD_File) free(MOTD_File);
 }
 
-conf_opt_t flt_motd_config[] = {
-  { "MotdFile",   flt_motd_handle, CFG_OPT_CONFIG|CFG_OPT_LOCAL, NULL },
-  { "EnableMotd", flt_motd_handle, CFG_OPT_USER|CFG_OPT_CONFIG|CFG_OPT_LOCAL, NULL },
+cf_conf_opt_t flt_motd_config[] = {
+  { "MotdFile",   flt_motd_handle, CF_CFG_OPT_CONFIG|CF_CFG_OPT_LOCAL, NULL },
+  { "EnableMotd", flt_motd_handle, CF_CFG_OPT_USER|CF_CFG_OPT_CONFIG|CF_CFG_OPT_LOCAL, NULL },
   { NULL, NULL, 0, NULL }
 };
 
-handler_config_t flt_motd_handlers[] = {
+cf_handler_config_t flt_motd_handlers[] = {
   { VIEW_INIT_HANDLER, flt_motd_execute },
   { 0, NULL }
 };
 
-module_config_t flt_motd = {
+cf_module_config_t flt_motd = {
   MODULE_MAGIC_COOKIE,
   flt_motd_config,
   flt_motd_handlers,

@@ -41,9 +41,9 @@ static u_char *flt_na_fn = NULL;
 
 /* {{{ flt_noanswer_gogogo */
 #ifndef CF_SHARED_MEM
-int flt_noanswer_gogogo(cf_hash_t *cgi,configuration_t *dc,configuration_t *vc,int sock)
+int flt_noanswer_gogogo(cf_hash_t *cgi,cf_configuration_t *dc,cf_configuration_t *vc,int sock)
 #else
-int flt_noanswer_gogogo(cf_hash_t *cgi,configuration_t *dc,configuration_t *vc,void *ptr)
+int flt_noanswer_gogogo(cf_hash_t *cgi,cf_configuration_t *dc,cf_configuration_t *vc,void *ptr)
 #endif
 {
   #ifdef CF_SHARED_MEM
@@ -65,7 +65,7 @@ int flt_noanswer_gogogo(cf_hash_t *cgi,configuration_t *dc,configuration_t *vc,v
     mid = cf_cgi_get(cgi,"m");
 
     if(!tid || !mid) return FLT_DECLINE;
-    if(str_to_u_int64(tid) == 0 || str_to_u_int64(mid) == 0) return FLT_DECLINE;
+    if(cf_str_to_uint64(tid) == 0 || cf_str_to_uint64(mid) == 0) return FLT_DECLINE;
 
     memset(&rl,0,sizeof(rl));
 
@@ -126,7 +126,7 @@ int flt_noanswer_gogogo(cf_hash_t *cgi,configuration_t *dc,configuration_t *vc,v
 /* }}} */
 
 /* {{{ flt_noanswer_posthandler */
-int flt_noanswer_posthandler(cf_hash_t *cgi,configuration_t *dc,configuration_t *vc,message_t *msg,u_int64_t tid,int mode) {
+int flt_noanswer_posthandler(cf_hash_t *cgi,cf_configuration_t *dc,cf_configuration_t *vc,message_t *msg,u_int64_t tid,int mode) {
   int si = cf_hash_get(GlobalValues,"ShowInvisible",13) != NULL;
   cf_readmode_t *rm = cf_hash_get(GlobalValues,"RM",2);
   cf_post_flag_t *flag;
@@ -153,7 +153,7 @@ int flt_noanswer_posthandler(cf_hash_t *cgi,configuration_t *dc,configuration_t 
 /* }}} */
 
 /* {{{ flt_noanswer_setvars */
-int flt_noanswer_setvars(cf_hash_t *head,configuration_t *dc,configuration_t *vc,cl_thread_t *thread,message_t *msg,cf_tpl_variable_t *hash) {
+int flt_noanswer_setvars(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t *vc,cl_thread_t *thread,message_t *msg,cf_tpl_variable_t *hash) {
   int si = cf_hash_get(GlobalValues,"ShowInvisible",13) != NULL;
   cf_post_flag_t *flag;
 
@@ -165,12 +165,12 @@ int flt_noanswer_setvars(cf_hash_t *head,configuration_t *dc,configuration_t *vc
 
 /* {{{ flt_noanswer_post */
 #ifdef CF_SHARED_MEM
-int flt_noanswer_post(cf_hash_t *head,configuration_t *dc,configuration_t *pc,message_t *p,cl_thread_t *thr,void *ptr,int sock,int mode)
+int flt_noanswer_post(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t *pc,message_t *p,cl_thread_t *thr,void *ptr,int sock,int mode)
 #else
-int flt_noanswer_post(cf_hash_t *head,configuration_t *dc,configuration_t *pc,message_t *p,cl_thread_t *thr,int sock,int mode)
+int flt_noanswer_post(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t *pc,message_t *p,cl_thread_t *thr,int sock,int mode)
 #endif
 {
-  name_value_t *cs;
+  cf_name_value_t *cs;
   u_char *fn;
 
   if(!thr) return FLT_DECLINE;
@@ -178,7 +178,7 @@ int flt_noanswer_post(cf_hash_t *head,configuration_t *dc,configuration_t *pc,me
   if(cf_hash_get(GlobalValues,"ShowInvisible",13) != NULL) return FLT_DECLINE;
 
   fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
-  cs = cfg_get_first_value(dc,fn,"ExternCharset");
+  cs = cf_cfg_get_first_value(dc,fn,"ExternCharset");
   printf("Status: 403 Forbidden\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
   cf_error_message("E_noanswer",NULL);
 
@@ -187,7 +187,7 @@ int flt_noanswer_post(cf_hash_t *head,configuration_t *dc,configuration_t *pc,me
 /* }}} */
 
 /* {{{ flt_na_handle */
-int flt_na_handle(configfile_t *cfile,conf_opt_t *opt,const u_char *context,u_char **args,size_t argnum) {
+int flt_na_handle(cf_configfile_t *cfile,cf_conf_opt_t *opt,const u_char *context,u_char **args,size_t argnum) {
   if(flt_na_fn == NULL) flt_na_fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   if(!context || cf_strcmp(flt_na_fn,context) != 0) return 0;
 
@@ -197,12 +197,12 @@ int flt_na_handle(configfile_t *cfile,conf_opt_t *opt,const u_char *context,u_ch
 }
 /* }}} */
 
-conf_opt_t flt_noanswer_config[] = {
-  { "NASend204", flt_na_handle, CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
+cf_conf_opt_t flt_noanswer_config[] = {
+  { "NASend204", flt_na_handle, CF_CFG_OPT_USER|CF_CFG_OPT_LOCAL, NULL },
   { NULL, NULL, 0, NULL }
 };
 
-handler_config_t flt_noanswer_handlers[] = {
+cf_handler_config_t flt_noanswer_handlers[] = {
   { CONNECT_INIT_HANDLER, flt_noanswer_gogogo },
   { VIEW_LIST_HANDLER,    flt_noanswer_posthandler },
   { PERPOST_VAR_HANDLER,  flt_noanswer_setvars },
@@ -210,7 +210,7 @@ handler_config_t flt_noanswer_handlers[] = {
   { 0, NULL }
 };
 
-module_config_t flt_noanswer = {
+cf_module_config_t flt_noanswer = {
   MODULE_MAGIC_COOKIE,
   flt_noanswer_config,
   flt_noanswer_handlers,

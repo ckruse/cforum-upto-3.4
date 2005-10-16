@@ -394,9 +394,9 @@ int flt_poas_qp_check(message_t *p) {
 
 /* {{{ flt_poas_execute */
 #ifdef CF_SHARED_MEM
-int flt_poas_execute(cf_hash_t *head,configuration_t *dc,configuration_t *pc,message_t *p,cl_thread_t *thr,void *ptr,int sock,int mode)
+int flt_poas_execute(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t *pc,message_t *p,cl_thread_t *thr,void *ptr,int sock,int mode)
 #else
-int flt_poas_execute(cf_hash_t *head,configuration_t *dc,configuration_t *pc,message_t *p,cl_thread_t *thr,int sock,int mode)
+int flt_poas_execute(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t *pc,message_t *p,cl_thread_t *thr,int sock,int mode)
 #endif
 {
   /* first: standard checks */
@@ -433,7 +433,7 @@ int flt_poas_execute(cf_hash_t *head,configuration_t *dc,configuration_t *pc,mes
 /* }}} */
 
 /* {{{ flt_poas_handle */
-int flt_poas_handle(configfile_t *cfile,conf_opt_t *opt,const u_char *context,u_char **args,size_t argnum) {
+int flt_poas_handle(cf_configfile_t *cfile,cf_conf_opt_t *opt,const u_char *context,u_char **args,size_t argnum) {
   if(flt_poas_fn == NULL) flt_poas_fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   if(!context || cf_strcmp(flt_poas_fn,context) != 0) return 0;
 
@@ -445,7 +445,7 @@ int flt_poas_handle(configfile_t *cfile,conf_opt_t *opt,const u_char *context,u_
       flt_poas_conf.fds_allowed = atof(args[0]);
       break;
     case 'B':
-      if(cf_strcmp(opt->name,"BadWords") == 0) flt_poas_conf.bws_len = split(args[0],",",&flt_poas_conf.bws);
+      if(cf_strcmp(opt->name,"BadWords") == 0) flt_poas_conf.bws_len = cf_split(args[0],",",&flt_poas_conf.bws);
       else flt_poas_conf.bws_allowed = atoi(args[0]);
       break;
     case 'Q':
@@ -473,22 +473,22 @@ void flt_poas_finish(void) {
 }
 /* }}} */
 
-conf_opt_t flt_poas_config[] = {
-  { "PostingAssistantMustValidate", flt_poas_handle, CFG_OPT_CONFIG|CFG_OPT_LOCAL, NULL },
-  { "BadWords",                     flt_poas_handle, CFG_OPT_CONFIG|CFG_OPT_LOCAL, NULL },
-  { "BadwordsAllowed",              flt_poas_handle, CFG_OPT_CONFIG|CFG_OPT_LOCAL, NULL },
-  { "FormateDeficitesAllowed",      flt_poas_handle, CFG_OPT_CONFIG|CFG_OPT_LOCAL, NULL },
-  { "QuotingPercent",               flt_poas_handle, CFG_OPT_CONFIG|CFG_OPT_LOCAL, NULL },
-  { "QuoteMustValidate",            flt_poas_handle, CFG_OPT_CONFIG|CFG_OPT_LOCAL, NULL },
+cf_conf_opt_t flt_poas_config[] = {
+  { "PostingAssistantMustValidate", flt_poas_handle, CF_CFG_OPT_CONFIG|CF_CFG_OPT_LOCAL, NULL },
+  { "BadWords",                     flt_poas_handle, CF_CFG_OPT_CONFIG|CF_CFG_OPT_LOCAL, NULL },
+  { "BadwordsAllowed",              flt_poas_handle, CF_CFG_OPT_CONFIG|CF_CFG_OPT_LOCAL, NULL },
+  { "FormateDeficitesAllowed",      flt_poas_handle, CF_CFG_OPT_CONFIG|CF_CFG_OPT_LOCAL, NULL },
+  { "QuotingPercent",               flt_poas_handle, CF_CFG_OPT_CONFIG|CF_CFG_OPT_LOCAL, NULL },
+  { "QuoteMustValidate",            flt_poas_handle, CF_CFG_OPT_CONFIG|CF_CFG_OPT_LOCAL, NULL },
   { NULL, NULL, 0, NULL }
 };
 
-handler_config_t flt_poas_handlers[] = {
+cf_handler_config_t flt_poas_handlers[] = {
   { NEW_POST_HANDLER, flt_poas_execute },
   { 0, NULL }
 };
 
-module_config_t flt_postingassistant = {
+cf_module_config_t flt_postingassistant = {
   MODULE_MAGIC_COOKIE,
   flt_poas_config,
   flt_poas_handlers,

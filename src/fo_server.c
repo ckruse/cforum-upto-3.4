@@ -142,14 +142,14 @@ void destroy_server(void *data) {
 
 /* {{{ logfile_worker */
 void logfile_worker(void) {
-  name_value_t *v = cfg_get_first_value(&fo_server_conf,NULL,"LogMaxSize");
-  name_value_t *log;
+  cf_name_value_t *v = cf_cfg_get_first_value(&fo_server_conf,NULL,"LogMaxSize");
+  cf_name_value_t *log;
   off_t size = strtol(v->values[0],NULL,10);
   struct stat st;
   u_char buff[256];
   struct tm tm;
   time_t t;
-  string_t str;
+  cf_string_t str;
   size_t len;
 
   if(RUN == 0) return;
@@ -157,42 +157,42 @@ void logfile_worker(void) {
   time(&t);
   localtime_r(&t,&tm);
 
-  log = cfg_get_first_value(&fo_server_conf,NULL,"StdLog");
+  log = cf_cfg_get_first_value(&fo_server_conf,NULL,"StdLog");
   if(stat(log->values[0],&st) == 0) {
     if(st.st_size >= size) {
       pthread_mutex_lock(&head.log.lock);
       fclose(head.log.std);
 
       len = strftime(buff,256,".%Y-%m-%d-%T",&tm);
-      str_init(&str);
-      str_char_set(&str,log->values[0],strlen(log->values[0]));
-      str_chars_append(&str,buff,len);
+      cf_str_init(&str);
+      cf_str_char_set(&str,log->values[0],strlen(log->values[0]));
+      cf_str_chars_append(&str,buff,len);
 
       rename(log->values[0],str.content);
 
       head.log.std = NULL;
 
-      str_cleanup(&str);
+      cf_str_cleanup(&str);
       pthread_mutex_unlock(&head.log.lock);
     }
   }
 
-  log = cfg_get_first_value(&fo_server_conf,NULL,"ErrorLog");
+  log = cf_cfg_get_first_value(&fo_server_conf,NULL,"ErrorLog");
   if(stat(log->values[0],&st) == 0) {
     if(st.st_size >= size) {
       pthread_mutex_lock(&head.log.lock);
       fclose(head.log.err);
 
       len = strftime(buff,256,".%Y-%m-%d-%T",&tm);
-      str_init(&str);
-      str_char_set(&str,log->values[0],strlen(log->values[0]));
-      str_chars_append(&str,buff,len);
+      cf_str_init(&str);
+      cf_str_char_set(&str,log->values[0],strlen(log->values[0]));
+      cf_str_chars_append(&str,buff,len);
 
       rename(log->values[0],str.content);
 
       head.log.err = NULL;
 
-      str_cleanup(&str);
+      cf_str_cleanup(&str);
       pthread_mutex_unlock(&head.log.lock);
     }
   }
@@ -261,12 +261,12 @@ int main(int argc,char *argv[]) {
   u_char *pidfile = NULL,
          *fname;
 
-  array_t *cfgfiles;
+  cf_array_t *cfgfiles;
 
-  configfile_t conf,
+  cf_configfile_t conf,
                dconf;
 
-  name_value_t *pidfile_nv,
+  cf_name_value_t *pidfile_nv,
                *forums,
                *threads,
                *run_archiver,
@@ -275,7 +275,7 @@ int main(int argc,char *argv[]) {
 
   forum_t *actforum;
 
-  internal_config_t *icfg;
+  cf_internal_config_t *icfg;
 
   cf_list_element_t *elem;
   server_t *srv;
@@ -286,7 +286,7 @@ int main(int argc,char *argv[]) {
   struct sched_param param;
 
   server_init_filter_t fkt;
-  handler_config_t *handler;
+  cf_handler_config_t *handler;
 
   periodical_t per;
 
@@ -342,41 +342,41 @@ int main(int argc,char *argv[]) {
   /* }}} */
 
   /* {{{ prepare to read and read configuration */
-  if((cfgfiles = get_conf_file(wanted,2)) == NULL) {
+  if((cfgfiles = cf_get_conf_file(wanted,2)) == NULL) {
     fprintf(stderr,"You should set CF_CONF_DIR or use the --config-directory option!\n");
     return EXIT_FAILURE;
   }
 
-  cfg_init();
+  cf_cfg_init();
   init_modules();
 
-  fname = *((u_char **)array_element_at(cfgfiles,0));
-  cfg_init_file(&dconf,fname);
+  fname = *((u_char **)cf_array_element_at(cfgfiles,0));
+  cf_cfg_init_file(&dconf,fname);
   free(fname);
 
-  fname = *((u_char **)array_element_at(cfgfiles,1));
-  cfg_init_file(&conf,fname);
+  fname = *((u_char **)cf_array_element_at(cfgfiles,1));
+  cf_cfg_init_file(&conf,fname);
   free(fname);
 
-  cfg_register_options(&dconf,default_options);
-  cfg_register_options(&conf,fo_server_options);
+  cf_cfg_register_options(&dconf,default_options);
+  cf_cfg_register_options(&conf,fo_server_options);
 
-  if(read_config(&dconf,NULL,CFG_MODE_CONFIG) != 0 || read_config(&conf,NULL,CFG_MODE_CONFIG) != 0) {
+  if(cf_read_config(&dconf,NULL,CF_CFG_MODE_CONFIG) != 0 || cf_read_config(&conf,NULL,CF_CFG_MODE_CONFIG) != 0) {
     fprintf(stderr,"config file error!\n");
 
-    cfg_cleanup_file(&conf);
-    cfg_cleanup_file(&dconf);
+    cf_cfg_cleanup_file(&conf);
+    cf_cfg_cleanup_file(&dconf);
 
     return EXIT_FAILURE;
   }
 
-  array_destroy(cfgfiles);
+  cf_array_destroy(cfgfiles);
   free(cfgfiles);
   /* }}} */
 
   /* {{{ security handling... never run as root, give ability to chroot() somewhere */
   /* {{{ get GID and UID */
-  if((usergroup = cfg_get_first_value(&fo_server_conf,NULL,"UserGroup")) != NULL) {
+  if((usergroup = cf_cfg_get_first_value(&fo_server_conf,NULL,"UserGroup")) != NULL) {
     if((gid = atoi(usergroup->values[1])) == 0 && (gid = get_gid(usergroup->values[1])) == 0) {
       fprintf(stderr,"config error: cannot set gid! Config value: %s\n",usergroup->values[1]);
       return EXIT_FAILURE;
@@ -401,7 +401,7 @@ int main(int argc,char *argv[]) {
   /* }}} */
 
   /* {{{ chroot() */
-  if((chrootv = cfg_get_first_value(&fo_server_conf,NULL,"Chroot")) != NULL) {
+  if((chrootv = cf_cfg_get_first_value(&fo_server_conf,NULL,"Chroot")) != NULL) {
     if(chdir(chrootv->values[0]) == -1) {
       fprintf(stderr,"could not chdir to chroot dir '%s': %s\n",chrootv->values[0],strerror(errno));
       return EXIT_SUCCESS;
@@ -430,11 +430,11 @@ int main(int argc,char *argv[]) {
   /* }}} */
 
   /* {{{ check if all forum contexts are present */
-  forums = cfg_get_first_value(&fo_server_conf,NULL,"Forums");
+  forums = cf_cfg_get_first_value(&fo_server_conf,NULL,"Forums");
   for(i=0;i<forums->valnum;i++) {
     status = 0;
     for(elem=fo_server_conf.forums.elements;elem;elem=elem->next) {
-      icfg = (internal_config_t *)elem->data;
+      icfg = (cf_internal_config_t *)elem->data;
       if(cf_strcmp(icfg->name,forums->values[i]) == 0) {
         status = 1;
         break;
@@ -449,7 +449,7 @@ int main(int argc,char *argv[]) {
   /* }}} */
 
   if(!pidfile) {
-    pidfile_nv = cfg_get_first_value(&fo_server_conf,NULL,"PIDFile");
+    pidfile_nv = cf_cfg_get_first_value(&fo_server_conf,NULL,"PIDFile");
     pidfile    = strdup(pidfile_nv->values[0]);
   }
 
@@ -483,7 +483,7 @@ int main(int argc,char *argv[]) {
    *
    * this can take a while, maybe we should send a message to the user?
    */
-  forums = cfg_get_first_value(&fo_server_conf,NULL,"Forums");
+  forums = cf_cfg_get_first_value(&fo_server_conf,NULL,"Forums");
   for(i=0;i<forums->valnum;i++) {
     if((actforum = cf_register_forum(forums->values[i])) == NULL) {
       cf_log(CF_ERR,__FILE__,__LINE__,"could not register forum %s\n",forums->values[i]);
@@ -542,7 +542,7 @@ int main(int argc,char *argv[]) {
   #endif
 
   /* ok, start worker threads */
-  threads = cfg_get_first_value(&fo_server_conf,NULL,"MinThreads");
+  threads = cf_cfg_get_first_value(&fo_server_conf,NULL,"MinThreads");
   start_threads = atoi(threads->values[0]);
 
   for(j=0;j<start_threads;j++) {
@@ -556,14 +556,14 @@ int main(int argc,char *argv[]) {
   }
 
   /* needed later */
-  threads = cfg_get_first_value(&fo_server_conf,NULL,"SpareThreads");
+  threads = cf_cfg_get_first_value(&fo_server_conf,NULL,"SpareThreads");
   spare_threads = atoi(threads->values[0]);
 
-  threads = cfg_get_first_value(&fo_server_conf,NULL,"MaxThreads");
+  threads = cf_cfg_get_first_value(&fo_server_conf,NULL,"MaxThreads");
   max_threads = atoi(threads->values[0]);
 
   /* {{{ register periodicals */
-  run_archiver = cfg_get_first_value(&fo_server_conf,NULL,"RunArchiver");
+  run_archiver = cf_cfg_get_first_value(&fo_server_conf,NULL,"RunArchiver");
   per.periode = atoi(run_archiver->values[0]);
   per.worker = cf_io_worker;
   cf_list_append(&head.periodicals,&per,sizeof(per));
@@ -588,7 +588,7 @@ int main(int argc,char *argv[]) {
     ret = FLT_OK;
 
     for(i=0;i<Modules[INIT_HANDLER].elements && (ret == FLT_DECLINE || ret == FLT_OK);++i) {
-      handler = array_element_at(&Modules[INIT_HANDLER],i);
+      handler = cf_array_element_at(&Modules[INIT_HANDLER],i);
       fkt     = (server_init_filter_t)handler->func;
       ret     = fkt(sock);
     }
@@ -693,7 +693,7 @@ int main(int argc,char *argv[]) {
   /* {{{ destroy forums */
   cf_log(CF_STD|CF_FLSH,__FILE__,__LINE__,"Destroying forums...\n");
 
-  forums = cfg_get_first_value(&fo_server_conf,NULL,"Forums");
+  forums = cf_cfg_get_first_value(&fo_server_conf,NULL,"Forums");
   for(i=0;i<forums->valnum;i++) {
     actforum = cf_hash_get(head.forums,forums->values[i],strlen(forums->values[i]));
     cf_destroy_forum(actforum);
@@ -724,16 +724,16 @@ int main(int argc,char *argv[]) {
   fclose(head.log.err);
   /* }}} */
 
-  cleanup_modules(Modules);
+  cf_cleanup_modules(Modules);
 
   remove(pidfile);
   free(pidfile);
 
   /* also the config */
-  cfg_destroy();
+  cf_cfg_destroy();
 
-  cfg_cleanup_file(&dconf);
-  cfg_cleanup_file(&conf);
+  cf_cfg_cleanup_file(&dconf);
+  cf_cfg_cleanup_file(&conf);
 
   return EXIT_SUCCESS;
 }

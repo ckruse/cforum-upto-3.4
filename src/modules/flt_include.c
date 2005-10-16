@@ -42,7 +42,7 @@ static u_char *InlineCSS = NULL;
 static u_char *flt_include_fn = NULL;
 
 /* {{{ flt_include_exec_list */
-int flt_include_exec_list(cf_hash_t *head,configuration_t *dc,configuration_t *vc,cf_template_t *begin,cf_template_t *end) {
+int flt_include_exec_list(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t *vc,cf_template_t *begin,cf_template_t *end) {
   int rc = FLT_DECLINE;
 
   if(CSSUri) {
@@ -80,13 +80,13 @@ int flt_include_exec_list(cf_hash_t *head,configuration_t *dc,configuration_t *v
 /* }}} */
 
 /* {{{ flt_include_exec_post */
-int flt_include_exec_post(cf_hash_t *head,configuration_t *dc,configuration_t *vc,cl_thread_t *thread,cf_template_t *tpl) {
+int flt_include_exec_post(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t *vc,cl_thread_t *thread,cf_template_t *tpl) {
   return flt_include_exec_list(head,dc,vc,tpl,NULL);
 }
 /* }}} */
 
 /* {{{ flt_incldue_handle */
-int flt_include_handle(configfile_t *cf,conf_opt_t *opt,const u_char *context,u_char **args,size_t argnum) {
+int flt_include_handle(cf_configfile_t *cf,cf_conf_opt_t *opt,const u_char *context,u_char **args,size_t argnum) {
   if(flt_include_fn == NULL) flt_include_fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   if(!context || cf_strcmp(flt_include_fn,context) != 0) return 0;
 
@@ -125,22 +125,22 @@ void flt_include_finish(void) {
   }
 }
 
-conf_opt_t flt_include_config[] = {
-  { "OwnCSSFile",           flt_include_handle, CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
-  { "OverwriteStandardCSS", flt_include_handle, CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
-  { "OwnJSFile",            flt_include_handle, CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
-  { "OwnXSLTFile",          flt_include_handle, CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
-  { "InlineCSS",            flt_include_handle, CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
+cf_conf_opt_t flt_include_config[] = {
+  { "OwnCSSFile",           flt_include_handle, CF_CFG_OPT_USER|CF_CFG_OPT_LOCAL, NULL },
+  { "OverwriteStandardCSS", flt_include_handle, CF_CFG_OPT_USER|CF_CFG_OPT_LOCAL, NULL },
+  { "OwnJSFile",            flt_include_handle, CF_CFG_OPT_USER|CF_CFG_OPT_LOCAL, NULL },
+  { "OwnXSLTFile",          flt_include_handle, CF_CFG_OPT_USER|CF_CFG_OPT_LOCAL, NULL },
+  { "InlineCSS",            flt_include_handle, CF_CFG_OPT_USER|CF_CFG_OPT_LOCAL, NULL },
   { NULL, NULL, 0, NULL }
 };
 
-handler_config_t flt_include_handlers[] = {
+cf_handler_config_t flt_include_handlers[] = {
   { VIEW_INIT_HANDLER, flt_include_exec_list },
   { POSTING_HANDLER,   flt_include_exec_post },
   { 0, NULL }
 };
 
-module_config_t flt_include = {
+cf_module_config_t flt_include = {
   MODULE_MAGIC_COOKIE,
   flt_include_config,
   flt_include_handlers,

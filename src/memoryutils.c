@@ -32,27 +32,27 @@
 #include "utils.h"
 /* }}} */
 
-/* {{{ fo_alloc
+/* {{{ cf_alloc
  * Returns:     NULL on false type attribute, the new pointer in any else case
  * Parameters:
  *   - void *ptr     The old pointer for realloc()
  *   - size_t nmemb  The number of objects to allocate
  *   - size_t size   The size of one object
- *   - int type      The type of the allocation (FO_ALLOC_MALLOC, FO_ALLOC_CALLOC or FO_ALLOC_REALLOC)
+ *   - int type      The type of the allocation (CF_ALLOC_MALLOC, CF_ALLOC_CALLOC or CF_ALLOC_REALLOC)
  *
  * Safely allocates new memory
  */
-void *fo_alloc(void *ptr,size_t nmemb,size_t size,int type) {
+void *cf_alloc(void *ptr,size_t nmemb,size_t size,int type) {
   void *l_ptr = NULL;
 
   switch(type) {
-    case FO_ALLOC_MALLOC:
+    case CF_ALLOC_MALLOC:
       l_ptr = malloc(nmemb * size);
       break;
-    case FO_ALLOC_CALLOC:
+    case CF_ALLOC_CALLOC:
       l_ptr = calloc(nmemb,size);
       break;
-    case FO_ALLOC_REALLOC:
+    case CF_ALLOC_REALLOC:
       l_ptr = realloc(ptr,size * nmemb);
       break;
   }
@@ -66,7 +66,7 @@ void *fo_alloc(void *ptr,size_t nmemb,size_t size,int type) {
 }
 /* }}} */
 
-/* {{{ memdup
+/* {{{ cf_memdup
  * Returns:  A pointer to the duplicated memory area
  * Parameters:
  *   - void *inptr  The pointer to the original memory area
@@ -75,16 +75,16 @@ void *fo_alloc(void *ptr,size_t nmemb,size_t size,int type) {
  * This function duplicates a memory area
  *
  */
-void *memdup(void *inptr,size_t size) {
-  void *outptr = fo_alloc(NULL,1,size,FO_ALLOC_MALLOC);
+void *cf_memdup(void *inptr,size_t size) {
+  void *outptr = cf_alloc(NULL,1,size,CF_ALLOC_MALLOC);
   memcpy(outptr,inptr,size);
 
   return outptr;
 }
 /* }}} */
 
-/* {{{ mem_init_growth */
-void mem_init_growth(mem_pool_t *pool,unsigned growth) {
+/* {{{ cf_mem_init_growth */
+void cf_mem_init_growth(cf_mem_pool_t *pool,unsigned growth) {
   pool->len      = 0;
   pool->reserved = 0;
   pool->growth   = growth;
@@ -92,8 +92,8 @@ void mem_init_growth(mem_pool_t *pool,unsigned growth) {
 }
 /* }}} */
 
-/* {{{ mem_init */
-void mem_init(mem_pool_t *pool) {
+/* {{{ cf_mem_init */
+void cf_mem_init(cf_mem_pool_t *pool) {
   pool->len      = 0;
   pool->reserved = 0;
   pool->growth   = CF_BUFSIZ;
@@ -101,8 +101,8 @@ void mem_init(mem_pool_t *pool) {
 }
 /* }}} */
 
-/* {{{ mem_cleanup */
-void mem_cleanup(mem_pool_t *pool) {
+/* {{{ cf_mem_cleanup */
+void cf_mem_cleanup(cf_mem_pool_t *pool) {
   pool->len      = 0;
   pool->reserved = 0;
 
@@ -112,15 +112,15 @@ void mem_cleanup(mem_pool_t *pool) {
 }
 /* }}} */
 
-/* {{{ mem_append */
-void *mem_append(mem_pool_t *pool,const void *src,size_t length) {
+/* {{{ cf_mem_append */
+void *cf_mem_append(cf_mem_pool_t *pool,const void *src,size_t length) {
   size_t len = pool->growth;
 
   if(pool->len + length >= pool->reserved) {
     if(length >= len) len += length;
 
     pool->reserved += len;
-    pool->content   = fo_alloc(pool->content,(size_t)pool->reserved,1,FO_ALLOC_REALLOC);
+    pool->content   = cf_alloc(pool->content,(size_t)pool->reserved,1,CF_ALLOC_REALLOC);
   }
 
   memcpy(pool->content + pool->len,src,length);
@@ -130,14 +130,14 @@ void *mem_append(mem_pool_t *pool,const void *src,size_t length) {
 }
 /* }}} */
 
-/* {{{ mem_set */
-size_t mem_set(mem_pool_t *pool,const void *src,size_t length) {
+/* {{{ cf_mem_set */
+size_t cf_mem_set(cf_mem_pool_t *pool,const void *src,size_t length) {
   size_t len = pool->growth;
 
   if(pool->len + length >= pool->reserved) {
     if(length >= len) len += length;
 
-    pool->content   = fo_alloc(pool->content,pool->reserved + len,1,FO_ALLOC_REALLOC);
+    pool->content   = cf_alloc(pool->content,pool->reserved + len,1,CF_ALLOC_REALLOC);
     pool->reserved += len;
   }
 

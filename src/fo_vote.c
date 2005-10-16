@@ -92,9 +92,9 @@ int is_id(const u_char *id) {
 /* }}} */
 
 /* {{{ send_ok_output */
-void send_ok_output(cf_hash_t *head,name_value_t *cs) {
-  name_value_t *fbase;
-  name_value_t *cfg_tpl;
+void send_ok_output(cf_hash_t *head,cf_name_value_t *cs) {
+  cf_name_value_t *fbase;
+  cf_name_value_t *cf_cfg_tpl;
   u_char tpl_name[256];
   cf_template_t tpl;
   u_char *uname = cf_hash_get(GlobalValues,"UserName",8);
@@ -105,11 +105,11 @@ void send_ok_output(cf_hash_t *head,name_value_t *cs) {
 
   u_int64_t tid,mid;
 
-  cfg_tpl = cfg_get_first_value(&fo_vote_conf,forum_name,"OkTemplate");
-  cf_gen_tpl_name(tpl_name,256,cfg_tpl->values[0]);
+  cf_cfg_tpl = cf_cfg_get_first_value(&fo_vote_conf,forum_name,"OkTemplate");
+  cf_gen_tpl_name(tpl_name,256,cf_cfg_tpl->values[0]);
 
-  tid   = str_to_u_int64(ctid);
-  mid   = str_to_u_int64(cmid);
+  tid   = cf_str_to_uint64(ctid);
+  mid   = cf_str_to_uint64(cmid);
   link  = cf_get_link(NULL,tid,mid);
 
   if(cf_tpl_init(&tpl,tpl_name) != 0) {
@@ -118,8 +118,8 @@ void send_ok_output(cf_hash_t *head,name_value_t *cs) {
     return;
   }
 
-  if(uname) fbase = cfg_get_first_value(&fo_default_conf,forum_name,"UBaseURL");
-  else      fbase = cfg_get_first_value(&fo_default_conf,forum_name,"BaseURL");
+  if(uname) fbase = cf_cfg_get_first_value(&fo_default_conf,forum_name,"UBaseURL");
+  else      fbase = cf_cfg_get_first_value(&fo_default_conf,forum_name,"BaseURL");
 
   cf_set_variable(&tpl,cs,"backlink",link,strlen(link),0);
   cf_set_variable(&tpl,cs,"forumbase",fbase->values[0],strlen(fbase->values[0]),1);
@@ -136,7 +136,7 @@ void send_ok_output(cf_hash_t *head,name_value_t *cs) {
 /**
  * Dummy function, for ignoring unknown directives
  */
-int ignre(configfile_t *cf,const u_char *context,u_char *name,u_char **args,size_t argnum) {
+int ignre(cf_configfile_t *cf,const u_char *context,u_char *name,u_char **args,size_t argnum) {
   return 0;
 }
 
@@ -155,21 +155,21 @@ int main(int argc,char *argv[],char *env[]) {
   };
 
   int sock,ret;
-  array_t *cfgfiles;
-  configfile_t dconf,conf,vconf;
+  cf_array_t *cfgfiles;
+  cf_configfile_t dconf,conf,vconf;
   u_char *fname,*ctid,*cmid,*a,buff[512],*uname,*ucfg,*mode = NULL,*line;
   cf_hash_t *head;
   size_t len;
   DB *db;
   DBT key,data;
-  name_value_t *dbname,*cs,*send204;
+  cf_name_value_t *dbname,*cs,*send204;
   int fd;
   u_char *forum_name;
   rline_t rsd;
 
   size_t i;
   filter_begin_t exec;
-  handler_config_t *handler;
+  cf_handler_config_t *handler;
   
   cf_readmode_t rm_infos;
 
@@ -179,51 +179,51 @@ int main(int argc,char *argv[],char *env[]) {
   signal(SIGFPE,sighandler);
   signal(SIGBUS,sighandler);
 
-  if((cfgfiles = get_conf_file(wanted,3)) == NULL) {
+  if((cfgfiles = cf_get_conf_file(wanted,3)) == NULL) {
     fprintf(stderr,"Could not find config files!\n");
     return EXIT_FAILURE;
   }
 
   cf_init();
   init_modules();
-  cfg_init();
+  cf_cfg_init();
 
   forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   sock = 0;
 
-  fname = *((u_char **)array_element_at(cfgfiles,0));
-  cfg_init_file(&dconf,fname);
+  fname = *((u_char **)cf_array_element_at(cfgfiles,0));
+  cf_cfg_init_file(&dconf,fname);
   free(fname);
 
-  fname = *((u_char **)array_element_at(cfgfiles,1));
-  cfg_init_file(&vconf,fname);
+  fname = *((u_char **)cf_array_element_at(cfgfiles,1));
+  cf_cfg_init_file(&vconf,fname);
   free(fname);
 
-  fname = *((u_char **)array_element_at(cfgfiles,2));
-  cfg_init_file(&conf,fname);
+  fname = *((u_char **)cf_array_element_at(cfgfiles,2));
+  cf_cfg_init_file(&conf,fname);
   free(fname);
 
-  cfg_register_options(&dconf,default_options);
-  cfg_register_options(&vconf,fo_view_options);
-  cfg_register_options(&conf,fo_vote_options);
+  cf_cfg_register_options(&dconf,default_options);
+  cf_cfg_register_options(&vconf,fo_view_options);
+  cf_cfg_register_options(&conf,fo_vote_options);
 
-  if(read_config(&dconf,NULL,CFG_MODE_CONFIG) != 0 || read_config(&conf,NULL,CFG_MODE_CONFIG) != 0 || read_config(&vconf,NULL,CFG_MODE_CONFIG) != 0) {
+  if(cf_read_config(&dconf,NULL,CF_CFG_MODE_CONFIG) != 0 || cf_read_config(&conf,NULL,CF_CFG_MODE_CONFIG) != 0 || cf_read_config(&vconf,NULL,CF_CFG_MODE_CONFIG) != 0) {
     fprintf(stderr,"config file error!\n");
-    cfg_cleanup_file(&dconf);
-    cfg_cleanup_file(&conf);
+    cf_cfg_cleanup_file(&dconf);
+    cf_cfg_cleanup_file(&conf);
     return EXIT_FAILURE;
   }
 
   head   = cf_cgi_new();
-  dbname = cfg_get_first_value(&fo_vote_conf,forum_name,"VotingDatabase");
-  cs     = cfg_get_first_value(&fo_default_conf,forum_name,"ExternCharset");
+  dbname = cf_cfg_get_first_value(&fo_vote_conf,forum_name,"VotingDatabase");
+  cs     = cf_cfg_get_first_value(&fo_default_conf,forum_name,"ExternCharset");
 
   /* {{{ first action: authorization modules */
   if(Modules[AUTH_HANDLER].elements) {
     ret = FLT_DECLINE;
 
     for(i=0;i<Modules[AUTH_HANDLER].elements && ret == FLT_DECLINE;i++) {
-      handler = array_element_at(&Modules[AUTH_HANDLER],i);
+      handler = cf_array_element_at(&Modules[AUTH_HANDLER],i);
 
       exec = (filter_begin_t)handler->func;
       ret = exec(head,&fo_default_conf,&fo_vote_conf);
@@ -250,14 +250,14 @@ int main(int argc,char *argv[],char *env[]) {
       free(conf.filename);
       conf.filename = ucfg;
 
-      if(read_config(&conf,ignre,CFG_MODE_USER) != 0) {
+      if(cf_read_config(&conf,ignre,CF_CFG_MODE_USER) != 0) {
         fprintf(stderr,"config file error!\n");
 
         printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
         cf_error_message("E_VOTE_INTERNAL",NULL);
 
-        cfg_cleanup_file(&conf);
-        cfg_cleanup_file(&dconf);
+        cf_cfg_cleanup_file(&conf);
+        cf_cfg_cleanup_file(&dconf);
 
         return EXIT_FAILURE;
       }
@@ -275,7 +275,7 @@ int main(int argc,char *argv[],char *env[]) {
     else cf_hash_set(GlobalValues,"RM",2,&rm_infos,sizeof(rm_infos));
   /* }}} */
 
-    send204 = cfg_get_first_value(&fo_vote_conf,forum_name,"Send204");
+    send204 = cf_cfg_get_first_value(&fo_vote_conf,forum_name,"Send204");
 
 
     if(cmid && ctid && a && is_id(cmid) && is_id(ctid)) {
@@ -417,15 +417,15 @@ int main(int argc,char *argv[],char *env[]) {
   if(head) cf_hash_destroy(head);
 
   /* cleanup source */
-  cfg_cleanup_file(&dconf);
-  cfg_cleanup_file(&conf);
+  cf_cfg_cleanup_file(&dconf);
+  cf_cfg_cleanup_file(&conf);
 
-  array_destroy(cfgfiles);
+  cf_array_destroy(cfgfiles);
   free(cfgfiles);
 
-  cleanup_modules(Modules);
+  cf_cleanup_modules(Modules);
   cf_fini();
-  cfg_destroy();
+  cf_cfg_destroy();
 
   return EXIT_SUCCESS;
   /* }}} */

@@ -12,16 +12,16 @@
 
 typedef struct s_token {
   int type;
-  string_t *data;
+  cf_string_t *data;
 } token_t;
 
 struct s_function;
 
 typedef struct s_context {
-  string_t   output;
-  string_t   output_mem;
-  array_t    foreach_var_stack;
-  array_t    if_level_stack;
+  cf_string_t   output;
+  cf_string_t   output_mem;
+  cf_array_t    foreach_var_stack;
+  cf_array_t    if_level_stack;
   long       n_assign_vars;
   long       n_cur_assign_vars;
   long       n_foreach_vars;
@@ -47,8 +47,8 @@ typedef struct s_context {
 } context_t;
 
 typedef struct s_function {
-  string_t name;
-  array_t  params;
+  cf_string_t name;
+  cf_array_t  params;
   context_t *ctx;
 } function_t;
 
@@ -106,12 +106,12 @@ typedef struct s_function {
 
 extern long lineno;
 extern cf_hash_t *defined_functions;
-extern array_t *defined_function_list;
+extern cf_array_t *defined_function_list;
 extern context_t *current_context;
-extern string_t string;
-extern string_t content;
-extern string_t content_backup;
-extern string_t current_file;
+extern cf_string_t string;
+extern cf_string_t content;
+extern cf_string_t content_backup;
+extern cf_string_t current_file;
 extern context_t global_context;
 
 #ifndef parsetplleng
@@ -137,32 +137,32 @@ extern int yyleng;
 
 int parse_file(const u_char *filename);
 
-int peek_next_nws_type(array_t *data);
-int peek_for_hash(array_t *data);
+int peek_next_nws_type(cf_array_t *data);
+int peek_for_hash(cf_array_t *data);
 
-int dereference_variable(string_t *out_str,token_t *var,array_t *data,string_t *c_var);
-int dereference_iterator(string_t *out_str,token_t *var,array_t *data,string_t *c_var);
+int dereference_variable(cf_string_t *out_str,token_t *var,cf_array_t *data,cf_string_t *c_var);
+int dereference_iterator(cf_string_t *out_str,token_t *var,cf_array_t *data,cf_string_t *c_var);
 
-void write_parser_functions_def(FILE *ofp, string_t *func_name, context_t *ctx, array_t *params);
-void write_parser_functions(FILE *ofp, string_t *func_name, context_t *ctx, array_t *params);
+void write_parser_functions_def(FILE *ofp, cf_string_t *func_name, context_t *ctx, cf_array_t *params);
+void write_parser_functions(FILE *ofp, cf_string_t *func_name, context_t *ctx, cf_array_t *params);
 
-int process_array_assignment(array_t *data,string_t *tmp);
-int process_variable_assignment_tag(token_t *variable,array_t *data);
-int process_variable_print_tag(token_t *variable,array_t *data);
-int process_iterator_print_tag (token_t *iterator,array_t *data);
-int process_include_tag(string_t *file);
-int process_foreach_tag(array_t *data);
-int process_if_tag(array_t *data, int is_elseif);
-int process_func_tag(array_t *data);
-int process_func_call_tag(array_t *data);
-int process_tag(array_t *data);
+int process_array_assignment(cf_array_t *data,cf_string_t *tmp);
+int process_variable_assignment_tag(token_t *variable,cf_array_t *data);
+int process_variable_print_tag(token_t *variable,cf_array_t *data);
+int process_iterator_print_tag (token_t *iterator,cf_array_t *data);
+int process_include_tag(cf_string_t *file);
+int process_foreach_tag(cf_array_t *data);
+int process_if_tag(cf_array_t *data, int is_elseif);
+int process_func_tag(cf_array_t *data);
+int process_func_call_tag(cf_array_t *data);
+int process_tag(cf_array_t *data);
 
 void init_context(context_t *context);
 void destroy_context(context_t *context);
 void init_function(function_t *func);
 void destroy_function(void *arg);
 void destroy_token(void *t);
-void append_escaped_string(string_t *dest,string_t *src);
+void append_escaped_string(cf_string_t *dest,cf_string_t *src);
 
 #endif
 

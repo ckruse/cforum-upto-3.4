@@ -4,7 +4,7 @@
  * \brief Utilities for the Classic Forum
  *
  * This file contains some utility functions for the Classic Forum, e.g. a string abstraction and a
- * split() function.
+ * cf_split() function.
  */
 
 /* {{{ Initial headers */
@@ -40,7 +40,7 @@ typedef struct s_mem_pool {
   unsigned long reserved; /**< length of the memory area itself */
   unsigned growth; /**< The growth factor */
   void *content; /**< The memory area itself */
-} mem_pool_t;
+} cf_mem_pool_t;
 
 #define MEMORY_INITIALIZER { 0, 0, 0, NULL }
 
@@ -49,7 +49,7 @@ typedef struct s_mem_pool {
  * This function initializes a memory pool
  * \param pool The memory pool object pointer
  */
-void mem_init(mem_pool_t *pool);
+void cf_mem_init(cf_mem_pool_t *pool);
 
 /**
  * \ingroup memory_funcs
@@ -57,14 +57,14 @@ void mem_init(mem_pool_t *pool);
  * \param pool The memory pool object pointer
  * \param growth The growth factor
  */
-void mem_init_growth(mem_pool_t *pool,unsigned growth);
+void cf_mem_init_growth(cf_mem_pool_t *pool,unsigned growth);
 
 /**
  * \ingroup memory_funcs
  * This function cleans up a memory pool.
  * \param pool The memory pool object pointer
  */
-void mem_cleanup(mem_pool_t *pool);
+void cf_mem_cleanup(cf_mem_pool_t *pool);
 
 /**
  * \ingroup memory_funcs
@@ -74,7 +74,7 @@ void mem_cleanup(mem_pool_t *pool);
  * \param length The length of the region to copy
  * \return Number of copied bytes
  */
-size_t mem_set(mem_pool_t *pool,const void *src,size_t length);
+size_t cf_mem_set(cf_mem_pool_t *pool,const void *src,size_t length);
 
 /**
  * \ingroup memory_funcs
@@ -85,7 +85,7 @@ size_t mem_set(mem_pool_t *pool,const void *src,size_t length);
  * \param len The length of the region
  * \return Number of bytes copied
  */
-void *mem_append(mem_pool_t *pool,const void *src,size_t len);
+void *cf_mem_append(cf_mem_pool_t *pool,const void *src,size_t len);
 /*\@}*/
 
 /* }}} */
@@ -106,9 +106,9 @@ typedef struct s_string {
   unsigned long reserved; /**< length of the memory area itself */
   unsigned growth;
   u_char *content; /**< The memory area itself */
-} string_t;
+} cf_string_t;
 
-#define STRING_INITIALIZER { 0, 0, CF_BUFSIZ, NULL }
+#define CF_STRING_INITIALIZER { 0, 0, CF_BUFSIZ, NULL }
 
 /**
  * \ingroup string_funcs
@@ -116,21 +116,21 @@ typedef struct s_string {
  * \param str A reference to a string structure
  * \param growth The growth factor
  */
-void str_init_growth(string_t *str,unsigned growth);
+void cf_str_init_growth(cf_string_t *str,unsigned growth);
 
 /**
  * \ingroup string_funcs
  * This function initializes a string structure. It just sets everything to 0
  * \param str A reference to a string structure
  */
-void str_init(string_t *str);
+void cf_str_init(cf_string_t *str);
 
 /**
  * \ingroup string_funcs
  * This function frees the reserved memory in a string structure and sets everything to NULL
  * \param str A reference to the string structure
  */
-void str_cleanup(string_t *str);
+void cf_str_cleanup(cf_string_t *str);
 
 /**
  * \ingroup string_funcs
@@ -139,7 +139,7 @@ void str_cleanup(string_t *str);
  * \param content The character to append
  * \return Number of characters appended on success or 0 on failure
  */
-size_t str_char_append(string_t *str,const u_char content);
+size_t cf_str_char_append(cf_string_t *str,const u_char content);
 
 /**
  * \ingroup string_funcs
@@ -149,26 +149,26 @@ size_t str_char_append(string_t *str,const u_char content);
  * \param length The length of the u_char array
  * \return The number of characters appended on success or 0 on failure
  */
-size_t str_chars_append(string_t *str,const u_char *content,size_t length);
+size_t cf_str_chars_append(cf_string_t *str,const u_char *content,size_t length);
 
 /**
  * \ingroup string_funcs
  * This function appends a string structure to a string structure. It's just a wrapper for
- * the str_chars_append() function.
+ * the cf_str_chars_append() function.
  * \param str A reference to the string structure to append to
  * \param content A reference to the string structure to append
  */
-size_t str_str_append(string_t *str,string_t *content);
+size_t cf_str_str_append(cf_string_t *str,cf_string_t *content);
 
 /**
  * \ingroup string_funcs
  * This function appends a C-like null terminated character array to a string structure.
- * It's just a wrapper for the str_chars_append() function.
+ * It's just a wrapper for the cf_str_chars_append() function.
  * \param str A reference to the string structure to append to
  * \param content The u_char array to append
  * \return The number of characters appended on success or 0 on failure
  */
-size_t str_cstr_append(string_t *str,const u_char *content);
+size_t cf_str_cstr_append(cf_string_t *str,const u_char *content);
 
 /**
  * \ingroup string_funcs
@@ -178,7 +178,7 @@ size_t str_cstr_append(string_t *str,const u_char *content);
  * \param content The string to set
  * \return The number of characters set on success or 0 on failure
  */
-int str_cstr_set(string_t *str,const u_char *content);
+int cf_str_cstr_set(cf_string_t *str,const u_char *content);
 
 /**
  * \ingroup string_funcs
@@ -189,7 +189,7 @@ int str_cstr_set(string_t *str,const u_char *content);
  * \param length The length of the string to set
  * \return The number of characters set on success or 0 on failure
  */
-size_t str_char_set(string_t *str,const u_char *content,size_t length);
+size_t cf_str_char_set(cf_string_t *str,const u_char *content,size_t length);
 
 /**
  * \ingroup string_funcs
@@ -199,26 +199,26 @@ size_t str_char_set(string_t *str,const u_char *content,size_t length);
  * \param content A reference to the structure to set
  * \return The number of characters set on success or 0 on failure
  */
-size_t str_str_set(string_t *str,string_t *content);
+size_t cf_str_str_set(cf_string_t *str,cf_string_t *content);
 
 /**
  * \ingroup string_funcs
- * This function tests if two strings (string_t) are equal
+ * This function tests if two strings (cf_string_t) are equal
  * \param str1 string 1
  * \param str2 string 2
  * \return TRUE if both equal, FALSE otherwise
  */
-int str_equal_string(const string_t *str1,const string_t *str2);
+int cf_str_equal_string(const cf_string_t *str1,const cf_string_t *str2);
 
 /**
  * \ingroup string_funcs
- * This function tests if two strings (string_t, u_char *) are equal
+ * This function tests if two strings (cf_string_t, u_char *) are equal
  * \param str1 string 1
  * \param str2 string 2
  * \param len Length of string str2
  * \return TRUE if both equal, FALSE otherwise
  */
-int str_equal_chars(const string_t *str1,const u_char *str2, size_t len);
+int cf_str_equal_chars(const cf_string_t *str1,const u_char *str2, size_t len);
 
 /*\@}*/
 /* }}} */
@@ -245,23 +245,23 @@ int cf_make_path(const u_char *path,mode_t mode);
 /**
  * Splits a string into a list of strings and returns the length of the list. The string big will be cut at
  * every match of the string small.
- * \param big The string to split
+ * \param big The string to cf_split
  * \param small The string to search
  * \param ulist A reference to a u_char ** pointer. In this u_char ** pointer will the list be stored.
  * \return The length of the list.
  * \attention You HAVE to free every element of the list and the list itself!
  */
-size_t split(const u_char *big,const u_char *small,u_char ***ulist);
+size_t cf_split(const u_char *big,const u_char *small,u_char ***ulist);
 
 /**
  * Splits a string into a list of maximal max elements
- * \param bug The string to split
+ * \param bug The string to cf_split
  * \param small The string to search
  * \param ulist A reference to a u_char ** pointer
  * \return The length of the list
  * \attention You have to free every element of the list _and_ the list itself!
  */
-size_t nsplit(const u_char *big,const u_char *small,u_char ***ulist,size_t max);
+size_t cf_nsplit(const u_char *big,const u_char *small,u_char ***ulist,size_t max);
 
 /**
  * This function tries to convert a date string in the form of "1.1.1982 12:30:40" into a unix timestamp.
@@ -269,7 +269,7 @@ size_t nsplit(const u_char *big,const u_char *small,u_char ***ulist,size_t max);
  * \param datestr The date string
  * \return The timestamp on success or -1 on failure.
  */
-time_t transform_date(const u_char *datestr);
+time_t cf_transform_date(const u_char *datestr);
 
 /**
  * This function generates a (hopefully) unique id from the REMOTE_ADDR environment variable and a little
@@ -278,21 +278,21 @@ time_t transform_date(const u_char *datestr);
  * \param maxlen The maximal length of the id
  * \return The length of the id on success or 0 on failure
  */
-int gen_unid(u_char *buff,int maxlen);
+int cf_gen_unid(u_char *buff,int maxlen);
 
 /**
  * This function safely allocates new memory. If the memory could not be allocated, exit() will be called.
- * \param ptr The old pointer (for FO_ALLOC_REALLOC)
+ * \param ptr The old pointer (for CF_ALLOC_REALLOC)
  * \param nmemb The number of objects to allocate
  * \param size The size of one object
  * \param type The type of the allocation
  * \return The pointer to the new memory segment or NULL, if you gave a wrong type.
  */
-void *fo_alloc(void *ptr,size_t nmemb,size_t size,int type);
+void *cf_alloc(void *ptr,size_t nmemb,size_t size,int type);
 
-#define FO_ALLOC_MALLOC  0 /**< Just allocate Memory */
-#define FO_ALLOC_CALLOC  1 /**< Allocate memory and initialize it with 0 bytes */
-#define FO_ALLOC_REALLOC 2 /**< Re-allocate a memory block with a different size */
+#define CF_ALLOC_MALLOC  0 /**< Just allocate Memory */
+#define CF_ALLOC_CALLOC  1 /**< Allocate memory and initialize it with 0 bytes */
+#define CF_ALLOC_REALLOC 2 /**< Re-allocate a memory block with a different size */
 
 #ifdef NOSTRDUP
 /**
@@ -345,17 +345,17 @@ ssize_t getdelim(char **lineptr,size_t *n,int delim,FILE *stream);
  * \return A pointer to the newly created segment
  * \attention You have to free() the newly created segment yourself!
  */
-void *memdup(void *inptr,size_t size);
+void *cf_memdup(void *inptr,size_t size);
 /* }}} */
 
 /* {{{ Array abstraction */
 /**
- * \defgroup array_funcs Array abstraction
+ * \defgroup cf_array_funcs Array abstraction
  */
 /*\@{*/
 
 /**
- * \ingroup array_funcs
+ * \ingroup cf_array_funcs
  * Array "class".
  * This struct contains all necessary information about the array
  */
@@ -364,91 +364,91 @@ typedef struct s_array {
          reserved, /**< Amount of memory reserved */
          element_size; /**< Size of one element */
 
-  void (*array_destroy)(void *); /**< Function pointer to element destructor */
+  void (*cf_array_destroy)(void *); /**< Function pointer to element destructor */
   void *array; /**< Array pointer */
-} array_t;
+} cf_array_t;
 
-#define ARRAY_INITIALIZER(size,destroy) { 0, 0, (size), (destroy), NULL }
+#define CF_ARRAY_INITIALIZER(size,destroy) { 0, 0, (size), (destroy), NULL }
 
 /**
- * \ingroup array_funcs
+ * \ingroup cf_array_funcs
  * This function initializes an array structure (it could be the constructor)
  * \param ary The array structure pointer
  * \param element_size The size of one element in the array
- * \param array_destroy The destroy function for an array element. This function will be called whenever an element in the array has to be deleted. Could be NULL if a function like this is not needed and a simple free() call is enough.
+ * \param cf_array_destroy The destroy function for an array element. This function will be called whenever an element in the array has to be deleted. Could be NULL if a function like this is not needed and a simple free() call is enough.
  */
-void array_init(array_t *ary,size_t element_size,void (*array_destroy)(void *));
+void cf_array_init(cf_array_t *ary,size_t element_size,void (*cf_array_destroy)(void *));
 
 /**
- * \ingroup array_funcs
+ * \ingroup cf_array_funcs
  * This function pushes an element to the end of the array. The element
- * is being copied via a memdup() function, which only is a malloc() with
+ * is being copied via a cf_memdup() function, which only is a malloc() with
  * a memcpy().
  * \param ary The array structure pointer
  * \param element The element to push to the end
  */
-void array_push(array_t *ary,const void *element);
+void cf_array_push(cf_array_t *ary,const void *element);
 
 /**
- * \ingroup array_funcs
+ * \ingroup cf_array_funcs
  * This function deletes the last element in the array.
  * \param ary The array structure pointer
  * \return A copy of the 'popped' element
  * \attention Because this function returns a copy of this element, the destroy function will not be called!
  */
-void *array_pop(array_t *ary);
+void *cf_array_pop(cf_array_t *ary);
 
 /**
- * \ingroup array_funcs
+ * \ingroup cf_array_funcs
  * This function deletes the first element in the array
  * \param ary The array structure pointer
  * \return A copy of the 'shifted' element
  * \attention Because this function returns a copy of this element, the destroy function will not be called!
  */
-void *array_shift(array_t *ary);
+void *cf_array_shift(cf_array_t *ary);
 
 /**
- * \ingroup array_funcs
+ * \ingroup cf_array_funcs
  * This function inserts an element at the beginning of the array.
  * \param ary The array structure pointer
  * \param element The pointer to the element
  */
-void array_unshift(array_t *ary,const void *element);
+void cf_array_unshift(cf_array_t *ary,const void *element);
 
 /**
- * \ingroup array_funcs
+ * \ingroup cf_array_funcs
  * This function sorts an array via the quick sort algorithm
  * \param ary The array structure pointer
  * \param compar The comparing function. See qsort(3) for informations of the return values and arguments of this coparing function.
  */
-void array_sort(array_t *ary,int(*compar)(const void *,const void *));
+void cf_array_sort(cf_array_t *ary,int(*compar)(const void *,const void *));
 
 /**
- * \ingroup array_funcs
+ * \ingroup cf_array_funcs
  * This function does a binary search on the array. Has to be sorted first!
  * \param ary The array structure pointer
  + \param key The key to search for
  * \param compar THe comparing function. See bsearch(3) for information of the return values and the arguments of this comparing function.
  * \return Returns NULL if element not found or element if found
  */
-void *array_bsearch(array_t *ary,const void *key,int (*compar)(const void *, const void *));
+void *cf_array_bsearch(cf_array_t *ary,const void *key,int (*compar)(const void *, const void *));
 
 /**
- * \ingroup array_funcs
+ * \ingroup cf_array_funcs
  * This function returns an element at a specified position.
  * \param ary The array structure pointer
  * \param index The index of the wanted element
  * \return The element at the specified position or NULL on failure
  */
-void *array_element_at(array_t *ary,size_t index);
+void *cf_array_element_at(cf_array_t *ary,size_t index);
 
 /**
- * \ingroup array_funcs
- * This function destroys an array. It calls the destroy function specified to array_init()
+ * \ingroup cf_array_funcs
+ * This function destroys an array. It calls the destroy function specified to cf_array_init()
  * for each argument and then free()s the array itself.
  * \param ary The array structure pointer
  */
-void array_destroy(array_t *ary);
+void cf_array_destroy(cf_array_t *ary);
 
 /*\@}*/
 
@@ -689,7 +689,7 @@ void cf_list_destroy(cf_list_head_t *head,void (*destroy)(void *data));
  * \param res_pid A pointer where the resulting pid is to be stored or NULL
  * \return 0 on success, -1 on error
  */
-int ipc_dpopen(const char *filename,char *const argv[],char *const envp[],int *result,pid_t *res_pid);
+int cf_ipc_dpopen(const char *filename,char *const argv[],char *const envp[],int *result,pid_t *res_pid);
 
 /**
  * This function closes two pipes opened by ipc_dpopen() and waits for the process
@@ -699,7 +699,7 @@ int ipc_dpopen(const char *filename,char *const argv[],char *const envp[],int *r
  * \param pid   A pointer where the pid is stored or NULL
  * \return 0 on success, -1 on error
  */
-int ipc_dpclose(int *pipes,pid_t *pid);
+int cf_ipc_dpclose(int *pipes,pid_t *pid);
 
 /*\@}*/
 
@@ -774,7 +774,7 @@ typedef struct {
   void *ptr;   /**< Pointer to the content */
   size_t size; /**< Size of the segment */
   int fd;      /**< file descriptor */
-} cache_entry_t;
+} cf_cache_entry_t;
 
 /**
  * function to check if a cache entry is outdated
@@ -812,44 +812,44 @@ int cf_cache(const u_char *base,const u_char *uri,const u_char *content,size_t l
  * \param gzip If > 0, it expects the content to be encoded with gzip
  * \return NULL on error, a cache entry on success
  */
-cache_entry_t *cf_get_cache(u_char *base,u_char *uri,int gzip);
+cf_cache_entry_t *cf_get_cache(u_char *base,u_char *uri,int gzip);
 
 /**
- * Function cleaning up a cache_entry_t struct
+ * Function cleaning up a cf_cache_entry_t struct
  * \param ent The entry to clean up
  */
-void cf_cache_destroy(cache_entry_t *ent);
+void cf_cache_destroy(cf_cache_entry_t *ent);
 
 /* }}} */
 
 /* {{{ data utilities */
 /**
- * This function converts an u_int64_t to a string_t (using str_char_append calls).
+ * This function converts an u_int64_t to a cf_string_t (using cf_str_char_append calls).
  * \param str The string to use
  * \param num The u_int64_t to convert
  */
-void u_int64_to_str(string_t *str, u_int64_t num);
+void cf_uint64_to_str(cf_string_t *str, u_int64_t num);
 
 /**
- * This function converts an u_int16_t to a string_t (using str_char_append calls).
+ * This function converts an u_int16_t to a cf_string_t (using cf_str_char_append calls).
  * \param str The string to use
  * \param num The u_int16_t to convert
  */
-void u_int16_to_str(string_t *str, u_int16_t num);
+void cf_uint16_to_str(cf_string_t *str, u_int16_t num);
 
 /**
- * This function converts an u_int32_t to a string_t (using str_char_append calls).
+ * This function converts an u_int32_t to a cf_string_t (using cf_str_char_append calls).
  * \param str The string to use
  * \param num The u_int32_t to convert
  */
-void u_int32_to_str(string_t *str, u_int32_t num);
+void cf_uint32_to_str(cf_string_t *str, u_int32_t num);
 
 /**
  * This function converts an u_char * to an u_int64_t
  * \param ptr The u_char * to convert
  * \return The converted number
  */
-u_int64_t str_to_u_int64(register const u_char *ptr);
+u_int64_t cf_str_to_uint64(register const u_char *ptr);
 
 
 /* }}} */
@@ -860,7 +860,7 @@ typedef struct {
   u_char *reason;
 
   cf_hash_t *headers;
-  string_t content;
+  cf_string_t content;
 } cf_http_response_t;
 
 
@@ -871,7 +871,7 @@ void cf_http_destroy_response(cf_http_response_t *rsp);
 void cf_http_redirect_with_nice_uri(const u_char *ruri,int perm);
 /* }}} */
 
-time_t cf_timegm (struct tm *tm);
+time_t cf_timegm(struct tm *tm);
 
 
 #endif

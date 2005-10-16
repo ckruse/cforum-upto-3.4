@@ -88,7 +88,7 @@ static flt_lf_node_t *flt_lf_first = NULL;
 static int flt_lf_active = 0;
 static int flt_lf_overwrite = 0;
 
-static string_t flt_lf_str = { 0, 0, 128, NULL };
+static cf_string_t flt_lf_str = { 0, 0, 128, NULL };
 
 static int flt_lf_success = 1;
 
@@ -113,29 +113,29 @@ u_char *flt_lf_case_strstr(const u_char *haystack,const u_char *needle) {
 
 /* {{{ flt_lf_read_string */
 int flt_lf_read_string(register u_char *ptr) {
-  str_init(&flt_lf_str);
+  cf_str_init(&flt_lf_str);
 
   for(;*ptr;ptr++) {
     switch(*ptr) {
       case '\\':
         switch(*(++ptr)) {
           case 'n':
-            str_char_append(&flt_lf_str,'\n');
+            cf_str_char_append(&flt_lf_str,'\n');
             break;
           case 't':
-            str_char_append(&flt_lf_str,'\t');
+            cf_str_char_append(&flt_lf_str,'\t');
             break;
           case '"':
-            str_char_append(&flt_lf_str,'"');
+            cf_str_char_append(&flt_lf_str,'"');
             break;
           default:
-            str_char_append(&flt_lf_str,*ptr);
+            cf_str_char_append(&flt_lf_str,*ptr);
             break;
         }
       case '"':
         return 0;
       default:
-        str_char_append(&flt_lf_str,*ptr);
+        cf_str_char_append(&flt_lf_str,*ptr);
     }
   }
 
@@ -159,24 +159,24 @@ int flt_lf_scanner(u_char *str,u_char **pos) {
       case '=':
         if(*(ptr + 1) == '~') {
           *pos = ptr + 2;
-          str_char_set(&flt_lf_str,ptr,2);
+          cf_str_char_set(&flt_lf_str,ptr,2);
           return TOK_CONTAINS;
         }
         else {
           *pos = ptr + 1;
-          str_char_set(&flt_lf_str,ptr,1);
+          cf_str_char_set(&flt_lf_str,ptr,1);
           return TOK_EQ;
         }
       case '(':
-        str_char_set(&flt_lf_str,ptr,1);
+        cf_str_char_set(&flt_lf_str,ptr,1);
         *pos = ptr + 1;
         return TOK_LPAREN;
       case ')':
-        str_char_set(&flt_lf_str,ptr,1);
+        cf_str_char_set(&flt_lf_str,ptr,1);
         *pos = ptr + 1;
         return TOK_RPAREN;
       case '!':
-        str_char_set(&flt_lf_str,ptr,2);
+        cf_str_char_set(&flt_lf_str,ptr,2);
         *pos = ptr + 2;
 
         if(*(ptr + 1) == '~') {
@@ -186,11 +186,11 @@ int flt_lf_scanner(u_char *str,u_char **pos) {
           return TOK_NE;
         }
       case '|':
-        str_char_set(&flt_lf_str,ptr,1);
+        cf_str_char_set(&flt_lf_str,ptr,1);
         *pos = ptr + 1;
         return TOK_OR;
       case '&':
-        str_char_set(&flt_lf_str,ptr,1);
+        cf_str_char_set(&flt_lf_str,ptr,1);
         *pos = ptr + 1;
         return TOK_AND;
       case '"':
@@ -214,7 +214,7 @@ int flt_lf_scanner(u_char *str,u_char **pos) {
           for(;*ptr && isalnum(*ptr);ptr++);
 
           /* safe identifier */
-          str_char_set(&flt_lf_str,*pos,ptr - *pos);
+          cf_str_char_set(&flt_lf_str,*pos,ptr - *pos);
 
           /* set position */
           *pos = ptr;
@@ -287,14 +287,14 @@ flt_lf_node_t *flt_lf_insert_node(flt_lf_node_t *cur,flt_lf_node_t *tok,flt_lf_n
 /* }}} */
 
 /* {{{ flt_lf_parse_string */
-int flt_lf_parse_string(u_char *str,u_char **pos,cf_template_t *tpl,flt_lf_node_t *node,flt_lf_node_t *root_node,configuration_t *dc) {
+int flt_lf_parse_string(u_char *str,u_char **pos,cf_template_t *tpl,flt_lf_node_t *node,flt_lf_node_t *root_node,cf_configuration_t *dc) {
   int ret = 0;
   flt_lf_node_t *current = NULL;
   u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
-  name_value_t *cs = cfg_get_first_value(dc,forum_name,"ExternCharset");
+  cf_name_value_t *cs = cf_cfg_get_first_value(dc,forum_name,"ExternCharset");
 
   while((ret = flt_lf_scanner(str,pos)) > 0) {
-    current       = fo_alloc(NULL,1,sizeof(*current),FO_ALLOC_CALLOC);
+    current       = cf_alloc(NULL,1,sizeof(*current),CF_ALLOC_CALLOC);
     current->type = ret;
 
     switch(ret) {
@@ -304,32 +304,32 @@ int flt_lf_parse_string(u_char *str,u_char **pos,cf_template_t *tpl,flt_lf_node_
 
         if(cf_strcasecmp(flt_lf_str.content,"true") == 0 && ret == TOK_ID) {
           current->content = (u_char *)1;
-          str_cleanup(&flt_lf_str);
+          cf_str_cleanup(&flt_lf_str);
         }
         else if(cf_strcasecmp(flt_lf_str.content,"false") == 0 && ret == TOK_ID) {
           current->content = (u_char *)0;
-          str_cleanup(&flt_lf_str);
+          cf_str_cleanup(&flt_lf_str);
         }
         else {
           if(cf_strcmp(cs->values[0],"UTF-8")) {
             if((current->content = charset_convert(flt_lf_str.content,flt_lf_str.len,cs->values[0],"UTF-8",NULL)) == NULL) {
               current->content = flt_lf_str.content;
-              str_init(&flt_lf_str);
+              cf_str_init(&flt_lf_str);
             }
             else {
-              str_cleanup(&flt_lf_str);
+              cf_str_cleanup(&flt_lf_str);
             }
           }
           else {
             current->content = flt_lf_str.content;
-            str_init(&flt_lf_str);
+            cf_str_init(&flt_lf_str);
           }
         }
 
         break;
       case TOK_LPAREN:
         current->prec     = PREC_PAREN;
-        current->argument = fo_alloc(NULL,1,sizeof(*current->argument),FO_ALLOC_CALLOC);
+        current->argument = cf_alloc(NULL,1,sizeof(*current->argument),CF_ALLOC_CALLOC);
         if((ret = flt_lf_parse_string(str,pos,tpl,NULL,current,dc)) != 0) return ret;
         break;
       case TOK_RPAREN:
@@ -364,7 +364,7 @@ int flt_lf_parse_string(u_char *str,u_char **pos,cf_template_t *tpl,flt_lf_node_
 /* }}} */
 
 /* {{{ flt_lf_form */
-int flt_lf_form(cf_hash_t *head,configuration_t *dc,configuration_t *vc,cf_template_t *begin,cf_template_t *end) {
+int flt_lf_form(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t *vc,cf_template_t *begin,cf_template_t *end) {
   u_char *filter_str,*pos;
 
   if(head) {
@@ -470,7 +470,7 @@ void flt_lf_to_int(flt_lf_result_t *v) {
 time_t flt_lf_transform_date(const u_char *datestr,flt_lf_result_t *v) {
   struct tm t;
   u_char *ptr,*before;
-  u_char *str = fo_alloc(NULL,strlen(datestr)+1,1,FO_ALLOC_MALLOC);
+  u_char *str = cf_alloc(NULL,strlen(datestr)+1,1,CF_ALLOC_MALLOC);
 
   strcpy(str,datestr);
   ptr = before = str;
@@ -626,7 +626,7 @@ int flt_lf_is_true(flt_lf_result_t *v) {
 /* {{{ flt_lf_evaluate */
 flt_lf_result_t *flt_lf_evaluate(flt_lf_node_t *n,message_t *msg,u_int64_t tid) {
   mod_api_t is_visited = cf_get_mod_api_ent("is_visited");
-  flt_lf_result_t *result = fo_alloc(NULL,1,sizeof(*result),FO_ALLOC_CALLOC);
+  flt_lf_result_t *result = cf_alloc(NULL,1,sizeof(*result),CF_ALLOC_CALLOC);
   flt_lf_result_t *l = NULL,*r = NULL,*tmp;
   struct tm tm,tm1;
 
@@ -860,7 +860,7 @@ flt_lf_result_t *flt_lf_evaluate(flt_lf_node_t *n,message_t *msg,u_int64_t tid) 
 /* }}} */
 
 /* {{{ flt_lf_filter */
-int flt_lf_filter(cf_hash_t *head,configuration_t *dc,configuration_t *vc,message_t *msg,u_int64_t tid,int mode) {
+int flt_lf_filter(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t *vc,message_t *msg,u_int64_t tid,int mode) {
   if(mode & CF_MODE_THREADVIEW) return FLT_DECLINE;
   flt_lf_result_t *res;
 
@@ -883,7 +883,7 @@ int flt_lf_filter(cf_hash_t *head,configuration_t *dc,configuration_t *vc,messag
 /* }}} */
 
 /* {{{ flt_lf_handle_command */
-int flt_lf_handle_command(configfile_t *cf,conf_opt_t *opt,const u_char *context,u_char **args,size_t argnum) {
+int flt_lf_handle_command(cf_configfile_t *cf,cf_conf_opt_t *opt,const u_char *context,u_char **args,size_t argnum) {
   if(!flt_lf_fn) flt_lf_fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   if(!context || cf_strcmp(flt_lf_fn,context) != 0) return 0;
 
@@ -900,19 +900,19 @@ void flt_lf_cleanup(void) {
 }
 /* }}} */
 
-conf_opt_t config[] = {
-  { "ActivateLiveFilter",  flt_lf_handle_command, CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
-  { "LiveFilterOverwrite", flt_lf_handle_command, CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
+cf_conf_opt_t config[] = {
+  { "ActivateLiveFilter",  flt_lf_handle_command, CF_CFG_OPT_CONFIG|CF_CFG_OPT_USER|CF_CFG_OPT_LOCAL, NULL },
+  { "LiveFilterOverwrite", flt_lf_handle_command, CF_CFG_OPT_CONFIG|CF_CFG_OPT_USER|CF_CFG_OPT_LOCAL, NULL },
   { NULL, NULL, 0, NULL }
 };
 
-handler_config_t handlers[] = {
+cf_handler_config_t handlers[] = {
   { VIEW_INIT_HANDLER, flt_lf_form },
   { VIEW_LIST_HANDLER, flt_lf_filter },
   { 0, NULL }
 };
 
-module_config_t flt_livefilter = {
+cf_module_config_t flt_livefilter = {
   MODULE_MAGIC_COOKIE,
   config,
   handlers,

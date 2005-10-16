@@ -99,7 +99,7 @@ message_t *flt_link_get_last(cl_thread_t *thread) {
 /* }}} */
 
 /* {{{ flt_link_getlink */
-void flt_link_getlink(string_t *str,u_int64_t tid,u_int64_t mid,u_char *forum_name) {
+void flt_link_getlink(cf_string_t *str,u_int64_t tid,u_int64_t mid,u_char *forum_name) {
   str->content  = cf_get_link(NULL,tid,mid);
   str->reserved = str->len = strlen(str->content);
   str->reserved += 1;
@@ -107,49 +107,49 @@ void flt_link_getlink(string_t *str,u_int64_t tid,u_int64_t mid,u_char *forum_na
 /* }}} */
 
 /* {{{ flt_link_set_links_post */
-int flt_link_set_links_post(cf_hash_t *head,configuration_t *dc,configuration_t *vc,cl_thread_t *thread,cf_template_t *tpl) {
+int flt_link_set_links_post(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t *vc,cl_thread_t *thread,cf_template_t *tpl) {
   u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   message_t *msg;
-  string_t str;
-  name_value_t *cs = cfg_get_first_value(&fo_default_conf,forum_name,"ExternCharset"),
-    *rm = cfg_get_first_value(vc,forum_name,"ReadMode");
+  cf_string_t str;
+  cf_name_value_t *cs = cf_cfg_get_first_value(&fo_default_conf,forum_name,"ExternCharset"),
+    *rm = cf_cfg_get_first_value(vc,forum_name,"ReadMode");
 
   /* user doesn't want <link> tags */
   if(SetLinks == 0 || cf_strcmp(rm->values[0],"thread") != 0) return FLT_DECLINE;
 
-  str_init(&str);
+  cf_str_init(&str);
 
   /* ok, we have to find the previous message */
   if((msg = flt_link_get_previous(thread->threadmsg)) != NULL) {
     flt_link_getlink(&str,thread->tid,msg->mid,forum_name);
     cf_set_variable(tpl,cs,"prev",str.content,str.len,1);
-    str_cleanup(&str);
+    cf_str_cleanup(&str);
   }
 
   /* next message... */
   if((msg = flt_link_get_next(thread->threadmsg)) != NULL) {
     flt_link_getlink(&str,thread->tid,msg->mid,forum_name);
     cf_set_variable(tpl,cs,"next",str.content,str.len,1);
-    str_cleanup(&str);
+    cf_str_cleanup(&str);
   }
 
   flt_link_getlink(&str,thread->tid,thread->messages->mid,forum_name);
   cf_set_variable(tpl,cs,"first",str.content,str.len,1);
-  str_cleanup(&str);
+  cf_str_cleanup(&str);
 
   /* link rel="up" */
   for(msg=thread->threadmsg;msg && msg->level >= thread->threadmsg->level;msg=msg->prev);
   if(msg) {
     flt_link_getlink(&str,thread->tid,msg->mid,forum_name);
     cf_set_variable(tpl,cs,"up",str.content,str.len,1);
-    str_cleanup(&str);
+    cf_str_cleanup(&str);
   }
 
   /* last message... */
   if((msg = flt_link_get_last(thread)) != NULL) {
     flt_link_getlink(&str,thread->tid,msg->mid,forum_name);
     cf_set_variable(tpl,cs,"last",str.content,str.len,1);
-    str_cleanup(&str);
+    cf_str_cleanup(&str);
   }
   
   return FLT_OK;
@@ -157,7 +157,7 @@ int flt_link_set_links_post(cf_hash_t *head,configuration_t *dc,configuration_t 
 /* }}} */
 
 /* {{{ flt_link_handle_conf */
-int flt_link_handle_conf(configfile_t *cfg,conf_opt_t *entry,const u_char *context,u_char **args,size_t argnum) {
+int flt_link_handle_conf(cf_configfile_t *cfg,cf_conf_opt_t *entry,const u_char *context,u_char **args,size_t argnum) {
   if(flt_link_fn == NULL) flt_link_fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   if(!context || cf_strcmp(flt_link_fn,context) != 0) return 0;
 
@@ -175,19 +175,19 @@ int flt_link_handle_conf(configfile_t *cfg,conf_opt_t *entry,const u_char *conte
 }
 /* }}} */
 
-conf_opt_t flt_link_config[] = {
-  { "SetLinkTags",     flt_link_handle_conf,  CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL,  NULL },
-  { "LinkNoVisited",   flt_link_handle_conf,  CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL,  NULL },
-  { "LinkInvisible",   flt_link_handle_conf,  CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL,  NULL },
+cf_conf_opt_t flt_link_config[] = {
+  { "SetLinkTags",     flt_link_handle_conf,  CF_CFG_OPT_CONFIG|CF_CFG_OPT_USER|CF_CFG_OPT_LOCAL,  NULL },
+  { "LinkNoVisited",   flt_link_handle_conf,  CF_CFG_OPT_CONFIG|CF_CFG_OPT_USER|CF_CFG_OPT_LOCAL,  NULL },
+  { "LinkInvisible",   flt_link_handle_conf,  CF_CFG_OPT_CONFIG|CF_CFG_OPT_USER|CF_CFG_OPT_LOCAL,  NULL },
   { NULL, NULL, 0, NULL }
 };
 
-handler_config_t flt_link_handlers[] = {
+cf_handler_config_t flt_link_handlers[] = {
   { POSTING_HANDLER,   flt_link_set_links_post },
   { 0, NULL }
 };
 
-module_config_t flt_link = {
+cf_module_config_t flt_link = {
   MODULE_MAGIC_COOKIE,
   flt_link_config,
   flt_link_handlers,

@@ -48,9 +48,9 @@
 
 /* {{{ flt_checkregisteredname_execute */
 #ifdef CF_SHARED_MEM
-int flt_checkregisteredname_execute(cf_hash_t *head,configuration_t *dc,configuration_t *pc,message_t *p,cl_thread_t *thr,void *ptr,int sock,int mode)
+int flt_checkregisteredname_execute(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t *pc,message_t *p,cl_thread_t *thr,void *ptr,int sock,int mode)
 #else
-int flt_checkregisteredname_execute(cf_hash_t *head,configuration_t *dc,configuration_t *pc,message_t *p,cl_thread_t *thr,int sock,int mode)
+int flt_checkregisteredname_execute(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t *pc,message_t *p,cl_thread_t *thr,int sock,int mode)
 #endif
 {
   u_char *username = cf_hash_get(GlobalValues,"UserName",8);
@@ -59,30 +59,30 @@ int flt_checkregisteredname_execute(cf_hash_t *head,configuration_t *dc,configur
 
   rline_t rsd;
 
-  string_t str;
+  cf_string_t str;
 
   if(!head) return FLT_DECLINE;
   memset(&rsd,0,sizeof(rsd));
 
   name = cf_cgi_get(head,"Name");
-  str_init(&str);
+  cf_str_init(&str);
 
-  str_chars_append(&str,"SELECT ",7);
-  str_chars_append(&str,forum_name,strlen(forum_name));
-  str_chars_append(&str,"\nAUTH CHECK\nName: ",18);
-  str_chars_append(&str,name,strlen(name));
-  str_char_append(&str,'\n');
+  cf_str_chars_append(&str,"SELECT ",7);
+  cf_str_chars_append(&str,forum_name,strlen(forum_name));
+  cf_str_chars_append(&str,"\nAUTH CHECK\nName: ",18);
+  cf_str_chars_append(&str,name,strlen(name));
+  cf_str_char_append(&str,'\n');
 
   if(username) {
-    str_chars_append(&str,"Pass: ",6);
-    str_chars_append(&str,username,strlen(username));
-    str_char_append(&str,'\n');
+    cf_str_chars_append(&str,"Pass: ",6);
+    cf_str_chars_append(&str,username,strlen(username));
+    cf_str_char_append(&str,'\n');
   }
 
-  str_char_append(&str,'\n');
+  cf_str_char_append(&str,'\n');
 
   writen(sock,str.content,str.len);
-  str_cleanup(&str);
+  cf_str_cleanup(&str);
 
   if((line = readline(sock,&rsd)) == NULL) return FLT_DECLINE;
   free(line);
@@ -101,7 +101,7 @@ int flt_checkregisteredname_execute(cf_hash_t *head,configuration_t *dc,configur
 }
 /* }}} */
 
-int flt_checkregisteredname_register(cf_hash_t *cgi,configuration_t *dc,configuration_t *uc,configuration_t *oldconf,uconf_userconfig_t *newconf) {
+int flt_checkregisteredname_register(cf_hash_t *cgi,cf_configuration_t *dc,cf_configuration_t *uc,cf_configuration_t *oldconf,uconf_userconfig_t *newconf) {
   u_char
     buff[512],
     *line,
@@ -109,11 +109,11 @@ int flt_checkregisteredname_register(cf_hash_t *cgi,configuration_t *dc,configur
     *fn = cf_hash_get(GlobalValues,"FORUM_NAME",10),
     *uname = cf_hash_get(GlobalValues,"UserName",8);
 
-  name_value_t *cs = cfg_get_first_value(dc,fn,"ExternCharset"),*on,*or;
+  cf_name_value_t *cs = cf_cfg_get_first_value(dc,fn,"ExternCharset"),*on,*or;
   int sock,status,doer;
   size_t len;
   rline_t tsd;
-  string_t str;
+  cf_string_t str;
 
   if(!uname) return FLT_DECLINE; /* cannot happen, but who knows... */
 
@@ -144,8 +144,8 @@ int flt_checkregisteredname_register(cf_hash_t *cgi,configuration_t *dc,configur
 
   free(line);
 
-  on            = cfg_get_first_value(oldconf,fn,"Name");
-  or            = cfg_get_first_value(oldconf,fn,"RegisteredName");
+  on            = cf_cfg_get_first_value(oldconf,fn,"Name");
+  or            = cf_cfg_get_first_value(oldconf,fn,"RegisteredName");
   newname       = (u_char *)uconf_get_conf_val(newconf,"Name",0);
   newregistered = (u_char *)uconf_get_conf_val(newconf,"RegisteredName",0);
 
@@ -157,40 +157,40 @@ int flt_checkregisteredname_register(cf_hash_t *cgi,configuration_t *dc,configur
 
   /* {{{ oldregistered and newregistered set, but either newname or oldname is not set or unequal */
   else if(oldregistered && cf_strcmp(oldregistered,"yes") == 0 && newregistered && cf_strcmp(newregistered,"yes") == 0) {
-    str_init_growth(&str,512);
+    cf_str_init_growth(&str,512);
 
     /* {{{ we shall register a new name but the new name is not given; so just unregister old name */
     if(oldname && !newname) {
-      str_char_set(&str,"AUTH DELETE\nName: ",18);
-      str_cstr_append(&str,oldname);
-      str_chars_append(&str,"\nPass: ",7);
-      str_cstr_append(&str,uname);
-      str_chars_append(&str,"\n\n",2);
+      cf_str_char_set(&str,"AUTH DELETE\nName: ",18);
+      cf_str_cstr_append(&str,oldname);
+      cf_str_chars_append(&str,"\nPass: ",7);
+      cf_str_cstr_append(&str,uname);
+      cf_str_chars_append(&str,"\n\n",2);
     }
     /* }}} */
     /* {{{ we shall change name registration */
     else if(oldname && newname) {
-      str_char_set(&str,"AUTH SET\nName: ",15);
-      str_cstr_append(&str,oldname);
-      str_chars_append(&str,"\nNew-Name: ",11);
-      str_cstr_append(&str,newname);
-      str_chars_append(&str,"\nPass: ",7);
-      str_cstr_append(&str,uname);
-      str_chars_append(&str,"\n\n",2);
+      cf_str_char_set(&str,"AUTH SET\nName: ",15);
+      cf_str_cstr_append(&str,oldname);
+      cf_str_chars_append(&str,"\nNew-Name: ",11);
+      cf_str_cstr_append(&str,newname);
+      cf_str_chars_append(&str,"\nPass: ",7);
+      cf_str_cstr_append(&str,uname);
+      cf_str_chars_append(&str,"\n\n",2);
     }
     /* }}} */
     /* {{{ oldname not set, register new one */
     else {
-      str_char_set(&str,"AUTH SET\nNew-Name: ",19);
-      str_cstr_append(&str,newname);
-      str_chars_append(&str,"\nPass: ",7);
-      str_cstr_append(&str,uname);
-      str_chars_append(&str,"\n\n",2);
+      cf_str_char_set(&str,"AUTH SET\nNew-Name: ",19);
+      cf_str_cstr_append(&str,newname);
+      cf_str_chars_append(&str,"\nPass: ",7);
+      cf_str_cstr_append(&str,uname);
+      cf_str_chars_append(&str,"\n\n",2);
     }
     /* }}} */
 
     writen(sock,str.content,str.len);
-    str_cleanup(&str);
+    cf_str_cleanup(&str);
 
     if((line = readline(sock,&tsd)) == NULL) {
       close(sock);
@@ -224,30 +224,30 @@ int flt_checkregisteredname_register(cf_hash_t *cgi,configuration_t *dc,configur
   /* {{{ oldregistered and newregistered set, but one of them is "no" */
   else if(oldregistered && newregistered) {
     doer = 0;
-    str_init_growth(&str,512);
+    cf_str_init_growth(&str,512);
 
     /* {{{ delete old registration */
     if(cf_strcmp(oldregistered,"yes") == 0 && cf_strcmp(newregistered,"no") == 0 && oldname) {
       doer = 1;
-      str_char_set(&str,"AUTH DELETE\nName: ",18);
-      str_cstr_append(&str,oldname);
-      str_chars_append(&str,"\nPass: ",7);
-      str_cstr_append(&str,uname);
-      str_chars_append(&str,"\n\n",2);
+      cf_str_char_set(&str,"AUTH DELETE\nName: ",18);
+      cf_str_cstr_append(&str,oldname);
+      cf_str_chars_append(&str,"\nPass: ",7);
+      cf_str_cstr_append(&str,uname);
+      cf_str_chars_append(&str,"\n\n",2);
     }
     /* }}} */
     else if(cf_strcmp(oldregistered,"no") == 0 && cf_strcmp(newregistered,"yes") == 0 && newname) {
       doer = 1;
-      str_char_set(&str,"AUTH SET\nNew-Name: ",19);
-      str_cstr_append(&str,newname);
-      str_chars_append(&str,"\nPass: ",7);
-      str_cstr_append(&str,uname);
-      str_chars_append(&str,"\n\n",2);
+      cf_str_char_set(&str,"AUTH SET\nNew-Name: ",19);
+      cf_str_cstr_append(&str,newname);
+      cf_str_chars_append(&str,"\nPass: ",7);
+      cf_str_cstr_append(&str,uname);
+      cf_str_chars_append(&str,"\n\n",2);
     }
 
     if(doer) {
       writen(sock,str.content,str.len);
-      str_cleanup(&str);
+      cf_str_cleanup(&str);
 
       if((line = readline(sock,&tsd)) == NULL) {
         close(sock);
@@ -283,32 +283,32 @@ int flt_checkregisteredname_register(cf_hash_t *cgi,configuration_t *dc,configur
   /* {{{ either oldregistered or newregistered not set */
   else {
     doer = 0;
-    str_init_growth(&str,512);
+    cf_str_init_growth(&str,512);
 
     /* {{{ delete old auth */
     if(oldregistered && !newregistered && cf_strcmp(oldregistered,"yes") == 0 && oldname) {
       doer = 1;
-      str_char_set(&str,"AUTH DELETE\nName: ",18);
-      str_cstr_append(&str,oldname);
-      str_chars_append(&str,"\nPass: ",7);
-      str_cstr_append(&str,uname);
-      str_chars_append(&str,"\n\n",2);
+      cf_str_char_set(&str,"AUTH DELETE\nName: ",18);
+      cf_str_cstr_append(&str,oldname);
+      cf_str_chars_append(&str,"\nPass: ",7);
+      cf_str_cstr_append(&str,uname);
+      cf_str_chars_append(&str,"\n\n",2);
     }
     /* }}} */
     /* {{{ set new auth */
     else if(!oldregistered && newregistered && cf_strcmp(newregistered,"yes") == 0 && newname) {
       doer = 1;
-      str_char_set(&str,"AUTH SET\nNew-Name: ",19);
-      str_cstr_append(&str,newname);
-      str_chars_append(&str,"\nPass: ",7);
-      str_cstr_append(&str,uname);
-      str_chars_append(&str,"\n\n",2);
+      cf_str_char_set(&str,"AUTH SET\nNew-Name: ",19);
+      cf_str_cstr_append(&str,newname);
+      cf_str_chars_append(&str,"\nPass: ",7);
+      cf_str_cstr_append(&str,uname);
+      cf_str_chars_append(&str,"\n\n",2);
     }
     /* }}} */
 
     if(doer) {
       writen(sock,str.content,str.len);
-      str_cleanup(&str);
+      cf_str_cleanup(&str);
 
       if((line = readline(sock,&tsd)) == NULL) {
         close(sock);
@@ -344,17 +344,17 @@ int flt_checkregisteredname_register(cf_hash_t *cgi,configuration_t *dc,configur
   return FLT_DECLINE;
 }
 
-conf_opt_t flt_checkregisteredname_config[] = {
+cf_conf_opt_t flt_checkregisteredname_config[] = {
   { NULL, NULL, 0, NULL }
 };
 
-handler_config_t flt_checkregisteredname_handlers[] = {
+cf_handler_config_t flt_checkregisteredname_handlers[] = {
   { NEW_POST_HANDLER,    flt_checkregisteredname_execute },
   { UCONF_WRITE_HANDLER, flt_checkregisteredname_register },
   { 0, NULL }
 };
 
-module_config_t flt_checkregisteredname = {
+cf_module_config_t flt_checkregisteredname = {
   MODULE_MAGIC_COOKIE,
   flt_checkregisteredname_config,
   flt_checkregisteredname_handlers,

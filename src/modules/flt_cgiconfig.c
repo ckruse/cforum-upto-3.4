@@ -43,14 +43,14 @@
 /* }}} */
 
 /* {{{ flt_cgiconfig_post */
-int flt_cgiconfig_post(cf_hash_t *head,configuration_t *dc,configuration_t *vc,cl_thread_t *thread,cf_template_t *tpl) {
+int flt_cgiconfig_post(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t *vc,cl_thread_t *thread,cf_template_t *tpl) {
   u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   u_char *UserName = cf_hash_get(GlobalValues,"UserName",8);
   u_char *link,*tmp = NULL;
 
   size_t l;
 
-  name_value_t *cs = cfg_get_first_value(dc,forum_name,"ExternCharset");
+  cf_name_value_t *cs = cf_cfg_get_first_value(dc,forum_name,"ExternCharset");
   cf_readmode_t *rm = cf_hash_get(GlobalValues,"RM",2);
 
   /* {{{ ShowThread links */
@@ -94,15 +94,15 @@ int flt_cgiconfig_post(cf_hash_t *head,configuration_t *dc,configuration_t *vc,c
 /* }}} */
 
 /* {{{ flt_cgiconfig_init_handler */
-int flt_cgiconfig_init_handler(cf_hash_t *head,configuration_t *dc,configuration_t *vc) {
-  name_value_t *v;
+int flt_cgiconfig_init_handler(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t *vc) {
+  cf_name_value_t *v;
   u_char *val,*forum_name;
 
   if(head) {
     forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
 
     if((val = cf_cgi_get(head,"showthread")) != NULL) {
-      v = cfg_get_first_value(vc,forum_name,"ShowThread");
+      v = cf_cfg_get_first_value(vc,forum_name,"ShowThread");
 
       if(cf_strcmp(val,"part") == 0) {
         free(v->values[0]);
@@ -121,7 +121,7 @@ int flt_cgiconfig_init_handler(cf_hash_t *head,configuration_t *dc,configuration
     }
 
     if((val = cf_cgi_get(head,"readmode")) != NULL) {
-      v = cfg_get_first_value(vc,forum_name,"ReadMode");
+      v = cf_cfg_get_first_value(vc,forum_name,"ReadMode");
 
       if(cf_strcmp(val,"list") == 0) {
         free(v->values[0]);
@@ -144,17 +144,17 @@ int flt_cgiconfig_init_handler(cf_hash_t *head,configuration_t *dc,configuration
 }
 /* }}} */
 
-conf_opt_t flt_cgiconfig_config[] = {
+cf_conf_opt_t flt_cgiconfig_config[] = {
   { NULL, NULL, 0, NULL }
 };
 
-handler_config_t flt_cgiconfig_handlers[] = {
+cf_handler_config_t flt_cgiconfig_handlers[] = {
   { POSTING_HANDLER,      flt_cgiconfig_post },
   { INIT_HANDLER,         flt_cgiconfig_init_handler },
   { 0, NULL }
 };
 
-module_config_t flt_cgiconfig = {
+cf_module_config_t flt_cgiconfig = {
   MODULE_MAGIC_COOKIE,
   flt_cgiconfig_config,
   flt_cgiconfig_handlers,

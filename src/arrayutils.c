@@ -32,20 +32,20 @@
 #include "utils.h"
 /* }}} */
 
-/* {{{ array_init */
-void array_init(array_t *ary,size_t element_size,void (*array_destroy)(void *)) {
+/* {{{ cf_array_init */
+void cf_array_init(cf_array_t *ary,size_t element_size,void (*cf_array_destroy)(void *)) {
   ary->reserved      = 0;
   ary->elements      = 0;
   ary->element_size  = element_size;
   ary->array         = NULL;
-  ary->array_destroy = array_destroy;
+  ary->cf_array_destroy = cf_array_destroy;
 }
 /* }}} */
 
-/* {{{ array_push */
-void array_push(array_t *ary,const void *element) {
+/* {{{ cf_array_push */
+void cf_array_push(cf_array_t *ary,const void *element) {
   if(ary->elements + 1 >= ary->reserved) {
-    ary->array     = fo_alloc(ary->array,ary->element_size,ary->reserved+1,FO_ALLOC_REALLOC);
+    ary->array     = cf_alloc(ary->array,ary->element_size,ary->reserved+1,CF_ALLOC_REALLOC);
     ary->reserved += 1;
   }
 
@@ -54,16 +54,16 @@ void array_push(array_t *ary,const void *element) {
 }
 /* }}} */
 
-/* {{{ array_pop */
-void *array_pop(array_t *ary) {
+/* {{{ cf_array_pop */
+void *cf_array_pop(cf_array_t *ary) {
   ary->elements -= 1;
-  return memdup((void *)(ary->array + ((ary->elements) * ary->element_size)),ary->element_size);
+  return cf_memdup((void *)(ary->array + ((ary->elements) * ary->element_size)),ary->element_size);
 }
 /* }}} */
 
-/* {{{ array_shift */
-void *array_shift(array_t *ary) {
-  void *elem = memdup(ary->array,ary->element_size);
+/* {{{ cf_array_shift */
+void *cf_array_shift(cf_array_t *ary) {
+  void *elem = cf_memdup(ary->array,ary->element_size);
 
   memmove(ary->array,ary->array+ary->element_size,(ary->elements - 1) * ary->element_size);
   ary->elements -= 1;
@@ -71,10 +71,10 @@ void *array_shift(array_t *ary) {
 }
 /* }}} */
 
-/* {{{ array_unshift */
-void array_unshift(array_t *ary,const void *element) {
+/* {{{ cf_array_unshift */
+void cf_array_unshift(cf_array_t *ary,const void *element) {
   if(ary->elements + 1 >= ary->reserved) {
-    ary->array     = fo_alloc(ary->array,ary->element_size,ary->reserved+1,FO_ALLOC_REALLOC);
+    ary->array     = cf_alloc(ary->array,ary->element_size,ary->reserved+1,CF_ALLOC_REALLOC);
     ary->reserved += 1;
   }
 
@@ -84,20 +84,20 @@ void array_unshift(array_t *ary,const void *element) {
 }
 /* }}} */
 
-/* {{{ array_sort */
-void array_sort(array_t *ary,int(*compar)(const void *,const void *)) {
+/* {{{ cf_array_sort */
+void cf_array_sort(cf_array_t *ary,int(*compar)(const void *,const void *)) {
   qsort(ary->array,ary->elements,ary->element_size,compar);
 }
 /* }}} */
 
-/* {{{ array_bsearch */
-void *array_bsearch(array_t *ary,const void *key,int (*compar)(const void *, const void *)) {
+/* {{{ cf_array_bsearch */
+void *cf_array_bsearch(cf_array_t *ary,const void *key,int (*compar)(const void *, const void *)) {
   return bsearch(key,ary->array,ary->elements,ary->element_size,compar);
 }
 /* }}} */
 
-/* {{{ array_element_at */
-void *array_element_at(array_t *ary,size_t index) {
+/* {{{ cf_array_element_at */
+void *cf_array_element_at(cf_array_t *ary,size_t index) {
   if(index < 0 || index >= ary->elements) {
     errno = EINVAL;
     return NULL;
@@ -107,13 +107,13 @@ void *array_element_at(array_t *ary,size_t index) {
 }
 /* }}} */
 
-/* {{{ array_destroy */
-void array_destroy(array_t *ary) {
+/* {{{ cf_array_destroy */
+void cf_array_destroy(cf_array_t *ary) {
   size_t i;
 
-  if(ary->array_destroy) {
+  if(ary->cf_array_destroy) {
     for(i=0;i<ary->elements;i++) {
-      ary->array_destroy(ary->array + (i * ary->element_size));
+      ary->cf_array_destroy(ary->array + (i * ary->element_size));
     }
   }
 

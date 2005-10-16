@@ -100,10 +100,10 @@ void flt_handle404_gen_url(u_char *buff,u_char *aurl,u_char *url,u_int64_t tid,u
 /* }}} */
 
 /* {{{ flt_handle404_execute */
-int flt_handle404_execute(cf_hash_t *head,configuration_t *dc,configuration_t *vc,u_int64_t tid,u_int64_t mid) {
+int flt_handle404_execute(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t *vc,u_int64_t tid,u_int64_t mid) {
   u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
-  name_value_t *v    = cfg_get_first_value(&fo_default_conf,forum_name,"ThreadIndexFile");
-  name_value_t *aurl = cfg_get_first_value(&fo_default_conf,forum_name,"ArchiveURL");
+  cf_name_value_t *v    = cf_cfg_get_first_value(&fo_default_conf,forum_name,"ThreadIndexFile");
+  cf_name_value_t *aurl = cf_cfg_get_first_value(&fo_default_conf,forum_name,"ArchiveURL");
   struct stat st;
   DB *db;
   DBT key,data;
@@ -149,16 +149,16 @@ int flt_handle404_execute(cf_hash_t *head,configuration_t *dc,configuration_t *v
 }
 /* }}} */
 
-conf_opt_t flt_handle404_config[] = {
+cf_conf_opt_t flt_handle404_config[] = {
   { NULL, NULL, 0, NULL }
 };
 
-handler_config_t flt_handle404_handlers[] = {
+cf_handler_config_t flt_handle404_handlers[] = {
   { HANDLE_404_HANDLER, flt_handle404_execute },
   { 0, NULL }
 };
 
-module_config_t flt_handle404 = {
+cf_module_config_t flt_handle404 = {
   MODULE_MAGIC_COOKIE,
   flt_handle404_config,
   flt_handle404_handlers,

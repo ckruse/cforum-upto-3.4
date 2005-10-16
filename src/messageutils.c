@@ -53,7 +53,7 @@ hierarchical_node_t *cf_msg_ht_get_first_visible(hierarchical_node_t *msg) {
   hierarchical_node_t *val;
 
   for(i=0;i<msg->childs.elements;++i) {
-    val = array_element_at(&msg->childs,i);
+    val = cf_array_element_at(&msg->childs,i);
 
     if(val->msg->invisible == 0 && val->msg->may_show) return val;
 
@@ -70,13 +70,13 @@ void _cf_msg_filter_invisible(hierarchical_node_t *ht,hierarchical_node_t *ary,i
   hierarchical_node_t *ht1,ary1;
 
   for(i=0;i<ht->childs.elements;++i) {
-    ht1 = array_element_at(&ht->childs,i);
+    ht1 = cf_array_element_at(&ht->childs,i);
 
     if(si || (ht1->msg->invisible == 0 && ht1->msg->may_show)) {
-      array_init(&ary1.childs,sizeof(ary1),NULL);
+      cf_array_init(&ary1.childs,sizeof(ary1),NULL);
       ary1.msg = ht1->msg;
       _cf_msg_filter_invisible(ht1,&ary1,si);
-      array_push(&ary->childs,&ary1);
+      cf_array_push(&ary->childs,&ary1);
     }
     else _cf_msg_filter_invisible(ht1,ary,si);
   }
@@ -84,7 +84,7 @@ void _cf_msg_filter_invisible(hierarchical_node_t *ht,hierarchical_node_t *ary,i
 /* }}} */
 
 void cf_msg_filter_invisible(hierarchical_node_t *ht,hierarchical_node_t *ary,int si) {
-  array_init(&ary->childs,sizeof(*ary),NULL);
+  cf_array_init(&ary->childs,sizeof(*ary),NULL);
 
   if(si || (ht->msg->invisible == 0 && ht->msg->may_show)) ary->msg = ht->msg;
   else ary->msg = NULL;
@@ -182,24 +182,24 @@ void _cf_cleanup_hierarchical(hierarchical_node_t *n) {
   hierarchical_node_t *tmp;
 
   for(i=0;i<n->childs.elements;++i) {
-    tmp = array_element_at(&n->childs,i);
+    tmp = cf_array_element_at(&n->childs,i);
     _cf_cleanup_hierarchical(tmp);
   }
 
-  array_destroy(&n->childs);
+  cf_array_destroy(&n->childs);
 }
 /* }}} */
 
 /* {{{ cf_cleanup_message */
 void cf_cleanup_message(message_t *msg) {
-  str_cleanup(&msg->author);
-  str_cleanup(&msg->subject);
+  cf_str_cleanup(&msg->author);
+  cf_str_cleanup(&msg->subject);
 
-  if(msg->category.len) str_cleanup(&msg->category);
-  if(msg->content.len) str_cleanup(&msg->content);
-  if(msg->email.len) str_cleanup(&msg->email);
-  if(msg->hp.len) str_cleanup(&msg->hp);
-  if(msg->img.len) str_cleanup(&msg->img);
+  if(msg->category.len) cf_str_cleanup(&msg->category);
+  if(msg->content.len) cf_str_cleanup(&msg->content);
+  if(msg->email.len) cf_str_cleanup(&msg->email);
+  if(msg->hp.len) cf_str_cleanup(&msg->hp);
+  if(msg->img.len) cf_str_cleanup(&msg->img);
 
   if(msg->flags.elements) cf_list_destroy(&msg->flags,cf_destroy_flag);
 }
@@ -232,15 +232,15 @@ message_t *cf_msg_build_hierarchical_structure(hierarchical_node_t *parent,messa
 
   while(m) {
     if(m->level == lvl) {
-      if(!parent->childs.element_size) array_init(&parent->childs,sizeof(*parent),NULL);
+      if(!parent->childs.element_size) cf_array_init(&parent->childs,sizeof(*parent),NULL);
 
       memset(&h,0,sizeof(h));
 
       h.msg = m;
-      array_push(&parent->childs,&h);
+      cf_array_push(&parent->childs,&h);
       m     = m->next;
     }
-    else if(m->level > lvl) m = cf_msg_build_hierarchical_structure(array_element_at(&parent->childs,parent->childs.elements-1),m);
+    else if(m->level > lvl) m = cf_msg_build_hierarchical_structure(cf_array_element_at(&parent->childs,parent->childs.elements-1),m);
     else return m;
   }
 
@@ -255,17 +255,17 @@ message_t *cf_msg_do_linearize(hierarchical_node_t *node) {
   hierarchical_node_t *tmp,*tmp1;
 
   if(node->childs.elements) {
-    tmp = array_element_at(&node->childs,0);
+    tmp = cf_array_element_at(&node->childs,0);
     node->msg->next = tmp->msg;
 
     for(i=0;i<node->childs.elements;++i) {
-      tmp = array_element_at(&node->childs,i);
+      tmp = cf_array_element_at(&node->childs,i);
 
       if(tmp->childs.elements) {
         p = cf_msg_do_linearize(tmp);
 
         if(i < node->childs.elements-1) {
-          tmp1 = array_element_at(&node->childs,i+1);
+          tmp1 = cf_array_element_at(&node->childs,i+1);
           p->next = tmp1->msg;
         }
         else {
@@ -275,7 +275,7 @@ message_t *cf_msg_do_linearize(hierarchical_node_t *node) {
       }
       else {
         if(i < node->childs.elements-1) {
-          tmp1 = array_element_at(&node->childs,i+1);
+          tmp1 = cf_array_element_at(&node->childs,i+1);
           tmp->msg->next = tmp1->msg;
         }
         else {

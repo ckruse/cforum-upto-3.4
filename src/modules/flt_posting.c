@@ -53,7 +53,7 @@ static u_char *flt_posting_tpl = NULL;
 static u_char *flt_posting_fn = NULL;
 
 /* {{{ flt_posting_replace_placeholders */
-void flt_posting_replace_placeholders(const u_char *str,string_t *appender,cl_thread_t *thread,name_value_t *cs) {
+void flt_posting_replace_placeholders(const u_char *str,cf_string_t *appender,cl_thread_t *thread,cf_name_value_t *cs) {
   register u_char *ptr = (u_char *)str;
   register u_char *ptr1 = NULL;
   u_char *name,*tmp;
@@ -65,7 +65,7 @@ void flt_posting_replace_placeholders(const u_char *str,string_t *appender,cl_th
 
   for(;*ptr;++ptr) {
     if(cf_strncmp(ptr,"\\n",2) == 0) {
-      str_chars_append(appender,"\n",1);
+      cf_str_chars_append(appender,"\n",1);
       ptr += 1;
     }
     else if(cf_strncmp(ptr,"{$name}",7) == 0) {
@@ -75,7 +75,7 @@ void flt_posting_replace_placeholders(const u_char *str,string_t *appender,cl_th
         len  = 4;
       }
 
-      str_chars_append(appender,name,len);
+      cf_str_chars_append(appender,name,len);
       ptr += 6;
       free(name);
     }
@@ -91,22 +91,22 @@ void flt_posting_replace_placeholders(const u_char *str,string_t *appender,cl_th
         len  = 4;
       }
 
-      str_chars_append(appender,name,len);
+      cf_str_chars_append(appender,name,len);
       free(name);
       if(tmp) free(tmp);
     }
-    else str_chars_append(appender,ptr,1);
+    else cf_str_chars_append(appender,ptr,1);
   }
 }
 /* }}} */
 
 /* {{{ flt_posting_execute_filter */
-int flt_posting_execute_filter(cf_hash_t *head,configuration_t *dc,configuration_t *vc,cl_thread_t *thread,cf_template_t *tpl) {
+int flt_posting_execute_filter(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t *vc,cl_thread_t *thread,cf_template_t *tpl) {
   u_char buff[256],*tmp,*qchars,*msgcnt,*UserName,*forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
-  name_value_t *ps,*v,*cs = cfg_get_first_value(dc,forum_name,"ExternCharset"),*dq,*st,*qc,*ms,*ss,*locale,*df,*rm = cfg_get_first_value(vc,forum_name,"ReadMode");
+  cf_name_value_t *ps,*v,*cs = cf_cfg_get_first_value(dc,forum_name,"ExternCharset"),*dq,*st,*qc,*ms,*ss,*locale,*df,*rm = cf_cfg_get_first_value(vc,forum_name,"ReadMode");
   int utf8;
   size_t len,qclen,msgcntlen;
-  string_t cite,content,threadlist;
+  cf_string_t cite,content,threadlist;
   cf_tpl_variable_t hash;
   cf_readmode_t *rm_infos = cf_hash_get(GlobalValues,"RM",2);
 
@@ -127,13 +127,13 @@ int flt_posting_execute_filter(cf_hash_t *head,configuration_t *dc,configuration
 
   UserName = cf_hash_get(GlobalValues,"UserName",8);
 
-  dq = cfg_get_first_value(vc,forum_name,"DoQuote");
-  st = cfg_get_first_value(vc,forum_name,"ShowThread");
-  qc = cfg_get_first_value(vc,forum_name,"QuotingChars");
-  ms = cfg_get_first_value(vc,forum_name,"MaxSigLines");
-  ss = cfg_get_first_value(vc,forum_name,"ShowSig");
-  locale = cfg_get_first_value(dc,forum_name,"DateLocale");
-  df = cfg_get_first_value(vc,forum_name,"DateFormatThreadView");
+  dq = cf_cfg_get_first_value(vc,forum_name,"DoQuote");
+  st = cf_cfg_get_first_value(vc,forum_name,"ShowThread");
+  qc = cf_cfg_get_first_value(vc,forum_name,"QuotingChars");
+  ms = cf_cfg_get_first_value(vc,forum_name,"MaxSigLines");
+  ss = cf_cfg_get_first_value(vc,forum_name,"ShowSig");
+  locale = cf_cfg_get_first_value(dc,forum_name,"DateLocale");
+  df = cf_cfg_get_first_value(vc,forum_name,"DateFormatThreadView");
 
   utf8 = cf_strcmp(cs->values[0],"UTF-8") == 0;
 
@@ -142,8 +142,8 @@ int flt_posting_execute_filter(cf_hash_t *head,configuration_t *dc,configuration
     qclen  = strlen(qchars);
   }
 
-  if(UserName) ps = cfg_get_first_value(dc,forum_name,"UPostScript");
-  else         ps = cfg_get_first_value(dc,forum_name,"PostScript");
+  if(UserName) ps = cf_cfg_get_first_value(dc,forum_name,"UPostScript");
+  else         ps = cf_cfg_get_first_value(dc,forum_name,"PostScript");
 
   cf_tpl_var_init(&hash,TPL_VARIABLE_HASH);
 
@@ -156,14 +156,14 @@ int flt_posting_execute_filter(cf_hash_t *head,configuration_t *dc,configuration
   len = sprintf(buff,"%llu,%llu",thread->tid,thread->threadmsg->mid);
   cf_tpl_setvalue(tpl,"fupto",TPL_VARIABLE_STRING,buff,len);
 
-  len = gen_unid(buff,50);
+  len = cf_gen_unid(buff,50);
   cf_tpl_setvalue(tpl,"unid",TPL_VARIABLE_STRING,buff,len);
   /* }}} */
 
-  if((v = cfg_get_first_value(vc,forum_name,"Name")) != NULL) cf_set_variable(tpl,cs,"aname",v->values[0],strlen(v->values[0]),1);
-  if((v = cfg_get_first_value(vc,forum_name,"EMail")) != NULL) cf_set_variable(tpl,cs,"aemail",v->values[0],strlen(v->values[0]),1);
-  if((v = cfg_get_first_value(vc,forum_name,"HomepageUrl")) != NULL) cf_set_variable(tpl,cs,"aurl",v->values[0],strlen(v->values[0]),1);
-  if((v = cfg_get_first_value(vc,forum_name,"ImageUrl")) != NULL) cf_set_variable(tpl,cs,"aimg",v->values[0],strlen(v->values[0]),1);
+  if((v = cf_cfg_get_first_value(vc,forum_name,"Name")) != NULL) cf_set_variable(tpl,cs,"aname",v->values[0],strlen(v->values[0]),1);
+  if((v = cf_cfg_get_first_value(vc,forum_name,"EMail")) != NULL) cf_set_variable(tpl,cs,"aemail",v->values[0],strlen(v->values[0]),1);
+  if((v = cf_cfg_get_first_value(vc,forum_name,"HomepageUrl")) != NULL) cf_set_variable(tpl,cs,"aurl",v->values[0],strlen(v->values[0]),1);
+  if((v = cf_cfg_get_first_value(vc,forum_name,"ImageUrl")) != NULL) cf_set_variable(tpl,cs,"aimg",v->values[0],strlen(v->values[0]),1);
 
   /* {{{ set title, name, email, homepage, time and category */
   cf_set_variable(tpl,cs,"name",thread->threadmsg->author.content,thread->threadmsg->author.len,1);
@@ -214,8 +214,8 @@ int flt_posting_execute_filter(cf_hash_t *head,configuration_t *dc,configuration
     msgcntlen = thread->threadmsg->content.len;
   }
 
-  str_init(&content);
-  str_init(&cite);
+  cf_str_init(&content);
+  cf_str_init(&cite);
 
   msg_to_html(
     thread,
@@ -231,8 +231,8 @@ int flt_posting_execute_filter(cf_hash_t *head,configuration_t *dc,configuration
   if(cf_strcmp(dq->values[0],"yes") == 0) cf_tpl_hashvar_setvalue(&hash,"cite",TPL_VARIABLE_STRING,cite.content,cite.len);
   /* }}} */
 
-  str_cleanup(&cite);
-  str_cleanup(&content);
+  cf_str_cleanup(&cite);
+  cf_str_cleanup(&content);
   free(msgcnt);
   free(qchars);
 
@@ -240,7 +240,7 @@ int flt_posting_execute_filter(cf_hash_t *head,configuration_t *dc,configuration
     if(cf_gen_threadlist(thread,head,&threadlist,rm_infos->thread_posting_tpl,st->values[0],rm_infos->posting_uri[UserName?1:0],CF_MODE_THREADVIEW) != FLT_EXIT) {
       //cf_gen_threadlist(thread,head,&threadlist,rm_infos->post_threadlist_tpl,st->values[0],NULL,CF_MODE_THREADVIEW);
       cf_tpl_setvalue(tpl,"threadlist",TPL_VARIABLE_STRING,threadlist.content,threadlist.len);
-      str_cleanup(&threadlist);
+      cf_str_cleanup(&threadlist);
     }
   }
 
@@ -252,66 +252,66 @@ int flt_posting_execute_filter(cf_hash_t *head,configuration_t *dc,configuration
 /* }}} */
 
 /* {{{ flt_posting_post_display */
-int flt_posting_post_display(cf_hash_t *head,configuration_t *dc,configuration_t *pc,cf_template_t *tpl,message_t *p) {
+int flt_posting_post_display(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t *pc,cf_template_t *tpl,message_t *p) {
   u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
-  name_value_t *v;
-  name_value_t *cs = cfg_get_first_value(dc,forum_name,"ExternCharset");
-  name_value_t *qc = cfg_get_first_value(pc,forum_name,"QuotingChars");
-  string_t body,tmp;
+  cf_name_value_t *v;
+  cf_name_value_t *cs = cf_cfg_get_first_value(dc,forum_name,"ExternCharset");
+  cf_name_value_t *qc = cf_cfg_get_first_value(pc,forum_name,"QuotingChars");
+  cf_string_t body,tmp;
 
   cl_thread_t thr;
 
   if(head) {
     /* set if none of the values have been given */
     if(!cf_cgi_get(head,"Name") && !cf_cgi_get(head,"EMail") && !cf_cgi_get(head,"HomepageUrl") && !cf_cgi_get(head,"ImageUrl") && !cf_cgi_get(head,"body")) {
-      if((v = cfg_get_first_value(pc,forum_name,"Name")) != NULL) cf_set_variable(tpl,cs,"Name",v->values[0],strlen(v->values[0]),1);
-      if((v = cfg_get_first_value(pc,forum_name,"EMail")) != NULL) cf_set_variable(tpl,cs,"EMail",v->values[0],strlen(v->values[0]),1);
-      if((v = cfg_get_first_value(pc,forum_name,"HomepageUrl")) != NULL) cf_set_variable(tpl,cs,"HomepageUrl",v->values[0],strlen(v->values[0]),1);
-      if((v = cfg_get_first_value(pc,forum_name,"ImageUrl")) != NULL) cf_set_variable(tpl,cs,"ImageUrl",v->values[0],strlen(v->values[0]),1);
+      if((v = cf_cfg_get_first_value(pc,forum_name,"Name")) != NULL) cf_set_variable(tpl,cs,"Name",v->values[0],strlen(v->values[0]),1);
+      if((v = cf_cfg_get_first_value(pc,forum_name,"EMail")) != NULL) cf_set_variable(tpl,cs,"EMail",v->values[0],strlen(v->values[0]),1);
+      if((v = cf_cfg_get_first_value(pc,forum_name,"HomepageUrl")) != NULL) cf_set_variable(tpl,cs,"HomepageUrl",v->values[0],strlen(v->values[0]),1);
+      if((v = cf_cfg_get_first_value(pc,forum_name,"ImageUrl")) != NULL) cf_set_variable(tpl,cs,"ImageUrl",v->values[0],strlen(v->values[0]),1);
 
-      str_init(&body);
+      cf_str_init(&body);
       if(p) {
         memset(&thr,0,sizeof(thr));
         thr.messages = thr.last = thr.threadmsg = thr.newest = p;
 
-        str_init(&tmp);
+        cf_str_init(&tmp);
         msg_to_html(&thr,p->content.content,&tmp,&body,qc->values[0],-1,1);
-        str_cleanup(&tmp);
+        cf_str_cleanup(&tmp);
       }
       else {
         if(flt_posting_cfg.Hi) flt_posting_replace_placeholders(flt_posting_cfg.Hi,&body,NULL,cs);
         if(flt_posting_cfg.Bye) flt_posting_replace_placeholders(flt_posting_cfg.Bye,&body,NULL,cs);
         if(flt_posting_cfg.Signature) {
-          str_chars_append(&body,"\n-- \n",5);
+          cf_str_chars_append(&body,"\n-- \n",5);
           flt_posting_replace_placeholders(flt_posting_cfg.Signature,&body,NULL,cs);
         }
       }
 
       if(body.len) {
         cf_set_variable(tpl,cs,"body",body.content,body.len,0);
-        str_cleanup(&body);
+        cf_str_cleanup(&body);
       }
 
       return FLT_OK;
     }
   }
   else {
-    if((v = cfg_get_first_value(pc,forum_name,"Name")) != NULL) cf_set_variable(tpl,cs,"Name",v->values[0],strlen(v->values[0]),1);
-    if((v = cfg_get_first_value(pc,forum_name,"EMail")) != NULL) cf_set_variable(tpl,cs,"EMail",v->values[0],strlen(v->values[0]),1);
-    if((v = cfg_get_first_value(pc,forum_name,"HomepageUrl")) != NULL) cf_set_variable(tpl,cs,"HomepageUrl",v->values[0],strlen(v->values[0]),1);
-    if((v = cfg_get_first_value(pc,forum_name,"ImageUrl")) != NULL) cf_set_variable(tpl,cs,"ImageUrl",v->values[0],strlen(v->values[0]),1);
+    if((v = cf_cfg_get_first_value(pc,forum_name,"Name")) != NULL) cf_set_variable(tpl,cs,"Name",v->values[0],strlen(v->values[0]),1);
+    if((v = cf_cfg_get_first_value(pc,forum_name,"EMail")) != NULL) cf_set_variable(tpl,cs,"EMail",v->values[0],strlen(v->values[0]),1);
+    if((v = cf_cfg_get_first_value(pc,forum_name,"HomepageUrl")) != NULL) cf_set_variable(tpl,cs,"HomepageUrl",v->values[0],strlen(v->values[0]),1);
+    if((v = cf_cfg_get_first_value(pc,forum_name,"ImageUrl")) != NULL) cf_set_variable(tpl,cs,"ImageUrl",v->values[0],strlen(v->values[0]),1);
 
-    str_init(&body);
+    cf_str_init(&body);
     if(flt_posting_cfg.Hi) flt_posting_replace_placeholders(flt_posting_cfg.Hi,&body,NULL,cs);
     if(flt_posting_cfg.Bye) flt_posting_replace_placeholders(flt_posting_cfg.Bye,&body,NULL,cs);
     if(flt_posting_cfg.Signature) {
-      str_chars_append(&body,"\n-- \n",5);
+      cf_str_chars_append(&body,"\n-- \n",5);
       flt_posting_replace_placeholders(flt_posting_cfg.Signature,&body,NULL,cs);
     }
 
     if(body.len) {
       cf_set_variable(tpl,cs,"body",body.content,body.len,0);
-      str_cleanup(&body);
+      cf_str_cleanup(&body);
     }
 
     return FLT_OK;
@@ -322,24 +322,24 @@ int flt_posting_post_display(cf_hash_t *head,configuration_t *dc,configuration_t
 /* }}} */
 
 /* {{{ pre and post content filters */
-int flt_posting_post_cnt(configuration_t *dc,configuration_t *vc,cl_thread_t *thr,string_t *content,string_t *cite,const u_char *qchars) {
+int flt_posting_post_cnt(cf_configuration_t *dc,cf_configuration_t *vc,cl_thread_t *thr,cf_string_t *content,cf_string_t *cite,const u_char *qchars) {
   u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
-  name_value_t *cs;
+  cf_name_value_t *cs;
   u_char *tmp;
 
   if(cite) {
-    cs = cfg_get_first_value(dc,forum_name,"ExternCharset");
+    cs = cf_cfg_get_first_value(dc,forum_name,"ExternCharset");
 
     if(flt_posting_cfg.Bye) {
       if(cf_strcasecmp(cs->values[0],"utf-8") == 0 || (tmp = htmlentities_charset_convert(flt_posting_cfg.Bye,"UTF-8",cs->values[0],NULL,0)) == NULL) tmp = strdup(flt_posting_cfg.Bye);
-      str_char_append(cite,'\n');
+      cf_str_char_append(cite,'\n');
       flt_posting_replace_placeholders(tmp,cite,thr,cs);
 
       free(tmp);
     }
     if(flt_posting_cfg.Signature) {
       if(cf_strcasecmp(cs->values[0],"utf-8") == 0 || (tmp = htmlentities_charset_convert(flt_posting_cfg.Signature,"UTF-8",cs->values[0],NULL,0)) == NULL) tmp = strdup(flt_posting_cfg.Signature);
-      str_chars_append(cite,"\n-- \n",5);
+      cf_str_chars_append(cite,"\n-- \n",5);
       flt_posting_replace_placeholders(tmp,cite,thr,cs);
 
       free(tmp);
@@ -351,14 +351,14 @@ int flt_posting_post_cnt(configuration_t *dc,configuration_t *vc,cl_thread_t *th
   return FLT_DECLINE;
 }
 
-int flt_posting_pre_cnt(configuration_t *dc,configuration_t *vc,cl_thread_t *thr,string_t *content,string_t *cite,const u_char *qchars) {
+int flt_posting_pre_cnt(cf_configuration_t *dc,cf_configuration_t *vc,cl_thread_t *thr,cf_string_t *content,cf_string_t *cite,const u_char *qchars) {
   u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
-  name_value_t *cs;
+  cf_name_value_t *cs;
   u_char *tmp;
 
   if(cite) {
     if(flt_posting_cfg.Hi) {
-      cs = cfg_get_first_value(dc,forum_name,"ExternCharset");
+      cs = cf_cfg_get_first_value(dc,forum_name,"ExternCharset");
 
       if(cf_strcasecmp(cs->values[0],"utf-8") == 0 || (tmp = htmlentities_charset_convert(flt_posting_cfg.Hi,"UTF-8",cs->values[0],NULL,0)) == NULL) tmp = strdup(flt_posting_cfg.Hi);
       flt_posting_replace_placeholders(tmp,cite,thr,cs);
@@ -373,33 +373,33 @@ int flt_posting_pre_cnt(configuration_t *dc,configuration_t *vc,cl_thread_t *thr
 /* }}} */
 
 /* {{{ flt_posting_rm_collector */
-int flt_posting_rm_collector(cf_hash_t *head,configuration_t *dc,configuration_t *vc,cf_readmode_t *rm_infos) {
-  name_value_t *rm;
-  name_value_t *v;
+int flt_posting_rm_collector(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t *vc,cf_readmode_t *rm_infos) {
+  cf_name_value_t *rm;
+  cf_name_value_t *v;
 
   u_char buff[256];
 
   if(flt_posting_fn == NULL) flt_posting_fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
-  rm = cfg_get_first_value(vc,flt_posting_fn,"ReadMode");
+  rm = cf_cfg_get_first_value(vc,flt_posting_fn,"ReadMode");
 
   if(cf_strcmp(rm->values[0],"thread") == 0) {
-    v = cfg_get_first_value(dc,flt_posting_fn,"PostingURL");
+    v = cf_cfg_get_first_value(dc,flt_posting_fn,"PostingURL");
     rm_infos->posting_uri[0] = v->values[0];
 
-    v = cfg_get_first_value(dc,flt_posting_fn,"UPostingURL");
+    v = cf_cfg_get_first_value(dc,flt_posting_fn,"UPostingURL");
     rm_infos->posting_uri[1] = v->values[0];
 
-    if((v = cfg_get_first_value(vc,flt_posting_fn,"TemplateForumBegin")) != NULL) {
+    if((v = cf_cfg_get_first_value(vc,flt_posting_fn,"TemplateForumBegin")) != NULL) {
       cf_gen_tpl_name(buff,256,v->values[0]);
       rm_infos->pre_threadlist_tpl = strdup(buff);
     }
 
-    if((v = cfg_get_first_value(vc,flt_posting_fn,"TemplateForumThread")) != NULL) {
+    if((v = cf_cfg_get_first_value(vc,flt_posting_fn,"TemplateForumThread")) != NULL) {
       cf_gen_tpl_name(buff,256,v->values[0]);
       rm_infos->thread_posting_tpl = rm_infos->threadlist_thread_tpl = strdup(buff);
     }
 
-    if((v = cfg_get_first_value(vc,flt_posting_fn,"TemplateForumEnd")) != NULL) {
+    if((v = cf_cfg_get_first_value(vc,flt_posting_fn,"TemplateForumEnd")) != NULL) {
       cf_gen_tpl_name(buff,256,v->values[0]);
       rm_infos->post_threadlist_tpl = strdup(buff);
     }
@@ -417,7 +417,7 @@ int flt_posting_rm_collector(cf_hash_t *head,configuration_t *dc,configuration_t
 /* }}} */
 
 /* {{{ flt_posting_handle_greet */
-int flt_posting_handle_greet(configfile_t *cfile,conf_opt_t *opt,const u_char *context,u_char **args,size_t argnum) {
+int flt_posting_handle_greet(cf_configfile_t *cfile,cf_conf_opt_t *opt,const u_char *context,u_char **args,size_t argnum) {
   u_char *tmp;
 
   if(flt_posting_fn == NULL) flt_posting_fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
@@ -443,7 +443,7 @@ int flt_posting_handle_greet(configfile_t *cfile,conf_opt_t *opt,const u_char *c
 /* }}} */
 
 /* {{{ flt_posting_handle_box */
-int flt_posting_handle_box(configfile_t *cfile,conf_opt_t *opt,const u_char *context,u_char **args,size_t argnum) {
+int flt_posting_handle_box(cf_configfile_t *cfile,cf_conf_opt_t *opt,const u_char *context,u_char **args,size_t argnum) {
   if(flt_posting_fn == NULL) flt_posting_fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   if(!context || cf_strcmp(flt_posting_fn,context) != 0) return 0;
 
@@ -463,7 +463,7 @@ int flt_posting_handle_box(configfile_t *cfile,conf_opt_t *opt,const u_char *con
 /* }}} */
 
 /* {{{ flt_posting_handle_actpcol */
-int flt_posting_handle_actpcol(configfile_t *cfile,conf_opt_t *opt,const u_char *context,u_char **args,size_t argnum) {
+int flt_posting_handle_actpcol(cf_configfile_t *cfile,cf_conf_opt_t *opt,const u_char *context,u_char **args,size_t argnum) {
   if(flt_posting_fn == NULL) flt_posting_fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   if(!context || cf_strcmp(flt_posting_fn,context) != 0) return 0;
 
@@ -477,7 +477,7 @@ int flt_posting_handle_actpcol(configfile_t *cfile,conf_opt_t *opt,const u_char 
 }
 /* }}} */
 
-int flt_posting_handle_tpl(configfile_t *cfile,conf_opt_t *opt,const u_char *context,u_char **args,size_t argnum) {
+int flt_posting_handle_tpl(cf_configfile_t *cfile,cf_conf_opt_t *opt,const u_char *context,u_char **args,size_t argnum) {
   if(flt_posting_fn == NULL) flt_posting_fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   if(!context || cf_strcmp(flt_posting_fn,context) != 0) return 0;
 
@@ -497,17 +497,17 @@ void flt_posting_cleanup(void) {
 }
 /* }}} */
 
-conf_opt_t flt_posting_config[] = {
-  { "Hi",                 flt_posting_handle_greet,    CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
-  { "Bye",                flt_posting_handle_greet,    CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
-  { "Signature",          flt_posting_handle_greet,    CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
-  { "TextBox",            flt_posting_handle_box,      CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
-  { "ActivePostingColor", flt_posting_handle_actpcol,  CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
-  { "TemplatePosting",    flt_posting_handle_tpl,      CFG_OPT_CONFIG|CFG_OPT_LOCAL,              NULL },
+cf_conf_opt_t flt_posting_config[] = {
+  { "Hi",                 flt_posting_handle_greet,    CF_CFG_OPT_CONFIG|CF_CFG_OPT_USER|CF_CFG_OPT_LOCAL, NULL },
+  { "Bye",                flt_posting_handle_greet,    CF_CFG_OPT_CONFIG|CF_CFG_OPT_USER|CF_CFG_OPT_LOCAL, NULL },
+  { "Signature",          flt_posting_handle_greet,    CF_CFG_OPT_CONFIG|CF_CFG_OPT_USER|CF_CFG_OPT_LOCAL, NULL },
+  { "TextBox",            flt_posting_handle_box,      CF_CFG_OPT_CONFIG|CF_CFG_OPT_USER|CF_CFG_OPT_LOCAL, NULL },
+  { "ActivePostingColor", flt_posting_handle_actpcol,  CF_CFG_OPT_CONFIG|CF_CFG_OPT_USER|CF_CFG_OPT_LOCAL, NULL },
+  { "TemplatePosting",    flt_posting_handle_tpl,      CF_CFG_OPT_CONFIG|CF_CFG_OPT_LOCAL,              NULL },
   { NULL, NULL, 0, NULL }
 };
 
-handler_config_t flt_posting_handlers[] = {
+cf_handler_config_t flt_posting_handlers[] = {
   { RM_COLLECTORS_HANDLER, flt_posting_rm_collector },
   { POSTING_HANDLER,       flt_posting_execute_filter },
   { PRE_CONTENT_FILTER,    flt_posting_pre_cnt },
@@ -516,7 +516,7 @@ handler_config_t flt_posting_handlers[] = {
   { 0, NULL }
 };
 
-module_config_t flt_posting = {
+cf_module_config_t flt_posting = {
   MODULE_MAGIC_COOKIE,
   flt_posting_config,
   flt_posting_handlers,

@@ -12,7 +12,7 @@
 
 /** This structure contains the user configuration */
 typedef struct {
-  array_t directives; /**< This is the array of directives */
+  cf_array_t directives; /**< This is the array of directives */
 } uconf_userconfig_t;
 
 /** This structure contains a directive with all information of the modules.de.xml */
@@ -23,7 +23,7 @@ typedef struct {
   int flags; /**< This variable contains the flags for this directive, i.e. CF_UCONF_FLAG_INVISIBLE */
   int argnum; /**< The number of arguments of this directive */
 
-  array_t arguments; /**< The arguments of this directive */
+  cf_array_t arguments; /**< The arguments of this directive */
 } uconf_directive_t;
 
 /** This struct defines the arguments */
@@ -55,18 +55,18 @@ uconf_userconfig_t *cf_uconf_read_modxml();
 void cf_uconf_destroy_argument(uconf_argument_t *argument);
 void cf_uconf_destroy_directive(uconf_directive_t *dir);
 void cf_uconf_cleanup_modxml(uconf_userconfig_t *modxml);
-void cf_uconf_to_html(string_t *str);
+void cf_uconf_to_html(cf_string_t *str);
 
-uconf_userconfig_t *cf_uconf_merge_config(cf_hash_t *head,configuration_t *config,array_t *errormessages,int touch_committed);
+uconf_userconfig_t *cf_uconf_merge_config(cf_hash_t *head,cf_configuration_t *config,cf_array_t *errormessages,int touch_committed);
 u_char *cf_write_uconf(const u_char *filename,uconf_userconfig_t *merged);
 
-int cf_run_uconf_write_handlers(cf_hash_t *cgi,configuration_t *dc,configuration_t *uc,configuration_t *oldconf,uconf_userconfig_t *newconf);
-void cf_run_uconf_display_handlers(cf_hash_t *cgi,configuration_t *dc,configuration_t *uc,cf_template_t *tpl,configuration_t *user);
+int cf_run_uconf_write_handlers(cf_hash_t *cgi,cf_configuration_t *dc,cf_configuration_t *uc,cf_configuration_t *oldconf,uconf_userconfig_t *newconf);
+void cf_run_uconf_display_handlers(cf_hash_t *cgi,cf_configuration_t *dc,cf_configuration_t *uc,cf_template_t *tpl,cf_configuration_t *user);
 
-typedef int (*uconf_write_filter_t)(cf_hash_t *cgi,configuration_t *dc,configuration_t *uc,configuration_t *oldconf,uconf_userconfig_t *newconf);
-typedef int (*uconf_display_filter_t)(cf_hash_t *cgi,configuration_t *dc,configuration_t *uc,cf_template_t *tpl,configuration_t *uconf);
+typedef int (*uconf_write_filter_t)(cf_hash_t *cgi,cf_configuration_t *dc,cf_configuration_t *uc,cf_configuration_t *oldconf,uconf_userconfig_t *newconf);
+typedef int (*uconf_display_filter_t)(cf_hash_t *cgi,cf_configuration_t *dc,cf_configuration_t *uc,cf_template_t *tpl,cf_configuration_t *uconf);
 
-typedef void (*uconf_action_handler_t)(cf_hash_t *cgi,configuration_t *dc,configuration_t *uc);
+typedef void (*uconf_action_handler_t)(cf_hash_t *cgi,cf_configuration_t *dc,cf_configuration_t *uc);
 
 int uconf_register_action_handler(u_char *name,uconf_action_handler_t action);
 uconf_action_handler_t uconf_get_action_handler(u_char *name);

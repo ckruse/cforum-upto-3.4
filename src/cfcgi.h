@@ -56,7 +56,7 @@ cf_hash_t *cf_cgi_parse_path_info_nv(cf_hash_t *hash);
  * This function parses a query string
  * \param ary A pointer to a array structure
  */
-void cf_cgi_parse_path_info(array_t *ary);
+void cf_cgi_parse_path_info(cf_array_t *ary);
 
 /**
  * This function encodes a string to an URL encoded string. This means,

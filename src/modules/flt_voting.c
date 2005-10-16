@@ -52,7 +52,7 @@ int flt_voting_handler(int sockfd,forum_t *forum,const u_char **tokens,int tnum,
   thread_t *t;
   posting_t *p;
   long llen;
-  string_t str;
+  cf_string_t str;
 
   if(tnum != 2) return FLT_DECLINE;
 
@@ -96,8 +96,8 @@ int flt_voting_handler(int sockfd,forum_t *forum,const u_char **tokens,int tnum,
         return FLT_OK;
       }
 
-      tid = str_to_u_int64(ctid);
-      mid = str_to_u_int64(cmid);
+      tid = cf_str_to_uint64(ctid);
+      mid = cf_str_to_uint64(cmid);
 
       cf_hash_destroy(infos);
 
@@ -113,16 +113,16 @@ int flt_voting_handler(int sockfd,forum_t *forum,const u_char **tokens,int tnum,
       }
       /* }}} */
 
-      str_init_growth(&str,128);
-      str_char_set(&str,"200 Ok\nNum: ",12);
+      cf_str_init_growth(&str,128);
+      cf_str_char_set(&str,"200 Ok\nNum: ",12);
 
       CF_RW_WR(&t->lock);
-      u_int32_to_str(&str,++p->votes_good);
+      cf_uint32_to_str(&str,++p->votes_good);
       CF_RW_UN(&t->lock);
 
-      str_char_append(&str,'\n');
+      cf_str_char_append(&str,'\n');
       writen(sockfd,str.content,str.len);
-      str_cleanup(&str);
+      cf_str_cleanup(&str);
       cf_generate_cache(forum);
     }
     else if(cf_strcmp(tokens[1],"BAD") == 0) {
@@ -135,8 +135,8 @@ int flt_voting_handler(int sockfd,forum_t *forum,const u_char **tokens,int tnum,
         return FLT_OK;
       }
 
-      tid = str_to_u_int64(ctid);
-      mid = str_to_u_int64(cmid);
+      tid = cf_str_to_uint64(ctid);
+      mid = cf_str_to_uint64(cmid);
 
       cf_hash_destroy(infos);
 
@@ -152,16 +152,16 @@ int flt_voting_handler(int sockfd,forum_t *forum,const u_char **tokens,int tnum,
       }
       /* }}} */
 
-      str_init_growth(&str,128);
-      str_char_set(&str,"200 Ok\nNum: ",12);
+      cf_str_init_growth(&str,128);
+      cf_str_char_set(&str,"200 Ok\nNum: ",12);
 
       CF_RW_WR(&t->lock);
-      u_int32_to_str(&str,++p->votes_bad);
+      cf_uint32_to_str(&str,++p->votes_bad);
       CF_RW_UN(&t->lock);
 
-      str_char_append(&str,'\n');
+      cf_str_char_append(&str,'\n');
       writen(sockfd,str.content,str.len);
-      str_cleanup(&str);
+      cf_str_cleanup(&str);
       cf_generate_cache(forum);
     }
     else {
@@ -182,16 +182,16 @@ int flt_voting_register_handlers(int sock) {
   return FLT_OK;
 }
 
-conf_opt_t flt_voting_config[] = {
+cf_conf_opt_t flt_voting_config[] = {
   { NULL, NULL, 0, NULL }
 };
 
-handler_config_t flt_voting_handlers[] = {
+cf_handler_config_t flt_voting_handlers[] = {
   { INIT_HANDLER, flt_voting_register_handlers },
   { 0, NULL }
 };
 
-module_config_t flt_voting = {
+cf_module_config_t flt_voting = {
   MODULE_MAGIC_COOKIE,
   flt_voting_config,
   flt_voting_handlers,

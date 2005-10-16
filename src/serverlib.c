@@ -65,7 +65,7 @@
 void cf_setup_shared_mem(forum_t *forum) {
   union semun smn;
   unsigned short x = 0;
-  name_value_t *v = cfg_get_first_value(&fo_default_conf,forum->name,"SharedMemIds");
+  cf_name_value_t *v = cf_cfg_get_first_value(&fo_default_conf,forum->name,"SharedMemIds");
 
   if((forum->shm.sem = semget(atoi(v->values[2]),1,S_IRWXU|S_IRWXG|S_IRWXO|IPC_CREAT)) == -1) {
     cf_log(CF_ERR,__FILE__,__LINE__,"semget: %s\n",strerror(errno));
@@ -94,13 +94,13 @@ void cf_setup_shared_mem(forum_t *forum) {
 
 /* {{{ cf_register_forum */
 forum_t *cf_register_forum(const u_char *name) {
-  forum_t *forum = fo_alloc(NULL,1,sizeof(*forum),FO_ALLOC_MALLOC);
+  forum_t *forum = cf_alloc(NULL,1,sizeof(*forum),CF_ALLOC_MALLOC);
 
   forum->name = strdup(name);
   forum->cache.fresh = forum->locked = 0;
 
-  str_init(&forum->cache.visible);
-  str_init(&forum->cache.invisible);
+  cf_str_init(&forum->cache.visible);
+  cf_str_init(&forum->cache.invisible);
 
   forum->date.visible = forum->date.invisible = 0;
 
@@ -145,8 +145,8 @@ void cf_destroy_forum(forum_t *forum) {
   cf_mutex_destroy(&forum->uniques.lock);
 
   free(forum->name);
-  str_cleanup(&forum->cache.visible);
-  str_cleanup(&forum->cache.invisible);
+  cf_str_cleanup(&forum->cache.visible);
+  cf_str_cleanup(&forum->cache.invisible);
 
   #ifdef CF_SHARED_MEM
   cf_mutex_destroy(&forum->shm.lock);
@@ -176,7 +176,7 @@ void cf_destroy_forum(forum_t *forum) {
 void cf_log(int mode,const u_char *file,unsigned int line,const u_char *format, ...) {
   u_char str[300];
   int status;
-  name_value_t *v;
+  cf_name_value_t *v;
   time_t t;
   struct tm *tm;
   int sz;
@@ -200,11 +200,11 @@ void cf_log(int mode,const u_char *file,unsigned int line,const u_char *format, 
   }
 
   if(!head.log.std) {
-    v = cfg_get_first_value(&fo_server_conf,NULL,"StdLog");
+    v = cf_cfg_get_first_value(&fo_server_conf,NULL,"StdLog");
     head.log.std = fopen(v->values[0],"a");
   }
   if(!head.log.err) {
-    v = cfg_get_first_value(&fo_server_conf,NULL,"ErrorLog");
+    v = cf_cfg_get_first_value(&fo_server_conf,NULL,"ErrorLog");
     head.log.err = fopen(v->values[0],"a");
   }
 
@@ -258,14 +258,14 @@ int cf_load_data(forum_t *forum) {
   int ret = FLT_DECLINE;
   size_t i;
   data_loading_filter_t fkt;
-  handler_config_t *handler;
+  cf_handler_config_t *handler;
 
   /* all references to this thread are released, so run the archiver plugins */
   if(Modules[DATA_LOADING_HANDLER].elements) {
     ret = FLT_DECLINE;
 
     for(i=0;i<Modules[DATA_LOADING_HANDLER].elements && ret == FLT_DECLINE;i++) {
-      handler = array_element_at(&Modules[DATA_LOADING_HANDLER],i);
+      handler = cf_array_element_at(&Modules[DATA_LOADING_HANDLER],i);
       fkt     = (data_loading_filter_t)handler->func;
       ret     = fkt(forum);
     }
@@ -277,16 +277,16 @@ int cf_load_data(forum_t *forum) {
 
 /* {{{ cf_cleanup_posting */
 void cf_cleanup_posting(posting_t *p) {
-  if(p->user.name.len)  str_cleanup(&p->user.name);
-  if(p->subject.len)    str_cleanup(&p->subject);
-  if(p->unid.len)       str_cleanup(&p->unid);
-  if(p->user.ip.len)    str_cleanup(&p->user.ip);
-  if(p->content.len)    str_cleanup(&p->content);
+  if(p->user.name.len)  cf_str_cleanup(&p->user.name);
+  if(p->subject.len)    cf_str_cleanup(&p->subject);
+  if(p->unid.len)       cf_str_cleanup(&p->unid);
+  if(p->user.ip.len)    cf_str_cleanup(&p->user.ip);
+  if(p->content.len)    cf_str_cleanup(&p->content);
 
-  if(p->category.len)   str_cleanup(&p->category);
-  if(p->user.email.len) str_cleanup(&p->user.email);
-  if(p->user.hp.len)    str_cleanup(&p->user.hp);
-  if(p->user.img.len)   str_cleanup(&p->user.img);
+  if(p->category.len)   cf_str_cleanup(&p->category);
+  if(p->user.email.len) cf_str_cleanup(&p->user.email);
+  if(p->user.hp.len)    cf_str_cleanup(&p->user.hp);
+  if(p->user.img.len)   cf_str_cleanup(&p->user.img);
 
   if(p->flags.elements) cf_list_destroy(&p->flags,cf_destroy_flag);
 }
@@ -442,7 +442,7 @@ void *cf_worker(void *arg) {
 /* {{{ cf_setup_socket */
 int cf_setup_socket(struct sockaddr_un *addr) {
   int sock;
-  name_value_t *sockpath = cfg_get_first_value(&fo_default_conf,NULL,"SocketName");
+  cf_name_value_t *sockpath = cf_cfg_get_first_value(&fo_default_conf,NULL,"SocketName");
 
   if((sock = socket(AF_LOCAL,SOCK_STREAM,0)) == -1) {
     cf_log(CF_ERR,__FILE__,__LINE__,"socket: %s\n",strerror(errno));
@@ -485,7 +485,7 @@ void cf_push_server(int sockfd,struct sockaddr *addr,size_t size,worker_t handle
   srv.sock   = sockfd;
   srv.size   = size;
   srv.worker = handler;
-  srv.addr   = memdup(addr,size);
+  srv.addr   = cf_memdup(addr,size);
 
   CF_LM(&head.servers.lock);
   cf_list_append(&head.servers.list,&srv,sizeof(srv));
@@ -629,12 +629,12 @@ int cf_tokenize(u_char *line,u_char ***tokens) {
   int n = 0,reser = 5;
   register u_char *ptr,*prev;
 
-  *tokens = fo_alloc(NULL,5,sizeof(*tokens),FO_ALLOC_MALLOC);
+  *tokens = cf_alloc(NULL,5,sizeof(*tokens),CF_ALLOC_MALLOC);
 
   for(prev=ptr=line;*ptr;ptr++) {
     if(n >= reser) {
       reser += 5;
-      *tokens = fo_alloc(*tokens,reser,sizeof(*tokens),FO_ALLOC_REALLOC);
+      *tokens = cf_alloc(*tokens,reser,sizeof(*tokens),CF_ALLOC_REALLOC);
     }
 
     if(isspace(*ptr) || *ptr == ':') {
@@ -644,12 +644,12 @@ int cf_tokenize(u_char *line,u_char ***tokens) {
       }
 
       *ptr = 0;
-      (*tokens)[n++] = memdup(prev,ptr-prev+1);
+      (*tokens)[n++] = cf_memdup(prev,ptr-prev+1);
       prev = ptr+1;
     }
   }
 
-  if(prev != ptr && prev-1 != ptr && *ptr) (*tokens)[n++] = memdup(prev,ptr-prev);
+  if(prev != ptr && prev-1 != ptr && *ptr) (*tokens)[n++] = cf_memdup(prev,ptr-prev);
 
   return n;
 }
@@ -658,7 +658,7 @@ int cf_tokenize(u_char *line,u_char ***tokens) {
 /* {{{ cf_cftp_handler */
 void cf_cftp_handler(int sockfd) {
   int           shallRun = 1,i;
-  rline_t      *tsd        = fo_alloc(NULL,1,sizeof(*tsd),FO_ALLOC_CALLOC);
+  rline_t      *tsd        = cf_alloc(NULL,1,sizeof(*tsd),CF_ALLOC_CALLOC);
   u_char *line  = NULL,**tokens;
   int   locked = 0,tnum = 0;
   forum_t *forum = NULL;
@@ -711,7 +711,7 @@ void cf_cftp_handler(int sockfd) {
               cf_log(CF_ERR,__FILE__,__LINE__,"Bad request\n");
             }
             else {
-              tid      = str_to_u_int64(tokens[2]+1);
+              tid      = cf_str_to_uint64(tokens[2]+1);
               cf_log(CF_ERR,__FILE__,__LINE__,"archiving thread %lld by user %s",tid,ln);
 
               writen(sockfd,"200 Ok\n",7);
@@ -739,8 +739,8 @@ void cf_cftp_handler(int sockfd) {
               writen(sockfd,"501 Thread id or message id missing\n",36);
             }
             else {
-              tid = str_to_u_int64(tokens[1]+1);
-              mid = str_to_u_int64(tokens[2]+1);
+              tid = cf_str_to_uint64(tokens[1]+1);
+              mid = cf_str_to_uint64(tokens[2]+1);
 
               t = cf_get_thread(forum,tid);
 
@@ -796,8 +796,8 @@ void cf_cftp_handler(int sockfd) {
               writen(sockfd,"501 Thread id or message id missing\n",36);
             }
             else {
-              tid = str_to_u_int64(tokens[1]+1);
-              mid = str_to_u_int64(tokens[2]+1);
+              tid = cf_str_to_uint64(tokens[1]+1);
+              mid = cf_str_to_uint64(tokens[2]+1);
 
               t = cf_get_thread(forum,tid);
 
@@ -953,7 +953,7 @@ posting_flag_t *cf_get_flag_by_name(cf_list_head_t *flags,const u_char *name) {
 void cf_send_posting(forum_t *forum,int sock,u_int64_t tid,u_int64_t mid,int invisible) {
   thread_t *t = cf_get_thread(forum,tid);
   posting_t *p = NULL;
-  string_t bff;
+  cf_string_t bff;
   int first = 1;
 
   cf_list_element_t *elem;
@@ -973,9 +973,9 @@ void cf_send_posting(forum_t *forum,int sock,u_int64_t tid,u_int64_t mid,int inv
     }
   }
 
-  str_init(&bff);
+  cf_str_init(&bff);
 
-  str_chars_append(&bff,"200 Ok\n",7);
+  cf_str_chars_append(&bff,"200 Ok\n",7);
 
   CF_RW_RD(&t->lock);
 
@@ -988,11 +988,11 @@ void cf_send_posting(forum_t *forum,int sock,u_int64_t tid,u_int64_t mid,int inv
   }
 
   p = t->postings;
-  str_chars_append(&bff,"THREAD t",8);
-  u_int64_to_str(&bff,t->tid);
-  str_chars_append(&bff," m",2);
-  u_int64_to_str(&bff,p->mid);
-  str_char_append(&bff,'\n');
+  cf_str_chars_append(&bff,"THREAD t",8);
+  cf_uint64_to_str(&bff,t->tid);
+  cf_str_chars_append(&bff," m",2);
+  cf_uint64_to_str(&bff,p->mid);
+  cf_str_char_append(&bff,'\n');
 
   for(;p;p=p->next) {
     if(p->invisible && !invisible) {
@@ -1001,9 +1001,9 @@ void cf_send_posting(forum_t *forum,int sock,u_int64_t tid,u_int64_t mid,int inv
     }
 
     if(!first) {
-      str_chars_append(&bff,"MSG m",5);
-      u_int64_to_str(&bff,p->mid);
-      str_char_append(&bff,'\n');
+      cf_str_chars_append(&bff,"MSG m",5);
+      cf_uint64_to_str(&bff,p->mid);
+      cf_str_char_append(&bff,'\n');
     }
 
     first = 0;
@@ -1011,72 +1011,72 @@ void cf_send_posting(forum_t *forum,int sock,u_int64_t tid,u_int64_t mid,int inv
     /* {{{ serialize flags */
     for(elem=p->flags.elements;elem;elem=elem->next) {
       flag = (posting_flag_t *)elem->data;
-      str_chars_append(&bff,"Flag:",5);
-      str_chars_append(&bff,flag->name,strlen(flag->name));
-      str_char_append(&bff,'=');
-      str_chars_append(&bff,flag->val,strlen(flag->val));
-      str_char_append(&bff,'\n');
+      cf_str_chars_append(&bff,"Flag:",5);
+      cf_str_chars_append(&bff,flag->name,strlen(flag->name));
+      cf_str_char_append(&bff,'=');
+      cf_str_chars_append(&bff,flag->val,strlen(flag->val));
+      cf_str_char_append(&bff,'\n');
     }
     /* }}} */
 
-    str_chars_append(&bff,"Author:",7);
-    str_chars_append(&bff,p->user.name.content,p->user.name.len);
+    cf_str_chars_append(&bff,"Author:",7);
+    cf_str_chars_append(&bff,p->user.name.content,p->user.name.len);
 
     if(p->user.email.len) {
-      str_chars_append(&bff,"\nEMail:",7);
-      str_chars_append(&bff,p->user.email.content,p->user.email.len);
+      cf_str_chars_append(&bff,"\nEMail:",7);
+      cf_str_chars_append(&bff,p->user.email.content,p->user.email.len);
     }
 
     if(p->user.hp.len) {
-      str_chars_append(&bff,"\nHomepage:",10);
-      str_chars_append(&bff,p->user.hp.content,p->user.hp.len);
+      cf_str_chars_append(&bff,"\nHomepage:",10);
+      cf_str_chars_append(&bff,p->user.hp.content,p->user.hp.len);
     }
 
     if(p->user.img.len) {
-      str_chars_append(&bff,"\nImage:",7);
-      str_chars_append(&bff,p->user.img.content,p->user.img.len);
+      cf_str_chars_append(&bff,"\nImage:",7);
+      cf_str_chars_append(&bff,p->user.img.content,p->user.img.len);
     }
 
-    str_chars_append(&bff,"\nSubject:",9);
-    str_chars_append(&bff,p->subject.content,p->subject.len);
+    cf_str_chars_append(&bff,"\nSubject:",9);
+    cf_str_chars_append(&bff,p->subject.content,p->subject.len);
 
     if(p->category.len) {
-      str_chars_append(&bff,"\nCategory:",10);
-      str_chars_append(&bff,p->category.content,p->category.len);
+      cf_str_chars_append(&bff,"\nCategory:",10);
+      cf_str_chars_append(&bff,p->category.content,p->category.len);
     }
 
-    str_chars_append(&bff,"\nRemote-Addr:",13);
-    str_str_append(&bff,&p->user.ip);
+    cf_str_chars_append(&bff,"\nRemote-Addr:",13);
+    cf_str_str_append(&bff,&p->user.ip);
 
-    str_chars_append(&bff,"\nDate:",6);
-    u_int32_to_str(&bff,p->date);
-    str_char_append(&bff,'\n');
+    cf_str_chars_append(&bff,"\nDate:",6);
+    cf_uint32_to_str(&bff,p->date);
+    cf_str_char_append(&bff,'\n');
 
-    str_chars_append(&bff,"Level:",6);
-    u_int16_to_str(&bff,p->level);
-    str_char_append(&bff,'\n');
+    cf_str_chars_append(&bff,"Level:",6);
+    cf_uint16_to_str(&bff,p->level);
+    cf_str_char_append(&bff,'\n');
 
-    str_chars_append(&bff,"Visible:",8);
-    u_int16_to_str(&bff,(u_int16_t)(p->invisible == 0));
-    str_char_append(&bff,'\n');
+    cf_str_chars_append(&bff,"Visible:",8);
+    cf_uint16_to_str(&bff,(u_int16_t)(p->invisible == 0));
+    cf_str_char_append(&bff,'\n');
 
-    str_chars_append(&bff,"Votes-Good:",11);
-    u_int32_to_str(&bff,p->votes_good);
-    str_char_append(&bff,'\n');
+    cf_str_chars_append(&bff,"Votes-Good:",11);
+    cf_uint32_to_str(&bff,p->votes_good);
+    cf_str_char_append(&bff,'\n');
 
-    str_chars_append(&bff,"Votes-Bad:",10);
-    u_int32_to_str(&bff,p->votes_bad);
-    str_char_append(&bff,'\n');
+    cf_str_chars_append(&bff,"Votes-Bad:",10);
+    cf_uint32_to_str(&bff,p->votes_bad);
+    cf_str_char_append(&bff,'\n');
 
-    str_chars_append(&bff,"Content:",8);
-    str_chars_append(&bff,p->content.content,p->content.len);
+    cf_str_chars_append(&bff,"Content:",8);
+    cf_str_chars_append(&bff,p->content.content,p->content.len);
 
-    str_char_append(&bff,'\n');
+    cf_str_char_append(&bff,'\n');
   }
 
   CF_RW_UN(&t->lock);
 
-  str_chars_append(&bff,"END\n",4);
+  cf_str_chars_append(&bff,"END\n",4);
 
   writen(sock,bff.content,bff.len);
   free(bff.content);
@@ -1100,34 +1100,34 @@ int cf_read_posting(forum_t *forum,posting_t *p,int sock,rline_t *tsd) {
       cf_log(CF_DBG,__FILE__,__LINE__,"read_posting: got line %s\n",line);
 
       if(cf_strncmp(line,"Unid:",5) == 0) {
-        str_char_set(&p->unid,line+6,llen-7);
+        cf_str_char_set(&p->unid,line+6,llen-7);
       }
       else if(cf_strncmp(line,"Author:",7) == 0) {
-        str_char_set(&p->user.name,line+8,llen-9);
+        cf_str_char_set(&p->user.name,line+8,llen-9);
       }
       else if(cf_strncmp(line,"EMail:",6) == 0) {
-        str_char_set(&p->user.email,line+7,llen-8);
+        cf_str_char_set(&p->user.email,line+7,llen-8);
       }
       else if(cf_strncmp(line,"Category:",9) == 0) {
-        str_char_set(&p->category,line+10,llen-11);
+        cf_str_char_set(&p->category,line+10,llen-11);
       }
       else if(cf_strncmp(line,"Subject:",8) == 0) {
-        str_char_set(&p->subject,line+9,llen-10);
+        cf_str_char_set(&p->subject,line+9,llen-10);
       }
       else if(cf_strncmp(line,"HomepageUrl:",12) == 0) {
-        str_char_set(&p->user.hp,line+13,llen-14);
+        cf_str_char_set(&p->user.hp,line+13,llen-14);
       }
       else if(cf_strncmp(line,"ImageUrl:",9) == 0) {
-        str_char_set(&p->user.img,line+10,llen-11);
+        cf_str_char_set(&p->user.img,line+10,llen-11);
       }
       else if(cf_strncmp(line,"Body:",5) == 0) {
-        str_char_set(&p->content,line+6,llen-7);
+        cf_str_char_set(&p->content,line+6,llen-7);
       }
       else if(cf_strncmp(line,"Invisible:",10) == 0) {
         p->invisible = atoi(line+11);
       }
       else if(cf_strncmp(line,"RemoteAddr:",11) == 0) {
-        str_char_set(&p->user.ip,line+12,llen-13);
+        cf_str_char_set(&p->user.ip,line+12,llen-13);
       }
       else if(cf_strncmp(line,"Flag:",5) == 0) {
         if((ptr = strstr(line+6,"=")) == NULL) {
@@ -1178,7 +1178,7 @@ int cf_remove_flags(int sockfd,rline_t *tsd,posting_t *p1) {
     line[tsd->rl_len-1] = '\0';
 
     if(cf_strncmp(line,"Flags:",6) == 0) {
-      len = split(line+7,",",&list);
+      len = cf_split(line+7,",",&list);
       for(i=0;i<len;++i) {
         cf_log(CF_DBG,__FILE__,__LINE__,"removing flag %s\n",list[i]);
 
@@ -1262,16 +1262,16 @@ void cf_destroy_flag(void *data) {
 /* {{{ cf_generate_cache */
 void *cf_generate_cache(void *arg) {
   forum_t *forum = (forum_t *)arg;
-  name_value_t *forums;
+  cf_name_value_t *forums;
   size_t i = 0;
 
 #ifndef CF_SHARED_MEM
-  string_t str1,str2;
+  cf_string_t str1,str2;
 
   /* {{{ make cache for only one forum */
   if(forum) {
-    str_init(&str1);
-    str_init(&str2);
+    cf_str_init(&str1);
+    cf_str_init(&str2);
 
     cf_generate_list(forum,&str1,0);
     cf_generate_list(forum,&str2,1);
@@ -1296,12 +1296,12 @@ void *cf_generate_cache(void *arg) {
   /* }}} */
   /* {{{ make cache for all forums */
   else {
-    forums = cfg_get_first_value(&fo_server_conf,NULL,"Forums");
+    forums = cf_cfg_get_first_value(&fo_server_conf,NULL,"Forums");
 
     for(i=0;i<forums->valnum;i++) {
       if((forum = cf_hash_get(head.forums,forums->values[i],strlen(forums->values[i]))) != NULL) {
-        str_init(&str1);
-        str_init(&str2);
+        cf_str_init(&str1);
+        cf_str_init(&str2);
 
         cf_generate_list(forum,&str1,0);
         cf_generate_list(forum,&str2,1);
@@ -1329,7 +1329,7 @@ void *cf_generate_cache(void *arg) {
   #else
   if(forum) cf_generate_shared_memory(forum);
   else {
-    forums = cfg_get_first_value(&fo_server_conf,NULL,"Forums");
+    forums = cf_cfg_get_first_value(&fo_server_conf,NULL,"Forums");
 
     for(i=0;i<forums->valnum;i++) {
       if((forum = cf_hash_get(head.forums,forums->values[i],strlen(forums->values[i]))) != NULL) cf_generate_shared_memory(forum);
@@ -1342,7 +1342,7 @@ void *cf_generate_cache(void *arg) {
 /* }}} */
 
 /* {{{ cf_generate_list */
-void cf_generate_list(forum_t *forum,string_t *str,int del) {
+void cf_generate_list(forum_t *forum,cf_string_t *str,int del) {
   int did = 0;
   thread_t *t,*t1;
   int first;
@@ -1351,7 +1351,7 @@ void cf_generate_list(forum_t *forum,string_t *str,int del) {
   cf_list_element_t *elem;
   posting_flag_t *flag;
 
-  str_chars_append(str,"200 Ok\n",7);
+  cf_str_chars_append(str,"200 Ok\n",7);
 
   CF_RW_RD(&forum->threads.lock);
   t1 = forum->threads.list;
@@ -1375,66 +1375,66 @@ void cf_generate_list(forum_t *forum,string_t *str,int del) {
       /* thread/posting header */
       if(first) {
         first = 0;
-        str_chars_append(str,"THREAD t",8);
-        u_int64_to_str(str,t->tid);
+        cf_str_chars_append(str,"THREAD t",8);
+        cf_uint64_to_str(str,t->tid);
       }
-      else str_chars_append(str,"MSG",3);
+      else cf_str_chars_append(str,"MSG",3);
 
-      str_chars_append(str," m",2);
-      u_int64_to_str(str,p->mid);
-      str_char_append(str,'\n');
+      cf_str_chars_append(str," m",2);
+      cf_uint64_to_str(str,p->mid);
+      cf_str_char_append(str,'\n');
 
       /* {{{ serialize flags */
       for(elem=p->flags.elements;elem;elem=elem->next) {
         flag = (posting_flag_t *)elem->data;
-        str_chars_append(str,"Flag:",5);
-        str_chars_append(str,flag->name,strlen(flag->name));
-        str_char_append(str,'=');
-        str_chars_append(str,flag->val,strlen(flag->val));
-        str_char_append(str,'\n');
+        cf_str_chars_append(str,"Flag:",5);
+        cf_str_chars_append(str,flag->name,strlen(flag->name));
+        cf_str_char_append(str,'=');
+        cf_str_chars_append(str,flag->val,strlen(flag->val));
+        cf_str_char_append(str,'\n');
       }
       /* }}} */
 
       /* author */
-      str_chars_append(str,"Author:",7);
-      str_chars_append(str,p->user.name.content,p->user.name.len);
+      cf_str_chars_append(str,"Author:",7);
+      cf_str_chars_append(str,p->user.name.content,p->user.name.len);
 
       /* subject */
-      str_chars_append(str,"\nSubject:",9);
-      str_chars_append(str,p->subject.content,p->subject.len);
+      cf_str_chars_append(str,"\nSubject:",9);
+      cf_str_chars_append(str,p->subject.content,p->subject.len);
 
       /* category */
       if(p->category.len) {
-        str_chars_append(str,"\nCategory:",10);
-        str_chars_append(str,p->category.content,p->category.len);
+        cf_str_chars_append(str,"\nCategory:",10);
+        cf_str_chars_append(str,p->category.content,p->category.len);
       }
 
-      str_chars_append(str,"\nRemote-Addr:",13);
-      str_str_append(str,&p->user.ip);
+      cf_str_chars_append(str,"\nRemote-Addr:",13);
+      cf_str_str_append(str,&p->user.ip);
 
       /* date */
-      str_chars_append(str,"\nDate:",6);
-      u_int32_to_str(str,(u_int32_t)p->date);
-      str_char_append(str,'\n');
+      cf_str_chars_append(str,"\nDate:",6);
+      cf_uint32_to_str(str,(u_int32_t)p->date);
+      cf_str_char_append(str,'\n');
 
       /* level */
-      str_chars_append(str,"Level:",6);
-      u_int16_to_str(str,p->level);
-      str_char_append(str,'\n');
+      cf_str_chars_append(str,"Level:",6);
+      cf_uint16_to_str(str,p->level);
+      cf_str_char_append(str,'\n');
 
-      str_chars_append(str,"Visible:",8);
-      u_int16_to_str(str,(u_int16_t)(p->invisible == 0));
-      str_char_append(str,'\n');
+      cf_str_chars_append(str,"Visible:",8);
+      cf_uint16_to_str(str,(u_int16_t)(p->invisible == 0));
+      cf_str_char_append(str,'\n');
     }
 
-    if(did) str_chars_append(str,"END\n",4);
+    if(did) cf_str_chars_append(str,"END\n",4);
     did = 0;
 
     t1   = t->next;
     CF_RW_UN(&t->lock);
   }
 
-  str_char_append(str,'\n');
+  cf_str_char_append(str,'\n');
 }
 /* }}} */
 
@@ -1471,119 +1471,119 @@ void *cf_shmat(int shmid,void *addr,int shmflag) {
 /* }}} */
 
 /* {{{ cf_shm_flags ------DEEP MAGIC!-------- */
-void cf_shm_flags(posting_t *p,mem_pool_t *pool) {
+void cf_shm_flags(posting_t *p,cf_mem_pool_t *pool) {
   cf_list_element_t *elem;
   u_int32_t val = 0;
 
   for(elem=p->flags.elements;elem;elem=elem->next,++val);
-  mem_append(pool,&val,sizeof(val));
+  cf_mem_append(pool,&val,sizeof(val));
 
   for(elem=p->flags.elements;elem;elem=elem->next) {
     posting_flag_t *flag = (posting_flag_t *)elem->data;
 
     val = strlen(flag->name);
-    mem_append(pool,&val,sizeof(val));
-    mem_append(pool,flag->name,val);
+    cf_mem_append(pool,&val,sizeof(val));
+    cf_mem_append(pool,flag->name,val);
 
     val = strlen(flag->val);
-    mem_append(pool,&val,sizeof(val));
-    mem_append(pool,flag->val,val);
+    cf_mem_append(pool,&val,sizeof(val));
+    cf_mem_append(pool,flag->val,val);
   }
 }
 /* }}} */
 
 /* {{{ cf_generate_shared_memory */
 void cf_generate_shared_memory(forum_t *forum) {
-  mem_pool_t pool;
+  cf_mem_pool_t pool;
   thread_t *t,*t1;
   posting_t *p;
-  name_value_t *v = cfg_get_first_value(&fo_default_conf,forum->name,"SharedMemIds");
+  cf_name_value_t *v = cf_cfg_get_first_value(&fo_default_conf,forum->name,"SharedMemIds");
   u_int32_t val;
   time_t tm = time(NULL);
   unsigned short semval;
 
-  mem_init(&pool);
+  cf_mem_init(&pool);
 
   CF_RW_RD(&forum->threads.lock);
   t1 = t = forum->threads.list;
   CF_RW_UN(&forum->threads.lock);
 
   /* {{{ CAUTION! Deep magic begins here! */
-  mem_append(&pool,&tm,sizeof(t));
+  cf_mem_append(&pool,&tm,sizeof(t));
 
   for(;t;t=t1) {
     CF_RW_RD(&t->lock);
 
     /* we only need thread id and postings */
-    mem_append(&pool,&(t->tid),sizeof(t->tid));
-    mem_append(&pool,&(t->posts),sizeof(t->posts));
+    cf_mem_append(&pool,&(t->tid),sizeof(t->tid));
+    cf_mem_append(&pool,&(t->posts),sizeof(t->posts));
 
     for(p=t->postings;p;p=p->next) {
-      mem_append(&pool,&(p->mid),sizeof(p->mid));
+      cf_mem_append(&pool,&(p->mid),sizeof(p->mid));
 
       /* we have to count the number of flags... */
       cf_shm_flags(p,&pool);
 
       val = p->subject.len + 1;
-      mem_append(&pool,&val,sizeof(val));
-      mem_append(&pool,p->subject.content,val);
+      cf_mem_append(&pool,&val,sizeof(val));
+      cf_mem_append(&pool,p->subject.content,val);
 
       val = p->category.len + 1;
       if(val > 1) {
-        mem_append(&pool,&val,sizeof(val));
-        mem_append(&pool,p->category.content,val);
+        cf_mem_append(&pool,&val,sizeof(val));
+        cf_mem_append(&pool,p->category.content,val);
       }
       else {
         val = 0;
-        mem_append(&pool,&val,sizeof(val));
+        cf_mem_append(&pool,&val,sizeof(val));
       }
 
       val = p->user.ip.len + 1;
-      mem_append(&pool,&val,sizeof(val));
-      mem_append(&pool,p->user.ip.content,val);
+      cf_mem_append(&pool,&val,sizeof(val));
+      cf_mem_append(&pool,p->user.ip.content,val);
 
       val = p->content.len + 1;
-      mem_append(&pool,&val,sizeof(val));
-      mem_append(&pool,p->content.content,val);
+      cf_mem_append(&pool,&val,sizeof(val));
+      cf_mem_append(&pool,p->content.content,val);
 
-      mem_append(&pool,&(p->date),sizeof(p->date));
-      mem_append(&pool,&(p->level),sizeof(p->level));
-      mem_append(&pool,&(p->invisible),sizeof(p->invisible));
-      mem_append(&pool,&(p->votes_good),sizeof(p->votes_good));
-      mem_append(&pool,&(p->votes_bad),sizeof(p->votes_bad));
+      cf_mem_append(&pool,&(p->date),sizeof(p->date));
+      cf_mem_append(&pool,&(p->level),sizeof(p->level));
+      cf_mem_append(&pool,&(p->invisible),sizeof(p->invisible));
+      cf_mem_append(&pool,&(p->votes_good),sizeof(p->votes_good));
+      cf_mem_append(&pool,&(p->votes_bad),sizeof(p->votes_bad));
 
       val = p->user.name.len + 1;
-      mem_append(&pool,&val,sizeof(val));
-      mem_append(&pool,p->user.name.content,val);
+      cf_mem_append(&pool,&val,sizeof(val));
+      cf_mem_append(&pool,p->user.name.content,val);
 
       val = p->user.email.len + 1;
       if(val > 1) {
-        mem_append(&pool,&val,sizeof(val));
-        mem_append(&pool,p->user.email.content,val);
+        cf_mem_append(&pool,&val,sizeof(val));
+        cf_mem_append(&pool,p->user.email.content,val);
       }
       else {
         val = 0;
-        mem_append(&pool,&val,sizeof(val));
+        cf_mem_append(&pool,&val,sizeof(val));
       }
 
       val = p->user.hp.len + 1;
       if(val > 1) {
-        mem_append(&pool,&val,sizeof(val));
-        mem_append(&pool,p->user.hp.content,val);
+        cf_mem_append(&pool,&val,sizeof(val));
+        cf_mem_append(&pool,p->user.hp.content,val);
       }
       else {
         val = 0;
-        mem_append(&pool,&val,sizeof(val));
+        cf_mem_append(&pool,&val,sizeof(val));
       }
 
       val = p->user.img.len + 1;
       if(val > 1) {
-        mem_append(&pool,&val,sizeof(val));
-        mem_append(&pool,p->user.img.content,val);
+        cf_mem_append(&pool,&val,sizeof(val));
+        cf_mem_append(&pool,p->user.img.content,val);
       }
       else {
         val = 0;
-        mem_append(&pool,&val,sizeof(val));
+        cf_mem_append(&pool,&val,sizeof(val));
       }
     }
 
@@ -1623,7 +1623,7 @@ void cf_generate_shared_memory(forum_t *forum) {
       if(cf_shmdt(forum->shm.ptrs[semval]) != 0) {
         cf_log(CF_ERR,__FILE__,__LINE__,"shmdt: %s (semval: %d)\n",strerror(errno),semval);
         CF_UM(&forum->shm.lock);
-        mem_cleanup(&pool);
+        cf_mem_cleanup(&pool);
         return;
       }
     }
@@ -1632,7 +1632,7 @@ void cf_generate_shared_memory(forum_t *forum) {
     if(shmctl(forum->shm.ids[semval],IPC_RMID,NULL) != 0) {
       cf_log(CF_ERR,__FILE__,__LINE__,"shmctl: %s\n",strerror(errno));
       CF_UM(&forum->shm.lock);
-      mem_cleanup(&pool);
+      cf_mem_cleanup(&pool);
       return;
     }
   }
@@ -1651,7 +1651,7 @@ void cf_generate_shared_memory(forum_t *forum) {
 
   memcpy(forum->shm.ptrs[semval],pool.content,pool.len);
 
-  mem_cleanup(&pool);
+  cf_mem_cleanup(&pool);
 
   if(semval == 1) CF_SEM_DOWN(forum->shm.sem,0);
   else CF_SEM_UP(forum->shm.sem,0);

@@ -25,10 +25,10 @@ typedef int (*server_protocol_handler_t)(int,forum_t *,const u_char **,int,rline
 typedef struct s_posting {
   u_int64_t mid; /**< The message id. */
 
-  string_t unid; /**< Unique id of the posting. Used to avoid double postings. */
-  string_t subject; /**< The subject of the posting */
-  string_t category; /**< The category of the posting */
-  string_t content; /**< The content of the posting. */
+  cf_string_t unid; /**< Unique id of the posting. Used to avoid double postings. */
+  cf_string_t subject; /**< The subject of the posting */
+  cf_string_t category; /**< The category of the posting */
+  cf_string_t content; /**< The content of the posting. */
 
   time_t date; /**< the date as time_t (it should be a long or an unsigned long) */
 
@@ -40,11 +40,11 @@ typedef struct s_posting {
 
   /** the name, email, homepage, image and ip as strings in an extra struct */
   struct {
-    string_t name; /**< The name of the poster */
-    string_t email; /**< The email address of the poster */
-    string_t hp; /**< The homepage URL of the poster */
-    string_t img; /**< The image URL of the poster */
-    string_t ip; /**< The IP address of the  poster */
+    cf_string_t name; /**< The name of the poster */
+    cf_string_t email; /**< The email address of the poster */
+    cf_string_t hp; /**< The homepage URL of the poster */
+    cf_string_t img; /**< The image URL of the poster */
+    cf_string_t ip; /**< The IP address of the  poster */
   } user;
 
   cf_list_head_t flags;
@@ -104,10 +104,10 @@ struct s_forum {
     int fresh;
 
     /** The cache including invisible messages and threads */
-    string_t visible;
+    cf_string_t visible;
 
     /** The cache excluding invisible messages and threads  */
-    string_t invisible;
+    cf_string_t invisible;
   } cache;
 
   struct {
@@ -186,7 +186,7 @@ void cf_cftp_handler(int sockfd);
 int cf_shmdt(void *ptr);
 void *cf_shmat(int shmid,void *addr,int shmflag);
 
-void cf_generate_list(forum_t *forum,string_t *str,int del);
+void cf_generate_list(forum_t *forum,cf_string_t *str,int del);
 void cf_generate_shared_memory(forum_t *forum);
 void *cf_generate_cache(void *arg);
 

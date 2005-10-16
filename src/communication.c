@@ -41,13 +41,13 @@
 
 /* {{{ cf_get_threadlist */
 #ifndef CF_SHARED_MEM
-int cf_get_threadlist(array_t *ary,int sock,rline_t *tsd)
+int cf_get_threadlist(cf_array_t *ary,int sock,rline_t *tsd)
 #else
-int cf_get_threadlist(array_t *ary,void *ptr)
+int cf_get_threadlist(cf_array_t *ary,void *ptr)
 #endif
 {
   cl_thread_t thread;
-  array_init(ary,sizeof(thread),(void (*)(void *))cf_cleanup_thread);
+  cf_array_init(ary,sizeof(thread),(void (*)(void *))cf_cleanup_thread);
 
   #ifndef CF_SHARED_MEM
   while(cf_get_next_thread_through_sock(sock,tsd,&thread) == 0)
@@ -55,7 +55,7 @@ int cf_get_threadlist(array_t *ary,void *ptr)
   while((ptr = cf_get_next_thread_through_shm(ptr,&thread)) != NULL)
   #endif
   {
-    array_push(ary,&thread);
+    cf_array_push(ary,&thread);
     memset(&thread,0,sizeof(thread));
   }
 
@@ -85,13 +85,13 @@ int cf_get_next_thread_through_sock(int sock,rline_t *tsd,cl_thread_t *thr) {
       else if(cf_strncmp(line,"THREAD t",8) == 0) {
         chtmp = strstr(line,"m");
 
-        thr->messages           = fo_alloc(NULL,1,sizeof(message_t),FO_ALLOC_CALLOC);
+        thr->messages           = cf_alloc(NULL,1,sizeof(message_t),CF_ALLOC_CALLOC);
         thr->last               = thr->messages;
         thr->newest             = thr->messages;
-        thr->last->mid          = str_to_u_int64(chtmp+1);
+        thr->last->mid          = cf_str_to_uint64(chtmp+1);
         thr->messages->may_show = 1;
         thr->msg_len            = 1;
-        thr->tid                = str_to_u_int64(line+8);
+        thr->tid                = cf_str_to_uint64(line+8);
 
         cf_tpl_var_init(&thr->messages->hashvar,TPL_VARIABLE_HASH);
       }
@@ -99,16 +99,16 @@ int cf_get_next_thread_through_sock(int sock,rline_t *tsd,cl_thread_t *thr) {
         x = thr->last;
 
         if(thr->last) {
-          thr->last->next = fo_alloc(NULL,1,sizeof(message_t),FO_ALLOC_CALLOC);
+          thr->last->next = cf_alloc(NULL,1,sizeof(message_t),CF_ALLOC_CALLOC);
           thr->last->next->prev = thr->last;
           thr->last       = thr->last->next;
         }
         else {
-          thr->messages = fo_alloc(NULL,1,sizeof(message_t),FO_ALLOC_CALLOC);
+          thr->messages = cf_alloc(NULL,1,sizeof(message_t),CF_ALLOC_CALLOC);
           thr->last     = thr->messages;
         }
 
-        thr->last->mid      = str_to_u_int64(line+5);
+        thr->last->mid      = cf_str_to_uint64(line+5);
         thr->last->may_show = 1;
 
         thr->msg_len++;
@@ -127,17 +127,17 @@ int cf_get_next_thread_through_sock(int sock,rline_t *tsd,cl_thread_t *thr) {
         thr->last->date = strtoul(line+5,NULL,10);
         if(thr->last->date > thr->newest->date) thr->newest = thr->last;
       }
-      else if(cf_strncmp(line,"Author:",7) == 0)   str_char_set(&thr->last->author,line+7,tsd->rl_len-8);
-      else if(cf_strncmp(line,"Subject:",8) == 0)  str_char_set(&thr->last->subject,line+8,tsd->rl_len-9);
-      else if(cf_strncmp(line,"Category:",9) == 0) str_char_set(&thr->last->category,line+9,tsd->rl_len-10);
+      else if(cf_strncmp(line,"Author:",7) == 0)   cf_str_char_set(&thr->last->author,line+7,tsd->rl_len-8);
+      else if(cf_strncmp(line,"Subject:",8) == 0)  cf_str_char_set(&thr->last->subject,line+8,tsd->rl_len-9);
+      else if(cf_strncmp(line,"Category:",9) == 0) cf_str_char_set(&thr->last->category,line+9,tsd->rl_len-10);
       else if(cf_strncmp(line,"Level:",6) == 0)    thr->last->level = atoi(line+6);
-      else if(cf_strncmp(line,"Content:",8) == 0)  str_char_set(&thr->last->content,line+8,tsd->rl_len-9);
-      else if(cf_strncmp(line,"Homepage:",9) == 0) str_char_set(&thr->last->hp,line+9,tsd->rl_len-10);
-      else if(cf_strncmp(line,"Image:",6) == 0)    str_char_set(&thr->last->img,line+6,tsd->rl_len-7);
-      else if(cf_strncmp(line,"EMail:",6) == 0)    str_char_set(&thr->last->email,line+6,tsd->rl_len-7);
+      else if(cf_strncmp(line,"Content:",8) == 0)  cf_str_char_set(&thr->last->content,line+8,tsd->rl_len-9);
+      else if(cf_strncmp(line,"Homepage:",9) == 0) cf_str_char_set(&thr->last->hp,line+9,tsd->rl_len-10);
+      else if(cf_strncmp(line,"Image:",6) == 0)    cf_str_char_set(&thr->last->img,line+6,tsd->rl_len-7);
+      else if(cf_strncmp(line,"EMail:",6) == 0)    cf_str_char_set(&thr->last->email,line+6,tsd->rl_len-7);
       else if(cf_strncmp(line,"Votes-Good:",11) == 0) thr->last->votes_good = strtoul(line+11,NULL,10);
       else if(cf_strncmp(line,"Votes-Bad:",10) == 0)  thr->last->votes_bad = strtoul(line+10,NULL,10);
-      else if(cf_strncmp(line,"Remote-Addr:",12) == 0) str_char_set(&thr->last->remote_addr,line+12,tsd->rl_len-13);
+      else if(cf_strncmp(line,"Remote-Addr:",12) == 0) cf_str_char_set(&thr->last->remote_addr,line+12,tsd->rl_len-13);
       else if(cf_strncmp(line,"Visible:",8) == 0) {
         thr->last->invisible = line[8] == '0';
         if(thr->last->invisible) thr->msg_len--;
@@ -157,7 +157,7 @@ int cf_get_next_thread_through_sock(int sock,rline_t *tsd,cl_thread_t *thr) {
 
   if(ok) {
     /* {{{ build hierarchical structure */
-    thr->ht = fo_alloc(NULL,1,sizeof(*thr->ht),FO_ALLOC_CALLOC);
+    thr->ht = cf_alloc(NULL,1,sizeof(*thr->ht),CF_ALLOC_CALLOC);
     thr->ht->msg = thr->messages;
 
     if(thr->messages->next) cf_msg_build_hierarchical_structure(thr->ht,thr->messages->next);
@@ -205,9 +205,9 @@ void *cf_get_next_thread_through_shm(void *shm_ptr,cl_thread_t *thr) {
   ptr += sizeof(u_int32_t);
 
   for(post = 0;post < msglen;++post) {
-    if(thr->last == NULL) thr->messages = thr->last = fo_alloc(NULL,1,sizeof(message_t),FO_ALLOC_CALLOC);
+    if(thr->last == NULL) thr->messages = thr->last = cf_alloc(NULL,1,sizeof(message_t),CF_ALLOC_CALLOC);
     else {
-      thr->last->next = fo_alloc(NULL,1,sizeof(message_t),FO_ALLOC_CALLOC);
+      thr->last->next = cf_alloc(NULL,1,sizeof(message_t),CF_ALLOC_CALLOC);
       thr->last->next->prev = thr->last;
       thr->last       = thr->last->next;
     }
@@ -245,7 +245,7 @@ void *cf_get_next_thread_through_shm(void *shm_ptr,cl_thread_t *thr) {
     ptr += sizeof(u_int32_t);
 
     /* subject */
-    str_char_set(&thr->last->subject,ptr,val);
+    cf_str_char_set(&thr->last->subject,ptr,val);
     ptr += val + 1;
     /* }}} */
 
@@ -256,7 +256,7 @@ void *cf_get_next_thread_through_shm(void *shm_ptr,cl_thread_t *thr) {
 
     /* category */
     if(val) {
-      str_char_set(&thr->last->category,ptr,val);
+      cf_str_char_set(&thr->last->category,ptr,val);
       ptr += val + 1;
     }
     /* }}} */
@@ -264,7 +264,7 @@ void *cf_get_next_thread_through_shm(void *shm_ptr,cl_thread_t *thr) {
     /* {{{ the remote address */
     val = *((u_int32_t *)ptr) - 1;
     ptr += sizeof(u_int32_t);
-    str_char_set(&thr->last->remote_addr,ptr,val);
+    cf_str_char_set(&thr->last->remote_addr,ptr,val);
     ptr += val + 1;
     /* }}} */
 
@@ -274,7 +274,7 @@ void *cf_get_next_thread_through_shm(void *shm_ptr,cl_thread_t *thr) {
     ptr += sizeof(u_int32_t);
 
     /* content */
-    str_char_set(&thr->last->content,ptr,val);
+    cf_str_char_set(&thr->last->content,ptr,val);
     ptr += val + 1;
     /* }}} */
 
@@ -312,7 +312,7 @@ void *cf_get_next_thread_through_shm(void *shm_ptr,cl_thread_t *thr) {
     ptr += sizeof(u_int32_t);
 
     /* author */
-    str_char_set(&thr->last->author,ptr,val);
+    cf_str_char_set(&thr->last->author,ptr,val);
     ptr += val + 1;
     /* }}} */
 
@@ -323,7 +323,7 @@ void *cf_get_next_thread_through_shm(void *shm_ptr,cl_thread_t *thr) {
 
     /* email */
     if(val) {
-      str_char_set(&thr->last->email,ptr,val-1);
+      cf_str_char_set(&thr->last->email,ptr,val-1);
       ptr += val;
     }
     /* }}} */
@@ -335,7 +335,7 @@ void *cf_get_next_thread_through_shm(void *shm_ptr,cl_thread_t *thr) {
 
     /* homepage */
     if(val) {
-      str_char_set(&thr->last->hp,ptr,val-1);
+      cf_str_char_set(&thr->last->hp,ptr,val-1);
       ptr += val;
     }
     /* }}} */
@@ -347,14 +347,14 @@ void *cf_get_next_thread_through_shm(void *shm_ptr,cl_thread_t *thr) {
 
     /* image */
     if(val) {
-      str_char_set(&thr->last->img,ptr,val-1);
+      cf_str_char_set(&thr->last->img,ptr,val-1);
       ptr += val;
     }
     /* }}} */
   }
 
   /* {{{ build hierarchical structure */
-  thr->ht = fo_alloc(NULL,1,sizeof(*thr->ht),FO_ALLOC_CALLOC);
+  thr->ht = cf_alloc(NULL,1,sizeof(*thr->ht),CF_ALLOC_CALLOC);
   thr->ht->msg = thr->messages;
 
   if(thr->messages->next) cf_msg_build_hierarchical_structure(thr->ht,thr->messages->next);

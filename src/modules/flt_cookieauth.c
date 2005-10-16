@@ -38,9 +38,9 @@ static u_char *flt_cookieauth_name  = NULL;
 static u_char *flt_cookieauth_fn = NULL;
 
 /* {{{ flt_cookieauth_run */
-int flt_cookieauth_run(cf_hash_t *head,configuration_t *dc,configuration_t *vc) {
+int flt_cookieauth_run(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t *vc) {
   u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
-  name_value_t *v = cfg_get_first_value(dc,forum_name,"AuthMode");
+  cf_name_value_t *v = cf_cfg_get_first_value(dc,forum_name,"AuthMode");
   u_char *name,*path;
   cf_hash_t *cookies;
 
@@ -63,7 +63,7 @@ int flt_cookieauth_run(cf_hash_t *head,configuration_t *dc,configuration_t *vc) 
 /* }}} */
 
 /* {{{ flt_cookieauth_handle */
-int flt_cookieauth_handle(configfile_t *cfile,conf_opt_t *opt,const u_char *context,u_char **args,size_t argnum) {
+int flt_cookieauth_handle(cf_configfile_t *cfile,cf_conf_opt_t *opt,const u_char *context,u_char **args,size_t argnum) {
   if(flt_cookieauth_fn == NULL) flt_cookieauth_fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   if(!context || cf_strcmp(flt_cookieauth_fn,context) != 0) return 0;
 
@@ -78,17 +78,17 @@ void flt_cookieauth_cleanup(void) {
   if(flt_cookieauth_name) free(flt_cookieauth_name);
 }
 
-conf_opt_t flt_cookieauth_config[] = {
-  { "CookieName", flt_cookieauth_handle, CFG_OPT_CONFIG|CFG_OPT_LOCAL, NULL },
+cf_conf_opt_t flt_cookieauth_config[] = {
+  { "CookieName", flt_cookieauth_handle, CF_CFG_OPT_CONFIG|CF_CFG_OPT_LOCAL, NULL },
   { NULL, NULL, 0, NULL }
 };
 
-handler_config_t flt_cookieauth_handlers[] = {
+cf_handler_config_t flt_cookieauth_handlers[] = {
   { AUTH_HANDLER, flt_cookieauth_run },
   { 0, NULL }
 };
 
-module_config_t flt_cookieauth = {
+cf_module_config_t flt_cookieauth = {
   MODULE_MAGIC_COOKIE,
   flt_cookieauth_config,
   flt_cookieauth_handlers,

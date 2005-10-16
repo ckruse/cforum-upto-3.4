@@ -19,13 +19,13 @@
 #include "parsetpl.h"
 
 /* {{{ peek_next_nws_type */
-int peek_next_nws_type(array_t *data) {
+int peek_next_nws_type(cf_array_t *data) {
   size_t i;
   int t = -1;
   token_t *tok;
   
   for (i = 0; i < data->elements; i++) {
-    tok = (token_t *)array_element_at(data,i);
+    tok = (token_t *)cf_array_element_at(data,i);
     if(tok->type == PARSETPL_TOK_WHITESPACE) continue;
 
     t = tok->type;
@@ -38,13 +38,13 @@ int peek_next_nws_type(array_t *data) {
 
 /* {{{ peek_for_hash */
 // returns: 0 - no hash, 1 - hash, -1 invalid tag
-int peek_for_hash(array_t *data) {
+int peek_for_hash(cf_array_t *data) {
   size_t i;
   token_t *tok;
   int had_str = 0;
   
   for (i = 0; i < data->elements; i++) {
-    tok = (token_t *)array_element_at(data,i);
+    tok = (token_t *)cf_array_element_at(data,i);
     if(tok->type == PARSETPL_TOK_WHITESPACE) continue;
 
     if(tok->type == PARSETPL_TOK_STRING) {
