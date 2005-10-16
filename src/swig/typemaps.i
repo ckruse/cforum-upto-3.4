@@ -14,7 +14,7 @@ typedef unsigned char u_char;
 
   tempav = (AV*)SvRV($input);
   len = av_len(tempav);
-  $1 = (u_char **)fo_alloc(NULL,len+2,sizeof(u_char *),FO_ALLOC_MALLOC);
+  $1 = (u_char **)cf_alloc(NULL,len+2,sizeof(u_char *),CF_ALLOC_MALLOC);
   for(i=0;i<=len;++i) {
     tv = av_fetch(tempav, i, 0);
     $1[i] = (u_char *) SvPV(*tv,PL_na);
@@ -35,7 +35,7 @@ typedef unsigned char u_char;
   int i = 0,len = 0;
   /* Figure out how many elements we have */
   while($1[len]) len++;
-  svs = (SV **)fo_alloc(NULL,len,sizeof(SV *),FO_ALLOC_MALLOC);
+  svs = (SV **)cf_alloc(NULL,len,sizeof(SV *),CF_ALLOC_MALLOC);
   for (i = 0; i < len ; i++) {
     svs[i] = sv_newmortal();
     sv_setpv((SV*)svs[i],$1[i]);

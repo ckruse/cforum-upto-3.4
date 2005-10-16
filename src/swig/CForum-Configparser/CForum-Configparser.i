@@ -34,13 +34,13 @@ static SV *callback = NULL;
 typedef struct s_xs_conf {
   SV *data;
   SV *callback;
-} xs_conf_t;
+} cf_xs_conf_t;
 
 /* {{{ xs_callback */
-int xs_callback(configfile_t *file,conf_opt_t *entry,const u_char *context,u_char **args,size_t len) {
+int xs_callback(cf_configfile_t *file,cf_conf_opt_t *entry,const u_char *context,u_char **args,size_t len) {
   size_t i;
   int ret;
-  xs_conf_t *data = (xs_conf_t *)entry->data;
+  cf_xs_conf_t *data = (cf_xs_conf_t *)entry->data;
 
   dSP;
 
@@ -78,7 +78,7 @@ int xs_callback(configfile_t *file,conf_opt_t *entry,const u_char *context,u_cha
 /* }}} */
 
 /* {{{ xs_callback_dflt */
-int xs_callback_dflt(configfile_t *cfile,const u_char *context,u_char *name,u_char **args,size_t len) {
+int xs_callback_dflt(cf_configfile_t *cfile,const u_char *context,u_char *name,u_char **args,size_t len) {
   size_t i;
   int ret;
 
@@ -119,7 +119,7 @@ int xs_callback_dflt(configfile_t *cfile,const u_char *context,u_char *name,u_ch
 %}
 
 %init %{
-  cfg_init();
+  cf_cfg_init();
   init_modules();
 %}
 
@@ -127,19 +127,19 @@ int xs_callback_dflt(configfile_t *cfile,const u_char *context,u_char *name,u_ch
 %include "../typemaps.i";
 
 /* {{{ typemap for configuration option */
-%typemap(out) conf_opt_t * {
+%typemap(out) cf_conf_opt_t * {
   AV *tempav,*tempav1;
   I32 len,len1;
   SV  **tv,**tv1;
   int i;
-  xs_conf_t conf;
+  cf_xs_conf_t conf;
 
   if(!SvROK($input)) croak("Argument $argnum is not a reference.");
   if(SvTYPE(SvRV($input)) != SVt_PVAV) croak("Argument $argnum is not an array.");
 
   tempav = (AV*)SvRV($input);
   len = av_len(tempav);
-  $1 = (conf_opt_t *)fo_alloc(NULL,len+2,sizeof(conf_opt_t *),FO_ALLOC_MALLOC);
+  $1 = (cf_conf_opt_t *)cf_alloc(NULL,len+2,sizeof(cf_conf_opt_t *),CF_ALLOC_MALLOC);
 
   for(i=0;i<=len;++i) {
     tv = av_fetch(tempav, i, 0);
@@ -189,75 +189,75 @@ int xs_callback_dflt(configfile_t *cfile,const u_char *context,u_char *name,u_ch
 /* }}} */
 
 
-/* {{{ configfile_t declarations */
+/* {{{ cf_configfile_t declarations */
 typedef struct s_configfile {
   char *filename;
-} configfile_t;
-%extend configfile_t {
-  configfile_t(char *filename);
-  int register_options(conf_opt_t *opts);
+} cf_configfile_t;
+%extend cf_configfile_t {
+  cf_configfile_t(char *filename);
+  int register_options(cf_conf_opt_t *opts);
   int read(int mode,SV *cllbck = NULL);
 }
 
 %{
-configfile_t *new_configfile_t(u_char *filename) {
-  configfile_t *cfg = malloc(sizeof(*cfg));
-  cfg_init_file(cfg,filename);
+cf_configfile_t *new_cf_configfile_t(u_char *filename) {
+  cf_configfile_t *cfg = malloc(sizeof(*cfg));
+  cf_cfg_init_file(cfg,filename);
   return cfg;
 }
 
-int configfile_t_register_options(configfile_t *self,conf_opt_t *opts) {
-  return cfg_register_options(self,opts);
+int cf_configfile_t_register_options(cf_configfile_t *self,cf_conf_opt_t *opts) {
+  return cf_cfg_register_options(self,opts);
 }
 
-int configfile_t_read(configfile_t *self,int mode,SV *cllbck) {
+int cf_configfile_t_read(cf_configfile_t *self,int mode,SV *cllbck) {
   int ret;
 
   if(cllbck) {
     callback = cllbck;
-    ret = read_config(self,xs_callback_dflt,mode);
+    ret = cf_read_config(self,xs_callback_dflt,mode);
   }
-  else ret = read_config(self,NULL,mode);
+  else ret = cf_read_config(self,NULL,mode);
 
   return ret;
 }
 %}
 /* }}} */
 
-/* {{{ configuration_t declarations */
-typedef struct s_configuration {} configuration_t;
-%extend configuration_t {
-  name_value_t *get_first_value(const char *context,const char *name);
+/* {{{ cf_configuration_t declarations */
+typedef struct s_configuration {} cf_configuration_t;
+%extend cf_configuration_t {
+  cf_name_value_t *get_first_value(const char *context,const char *name);
   cf_list_head_t *get_value(const char *context,const char *name);
 }
 
 %{
-name_value_t *configuration_t_get_first_value(configuration_t *self,const u_char *context,const u_char *name) {
-  return cfg_get_first_value(self,context,name);
+cf_name_value_t *cf_configuration_t_get_first_value(cf_configuration_t *self,const u_char *context,const u_char *name) {
+  return cf_cfg_get_first_value(self,context,name);
 }
 
-cf_list_head_t *configuration_t_get_value(configuration_t *self,const u_char *context,const u_char *name) {
-  return cfg_get_value(self,context,name);
+cf_list_head_t *cf_configuration_t_get_value(cf_configuration_t *self,const u_char *context,const u_char *name) {
+  return cf_cfg_get_value(self,context,name);
 }
 
-array_t *configuration_t_get_conf_file(const u_char **which,size_t llen) {
-  return get_conf_file(which,llen);
+cf_array_t *cf_configuration_t_get_conf_file(const u_char **which,size_t llen) {
+  return cf_get_conf_file(which,llen);
 }
 %}
 /* }}} */
 
 /* {{{ misc declarations */
-array_t *get_conf_file(const u_char **which,size_t llen);
+cf_array_t *cf_get_conf_file(const u_char **which,size_t llen);
 typedef struct s_array {
   const int elements;
-} array_t;
+} cf_array_t;
 
-%extend array_t {
+%extend cf_array_t {
   char *element_at(size_t i);
 }
 %{
-u_char *array_t_element_at(array_t *array,size_t i) {
-  return *((u_char **)array_element_at((array_t *)array,i));
+u_char *cf_array_t_element_at(cf_array_t *array,size_t i) {
+  return *((u_char **)array_element_at((cf_array_t *)array,i));
 }
 %}
 
@@ -265,14 +265,14 @@ typedef struct s_name_value {
   %immutable;
   char *name;
   size_t valnum;
-} name_value_t;
+} cf_name_value_t;
 
-%extend name_value_t {
+%extend cf_name_value_t {
   char *get_val(size_t i);
 }
 
 %{
-u_char *name_value_t_get_val(name_value_t *self,size_t i) {
+u_char *cf_name_value_t_get_val(cf_name_value_t *self,size_t i) {
   if(i < self->valnum) return self->values[i];
   return NULL;
 }
@@ -282,19 +282,19 @@ u_char *name_value_t_get_val(name_value_t *self,size_t i) {
 
 /* {{{ variables */
 %immutable;
-extern configuration_t fo_default_conf;
-extern configuration_t fo_server_conf;
-extern configuration_t fo_view_conf;
-extern configuration_t fo_arcview_conf;
-extern configuration_t fo_post_conf;
-extern configuration_t fo_vote_conf;
+extern cf_configuration_t fo_default_conf;
+extern cf_configuration_t fo_server_conf;
+extern cf_configuration_t fo_view_conf;
+extern cf_configuration_t fo_arcview_conf;
+extern cf_configuration_t fo_post_conf;
+extern cf_configuration_t fo_vote_conf;
 
-extern conf_opt_t default_options[];
-extern conf_opt_t fo_view_options[];
-extern conf_opt_t fo_post_options[];
-extern conf_opt_t fo_server_options[];
-extern conf_opt_t fo_arcview_options[];
-extern conf_opt_t fo_vote_options[];
+extern cf_conf_opt_t default_options[];
+extern cf_conf_opt_t fo_view_options[];
+extern cf_conf_opt_t fo_post_options[];
+extern cf_conf_opt_t fo_server_options[];
+extern cf_conf_opt_t fo_arcview_options[];
+extern cf_conf_opt_t fo_vote_options[];
 /* }}} */
 
 // eof

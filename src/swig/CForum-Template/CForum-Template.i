@@ -32,7 +32,7 @@ typedef struct s_cf_tpl_variable {
 /* {{{ cf_tpl_variable_t */
 %{
 cf_tpl_variable_t *new_cf_tpl_variable_t(int type) {
-  cf_tpl_variable_t *var = fo_alloc(NULL,1,sizeof(*var),FO_ALLOC_MALLOC);
+  cf_tpl_variable_t *var = cf_alloc(NULL,1,sizeof(*var),CF_ALLOC_MALLOC);
 
   cf_tpl_var_init(var,type);
   return var;
@@ -83,7 +83,7 @@ typedef struct s_cf_template {
 /* {{{ cf_template_t */
 %{
 cf_template_t *new_cf_template_t(const char *filename) {
-  cf_template_t *tpl = fo_alloc(NULL,1,sizeof(*tpl),FO_ALLOC_MALLOC);
+  cf_template_t *tpl = cf_alloc(NULL,1,sizeof(*tpl),CF_ALLOC_MALLOC);
 
   if(cf_tpl_init(tpl,filename) == -1) {
     free(tpl);
