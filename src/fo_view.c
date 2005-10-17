@@ -551,7 +551,7 @@ int main(int argc,char *argv[],char *env[]) {
   };
 
   int ret;
-  u_char  *ucfg,*m  = NULL,*t = NULL,*UserName,*fname,*mode = NULL;
+  u_char  *ucfg,*UserName,*fname;
   cf_array_t *cfgfiles;
   cf_hash_t *head;
   cf_configfile_t conf,dconf;
@@ -562,6 +562,8 @@ int main(int argc,char *argv[],char *env[]) {
   cf_readmode_t rm_infos;
 
   u_int64_t tid = 0,mid = 0;
+
+  cf_string_t *m  = NULL,*t = NULL,*mode = NULL;
   /* }}} */
 
   /* {{{ set signal handler for SIGSEGV (for error reporting) */
@@ -727,12 +729,10 @@ int main(int argc,char *argv[],char *env[]) {
         mode = cf_cgi_get(head,"mode");
       }
 
-      if(t) tid = cf_str_to_uint64(t);
-      if(m) mid = cf_str_to_uint64(m);
+      if(t) tid = cf_str_to_uint64(t->content);
+      if(m) mid = cf_str_to_uint64(m->content);
 
-      if(mode && cf_strcmp(mode,"xmlhttp") == 0 && t) {
-        show_xmlhttp_thread(head,sock,tid,mid);
-      }
+      if(mode && cf_strcmp(mode->content,"xmlhttp") == 0 && t) show_xmlhttp_thread(head,sock,tid,mid);
       else {
         if(tid) show_posting(head,sock,tid,mid);
         else    show_threadlist(sock,head);

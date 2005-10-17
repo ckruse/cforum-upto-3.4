@@ -55,7 +55,8 @@ int flt_checkregisteredname_execute(cf_hash_t *head,cf_configuration_t *dc,cf_co
 {
   u_char *username = cf_hash_get(GlobalValues,"UserName",8);
   u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
-  u_char *name,*line;
+  u_char *line;
+  cf_string_t *name;
 
   rline_t rsd;
 
@@ -70,7 +71,7 @@ int flt_checkregisteredname_execute(cf_hash_t *head,cf_configuration_t *dc,cf_co
   cf_str_chars_append(&str,"SELECT ",7);
   cf_str_chars_append(&str,forum_name,strlen(forum_name));
   cf_str_chars_append(&str,"\nAUTH CHECK\nName: ",18);
-  cf_str_chars_append(&str,name,strlen(name));
+  cf_str_str_append(&str,name);
   cf_str_char_append(&str,'\n');
 
   if(username) {

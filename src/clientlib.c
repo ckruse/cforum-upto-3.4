@@ -606,6 +606,7 @@ u_char *cf_get_link(const u_char *link,u_int64_t tid,u_int64_t mid) {
   cf_readmode_t *rm;
   cf_uri_flag_t *flag;
   cf_list_element_t *elem;
+  size_t len;
 
   cf_str_init_growth(&buff,128);
 
@@ -657,14 +658,16 @@ u_char *cf_get_link(const u_char *link,u_int64_t tid,u_int64_t mid) {
     }
 
     if(flag->encode) {
-      tmp = cf_cgi_url_encode(flag->name,strlen(flag->name));
-      cf_str_chars_append(&buff,tmp,strlen(tmp));
+      len = strlen(flag->name);
+      tmp = cf_cgi_url_encode(flag->name,&len);
+      cf_str_chars_append(&buff,tmp,len);
       free(tmp);
 
       cf_str_char_append(&buff,'=');
 
-      tmp = cf_cgi_url_encode(flag->val,strlen(flag->val));
-      cf_str_chars_append(&buff,tmp,strlen(tmp));
+      len = strlen(flag->val);
+      tmp = cf_cgi_url_encode(flag->val,&len);
+      cf_str_chars_append(&buff,tmp,len);
       free(tmp);
     }
     else {
@@ -713,6 +716,7 @@ u_char *cf_advanced_get_link(const u_char *link,u_int64_t tid,u_int64_t mid,u_ch
   va_list ap;
   cf_uri_flag_t *flag;
   cf_list_element_t *elem;
+  size_t namlen,vallen;
 
   cf_str_init_growth(&buff,128);
 
@@ -748,11 +752,13 @@ u_char *cf_advanced_get_link(const u_char *link,u_int64_t tid,u_int64_t mid,u_ch
   /* {{{ append uri arguments */
   va_start(ap,l);
   for(i=0;i<plen;++i) {
-    tmp = va_arg(ap,u_char *);
-    name = cf_cgi_url_encode(tmp,strlen(tmp));
+    tmp   = va_arg(ap,u_char *);
+    namlen= strlen(tmp);
+    name  = cf_cgi_url_encode(tmp,&namlen);
 
-    tmp = va_arg(ap,u_char *);
-    value = cf_cgi_url_encode(tmp,strlen(tmp));
+    tmp   = va_arg(ap,u_char *);
+    vallen= strlen(tmp);
+    value = cf_cgi_url_encode(tmp,&vallen);
 
     if(qm == 0) {
       cf_str_char_append(&buff,'?');
@@ -760,9 +766,9 @@ u_char *cf_advanced_get_link(const u_char *link,u_int64_t tid,u_int64_t mid,u_ch
     }
     else cf_str_char_append(&buff,'&');
 
-    cf_str_chars_append(&buff,name,strlen(name));
+    cf_str_chars_append(&buff,name,namlen);
     cf_str_char_append(&buff,'=');
-    cf_str_chars_append(&buff,value,strlen(value));
+    cf_str_chars_append(&buff,value,vallen);
 
     free(name);
     free(value);
@@ -777,14 +783,16 @@ u_char *cf_advanced_get_link(const u_char *link,u_int64_t tid,u_int64_t mid,u_ch
     cf_str_char_append(&buff,'&');
 
     if(flag->encode) {
-      tmp = cf_cgi_url_encode(flag->name,strlen(flag->name));
-      cf_str_chars_append(&buff,tmp,strlen(tmp));
+      namlen = strlen(flag->name);
+      tmp    = cf_cgi_url_encode(flag->name,&namlen);
+      cf_str_chars_append(&buff,tmp,namlen);
       free(tmp);
 
       cf_str_char_append(&buff,'=');
 
-      tmp = cf_cgi_url_encode(flag->val,strlen(flag->val));
-      cf_str_chars_append(&buff,tmp,strlen(tmp));
+      vallen = strlen(flag->val);
+      tmp    = cf_cgi_url_encode(flag->val,&vallen);
+      cf_str_chars_append(&buff,tmp,vallen);
       free(tmp);
     }
     else {

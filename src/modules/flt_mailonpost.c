@@ -97,7 +97,7 @@ void flt_mailonpost_destroy(DB *db) {
 
 /* {{{ flt_mailonpost_init_handler */
 int flt_mailonpost_init_handler(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t *vc) {
-  u_char *val,*email,buff[256],*user = cf_hash_get(GlobalValues,"UserName",8),**list = NULL;
+  u_char *email,buff[256],*user = cf_hash_get(GlobalValues,"UserName",8),**list = NULL;
   DB *db = NULL,*udb = NULL;
   DBT key,data;
   size_t n,i;
@@ -106,24 +106,28 @@ int flt_mailonpost_init_handler(cf_hash_t *head,cf_configuration_t *dc,cf_config
   cf_string_t str;
   cf_name_value_t *v = NULL;
 
+  cf_string_t *val,*cgival;
+
   if(!head) return FLT_DECLINE;
 
   if((val = cf_cgi_get(head,"t")) == NULL) {
     if((val = cf_cgi_get(head,"fupto")) == NULL) return FLT_DECLINE;
   }
 
-  tid = cf_str_to_uint64(val);
+  tid = cf_str_to_uint64(val->content);
 
-  if((val = cf_cgi_get(head,"mailonpost")) != NULL && (cf_strcmp(val,"yes") == 0 || cf_strcmp(val,"no") == 0) && tid != 0) {
+  if((val = cf_cgi_get(head,"mailonpost")) != NULL && (cf_strcmp(val->content,"yes") == 0 || cf_strcmp(val->content,"no") == 0) && tid != 0) {
     /* {{{ get email address; either from CGI parameter or from config file, depends */
-    if((email = cf_cgi_get(head,"EMail")) == NULL) {
+    if((cgival = cf_cgi_get(head,"EMail")) == NULL) {
       if(user == NULL) return FLT_DECLINE;
+
       if(flt_mailonpost_uemail) email = flt_mailonpost_uemail;
       else {
         if((v = cf_cfg_get_first_value(vc,flt_mailonpost_fn,"EMail")) == NULL) return FLT_DECLINE;
         email = v->values[0];
       }
     }
+    else email = cgival->content;
     /* }}} */
 
     if(flt_mailonpost_create(&db,flt_mailonpost_dbname) == -1) return FLT_DECLINE;
@@ -151,7 +155,7 @@ int flt_mailonpost_init_handler(cf_hash_t *head,cf_configuration_t *dc,cf_config
         return FLT_DECLINE;
       }
       else {
-        if(cf_strcmp(val,"yes") == 0) {
+        if(cf_strcmp(val->content,"yes") == 0) {
           cf_str_chars_append(&str,email,strlen(email));
 
           data.data = "1";
@@ -171,7 +175,7 @@ int flt_mailonpost_init_handler(cf_hash_t *head,cf_configuration_t *dc,cf_config
     else {
       cf_str_char_set(&str,data.data,data.size);
 
-      if(cf_strcmp(val,"yes") == 0) {
+      if(cf_strcmp(val->content,"yes") == 0) {
         /* {{{ check if mail already exists in data entry */
         n = cf_split(str.content,"\x7F",&list);
         for(i=0,ret=0;i<n;++i) {

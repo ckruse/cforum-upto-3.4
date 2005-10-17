@@ -85,18 +85,19 @@ int flt_oc_exec_xmlhttp(cf_hash_t *cgi,cf_configuration_t *dc,cf_configuration_t
 int flt_oc_exec_xmlhttp(cf_hash_t *cgi,cf_configuration_t *dc,cf_configuration_t *vc,void *shm)
 #endif
 {
-  u_char *val,buff[512];
+  u_char buff[512];
   u_int64_t tid;
   int ret;
   char one[] = "1";
   size_t len;
+  cf_string_t *val;
 
   DBT key,data;
 
   if(cgi == NULL || flt_oc_dbfile == NULL) return FLT_DECLINE;
 
-  if((val = cf_cgi_get(cgi,"a")) != NULL && (cf_strcmp(val,"open") == 0 || cf_strcmp(val,"close") == 0)) {
-    if((val = cf_cgi_get(cgi,"oc_t")) != NULL && (tid = cf_str_to_uint64(val)) != 0) {
+  if((val = cf_cgi_get(cgi,"a")) != NULL && (cf_strcmp(val->content,"open") == 0 || cf_strcmp(val->content,"close") == 0)) {
+    if((val = cf_cgi_get(cgi,"oc_t")) != NULL && (tid = cf_str_to_uint64(val->content)) != 0) {
       /* {{{ put tid to database or remove it from database */
       len = snprintf(buff,512,"%llu",tid);
 
@@ -239,12 +240,12 @@ int flt_oc_validate(cf_hash_t *cgi,cf_configuration_t *dc,cf_configuration_t *vc
 int flt_oc_validate(cf_hash_t *cgi,cf_configuration_t *dc,cf_configuration_t *vc,time_t last_modified,void *sock)
 #endif
 {
-  u_char *val;
+  cf_string_t *val;
 
   if(cgi) {
     if((val = cf_cgi_get(cgi,"a")) != NULL) {
       if((val = cf_cgi_get(cgi,"oc_t")) != NULL) {
-        if(cf_str_to_uint64(val) != 0) return FLT_EXIT;
+        if(cf_str_to_uint64(val->content) != 0) return FLT_EXIT;
       }
     }
   }

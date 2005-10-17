@@ -46,7 +46,8 @@
 int flt_cgiconfig_post(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t *vc,cl_thread_t *thread,cf_template_t *tpl) {
   u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   u_char *UserName = cf_hash_get(GlobalValues,"UserName",8);
-  u_char *link,*tmp = NULL;
+  u_char *link;
+  cf_string_t *tmp = NULL;
 
   size_t l;
 
@@ -68,7 +69,7 @@ int flt_cgiconfig_post(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t
   cf_set_variable(tpl,cs,"showthread_full",link,l,1);
   free(link);
 
-  if(tmp) cf_add_static_uri_flag("showthread",tmp,0);
+  if(tmp) cf_add_static_uri_flag("showthread",tmp->content,0);
   /* }}} */
 
   /* {{{ ReadMode links */
@@ -86,7 +87,7 @@ int flt_cgiconfig_post(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t
   cf_set_variable(tpl,cs,"readmode_thread",link,l,1);
   free(link);
 
-  if(tmp) cf_add_static_uri_flag("readmode",tmp,0);
+  if(tmp) cf_add_static_uri_flag("readmode",tmp->content,0);
   /* }}} */
 
   return FLT_OK;
@@ -96,7 +97,8 @@ int flt_cgiconfig_post(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t
 /* {{{ flt_cgiconfig_init_handler */
 int flt_cgiconfig_init_handler(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t *vc) {
   cf_name_value_t *v;
-  u_char *val,*forum_name;
+  u_char *forum_name;
+  cf_string_t *val;
 
   if(head) {
     forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
@@ -104,39 +106,39 @@ int flt_cgiconfig_init_handler(cf_hash_t *head,cf_configuration_t *dc,cf_configu
     if((val = cf_cgi_get(head,"showthread")) != NULL) {
       v = cf_cfg_get_first_value(vc,forum_name,"ShowThread");
 
-      if(cf_strcmp(val,"part") == 0) {
+      if(cf_strcmp(val->content,"part") == 0) {
         free(v->values[0]);
         v->values[0] = strdup("partitial");
       }
-      else if(cf_strcmp(val,"none") == 0) {
+      else if(cf_strcmp(val->content,"none") == 0) {
         free(v->values[0]);
         v->values[0] = strdup("none");
       }
-      else if(cf_strcmp(val,"full") == 0) {
+      else if(cf_strcmp(val->content,"full") == 0) {
         free(v->values[0]);
         v->values[0] = strdup("full");
       }
 
-      cf_add_static_uri_flag("showthread",val,0);
+      cf_add_static_uri_flag("showthread",val->content,0);
     }
 
     if((val = cf_cgi_get(head,"readmode")) != NULL) {
       v = cf_cfg_get_first_value(vc,forum_name,"ReadMode");
 
-      if(cf_strcmp(val,"list") == 0) {
+      if(cf_strcmp(val->content,"list") == 0) {
         free(v->values[0]);
         v->values[0] = strdup("list");
       }
-      else if(cf_strcmp(val,"nested") == 0) {
+      else if(cf_strcmp(val->content,"nested") == 0) {
         free(v->values[0]);
         v->values[0] = strdup("nested");
       }
-      else if(cf_strcmp(val,"thread") == 0) {
+      else if(cf_strcmp(val->content,"thread") == 0) {
         free(v->values[0]);
         v->values[0] = strdup("thread");
       }
 
-      cf_add_static_uri_flag("readmode",val,0);
+      cf_add_static_uri_flag("readmode",val->content,0);
     }
   }
 

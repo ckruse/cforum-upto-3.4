@@ -209,7 +209,7 @@ int flt_moderated_gogogo(cf_hash_t *cgi,cf_configuration_t *dc,cf_configuration_
 int flt_moderated_gogogo(cf_hash_t *cgi,cf_configuration_t *dc,cf_configuration_t *vc,void *ptr)
 #endif
 {
-  u_char *action = NULL,*tid,*mid;
+  cf_string_t *action = NULL,*tid,*mid;
   int si = cf_hash_get(GlobalValues,"ShowInvisible",13) != NULL,ret;
   cf_string_t str;
   DBT key,data;
@@ -218,24 +218,24 @@ int flt_moderated_gogogo(cf_hash_t *cgi,cf_configuration_t *dc,cf_configuration_
 
   if(si == 0 || cgi == NULL) return FLT_DECLINE;
 
-  if((action = cf_cgi_get(cgi,"a")) != NULL && (cf_strcmp(action,"approve") == 0 || cf_strcmp(action,"unapprove") == 0)) {
+  if((action = cf_cgi_get(cgi,"a")) != NULL && (cf_strcmp(action->content,"approve") == 0 || cf_strcmp(action->content,"unapprove") == 0)) {
     tid = cf_cgi_get(cgi,"t");
     mid = cf_cgi_get(cgi,"m");
 
     if(!tid || !mid) return FLT_DECLINE;
-    if(cf_str_to_uint64(tid) == 0 || cf_str_to_uint64(mid) == 0) return FLT_DECLINE;
+    if(cf_str_to_uint64(tid->content) == 0 || cf_str_to_uint64(mid->content) == 0) return FLT_DECLINE;
 
     cf_str_init_growth(&str,50);
     cf_str_char_append(&str,'t');
-    cf_str_chars_append(&str,tid,strlen(tid));
+    cf_str_chars_append(&str,tid->content,tid->len);
     cf_str_char_append(&str,'m');
-    cf_str_chars_append(&str,mid,strlen(mid));
+    cf_str_chars_append(&str,mid->content,mid->len);
 
     memset(&key,0,sizeof(key));
     memset(&data,0,sizeof(data));
 
     /* {{{ approve */
-    if(cf_strcmp(action,"approve") == 0) {
+    if(cf_strcmp(action->content,"approve") == 0) {
       if(flt_mod_getdb(0) == FLT_EXIT) return FLT_DECLINE;
 
       key.data = str.content;
@@ -250,7 +250,7 @@ int flt_moderated_gogogo(cf_hash_t *cgi,cf_configuration_t *dc,cf_configuration_
     }
     /* }}} */
     /* {{{ unapprove */
-    else if(cf_strcmp(action,"unapprove") == 0) {
+    else if(cf_strcmp(action->content,"unapprove") == 0) {
       if(flt_mod_getdb(0) == FLT_EXIT) return FLT_DECLINE;
 
       key.data = str.content;

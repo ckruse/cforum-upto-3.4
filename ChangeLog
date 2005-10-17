@@ -1,3 +1,9 @@
+2005-10-17 Christian Kruse <ckruse@wwwtech.de>
+	* *: I changed the CGI library to a better interface. Now
+		cf_cgi_url_{encode,decode}() give back the length of the new string and the
+		CGI library works internally and externally with cf_string_t for CGI values.
+		This is the first step for handling of multipart/form-data forms.
+
 2005-10-16 Christian Kruse <ckruse@wwwtech.de>
 	* conf/modules.de.xml: Fixed regexes so that they are compatible to regexes in
 		JS

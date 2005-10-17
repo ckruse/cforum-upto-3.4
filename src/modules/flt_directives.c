@@ -210,8 +210,8 @@ void flt_directives_generate_uri(const u_char *uri,const u_char *title,cf_string
   tmp2 = htmlentities(uri,1);
   len = strlen(tmp2);
 
-  tmp1 = cf_cgi_url_encode(tmp2,len);
-  len2 = strlen(tmp1);
+  len2 = len;
+  tmp1 = cf_cgi_url_encode(tmp2,&len2);
 
   if(flt_directives_rpl && title == NULL) {
     title = strdup(tmp2);

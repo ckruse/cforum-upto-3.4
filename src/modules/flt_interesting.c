@@ -88,7 +88,6 @@ int flt_interesting_mark_thread(cf_hash_t *head,cf_configuration_t *dc,cf_config
 int flt_interesting_mark_thread(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t *vc,void *sock)
 #endif
 {
-  u_char *a;
   u_int64_t tid;
   DBT key,data;
   char one[] = "1";
@@ -96,14 +95,15 @@ int flt_interesting_mark_thread(cf_hash_t *head,cf_configuration_t *dc,cf_config
   char buff[256];
   size_t len;
   cf_cgi_param_t *parm;
+  cf_string_t *a;
 
   if(head && flt_interesting_file) {
     if((a = cf_cgi_get(head,"a")) != NULL) {
-      if(cf_strcmp(a,"mi") == 0) {
+      if(cf_strcmp(a->content,"mi") == 0) {
         if((parm = cf_cgi_get_multiple(head,"mit")) != NULL) {
           /* {{{ put tids to database */
           for(;parm;parm=parm->next) {
-            tid = cf_str_to_uint64(parm->value);
+            tid = cf_str_to_uint64(parm->value.content);
 
             if(tid) {
               memset(&key,0,sizeof(key));
@@ -140,11 +140,11 @@ int flt_interesting_mark_thread(cf_hash_t *head,cf_configuration_t *dc,cf_config
           /* }}} */
         }
       }
-      else if(cf_strcmp(a,"rmi") == 0) {
+      else if(cf_strcmp(a->content,"rmi") == 0) {
         if((parm = cf_cgi_get_multiple(head,"mit")) != NULL) {
           /* {{{ put tids to database */
           for(;parm;parm=parm->next) {
-            tid = cf_str_to_uint64(parm->value);
+            tid = cf_str_to_uint64(parm->value.content);
 
             if(tid) {
               memset(&key,0,sizeof(key));

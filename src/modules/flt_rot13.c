@@ -91,13 +91,13 @@ int flt_rot13_execute(cf_configuration_t *fdc,cf_configuration_t *fvc,cl_thread_
 
 /* {{{ flt_rot13_init */
 int flt_rot13_init(cf_hash_t *cgi,cf_configuration_t *dc,cf_configuration_t *vc) {
-  u_char *ptr;
+  cf_string_t *ptr;
 
   cf_html_register_directive("rot13",flt_rot13_execute,CF_HTML_DIR_TYPE_ARG|CF_HTML_DIR_TYPE_BLOCK);
 
   if(cgi) {
     if((ptr = cf_cgi_get(cgi,"rot13")) != NULL) {
-      flt_rot13_decoded = cf_strcmp(ptr,"decoded") == 0;
+      flt_rot13_decoded = cf_strcmp(ptr->content,"decoded") == 0;
     }
   }
 

@@ -960,7 +960,7 @@ void _do_html(hierarchical_node_t *ary,cl_thread_t *thread,int ShowInvisible,con
 
 /* {{{ _starthread_tlist */
 int _starthread_tlist(cl_thread_t *thread,int ShowInvisible,const u_char *linktpl,cf_name_value_t *cs,cf_name_value_t *dft,cf_name_value_t *locale) {
-  hierarchical_node_t ary,*ary1,*tmp = NULL;
+  hierarchical_node_t ary,*ary1;
   size_t i;
   cf_tpl_variable_t tpl_ary;
 

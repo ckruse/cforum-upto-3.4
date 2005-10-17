@@ -217,18 +217,21 @@ int flt_phpsessauth_run(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_
   cf_name_value_t *v = cf_cfg_get_first_value(dc,fn,"AuthMode");
   u_char *name = NULL,*path;
   cf_hash_t *cookies;
+  cf_string_t *sess;
 
   if(!flt_phpsessauth_vname) return FLT_DECLINE;
   if(!v || !v->values[0] || cf_strcmp(v->values[0],"phpsess") != 0) return FLT_DECLINE;
 
-  if(head == NULL || (flt_phpsessauth_sid = cf_cgi_get(head,flt_phpsessauth_sessname)) == NULL) {
+  sess = cf_cgi_get(head,flt_phpsessauth_sessname);
+  if(head == NULL || (flt_phpsessauth_sid = sess->content) == NULL) {
     cookies = cf_hash_new(cf_cgi_destroy_entry);
     cf_cgi_parse_cookies(cookies);
 
-    if((flt_phpsessauth_sid = cf_cgi_get(cookies,flt_phpsessauth_sessname)) == NULL) {
+    if((sess = cf_cgi_get(cookies,flt_phpsessauth_sessname)) == NULL) {
       cf_hash_destroy(cookies);
       return FLT_DECLINE;
     }
+    else flt_phpsessauth_sid = sess->content;
 
     cf_hash_destroy(cookies);
   }

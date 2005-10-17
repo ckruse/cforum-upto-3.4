@@ -41,8 +41,9 @@ static u_char *flt_cookieauth_fn = NULL;
 int flt_cookieauth_run(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t *vc) {
   u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   cf_name_value_t *v = cf_cfg_get_first_value(dc,forum_name,"AuthMode");
-  u_char *name,*path;
+  u_char *path;
   cf_hash_t *cookies;
+  cf_string_t *name;
 
   if(!v || !v->values[0] || cf_strcmp(v->values[0],"cookie") != 0 || flt_cookieauth_name == NULL) return FLT_DECLINE;
 
@@ -50,9 +51,9 @@ int flt_cookieauth_run(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t
   cf_cgi_parse_cookies(cookies);
 
   if((name = cf_cgi_get(cookies,flt_cookieauth_name)) != NULL) {
-    if((path = cf_get_uconf_name(name)) != NULL) {
+    if((path = cf_get_uconf_name(name->content)) != NULL) {
       free(path);
-      cf_hash_set(GlobalValues,"UserName",8,name,strlen(name)+1);
+      cf_hash_set(GlobalValues,"UserName",8,name->content,name->len+1);
     }
   }
 

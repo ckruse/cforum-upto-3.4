@@ -52,12 +52,13 @@ int flt_noanswer_gogogo(cf_hash_t *cgi,cf_configuration_t *dc,cf_configuration_t
 
   size_t len;
   rline_t rl;
-  u_char *action = NULL,*tid,*mid,buff[512],*uname,*fn,*answer,*mode;
+  u_char buff[512],*uname,*fn,*answer;
   int si = cf_hash_get(GlobalValues,"ShowInvisible",13) != NULL,x = 0;
+  cf_string_t *action = NULL,*tid,*mid,*mode;
 
   if(si == 0 || cgi == NULL) return FLT_DECLINE;
 
-  if((action = cf_cgi_get(cgi,"a")) != NULL && (cf_strcmp(action,"set-na") == 0 || cf_strcmp(action,"remove-na") == 0)) {
+  if((action = cf_cgi_get(cgi,"a")) != NULL && (cf_strcmp(action->content,"set-na") == 0 || cf_strcmp(action->content,"remove-na") == 0)) {
     uname = cf_hash_get(GlobalValues,"UserName",8);
     fn    = cf_hash_get(GlobalValues,"FORUM_NAME",10);
 
@@ -65,7 +66,7 @@ int flt_noanswer_gogogo(cf_hash_t *cgi,cf_configuration_t *dc,cf_configuration_t
     mid = cf_cgi_get(cgi,"m");
 
     if(!tid || !mid) return FLT_DECLINE;
-    if(cf_str_to_uint64(tid) == 0 || cf_str_to_uint64(mid) == 0) return FLT_DECLINE;
+    if(cf_str_to_uint64(tid->content) == 0 || cf_str_to_uint64(mid->content) == 0) return FLT_DECLINE;
 
     memset(&rl,0,sizeof(rl));
 
@@ -85,12 +86,12 @@ int flt_noanswer_gogogo(cf_hash_t *cgi,cf_configuration_t *dc,cf_configuration_t
     if(answer) free(answer);
 
     if(x == 0 || x == 200) {
-      if(cf_strcmp(action,"set-na") == 0) {
-        len = snprintf(buff,512,"FLAG SET t%s m%s\nFlag: no-answer=yes\n\n",tid,mid);
+      if(cf_strcmp(action->content,"set-na") == 0) {
+        len = snprintf(buff,512,"FLAG SET t%s m%s\nFlag: no-answer=yes\n\n",tid->content,mid->content);
         writen(sock,buff,len);
       }
-      else if(cf_strcmp(action,"remove-na") == 0) {
-        len = snprintf(buff,512,"FLAG REMOVE t%s m%s\nFlags: no-answer\n",tid,mid);
+      else if(cf_strcmp(action->content,"remove-na") == 0) {
+        len = snprintf(buff,512,"FLAG REMOVE t%s m%s\nFlags: no-answer\n",tid->content,mid->content);
         writen(sock,buff,len);
       }
 
@@ -108,7 +109,7 @@ int flt_noanswer_gogogo(cf_hash_t *cgi,cf_configuration_t *dc,cf_configuration_t
     cf_reget_shm_ptr();
     #endif
 
-    if((mode = cf_cgi_get(cgi,"mode")) == NULL || cf_strcmp(mode,"xmlhttp") != 0) {
+    if((mode = cf_cgi_get(cgi,"mode")) == NULL || cf_strcmp(mode->content,"xmlhttp") != 0) {
       cf_hash_entry_delete(cgi,"t",1);
       cf_hash_entry_delete(cgi,"m",1);
 

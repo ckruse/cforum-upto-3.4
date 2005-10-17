@@ -171,7 +171,6 @@ int flt_deleted_del_thread(cf_hash_t *head,cf_configuration_t *dc,cf_configurati
 int flt_deleted_del_thread(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t *vc,void *sock)
 #endif
 {
-  u_char *a;
   u_int64_t tid;
   DBT key,data;
   char one[] = "1";
@@ -181,15 +180,17 @@ int flt_deleted_del_thread(cf_hash_t *head,cf_configuration_t *dc,cf_configurati
   cf_cgi_param_t *parm;
   u_char *tmp;
 
+  cf_string_t *a,*cgitmp;
+
   if(head && Cfg.DeletedFile) {
     a = cf_cgi_get(head,"a");
 
     if(a) {
-      if(cf_strcmp(a,"d") == 0) {
+      if(cf_strcmp(a->content,"d") == 0) {
         if((parm = cf_cgi_get_multiple(head,"dt")) != NULL) {
           /* {{{ put tids to database */
           for(;parm;parm=parm->next) {
-            tid = cf_str_to_uint64(parm->value);
+            tid = cf_str_to_uint64(parm->value.content);
 
             if(tid) {
               memset(&key,0,sizeof(key));
@@ -219,20 +220,20 @@ int flt_deleted_del_thread(cf_hash_t *head,cf_configuration_t *dc,cf_configurati
           /* }}} */
 
           /* {{{ XMLHttp mode */
-          if(((tmp = cf_cgi_get(head,"mode")) == NULL || cf_strcmp(tmp,"xmlhttp") != 0) && Cfg.resp_204) {
+          if(((cgitmp = cf_cgi_get(head,"mode")) == NULL || cf_strcmp(cgitmp->content,"xmlhttp") != 0) && Cfg.resp_204) {
             printf("Status: 204 No Content\015\012\015\012");
             return FLT_EXIT;
           }
           /* }}} */
         }
       }
-      else if(cf_strcmp(a,"nd") == 0) {
+      else if(cf_strcmp(a->content,"nd") == 0) {
         Cfg.DoDelete = 0;
       }
-      else if(cf_strcmp(a,"u") == 0) {
-        if((tmp = cf_cgi_get(head,"dt")) != NULL) {
+      else if(cf_strcmp(a->content,"u") == 0) {
+        if((cgitmp = cf_cgi_get(head,"dt")) != NULL) {
           /* {{{ remove tid from database */
-          if((tid = cf_str_to_uint64(tmp)) > 0) {
+          if((tid = cf_str_to_uint64(cgitmp->content)) > 0) {
             memset(&key,0,sizeof(key));
 
             /* we transform the value again to a string because there could be trash in it... */
@@ -292,7 +293,7 @@ int flt_del_init_handler(cf_hash_t *cgi,cf_configuration_t *dc,cf_configuration_
 
 /* {{{ flt_deleted_view_init_handler */
 int flt_del_view_init_handler(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t *vc,cf_template_t *begin,cf_template_t *end) {
-  u_char *val;
+  cf_string_t *val;
 
   if(Cfg.DeletedFile) {
     if(end && Cfg.CheckBoxes) {
@@ -300,7 +301,7 @@ int flt_del_view_init_handler(cf_hash_t *head,cf_configuration_t *dc,cf_configur
       cf_tpl_setvalue(end,"delcheckbox",TPL_VARIABLE_INT,1);
     }
 
-    if(head && (val = cf_cgi_get(head,"a")) != NULL && cf_strcmp(val,"nd") == 0) cf_tpl_setvalue(begin,"delnodelete",TPL_VARIABLE_INT,1);
+    if(head && (val = cf_cgi_get(head,"a")) != NULL && cf_strcmp(val->content,"nd") == 0) cf_tpl_setvalue(begin,"delnodelete",TPL_VARIABLE_INT,1);
     if(Cfg.xml_http) cf_tpl_setvalue(begin,"DeletedUseXMLHttp",TPL_VARIABLE_INT,1);
   }
 

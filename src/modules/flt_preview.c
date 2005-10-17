@@ -65,21 +65,21 @@ int flt_preview_execute(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_
       v = cf_cfg_get_first_value(dc,forum_name,"DateLocale");
 
       date = cf_general_get_time(flt_preview_datefmt,v->values[0],&len,&p->date);
-      cf_cgi_set(head,"date",date);
+      cf_cgi_set(head,"date",date,len);
       free(date);
 
       v = cf_cfg_get_first_value(pc,forum_name,"QuotingChars");
       cf_str_init(&cnt);
       msg_to_html(NULL,p->content.content,&cnt,NULL,v->values[0],-1,1);
 
-      cf_cgi_set(head,"ne_message",cnt.content);
+      cf_cgi_set(head,"ne_message",cnt.content,cnt.len);
       cf_str_cleanup(&cnt);
 
       if(cf_cgi_get(head,"preview") != NULL) {
-        cf_cgi_set(head,"genprev","1");
+        cf_cgi_set(head,"genprev","1",2);
         cf_hash_entry_delete(head,"preview",7);
       }
-      else cf_cgi_set(head,"preview","1");
+      else cf_cgi_set(head,"preview","1",2);
 
       flt_preview_is_preview = 1;
 

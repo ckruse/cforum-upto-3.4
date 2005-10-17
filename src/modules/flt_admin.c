@@ -70,6 +70,7 @@ int flt_admin_is_admin(const u_char *name) {
 /* }}} */
 
 /* {{{ flt_admin_gogogo */
+
 #ifndef CF_SHARED_MEM
 int flt_admin_gogogo(cf_hash_t *cgi,cf_configuration_t *dc,cf_configuration_t *vc,int sock)
 #else
@@ -79,10 +80,11 @@ int flt_admin_gogogo(cf_hash_t *cgi,cf_configuration_t *dc,cf_configuration_t *v
   #ifdef CF_SHARED_MEM
   int sock;
   #endif
-  u_char *action = NULL,*tid,*mid,buff[512],*answer,*mode;
+  u_char buff[512],*answer;
   size_t len;
   rline_t rl;
   int x = 0;
+  cf_string_t *action = NULL,*tid,*mid,*mode;
 
   u_int64_t itid;
 
@@ -97,7 +99,7 @@ int flt_admin_gogogo(cf_hash_t *cgi,cf_configuration_t *dc,cf_configuration_t *v
     mid = cf_cgi_get(cgi,"m");
 
     if(!tid || !mid) return FLT_DECLINE;
-    if(cf_str_to_uint64(tid) == 0 || cf_str_to_uint64(mid) == 0) return FLT_DECLINE;
+    if((itid = cf_str_to_uint64(tid->content)) == 0 || cf_str_to_uint64(mid->content) == 0) return FLT_DECLINE;
 
     memset(&rl,0,sizeof(rl));
 
@@ -117,16 +119,16 @@ int flt_admin_gogogo(cf_hash_t *cgi,cf_configuration_t *dc,cf_configuration_t *v
     if(answer) free(answer);
 
     if(x == 0 || x == 200) {
-      if(cf_strcmp(action,"del") == 0) {
-        len = snprintf(buff,512,"DELETE t%s m%s\nUser-Name: %s\n",tid,mid,UserName);
+      if(cf_strcmp(action->content,"del") == 0) {
+        len = snprintf(buff,512,"DELETE t%s m%s\nUser-Name: %s\n",tid->content,mid->content,UserName);
         writen(sock,buff,len);
       }
-      else if(cf_strcmp(action,"undel") == 0) {
-        len = snprintf(buff,512,"UNDELETE t%s m%s\nUser-Name: %s\n",tid,mid,UserName);
+      else if(cf_strcmp(action->content,"undel") == 0) {
+        len = snprintf(buff,512,"UNDELETE t%s m%s\nUser-Name: %s\n",tid->content,mid->content,UserName);
         writen(sock,buff,len);
       }
-      else if(cf_strcmp(action,"archive") == 0) {
-        len = snprintf(buff,512,"ARCHIVE THREAD t%s\nUser-Name: %s\n",tid,UserName);
+      else if(cf_strcmp(action->content,"archive") == 0) {
+        len = snprintf(buff,512,"ARCHIVE THREAD t%s\nUser-Name: %s\n",tid->content,UserName);
         writen(sock,buff,len);
       }
 
@@ -140,16 +142,11 @@ int flt_admin_gogogo(cf_hash_t *cgi,cf_configuration_t *dc,cf_configuration_t *v
 
     #ifdef CF_SHARED_MEM
     ptr = cf_reget_shm_ptr();
-    #endif
-
-    itid = cf_str_to_uint64(tid);
-
-    #ifdef CF_SHARED_MEM
     writen(sock,"QUIT\n",5);
     close(sock);
     #endif
 
-    if((mode = cf_cgi_get(cgi,"mode")) == NULL || cf_strcmp(mode,"xmlhttp") != 0) {
+    if((mode = cf_cgi_get(cgi,"mode")) == NULL || cf_strcmp(mode->content,"xmlhttp") != 0) {
       cf_hash_entry_delete(cgi,"t",1);
       cf_hash_entry_delete(cgi,"m",1);
 
@@ -164,6 +161,7 @@ int flt_admin_gogogo(cf_hash_t *cgi,cf_configuration_t *dc,cf_configuration_t *v
 
   return FLT_DECLINE;
 }
+
 /* }}} */
 
 /* {{{ flt_admin_setvars */
@@ -237,7 +235,7 @@ int flt_admin_setvars_thread(cf_hash_t *head,cf_configuration_t *dc,cf_configura
 int flt_admin_init(cf_hash_t *cgi,cf_configuration_t *dc,cf_configuration_t *vc) {
   u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   cf_name_value_t *v = cf_cfg_get_first_value(dc,forum_name,"Administrators");
-  u_char *val = NULL;
+  cf_string_t *val = NULL;
   u_char *UserName = cf_hash_get(GlobalValues,"UserName",8);
 
   cf_register_mod_api_ent("flt_admin","is_admin",(mod_api_t)flt_admin_is_admin);
@@ -251,7 +249,7 @@ int flt_admin_init(cf_hash_t *cgi,cf_configuration_t *dc,cf_configuration_t *vc)
   if(!val) return FLT_DECLINE;
 
   /* ShowInvisible is imported from the client library */
-  if(flt_admin_is_admin(UserName) && *val == '1') {
+  if(flt_admin_is_admin(UserName) && *val->content == '1') {
     cf_hash_set(GlobalValues,"ShowInvisible",13,"1",1);
     cf_add_static_uri_flag("aaf","1",0);
   }

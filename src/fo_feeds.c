@@ -490,8 +490,8 @@ void show_thread(cf_hash_t *head,void *sock,u_int64_t tid)
   rline_t tsd;
   #endif
 
-  u_char *tmp,
-         *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
+  u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
+  cf_string_t *tmp;
 
   cf_name_value_t *cs = cf_cfg_get_first_value(&fo_default_conf,forum_name,"ExternCharset");
 
@@ -500,9 +500,8 @@ void show_thread(cf_hash_t *head,void *sock,u_int64_t tid)
   int del = cf_hash_get(GlobalValues,"ShowInvisible",13) == NULL ? CF_KILL_DELETED : CF_KEEP_DELETED,mode = CF_MODE_RSS;
 
   if(head) {
-    tmp = cf_cgi_get(head,"m");
-    if(tmp) {
-      if(cf_strcmp(tmp,"atom") == 0) mode = CF_MODE_ATOM;
+    if((tmp = cf_cgi_get(head,"m")) != NULL) {
+      if(cf_strcmp(tmp->content,"atom") == 0) mode = CF_MODE_ATOM;
       else mode = CF_MODE_RSS;
     }
   }
@@ -760,9 +759,8 @@ void show_threadlist(void *shm_ptr,cf_hash_t *head)
   void *ptr,*ptr1;
   #endif
 
-  u_char *tmp = NULL,
-        *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10),
-        *UserName = cf_hash_get(GlobalValues,"UserName",8);
+  u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10),
+    *UserName = cf_hash_get(GlobalValues,"UserName",8);
 
   cf_name_value_t *fbase,*cs = cf_cfg_get_first_value(&fo_default_conf,forum_name,"ExternCharset");
 
@@ -771,7 +769,7 @@ void show_threadlist(void *shm_ptr,cf_hash_t *head)
   size_t i;
   int del = cf_hash_get(GlobalValues,"ShowInvisible",13) == NULL ? CF_KILL_DELETED : CF_KEEP_DELETED,mode = CF_MODE_RSS;
 
-  cf_string_t cnt;
+  cf_string_t cnt,*tmp;
 
   #ifndef CF_NO_SORTING
   cf_array_t threads;
@@ -781,9 +779,8 @@ void show_threadlist(void *shm_ptr,cf_hash_t *head)
   cf_str_init(&cnt);
 
   if(head) {
-    tmp = cf_cgi_get(head,"m");
-    if(tmp) {
-      if(cf_strcmp(tmp,"atom") == 0) mode = CF_MODE_ATOM;
+    if((tmp = cf_cgi_get(head,"m")) != NULL) {
+      if(cf_strcmp(tmp->content,"atom") == 0) mode = CF_MODE_ATOM;
       else mode = CF_MODE_RSS;
     }
   }
@@ -1044,7 +1041,7 @@ int main(int argc,char *argv[],char *env[]) {
   };
 
   int ret;
-  u_char  *ucfg,*t = NULL,*UserName,*fname;
+  u_char  *ucfg,*UserName,*fname;
   cf_array_t *cfgfiles;
   cf_hash_t *head;
   cf_configfile_t conf,dconf,feedsconf;
@@ -1055,6 +1052,8 @@ int main(int argc,char *argv[],char *env[]) {
   u_int64_t tid = 0;
 
   cf_readmode_t rm_infos;
+
+  cf_string_t *t = NULL;
   /* }}} */
 
   /* {{{ set signal handler for SIGSEGV (for error reporting) */
@@ -1221,7 +1220,7 @@ int main(int argc,char *argv[],char *env[]) {
     if(ret != FLT_EXIT) {
       /* after that, look for m= and t= */
       if(head) t = cf_cgi_get(head,"t");
-      if(t) tid = cf_str_to_uint64(t);
+      if(t) tid = cf_str_to_uint64(t->content);
 
       if(tid)   show_thread(head,sock,tid);
       else      show_threadlist(sock,head);

@@ -365,14 +365,15 @@ int flt_lf_parse_string(u_char *str,u_char **pos,cf_template_t *tpl,flt_lf_node_
 
 /* {{{ flt_lf_form */
 int flt_lf_form(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t *vc,cf_template_t *begin,cf_template_t *end) {
-  u_char *filter_str,*pos;
+  u_char *pos;
+  cf_string_t *filter_str;
 
   if(head) {
     if((filter_str = cf_cgi_get(head,"lf")) != NULL) {
       cf_hash_set(GlobalValues,"openclose",9,"0",1);
-      pos = filter_str;
-      flt_lf_parse_string(filter_str,&pos,begin,NULL,NULL,dc);
-      cf_tpl_setvalue(begin,"lf",TPL_VARIABLE_STRING,filter_str,strlen(filter_str));
+      pos = filter_str->content;
+      flt_lf_parse_string(filter_str->content,&pos,begin,NULL,NULL,dc);
+      cf_tpl_setvalue(begin,"lf",TPL_VARIABLE_STRING,filter_str->content,filter_str->len);
     }
   }
 

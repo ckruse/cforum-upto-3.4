@@ -48,7 +48,7 @@ int flt_frameset_execute_filter(cf_hash_t *head,cf_configuration_t *dc,cf_config
   cf_name_value_t *cs = cf_cfg_get_first_value(dc,forum_name,"ExternCharset");
   cf_name_value_t *x = cf_cfg_get_first_value(dc,forum_name,UserName?"UBaseURL":"BaseURL");
   cf_template_t tpl;
-  u_char *action = NULL;
+  cf_string_t *action = NULL;
 
   if(!ShallFrameset) return FLT_DECLINE;
 
@@ -77,7 +77,7 @@ int flt_frameset_execute_filter(cf_hash_t *head,cf_configuration_t *dc,cf_config
     if(head) action = cf_cgi_get(head,"a");
 
     if(action) {
-      if(cf_strcmp(action,"b") == 0) {
+      if(cf_strcmp(action->content,"b") == 0) {
         cf_gen_tpl_name(buff,256,TplBlank);
 
         printf("Content-Type: text/html; charset=%s\n\n",cs->values[0]);
@@ -95,7 +95,7 @@ int flt_frameset_execute_filter(cf_hash_t *head,cf_configuration_t *dc,cf_config
         return FLT_EXIT;
       }
       else {
-        if(cf_strcmp(action,"f") == 0) {
+        if(cf_strcmp(action->content,"f") == 0) {
           cf_hash_entry_delete(head,"a",1);
           return FLT_OK;
         }

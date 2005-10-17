@@ -199,12 +199,12 @@ void show_edit_content(cf_hash_t *head,const u_char *msg,const u_char *source,in
          * of the values
          */
         if(cf_strcmp(source,"cgi") == 0) {
-          if(head && (mult = cf_cgi_get_multiple(head,arg->param)) != NULL && mult->value && *mult->value) {
-            cf_str_char_set(&val,mult->value,strlen(mult->value));
+          if(head && (mult = cf_cgi_get_multiple(head,arg->param)) != NULL && mult->value.content && *mult->value.content) {
+            cf_str_str_set(&val,&mult->value);
 
             for(mult=mult->next;mult;mult=mult->next) {
               cf_str_char_append(&val,',');
-              cf_str_cstr_append(&val,mult->value);
+              cf_str_str_append(&val,&mult->value);
             }
           }
           else if(arg->ifnotcommitted) cf_str_char_set(&val,arg->ifnotcommitted,strlen(arg->ifnotcommitted));
@@ -225,11 +225,11 @@ void show_edit_content(cf_hash_t *head,const u_char *msg,const u_char *source,in
          * if the specific config value exists.
          */
         if(head && (mult = cf_cgi_get_multiple(head,arg->param)) != NULL) {
-          cf_str_char_set(&val,mult->value,strlen(mult->value));
+          cf_str_str_set(&val,&mult->value);
 
           for(mult=mult->next;mult;mult=mult->next) {
             cf_str_char_append(&val,',');
-            cf_str_cstr_append(&val,mult->value);
+            cf_str_str_append(&val,&mult->value);
           }
         }
         else {
@@ -392,24 +392,24 @@ void do_save(cf_hash_t *head) {
 
 /* {{{ normalize_params */
 u_char *normalize_params(cf_hash_t *head,const u_char *name) {
-  u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10),*converted,*val,c;
+  u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10),*converted,c;
   register u_char *ptr;
   cf_name_value_t *cs = cf_cfg_get_first_value(&fo_default_conf,forum_name,"ExternCharset");
   cf_hash_keylist_t *key;
   cf_cgi_param_t *param;
   size_t flen;
 
-  cf_string_t str;
+  cf_string_t str,*str1,*val;
 
 
   if((val = cf_cgi_get(head,(u_char *)name)) == NULL) return "E_manipulated";
 
   /* utf-8? */
-  if(*val != 0xC3 || *(val+1) != 0xBF) {
+  if(*val->content != 0xC3 || *(val->content+1) != 0xBF) {
     /* {{{ transform everything to utf-8... */
     for(key=head->keys.elems;key;key=key->next) {
       for(param = cf_cgi_get_multiple(head,key->key);param;param=param->next) {
-        if((converted = charset_convert(param->value,strlen(param->value),cs->values[0],"UTF-8",NULL)) == NULL) return "E_manipulated";
+        if((converted = charset_convert(param->value.content,param->value.len,cs->values[0],"UTF-8",NULL)) == NULL) return "E_manipulated";
 
         /* {{{ remove unicode whitespaces */
         cf_str_init(&str);
@@ -432,8 +432,10 @@ u_char *normalize_params(cf_hash_t *head,const u_char *name) {
         }
         /* }}} */
 
-        free(param->value);
-        param->value = str.content;
+        free(param->value.content);
+        param->value.content = str.content;
+        param->value.len     = str.len;
+        param->value.reserved= str.reserved;
 
         free(converted);
       }
@@ -444,11 +446,11 @@ u_char *normalize_params(cf_hash_t *head,const u_char *name) {
     /* {{{ input seems to be UTF-8, check if strings are valid UTF-8 */
     for(key=head->keys.elems;key;key=key->next) {
       for(param = cf_cgi_get_multiple(head,key->key);param;param=param->next) {
-        if(is_valid_utf8_string(param->value,strlen(param->value)) != 0) return "E_manipulated";
+        if(is_valid_utf8_string(param->value.content,param->value.len) != 0) return "E_manipulated";
 
         /* {{{ removed unicode whitespaces */
         cf_str_init(&str);
-        for(ptr=param->value;*ptr;++ptr) {
+        for(ptr=param->value.content;*ptr;++ptr) {
           // \xC2\xA0 is nbsp
           if(cf_strncmp(ptr,"\xC2\xA0",2) == 0) {
             cf_str_char_append(&str,' ');
@@ -467,25 +469,27 @@ u_char *normalize_params(cf_hash_t *head,const u_char *name) {
         }
         /* }}} */
 
-        free(param->value);
-        param->value = str.content;
+        free(param->value.content);
+        param->value.content = str.content;
+        param->value.len     = str.len;
+        param->value.reserved= str.reserved;
       }
     }
     /* }}} */
   }
 
   /* {{{ remove first two characters */
-  if((val = cf_cgi_get(head,(u_char *)name)) != NULL) {
-    flen  = strlen(val);
-
+  if((str1 = cf_cgi_get(head,(u_char *)name)) != NULL) {
+    flen      = str1->len;
     converted = cf_alloc(NULL,1,flen-2,CF_ALLOC_MALLOC);
 
     /* strip character from field */
-    memcpy(converted,val+2,flen-2);
-    memcpy(val,converted,flen-2);
+    memcpy(converted,str1->content+2,flen-2);
+    free(str1->content);
 
-    val[flen-2] = '\0';
-    free(converted);
+    str1->content = converted;
+    str1->len = str1->reserved = flen - 2;
+    str1->content[flen-2] = '\0';
   }
   /* }}} */
 
@@ -557,7 +561,7 @@ int main(int argc,char *argv[],char *env[]) {
 
   cf_hash_t *head;
 
-  u_char *forum_name,*fname,*uname,*err,*action,*ucfg;
+  u_char *forum_name,*fname,*uname,*err,*ucfg;
 
   cf_array_t *cfgfiles;
   cf_configfile_t dconf,conf,vconf;
@@ -567,6 +571,8 @@ int main(int argc,char *argv[],char *env[]) {
   int ret;
 
   uconf_action_handler_t actionhndl;
+
+  cf_string_t *action;
   /* }}} */
 
   /* {{{ set signal handler for bad signals (for error reporting) */
@@ -660,8 +666,8 @@ int main(int argc,char *argv[],char *env[]) {
     if(head) {
       if((action = cf_cgi_get(head,"a")) == NULL) show_edit_content(head,NULL,NULL,0,NULL);
       else {
-        if(cf_strcmp(action,"save") == 0) do_save(head);
-        else if((actionhndl = uconf_get_action_handler(action)) != NULL) actionhndl(head,&fo_default_conf,&fo_userconf_conf);
+        if(cf_strcmp(action->content,"save") == 0) do_save(head);
+        else if((actionhndl = uconf_get_action_handler(action->content)) != NULL) actionhndl(head,&fo_default_conf,&fo_userconf_conf);
         else show_edit_content(head,NULL,NULL,0,NULL);
       }
     }

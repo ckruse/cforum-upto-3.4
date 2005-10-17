@@ -402,7 +402,7 @@ int flt_poas_execute(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t *
   /* first: standard checks */
   if(cf_cgi_get(head,"assicheck") == NULL || flt_poas_conf.poas_must_validate) {
     if(flt_poas_standardchecks(p) != 0) {
-      cf_cgi_set(head,"assicheck","1");
+      cf_cgi_set(head,"assicheck","1",2);
       strcpy(ErrorString,"E_posting_format");
       display_posting_form(head,p,NULL);
       return FLT_EXIT;
@@ -411,7 +411,7 @@ int flt_poas_execute(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t *
 
   /* check for bad words */
   if(flt_poas_badwords_check(p) != 0) {
-    cf_cgi_set(head,"assicheck","1");
+    cf_cgi_set(head,"assicheck","1",2);
     strcpy(ErrorString,"E_posting_badwords");
     display_posting_form(head,p,NULL);
     return FLT_EXIT;
@@ -420,7 +420,7 @@ int flt_poas_execute(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t *
   /* check for quotes */
   if(cf_cgi_get(head,"assicheck") == NULL || flt_poas_conf.qp_must_validate) {
     if(flt_poas_qp_check(p) != 0) {
-      cf_cgi_set(head,"assicheck","1");
+      cf_cgi_set(head,"assicheck","1",2);
       strcpy(ErrorString,"E_posting_quoting");
       display_posting_form(head,p,NULL);
       return FLT_EXIT;

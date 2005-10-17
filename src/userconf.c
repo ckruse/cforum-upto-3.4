@@ -371,13 +371,13 @@ uconf_userconfig_t *cf_uconf_merge_config(cf_hash_t *head,cf_configuration_t *co
         memset(&my_arg,0,sizeof(my_arg));
         cf_str_init_growth(&str,128);
 
-        if((mult = cf_cgi_get_multiple(head,arg->param)) != NULL && mult->value && *mult->value) {
+        if((mult = cf_cgi_get_multiple(head,arg->param)) != NULL && mult->value.content && *mult->value.content) {
           /* {{{ create new value from CGI parameter(s) */
-          cf_str_cstr_set(&str,mult->value);
+          cf_str_str_set(&str,&mult->value);
 
           for(mult=mult->next;mult;mult=mult->next) {
             cf_str_char_append(&str,',');
-            cf_str_cstr_append(&str,mult->value);
+            cf_str_str_append(&str,&mult->value);
           }
           /* }}} */
 

@@ -135,7 +135,6 @@ int flt_visited_execute_filter(cf_hash_t *head,cf_configuration_t *dc,cf_configu
 {
   u_char *uname = cf_hash_get(GlobalValues,"UserName",8);
   u_char *fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
-  u_char *cmid,*ctid,*mode;
   u_int64_t mid,tid;
   int ret,fd,xmlhttp = 0,we_set_it = 0;
   char one[] = "1";
@@ -143,10 +142,11 @@ int flt_visited_execute_filter(cf_hash_t *head,cf_configuration_t *dc,cf_configu
   message_t *msg;
   cl_thread_t thread;
   DBT key,data;
-  u_char buff[256],*mav,*a;
+  u_char buff[256];
   cf_cgi_param_t *parm;
   size_t len;
   cf_name_value_t *rm = cf_cfg_get_first_value(vc,fn,"ReadMode");
+  cf_string_t *mav,*cmid,*ctid,*mode,*a;
 
   if(uname && Cfg.VisitedFile) {
     memset(&key,0,sizeof(key));
@@ -161,7 +161,7 @@ int flt_visited_execute_filter(cf_hash_t *head,cf_configuration_t *dc,cf_configu
 
     /* check if we should mark all visited */
     if(head && (mav = cf_cgi_get(head,"mav")) != NULL) {
-      if(*mav == '1') Cfg.mark_all_visited = 1;
+      if(*mav->content == '1') Cfg.mark_all_visited = 1;
     }
 
 
@@ -171,13 +171,13 @@ int flt_visited_execute_filter(cf_hash_t *head,cf_configuration_t *dc,cf_configu
       mode = cf_cgi_get(head,"mode");
       a    = cf_cgi_get(head,"a");
 
-      if(mode) xmlhttp = cf_strcmp(mode,"xmlhttp") == 0;
+      if(mode) xmlhttp = cf_strcmp(mode->content,"xmlhttp") == 0;
 
       /* {{{ mark marked threads visited */
-      if(a && cf_strcmp(a,"mv") == 0) {
+      if(a && cf_strcmp(a->content,"mv") == 0) {
         if((parm = cf_cgi_get_multiple(head,"dt")) != NULL) {
           for(;parm;parm=parm->next) {
-            tid = cf_str_to_uint64(parm->value);
+            tid = cf_str_to_uint64(parm->value.content);
 
             if(tid) {
               #ifdef CF_SHARED_MEM
@@ -216,7 +216,7 @@ int flt_visited_execute_filter(cf_hash_t *head,cf_configuration_t *dc,cf_configu
 
       /* we shall mark a whole thread visited */
       if(ctid) {
-        tid = cf_str_to_uint64(ctid);
+        tid = cf_str_to_uint64(ctid->content);
         memset(&tsd,0,sizeof(tsd));
         memset(&thread,0,sizeof(thread));
 
@@ -255,7 +255,7 @@ int flt_visited_execute_filter(cf_hash_t *head,cf_configuration_t *dc,cf_configu
 
       /* we shall only mark a message visited */
       else if(cmid) {
-        mid = cf_str_to_uint64(cmid);
+        mid = cf_str_to_uint64(cmid->content);
 
         if(mid) {
           len = snprintf(buff,256,"%llu",mid);

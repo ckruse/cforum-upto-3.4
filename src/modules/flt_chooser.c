@@ -78,13 +78,13 @@ int flt_chooser_execute(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_
 }
 
 int flt_chooser_list(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t *vc,message_t *msg,u_int64_t tid,int mode) {
-  u_char *val;
+  cf_string_t *val;
 
   if(head == NULL) return FLT_DECLINE;
   if(msg->category.len == 0) return FLT_DECLINE;
   if((val = cf_cgi_get(head,"cat")) == NULL) return FLT_DECLINE;
 
-  if(cf_strcmp(val,msg->category.content) != 0) msg->may_show = 0;
+  if(cf_strcmp(val->content,msg->category.content) != 0) msg->may_show = 0;
 
   return FLT_OK;
 }
