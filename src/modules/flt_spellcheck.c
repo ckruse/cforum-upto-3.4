@@ -90,14 +90,15 @@ int flt_spellcheck_execute(cf_hash_t *head,configuration_t *dc,configuration_t *
   string_t *ptmp;
   FILE *ispell_read;
   
-  cf_hash_entry_t *ent;
   cf_cgi_param_t *param;
   name_value_t *v;
   
   array_t replacements;
   flt_spellcheck_replacement_t replacement;
   flt_spellcheck_replacement_t *r;
-  
+
+  cf_hash_keylist_t *keyel;
+ 
   if(!head) return FLT_DECLINE;
   if(!cf_cgi_get(head,"spellcheck")) {
     return FLT_DECLINE;
@@ -107,34 +108,30 @@ int flt_spellcheck_execute(cf_hash_t *head,configuration_t *dc,configuration_t *
   
   if(cf_cgi_get(head,"spellcheck_ok")) {
     array_init(&replacements,sizeof(flt_spellcheck_replacement_t),NULL);
-    for(i=0;(size_t)i<cf_hashsize(head->tablesize);i++) {
-      if(!head->table[i]) continue;
+    for(keyel=head->keys.elems;keyel;keyel=keyel->next) {
+      for(param=cf_cgi_get_multiple(head,keyel->key);param;param=param->next) {
+        if(!param->value) continue;
+        if(cf_strncmp(param->name,"spelling_",9)) continue;
 
-      for(ent = head->table[i];ent;ent=ent->next) {
-        for(param = (cf_cgi_param_t *)ent->data;param;param=param->next) {
-          if(!param->value) continue;
-          if(cf_strncmp(param->name,"spelling_",9)) continue;
+        ptr = param->name + 9;
+        wpos = strtoul(ptr,&ptr,10);
 
-          ptr = param->name + 9;
-          wpos = strtoul(ptr,&ptr,10);
+        if(*ptr != '_') continue;
 
-          if(*ptr != '_') continue;
+        ptr++;
+        l = strtoul(ptr,&ptr,10);
 
-          ptr++;
-          l = strtoul(ptr,&ptr,10);
+        if(*ptr) continue;
+        if(wpos < 0 || l < 0 || (size_t)wpos > p->content.len || (size_t)(wpos + l) > p->content.len) continue;
 
-          if(*ptr) continue;
-          if(wpos < 0 || l < 0 || (size_t)wpos > p->content.len || (size_t)(wpos + l) > p->content.len) continue;
-
-          replacement.replacement = param->value;
-          replacement.start = wpos;
-          replacement.len = l;
-          array_push(&replacements,&replacement);
-        }
+        replacement.replacement = param->value;
+        replacement.start = wpos;
+        replacement.len = l;
+        array_push(&replacements,&replacement);
       }
     }
 
-    array_sort(&replacements,(int (*)(void *,void *))flt_spellcheck_replacement_compare);
+    array_sort(&replacements,(int (*)(const void *,const void *))flt_spellcheck_replacement_compare);
     
     cpos = 0;
     str_init(&html_out);

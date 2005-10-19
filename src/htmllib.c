@@ -23,6 +23,8 @@
 #include <string.h>
 #include <ctype.h>
 
+#include <sys/types.h>
+
 #include "hashlib.h"
 #include "utils.h"
 #include "configparser.h"
@@ -960,7 +962,7 @@ void _do_html(hierarchical_node_t *ary,cl_thread_t *thread,int ShowInvisible,con
 
 /* {{{ _starthread_tlist */
 int _starthread_tlist(cl_thread_t *thread,int ShowInvisible,const u_char *linktpl,name_value_t *cs,name_value_t *dft,name_value_t *locale) {
-  hierarchical_node_t ary,*ary1,*tmp = NULL;
+  hierarchical_node_t ary,*ary1;
   size_t i;
   cf_tpl_variable_t tpl_ary;
 

@@ -24,6 +24,8 @@
 #include <iconv.h>
 #include <string.h>
 
+#include <sys/types.h>
+
 #include "entitytable.h"
 
 #include "utils.h"

@@ -1,20 +1,18 @@
-2005-10-15 Christian Kruse <ckruse@wwwtech.de>
-	* *: Merged back bugfixes from trunk
-
-2005-10-14 Christian Seiler <self@christian-seiler.de>
-	* src/modules/flt_spellcheck.c: Change hashsize() -> cf_hashsize()
-	
-2005-10-07 Christian Seiler <self@christian-seiler.de>
-	* src/perl/Plugins/UserconfCategories.pm: fixed datatype
-
-2005-10-01 Christian Kruse <ckruse@wwwtech.de>
-	* *: Merged back changes from trunk
-
-2005-10-01 Christian Seiler <self@christian-seiler.de>
-	* src/wwwutils.c: Bugfix in cf_http_redirect_with_nice_uri
-	* scripts/fo_userconf.in: fixed datatype
-
-2005-10-01 Christian Kruse <ckruse@wwwtech.de>
-	* conf/fo_view.conf.in: Removed some old config values
-	* src/swig/CForum-Template/Makefile.PL.in: Bugfix for datatypes
+2005-10-19 Christian Kruse <ckruse@wwwtech.de>
+	* src/fo_view.c: Added <string.h>
+	* src/utils.c: Added <limits.h>
+	* src/charconvert.c: Added <sys/types.h>
+	* src/fo_threadlookup.c: Added <string.h>
+	* src/modules/flt_spellcheck.c: Moved to keylist of the hash
+	* src/fo_vote.c: Added <string.h>
+	* src/xml_handling.c: Added <sys/types.h>
+	* src/communication.c: Added <sys/types.h>
+	* src/parsetpl/writers.c, src/parsetpl/helpers.c,
+		src/parsetpl/processors.c, src/parsetpl/dereferencors.c,
+		src/parsetpl/peeks.c: Changed order of #includes
+	* src/fo_feeds.c: Added <string.h>
+	* src/handlerrunners.c: Added <sys/types.h>
+	* src/htmllib.c: Added <sys/types.h>, removed unnecessary variable
+	* src/cf-tid_index.c: Added <string.h>
+	* src/messageutils.c: Added <sys/types.h>
 
