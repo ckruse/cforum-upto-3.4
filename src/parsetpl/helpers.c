@@ -8,14 +8,14 @@
 #include "config.h"
 #include "defines.h"
 
-#include "utils.h"
-#include "hashlib.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
 #include <time.h>
 
+#include "utils.h"
+#include "hashlib.h"
 #include "parsetpl.h"
 
 /* {{{ init_context */

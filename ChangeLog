@@ -15,6 +15,10 @@
 	* src/cf-tid_index.c: Added <string.h>
 	* src/messageutils.c: Added sys/types.h>
 	* src/fo_userconf.c: Added <string.h>
+	* src/parsetpl/writers.c, src/parsetpl/helpers.c,
+		src/parsetpl/processors.c, src/parsetpl/dereferencors.c,
+		src/parsetpl/peeks.c, src/parsetpl/parser.c: Changed order of
+		#includes
 
 2005-10-17 Christian Kruse <ckruse@wwwtech.de>
 	* *: I changed the CGI library to a better interface. Now
