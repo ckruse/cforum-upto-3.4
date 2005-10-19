@@ -19,6 +19,9 @@
 		src/parsetpl/processors.c, src/parsetpl/dereferencors.c,
 		src/parsetpl/peeks.c, src/parsetpl/parser.c: Changed order of
 		#includes
+	* src/configparser.c: Added UTF-8 check for config values (all values
+		have to be correct UTF-8!)
+	* src/Makefile.am: Added libcfcharconvert for configparser
 
 2005-10-17 Christian Kruse <ckruse@wwwtech.de>
 	* *: I changed the CGI library to a better interface. Now

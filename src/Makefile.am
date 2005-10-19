@@ -59,7 +59,7 @@ libcfhtml_la_LIBADD=libcfutils.la libcfcharconvert.la libcfclientlib.la
 libcfhtml_la_LDFLAGS=-export-dynamic -avoid-version
 
 libcfconfigparser_la_SOURCES=configparser.c
-libcfconfigparser_la_LIBADD=libcfutils.la $(DL)
+libcfconfigparser_la_LIBADD=libcfutils.la libcfcharconvert.la $(DL)
 libcfconfigparser_la_LDFLAGS=-export-dynamic -avoid-version
 
 libcfserverutils_la_SOURCES=serverutils.c cf_pthread.c
