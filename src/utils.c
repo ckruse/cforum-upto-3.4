@@ -33,6 +33,8 @@
 #include <dirent.h>
 #include <unistd.h>
 
+#include <limits.h>
+
 #include "charconvert.h"
 #include "utils.h"
 /* }}} */

@@ -1,3 +1,21 @@
+2005-10-19 Christian Kruse <ckruse@wwwtech.de>
+	* src/fo_view.c: Added <string.h>
+	* src/utils.c: Added <limits.h>
+	* src/charconvert.c: Added <sys/types.h>
+	* src/fo_threadlookup.c: Added <string.h>
+	* src/modules/flt_deleted.c: Removed unnecessary variable
+	* src/modules/flt_spellcheck.c: Removed unnecessary variable
+	* src/fo_vote.c: Added <string.h>
+	* src/xml_handling.c: Added <sys/types.h>
+	* src/communication.c: Added <sys/types.h>
+	* src/fo_feeds.c: Added <string.h>
+	* src/userconf.c: Added <sys/types.h>
+	* src/handlerrunners.c: Added <sys/types.h>
+	* src/htmllib.c: Added <sys/types.h>
+	* src/cf-tid_index.c: Added <string.h>
+	* src/messageutils.c: Added sys/types.h>
+	* src/fo_userconf.c: Added <string.h>
+
 2005-10-17 Christian Kruse <ckruse@wwwtech.de>
 	* *: I changed the CGI library to a better interface. Now
 		cf_cgi_url_{encode,decode}() give back the length of the new string and the

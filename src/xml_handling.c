@@ -27,6 +27,8 @@
 
 #include <gdome.h>
 
+#include <sys/types.h>
+
 #include "charconvert.h"
 #include "hashlib.h"
 #include "utils.h"

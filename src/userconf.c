@@ -28,6 +28,8 @@
 
 #include <pcre.h>
 
+#include <sys/types.h>
+
 #include "hashlib.h"
 #include "utils.h"
 #include "configparser.h"

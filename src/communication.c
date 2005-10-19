@@ -30,6 +30,8 @@
 #include <sys/sem.h>
 #endif
 
+#include <sys/types.h>
+
 #include "hashlib.h"
 #include "utils.h"
 #include "configparser.h"

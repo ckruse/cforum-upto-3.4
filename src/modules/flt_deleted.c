@@ -178,7 +178,6 @@ int flt_deleted_del_thread(cf_hash_t *head,cf_configuration_t *dc,cf_configurati
   char buff[256];
   size_t len;
   cf_cgi_param_t *parm;
-  u_char *tmp;
 
   cf_string_t *a,*cgitmp;
 
