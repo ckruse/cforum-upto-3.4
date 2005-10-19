@@ -38,6 +38,7 @@
 
 #include "utils.h"
 #include "hashlib.h"
+#include "charconvert.h"
 #include "configparser.h"
 /* }}} */
 
@@ -616,6 +617,15 @@ int read_config(configfile_t *conf,t_take_default deflt,int mode) {
       continue;
     }
     /* }}} */
+
+    for(i=0;i<argnum;++i) {
+      if(is_valid_utf8_string(args[i],strlen(args[i])) != 0) {
+	fprintf(stderr,"[%s:%d] Sorry, argument %d for directive '%s' is not valid UTF-8!\n",conf->filename,linenum,i+1,opt->name);
+	close(fd);
+	munmap(buff,st.st_size);
+	return 1;
+      }
+    }
 
     found = 0;
     if((opt = cf_hash_get(conf->options,directive_name,ptr-ptr1)) != NULL) {

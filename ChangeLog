@@ -15,4 +15,6 @@
 	* src/htmllib.c: Added <sys/types.h>, removed unnecessary variable
 	* src/cf-tid_index.c: Added <string.h>
 	* src/messageutils.c: Added <sys/types.h>
+	* src/configparser.c: Fixed bug #93
+	* src/Makefile.am: Added libcharconvert.la for configparser
 
