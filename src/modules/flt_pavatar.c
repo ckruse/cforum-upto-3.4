@@ -26,8 +26,9 @@
 
 #include <time.h>
 #include <sys/types.h>
-
+#include <sys/stat.h>
 #include <sys/file.h>
+
 #include <db.h>
 
 #include "readline.h"
@@ -105,7 +106,7 @@ u_char *flt_pavatar_autodiscover(const u_char *uri) {
 
   string_t uri_buff;
 
-  if((rsp = cf_http_simple_get_uri(uri)) == NULL) return NULL;
+  if((rsp = cf_http_simple_get_uri(uri,0)) == NULL) return NULL;
 
   if((pavatar_uri = cf_hash_get(rsp->headers,"X-Pavatar",10)) == NULL) {
     if(rsp->content.content && (ret = strcasestr(rsp->content.content,"<link rel=\"pavatar\" href=\"")) != NULL) {
@@ -127,7 +128,7 @@ u_char *flt_pavatar_autodiscover(const u_char *uri) {
         str_char_set(&uri_buff,uri,last-uri);
         str_chars_append(&uri_buff,"robots.txt",11);
 
-        if((rsp = cf_http_simple_get_uri(uri_buff.content)) == NULL) {
+        if((rsp = cf_http_simple_get_uri(uri_buff.content,0)) == NULL) {
           str_cleanup(&uri_buff);
           return NULL;
         }
@@ -206,13 +207,42 @@ void flt_pavatar_get_cache_filename(const u_char *uri,u_char **cachefile,u_char 
 /* }}} */
 
 /* {{{ flt_pavatar_is_cachend */
-u_char *flt_pavatar_is_cached(const u_char *uri) {
+u_char *flt_pavatar_is_cached(const u_char *uri,time_t *plm) {
   struct stat st;
   u_char *file,*curi;
+  FILE *fd;
+  string_t str;
+  time_t onow,lm,expires,maxage,now = time(NULL);
 
   flt_pavatar_get_cache_filename(uri,&file,&curi);
 
   if(stat(file,&st) == -1) {
+    free(file);
+    free(curi);
+    return NULL;
+  }
+
+  str_init_growth(&str,256);
+  str_cstr_set(&str,uri);
+  str_chars_append(&str,".hdrs",5);
+
+  if((fd = fopen(str.content,"rb")) == NULL) {
+    str_cleanup(&str);
+    free(file);
+    free(curi);
+    return NULL;
+  }
+
+  fread(&onow,sizeof(onow),1,fd);
+  fread(&lm,sizeof(lm),1,fd);
+  fread(&expires,sizeof(expires),1,fd);
+  fread(&maxage,sizeof(maxage),1,fd);
+  fclose(fd);
+
+  if(plm) *plm = lm;
+
+  if(now >= expires || now >= onow + maxage) {
+    str_cleanup(&str);
     free(file);
     free(curi);
     return NULL;
@@ -257,15 +287,73 @@ void flt_pavatar_parse_datestr(const u_char *str,struct tm *tm) {
 }
 /* }}} */
 
+/* {{{ flt_pavatar_set_cache_fresh */
+u_char *flt_pavatar_set_cache_fresh(const u_char *hpuri) {
+  u_char *curi,*file;
+  string_t str;
+  FILE *fd;
+  time_t now = time(NULL),onow,lm,expires,maxage;
+
+  flt_pavatar_get_cache_filename(hpuri,&file,&curi);
+
+  str_init_growth(&str,256);
+  str_cstr_set(&str,file);
+  str_chars_append(&str,".hdrs",5);
+
+  if((fd = fopen(str.content,"rb")) == NULL) {
+    free(curi);
+    free(file);
+    str_cleanup(&str);
+    return NULL;
+  }
+
+  fread(&onow,sizeof(onow),1,fd);
+  fread(&lm,sizeof(lm),1,fd);
+  fread(&expires,sizeof(expires),1,fd);
+  fread(&maxage,sizeof(maxage),1,fd);
+  fclose(fd);
+
+  expires = now + maxage;
+
+  if((fd = fopen(str.content,"rb")) == NULL) {
+    free(curi);
+    free(file);
+    str_cleanup(&str);
+    return NULL;
+  }
+  fwrite(&now,sizeof(now),1,fd);
+  fwrite(&lm,sizeof(lm),1,fd);
+  fwrite(&expires,sizeof(expires),1,fd);
+  fwrite(&maxage,sizeof(maxage),1,fd);
+  fclose(fd);
+
+  free(file);
+  str_cleanup(&str);
+  return curi;
+}
+/* }}} */
+
 /* {{{ flt_pavatar_cache_it */
-u_char *flt_pavatar_cache_it(const u_char *hpuri,const u_char *pavatar_uri) {
+u_char *flt_pavatar_cache_it(const u_char *hpuri,const u_char *pavatar_uri,time_t lastmod) {
   string_t str;
   FILE *fd;
   u_char *curi,*file,*val,*ptr;
-  cf_http_response_t *rsp = cf_http_simple_get_uri(pavatar_uri);
+  cf_http_response_t *rsp = cf_http_simple_get_uri(pavatar_uri,lastmod);
   time_t lm,expires,maxage,now;
   struct tm tm;
-  if(!rsp || rsp->status != 200) return NULL;
+
+  if(!rsp) return NULL;
+  if(rsp->status != 200) {
+    if(rsp->status == 304) {
+      cf_http_destroy_response(rsp);
+      free(rsp);
+      return flt_pavatar_set_cache_fresh(hpuri);
+    }
+
+    cf_http_destroy_response(rsp);
+    free(rsp);
+    return NULL;
+  }
 
 
   flt_pavatar_get_cache_filename(hpuri,&file,&curi);
@@ -341,12 +429,13 @@ u_char *flt_pavatar_cache_it(const u_char *hpuri,const u_char *pavatar_uri) {
 /* {{{ flt_pavatar_handleit */
 u_char *flt_pavatar_handleit(const u_char *uri) {
   u_char *ret,*pavatar_uri = NULL;
+  time_t lm;
 
-  if(flt_pavatar_cache_them && (ret = flt_pavatar_is_cached(uri)) != NULL) return ret;
+  if(flt_pavatar_cache_them && (ret = flt_pavatar_is_cached(uri,&lm)) != NULL) return ret;
   if((pavatar_uri = flt_pavatar_autodiscover(uri)) == NULL) return NULL;
 
   if(flt_pavatar_cache_them) { /* create a cache */
-    ret = flt_pavatar_cache_it(uri,pavatar_uri);
+    ret = flt_pavatar_cache_it(uri,pavatar_uri,lm);
     free(pavatar_uri);
     return ret;
   }

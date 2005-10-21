@@ -28,6 +28,7 @@
 #include <errno.h>
 
 #include <sys/time.h>
+#include <locale.h>
 
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -47,7 +48,7 @@ size_t cf_http_header_callback(void *buffer, size_t size, size_t nmemb, void *us
   size_t x = size * nmemb;
   float version;
   int status;
-  u_char *ptr,*ptr1,*name,*value;
+  u_char *ptr,*name,*value;
 
   if(x > 7 && cf_strncmp(buffer,"HTTP/",5) == 0) {
     version = atof(buffer+5);
@@ -189,15 +190,25 @@ cf_http_response_t *cf_http_simple_head_uri(const u_char *uri) {
 /* }}} */
 
 /* {{{ cf_http_simple_get_uri */
-cf_http_response_t *cf_http_simple_get_uri(const u_char *uri) {
+cf_http_response_t *cf_http_simple_get_uri(const u_char *uri,time_t lm) {
   cf_http_request_t rq;
   cf_http_response_t *rsp = fo_alloc(NULL,1,sizeof(*rsp),FO_ALLOC_CALLOC);
+  u_char buff[512];
+  struct tm tm;
 
   memset(&rq,0,sizeof(rq));
   rq.rsp    = rsp;
   rq.uri    = (u_char *)uri;
   rq.follow = 1;
   rq.type   = CF_HTTP_TYPE_GET;
+
+  if(lm) {
+    setlocale(LC_TIME,"C");
+    gmtime_r(&lm,&tm);
+    // Last-Modified: Fri, 21 Oct 2005 12:42:36 GMT
+    strftime(buff,512,"If-Modified-Since: %a, %d %b %G %H:%M:%S GMT",&tm);
+    rq.custom_headers = curl_slist_append(rq.custom_headers, buff);;
+  }
 
   rsp->headers = cf_hash_new(NULL);
 

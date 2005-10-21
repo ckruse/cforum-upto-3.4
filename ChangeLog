@@ -8,6 +8,11 @@
 		Libcurl has a bad documentation, too, but it is much better than the
 		libwww!
 	* src/Makefile.am: Changed to libcurl
+	* src/utils.h, src/wwwutils.c: Changed the interface for
+		cf_http_simple_get_uri() a little bit: now you can give a
+		timestamp for the If-Modified-Since header.
+	* src/modules/flt_pavatar.c: Added cache timeout validation
+	* src/modules/flt_remotesignature.c: Changed to new API of HTTP utils
 
 2005-10-19 Christian Kruse <ckruse@wwwtech.de>
 	* src/fo_view.c: Added <string.h>
