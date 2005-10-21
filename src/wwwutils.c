@@ -16,7 +16,6 @@
  */
 /* }}} */
 
-
 /* {{{ Includes */
 #include "config.h"
 #include "defines.h"
@@ -35,109 +34,175 @@
 #include <dirent.h>
 #include <unistd.h>
 
-#include <WWWLib.h>
-#include <WWWHTTP.h>
-#include <WWWInit.h>
+#include <curl/curl.h>
 
 #include "charconvert.h"
 #include "utils.h"
 /* }}} */
 
 
-/* {{{ printer */
-PRIVATE int printer(const char * fmt, va_list pArgs) {
-  return 0;
+/* {{{ cf_http_header_callback */
+size_t cf_http_header_callback(void *buffer, size_t size, size_t nmemb, void *userp) {
+  cf_http_request_t *rq = (cf_http_request_t *)userp;
+  size_t x = size * nmemb;
+  float version;
+  int status;
+  u_char *ptr,*ptr1,*name,*value;
+
+  if(x > 7 && cf_strncmp(buffer,"HTTP/",5) == 0) {
+    version = atof(buffer+5);
+
+    for(ptr=buffer+8;ptr < (u_char *)(buffer+x) && !isdigit(*ptr);++ptr);
+    status = strtol(ptr,(char **)&ptr,10);
+
+    if(status > 300 && status < 400 && status != 304) {
+      if(rq->follow) rq->_donttouch = 1;
+      else {
+        for(;ptr < (u_char *)(buffer+x) && isspace(*ptr);++ptr);
+        rq->rsp->reason = strndup(ptr,(u_char *)(buffer+x)-ptr);
+        rq->rsp->status = status;
+        rq->rsp->version= version;
+      }
+    }
+    else {
+      for(;ptr < (u_char *)(buffer+x) && isspace(*ptr);++ptr);
+
+      rq->rsp->reason = strndup(ptr,(u_char *)(buffer+x)-ptr);
+      rq->rsp->status = status;
+      rq->rsp->version= version;
+      rq->_donttouch = 0;
+    }
+  }
+  else {
+    if(rq->_donttouch == 0) {
+      for(ptr=buffer;ptr<(u_char *)(buffer+x) && *ptr != ':';++ptr);
+
+      if(*ptr == '\0') return x; /* ignore empty headers */
+      name = strndup(buffer,ptr-(u_char *)buffer);
+
+      for(++ptr;ptr < (u_char *)(buffer+x) && isspace(*ptr);++ptr);
+      if(*ptr == '\0') {
+        free(name);
+        return x;
+      }
+
+      value = strndup(ptr,(u_char *)(buffer+x)-ptr-2); /* remove \r\n */
+
+      if(rq->rsp->headers == NULL) rq->rsp->headers = cf_hash_new(NULL);
+      cf_hash_set(rq->rsp->headers,name,strlen(name)+1,value,strlen(value)+1);
+
+      free(name);
+      free(value);
+    }
+  }
+
+  return x;
 }
 /* }}} */
 
-/* {{{ tracer */
-PRIVATE int tracer(const char * fmt, va_list pArgs) {
-  return 0;
+/* {{{ cf_http_data_callback */
+size_t cf_http_data_callback(void *buffer, size_t size, size_t nmemb, void *userp) {
+  cf_http_request_t *rq = (cf_http_request_t *)userp;
+  size_t x = size * nmemb; /* avoid multiple multiplication */
+  str_chars_append(&rq->rsp->content,buffer,x);
+
+  return x;
 }
 /* }}} */
 
-/* {{{ terminate_handler */
-PRIVATE int terminate_handler(HTRequest *request, HTResponse *response, void *param, int status)  {
-  /* we're not handling other requests */
-  HTEventList_stopLoop ();
- 
-  /* stop here */
-  return HT_ERROR;
+/* {{{ cf_http_complex_request */
+int cf_http_complex_request(cf_http_request_t *rq) {
+  if(rq->rsp == NULL)    rq->rsp = fo_alloc(NULL,1,sizeof(*rq->rsp),FO_ALLOC_CALLOC);
+  if(rq->handle == NULL) rq->handle = curl_easy_init();
+
+  rq->_donttouch = 0;
+  curl_easy_setopt(rq->handle, CURLOPT_URL, rq->uri);
+
+  if(rq->follow)          curl_easy_setopt(rq->handle, CURLOPT_FOLLOWLOCATION, 1);
+  if(rq->resume)          curl_easy_setopt(rq->handle, CURLOPT_RESUME_FROM,rq->resume);
+  if(rq->user_pass)       curl_easy_setopt(rq->handle, CURLOPT_USERPWD,rq->user_pass);
+  if(rq->custom_headers)  curl_easy_setopt(rq->handle, CURLOPT_HTTPHEADER, rq->custom_headers);
+  if(rq->referer)         curl_easy_setopt(rq->handle, CURLOPT_REFERER, rq->referer);
+  if(rq->cookies)         curl_easy_setopt(rq->handle, CURLOPT_COOKIE, rq->cookies);
+
+  if(rq->ua)              curl_easy_setopt(rq->handle, CURLOPT_USERAGENT, rq->ua);
+  else                    curl_easy_setopt(rq->handle, CURLOPT_USERAGENT, "Classic Forum/" CF_VERSION);
+  if(rq->data_callback)   curl_easy_setopt(rq->handle, CURLOPT_WRITEFUNCTION, rq->data_callback);
+  else                    curl_easy_setopt(rq->handle, CURLOPT_WRITEFUNCTION, cf_http_data_callback);
+  if(rq->header_callback) curl_easy_setopt(rq->handle, CURLOPT_HEADERFUNCTION, rq->header_callback);
+  else                    curl_easy_setopt(rq->handle, CURLOPT_HEADERFUNCTION, cf_http_header_callback);
+
+  if(rq->rqdata) {
+    curl_easy_setopt(rq->handle, CURLOPT_WRITEDATA, rq->rqdata);
+    curl_easy_setopt(rq->handle, CURLOPT_WRITEHEADER, rq->rqdata);
+  }
+  else {
+    curl_easy_setopt(rq->handle, CURLOPT_WRITEDATA, rq);
+    curl_easy_setopt(rq->handle, CURLOPT_WRITEHEADER, rq);
+  }
+
+  if(rq->post_data.len) {
+    curl_easy_setopt(rq->handle,CURLOPT_POSTFIELDS,rq->post_data.content);
+    curl_easy_setopt(rq->handle,CURLOPT_POSTFIELDSIZE,rq->post_data.len);
+  }
+
+  if(rq->proxy) {
+    curl_easy_setopt(rq->handle,CURLOPT_PROXY,rq->proxy);
+    if(rq->proxy_user_pass) curl_easy_setopt(rq->handle,CURLOPT_PROXYUSERPWD,rq->proxy_user_pass);
+  }
+
+  if(rq->custom_rq) curl_easy_setopt(rq->handle, CURLOPT_CUSTOMREQUEST, rq->custom_rq);
+  else {
+    switch(rq->type) {
+      case CF_HTTP_TYPE_POST:
+        curl_easy_setopt(rq->handle, CURLOPT_POST, 1);
+        break;
+      case CF_HTTP_TYPE_HEAD:
+        curl_easy_setopt(rq->handle, CURLOPT_NOBODY, 1);
+        break;
+      default:
+        curl_easy_setopt(rq->handle, CURLOPT_HTTPGET, 1);
+        break;
+    }
+  }
+
+  return curl_easy_perform(rq->handle);
 }
 /* }}} */
 
+/* {{{ cf_http_simple_head_uri */
+cf_http_response_t *cf_http_simple_head_uri(const u_char *uri) {
+  cf_http_request_t rq;
+  cf_http_response_t *rsp = fo_alloc(NULL,1,sizeof(*rsp),FO_ALLOC_CALLOC);
+
+  memset(&rq,0,sizeof(rq));
+  rq.rsp    = rsp;
+  rq.uri    = (u_char *)uri;
+  rq.follow = 1;
+  rq.type   = CF_HTTP_TYPE_HEAD;
+
+  cf_http_complex_request(&rq);
+  curl_easy_cleanup(rq.handle);
+
+  return rsp;
+}
+/* }}} */
 
 /* {{{ cf_http_simple_get_uri */
 cf_http_response_t *cf_http_simple_get_uri(const u_char *uri) {
-  u_char *cwd,*absolute_url,*name,*value;
-  HTRequest *request;
-  HTChunk *chunk = NULL;
-  HTResponse *response;
-  HTParentAnchor *panch;
+  cf_http_request_t rq;
+  cf_http_response_t *rsp = fo_alloc(NULL,1,sizeof(*rsp),FO_ALLOC_CALLOC);
 
-  cf_http_response_t *rsp = NULL;
+  memset(&rq,0,sizeof(rq));
+  rq.rsp    = rsp;
+  rq.uri    = (u_char *)uri;
+  rq.follow = 1;
+  rq.type   = CF_HTTP_TYPE_GET;
 
-  HTAssocList *hdrlst;
-  HTAssoc *pres;
+  rsp->headers = cf_hash_new(NULL);
 
-  /* Initialize libwww core */
-  HTProfile_newPreemptiveClient("Classic Forum", CF_VERSION);
-
-  /* Gotta set up our own traces */
-  HTPrint_setCallback(printer);
-  HTTrace_setCallback(tracer);
-
-  /* create request */
-  request = HTRequest_new();
-
-  /* We want raw output including headers */
-  HTRequest_setOutputFormat(request, WWW_SOURCE);
-
-  /* Close connection immediately */
-  HTRequest_addConnection(request, "close", "");
-
-  /* Add our own filter to handle termination */
-  HTNet_addAfter(terminate_handler, NULL, NULL, HT_ALL, HT_FILTER_LAST);
-
-  cwd          = HTGetCurrentDirectoryURL();
-  absolute_url = HTParse(uri, cwd, PARSE_ALL);
-  chunk        = HTLoadToChunk(absolute_url, request);
-
-  HT_FREE(absolute_url);
-  HT_FREE(cwd);
-
-  /* If chunk != NULL then we have the data */
-  if (chunk) {
-    rsp          = fo_alloc(NULL,1,sizeof(*rsp),FO_ALLOC_MALLOC);
-    rsp->reason  = NULL;
-    rsp->status  = 0;
-    rsp->headers = cf_hash_new(NULL);
-
-    str_init(&rsp->content);
-
-    if((response = HTRequest_response(request)) != NULL) rsp->reason = strdup(HTResponse_reason(response));
-
-    if((panch = HTRequest_anchor(request)) != NULL) {
-      if((hdrlst = HTAnchor_header(panch)) != NULL) {
-        while((pres = (HTAssoc *)HTAssocList_nextObject(hdrlst)) != NULL) {
-          name  = HTAssoc_name(pres);
-          value = HTAssoc_value(pres);
-
-          cf_hash_set(rsp->headers,name,strlen(name),value,strlen(value)+1);
-        }
-      }
-    }
-
-    /* print the chunk result */
-    rsp->content.len     = rsp->content.reserved = HTChunk_size(chunk);
-    rsp->content.content = HTChunk_toCString(chunk);
-  }
-  
-  /* Clean up the request */
-  HTRequest_delete(request);
-
-  /* Terminate the Library */
-  HTProfile_delete();
+  cf_http_complex_request(&rq);
+  curl_easy_cleanup(rq.handle);
 
   return rsp;
 }
@@ -145,84 +210,23 @@ cf_http_response_t *cf_http_simple_get_uri(const u_char *uri) {
 
 /* {{{ cf_http_simple_post_uri */
 cf_http_response_t *cf_http_simple_post_uri(const u_char *uri,const u_char *postdata,size_t len) {
-  HTRequest * request = NULL;
-  HTParentAnchor *src = NULL;
-  HTAnchor *dst = NULL;
-  HTStream *target_stream;
-  HTChunk *response_data;
-  HTResponse *response;
-  HTParentAnchor *panch;
+  cf_http_request_t rq;
+  cf_http_response_t *rsp = fo_alloc(NULL,1,sizeof(*rsp),FO_ALLOC_CALLOC);
 
-  HTAssocList *hdrlst;
-  HTAssoc *pres;
+  memset(&rq,0,sizeof(rq));
+  rq.rsp    = rsp;
+  rq.uri    = (u_char *)uri;
+  rq.follow = 1;
+  rq.type   = CF_HTTP_TYPE_POST;
 
-  cf_http_response_t *rsp = NULL;
-  
-  BOOL status = NO;
-  u_char *cwd,*name,*value;
+  rq.post_data.content  = (u_char *)postdata;
+  rq.post_data.len      = len;
+  rq.post_data.reserved = 0;
 
-  /* Create a new premptive client */
-  HTProfile_newNoCacheClient("CForum", CF_VERSION);
+  rsp->headers = cf_hash_new(NULL);
 
-  /* Need our own trace and print functions */
-  HTPrint_setCallback(printer);
-  HTTrace_setCallback(tracer);
-
-  /* Add our own filter to update the history list */
-  HTNet_addAfter(terminate_handler, NULL, NULL, HT_ALL, HT_FILTER_LAST);
-
-  cwd     = HTGetCurrentDirectoryURL();
-  request = HTRequest_new();
-  dst     = HTAnchor_findAddress(uri);
-  src     = HTTmpAnchor(NULL);
-
-  target_stream = HTStreamToChunk(request,&response_data, 0);
-
-  HTRequest_setOutputStream(request, target_stream);    
-  HTRequest_setOutputFormat(request, WWW_SOURCE);
-
-  HTAnchor_setDocument(src,(char *)postdata);
-  HTAnchor_setFormat(src,WWW_PLAINTEXT);
-  HTAnchor_setLength(src,len);
-
-  status = HTPostAnchor(src,dst,request);
-
-  HT_FREE(cwd);
-
-  if(status == YES) {
-    HTEventList_loop(request);
-
-    rsp          = fo_alloc(NULL,1,sizeof(*rsp),FO_ALLOC_MALLOC);
-    rsp->reason  = NULL;
-    rsp->status  = 0;
-    rsp->headers = cf_hash_new(NULL);
-
-    str_init(&rsp->content);
-
-    if((response = HTRequest_response(request)) != NULL) rsp->reason = strdup(HTResponse_reason(response));
-
-    if((panch = HTRequest_anchor(request)) != NULL) {
-      if((hdrlst = HTAnchor_header(panch)) != NULL) {
-        while((pres = (HTAssoc *)HTAssocList_nextObject(hdrlst)) != NULL) {
-          name  = HTAssoc_name(pres);
-          value = HTAssoc_value(pres);
-
-          cf_hash_set(rsp->headers,name,strlen(name),value,strlen(value)+1);
-        }
-      }
-    }
-
-    /* print the chunk result */
-    rsp->content.len     = rsp->content.reserved = HTChunk_size(response_data);
-    rsp->content.content = HTChunk_toCString(response_data);
-  }
-
-
-  /* Clean up the request */
-  HTRequest_delete(request);
-
-  /* Terminate the Library */
-  HTProfile_delete();
+  cf_http_complex_request(&rq);
+  curl_easy_cleanup(rq.handle);
 
   return rsp;
 }
@@ -293,7 +297,6 @@ void cf_http_redirect_with_nice_uri(const u_char *ruri,int perm) {
   printf("Location: %s\015\012\015\012",uri.content);
 }
 /* }}} */
-
 
 
 /* eof */

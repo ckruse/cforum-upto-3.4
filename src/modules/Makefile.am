@@ -260,6 +260,9 @@ EXTRA_LTLIBRARIES+=flt_importexport.la
 flt_importexport_la_SOURCES=flt_importexport.c
 flt_importexport_la_LDFLAGS=-module -export-dynamic -avoid-version -rpath '$(pkglibdir)'
 
+EXTRA_LTLIBRARIES+=flt_pavatar.la
+flt_pavatar_la_SOURCES=flt_pavatar.c
+flt_pavatar_la_LDFLAGS=-module -export-dynamic -avoid-version -rpath '$(pkglibdir)'
 
 pkglib_LTLIBRARIES+=${OPTIONAL_MODULES}
 

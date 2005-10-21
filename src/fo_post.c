@@ -558,12 +558,14 @@ int validate_cgi_variables(cf_hash_t *head) {
 }
 /* }}} */
 
-/* {{{ gemessage_t_url */
-int gemessage_t_url(const u_char *msgstr,name_value_t **v) {
+/* {{{ get_message_url */
+int get_message_url(const u_char *msgstr,name_value_t **v) {
   u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   name_value_t *ent;
   cf_list_element_t *elem;
   cf_list_head_t *list = cfg_get_value(&fo_post_conf,forum_name,"Image");
+
+  if(!list) return -1;
 
   for(elem=list->elements;elem;elem=elem->next) {
     ent = (name_value_t *)elem->data;
@@ -626,7 +628,7 @@ string_t *body_plain2coded(const u_char *text) {
           if(*end == ']') {
             tmp  = strndup(ptr+5,end-ptr-5);
 
-            if(gemessage_t_url(tmp,&v) == 0) {
+            if(get_message_url(tmp,&v) == 0) {
               str_chars_append(str,"[image:",7);
               str_chars_append(str,v->values[1],strlen(v->values[1]));
               str_chars_append(str,"@alt=",5);

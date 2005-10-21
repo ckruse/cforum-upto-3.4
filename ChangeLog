@@ -1,3 +1,14 @@
+2005-10-21 Christian Kruse <ckruse@wwwtech.de>
+	* configure.in: Added flt_pavatar.la, changed to libcurl
+	* src/utils.h: Added several datatypes for cf_http_complex_request()
+	* src/modules/flt_remotesignature.c: Removed WWWLib headers
+	* src/modules/Makefile.am: Added flt_pavatar
+	* src/fo_post.c: Fixed a bug in [msg:] handling
+	* src/wwwutils.c: Changed to libcurl since libwww is _really_ pain in the ass.
+		Libcurl has a bad documentation, too, but it is much better than the
+		libwww!
+	* src/Makefile.am: Changed to libcurl
+
 2005-10-19 Christian Kruse <ckruse@wwwtech.de>
 	* src/fo_view.c: Added <string.h>
 	* src/utils.c: Added <limits.h>

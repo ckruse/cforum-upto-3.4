@@ -46,7 +46,7 @@ AC_PATH_PROG(PERL,perl)
 AC_PATH_PROG(MAKEPGM,make)
 dnl }}}
 
-ALL_MODULES="flt_basic.la flt_category.la flt_deleted.la flt_frameset.la flt_http.la flt_link.la flt_listhighlight.la flt_livefilter.la flt_openclose.la flt_include.la flt_registerednames.la flt_tplmode.la flt_urlrewrite.la flt_visited.la flt_extern.la flt_threadreturnanchor.la flt_tipoftheday.la flt_postingassistant.la flt_remotesignature.la flt_preview.la flt_spellcheck.la flt_handle404.la flt_voting.la flt_scoring.la flt_motd.la flt_votingvariables.la flt_sorting.la flt_latex.la flt_syntax.la flt_checkregisteredname.la flt_mailonpost.la flt_cgiconfig.la flt_rot13.la flt_gummizelle.la flt_noanonymous.la flt_noanswer.la flt_chooser.la flt_moderated.la flt_cookieauth.la flt_noarchive.la flt_noarchive_server.la flt_stdreplacements.la flt_interesting.la flt_admin_mysql.la flt_shortcuts.la flt_phpsessauth.la flt_bbcodes.la"
+ALL_MODULES="flt_basic.la flt_category.la flt_deleted.la flt_frameset.la flt_http.la flt_link.la flt_listhighlight.la flt_livefilter.la flt_openclose.la flt_include.la flt_registerednames.la flt_tplmode.la flt_urlrewrite.la flt_visited.la flt_extern.la flt_threadreturnanchor.la flt_tipoftheday.la flt_postingassistant.la flt_remotesignature.la flt_preview.la flt_spellcheck.la flt_handle404.la flt_voting.la flt_scoring.la flt_motd.la flt_votingvariables.la flt_sorting.la flt_latex.la flt_syntax.la flt_checkregisteredname.la flt_mailonpost.la flt_cgiconfig.la flt_rot13.la flt_gummizelle.la flt_noanonymous.la flt_noanswer.la flt_chooser.la flt_moderated.la flt_cookieauth.la flt_noarchive.la flt_noarchive_server.la flt_stdreplacements.la flt_interesting.la flt_admin_mysql.la flt_shortcuts.la flt_phpsessauth.la flt_bbcodes.la flt_pavatar.la"
 
 CFLAGS="$CFLAGS -D_REENTRANT -Wall -W -pipe -D_GNU_SOURCE"
 LDFLAGS="$LDFLAGS -L/usr/local/lib"
@@ -99,14 +99,14 @@ if test ! -n "$SWIG" ; then
   AC_MSG_ERROR([cannot find swig. Be sure that SWIG is installed and it is in your PATH])
 fi
 
-AC_PATH_PROG(LIBWWWCFG, libwww-config)
+AC_PATH_PROG(CURLCFG, curl-config)
 
-if test ! -n "$LIBWWWCFG" ; then
-  AC_MSG_ERROR([cannot find libwww-config. Be sure that libwww is installed and libwww-config is in your PATH])
+if test ! -n "$CURLCFG" ; then
+  AC_MSG_ERROR([cannot find curl-config. Be sure that libcurl is installed and curl-config is in your PATH])
 fi
 
-LIBWWW_CFLAGS=`$LIBWWWCFG --cflags`
-LIBWWW_LIBS=`$LIBWWWCFG --libs`
+CURL_CFLAGS=`$CURLCFG --cflags`
+CURL_LIBS=`$CURLCFG --libs`
 
 GDOME_CFLAGS=`$GDOMECFG --cflags`
 GDOME_LIBS=`$GDOMECFG --libs`
@@ -114,11 +114,11 @@ GDOME_LIBS=`$GDOMECFG --libs`
 PCRE_CFLAGS=`$PCRECFG --cflags`
 PCRE_LIBS=`$PCRECFG --libs`
 
-CFLAGS="$GDOME_CFLAGS $CFLAGS $PCRE_CFLAGS $LIBWWW_CFLAGS"
+CFLAGS="$GDOME_CFLAGS $CFLAGS $PCRE_CFLAGS $CURL_CFLAGS"
 
 AC_SUBST(GDOME_LIBS)
 AC_SUBST(PCRE_LIBS)
-AC_SUBST(LIBWWW_LIBS)
+AC_SUBST(CURL_LIBS)
 AC_SUBST(SWIG)
 AC_SUBST(ICONV)
 AC_SUBST(DL)
