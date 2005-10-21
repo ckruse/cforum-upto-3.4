@@ -21,6 +21,7 @@
 
 #include <time.h>
 #include <sys/types.h>
+#include <curl/curl.h>
 
 #include "hashlib.h"
 
@@ -855,7 +856,10 @@ u_int64_t cf_str_to_uint64(register const u_char *ptr);
 /* }}} */
 
 /* {{{ HTTP utilities */
+typedef size_t (*cf_http_request_callback_t)(void *,size_t,size_t,void *);
+
 typedef struct {
+  float version;
   int status;
   u_char *reason;
 
@@ -863,7 +867,31 @@ typedef struct {
   cf_string_t content;
 } cf_http_response_t;
 
+#define CF_HTTP_TYPE_GET  1
+#define CF_HTTP_TYPE_POST 2
+#define CF_HTTP_TYPE_HEAD 3
+typedef struct {
+  u_char *uri;
+  int follow,type;
+  long resume;
 
+  u_char *user_pass,*proxy_user_pass,*proxy,*referer,*ua,*cookies,*custom_rq;
+  void *rqdata;
+
+  cf_string_t post_data;
+
+  struct curl_slist *custom_headers;
+  cf_http_response_t *rsp;
+
+  CURL *handle;
+
+  cf_http_request_callback_t data_callback,header_callback;
+
+  int _donttouch;
+} cf_http_request_t;
+
+int cf_http_complex_request(cf_http_request_t *rq);
+cf_http_response_t *cf_http_simple_head_uri(const u_char *uri);
 cf_http_response_t *cf_http_simple_get_uri(const u_char *uri);
 cf_http_response_t *cf_http_simple_post_uri(const u_char *uri,const u_char *postdata,size_t len);
 void cf_http_destroy_response(cf_http_response_t *rsp); 

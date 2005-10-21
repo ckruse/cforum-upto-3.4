@@ -269,6 +269,10 @@ EXTRA_LTLIBRARIES+=flt_jsvalidation.la
 flt_jsvalidation_la_SOURCES=flt_jsvalidation.c
 flt_jsvalidation_la_LDFLAGS=-module -export-dynamic -avoid-version -rpath '$(pkglibdir)'
 
+EXTRA_LTLIBRARIES+=flt_pavatar.la
+flt_pavatar_la_SOURCES=flt_pavatar.c
+flt_pavatar_la_LDFLAGS=-module -export-dynamic -avoid-version -rpath '$(pkglibdir)'
+
 pkglib_LTLIBRARIES+=${OPTIONAL_MODULES}
 
 # eof

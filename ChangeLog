@@ -1,3 +1,18 @@
+2005-10-21 Christian Kruse <ckruse@wwwtech.de>
+	* configure.in: Changed to libcurl, added flt_pavatar
+	* src/utils.h: Changed to libcurl, added some types for
+		cf_http_complex_request()
+	* src/modules/flt_remotesignature.c: Removed libwww header files
+	* src/modules/Makefile.am: Added flt_pavatar
+	* src/fo_post.c: Fixed a bug in [msg:] handling
+	* src/wwwutils.c: Changed to libcurl, added cf_http_complex_request()
+	* src/Makefile.am: Changed to libcurl
+
+2005-10-20 Christian Kruse <ckruse@wwwtech.de>
+	* src/modules/flt_jsvalidation.c: Forgot to add it; module for generating
+		necessary variables for JS validation in user config (now) and posting
+		(later)
+
 2005-10-19 Christian Kruse <ckruse@wwwtech.de>
 	* src/fo_view.c: Added <string.h>
 	* src/utils.c: Added <limits.h>

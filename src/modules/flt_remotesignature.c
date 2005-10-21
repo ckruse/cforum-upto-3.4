@@ -29,10 +29,6 @@
 
 #include <time.h>
 
-#include <WWWLib.h>
-#include <WWWHTTP.h>
-#include <WWWInit.h>
-
 #include "readline.h"
 #include "hashlib.h"
 #include "utils.h"
