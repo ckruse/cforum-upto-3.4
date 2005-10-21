@@ -7,6 +7,12 @@
 	* src/fo_post.c: Fixed a bug in [msg:] handling
 	* src/wwwutils.c: Changed to libcurl, added cf_http_complex_request()
 	* src/Makefile.am: Changed to libcurl
+	* src/utils.h, src/wwwutils.c: Changed the interface of
+		cf_http_simple_get_uri() a little bit: now you can give a
+		timestamp for the If-Modified-Since HTTP header.
+	* src/modules/flt_pavatar.c: Added cache timeout validation
+	* src/modules/flt_remotesignature.c: Changed to new API of HTTP
+		utilities
 
 2005-10-20 Christian Kruse <ckruse@wwwtech.de>
 	* src/modules/flt_jsvalidation.c: Forgot to add it; module for generating

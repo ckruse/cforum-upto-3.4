@@ -892,9 +892,9 @@ typedef struct {
 
 int cf_http_complex_request(cf_http_request_t *rq);
 cf_http_response_t *cf_http_simple_head_uri(const u_char *uri);
-cf_http_response_t *cf_http_simple_get_uri(const u_char *uri);
+cf_http_response_t *cf_http_simple_get_uri(const u_char *uri,time_t lm);
 cf_http_response_t *cf_http_simple_post_uri(const u_char *uri,const u_char *postdata,size_t len);
-void cf_http_destroy_response(cf_http_response_t *rsp); 
+void cf_http_destroy_response(cf_http_response_t *rsp);
 
 void cf_http_redirect_with_nice_uri(const u_char *ruri,int perm);
 /* }}} */

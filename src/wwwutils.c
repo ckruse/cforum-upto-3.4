@@ -27,6 +27,7 @@
 #include <ctype.h>
 #include <errno.h>
 
+#include <locale.h>
 #include <sys/time.h>
 
 #include <sys/stat.h>
@@ -189,15 +190,25 @@ cf_http_response_t *cf_http_simple_head_uri(const u_char *uri) {
 /* }}} */
 
 /* {{{ cf_http_simple_get_uri */
-cf_http_response_t *cf_http_simple_get_uri(const u_char *uri) {
+cf_http_response_t *cf_http_simple_get_uri(const u_char *uri,time_t lm) {
   cf_http_request_t rq;
   cf_http_response_t *rsp = cf_alloc(NULL,1,sizeof(*rsp),CF_ALLOC_CALLOC);
+  u_char buff[512];
+  struct tm tm;
 
   memset(&rq,0,sizeof(rq));
   rq.rsp    = rsp;
   rq.uri    = (u_char *)uri;
   rq.follow = 1;
   rq.type   = CF_HTTP_TYPE_GET;
+
+  if(lm) {
+    setlocale(LC_TIME,"C");
+    gmtime_r(&lm,&tm);
+    // Last-Modified: Fri, 21 Oct 2005 12:42:36 GMT
+    strftime(buff,512,"If-Modified-Since: %a, %d %b %G %H:%M:%S GMT",&tm);
+    rq.custom_headers = curl_slist_append(rq.custom_headers, buff);;
+  }
 
   rsp->headers = cf_hash_new(NULL);
 
