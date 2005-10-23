@@ -54,6 +54,8 @@ int flt_noanswer_gogogo(cf_hash_t *cgi,configuration_t *dc,configuration_t *vc,v
   rline_t rl;
   u_char *action = NULL,*tid,*mid,buff[512],*uname,*fn,*answer,*mode;
   int si = cf_hash_get(GlobalValues,"ShowInvisible",13) != NULL,x = 0;
+  u_int64_t itid,imid;
+  string_t str;
 
   if(si == 0 || cgi == NULL) return FLT_DECLINE;
 
@@ -65,7 +67,7 @@ int flt_noanswer_gogogo(cf_hash_t *cgi,configuration_t *dc,configuration_t *vc,v
     mid = cf_cgi_get(cgi,"m");
 
     if(!tid || !mid) return FLT_DECLINE;
-    if(str_to_u_int64(tid) == 0 || str_to_u_int64(mid) == 0) return FLT_DECLINE;
+    if((itid = str_to_u_int64(tid)) == 0 || (imid = str_to_u_int64(mid)) == 0) return FLT_DECLINE;
 
     memset(&rl,0,sizeof(rl));
 
@@ -85,14 +87,22 @@ int flt_noanswer_gogogo(cf_hash_t *cgi,configuration_t *dc,configuration_t *vc,v
     if(answer) free(answer);
 
     if(x == 0 || x == 200) {
-      if(cf_strcmp(action,"set-na") == 0) {
-        len = snprintf(buff,512,"FLAG SET t%s m%s\nFlag: no-answer=yes\n\n",tid,mid);
-        writen(sock,buff,len);
-      }
-      else if(cf_strcmp(action,"remove-na") == 0) {
-        len = snprintf(buff,512,"FLAG REMOVE t%s m%s\nFlags: no-answer\n",tid,mid);
-        writen(sock,buff,len);
-      }
+      str_init_growth(&str,256);
+
+      if(cf_strcmp(action,"set-na") == 0)         str_char_set(&str,"FLAG SET ",9);
+      else if(cf_strcmp(action,"remove-na") == 0) str_char_set(&str,"FLAG REMOVE ",12);
+
+      str_char_append(&str,'t');
+      u_int64_to_str(&str,itid);
+      str_chars_append(&str," m",2);
+      u_int64_to_str(&str,imid);
+      str_chars_append(&str,"\n Flag: no-answer",16);
+      if(cf_strcmp(action,"set-na") == 0) str_chars_append(&str,"=yes",4);
+      str_chars_append(&str,"\n\n",2);
+
+      writen(sock,str.content,str.len);
+
+      str_cleanup(&str);
 
       answer = readline(sock,&rl);
       if(!answer || ((x = atoi(answer)) != 200)) {

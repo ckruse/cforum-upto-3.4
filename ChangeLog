@@ -1,3 +1,9 @@
+2005-10-23 Christian Kruse <ckruse@wwwtech.de>
+	* src/modules/flt_noanswer.c, src/modules/flt_moderated.c,
+		src/modules/flt_noarchive.c, src/modules/flt_admin.c: Fixed several security
+		issues. I sent CGI parameters directly to the server without checking for
+		bad input
+
 2005-10-21 Christian Kruse <ckruse@wwwtech.de>
 	* configure.in: Added flt_pavatar.la, changed to libcurl
 	* src/utils.h: Added several datatypes for cf_http_complex_request()

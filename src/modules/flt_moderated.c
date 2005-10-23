@@ -213,6 +213,7 @@ int flt_moderated_gogogo(cf_hash_t *cgi,configuration_t *dc,configuration_t *vc,
   int si = cf_hash_get(GlobalValues,"ShowInvisible",13) != NULL,ret;
   string_t str;
   DBT key,data;
+  u_int64_t itid,imid;
 
   u_char one[] = "1";
 
@@ -223,13 +224,13 @@ int flt_moderated_gogogo(cf_hash_t *cgi,configuration_t *dc,configuration_t *vc,
     mid = cf_cgi_get(cgi,"m");
 
     if(!tid || !mid) return FLT_DECLINE;
-    if(str_to_u_int64(tid) == 0 || str_to_u_int64(mid) == 0) return FLT_DECLINE;
+    if((itid = str_to_u_int64(tid)) == 0 || (imid = str_to_u_int64(mid)) == 0) return FLT_DECLINE;
 
     str_init_growth(&str,50);
     str_char_append(&str,'t');
-    str_chars_append(&str,tid,strlen(tid));
+    u_int64_to_str(&str,itid);
     str_char_append(&str,'m');
-    str_chars_append(&str,mid,strlen(mid));
+    u_int64_to_str(&str,imid);
 
     memset(&key,0,sizeof(key));
     memset(&data,0,sizeof(data));

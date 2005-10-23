@@ -83,8 +83,9 @@ int flt_admin_gogogo(cf_hash_t *cgi,configuration_t *dc,configuration_t *vc,void
   size_t len;
   rline_t rl;
   int x = 0;
+  string_t str;
 
-  u_int64_t itid;
+  u_int64_t itid,imid;
 
   u_char *UserName = cf_hash_get(GlobalValues,"UserName",8);
   u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
@@ -97,7 +98,7 @@ int flt_admin_gogogo(cf_hash_t *cgi,configuration_t *dc,configuration_t *vc,void
     mid = cf_cgi_get(cgi,"m");
 
     if(!tid || !mid) return FLT_DECLINE;
-    if(str_to_u_int64(tid) == 0 || str_to_u_int64(mid) == 0) return FLT_DECLINE;
+    if((itid = str_to_u_int64(tid)) == 0 || (imid = str_to_u_int64(mid)) == 0) return FLT_DECLINE;
 
     memset(&rl,0,sizeof(rl));
 
@@ -116,19 +117,24 @@ int flt_admin_gogogo(cf_hash_t *cgi,configuration_t *dc,configuration_t *vc,void
     }
     if(answer) free(answer);
 
+    str_init_growth(&str,256);
+
     if(x == 0 || x == 200) {
-      if(cf_strcmp(action,"del") == 0) {
-        len = snprintf(buff,512,"DELETE t%s m%s\nUser-Name: %s\n",tid,mid,UserName);
-        writen(sock,buff,len);
-      }
-      else if(cf_strcmp(action,"undel") == 0) {
-        len = snprintf(buff,512,"UNDELETE t%s m%s\nUser-Name: %s\n",tid,mid,UserName);
-        writen(sock,buff,len);
-      }
-      else if(cf_strcmp(action,"archive") == 0) {
-        len = snprintf(buff,512,"ARCHIVE THREAD t%s\nUser-Name: %s\n",tid,UserName);
-        writen(sock,buff,len);
-      }
+      if(cf_strcmp(action,"del") == 0)          str_char_set(&str,"DELETE ",7);
+      else if(cf_strcmp(action,"undel") == 0)   str_char_set(&str,"UNDELETE ",9);
+      else if(cf_strcmp(action,"archive") == 0) str_char_set(&str,"ARCHIVE THREAD ",15);
+
+      str_char_append(&str,'t');
+      u_int64_to_str(&str,itid);
+      str_chars_append(&str," m",2);
+      u_int64_to_str(&str,imid);
+      str_chars_append(&str,"\nUser-Name: ",11);
+      str_cstr_append(&str,UserName);
+      str_char_append(&str,'\n');
+
+      writen(sock,str.content,str.len);
+
+      str_cleanup(&str);
 
       answer = readline(sock,&rl);
       if(!answer || ((x = atoi(answer)) != 200)) {
