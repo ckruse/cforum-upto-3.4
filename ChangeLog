@@ -1,3 +1,7 @@
+2005-10-23 Christian Seiler <self@christian-seiler.de>
+	* src/parsetpl/{processors.c,parser.c,parsetpl.lex}: Fixed some
+		lengths so generated code still works.
+
 2005-10-23 Christian Kruse <ckruse@wwwtech.de>
 	* src/modules/flt_noarchive.c, src/modules/flt_admin.c,
 		src/modules/flt_noanswer.c, src/modules/flt_moderated.c: Fixed several

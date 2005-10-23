@@ -124,7 +124,7 @@ int parse_file(const u_char *filename) {
     // a new tag starts or EOF
     if(content.len) {
       cf_str_chars_append(&current_context->output,"my_write(\"",10);
-      cf_str_chars_append(&current_context->output_mem,"cf_str_chars_append(&tpl->parsed,\"",31);
+      cf_str_chars_append(&current_context->output_mem,"cf_str_chars_append(&tpl->parsed,\"",34);
       append_escaped_string(&current_context->output,&content);
       append_escaped_string(&current_context->output_mem,&content);
       cf_str_chars_append(&current_context->output,"\");\n",4);

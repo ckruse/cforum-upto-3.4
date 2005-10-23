@@ -775,15 +775,15 @@ int process_include_tag(cf_string_t *file) {
   }
 
   cf_str_init(&tmp);
-  cf_str_chars_append(&tmp,"inc_filename = cf_alloc(NULL,sizeof(cf_string_t),1,CF_ALLOC_MALLOC);\n",66);
-  cf_str_chars_append(&tmp,"inc_filepart = cf_alloc(NULL,sizeof(cf_string_t),1,CF_ALLOC_MALLOC);\n",66);
-  cf_str_chars_append(&tmp,"inc_fileext = cf_alloc(NULL,sizeof(cf_string_t),1,CF_ALLOC_MALLOC);\n",65);
+  cf_str_chars_append(&tmp,"inc_filename = cf_alloc(NULL,sizeof(cf_string_t),1,CF_ALLOC_MALLOC);\n",69);
+  cf_str_chars_append(&tmp,"inc_filepart = cf_alloc(NULL,sizeof(cf_string_t),1,CF_ALLOC_MALLOC);\n",69);
+  cf_str_chars_append(&tmp,"inc_fileext = cf_alloc(NULL,sizeof(cf_string_t),1,CF_ALLOC_MALLOC);\n",68);
   cf_str_chars_append(&tmp,"inc_tpl = cf_alloc(NULL,sizeof(cf_template_t),1,CF_ALLOC_MALLOC);\n",66);
-  cf_str_chars_append(&tmp,"cf_str_init(inc_filename);\n",24);
-  cf_str_chars_append(&tmp,"cf_str_init(inc_filepart);\n",24);
-  cf_str_chars_append(&tmp,"cf_str_init(inc_fileext);\n",23);
-  cf_str_chars_append(&tmp,"cf_str_char_set(inc_filename,tpl->filename,strlen(tpl->filename));\n",64);
-  cf_str_chars_append(&tmp,"cf_str_char_set(inc_filepart,\"",27);
+  cf_str_chars_append(&tmp,"cf_str_init(inc_filename);\n",27);
+  cf_str_chars_append(&tmp,"cf_str_init(inc_filepart);\n",27);
+  cf_str_chars_append(&tmp,"cf_str_init(inc_fileext);\n",26);
+  cf_str_chars_append(&tmp,"cf_str_char_set(inc_filename,tpl->filename,strlen(tpl->filename));\n",67);
+  cf_str_chars_append(&tmp,"cf_str_char_set(inc_filepart,\"",30);
   append_escaped_string(&tmp,&current_file);
   cf_str_chars_append(&tmp,"\",",2);
   snprintf(buf,19,"%ld",current_file.len);
@@ -793,14 +793,14 @@ int process_include_tag(cf_string_t *file) {
   cf_str_chars_append(&tmp,"while(strncmp(p,inc_filepart->content,inc_filepart->len) && p > inc_filename->content) p--;\n",92);
   cf_str_chars_append(&tmp,"if(!strncmp(p,inc_filepart->content,inc_filepart->len)) {\n",58);
   cf_str_chars_append(&tmp,"*p = '\\0'; inc_filename->len = p - inc_filename->content;\n",58);
-  cf_str_chars_append(&tmp,"cf_str_char_set(inc_fileext,p+inc_filepart->len,strlen(p+inc_filepart->len));\n",75);
-  cf_str_chars_append(&tmp,"cf_str_chars_append(inc_filename,\"",31);
+  cf_str_chars_append(&tmp,"cf_str_char_set(inc_fileext,p+inc_filepart->len,strlen(p+inc_filepart->len));\n",78);
+  cf_str_chars_append(&tmp,"cf_str_chars_append(inc_filename,\"",34);
   append_escaped_string(&tmp,file);
   cf_str_chars_append(&tmp,"\",",2);
   snprintf(buf,19,"%ld",file->len);
   cf_str_chars_append(&tmp,buf,strlen(buf));  
   cf_str_chars_append(&tmp,");\n",3);
-  cf_str_chars_append(&tmp,"cf_str_str_append(inc_filename,inc_fileext);\n",42);
+  cf_str_chars_append(&tmp,"cf_str_str_append(inc_filename,inc_fileext);\n",45);
   cf_str_chars_append(&tmp,"ret = cf_tpl_init(inc_tpl,inc_filename->content);\n",50);
   cf_str_chars_append(&tmp,"if(!ret) {\n",11);
   // evil, we copy the varlist - but i don't have a better idea that doesn't cost much code
@@ -810,16 +810,16 @@ int process_include_tag(cf_string_t *file) {
   cf_str_str_append(&current_context->output_mem,&tmp);
   cf_str_chars_append(&current_context->output,"cf_tpl_parse(inc_tpl);\n",23);
   cf_str_chars_append(&current_context->output_mem,"cf_tpl_parse_to_mem(inc_tpl);\n",30);
-  cf_str_chars_append(&current_context->output_mem,"if(inc_tpl->parsed.len) cf_str_str_append(&tpl->parsed,&inc_tpl->parsed);\n",71);
+  cf_str_chars_append(&current_context->output_mem,"if(inc_tpl->parsed.len) cf_str_str_append(&tpl->parsed,&inc_tpl->parsed);\n",74);
   cf_str_cleanup(&tmp);
   cf_str_init(&tmp);
   cf_str_chars_append(&tmp,"inc_tpl->varlist = ov;\n",23);
   cf_str_chars_append(&tmp,"}\n",2);
   cf_str_chars_append(&tmp,"cf_tpl_finish(inc_tpl);\n",24);
   cf_str_chars_append(&tmp,"}\n",2);
-  cf_str_chars_append(&tmp,"cf_str_cleanup(inc_filepart);\n",27);
-  cf_str_chars_append(&tmp,"cf_str_cleanup(inc_filename);\n",27);
-  cf_str_chars_append(&tmp,"cf_str_cleanup(inc_fileext);\n",26);
+  cf_str_chars_append(&tmp,"cf_str_cleanup(inc_filepart);\n",30);
+  cf_str_chars_append(&tmp,"cf_str_cleanup(inc_filename);\n",30);
+  cf_str_chars_append(&tmp,"cf_str_cleanup(inc_fileext);\n",29);
   cf_str_chars_append(&tmp,"free(inc_tpl);\n",15);
   cf_str_chars_append(&tmp,"free(inc_filepart);\n",20);
   cf_str_chars_append(&tmp,"free(inc_filename);\n",20);
