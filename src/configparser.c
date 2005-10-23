@@ -39,6 +39,7 @@
 #include "utils.h"
 #include "hashlib.h"
 #include "configparser.h"
+#include "charconvert.h"
 /* }}} */
 
 /* {{{ globals */
@@ -619,10 +620,10 @@ int cf_read_config(cf_configfile_t *conf,cf_take_default_t deflt,int mode) {
 
     for(i=0;i<argnum;++i) {
       if(is_valid_utf8_string(args[i],strlen(args[i])) != 0) {
-	fprintf(stderr,"[%s:%d] Sorry, argument %d for directive '%s' is not valid UTF-8!\n",conf->filename,linenum,i+1,opt->name);
-	close(fd);
-	munmap(buff,st.st_size);
-	return 1;
+        fprintf(stderr,"[%s:%d] Sorry, argument %d for directive '%s' is not valid UTF-8!\n",conf->filename,linenum,i+1,opt->name);
+        close(fd);
+        munmap(buff,st.st_size);
+        return 1;
       }
     }
 

@@ -1,3 +1,10 @@
+2005-10-23 Christian Kruse <ckruse@wwwtech.de>
+	* src/modules/flt_noarchive.c, src/modules/flt_admin.c,
+		src/modules/flt_noanswer.c, src/modules/flt_moderated.c: Fixed several
+		security issues; I sent CGI parameters directly to the server without
+		checking for bad input.
+	* src/configparser.c: Added charconvert.h
+
 2005-10-21 Christian Kruse <ckruse@wwwtech.de>
 	* configure.in: Changed to libcurl, added flt_pavatar
 	* src/utils.h: Changed to libcurl, added some types for

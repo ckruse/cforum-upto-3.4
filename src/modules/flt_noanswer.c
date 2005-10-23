@@ -54,7 +54,8 @@ int flt_noanswer_gogogo(cf_hash_t *cgi,cf_configuration_t *dc,cf_configuration_t
   rline_t rl;
   u_char buff[512],*uname,*fn,*answer;
   int si = cf_hash_get(GlobalValues,"ShowInvisible",13) != NULL,x = 0;
-  cf_string_t *action = NULL,*tid,*mid,*mode;
+  cf_string_t *action = NULL,*tid,*mid,*mode,str;
+  u_int64_t itid,imid;
 
   if(si == 0 || cgi == NULL) return FLT_DECLINE;
 
@@ -66,7 +67,7 @@ int flt_noanswer_gogogo(cf_hash_t *cgi,cf_configuration_t *dc,cf_configuration_t
     mid = cf_cgi_get(cgi,"m");
 
     if(!tid || !mid) return FLT_DECLINE;
-    if(cf_str_to_uint64(tid->content) == 0 || cf_str_to_uint64(mid->content) == 0) return FLT_DECLINE;
+    if((itid = cf_str_to_uint64(tid->content)) == 0 || (imid = cf_str_to_uint64(mid->content)) == 0) return FLT_DECLINE;
 
     memset(&rl,0,sizeof(rl));
 
@@ -86,14 +87,22 @@ int flt_noanswer_gogogo(cf_hash_t *cgi,cf_configuration_t *dc,cf_configuration_t
     if(answer) free(answer);
 
     if(x == 0 || x == 200) {
-      if(cf_strcmp(action->content,"set-na") == 0) {
-        len = snprintf(buff,512,"FLAG SET t%s m%s\nFlag: no-answer=yes\n\n",tid->content,mid->content);
-        writen(sock,buff,len);
-      }
-      else if(cf_strcmp(action->content,"remove-na") == 0) {
-        len = snprintf(buff,512,"FLAG REMOVE t%s m%s\nFlags: no-answer\n",tid->content,mid->content);
-        writen(sock,buff,len);
-      }
+      cf_str_init_growth(&str,256);
+
+      if(cf_strcmp(action->content,"set-na") == 0)         cf_str_char_set(&str,"FLAG SET ",9);
+      else if(cf_strcmp(action->content,"remove-na") == 0) cf_str_char_set(&str,"FLAG REMOVE ",12);
+
+      cf_str_char_append(&str,'t');
+      cf_uint64_to_str(&str,itid);
+      cf_str_chars_append(&str," m",2);
+      cf_uint64_to_str(&str,imid);
+      cf_str_chars_append(&str,"\n Flag: no-answer",16);
+      if(cf_strcmp(action->content,"set-na") == 0) cf_str_chars_append(&str,"=yes",4);
+      cf_str_chars_append(&str,"\n\n",2);
+
+      writen(sock,str.content,str.len);
+
+      cf_str_cleanup(&str);
 
       answer = readline(sock,&rl);
       if(!answer || ((x = atoi(answer)) != 200)) {
