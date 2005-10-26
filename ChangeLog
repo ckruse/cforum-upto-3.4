@@ -1,42 +1,4 @@
-2005-10-23 Christian Kruse <ckruse@wwwtech.de>
-	* src/modules/flt_noanswer.c, src/modules/flt_moderated.c,
-		src/modules/flt_noarchive.c, src/modules/flt_admin.c: Fixed several security
-		issues. I sent CGI parameters directly to the server without checking for
-		bad input
-
-2005-10-21 Christian Kruse <ckruse@wwwtech.de>
-	* configure.in: Added flt_pavatar.la, changed to libcurl
-	* src/utils.h: Added several datatypes for cf_http_complex_request()
-	* src/modules/flt_remotesignature.c: Removed WWWLib headers
-	* src/modules/Makefile.am: Added flt_pavatar
-	* src/fo_post.c: Fixed a bug in [msg:] handling
-	* src/wwwutils.c: Changed to libcurl since libwww is _really_ pain in the ass.
-		Libcurl has a bad documentation, too, but it is much better than the
-		libwww!
-	* src/Makefile.am: Changed to libcurl
-	* src/utils.h, src/wwwutils.c: Changed the interface for
-		cf_http_simple_get_uri() a little bit: now you can give a
-		timestamp for the If-Modified-Since header.
-	* src/modules/flt_pavatar.c: Added cache timeout validation
-	* src/modules/flt_remotesignature.c: Changed to new API of HTTP utils
-
-2005-10-19 Christian Kruse <ckruse@wwwtech.de>
-	* src/fo_view.c: Added <string.h>
-	* src/utils.c: Added <limits.h>
-	* src/charconvert.c: Added <sys/types.h>
-	* src/fo_threadlookup.c: Added <string.h>
-	* src/modules/flt_spellcheck.c: Moved to keylist of the hash
-	* src/fo_vote.c: Added <string.h>
-	* src/xml_handling.c: Added <sys/types.h>
-	* src/communication.c: Added <sys/types.h>
-	* src/parsetpl/writers.c, src/parsetpl/helpers.c,
-		src/parsetpl/processors.c, src/parsetpl/dereferencors.c,
-		src/parsetpl/peeks.c: Changed order of #includes
-	* src/fo_feeds.c: Added <string.h>
-	* src/handlerrunners.c: Added <sys/types.h>
-	* src/htmllib.c: Added <sys/types.h>, removed unnecessary variable
-	* src/cf-tid_index.c: Added <string.h>
-	* src/messageutils.c: Added <sys/types.h>
-	* src/configparser.c: Fixed bug #93
-	* src/Makefile.am: Added libcharconvert.la for configparser
+2005-10-26 Christian Kruse <ckruse@wwwtech.de>
+	* src/modules/flt_pavatar.c: Fixed bugs, adopted handling to newer spec
+	* src/wwwutils.c: Fixed bug: HEAD requests should not follow redirects!
 
