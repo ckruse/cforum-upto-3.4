@@ -713,7 +713,7 @@ int process_variable_print_tag(token_t *variable,cf_array_t *data) {
   
   if(escape_html) {
     cf_str_cstr_append(&current_context->output,"print_htmlentities_encoded(vp->data.d_string.content,0,stdout);\n}\n}\n");
-    cf_str_cstr_append(&current_context->output_mem,"tmp = htmlentities(vp->data.d_string.content,0);\nstr_chars_append(&tpl->parsed,tmp,strlen(tmp));\nfree(tmp);\n}\n}\n");
+    cf_str_cstr_append(&current_context->output_mem,"tmp = htmlentities(vp->data.d_string.content,0);\ncf_str_chars_append(&tpl->parsed,tmp,strlen(tmp));\nfree(tmp);\n}\n}\n");
   }
   else {
     cf_str_cstr_append(&current_context->output,"my_write(vp->data.d_string.content);\n}\n}\n");

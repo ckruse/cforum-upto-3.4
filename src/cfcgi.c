@@ -25,6 +25,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <unistd.h>
 
 #include "hashlib.h"
 #include "utils.h"
@@ -62,6 +63,9 @@ int _cf_cgi_save_param(cf_hash_t *hash,u_char *name,size_t namlen,u_char *value,
  * \param data the given parameter list
  */
 void cf_cgi_destroy_entry(void *data);
+
+
+int _cf_cgi_parse_multipart(cf_hash_t *cgi,const u_char *data,size_t datalen,const u_char *boundary);
 /*\@}*/
 /* }}} */
 
@@ -74,46 +78,75 @@ void cf_cgi_destroy_entry(void *data);
  *
  */
 cf_hash_t *cf_cgi_new(void) {
-  u_char *clen = getenv("CONTENT_LENGTH"),*rqmeth = getenv("REQUEST_METHOD"),*data;
+  u_char *clen = getenv("CONTENT_LENGTH"),*data,*ct = getenv("CONTENT_TYPE"),*boundary;
   cf_hash_t *hash;
   long len  = 0;
-  int trash = 0;
+  int trash = 0,didone = 0;
 
-  if(!rqmeth) return NULL;
   if(clen) len = strtol(clen,NULL,10);
 
   hash = cf_hash_new(cf_cgi_destroy_entry);
 
-  if(strcmp(rqmeth,"GET") == 0) {
-    data = getenv("QUERY_STRING");
-  }
-  else {
-    if(!len) {
-      cf_hash_destroy(hash);
-      return NULL;
-    }
+  if(len) {
+    didone = 1;
+    trash  = 1;
 
-    trash = 1;
-    data  = cf_alloc(NULL,len + 1,1,CF_ALLOC_MALLOC);
+    data   = cf_alloc(NULL,len + 1,1,CF_ALLOC_MALLOC);
 
     fread(data,1,len,stdin);
     data[len] = '\0';
+
+    if(data && *data) {
+      if(ct && cf_strncmp(ct,"multipart/form-data",19) == 0) {
+        /* get boundary */
+        boundary = strstr(ct,"boundary");
+
+        /* no boundary? this cannot happen, but who knows what stupid browsers out there */
+        if(boundary == NULL || (boundary = strchr(boundary, '=')) == NULL) {
+          cf_hash_destroy(hash);
+          free(data);
+          return NULL;
+        }
+
+        boundary = strdup(boundary+1);
+
+        if(!_cf_cgi_parse_multipart(hash,data,(size_t)len,boundary)) {
+          cf_hash_destroy(hash);
+          free(boundary);
+          free(data);
+          return NULL;
+        }
+
+        free(boundary);
+      }
+      else {
+        if(!_cf_cgi_parse_params(hash,data)) {
+          cf_hash_destroy(hash);
+          free(data);
+          return NULL;
+        }
+      }
+    }
   }
 
-  if(data && *data) {
+  if(trash) free(data);
+  trash = 0;
+
+  if((data = getenv("QUERY_STRING")) != NULL && *data) {
     if(!_cf_cgi_parse_params(hash,data)) {
       cf_hash_destroy(hash);
-      if(trash) free(data);
       return NULL;
     }
 
-    return hash;
-  }
-  else {
-    cf_hash_destroy(hash);
+    didone = 1;
   }
 
-  return NULL;
+  if(didone == 0) {
+    cf_hash_destroy(hash);
+    return NULL;
+  }
+
+  return hash;
 }
 /* }}} */
 
@@ -306,6 +339,109 @@ u_char *cf_cgi_url_encode(const u_char *str,size_t *len) {
   *len  = ptr2-nstr;
 
   return nstr;
+}
+/* }}} */
+
+/* {{{ _cf_cgi_parse_multipart */
+int _cf_cgi_parse_multipart(cf_hash_t *cgi,const u_char *data,size_t datalen,const u_char *boundary) {
+  size_t blen = strlen(boundary),namlen,vallen;
+  u_char
+    *start_boundary = cf_alloc(NULL,1,blen+3,CF_ALLOC_MALLOC),
+    *start,*name,*value;
+
+  register u_char *ptr;
+
+  *start_boundary = '-';
+  *(start_boundary+1) = '-';
+  strcpy(start_boundary+2,boundary);
+
+  for(ptr=(u_char *)data;*ptr;++ptr) {
+    if(cf_strncmp(ptr,start_boundary,blen+2) == 0) {
+      ptr += blen + 2;
+
+      if(*ptr == '-' && *(ptr+1) == '-') break;
+
+      if(ptr >= data+datalen) {
+        free(start_boundary);
+        #ifdef CF_CGI_DBG
+        fprintf(stderr,"[%s:%d] ptr is smaller than data+datalen (%d) \n",__FILE__,__LINE__,(int)(data+datalen));
+        #endif
+        return 0;
+      }
+      for(;*ptr && cf_strncmp(ptr,"Content-Disposition: form-data;",31) != 0;++ptr);
+      if(*ptr == '\0') {
+        free(start_boundary);
+        #ifdef CF_CGI_DBG
+        fprintf(stderr,"[%s:%d] *ptr is \\0 after Content-Disposition: form-data;\n",__FILE__,__LINE__);
+        #endif
+        return 0;
+      }
+
+      ptr += 31;
+      for(;*ptr && isspace(*ptr);++ptr);
+      if(cf_strncmp(ptr,"name=\"",6) != 0) {
+        free(start_boundary);
+        #ifdef CF_CGI_DBG
+        fprintf(stderr,"[%s:%d] name=\" is missing (%s)\n",__FILE__,__LINE__,ptr);
+        #endif
+        return 0;
+      }
+
+      ptr += 6;
+      start = ptr;
+
+      for(++ptr;*ptr && *ptr != '"';++ptr);
+      if(*ptr == '\0') {
+        free(start_boundary);
+        #ifdef CF_CGI_DBG
+        fprintf(stderr,"[%s:%d] ptr is \\0 after name=\"\n",__FILE__,__LINE__);
+        #endif
+        return 0;
+      }
+
+      namlen = ptr - start;
+      name   = strndup(start,namlen);
+
+      /* search content; go to first \r\n */
+      for(;*ptr && cf_strncmp(ptr,"\015\012\015\012",4) != 0;++ptr);
+      if(*ptr == '\0') {
+        free(start_boundary);
+        free(name);
+        #ifdef CF_CGI_DBG
+        fprintf(stderr,"[%s:%d] ptr is \\0, failure!",__FILE__,__LINE__);
+        #endif
+        return 0;
+      }
+
+      ptr += 4;
+      start = ptr;
+
+      /* search end of value */
+      for(ptr=start;*ptr && cf_strncmp(ptr,start_boundary,blen+2) != 0;++ptr);
+      if(*ptr == '\0') {
+        free(start_boundary);
+        free(name);
+        #ifdef CF_CGI_DBG
+        fprintf(stderr,"[%s:%d] ptr is \\0 after value!\n",__FILE__,__LINE__);
+        #endif
+        return 0;
+      }
+
+      vallen = ptr - start - 2;
+      value = strndup(start,vallen);
+
+      _cf_cgi_save_param(cgi,name,namlen,value,vallen);
+
+      free(name);
+      free(value);
+
+      --ptr;
+    }
+  }
+
+  free(start_boundary);
+
+  return 1;
 }
 /* }}} */
 

@@ -1,3 +1,8 @@
+2005-10-26 Christian Kruse <ckruse@wwwtech.de>
+	* src/cfcgi.c: Implemented multipart/form-data handling; you should not use it
+		with big files! All data is saved in memory!
+	* src/parsetpl/processors.c: Bugfix, str_chars_append => cf_str_chars_append
+
 2005-10-23 Christian Seiler <self@christian-seiler.de>
 	* src/parsetpl/{processors.c,parser.c,parsetpl.lex}: Fixed some
 		lengths so generated code still works.
