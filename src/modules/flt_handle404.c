@@ -24,6 +24,7 @@
 #include <string.h>
 #include <time.h>
 #include <sys/types.h>
+#include <inttypes.h>
 
 #include <sys/stat.h>
 #include <unistd.h>
@@ -89,10 +90,10 @@ void flt_handle404_gen_url(u_char *buff,u_char *aurl,u_char *url,u_int64_t tid,u
   if(slash == 0) *ptr++ = '/';
 
   /* now, append tid */
-  len = sprintf(ptr,"t%llu/",tid);
+  len = sprintf(ptr,"t%"PRIu64"/",tid);
   ptr += len;
 
-  if(mid) len = sprintf(ptr,"#m%llu",mid);
+  if(mid) len = sprintf(ptr,"#m%"PRIu64,mid);
   ptr += len;
 
   *ptr = '\0';
@@ -129,7 +130,7 @@ int flt_handle404_execute(cf_hash_t *head,configuration_t *dc,configuration_t *v
   memset(&key,0,sizeof(key));
   memset(&data,0,sizeof(data));
 
-  len = snprintf(ctid,50,"%llu",tid);
+  len = snprintf(ctid,50,"%"PRIu64,tid);
   key.data = ctid;
   key.size = len;
 

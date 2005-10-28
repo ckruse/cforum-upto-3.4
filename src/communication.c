@@ -31,6 +31,7 @@
 #endif
 
 #include <sys/types.h>
+#include <inttypes.h>
 
 #include "hashlib.h"
 #include "utils.h"
@@ -383,7 +384,7 @@ int cf_get_message_through_sock(int sock,rline_t *tsd,cl_thread_t *thr,u_int64_t
   if(line && cf_strncmp(line,"200 Ok",6) == 0) {
     free(line);
 
-    len  = snprintf(buff,128,"GET POSTING t%llu m%llu invisible=%d\n",tid,mid,del);
+    len  = snprintf(buff,128,"GET POSTING t%"PRIu64" m%"PRIu64" invisible=%d\n",tid,mid,del);
     writen(sock,buff,len);
 
     line = readline(sock,tsd);

@@ -23,6 +23,7 @@
 #include <string.h>
 #include <time.h>
 #include <sys/types.h>
+#include <inttypes.h>
 
 #include "hashlib.h"
 #include "utils.h"
@@ -50,7 +51,7 @@ int flt_threadreturnanchor_post(cf_hash_t *head,configuration_t *dc,configuratio
     str_init(&new_path);
     str_str_set(&new_path,(string_t *)&path->data.d_string);
     str_char_append(&new_path,'#');
-    len = snprintf(buf, 50, "t%llu", thread->tid);
+    len = snprintf(buf, 50, "t%"PRIu64, thread->tid);
     str_chars_append(&new_path,buf,len);
     cf_tpl_setvalue(tpl,"forumreturn",TPL_VARIABLE_STRING,new_path.content,new_path.len);
     str_cleanup(&new_path);

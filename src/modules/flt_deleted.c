@@ -25,6 +25,7 @@
 
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <inttypes.h>
 #include <fcntl.h>
 #include <unistd.h>
 
@@ -79,7 +80,7 @@ int flt_deleted_execute(cf_hash_t *head,configuration_t *dc,configuration_t *vc,
         memset(&key,0,sizeof(key));
         memset(&data,0,sizeof(data));
 
-        len = snprintf(buff,256,"%llu",thread->tid);
+        len = snprintf(buff,256,"%"PRIu64,thread->tid);
         key.data = buff;
         key.size = len;
 
@@ -92,7 +93,7 @@ int flt_deleted_execute(cf_hash_t *head,configuration_t *dc,configuration_t *vc,
             cf_msg_delete_subtree(thread->messages);
           }
           else {
-            len = snprintf(buff,256,"?a=u&dt=%llu",thread->tid);
+            len = snprintf(buff,256,"?a=u&dt=%"PRIu64,thread->tid);
             cf_tpl_hashvar_setvalue(&thread->messages->hashvar,"deleted_undel_link",TPL_VARIABLE_STRING,buff,len);
 
             for(msg=thread->messages;msg;msg=msg->next) cf_tpl_hashvar_setvalue(&msg->hashvar,"undel",TPL_VARIABLE_INT,1);
@@ -106,14 +107,14 @@ int flt_deleted_execute(cf_hash_t *head,configuration_t *dc,configuration_t *vc,
 
           if(Cfg.xml_http) cf_tpl_hashvar_setvalue(&msg->hashvar,"DeletedUseXMLHttp",TPL_VARIABLE_INT,1);
 
-          len = snprintf(buff,150,"%s?a=d&dt=%lld",url->values[0],thread->tid);
+          len = snprintf(buff,150,"%s?a=d&dt=%"PRIu64,url->values[0],thread->tid);
           cf_tpl_hashvar_setvalue(&msg->hashvar,"dellink",TPL_VARIABLE_STRING,buff,len);
         }
       }
     }
     else {
       if(mode & CF_MODE_THREADVIEW) {
-        len = snprintf(buff,150,"%s?a=d&dt=%lld",url->values[0],thread->tid);
+        len = snprintf(buff,150,"%s?a=d&dt=%"PRIu64,url->values[0],thread->tid);
         cf_tpl_hashvar_setvalue(&msg->hashvar,"dellink",TPL_VARIABLE_STRING,buff,len);
 
         if(Cfg.xml_http) cf_tpl_hashvar_setvalue(&msg->hashvar,"DeletedUseXMLHttp",TPL_VARIABLE_INT,1);
@@ -199,7 +200,7 @@ int flt_deleted_del_thread(cf_hash_t *head,configuration_t *dc,configuration_t *
               data.size = sizeof(one);
 
               /* we transform the value again to a string because there could be trash in it... */
-              len = snprintf(buff,256,"%llu",tid);
+              len = snprintf(buff,256,"%"PRIu64,tid);
 
               key.data = buff;
               key.size = len;
@@ -236,7 +237,7 @@ int flt_deleted_del_thread(cf_hash_t *head,configuration_t *dc,configuration_t *
             memset(&key,0,sizeof(key));
 
             /* we transform the value again to a string because there could be trash in it... */
-            len = snprintf(buff,256,"%llu",tid);
+            len = snprintf(buff,256,"%"PRIu64,tid);
 
             key.data = buff;
             key.size = len;

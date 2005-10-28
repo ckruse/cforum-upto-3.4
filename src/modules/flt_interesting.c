@@ -25,6 +25,7 @@
 
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <inttypes.h>
 #include <fcntl.h>
 #include <unistd.h>
 
@@ -113,7 +114,7 @@ int flt_interesting_mark_thread(cf_hash_t *head,configuration_t *dc,configuratio
               data.size = sizeof(one);
 
               /* we transform the value again to a string because there could be trash in it... */
-              len = snprintf(buff,256,"%llu",tid);
+              len = snprintf(buff,256,"%"PRIu64,tid);
 
               key.data = buff;
               key.size = len;
@@ -150,7 +151,7 @@ int flt_interesting_mark_thread(cf_hash_t *head,configuration_t *dc,configuratio
               memset(&key,0,sizeof(key));
 
               /* we transform the value again to a string because there could be trash in it... */
-              len = snprintf(buff,256,"%llu",tid);
+              len = snprintf(buff,256,"%"PRIu64,tid);
 
               key.data = buff;
               key.size = len;
@@ -239,18 +240,18 @@ int flt_interesting_mark_interesting(cf_hash_t *head,configuration_t *dc,configu
         memset(&key,0,sizeof(key));
         memset(&data,0,sizeof(data));
 
-        len = snprintf(buff,256,"%llu",thread->tid);
+        len = snprintf(buff,256,"%"PRIu64,thread->tid);
         key.data = buff;
         key.size = len;
 
         if(flt_interesting_db->get(flt_interesting_db,NULL,&key,&data,0) == 0) {
           cf_tpl_hashvar_setvalue(&msg->hashvar,"mi",TPL_VARIABLE_INT,1);
 
-          len = snprintf(buff,150,"%s?a=rmi&mit=%llu",url->values[0],thread->tid);
+          len = snprintf(buff,150,"%s?a=rmi&mit=%"PRIu64,url->values[0],thread->tid);
           cf_tpl_hashvar_setvalue(&msg->hashvar,"rmilink",TPL_VARIABLE_STRING,buff,len);
         }
         else {
-          len = snprintf(buff,150,"%s?a=mi&mit=%llu",url->values[0],thread->tid);
+          len = snprintf(buff,150,"%s?a=mi&mit=%"PRIu64,url->values[0],thread->tid);
           cf_tpl_hashvar_setvalue(&msg->hashvar,"milink",TPL_VARIABLE_STRING,buff,len);
         }
       }

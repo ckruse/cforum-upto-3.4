@@ -26,6 +26,7 @@
 #include <ctype.h>
 #include <string.h>
 #include <sys/types.h>
+#include <inttypes.h>
 #include <sys/file.h>
 
 #include <errno.h>
@@ -132,7 +133,7 @@ int flt_mailonpost_init_handler(cf_hash_t *head,configuration_t *dc,configuratio
       return FLT_DECLINE;
     }
 
-    n = snprintf(buff,256,"t%llu",tid);
+    n = snprintf(buff,256,"t%"PRIu64,tid);
 
     memset(&key,0,sizeof(key));
     memset(&data,0,sizeof(data));
@@ -293,6 +294,7 @@ void flt_mailonpost_encode_header(string_t *str,const u_char *enc,size_t len) {
   unsigned x;
   u_char *ptr;
   size_t llen,clen;
+  u_int32_t num;
 
   for(ptr=(u_char *)enc;*ptr && di == 0;++ptr) {
     if(((u_int8_t)*ptr) & 0x80) ++di;
@@ -304,7 +306,7 @@ void flt_mailonpost_encode_header(string_t *str,const u_char *enc,size_t len) {
     for(llen=0,ptr=(u_char *)enc;*ptr;++ptr,++llen) {
       if(*ptr == ' ') str_char_append(str,'_');
       else if(*ptr >= 0x7f || *ptr < 0x20 || *ptr == '_') {
-        clen = utf8_to_unicode(ptr,len-(ptr-enc),&clen);
+        clen = utf8_to_unicode(ptr,len-(ptr-enc),&num);
 
         if(llen == 73 - clen) {
           str_chars_append(str,"?=\n =?UTF-8?Q?",14);
@@ -538,7 +540,7 @@ int flt_mailonpost_execute(cf_hash_t *head,configuration_t *dc,configuration_t *
   memset(&key,0,sizeof(key));
   memset(&data,0,sizeof(data));
 
-  n = snprintf(buff,256,"t%llu",tid);
+  n = snprintf(buff,256,"t%"PRIu64,tid);
   key.data = buff;
   key.size = n;
 
@@ -595,7 +597,7 @@ int flt_mailonpost_post_handler(cf_hash_t *head,configuration_t *dc,configuratio
   memset(&key,0,sizeof(key));
   memset(&data,0,sizeof(data));
 
-  len = snprintf(buff,256,"t%llu",thread->tid);
+  len = snprintf(buff,256,"t%"PRIu64,thread->tid);
 
   key.data = buff;
   key.size = len;

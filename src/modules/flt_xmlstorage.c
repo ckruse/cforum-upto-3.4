@@ -33,6 +33,7 @@
 #include <errno.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <inttypes.h>
 #include <sys/wait.h>
 
 struct sockaddr_un;
@@ -372,7 +373,7 @@ int flt_xmlstorage_make_forumtree(forum_t *forum) {
     cf_register_thread(forum,thread);
 
     /* initialize thread lock */
-    snprintf(buff,50,"t%llu",thread->tid);
+    snprintf(buff,50,"t%"PRIu64,thread->tid);
     cf_rwlock_init(buff,&thread->lock);
 
     free(ctid);
@@ -506,14 +507,14 @@ void flt_xmlstorage_create_threadtree(forum_t *forum,thread_t *thread,posting_t 
         post->content.reserved = post->content.len;
       }
       else {
-        cf_log(CF_ERR|CF_FLSH,__FILE__,__LINE__,"error in thread file of thread %llu: could not get content!\n",thread->tid);
+        cf_log(CF_ERR|CF_FLSH,__FILE__,__LINE__,"error in thread file of thread %"PRIu64": could not get content!\n",thread->tid);
         exit(-1);
       }
     }
     else if(cf_strcmp(name->str,"Message") == 0) {
       cmid = xml_get_attribute(n,"id");
       if((msg_ind = flt_xmlstorage_gemessage_t_node(msg_elem_index,cmid)) == NULL) {
-        cf_log(CF_ERR|CF_FLSH,__FILE__,__LINE__,"error getting index element in thread %llu, message %llu\n",thread->tid,post->mid);
+        cf_log(CF_ERR|CF_FLSH,__FILE__,__LINE__,"error getting index element in thread %"PRIu64", message %"PRIu64"\n",thread->tid,post->mid);
         exit(-1);
       }
       free(cmid);
@@ -946,7 +947,7 @@ int flt_xmlstorage_threadlist_writer(forum_t *forum) {
   doc = xml_create_doc(impl,"Forum",FORUM_DTD);
   elm = gdome_doc_documentElement(doc,&e);
 
-  cf_log(CF_DBG,__FILE__,__LINE__,"tid %llu, mid: %llu\n",ltid,lmid);
+  cf_log(CF_DBG,__FILE__,__LINE__,"tid %"PRIu64", mid: %"PRIu64"\n",ltid,lmid);
 
   str_init_growth(&str,10);
 
@@ -974,12 +975,12 @@ int flt_xmlstorage_threadlist_writer(forum_t *forum) {
     str_chars_append(&str,".xml",4);
     cf_log(CF_DBG,__FILE__,__LINE__,"save file: %s\n",str.content);
     if(!gdome_di_saveDocToFile(impl,doc_thread,str.content,0,&e)) {
-      cf_log(CF_ERR|CF_FLSH,__FILE__,__LINE__,"ERROR! COULD NOT WRITE XML FILE! Trying to write it to /tmp/%s/t%llu.xml\n",forum->name,t->tid);
+      cf_log(CF_ERR|CF_FLSH,__FILE__,__LINE__,"ERROR! COULD NOT WRITE XML FILE! Trying to write it to /tmp/%s/t%"PRIu64".xml\n",forum->name,t->tid);
 
       snprintf(buff,256,"/tmp/%s",forum->name);
       cf_make_path(buff,0755);
 
-      snprintf(buff,256,"/tmp/%s/t%llu.xml",forum->name,t->tid);
+      snprintf(buff,256,"/tmp/%s/t%"PRIu64".xml",forum->name,t->tid);
       gdome_di_saveDocToFile(impl,doc_thread,buff,0,&e);
     }
 
@@ -1078,12 +1079,12 @@ int flt_xmlstorage_archive_threads(forum_t *forum,thread_t **threads,size_t len)
     str_chars_append(&str,".xml",4);
 
     if(!gdome_di_saveDocToFile(impl,doc_thread,str.content,0,&e)) {
-      cf_log(CF_ERR|CF_FLSH,__FILE__,__LINE__,"ERROR! COULD NOT WRITE XML FILE! Trying to write it to /tmp/%s/archive/t%llu.xml\n",forum->name,threads[i]->tid);
+      cf_log(CF_ERR|CF_FLSH,__FILE__,__LINE__,"ERROR! COULD NOT WRITE XML FILE! Trying to write it to /tmp/%s/archive/t%"PRIu64".xml\n",forum->name,threads[i]->tid);
 
       snprintf(buff,256,"/tmp/%s/archive",forum->name);
       cf_make_path(buff,0755);
 
-      snprintf(buff,256,"/tmp/%s/archive/t%llu.xml",forum->name,threads[i]->tid);
+      snprintf(buff,256,"/tmp/%s/archive/t%"PRIu64".xml",forum->name,threads[i]->tid);
       gdome_di_saveDocToFile(impl,doc_thread,buff,0,&e);
     }
 
@@ -1096,7 +1097,7 @@ int flt_xmlstorage_archive_threads(forum_t *forum,thread_t **threads,size_t len)
     gdome_doc_unref(doc_thread,&e);
     gdome_doc_unref(doc,&e);
 
-    snprintf(buff,512,"%s/t%llu.xml",mpath->values[0],threads[i]->tid);
+    snprintf(buff,512,"%s/t%"PRIu64".xml",mpath->values[0],threads[i]->tid);
     unlink(buff);
   }
 
@@ -1110,7 +1111,7 @@ int flt_xmlstorage_remove_thread(forum_t *forum,thread_t *thr) {
   name_value_t *mpath = cfg_get_first_value(&fo_default_conf,forum->name,"MessagePath");
   u_char buff[512];
 
-  snprintf(buff,512,"%s/t%llu.xml",mpath->values[0],thr->tid);
+  snprintf(buff,512,"%s/t%"PRIu64".xml",mpath->values[0],thr->tid);
   unlink(buff);
 
   return FLT_OK;

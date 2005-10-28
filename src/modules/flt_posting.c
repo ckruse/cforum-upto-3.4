@@ -25,6 +25,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <sys/types.h>
+#include <inttypes.h>
 
 #include "readline.h"
 #include "hashlib.h"
@@ -153,7 +154,7 @@ int flt_posting_execute_filter(cf_hash_t *head,configuration_t *dc,configuration
   cf_tpl_setvalue(tpl,"qchar",TPL_VARIABLE_STRING,"&#255;",6);
   cf_tpl_appendvalue(tpl,"qchar",qchars,qclen);
 
-  len = sprintf(buff,"%llu,%llu",thread->tid,thread->threadmsg->mid);
+  len = sprintf(buff,"%"PRIu64",%"PRIu64,thread->tid,thread->threadmsg->mid);
   cf_tpl_setvalue(tpl,"fupto",TPL_VARIABLE_STRING,buff,len);
 
   len = gen_unid(buff,50);

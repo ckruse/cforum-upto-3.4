@@ -198,7 +198,7 @@ time_t flt_http_lm_callbacks(cf_hash_t *head,configuration_t *dc,configuration_t
         if(ret == (time_t)-1) continue;
         if(ret > t1) {
           #ifdef DEBUG
-          printf("X-Debug: got it from %d\n",i);
+          printf("X-Debug: got it from %zu\n",i);
           #endif
           t1 = ret;
         }

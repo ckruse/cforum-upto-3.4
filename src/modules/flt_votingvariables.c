@@ -25,6 +25,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <sys/types.h>
+#include <inttypes.h>
 
 #include "readline.h"
 #include "hashlib.h"
@@ -51,11 +52,11 @@ int flt_votingvariables_execute_filter(cf_hash_t *head,configuration_t *dc,confi
   u_char *UserName = cf_hash_get(GlobalValues,"UserName",8);
 
   if(flt_vv_Config.activate) {
-    cf_tpl_setvalue(tpl,"votes",TPL_VARIABLE_STRING,"1",1);
+    cf_tpl_setvalue(tpl,"votes",TPL_VARIABLE_INT,1);
 
-    if(UserName) cf_tpl_setvalue(tpl,"votes_link",TPL_VARIABLE_STRING,"1",1);
+    if(UserName) cf_tpl_setvalue(tpl,"votes_link",TPL_VARIABLE_INT,1);
 
-    if(flt_vv_Config.show_votes) cf_tpl_setvalue(tpl,"show_votes",TPL_VARIABLE_STRING,"1",1);
+    if(flt_vv_Config.show_votes) cf_tpl_setvalue(tpl,"show_votes",TPL_VARIABLE_INT,1);
     if(flt_vv_Config.use_js) cf_tpl_setvalue(tpl,"VotingUseJS",TPL_VARIABLE_INT,1);
 
     return FLT_OK;
@@ -75,10 +76,10 @@ int flt_votingvariables_setvars(cf_hash_t *head,configuration_t *dc,configuratio
   size_t len;
 
   if(flt_vv_Config.activate) {
-    len = snprintf(buff,512,"%llu",msg->mid);
+    len = snprintf(buff,512,"%"PRIu64,msg->mid);
     cf_tpl_hashvar_setvalue(hash,"mid",TPL_VARIABLE_STRING,buff,len);
 
-    len = snprintf(buff,512,"%llu",thread->tid);
+    len = snprintf(buff,512,"%"PRIu64,thread->tid);
     cf_tpl_hashvar_setvalue(hash,"tid",TPL_VARIABLE_STRING,buff,len);
 
     if(UserName) {
@@ -92,10 +93,10 @@ int flt_votingvariables_setvars(cf_hash_t *head,configuration_t *dc,configuratio
     }
 
     if(flt_vv_Config.show_votes) {
-      len = snprintf(buff,512,"%lu",(unsigned long)msg->votes_good);
+      len = snprintf(buff,512,"%"PRIu32,msg->votes_good);
       cf_tpl_hashvar_setvalue(hash,"votes_good",TPL_VARIABLE_STRING,buff,len);
 
-      len = snprintf(buff,512,"%lu",(unsigned long)msg->votes_bad);
+      len = snprintf(buff,512,"%"PRIu32,msg->votes_bad);
       cf_tpl_hashvar_setvalue(hash,"votes_bad",TPL_VARIABLE_STRING,buff,len);
     }
 

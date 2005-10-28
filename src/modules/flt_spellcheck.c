@@ -335,7 +335,7 @@ int flt_spellcheck_execute(cf_hash_t *head,configuration_t *dc,configuration_t *
         snprintf(buf,19,"%d",wpos-1);
         str_cstr_append(&html_out,buf);
         str_char_append(&html_out,'_');
-        snprintf(buf,19,"%d",l);
+        snprintf(buf,19,"%zu",l);
         str_cstr_append(&html_out,buf);
         str_cstr_append(&html_out,"\">");
         str_cstr_append(&html_out,"<option>");
@@ -402,7 +402,7 @@ int flt_spellcheck_execute(cf_hash_t *head,configuration_t *dc,configuration_t *
         snprintf(buf,19,"%d",wpos-1);
         str_cstr_append(&html_out,buf);
         str_char_append(&html_out,'_');
-        snprintf(buf,19,"%d",l);
+        snprintf(buf,19,"%zu",l);
         str_cstr_append(&html_out,buf);
         str_cstr_append(&html_out,"\">");
         str_cstr_append(&html_out,"<option>");

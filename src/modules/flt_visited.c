@@ -33,6 +33,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <sys/file.h>
+#include <inttypes.h>
 
 #include <db.h>
 
@@ -72,7 +73,7 @@ void *flt_visited_is_visited(void *vmid) {
   memset(&data,0,sizeof(data));
 
   if(Cfg.VisitedFile) {
-    len = snprintf(buff,256,"%llu",*mid);
+    len = snprintf(buff,256,"%"PRIu64,*mid);
     key.data = buff;
     key.size = len;
 
@@ -98,7 +99,7 @@ void *flt_visited_mark_visited_api(void *vmid) {
     memset(&key,0,sizeof(key));
     memset(&data,0,sizeof(data));
 
-    len = snprintf(buff,256,"%llu",*mid);
+    len = snprintf(buff,256,"%"PRIu64,*mid);
 
     data.data = one;
     data.size = sizeof(one);
@@ -189,7 +190,7 @@ int flt_visited_execute_filter(cf_hash_t *head,configuration_t *dc,configuration
               if(ret == -1) return FLT_DECLINE;
 
               for(msg=thread.messages;msg;msg=msg->next) {
-                len = snprintf(buff,256,"%llu",msg->mid);
+                len = snprintf(buff,256,"%"PRIu64,msg->mid);
                 key.data = buff;
                 key.size = len;
 
@@ -230,7 +231,7 @@ int flt_visited_execute_filter(cf_hash_t *head,configuration_t *dc,configuration
           if(ret == -1) return FLT_DECLINE;
 
           for(msg=thread.messages;msg;msg=msg->next) {
-            len = snprintf(buff,256,"%llu",msg->mid);
+            len = snprintf(buff,256,"%"PRIu64,msg->mid);
             key.data = buff;
             key.size = len;
 
@@ -258,7 +259,7 @@ int flt_visited_execute_filter(cf_hash_t *head,configuration_t *dc,configuration
         mid = str_to_u_int64(cmid);
 
         if(mid) {
-          len = snprintf(buff,256,"%llu",mid);
+          len = snprintf(buff,256,"%"PRIu64,mid);
           key.data = buff;
           key.size = len;
 
@@ -313,7 +314,7 @@ int flt_visited_mark_visited(cf_hash_t *head,configuration_t *dc,configuration_t
     memset(&key,0,sizeof(key));
     memset(&data,0,sizeof(data));
 
-    len = snprintf(buff,256,"%llu",msg->mid);
+    len = snprintf(buff,256,"%"PRIu64,msg->mid);
     key.data = buff;
     key.size = len;
 
@@ -438,7 +439,7 @@ int flt_visited_set_link(cf_hash_t *head,configuration_t *dc,configuration_t *vc
   message_t *msg = cf_msg_get_first_visible(thr->messages);
 
   if(Cfg.VisitedFile && Cfg.HighlightVisitedPostings) {
-    len = snprintf(buff,512,"%s?mv=%llu",x->values[0],thr->tid);
+    len = snprintf(buff,512,"%s?mv=%"PRIu64,x->values[0],thr->tid);
     cf_set_variable_hash(&msg->hashvar,cs,"mvlink",buff,len,1);
 
     if(Cfg.xml_http) cf_tpl_hashvar_setvalue(&msg->hashvar,"VisitedUseXMLHttp",TPL_VARIABLE_INT,1);

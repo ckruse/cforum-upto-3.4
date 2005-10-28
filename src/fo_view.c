@@ -31,6 +31,7 @@
 #include <netdb.h>
 #include <unistd.h>
 #include <sys/un.h>
+#include <inttypes.h>
 
 #ifdef CF_SHARED_MEM
 #include <sys/ipc.h>
@@ -242,9 +243,9 @@ void show_posting(cf_hash_t *head,void *shm_ptr,u_int64_t tid,u_int64_t mid)
   cf_set_variable(&tpl,cs,"postscript",ps->values[0],strlen(ps->values[0]),1);
   cf_set_variable(&tpl,cs,"regscript",reg->values[0],strlen(reg->values[0]),1);
 
-  len = snprintf(buff,256,"%llu",thread.tid);
+  len = snprintf(buff,256,"%"PRIu64,thread.tid);
   cf_set_variable(&tpl,cs,"tid",buff,len,0);
-  len = snprintf(buff,256,"%llu",thread.threadmsg->mid);
+  len = snprintf(buff,256,"%"PRIu64,thread.threadmsg->mid);
   cf_set_variable(&tpl,cs,"mid",buff,len,0);
 
   /* user values */
@@ -286,7 +287,7 @@ void show_threadlist(void *shm_ptr,cf_hash_t *head)
 #endif
 {
   /* {{{ variables */
-  int len;
+  size_t len;
   #ifndef CF_SHARED_MEM
   rline_t tsd;
   u_char *line,buff[128];

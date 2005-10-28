@@ -26,6 +26,7 @@
 
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <inttypes.h>
 #include <sys/file.h>
 #include <errno.h>
 
@@ -87,7 +88,7 @@ int flt_tidx_module(forum_t *forum,thread_t *thr) {
   /* }}} */
 
   len  = snprintf(buff,256,"%d/%d",t.tm_year+1900,t.tm_mon+1);
-  tlen = snprintf(tid,50,"%llu",thr->tid);
+  tlen = snprintf(tid,50,"%"PRIu64,thr->tid);
 
   memset(&key,0,sizeof(key));
   memset(&data,0,sizeof(data));

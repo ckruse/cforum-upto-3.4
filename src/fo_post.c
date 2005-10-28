@@ -28,6 +28,7 @@
 
 #include <pcre.h>
 #include <sys/types.h>
+#include <inttypes.h>
 
 /* socket includes */
 #include <sys/socket.h>
@@ -104,7 +105,7 @@ void display_finishing_screen(message_t *p) {
   cf_set_variable(&tpl,cs,"Name",p->author.content,p->author.len,1);
   cf_set_variable(&tpl,cs,"subject",p->subject.content,p->subject.len,1);
 
-  if((val = cf_general_get_time(df->values[0],lc->values[0],(int *)&len,&p->date)) != NULL) {
+  if((val = cf_general_get_time(df->values[0],lc->values[0],&len,&p->date)) != NULL) {
     cf_set_variable(&tpl,cs,"date",val,len,1);
     free(val);
   }
@@ -1132,7 +1133,7 @@ int main(int argc,char *argv[],char *env[]) {
 
         free(val);
 
-        if(tid && mid) len = snprintf(buff,256,"POST ANSWER t=%llu m=%llu\n",tid,mid);
+        if(tid && mid) len = snprintf(buff,256,"POST ANSWER t=%"PRIu64" m=%"PRIu64"\n",tid,mid);
         else           len = snprintf(buff,256,"POST THREAD\n");
 
         str_chars_append(&str1,buff,len);
@@ -1268,7 +1269,7 @@ int main(int argc,char *argv[],char *env[]) {
   if(head) cf_hash_destroy(head);
 
   #ifdef CF_SHARED_MEM
-  if(sock) shmdt((void *)sock);
+  if(sock) shmdt(shm);
   #endif
 
   return EXIT_SUCCESS;

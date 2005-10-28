@@ -565,7 +565,7 @@ void generate_thread_output(cl_thread_t *thread,hierarchical_node_t *msg,cf_tpl_
   cf_tpl_var_addvalue(&ary,TPL_VARIABLE_STRING,tmp?tmp:msg->msg->author.content,tmp?len:msg->msg->author.len);
   if(tmp) free(tmp);
 
-  if((date = cf_general_get_time(tf->values[0],dl->values[0],(int *)&len,&msg->msg->date)) != NULL) {
+  if((date = cf_general_get_time(tf->values[0],dl->values[0],&len,&msg->msg->date)) != NULL) {
     cf_set_variable(tl_tpl,cs,"date",date,len,1);
 
     len1 = prep_var(date,len,&tmp,cs,1);
@@ -744,7 +744,7 @@ void show_thread(const u_char *year,const u_char *month,const u_char *tid) {
   u_char pi[256];
 
   mod_api_t is_admin = cf_get_mod_api_ent("is_admin");
-  int admin = uname ? (int)is_admin(uname) : 0;
+  int admin = uname ? is_admin(uname) == NULL ? 0 : 1 : 0;
 
   name_value_t *cs = cfg_get_first_value(&fo_default_conf,fn,"ExternCharset");
   name_value_t *sm = cfg_get_first_value(&fo_arcview_conf,fn,"SortMessages");

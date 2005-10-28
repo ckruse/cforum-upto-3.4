@@ -25,6 +25,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <sys/types.h>
+#include <inttypes.h>
 
 #include "readline.h"
 #include "hashlib.h"
@@ -123,9 +124,9 @@ int flt_list_execute_filter(cf_hash_t *head,configuration_t *dc,configuration_t 
       str_cleanup(&content);
       free(msgcnt);
 
-      len = snprintf(buff,256,"%llu",thread->tid);
+      len = snprintf(buff,256,"%"PRIu64,thread->tid);
       cf_set_variable_hash(&hash,cs,"tid",buff,len,0);
-      len = snprintf(buff,256,"%llu",msg->mid);
+      len = snprintf(buff,256,"%"PRIu64,msg->mid);
       cf_set_variable_hash(&hash,cs,"mid",buff,len,0);
 
       cf_run_perpost_var_handlers(head,thread,msg,&hash);

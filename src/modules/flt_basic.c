@@ -58,7 +58,7 @@ int flt_basic_execute(cf_hash_t *head,configuration_t *dc,configuration_t *vc,cf
 
   u_char buff[20];
   time_t tm  = time(NULL);
-  int   len  = 0;
+  size_t len  = 0;
   size_t n;
   u_char *time;
 

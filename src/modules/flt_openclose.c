@@ -23,6 +23,7 @@
 #include <string.h>
 #include <time.h>
 #include <sys/types.h>
+#include <inttypes.h>
 
 #include <sys/file.h>
 #include <db.h>
@@ -98,7 +99,7 @@ int flt_oc_exec_xmlhttp(cf_hash_t *cgi,configuration_t *dc,configuration_t *vc,v
   if((val = cf_cgi_get(cgi,"a")) != NULL && (cf_strcmp(val,"open") == 0 || cf_strcmp(val,"close") == 0)) {
     if((val = cf_cgi_get(cgi,"oc_t")) != NULL && (tid = str_to_u_int64(val)) != 0) {
       /* {{{ put tid to database or remove it from database */
-      len = snprintf(buff,512,"%llu",tid);
+      len = snprintf(buff,512,"%"PRIu64,tid);
 
       memset(&key,0,sizeof(key));
       memset(&data,0,sizeof(data));
@@ -143,14 +144,14 @@ int flt_oc_execute_filter(cf_hash_t *head,configuration_t *dc,configuration_t *v
   vs = cfg_get_first_value(dc,flt_oc_fn,UserName ? "UBaseURL" : "BaseURL");
   cf_tpl_hashvar_setvalue(&thread->messages->hashvar,"openclose",TPL_VARIABLE_INT,1);
 
-  i = snprintf(buff,512,"t%llu",thread->tid);
+  i = snprintf(buff,512,"t%"PRIu64,thread->tid);
   cf_tpl_hashvar_setvalue(&thread->messages->hashvar,"unanch",TPL_VARIABLE_STRING,buff,i);
 
   /* user wants to use java script */
   if(UseJavaScript) cf_tpl_hashvar_setvalue(&thread->messages->hashvar,"UseJavaScript",TPL_VARIABLE_INT,1);
 
   if(ThreadsOpenByDefault == 0) {
-    i = snprintf(buff,512,"%llu",thread->tid);
+    i = snprintf(buff,512,"%"PRIu64,thread->tid);
 
     memset(&key,0,sizeof(key));
     memset(&data,0,sizeof(data));
@@ -160,7 +161,7 @@ int flt_oc_execute_filter(cf_hash_t *head,configuration_t *dc,configuration_t *v
 
     if(flt_oc_db->get(flt_oc_db,NULL,&key,&data,0) == 0) {
       cf_tpl_hashvar_setvalue(&thread->messages->hashvar,"open",TPL_VARIABLE_INT,1);
-      i = snprintf(buff,512,"%s?oc_t=%lld&a=close",vs->values[0],thread->tid);
+      i = snprintf(buff,512,"%s?oc_t=%"PRIu64"&a=close",vs->values[0],thread->tid);
       cf_tpl_hashvar_setvalue(&thread->messages->hashvar,"link_oc",TPL_VARIABLE_STRING,buff,i);
 
       return FLT_DECLINE; /* thread is open */
@@ -178,7 +179,7 @@ int flt_oc_execute_filter(cf_hash_t *head,configuration_t *dc,configuration_t *v
           /* Thread has at least one not yet visited messages -- leave it open */
           if(is_visited(&(msg->mid)) == NULL && msg->invisible == 0 && msg->may_show == 1) {
             cf_tpl_hashvar_setvalue(&thread->messages->hashvar,"open",TPL_VARIABLE_INT,1);
-            i = snprintf(buff,500,"%s?oc_t=%lld&a=close",vs->values[0],thread->tid);
+            i = snprintf(buff,500,"%s?oc_t=%"PRIu64"&a=close",vs->values[0],thread->tid);
             cf_tpl_hashvar_setvalue(&thread->messages->hashvar,"link_oc",TPL_VARIABLE_STRING,buff,i);
 
             return FLT_DECLINE;
@@ -187,14 +188,14 @@ int flt_oc_execute_filter(cf_hash_t *head,configuration_t *dc,configuration_t *v
       }
     }
 
-    i = snprintf(buff,512,"%s?oc_t=%lld&a=open",vs->values[0],thread->tid);
+    i = snprintf(buff,512,"%s?oc_t=%"PRIu64"&a=open",vs->values[0],thread->tid);
     cf_tpl_hashvar_setvalue(&thread->messages->hashvar,"link_oc",TPL_VARIABLE_STRING,buff,i,1);
 
     cf_msg_delete_subtree(thread->messages);
   }
   else {
     /* check, if the actual thread is in the closed threads list */
-    i = snprintf(buff,512,"%llu",thread->tid);
+    i = snprintf(buff,512,"%"PRIu64,thread->tid);
 
     memset(&key,0,sizeof(key));
     memset(&data,0,sizeof(data));
@@ -203,7 +204,7 @@ int flt_oc_execute_filter(cf_hash_t *head,configuration_t *dc,configuration_t *v
     key.size = i;
 
     if(flt_oc_db->get(flt_oc_db,NULL,&key,&data,0) == 0) {
-      i = snprintf(buff,512,"%s?oc_t=%lld&a=open",vs->values[0],thread->tid);
+      i = snprintf(buff,512,"%s?oc_t=%"PRIu64"&a=open",vs->values[0],thread->tid);
       cf_tpl_hashvar_setvalue(&thread->messages->hashvar,"link_oc",TPL_VARIABLE_STRING,buff,i,1);
       cf_msg_delete_subtree(thread->messages);
       return FLT_DECLINE; /* thread is closed */
@@ -211,7 +212,7 @@ int flt_oc_execute_filter(cf_hash_t *head,configuration_t *dc,configuration_t *v
 
     /* this thread must be open */
     cf_tpl_hashvar_setvalue(&thread->messages->hashvar,"open",TPL_VARIABLE_INT,1);
-    i = snprintf(buff,512,"%s?oc_t=%lld&a=close",vs->values[0],thread->tid);
+    i = snprintf(buff,512,"%s?oc_t=%"PRIu64"&a=close",vs->values[0],thread->tid);
     cf_tpl_hashvar_setvalue(&thread->messages->hashvar,"link_oc",TPL_VARIABLE_STRING,buff,i);
   }
 

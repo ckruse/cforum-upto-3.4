@@ -1,3 +1,7 @@
+2005-10-28 Christian Kruse <ckruse@wwwtech.de>
+	* *: Made several changes to be much more platform independent, e.g.
+		introduced PRIu64 and %zu, etc, pp
+
 2005-10-26 Christian Kruse <ckruse@wwwtech.de>
 	* src/modules/flt_pavatar.c: Fixed bugs, adopted handling to newer spec
 	* src/wwwutils.c: Fixed bug: HEAD requests should not follow redirects!

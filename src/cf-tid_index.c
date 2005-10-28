@@ -29,6 +29,7 @@
 
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <inttypes.h>
 
 #include <errno.h>
 #include <dirent.h>
@@ -134,7 +135,7 @@ void index_month(char *year,char *month) {
     if(is_thread(ent->d_name) == -1) continue;
 
     x   = str_to_u_int64(ent->d_name+1);
-    len = snprintf(y,50,"%llu",x);
+    len = snprintf(y,50,"%"PRIu64,x);
 
     key.data = y;
     key.size = len;

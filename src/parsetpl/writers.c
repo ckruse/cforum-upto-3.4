@@ -25,14 +25,14 @@ void write_parser_functions_def(FILE *ofp, string_t *func_name, context_t *ctx, 
   fprintf(ofp,"void %s(cf_template_t *%stpl", func_name->content, (params ? "o" : ""));
 
   if(params) {
-    for(i = 0;i < params->elements; i++) fprintf(ofp,", cf_tpl_variable_t *p%u", i);
+    for(i = 0;i < params->elements; i++) fprintf(ofp,", cf_tpl_variable_t *p%zu", i);
   }
 
   fprintf(ofp,");\n");
   fprintf(ofp,"void %s_to_mem(cf_template_t *%stpl", func_name->content, (params ? "o" : ""));
 
   if(params) {
-    for(i = 0; i < params->elements; i++) fprintf(ofp,", cf_tpl_variable_t *p%u", i);
+    for(i = 0; i < params->elements; i++) fprintf(ofp,", cf_tpl_variable_t *p%zu", i);
   }
 
   fprintf(ofp,");\n");
