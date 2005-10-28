@@ -60,6 +60,7 @@ int flt_spellcheck_replacement_compare(flt_spellcheck_replacement_t *a, flt_spel
 }
 
 /* {{{ flt_spellcheck_execute */
+
 #ifdef CF_SHARED_MEM
 int flt_spellcheck_execute(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t *pc,message_t *p,cl_thread_t *thr,void *shm_ptr,int sock,int mode)
 #else
@@ -333,7 +334,7 @@ int flt_spellcheck_execute(cf_hash_t *head,cf_configuration_t *dc,cf_configurati
         snprintf(buf,19,"%d",wpos-1);
         cf_str_cstr_append(&html_out,buf);
         cf_str_char_append(&html_out,'_');
-        snprintf(buf,19,"%d",l);
+        snprintf(buf,19,"%zu",l);
         cf_str_cstr_append(&html_out,buf);
         cf_str_cstr_append(&html_out,"\">");
         cf_str_cstr_append(&html_out,"<option>");
@@ -400,7 +401,7 @@ int flt_spellcheck_execute(cf_hash_t *head,cf_configuration_t *dc,cf_configurati
         snprintf(buf,19,"%d",wpos-1);
         cf_str_cstr_append(&html_out,buf);
         cf_str_char_append(&html_out,'_');
-        snprintf(buf,19,"%d",l);
+        snprintf(buf,19,"%zu",l);
         cf_str_cstr_append(&html_out,buf);
         cf_str_cstr_append(&html_out,"\">");
         cf_str_cstr_append(&html_out,"<option>");

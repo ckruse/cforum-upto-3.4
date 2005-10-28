@@ -29,6 +29,7 @@
 
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <inttypes.h>
 
 #include <dirent.h>
 
@@ -113,10 +114,10 @@ void gen_archive_url(u_char *buff,u_char *aurl,u_char *url,u_int64_t tid,u_int64
   if(slash == 0) *ptr++ = '/';
 
   /* now, append tid */
-  len = sprintf(ptr,"t%llu/",tid);
+  len = sprintf(ptr,"t%" PRIu64 "/",tid);
   ptr += len;
 
-  if(mid) len = sprintf(ptr,"#m%llu",mid);
+  if(mid) len = sprintf(ptr,"#m%" PRIu64,mid);
   ptr += len;
 
   *ptr = '\0';
@@ -184,7 +185,7 @@ int main(int argc,char *argv[],char *envp[]) {
   if(infos.elements != 2 && infos.elements != 4) {
     printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]),
     cf_error_message("E_FO_500",NULL);
-    fprintf(stderr,"Wrong argument count: %d\n",infos.elements);
+    fprintf(stderr,"Wrong argument count: %lu\n",infos.elements);
     return EXIT_FAILURE;
   }
   /* }}} */

@@ -228,9 +228,9 @@ int flt_moderated_gogogo(cf_hash_t *cgi,cf_configuration_t *dc,cf_configuration_
 
     cf_str_init_growth(&str,50);
     cf_str_char_append(&str,'t');
-    u_int32_to_str(&str,itid);
+    cf_uint32_to_str(&str,itid);
     cf_str_char_append(&str,'m');
-    u_int32_to_str(&str,imid);
+    cf_uint32_to_str(&str,imid);
 
     memset(&key,0,sizeof(key));
     memset(&data,0,sizeof(data));

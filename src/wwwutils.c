@@ -48,7 +48,7 @@ size_t cf_http_header_callback(void *buffer, size_t size, size_t nmemb, void *us
   size_t x = size * nmemb;
   float version;
   int status;
-  u_char *ptr,*ptr1,*name,*value;
+  u_char *ptr,*name,*value;
 
   if(x > 7 && cf_strncmp(buffer,"HTTP/",5) == 0) {
     version = atof(buffer+5);
@@ -179,7 +179,7 @@ cf_http_response_t *cf_http_simple_head_uri(const u_char *uri) {
   memset(&rq,0,sizeof(rq));
   rq.rsp    = rsp;
   rq.uri    = (u_char *)uri;
-  rq.follow = 1;
+  rq.follow = 0;
   rq.type   = CF_HTTP_TYPE_HEAD;
 
   cf_http_complex_request(&rq);

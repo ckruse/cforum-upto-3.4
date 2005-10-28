@@ -28,6 +28,7 @@
 
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <inttypes.h>
 
 struct sockaddr_un;
 
@@ -367,7 +368,7 @@ int flt_cftp_handler(int sockfd,forum_t *forum,const u_char **tokens,int tnum,rl
         if(err == 0) {
           CF_RW_WR(&forum->threads.lock);
 
-          snprintf(buff,50,"t%llu",forum->threads.last_tid+1);
+          snprintf(buff,50,"t%" PRIu64,forum->threads.last_tid+1);
           cf_rwlock_init(buff,&t->lock);
           CF_RW_WR(&t->lock);
 

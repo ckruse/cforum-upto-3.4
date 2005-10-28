@@ -235,11 +235,11 @@ void cf_cgi_parse_cookies(cf_hash_t *hash) {
   u_char *cookies = getenv("HTTP_COOKIE");
   u_char *pos = cookies,*pos1 = cookies;
   u_char *name = NULL,*value = NULL;
-  int len = 0,namlen = 0,vallen = 0;
+  size_t len = 0,namlen = 0,vallen = 0;
 
   if(cookies) {
     while((pos = strstr(pos1,"=")) != NULL) {
-      for(;*pos && isspace(*pos);++pos);
+      for(;*pos1 && isspace(*pos1);++pos1);
 
       namlen = pos - pos1;
       *pos   = 0;

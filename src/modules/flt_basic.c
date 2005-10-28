@@ -24,6 +24,7 @@
 #include <ctype.h>
 #include <time.h>
 #include <sys/types.h>
+#include <inttypes.h>
 
 #include "readline.h"
 #include "hashlib.h"
@@ -58,7 +59,7 @@ int flt_basic_execute(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t 
 
   u_char buff[20];
   time_t tm  = time(NULL);
-  int   len  = 0;
+  size_t len  = 0;
   size_t n;
   u_char *time;
 

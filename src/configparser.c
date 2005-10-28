@@ -33,6 +33,7 @@
 #include <sys/stat.h>
 #include <sys/mman.h>
 #include <sys/uio.h>
+#include <inttypes.h>
 
 #include <pwd.h>
 
@@ -765,7 +766,7 @@ int cf_add_module(cf_configfile_t *cfile,const u_char *path,const u_char *name) 
 
       if(mod_cfg->module_magic_cookie != MODULE_MAGIC_COOKIE) {
         #ifdef DEBUG
-        fprintf(stderr,"module magic number: %lu, modcfg: %lu\n",mod_cfg->module_magic_cookie,MODULE_MAGIC_COOKIE);
+        fprintf(stderr,"module magic number: %" PRIu32 ", modcfg: %" PRIu32 "\n",mod_cfg->module_magic_cookie,MODULE_MAGIC_COOKIE);
         #endif
 
         /* check what's the problem */

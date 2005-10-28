@@ -25,6 +25,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <sys/types.h>
+#include <inttypes.h>
 
 #include "readline.h"
 #include "hashlib.h"
@@ -75,10 +76,10 @@ int flt_votingvariables_setvars(cf_hash_t *head,cf_configuration_t *dc,cf_config
   size_t len;
 
   if(flt_vv_Config.activate) {
-    len = snprintf(buff,512,"%llu",msg->mid);
+    len = snprintf(buff,512,"%"PRIu64,msg->mid);
     cf_tpl_hashvar_setvalue(hash,"mid",TPL_VARIABLE_STRING,buff,len);
 
-    len = snprintf(buff,512,"%llu",thread->tid);
+    len = snprintf(buff,512,"%"PRIu64,thread->tid);
     cf_tpl_hashvar_setvalue(hash,"tid",TPL_VARIABLE_STRING,buff,len);
 
     if(UserName) {

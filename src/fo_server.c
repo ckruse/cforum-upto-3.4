@@ -253,8 +253,8 @@ int main(int argc,char *argv[]) {
   gid_t gid;
   uid_t uid;
 
-  size_t i,
-         size;
+  size_t i;
+  socklen_t size;
 
   fd_set rfds;
 

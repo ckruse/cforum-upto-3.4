@@ -34,6 +34,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <inttypes.h>
 
 struct sockaddr_un;
 
@@ -372,7 +373,7 @@ int flt_xmlstorage_make_forumtree(forum_t *forum) {
     cf_register_thread(forum,thread);
 
     /* initialize thread lock */
-    snprintf(buff,50,"t%llu",thread->tid);
+    snprintf(buff,50,"t%"PRIu64,thread->tid);
     cf_rwlock_init(buff,&thread->lock);
 
     free(ctid);
@@ -979,7 +980,7 @@ int flt_xmlstorage_threadlist_writer(forum_t *forum) {
       snprintf(buff,256,"/tmp/%s",forum->name);
       cf_make_path(buff,0755);
 
-      snprintf(buff,256,"/tmp/%s/t%llu.xml",forum->name,t->tid);
+      snprintf(buff,256,"/tmp/%s/t%"PRIu64".xml",forum->name,t->tid);
       gdome_di_saveDocToFile(impl,doc_thread,buff,0,&e);
     }
 
@@ -1083,7 +1084,7 @@ int flt_xmlstorage_archive_threads(forum_t *forum,thread_t **threads,size_t len)
       snprintf(buff,256,"/tmp/%s/archive",forum->name);
       cf_make_path(buff,0755);
 
-      snprintf(buff,256,"/tmp/%s/archive/t%llu.xml",forum->name,threads[i]->tid);
+      snprintf(buff,256,"/tmp/%s/archive/t%"PRIu64".xml",forum->name,threads[i]->tid);
       gdome_di_saveDocToFile(impl,doc_thread,buff,0,&e);
     }
 
@@ -1096,7 +1097,7 @@ int flt_xmlstorage_archive_threads(forum_t *forum,thread_t **threads,size_t len)
     gdome_doc_unref(doc_thread,&e);
     gdome_doc_unref(doc,&e);
 
-    snprintf(buff,512,"%s/t%llu.xml",mpath->values[0],threads[i]->tid);
+    snprintf(buff,512,"%s/t%"PRIu64".xml",mpath->values[0],threads[i]->tid);
     unlink(buff);
   }
 
@@ -1110,7 +1111,7 @@ int flt_xmlstorage_remove_thread(forum_t *forum,thread_t *thr) {
   cf_name_value_t *mpath = cf_cfg_get_first_value(&fo_default_conf,forum->name,"MessagePath");
   u_char buff[512];
 
-  snprintf(buff,512,"%s/t%llu.xml",mpath->values[0],thr->tid);
+  snprintf(buff,512,"%s/t%"PRIu64".xml",mpath->values[0],thr->tid);
   unlink(buff);
 
   return FLT_OK;

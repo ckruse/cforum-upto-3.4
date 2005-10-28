@@ -53,56 +53,10 @@ static int flt_pavatar_favicon_way        = 1;
 static int flt_pavatar_cache_them         = 1;
 static mode_t flt_pavatar_umask           = 0022;
 
-/* {{{ flt_pavatar_check_robots_rule */
-int flt_pavatar_check_robots_rule(const u_char *robotsfile,const u_char *uri) {
-  register u_char *ptr;
-  u_char *start,*rule_content;
-
-  for(ptr=(u_char *)robotsfile;*ptr;++ptr) {
-    if(cf_strncmp(ptr,"User-Agent:",11) == 0) {
-      for(ptr+=11;*ptr && isspace(*ptr);++ptr);
-
-      /* eof and now disallow rule seen */
-      if(*ptr == 0) return 0;
-
-      if(cf_strncmp(ptr,"pavatar",7) == 0) {
-        for(ptr+=7;*ptr && (*ptr == '\012' || *ptr == '\015');++ptr);
-
-        if(*ptr == 0) return 0;
-
-        if(cf_strncmp(ptr,"Disallow:",9) == 0) {
-          for(ptr+=9;*ptr && isspace(*ptr);++ptr);
-          if(*ptr == 0) return 0; /* Disallow: means, everything is allowed */
-
-          for(start=ptr;*ptr && !isspace(*ptr) && *ptr != '\012' && *ptr != '\015';++ptr);
-
-          rule_content = strndup(start,ptr-start);
-          if(cf_strcmp(ptr,"/") == 0) { /* *evrything* is disallowed. Return. */
-            free(rule_content);
-            return 1;
-          }
-
-          if(cf_strncmp(rule_content,uri,strlen(rule_content)) == 0) {
-            /* this URL is disallowed. Return. */
-            free(rule_content);
-            return 1;
-          }
-
-          free(rule_content);
-        }
-      }
-
-    }
-  }
-
-  return 0;
-}
-/* }}} */
-
 /* {{{ flt_pavatar_autodiscover */
 u_char *flt_pavatar_autodiscover(const u_char *uri) {
-  u_char *ret,*pavatar_uri = NULL,*last;
-  cf_http_response_t *rsp,*rsp1;
+  u_char *ret,*pavatar_uri = NULL,*last,*last1;
+  cf_http_response_t *rsp;
   register u_char *ptr;
 
   cf_string_t uri_buff;
@@ -121,43 +75,44 @@ u_char *flt_pavatar_autodiscover(const u_char *uri) {
         cf_http_destroy_response(rsp);
         free(rsp);
 
-        for(last=NULL,ptr=(u_char *)uri;*ptr;++ptr) {
+        for(last=NULL,ptr=(u_char *)uri+8;*ptr;++ptr) {
           if(*ptr == '/') last = ptr;
         }
 
         cf_str_init_growth(&uri_buff,128);
-        cf_str_char_set(&uri_buff,uri,last-uri);
-        cf_str_chars_append(&uri_buff,"robots.txt",11);
+        if(last == NULL) { /* no slash in URI after http:// */
+          cf_str_cstr_append(&uri_buff,uri);
+          cf_str_char_append(&uri_buff,'/');
+        }
+        else cf_str_char_set(&uri_buff,uri,last-uri);
+        cf_str_chars_append(&uri_buff,"pavatar",8);
 
-        if((rsp = cf_http_simple_get_uri(uri_buff.content,0)) == NULL) {
-          cf_str_cleanup(&uri_buff);
-          return NULL;
+        if((rsp = cf_http_simple_head_uri(uri_buff.content)) != NULL) {
+          if(rsp->status == 200) pavatar_uri = uri_buff.content;
+          else cf_str_cleanup(&uri_buff);
+
+          cf_http_destroy_response(rsp);
+          free(rsp);
+          rsp = NULL;
         }
 
-        for(ptr=(u_char *)uri+strlen(uri)-1;ptr>=uri+7;--ptr) {
-          if(*ptr == '/') {
-            cf_str_char_set(&uri_buff,uri,ptr-uri);
+        if(pavatar_uri == NULL && last != NULL) {
+          for(last1=NULL,ptr=(u_char *)uri+8;*ptr && last1 == NULL;++ptr) {
+            if(*ptr == '/') last1 = ptr;
+          }
+
+          if(last1 != last) {
+            cf_str_char_set(&uri_buff,uri,last1-uri);
             cf_str_chars_append(&uri_buff,"pavatar",8);
 
-            if(rsp->status == 200) { /* if robots.txt exists: check if we may check this URL */
-              if(flt_pavatar_check_robots_rule(rsp->content.content,uri_buff.content) != 0) continue;
-            }
+            if((rsp = cf_http_simple_head_uri(uri_buff.content)) != NULL) {
+              if(rsp->status == 200) pavatar_uri = uri_buff.content;
+              else cf_str_cleanup(&uri_buff);
 
-            if((rsp1 = cf_http_simple_head_uri(uri_buff.content)) == NULL) {
               cf_http_destroy_response(rsp);
               free(rsp);
+              rsp = NULL;
             }
-
-            if(rsp1->status == 200) {
-              cf_http_destroy_response(rsp1);
-              free(rsp1);
-
-              pavatar_uri = uri_buff.content;
-              break;
-            }
-
-            cf_http_destroy_response(rsp1);
-            free(rsp1);
           }
         }
       }
@@ -165,8 +120,10 @@ u_char *flt_pavatar_autodiscover(const u_char *uri) {
   }
   else pavatar_uri = strdup(pavatar_uri);
 
-  cf_http_destroy_response(rsp);
-  free(rsp);
+  if(rsp) {
+    cf_http_destroy_response(rsp);
+    free(rsp);
+  }
 
   return pavatar_uri;
 }
@@ -208,7 +165,7 @@ void flt_pavatar_get_cache_filename(const u_char *uri,u_char **cachefile,u_char 
 /* }}} */
 
 /* {{{ flt_pavatar_is_cachend */
-u_char *flt_pavatar_is_cached(const u_char *uri,time_t *plm) {
+u_char *flt_pavatar_is_cached(const u_char *uri,time_t *plm,int *state) {
   struct stat st;
   u_char *file,*curi;
   FILE *fd;
@@ -217,15 +174,38 @@ u_char *flt_pavatar_is_cached(const u_char *uri,time_t *plm) {
 
   flt_pavatar_get_cache_filename(uri,&file,&curi);
 
-  if(stat(file,&st) == -1) {
-    free(file);
-    free(curi);
-    return NULL;
-  }
-
   cf_str_init_growth(&str,256);
-  cf_str_cstr_set(&str,uri);
+  cf_str_cstr_set(&str,file);
   cf_str_chars_append(&str,".hdrs",5);
+
+  *state = 1;
+
+  if(stat(file,&st) == -1) {
+    if(stat(str.content,&st) == -1) {
+      cf_str_cleanup(&str);
+      free(file);
+      free(curi);
+      return NULL;
+    }
+    else {
+      if((fd = fopen(str.content,"rb")) == NULL) {
+        cf_str_cleanup(&str);
+        free(file);
+        free(curi);
+        return NULL;
+      }
+      fread(&onow,sizeof(onow),1,fd);
+      fclose(fd);
+
+      cf_str_cleanup(&str);
+      free(file);
+      free(curi);
+
+
+      if(now < onow + flt_pavatar_cachetime_least) *state = 0;
+      return NULL;
+    }
+  }
 
   if((fd = fopen(str.content,"rb")) == NULL) {
     cf_str_cleanup(&str);
@@ -339,11 +319,39 @@ u_char *flt_pavatar_cache_it(const u_char *hpuri,const u_char *pavatar_uri,time_
   cf_string_t str;
   FILE *fd;
   u_char *curi,*file,*val,*ptr;
-  cf_http_response_t *rsp = cf_http_simple_get_uri(pavatar_uri,lastmod);
+  cf_http_response_t *rsp;
   time_t lm,expires,maxage,now;
   struct tm tm;
 
-  if(!rsp) return NULL;
+  /* {{{ cache negative results, too */
+  if(!pavatar_uri) {
+    flt_pavatar_get_cache_filename(hpuri,&file,&curi);
+
+    cf_str_init_growth(&str,256);
+    cf_str_cstr_set(&str,file);
+    cf_str_chars_append(&str,".hdrs",5);
+
+    if((fd = fopen(str.content,"wb")) == NULL) {
+      perror("fopen");
+      cf_str_cleanup(&str);
+      free(file);
+      free(curi);
+      return NULL;
+    }
+
+    now = time(NULL);
+    fwrite(&now,sizeof(now),1,fd);
+    fclose(fd);
+
+    cf_str_cleanup(&str);
+    free(file);
+    free(curi);
+
+    return NULL;
+  }
+  /* }}} */
+
+  if((rsp = cf_http_simple_get_uri(pavatar_uri,lastmod)) == NULL) return NULL;
   if(rsp->status != 200) {
     if(rsp->status == 304) {
       cf_http_destroy_response(rsp);
@@ -430,9 +438,10 @@ u_char *flt_pavatar_cache_it(const u_char *hpuri,const u_char *pavatar_uri,time_
 /* {{{ flt_pavatar_handleit */
 u_char *flt_pavatar_handleit(const u_char *uri) {
   u_char *ret,*pavatar_uri = NULL;
-  time_t lm;
+  time_t lm = 0;
+  int state = 1;
 
-  if(flt_pavatar_cache_them && (ret = flt_pavatar_is_cached(uri,&lm)) != NULL) return ret;
+  if(flt_pavatar_cache_them && ((ret = flt_pavatar_is_cached(uri,&lm,&state)) != NULL || state == 0)) return ret;
   if((pavatar_uri = flt_pavatar_autodiscover(uri)) == NULL) return NULL;
 
   if(flt_pavatar_cache_them) { /* create a cache */

@@ -579,7 +579,7 @@ u_char *cf_advanced_get_link(const u_char *link,u_int64_t tid,u_int64_t mid,u_ch
  * \param date The date itself
  * \return NULL on failure, the date string on success
  */
-u_char *cf_general_get_time(u_char *fmt,u_char *locale,int *len,time_t *date);
+u_char *cf_general_get_time(const u_char *fmt,const u_char *locale,size_t *len,time_t *date);
 
 
 
