@@ -102,6 +102,7 @@ int flt_checkregisteredname_execute(cf_hash_t *head,cf_configuration_t *dc,cf_co
 }
 /* }}} */
 
+/* {{{ flt_checkregisteredname_register */
 int flt_checkregisteredname_register(cf_hash_t *cgi,cf_configuration_t *dc,cf_configuration_t *uc,cf_configuration_t *oldconf,cf_uconf_userconfig_t *newconf) {
   u_char
     buff[512],
@@ -209,7 +210,7 @@ int flt_checkregisteredname_register(cf_hash_t *cgi,cf_configuration_t *dc,cf_co
         show_edit_content(cgi,"E_FO_500","cgi",0,NULL);
       }
       else {
-        printf("Status: 401 Auth Required\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
+        printf("Status: 403 Forbidden\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
         show_edit_content(cgi,"E_FO_504","cgi",0,NULL);
       }
 
@@ -266,7 +267,7 @@ int flt_checkregisteredname_register(cf_hash_t *cgi,cf_configuration_t *dc,cf_co
           show_edit_content(cgi,"E_FO_500","cgi",0,NULL);
         }
         else {
-          printf("Status: 401 Auth Required\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
+          printf("Status: 403 Forbidden\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
           show_edit_content(cgi,"E_FO_504","cgi",0,NULL);
         }
 
@@ -327,7 +328,7 @@ int flt_checkregisteredname_register(cf_hash_t *cgi,cf_configuration_t *dc,cf_co
           show_edit_content(cgi,"E_FO_500","cgi",0,NULL);
         }
         else {
-          printf("Status: 401 Auth Required\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
+          printf("Status: 403 Forbidden\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
           show_edit_content(cgi,"E_FO_504","cgi",0,NULL);
         }
 
@@ -344,6 +345,7 @@ int flt_checkregisteredname_register(cf_hash_t *cgi,cf_configuration_t *dc,cf_co
 
   return FLT_DECLINE;
 }
+/* }}} */
 
 cf_conf_opt_t flt_checkregisteredname_config[] = {
   { NULL, NULL, 0, NULL }

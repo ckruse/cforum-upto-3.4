@@ -14,6 +14,8 @@
 	* src/handlerrunners.c: Changed API for uconf handlers
 	* src/fo_userconf.c: Changed API for uconf handlers
 	* *.h: Unified #ifdef symbols
+	* src/modules/flt_checkregisteredname.c: Changed status 401 to 403 (401 was an
+		error)
 
 2005-10-28 Christian Kruse <ckruse@wwwtech.de>
 	* *: Did several modifications to be more plattform independent. E.g. now

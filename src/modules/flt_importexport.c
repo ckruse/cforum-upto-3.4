@@ -353,9 +353,9 @@ void flt_importexport_import(cf_hash_t *cgi,cf_configuration_t *dc,cf_configurat
     return;
   }
 
-  if(cf_run_uconf_write_handlers(cgi,&fo_default_conf,&fo_userconf_conf,uconf,merged) == FLT_EXIT) {
-    printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
-    cf_error_message("E_IMPORT_DATAFAILURE",NULL);
+  if(cf_run_uconf_write_handlers(cgi,dc,uc,uconf,merged) == FLT_EXIT) {
+    //printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
+    //cf_error_message("E_IMPORT_DATAFAILURE",NULL);
 
     cf_uconf_cleanup_modxml(intrnl);
     cf_uconf_cleanup_modxml(merged);
@@ -379,7 +379,7 @@ void flt_importexport_import(cf_hash_t *cgi,cf_configuration_t *dc,cf_configurat
     cf_error_message(msg,NULL,strerror(errno));
   }
   else {
-    cf_gen_tpl_name(tplname,256,flt_importexport_form);
+    cf_gen_tpl_name(tplname,256,flt_importexport_ok);
     if(cf_tpl_init(&tpl,tplname) != 0) {
       printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
       cf_error_message("E_TPL_NOT_FOUND",NULL);
