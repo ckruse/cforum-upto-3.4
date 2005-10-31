@@ -1,3 +1,4 @@
 2005-10-31 Christian Kruse <ckruse@wwwtech.de>
 	* *.h: Fixed #ifdef header symbols
+	* scripts/cf-compile_templates.pl: Small bugfix, had a typo
 
