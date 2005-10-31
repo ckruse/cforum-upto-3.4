@@ -7,6 +7,9 @@
  *
  */
 
+#ifndef _CF_SERVERLIB_H
+#define _CF_SERVERLIB_H
+
 typedef struct s_posting_flag {
   u_char *name;
   u_char *val;
@@ -213,4 +216,5 @@ int cf_remove_flags(int sockfd,rline_t *tsd,posting_t *p1);
 int cf_read_flags(int sockfd,rline_t *tsd,posting_t *p);
 posting_flag_t *cf_get_flag_by_name(cf_list_head_t *flags,const u_char *name);
 
+#endif
 /* eof */

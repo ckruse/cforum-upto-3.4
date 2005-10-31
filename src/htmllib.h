@@ -16,6 +16,7 @@
 
 
 #ifndef _CF_HTMLLIB_H
+#define _CF_HTMLLIB_H
 
 typedef int (*directive_filter_t)(cf_configuration_t *dc,cf_configuration_t *vc,cl_thread_t *thr,const u_char *directive,const u_char **parameters,size_t plen,cf_string_t *bcnt,cf_string_t *bcite,cf_string_t *content,cf_string_t *cite,const u_char *qchars,int sig);
 typedef int (*content_filter_t)(cf_configuration_t *dc,cf_configuration_t *vc,cl_thread_t *thr,cf_string_t *content,cf_string_t *cite,const u_char *qchars);

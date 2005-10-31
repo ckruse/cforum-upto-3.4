@@ -6,8 +6,8 @@
  * This file defines some things for fo_post
  */
 
-#ifndef _FO_POST_H
-#define _FO_POST_H
+#ifndef _CF_POST_H
+#define _CF_POST_H
 
 void display_posting_form(cf_hash_t *head,message_t *p,cf_tpl_variable_t *var);
 cf_string_t *body_plain2coded(const u_char *text);

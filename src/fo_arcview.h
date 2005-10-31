@@ -13,8 +13,8 @@
  */
 /* }}} */
 
-#ifndef _FO_ARCVIEW_H
-#define _FO_ARCVIEW_H
+#ifndef _CF_ARCVIEW_H
+#define _CF_ARCVIEW_H
 
 extern cf_hash_t *ArcviewHandlers;
 

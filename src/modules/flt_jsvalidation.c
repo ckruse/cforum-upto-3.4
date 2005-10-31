@@ -61,9 +61,9 @@ void flt_jsvalidation_append_escaped(cf_string_t *str,const u_char *val) {
 
 void flt_jsvalidation_uconfjs(cf_hash_t *cgi,cf_configuration_t *dc,cf_configuration_t *uc,cf_template_t *tpl,cf_configuration_t *user) {
   size_t i,j;
-  uconf_userconfig_t *modxml = cf_uconf_read_modxml();
-  uconf_directive_t *directive;
-  uconf_argument_t *arg;
+  cf_uconf_userconfig_t *modxml = cf_uconf_read_modxml();
+  cf_uconf_directive_t *directive;
+  cf_uconf_argument_t *arg;
   cf_string_t str;
 
   if(!modxml) return;

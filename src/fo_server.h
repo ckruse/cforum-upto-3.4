@@ -13,8 +13,8 @@
  */
 /* }}} */
 
-#ifndef __FO_SERVER_H
-#define __FO_SERVER_H
+#ifndef _CF_SERVER_H
+#define _CF_SERVER_H
 
 /**
  * Scheduling policy; either SCHED_RR, SCHED_FIFO or SCHED_OTHER

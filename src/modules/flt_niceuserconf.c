@@ -89,10 +89,10 @@ void flt_niceuserconf_nicevalues(cf_hash_t *cgi,cf_configuration_t *dc,cf_config
 /* }}} */
 
 /* {{{ flt_niceuserconf_transformer */
-int flt_niceuserconf_transformer(cf_hash_t *cgi,cf_configuration_t *dc,cf_configuration_t *uc,cf_configuration_t *olduconf,uconf_userconfig_t *newconf) {
+int flt_niceuserconf_transformer(cf_hash_t *cgi,cf_configuration_t *dc,cf_configuration_t *uc,cf_configuration_t *olduconf,cf_uconf_userconfig_t *newconf) {
   size_t i;
-  uconf_directive_t *dir;
-  uconf_argument_t *arg;
+  cf_uconf_directive_t *dir;
+  cf_uconf_argument_t *arg;
 
   cf_string_t str;
   register u_char *ptr;

@@ -373,16 +373,16 @@ int cf_run_readmode_collectors(cf_hash_t *head,cf_configuration_t *vc,cf_readmod
 /* }}} */
 
 /* {{{ cf_run_uconf_write_handlers */
-int cf_run_uconf_write_handlers(cf_hash_t *cgi,cf_configuration_t *dc,cf_configuration_t *uc,cf_configuration_t *oldconf,uconf_userconfig_t *newconf) {
+int cf_run_uconf_write_handlers(cf_hash_t *cgi,cf_configuration_t *dc,cf_configuration_t *uc,cf_configuration_t *oldconf,cf_uconf_userconfig_t *newconf) {
   int ret = FLT_OK;
   cf_handler_config_t *handler;
   size_t i;
-  uconf_write_filter_t fkt;
+  cf_uconf_write_filter_t fkt;
 
   if(Modules[UCONF_WRITE_HANDLER].elements) {
     for(i=0;i<Modules[UCONF_WRITE_HANDLER].elements && ret != FLT_EXIT;++i) {
       handler = cf_array_element_at(&Modules[UCONF_WRITE_HANDLER],i);
-      fkt     = (uconf_write_filter_t)handler->func;
+      fkt     = (cf_uconf_write_filter_t)handler->func;
       ret     = fkt(cgi,dc,uc,oldconf,newconf);
     }
   }
@@ -395,12 +395,12 @@ int cf_run_uconf_write_handlers(cf_hash_t *cgi,cf_configuration_t *dc,cf_configu
 void cf_run_uconf_display_handlers(cf_hash_t *cgi,cf_configuration_t *dc,cf_configuration_t *uc,cf_template_t *tpl,cf_configuration_t *user) {
   cf_handler_config_t *handler;
   size_t i;
-  uconf_display_filter_t fkt;
+  cf_uconf_display_filter_t fkt;
 
   if(Modules[UCONF_DISPLAY_HANDLER].elements) {
     for(i=0;i<Modules[UCONF_DISPLAY_HANDLER].elements;++i) {
       handler = cf_array_element_at(&Modules[UCONF_DISPLAY_HANDLER],i);
-      fkt     = (uconf_display_filter_t)handler->func;
+      fkt     = (cf_uconf_display_filter_t)handler->func;
       fkt(cgi,dc,uc,tpl,user);
     }
   }

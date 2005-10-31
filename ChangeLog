@@ -1,3 +1,20 @@
+2005-10-31 Christian Kruse <ckruse@wwwtech.de>
+	* src/fo_view.c: Fixed small charset bug (sent always UTF-8)
+	* src/fo_threadlookup.c: Fixed format string
+	* src/modules/flt_jsvalidation.c, src/modules/flt_checkregisteredname.c,
+		src/modules/flt_votingvariables.c, src/modules/flt_niceuserconf.c: Changed
+		to new userconf API
+	* src/defines.h: Fixed module magic cookie, incremented major API version
+	* src/modules/flt_http.c: Fixed format string
+	* src/modules/flt_importexport.c: Wrote the rest of the code for
+		flt_importexport; not yet tested!
+	* src/modules/Makefile.am: Changed dependencies for flt_importexport
+	* src/userconf.[ch]: Code cleanup, changed validation code, changed action
+		handler API
+	* src/handlerrunners.c: Changed API for uconf handlers
+	* src/fo_userconf.c: Changed API for uconf handlers
+	* *.h: Unified #ifdef symbols
+
 2005-10-28 Christian Kruse <ckruse@wwwtech.de>
 	* *: Did several modifications to be more plattform independent. E.g. now
 		we're using the PRIu64 from inttypes.h for printing 64 bit integers. Also we

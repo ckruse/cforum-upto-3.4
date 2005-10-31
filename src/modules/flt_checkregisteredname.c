@@ -102,7 +102,7 @@ int flt_checkregisteredname_execute(cf_hash_t *head,cf_configuration_t *dc,cf_co
 }
 /* }}} */
 
-int flt_checkregisteredname_register(cf_hash_t *cgi,cf_configuration_t *dc,cf_configuration_t *uc,cf_configuration_t *oldconf,uconf_userconfig_t *newconf) {
+int flt_checkregisteredname_register(cf_hash_t *cgi,cf_configuration_t *dc,cf_configuration_t *uc,cf_configuration_t *oldconf,cf_uconf_userconfig_t *newconf) {
   u_char
     buff[512],
     *line,
@@ -147,8 +147,8 @@ int flt_checkregisteredname_register(cf_hash_t *cgi,cf_configuration_t *dc,cf_co
 
   on            = cf_cfg_get_first_value(oldconf,fn,"Name");
   or            = cf_cfg_get_first_value(oldconf,fn,"RegisteredName");
-  newname       = (u_char *)uconf_get_conf_val(newconf,"Name",0);
-  newregistered = (u_char *)uconf_get_conf_val(newconf,"RegisteredName",0);
+  newname       = (u_char *)cf_uconf_get_conf_val(newconf,"Name",0);
+  newregistered = (u_char *)cf_uconf_get_conf_val(newconf,"RegisteredName",0);
 
   if(on) oldname = on->values[0];
   if(or) oldregistered = or->values[0];

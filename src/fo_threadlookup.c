@@ -185,7 +185,7 @@ int main(int argc,char *argv[],char *envp[]) {
   if(infos.elements != 2 && infos.elements != 4) {
     printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]),
     cf_error_message("E_FO_500",NULL);
-    fprintf(stderr,"Wrong argument count: %lu\n",infos.elements);
+    fprintf(stderr,"Wrong argument count: %zu\n",infos.elements);
     return EXIT_FAILURE;
   }
   /* }}} */

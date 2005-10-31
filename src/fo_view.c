@@ -88,7 +88,7 @@ void show_xmlhttp_thread(cf_hash_t *head,void *shm_ptr,u_int64_t tid,u_int64_t m
 
   #ifdef CF_SHARED_MEM
   if((sock = cf_socket_setup()) == -1) {
-    printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=UTF-8\015\012\015\012");
+    printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
     cf_error_message("E_NO_CONN",NULL,strerror(errno));
     return;
   }
@@ -102,7 +102,7 @@ void show_xmlhttp_thread(cf_hash_t *head,void *shm_ptr,u_int64_t tid,u_int64_t m
       fprintf(stderr,"fo_view: xmlhttp: Server returned: %s\n",line);
       free(line);
     }
-    printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=UTF-8\015\012\015\012");
+    printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
     cf_error_message("E_DATA_FAILURE",NULL);
     return;
   }

@@ -52,11 +52,11 @@ int flt_votingvariables_execute_filter(cf_hash_t *head,cf_configuration_t *dc,cf
   u_char *UserName = cf_hash_get(GlobalValues,"UserName",8);
 
   if(flt_vv_Config.activate) {
-    cf_tpl_setvalue(tpl,"votes",TPL_VARIABLE_STRING,"1",1);
+    cf_tpl_setvalue(tpl,"votes",TPL_VARIABLE_INT,1);
 
-    if(UserName) cf_tpl_setvalue(tpl,"votes_link",TPL_VARIABLE_STRING,"1",1);
+    if(UserName) cf_tpl_setvalue(tpl,"votes_link",TPL_VARIABLE_INT,1);
 
-    if(flt_vv_Config.show_votes) cf_tpl_setvalue(tpl,"show_votes",TPL_VARIABLE_STRING,"1",1);
+    if(flt_vv_Config.show_votes) cf_tpl_setvalue(tpl,"show_votes",TPL_VARIABLE_INT,1);
     if(flt_vv_Config.use_js) cf_tpl_setvalue(tpl,"VotingUseJS",TPL_VARIABLE_INT,1);
 
     return FLT_OK;
@@ -93,10 +93,10 @@ int flt_votingvariables_setvars(cf_hash_t *head,cf_configuration_t *dc,cf_config
     }
 
     if(flt_vv_Config.show_votes) {
-      len = snprintf(buff,512,"%lu",(unsigned long)msg->votes_good);
+      len = snprintf(buff,512,"%"PRIu32,msg->votes_good);
       cf_tpl_hashvar_setvalue(hash,"votes_good",TPL_VARIABLE_STRING,buff,len);
 
-      len = snprintf(buff,512,"%lu",(unsigned long)msg->votes_bad);
+      len = snprintf(buff,512,"%"PRIu32,msg->votes_bad);
       cf_tpl_hashvar_setvalue(hash,"votes_bad",TPL_VARIABLE_STRING,buff,len);
     }
 

@@ -24,8 +24,8 @@
  */
 /* }}} */
 
-#ifndef __CF_CGI_H
-#define __CF_CGI_H
+#ifndef _CF_CGI_H
+#define _CF_CGI_H
 
 /**
  * this type is used for multiple form values (such as checkboxes or something like that)

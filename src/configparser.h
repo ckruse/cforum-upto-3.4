@@ -15,8 +15,8 @@
  */
 /* }}} */
 
-#ifndef __CONFIGPARSER_H
-#define __CONFIGPARSER_H
+#ifndef _CF_CONFIGPARSER_H
+#define _CF_CONFIGPARSER_H
 
 struct cf_conf_opt_s;
 struct cf_configfile_s;

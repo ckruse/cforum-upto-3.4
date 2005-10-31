@@ -15,15 +15,15 @@
  */
 /* }}} */
 
-#ifndef __DEFINES_H
-#define __DEFINES_H
+#ifndef _CF_DEFINES_H
+#define _CF_DEFINES_H
 
 /*
  * Magic numbers change with every API change. Binary backwards compatibility
  * leads to a minor change, backwards incompatibility leads to a major change
  */
-#define MODULE_MAGIC_NUMBER_MAJOR ((u_int32_t)0x2) /* upper 16 bit */
-#define MODULE_MAGIC_NUMBER_MINOR ((u_int32_t)0x1) /* lower 16 bit */
+#define MODULE_MAGIC_NUMBER_MAJOR ((u_int16_t)0x3) /* upper 16 bit */
+#define MODULE_MAGIC_NUMBER_MINOR ((u_int16_t)0x1) /* lower 16 bit */
 #define MODULE_MAGIC_COOKIE ((u_int32_t)((MODULE_MAGIC_NUMBER_MAJOR << 16) | (MODULE_MAGIC_NUMBER_MINOR)))
 
 #define CF_SORT_ASCENDING 1

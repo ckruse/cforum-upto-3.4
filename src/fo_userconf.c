@@ -109,18 +109,17 @@ int handle_userconf_command(cf_configfile_t *cfile,const u_char *context,u_char 
 
 /* {{{ show_edit_content */
 void show_edit_content(cf_hash_t *head,const u_char *msg,const u_char *source,int saved,cf_array_t *errors) {
-  u_char tplname[256],*ucfg,*uname,*fn = cf_hash_get(GlobalValues,"FORUM_NAME",10),*tmp,buff[256];
+  u_char tplname[256],*fn = cf_hash_get(GlobalValues,"FORUM_NAME",10),*tmp,buff[256];
 
   cf_name_value_t *cval,
     *cs = cf_cfg_get_first_value(&fo_default_conf,fn,"ExternCharset"),
     *tplnv = cf_cfg_get_first_value(&fo_userconf_conf,fn,"Edit"),
     *cats = cf_cfg_get_first_value(&fo_default_conf,fn,"Categories");
 
-  cf_configfile_t config;
-  uconf_userconfig_t *modxml;
+  cf_uconf_userconfig_t *modxml;
   cf_template_t tpl;
-  uconf_directive_t *directive;
-  uconf_argument_t *arg;
+  cf_uconf_directive_t *directive;
+  cf_uconf_argument_t *arg;
   cf_name_value_t *value;
   cf_cgi_param_t *mult;
   cf_string_t val;
@@ -131,32 +130,7 @@ void show_edit_content(cf_hash_t *head,const u_char *msg,const u_char *source,in
 
   size_t i,j;
 
-  uconf_error_t *error;
-
-  if((uname = cf_hash_get(GlobalValues,"UserName",8)) == NULL) {
-    printf("Status: 403 Forbidden\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
-    cf_error_message("E_MUST_AUTH",NULL);
-    return;
-  }
-
-  if(inited == 0) {
-    if((ucfg = cf_get_uconf_name(uname)) == NULL) {
-      printf("Status: 403 Forbidden\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
-      cf_error_message("E_MUST_AUTH",NULL);
-      return;
-    }
-
-    cf_cfg_init_file(&config,ucfg);
-    free(ucfg);
-
-    if(cf_read_config(&config,handle_userconf_command,CF_CFG_MODE_USER) != 0) {
-      printf("Status: 500 Internal Server Error\015\012COntent-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
-      cf_error_message("E_CONFIG_BROKEN",NULL);
-      return;
-    }
-
-    inited = 1;
-  }
+  cf_uconf_error_t *error;
 
   if((modxml = cf_uconf_read_modxml()) == NULL) {
     printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
@@ -327,15 +301,13 @@ void show_edit_content(cf_hash_t *head,const u_char *msg,const u_char *source,in
 
   cf_tpl_finish(&tpl);
   cf_uconf_cleanup_modxml(modxml);
-  cf_cfg_cleanup_file(&config);
 }
 /* }}} */
 
 /* {{{ do_save */
 void do_save(cf_hash_t *head) {
-  uconf_userconfig_t *merged;
+  cf_uconf_userconfig_t *merged;
   u_char *msg,*uname,*ucfg, *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);;
-  cf_configfile_t config;
   cf_name_value_t *cs = cf_cfg_get_first_value(&fo_default_conf,forum_name,"ExternCharset");
   cf_array_t errmsgs;
 
@@ -351,23 +323,11 @@ void do_save(cf_hash_t *head) {
     return;
   }
 
-  cf_cfg_init_file(&config,ucfg);
-
-  if(cf_read_config(&config,handle_userconf_command,CF_CFG_MODE_USER) != 0) {
-    printf("Status: 500 Internal Server Error\015\012COntent-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
-    cf_error_message("E_CONFIG_BROKEN",NULL);
-    free(ucfg);
-    return;
-  }
-
-  inited = 1;
-
   memset(&errmsgs,0,sizeof(errmsgs));
   if((merged = cf_uconf_merge_config(head,&glob_config,&errmsgs,1)) != NULL) {
     if(cf_run_uconf_write_handlers(head,&fo_default_conf,&fo_userconf_conf,&glob_config,merged) == FLT_EXIT) {
       cf_uconf_cleanup_modxml(merged);
       free(merged);
-      cf_cfg_cleanup_file(&config);
       free(ucfg);
       return;
     }
@@ -377,7 +337,6 @@ void do_save(cf_hash_t *head) {
 
     cf_uconf_cleanup_modxml(merged);
     free(merged);
-    cf_cfg_cleanup_file(&config);
     free(ucfg);
     return;
   }
@@ -385,9 +344,6 @@ void do_save(cf_hash_t *head) {
     show_edit_content(head,NULL,"cgi",0,&errmsgs);
     cf_array_destroy(&errmsgs);
   }
-
-  cf_cfg_cleanup_file(&config);
-  free(ucfg);
 }
 /* }}} */
 
@@ -565,13 +521,13 @@ int main(int argc,char *argv[],char *env[]) {
   u_char *forum_name,*fname,*uname,*err,*ucfg;
 
   cf_array_t *cfgfiles;
-  cf_configfile_t dconf,conf,vconf;
+  cf_configfile_t dconf,conf,vconf,all_conf;
 
   cf_name_value_t *cs;
 
   int ret;
 
-  uconf_action_handler_t actionhndl;
+  cf_uconf_action_handler_t actionhndl;
 
   cf_string_t *action;
   /* }}} */
@@ -651,6 +607,17 @@ int main(int argc,char *argv[],char *env[]) {
 
     return EXIT_FAILURE;
   }
+
+  cf_cfg_init_file(&all_conf,ucfg);
+
+  if(cf_read_config(&all_conf,handle_userconf_command,CF_CFG_MODE_USER) != 0) {
+    printf("Status: 500 Internal Server Error\015\012COntent-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
+    cf_error_message("E_CONFIG_BROKEN",NULL);
+    free(ucfg);
+    return EXIT_FAILURE;
+  }
+
+  inited = 1;
   /* }}} */
 
   ret = cf_run_init_handlers(head);
@@ -668,7 +635,7 @@ int main(int argc,char *argv[],char *env[]) {
       if((action = cf_cgi_get(head,"a")) == NULL) show_edit_content(head,NULL,NULL,0,NULL);
       else {
         if(cf_strcmp(action->content,"save") == 0) do_save(head);
-        else if((actionhndl = uconf_get_action_handler(action->content)) != NULL) actionhndl(head,&fo_default_conf,&fo_userconf_conf);
+        else if((actionhndl = cf_uconf_get_action_handler(action->content)) != NULL) actionhndl(head,&fo_default_conf,&fo_userconf_conf,&glob_config);
         else show_edit_content(head,NULL,NULL,0,NULL);
       }
     }
@@ -680,6 +647,7 @@ int main(int argc,char *argv[],char *env[]) {
   /* cleanup source */
   cf_cfg_cleanup_file(&dconf);
   cf_cfg_cleanup_file(&conf);
+  cf_cfg_cleanup_file(&all_conf);
 
   cf_array_destroy(cfgfiles);
   free(cfgfiles);

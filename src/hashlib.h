@@ -19,8 +19,8 @@
  */
 /* }}} */
 
-#ifndef __HASHLIB_H
-#define __HASHLIB_H
+#ifndef _CF_HASHLIB_H
+#define _CF_HASHLIB_H
 
 typedef           u_int32_t  ub4;   /**< unsigned 4-byte quantities */
 typedef           u_char     ub1;   /**< unified character format */

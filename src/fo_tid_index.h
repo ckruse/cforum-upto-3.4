@@ -16,8 +16,8 @@
  */
 /* }}} */
 
-#ifndef __FO_TID_INDEX_H
-#define __FO_TID_INDEX_H
+#ifndef _CF_TID_INDEX_H
+#define _CF_TID_INDEX_H
 
 /**
  * struct for the index of the thread ids

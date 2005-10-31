@@ -18,8 +18,8 @@
  */
 /* }}} */
 
-#ifndef __TEMPLATE_H
-#define __TEMPLATE_H
+#ifndef _CF_TEMPLATE_H
+#define _CF_TEMPLATE_H
 
 #define TPL_VARIABLE_INVALID      0
 #define TPL_VARIABLE_STRING       1

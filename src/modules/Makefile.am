@@ -262,7 +262,8 @@ flt_bbcodes_la_SOURCES=flt_bbcodes.c
 flt_bbcodes_la_LDFLAGS=-module -export-dynamic -avoid-version -rpath '$(pkglibdir)'
 
 EXTRA_LTLIBRARIES+=flt_importexport.la
-flt_importexport_la_SOURCES=flt_importexport.c
+flt_importexport_la_SOURCES=flt_importexport.c ../xml_handling.c
+flt_importexport_la_LIBADD=$(GDOME_LIBS)
 flt_importexport_la_LDFLAGS=-module -export-dynamic -avoid-version -rpath '$(pkglibdir)'
 
 EXTRA_LTLIBRARIES+=flt_jsvalidation.la
