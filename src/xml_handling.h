@@ -16,8 +16,8 @@
  */
 /* }}} */
 
-#ifndef __XML_HANDLING_ROUTINES_H
-#define __XML_HANDLING_ROUTINES_H
+#ifndef _CF_XML_HANDLING_H
+#define _CF_XML_HANDLING_H
 
 /**
  * This function tries to get the node content. The returned charset is UTF-8.

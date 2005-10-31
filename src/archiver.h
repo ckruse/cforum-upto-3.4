@@ -17,8 +17,8 @@
  */
 /* }}} */
 
-#ifndef _ARCHIVER_H
-#define _ARCHIVER_H
+#ifndef _CF_ARCHIVER_H
+#define _CF_ARCHIVER_H
 
 /**
  * Function type for archiver plugins.

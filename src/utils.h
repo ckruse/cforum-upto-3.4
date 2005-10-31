@@ -16,8 +16,8 @@
  */
 /* }}} */
 
-#ifndef __UTILS_H
-#define __UTILS_H
+#ifndef _CF_UTILS_H
+#define _CF_UTILS_H
 
 #include <time.h>
 #include <sys/types.h>

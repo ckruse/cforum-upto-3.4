@@ -15,8 +15,8 @@
  */
 /* }}} */
 
-#ifndef __DEFINES_H
-#define __DEFINES_H
+#ifndef _CF_DEFINES_H
+#define _CF_DEFINES_H
 
 /*
  * Magic numbers change with every API change. Binary backwards compatibility

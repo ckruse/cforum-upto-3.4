@@ -14,8 +14,8 @@
  */
 /* }}} */
 
-#ifndef FO_VIEW_H
-#define FO_VIEW_H
+#ifndef _CF_VIEW_H
+#define _CF_VIEW_H
 
 
 /* function forwards */

@@ -17,8 +17,8 @@
  */
 /* }}} */
 
-#ifndef __CHARCONVERT_H
-#define __CHARCONVERT_H
+#ifndef _CF_CHARCONVERT_H
+#define _CF_CHARCONVERT_H
 
 /**
  * This function tries to convert a string from charset from_charset to charset to_charset.

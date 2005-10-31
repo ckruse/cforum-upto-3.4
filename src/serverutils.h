@@ -16,6 +16,7 @@
 /* }}} */
 
 #ifndef _CF_SERVERUTILS_H
+#define _CF_SERVERUTILS_H
 
 typedef struct s_cf_rwlocked_lishead_t {
   cf_rwlock_t lock;
@@ -32,5 +33,6 @@ void *cf_rw_list_search(cf_rw_list_head_t *head,void *data,int (*compare)(const 
 void cf_rw_list_delete(cf_rw_list_head_t *head,cf_list_element_t *elem);
 void cf_rw_list_destroy(cf_rw_list_head_t *head,void (*destroy)(void *data));
 
-#define _CF_SERVERUTILS_H
 #endif
+
+/* eof */

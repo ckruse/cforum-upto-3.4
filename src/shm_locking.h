@@ -19,8 +19,8 @@
  */
 /* }}} */
 
-#ifndef __CF_SHM_LOCKING_H
-#define __CF_SHM_LOCKING_H
+#ifndef _CF_SHM_LOCKING_H
+#define _CF_SHM_LOCKING_H
 
 #ifdef CF_SHARED_MEM
 

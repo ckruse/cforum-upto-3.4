@@ -16,8 +16,8 @@
  */
 /* }}} */
 
-#ifndef __CF_READLINE_H
-#define __CF_READLINE_H
+#ifndef _CF_READLINE_H
+#define _CF_READLINE_H
 
 /**
  * This structure contains the necessary information about the read data
