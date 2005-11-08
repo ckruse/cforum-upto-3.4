@@ -802,6 +802,20 @@
     </argument>
   </directive>
 
+  <directive name="WarnBadLinks" arguments="1">
+    <argument paramname="warn_bad_links" default="yes" ifNotCommitted="no">
+      <validate>^(yes|no)$</validate>
+      <error>Soll bei fehlerhaften Links gewarnt werden? Geben Sie &quot;ja&quot; oder &quot;nein&quot; an!</error>
+    </argument>
+  </directive>
+
+  <directive name="PavatarActive" arguments="1">
+    <argument paramname="pavatar_active" default="no" ifNotCommitted="no">
+      <validate>^(yes|no)$</validate>
+      <error>Sollen Pavatare angezeigt werden? Geben Sie &quot;ja&quot; oder &quot;nein&quot; an!</error>
+    </argument>
+  </directive>
+
 </config>
 
 <!-- eof -->

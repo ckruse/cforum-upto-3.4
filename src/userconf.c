@@ -481,11 +481,11 @@ static void _uconf_append_escaped(cf_string_t *str,const u_char *val) {
         break;
       case '\012':
         if(*(ptr+1) == '\015') ++ptr;
-        cf_str_char_append(str,'\n');
+        cf_str_chars_append(str,"\\n",2);
         break;
       case '\015':
         if(*(ptr+1) == '\012') ++ptr;
-        cf_str_char_append(str,'\n');
+        cf_str_chars_append(str,"\\n",2);
         break;
       default:
         cf_str_char_append(str,*ptr);

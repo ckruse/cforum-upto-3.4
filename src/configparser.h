@@ -159,6 +159,8 @@ extern cf_configuration_t fo_post_conf; /**< The configuration data of the archi
 extern cf_configuration_t fo_vote_conf; /**< The configuration data of the voting program */
 extern cf_configuration_t fo_feeds_conf; /**< The configuration data of the feeds program */
 extern cf_configuration_t fo_userconf_conf; /**< The configuration data of the userconfig program */
+extern cf_configuration_t fo_usermanagement_conf; /**< The configuration data of the userconfig program */
+extern cf_configuration_t fo_xmlrpc_conf; /**< The configuration data of the xmlrpc program */
 
 extern cf_conf_opt_t default_options[]; /**< The default configuration options */
 extern cf_conf_opt_t fo_view_options[]; /**< The client configuration options */
@@ -168,6 +170,8 @@ extern cf_conf_opt_t fo_arcview_options[]; /**< The archiv viewer configuration 
 extern cf_conf_opt_t fo_vote_options[]; /**< The voting program configuration options */
 extern cf_conf_opt_t fo_feeds_options[];  /**< The feeds program configuration options */
 extern cf_conf_opt_t fo_userconf_options[]; /**< The userconf program configuration options */
+extern cf_conf_opt_t fo_usermanagement_options[]; /**< The userconf program configuration options */
+extern cf_conf_opt_t fo_xmlrpc_options[]; /**< The xmlrpc program configuration options */
 
 extern cf_array_t Modules[]; /**< The modules array */
 

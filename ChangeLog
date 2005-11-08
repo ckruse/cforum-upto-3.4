@@ -1,3 +1,16 @@
+2005-11-08 Christian Kruse <ckruse@wwwtech.de>
+	* conf/errormessages.de.txt: Added ACTION_NOT_ALLOWED
+	* conf/modules.de.xml: Added WarnBadLinks and PavatarActive
+	* configure.in: Added XMLRPC libs
+	* src/cfgcomp_codegenerator.c, src/cfgcomp_assembler.c, src/cfgcomp_lexer.c,
+		src/cfgcomp_parser.c, cfgcomp.h: Added config file compiler; next step is a
+		VM
+	* src/userconf.c: Small bugfix
+	* src/configparser.[ch]: Added fo_xmlrpc_conf, fo_usermanagement_conf,
+		fo_usermanagement_options
+	* src/Makefile.am: Added fo_usermanagement
+	* scripts/cf-compile_templates.pl: Fixed bug!
+
 2005-10-31 Christian Kruse <ckruse@wwwtech.de>
 	* src/fo_view.c: Fixed small charset bug (sent always UTF-8)
 	* src/fo_threadlookup.c: Fixed format string

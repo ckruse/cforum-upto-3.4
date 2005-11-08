@@ -65,9 +65,9 @@ while(my $ent = readdir DIR) {
   }
 
   $? = 0;
-  if(-f "$libdir/$so_name") {
+  if(-f "$install/$so_name") {
     my $mtime_c = (stat("$template_dir/$wo_end.c"))[9];
-    my $mtime_so = (stat("$libdir/$so_name"))[9];
+    my $mtime_so = (stat("$install/$so_name"))[9];
 
     system "gcc -shared ".($ENV{CFLAGS}||'')." $cforum_source ".($ENV{LDFLAGS}||'')." -L$libdir -o $install/$so_name $template_dir/$wo_end.c -lcfutils -lcftemplate" if $mtime_c > $mtime_so;
   }

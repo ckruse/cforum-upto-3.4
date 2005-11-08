@@ -105,6 +105,15 @@ if test ! -n "$CURLCFG" ; then
   AC_MSG_ERROR([cannot find curl-config. Be sure that libcurl is installed and curl-config is in your PATH])
 fi
 
+AC_PATH_PROG(XMLRPC_C_CFG,xmlrpc-c-config)
+if test ! -n "$XMLRPC_C_CFG"; then
+  AC_MSG_ERROR([cannot find xmlrpc-c-config. Be sure that libxmlrpc-c is installed and xmlrpc-c-config is in your PATH])
+fi
+
+XMLRPC_C_CFLAGS="`$XMLRPC_C_CFG cgi-server --cflags`"
+XMLRPC_C_LIBS="`$XMLRPC_C_CFG cgi-server --libs`"
+XMLRPC_C_CLIENTLIBS="`$XMLRPC_C_CFG client --libs`"
+
 CURL_CFLAGS=`$CURLCFG --cflags`
 CURL_LIBS=`$CURLCFG --libs`
 
@@ -114,7 +123,7 @@ GDOME_LIBS=`$GDOMECFG --libs`
 PCRE_CFLAGS=`$PCRECFG --cflags`
 PCRE_LIBS=`$PCRECFG --libs`
 
-CFLAGS="$GDOME_CFLAGS $CFLAGS $PCRE_CFLAGS $CURL_CFLAGS"
+CFLAGS="$GDOME_CFLAGS $CFLAGS $PCRE_CFLAGS $CURL_CFLAGS $XMLRPC_C_CFLAGS"
 
 AC_SUBST(GDOME_LIBS)
 AC_SUBST(PCRE_LIBS)
@@ -122,7 +131,8 @@ AC_SUBST(CURL_LIBS)
 AC_SUBST(SWIG)
 AC_SUBST(ICONV)
 AC_SUBST(DL)
-
+AC_SUBST(XMLRPC_C_LIBS)
+AC_SUBST(XMLRPC_C_CLIENTLIBS)
 
 dnl lets check for -pthread
 AC_MSG_CHECKING(for -pthread arg to compiler)

@@ -58,6 +58,8 @@ cf_configuration_t fo_post_conf;
 cf_configuration_t fo_vote_conf;
 cf_configuration_t fo_feeds_conf;
 cf_configuration_t fo_userconf_conf;
+cf_configuration_t fo_usermanagement_conf;
+cf_configuration_t fo_xmlrpc_conf;
 
 cf_array_t Modules[MOD_MAX+1];
 
@@ -239,6 +241,26 @@ cf_conf_opt_t fo_userconf_options[] = {
   { "FromUntilFormat", cf_handle_command,   CF_CFG_OPT_NEEDED|CF_CFG_OPT_CONFIG|CF_CFG_OPT_LOCAL, &fo_userconf_conf },
   { "Edit",            cf_handle_command,   CF_CFG_OPT_NEEDED|CF_CFG_OPT_CONFIG|CF_CFG_OPT_LOCAL, &fo_userconf_conf },
 
+  { NULL, NULL, 0, NULL }
+};
+/* }}} */
+
+/* {{{ fo_userconf_options */
+cf_conf_opt_t fo_usermanagement_options[] = {
+  { "MinLength",       cf_handle_command,   CF_CFG_OPT_NEEDED|CF_CFG_OPT_CONFIG|CF_CFG_OPT_LOCAL, &fo_userconf_conf },
+  { "MaxLength",       cf_handle_command,   CF_CFG_OPT_NEEDED|CF_CFG_OPT_CONFIG|CF_CFG_OPT_LOCAL, &fo_userconf_conf },
+  { "MinVal",          cf_handle_command,   CF_CFG_OPT_NEEDED|CF_CFG_OPT_CONFIG|CF_CFG_OPT_LOCAL, &fo_userconf_conf },
+  { "MaxVal",          cf_handle_command,   CF_CFG_OPT_NEEDED|CF_CFG_OPT_CONFIG|CF_CFG_OPT_LOCAL, &fo_userconf_conf },
+  { "ModuleConfig",    cf_handle_command,   CF_CFG_OPT_NEEDED|CF_CFG_OPT_CONFIG|CF_CFG_OPT_LOCAL, &fo_userconf_conf },
+  { "FromUntilFormat", cf_handle_command,   CF_CFG_OPT_NEEDED|CF_CFG_OPT_CONFIG|CF_CFG_OPT_LOCAL, &fo_userconf_conf },
+  { "Edit",            cf_handle_command,   CF_CFG_OPT_NEEDED|CF_CFG_OPT_CONFIG|CF_CFG_OPT_LOCAL, &fo_userconf_conf },
+
+  { NULL, NULL, 0, NULL }
+};
+/* }}} */
+
+/* {{{ fo_xmlrpc_options */
+cf_conf_opt_t fo_xmlrpc_options[] = {
   { NULL, NULL, 0, NULL }
 };
 /* }}} */
@@ -1055,6 +1077,8 @@ void cf_cfg_init(void) {
   cf_tree_init(&fo_post_conf.global_directives,cf_cfg_compare,destroy_directive_list);
   cf_tree_init(&fo_vote_conf.global_directives,cf_cfg_compare,destroy_directive_list);
   cf_tree_init(&fo_feeds_conf.global_directives,cf_cfg_compare,destroy_directive_list);
+  cf_tree_init(&fo_xmlrpc_conf.global_directives,cf_cfg_compare,destroy_directive_list);
+  cf_tree_init(&fo_usermanagement_conf.global_directives,cf_cfg_compare,destroy_directive_list);
 
   cf_list_init(&fo_default_conf.forums);
   cf_list_init(&fo_server_conf.forums);
@@ -1063,6 +1087,8 @@ void cf_cfg_init(void) {
   cf_list_init(&fo_post_conf.forums);
   cf_list_init(&fo_vote_conf.forums);
   cf_list_init(&fo_feeds_conf.forums);
+  cf_list_init(&fo_xmlrpc_conf.forums);
+  cf_tree_init(&fo_usermanagement_conf.forums,cf_cfg_compare,destroy_directive_list);
 }
 /* }}} */
 
