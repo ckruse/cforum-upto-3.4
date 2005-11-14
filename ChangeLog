@@ -1,3 +1,8 @@
+2005-11-14 Christian Kruse <ckruse@wwwtech.de>
+	* src/cf_pthread.c, src/datautils.c, src/arrayutils.c, src/treeutils.c,
+		src/stringutils.c, src/listutils.c, src/serverutils.c,
+		src/memoryutils.c: Did some fixes for MacOS X
+
 2005-10-31 Christian Kruse <ckruse@wwwtech.de>
 	* *.h: Fixed #ifdef header symbols
 	* scripts/cf-compile_templates.pl: Small bugfix, had a typo
