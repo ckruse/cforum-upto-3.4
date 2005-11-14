@@ -29,6 +29,7 @@
 
 #include "utils.h"
 #include "cfgcomp.h"
+#include "charconvert.h"
 /* }}} */
 
 
@@ -179,6 +180,13 @@ int cf_cfg_lex_readstr(cf_cfg_stream_t *stream,u_char *ptr,int do_seq,u_char del
   }
 
   if(*ptr == '\0') {
+    fprintf(stderr,"unexpected EOF while reading string!");
+    cf_str_cleanup(&str);
+    return -1;
+  }
+
+  if(is_valid_utf8_string(str.content,str.len) == -1) {
+    fprintf(stderr,"string %s is not valid utf8!\n",str.content);
     cf_str_cleanup(&str);
     return -1;
   }

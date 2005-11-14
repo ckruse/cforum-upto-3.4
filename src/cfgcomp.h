@@ -75,7 +75,7 @@
 
 
 #define CF_ASM_MODULE    0x1
-#define CF_ASM_PUSH      0x2
+#define CF_ASM_SET       0x2
 #define CF_ASM_PUSHDIR   0x3
 #define CF_ASM_UNSET     0x4
 #define CF_ASM_LOAD      0x5
@@ -103,7 +103,9 @@
 
 #define CF_ASM_ARG_REG 0x1
 #define CF_ASM_ARG_NUM 0x2
-#define CF_ASM_ARG_STR (0x1|0x2)
+#define CF_ASM_ARG_STR 0x3
+#define CF_ASM_ARG_CFG 0x4
+#define CF_ASM_ARG_ARY 0x5
 
 #define CF_ASM_T_STR  0x1
 #define CF_ASM_T_ATOM 0x2
@@ -167,14 +169,70 @@ typedef struct {
 } cf_cfg_vmstate_t;
 
 
+
+
+typedef struct cf_cfg_config_value_s cf_cfg_config_value_t;
+typedef struct cf_cfg_vm_val_s {
+  int type;
+  int32_t i32val;
+  u_char *cval;
+  u_char bval;
+  cf_cfg_config_value_t *cfgval;
+
+  struct cf_cfg_vm_val_s *ary;
+  size_t alen,pos;
+} cf_cfg_vm_val_t;
+
+typedef struct {
+  u_char instruction;
+  size_t argcount;
+
+  cf_cfg_vm_val_t *args;
+} cf_cfg_vm_command_t;
+
+typedef struct {
+  cf_cfg_vm_val_t registers[256];
+  u_char *content,*pos;
+  size_t len;
+} cf_cfg_vm_t;
+
+
+/* configuration values */
+struct cf_cfg_config_value_s {
+  u_char type;
+  int32_t ival;
+  u_char *sval,*name;
+
+  struct cf_cfg_config_value_s *avals;
+  size_t alen;
+};
+
+typedef struct cf_cfg_config_s {
+  u_char *name;
+  cf_array_t nmspcs;
+
+  cf_tree_t args;
+  
+} cf_cfg_config_t;
+
+
+
 int cf_cfg_lexer(cf_cfg_stream_t *stream,int changestate);
 u_char *cf_dbg_get_token(int ttype);
 
 int cf_cfg_parser(cf_cfg_stream_t *stream,cf_cfg_trees_t *exec,cf_cfg_token_t *cur,int level,int retat);
 int cf_cfg_codegenerator(cf_cfg_stream_t *stream,cf_cfg_trees_t *trees,cf_cfg_vmstate_t *state,cf_string_t *str,int regarg);
+int cf_cfg_assemble(const u_char *filename,cf_string_t *str);
+int cf_cfg_cfgcomp_compile_if_needed(const u_char *filename);
+int cf_cfg_vm_start(cf_cfg_vm_t *me,cf_cfg_config_t *cfg);
 
 void cf_cfg_parser_destroy_tokens(cf_cfg_token_t *tok);
 void cf_cfg_parser_destroy_stream(cf_cfg_stream_t *stream);
 void cf_cfg_parser_destroy_trees(cf_cfg_trees_t *tree);
+
+void cf_cfg_init_cfg(cf_cfg_config_t *cfg);
+void cf_cfg_config_destroy(cf_cfg_config_t *cfg);
+int cf_cfg_cmp(cf_tree_dataset_t *dt,cf_tree_dataset_t *dt1);
+
 
 #endif

@@ -1,3 +1,11 @@
+2005-11-14 Christian Kruse <ckruse@wwwtech.de>
+	* src/cf_pthread.c, src/datautils.c, src/arrayutils.c, src/treeutils.c,
+		src/stringutils.c, src/listutils.c, src/serverutils.c, src/memoryutils.c:
+		Did some changes; now cforum also compiles on MacOS X
+	* src/cfgcomp_codegenerator.c, src/cfgcomp_assembler.c, src/cfgcomp_lexer.c,
+		src/cfgcomp.h, src/cfgcomp.c, src/cfgcomp_vm.c: Wrote most of needed code
+		for config vm
+
 2005-11-08 Christian Kruse <ckruse@wwwtech.de>
 	* conf/errormessages.de.txt: Added ACTION_NOT_ALLOWED
 	* conf/modules.de.xml: Added WarnBadLinks and PavatarActive

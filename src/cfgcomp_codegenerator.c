@@ -219,7 +219,7 @@ int cf_cfg_codegenerator_tokens(cf_cfg_stream_t *stream,cf_cfg_token_t *tok,cf_c
 
       if(reg < 0 || reg1 < 0) return -1;
 
-      cf_str_cstr_append(str,"PUSH reg");
+      cf_str_cstr_append(str,"SET reg");
       cf_uint16_to_str(str,(u_int16_t)reg1);
       cf_str_cstr_append(str,",reg");
       cf_uint16_to_str(str,(u_int16_t)reg);
@@ -365,6 +365,8 @@ int cf_cfg_codegenerator_tokens(cf_cfg_stream_t *stream,cf_cfg_token_t *tok,cf_c
 
       cf_str_cstr_append(str,"ARRAY reg");
       cf_uint16_to_str(str,(u_int16_t)reg);
+      cf_str_char_append(str,',');
+      cf_uint32_to_str(str,(u_int32_t)tok->arglen);
       cf_str_char_append(str,'\n');
 
       for(i=0;i<tok->arglen;++i) {

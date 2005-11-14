@@ -232,13 +232,13 @@ int cf_cfg_assembler(cf_string_t *asmb,cf_string_t *bc) {
       cf_str_char_append(&itself,CF_ASM_MODULE);
       argdesc = 2;
     }
-    else if(cf_strcmp(tokens[0].val,"PUSH") == 0) {
+    else if(cf_strcmp(tokens[0].val,"SET") == 0) {
       if(tnum != 3) {
         fprintf(stderr,"[%s:%d]: ERROR! wrong argument count %zu for PUSH!\n",__FILE__,__LINE__,tnum);
         return CF_RETVAL_PARSEERROR;
       }
 
-      cf_str_char_append(&itself,CF_ASM_PUSH);
+      cf_str_char_append(&itself,CF_ASM_SET);
       argdesc = 2;
     }
     else if(cf_strcmp(tokens[0].val,"UNSET") == 0) {
@@ -419,13 +419,13 @@ int cf_cfg_assembler(cf_string_t *asmb,cf_string_t *bc) {
       argdesc = 2;
     }
     else if(cf_strcmp(tokens[0].val,"ARRAY") == 0) {
-      if(tnum != 2) {
+      if(tnum != 3) {
         fprintf(stderr,"[%s:%d]: ERROR! wrong argument count %zu for ARRAY!\n",__FILE__,__LINE__,tnum);
         return CF_RETVAL_PARSEERROR;
       }
 
       cf_str_char_append(&itself,CF_ASM_ARRAY);
-      argdesc = 1;
+      argdesc = 2;
     }
     else if(cf_strcmp(tokens[0].val,"ARRAYSUBS") == 0) {
       if(tnum != 3) {
@@ -595,21 +595,5 @@ int cf_cfg_assemble(const u_char *filename,cf_string_t *str) {
   return CF_RETVAL_OK;
 }
 /* }}} */
-
-int main(int argc,char *argv[]) {
-  cf_string_t str;
-
-  if(argc < 2) {
-    fprintf(stderr,"usage: %s <file>\n",argv[0]);
-    return EXIT_FAILURE;
-  }
-
-  memset(&str,0,sizeof(str));
-  fprintf(stderr,"retval: %d\n",cf_cfg_assemble(argv[1],&str));
-  fwrite(str.content,1,str.len,stdout);
-  cf_str_cleanup(&str);
-
-  return EXIT_SUCCESS;
-}
 
 /* eof */

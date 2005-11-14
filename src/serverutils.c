@@ -18,6 +18,7 @@
 
 #include <sys/time.h>
 #include <pthread.h>
+#include <sys/types.h>
 
 #include "cf_pthread.h"
 
