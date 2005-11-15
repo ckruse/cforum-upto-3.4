@@ -170,7 +170,7 @@ u_char *cf_get_uconf_name(const u_char *uname) {
 
   path = cf_alloc(NULL,strlen(confpath->values[0]) + strlen(name) + 12,1,CF_ALLOC_MALLOC);
 
-  sprintf(path,"%s%c/%c/%c/%s.conf",confpath->values[0],name[0],name[1],name[2],name);
+  sprintf(path,"%s%c/%c/%c/%s.cfcl",confpath->values[0],name[0],name[1],name[2],name);
 
   if(stat(path,&sb) == -1) {
     fprintf(stderr,"clientlib: user config file '%s' not found!\n",path);

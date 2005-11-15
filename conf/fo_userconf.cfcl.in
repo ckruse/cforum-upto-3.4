@@ -1,0 +1,52 @@
+#
+# \file fo_userconf.conf
+# \author Christian Kruse, <ckruse@wwwtech.de>
+#
+# The configuration for the user config program
+#
+# $LastChangedDate$
+# $LastChangedRevision$
+# $LastChangedBy$
+#
+
+ModulePath = "@libdir@/cforum/";
+
+Load "flt_httpauth";
+Load "flt_niceuserconf";
+Load "flt_importexport";
+Load "flt_jsvalidation";
+Load "flt_checkregisteredname";
+
+ # Edit-Options
+FU:MinLength = (
+  ("QuotingChars",1),
+  ("Name", 2),
+  ("EMail", 2),
+  ("Bye", 2),
+  ("Hi", 2)
+);
+
+FU:MaxLength = (
+  ("Bye", 120),
+  ("Hi", 120),
+  ("Name", 60),
+  ("EMail", 60)
+);
+
+FU:MinVal = (
+  ("AutoReload", 2)
+);
+FU:MaxVal = (
+  ("AutoReload", 30)
+);
+
+FU:ModuleConfig    = "@sysconfdir@/cforum/modules.de.xml";
+FU:FromUntilFormat = "%d. %m. %Y, %H:%M";
+
+WITH(FORUM1)
+  FU:Edit       = "@sysconfdir@/cforum/templates/forum1/%s_%s_usersettings.so";
+  FU:ImportForm = "@sysconfdir@/cforum/templates/forum1/%s_%s_importform.so";
+  FU:ImportOk   = "@sysconfdir@/cforum/templates/forum1/%s_%s_importok.so";
+end;
+
+# eof

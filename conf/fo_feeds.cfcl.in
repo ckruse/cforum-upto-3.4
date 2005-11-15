@@ -1,0 +1,22 @@
+#
+# \file fo_feeds.conf.in
+# Feeds configuration file
+#
+
+FF:DateLocaleEn "en_GB.UTF-8"
+FF:FeedLang "de"
+
+WITH(FORUM1)
+  FF:AtomTitle            = "Classic Forum Feed";
+  FF:AtomTagline          = "Classic Forum Entwickler-Feed";
+
+  FF:RSSTitle             = "Classic Forum Feed";
+  FF:RSSDescription       = "Classic Forum Entwickler-Feed";
+  FF:RSSDescriptionThread = "Feed fuer Thread %t";
+
+  FF:RSSCopyright         = "Copyright 2005";
+  FF:RSSWebMaster         = "ckruse@wwwtech.de (Christian Kruse)";
+  FF:RSSCategory          = "Web-Entwicklung";
+end;
+
+# eof

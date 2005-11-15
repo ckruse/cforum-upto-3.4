@@ -1,0 +1,45 @@
+#
+# \file fo_arcview.conf.in
+# \author Christian Kruse, <ckruse@wwwtech.de>
+#
+# The configuration for the archive viewer
+#
+# $LastChangedDate$
+# $LastChangedRevision$
+# $LastChangedBy$
+#
+
+ModulePath = "@libdir@/cforum/";
+
+Load "flt_http";
+Load "flt_posting";
+Load "flt_httpauth";
+Load "flt_admin";
+Load "flt_directives";
+Load "flt_syntax";
+Load "flt_xmlarc";
+
+AV:PatternsDirectory  = "@sysconfdir@/cforum/patterns/";
+AV:SortYearList       = "ascending"; # ascending/descending
+AV:SortMonthList      = "descending"; # ascending/descending
+AV:SortThreadList     = "ascending"; # ascending/descending
+AV:SortMessages       = "ascending"; # ascending/descending
+
+AV:DateFormatList     = "%d. %m. %Y";
+AV:DateFormatViewList = "%d. %m. %Y, %H:%M";
+
+AV:EnableCache        = "yes";
+AV:CacheLevel         = 6;
+
+
+WITH(FORUM1)
+  XmlArc:ArchivePath    = "@localstatedir@/cforum/archive/forum1/";
+  AV:CacheDir           = "@localstatedir@/cforum/cache/forum1/";
+
+  AV:YearsTemplate      = "@sysconfdir@/cforum/templates/forum1/%s_%s_arcyears.so";
+  AV:MonthsTemplate     = "@sysconfdir@/cforum/templates/forum1/%s_%s_arcmonths.so";
+
+  AV:ThreadTemplate     = "@sysconfdir@/cforum/templates/forum1/%s_%s_arcthread.so";
+  AV:ThreadListTemplate = "@sysconfdir@/cforum/templates/forum1/%s_%s_arcthreadlist.so";
+end;
+

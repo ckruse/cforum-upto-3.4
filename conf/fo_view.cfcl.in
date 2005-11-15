@@ -1,0 +1,90 @@
+#
+# \file fo_view.conf
+# \author Christian Kruse, <ckruse@wwwtech.de>
+#
+# The configuration for the viewer program
+#
+# $LastChangedDate$
+# $LastChangedRevision$
+# $LastChangedBy$
+#
+
+ModulePath = "@libdir@/cforum/";
+
+Load "flt_tplmode";
+Load "flt_http";
+Load "flt_frameset";
+Load "flt_openclose";
+Load "flt_posting";
+Load "flt_list";
+Load "flt_nested";
+Load "flt_basic";
+Load "flt_listhighlight";
+Load "flt_category";
+Load "flt_deleted";
+Load "flt_visited";
+Load "flt_include";
+Load "flt_livefilter";
+Load "flt_httpauth";
+Load "flt_admin";
+Load "flt_link";
+Load "flt_threadreturnanchor";
+Load "flt_handle404";
+Load "flt_motd";
+Load "flt_tipoftheday";
+Load "flt_sorting";
+Load "flt_directives";
+Load "flt_syntax";
+Load "flt_mailonpost";
+Load "flt_preview";
+Load "flt_cgiconfig";
+
+Syntax:PatternsDirectory       = "@sysconfdir@/cforum/patterns/";
+Openclose:ThreadsOpenByDefault = "yes";
+Posting:DoQuote                = "yes";
+DF:ReadMode                = "thread"; # thread, list, nested
+DF:ThreadMode              = "list"; # list, nested
+FV:ShowThread              = "partitial"; # full, partitial, none
+# Listhighlight:VIPList                = ("Cheatah","Stefan Einspender","Stefan Muenz");
+# Listhighlight:VIPColors              = ("#FF00FF","#0000FF");
+Frameset:ShowForumAsFrameset     = "no";
+# Basic:BaseTarget             = "view";
+
+FV:ParamType               = "Q"; # Q (query string) or P (path info)
+
+Http:SendLastModified        = "yes";
+Http:SendExpires             = "1M";
+Http:HandleLastModifiedSince = "yes";
+
+Preview:GeneratePreview         = "yes";
+
+Motd:MotdFile                = "/etc/motd";
+Motd:EnableMotd              = "yes";
+
+# Date format
+#
+# see 'man strftime` for more informations to the
+# format strings
+#
+
+FV:DateFormatLoadTime      = "%A, %d. %B %Y, %H:%M:%S";
+FV:DateFormatThreadList    = "%d. %m. %Y, %H:%M";
+FV:DateFormatThreadView    = "%d. %B %Y, %H:%M";
+
+WITH(FORUM1)
+  Frameset:TemplatesFrameset     = ("@sysconfdir@/cforum/templates/forum1/%s_%s_frameset.so", "@sysconfdir@/cforum/templates/forum1/%s_%s_blank.so");
+
+  FV:TemplateForumBegin    = "@sysconfdir@/cforum/templates/forum1/%s_%s_forum_begin.so";
+  FV:TemplateForumEnd      = "@sysconfdir@/cforum/templates/forum1/%s_%s_forum_end.so";
+  Posting:TemplateForumThread   = "@sysconfdir@/cforum/templates/forum1/%s_%s_forum_thread.so";
+  List:TemplateForumList     = "@sysconfdir@/cforum/templates/forum1/%s_%s_forum_list.so";
+  Nested:TemplateForumNested   = "@sysconfdir@/cforum/templates/forum1/%s_%s_forum_nested.so";
+
+  Posting:TemplatePosting       = "@sysconfdir@/cforum/templates/forum1/%s_%s_forum_posting.so";
+
+  Mailonpost:MailDatabase          = "@localstatedir@/cforum/mail_forum1.db";
+end;
+
+
+# eof
+

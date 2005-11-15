@@ -1,0 +1,28 @@
+#
+# \file fo_cleanup.conf.in
+# \author Christian Kruse, <ckruse@wwwtech.de>
+#
+# The cf-cleanup config file
+#
+# $LastChangedDate$
+# $LastChangedRevision$
+# $LastChangedBy$
+#
+
+CL:TidFile = (
+  ("DeletedFile"),
+  ("MailUserDB","t%t"),
+  ("OcDbFile"),
+  ("InterestingFile")
+);
+
+CL:MidFile = (
+  ("VisitedFile")
+);
+
+CL:GlobalMidFile = (
+  ("VotingDatabase", "fo_vote", "%u_%m")
+);
+
+
+# eof

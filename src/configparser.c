@@ -304,7 +304,7 @@ cf_array_t *cf_get_conf_file(const u_char **which,size_t llen) {
     }
 
     cf_str_chars_append(&file,which[i],strlen(which[i]));
-    cf_str_chars_append(&file,".conf",5);
+    cf_str_chars_append(&file,".cfcl",5);
 
     memset(&st,0,sizeof(st));
     if(stat(file.content,&st) == -1) {

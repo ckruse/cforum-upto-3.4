@@ -1,0 +1,20 @@
+#
+# \file fo_vote.conf.in
+# \author Christian Kruse, <ckruse@wwwtech.de>
+#
+# The fo_vote config file
+#
+# $LastChangedDate$
+# $LastChangedRevision$
+# $LastChangedBy$
+#
+
+ModulePath = "@libdir@/cforum/";
+Load "flt_httpauth";
+
+
+WITH(FORUM1)
+  FVO:VotingDatabase = "@localstatedir@/cforum/forum1_voting.dat";
+  FVO:OkTemplate     = "@sysconfdir@/cforum/templates/forum1/%s_%s_vote_ok.so";
+end;
+

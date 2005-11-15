@@ -148,11 +148,13 @@ void cf_cfg_destroy_node(cf_tree_dataset_t *dt) {
 }
 /* }}} */
 
+/* {{{ cf_cfg_config_destroy */
 void cf_cfg_config_destroy(cf_cfg_config_t *cfg) {
   if(cfg->name) free(cfg->name);
   cf_tree_destroy(&cfg->args);
   cf_array_destroy(&cfg->nmspcs);
 }
+/* }}} */
 
 /* {{{ cf_cfg_init_cfg */
 void cf_cfg_init_cfg(cf_cfg_config_t *cfg) {

@@ -306,7 +306,7 @@ int cf_cfg_vm_start(cf_cfg_vm_t *me,cf_cfg_config_t *cfg) {
   cf_cfg_vm_val_t *dstreg,*srcreg,*srcreg1;
   int32_t i32;
 
-  size_t i;
+  size_t i,len,len1;
   cf_cfg_config_t *cfgns; /* namespace */
 
   me->pos = me->content;
@@ -434,9 +434,6 @@ int cf_cfg_vm_start(cf_cfg_vm_t *me,cf_cfg_config_t *cfg) {
           }
         }
         /* }}} */
-        break;
-
-      case CF_ASM_PUSHDIR:
         break;
 
       case CF_ASM_UNSET:
@@ -762,13 +759,431 @@ int cf_cfg_vm_start(cf_cfg_vm_t *me,cf_cfg_config_t *cfg) {
         break;
 
       case CF_ASM_ADD:
+        /* {{{ add two values */
+        if(cmd.argcount < 2 || cmd.argcount > 3) {
+          fprintf(stderr,"ADD with %zu arguments!\n",cmd.argcount);
+          return -1;
+        }
+
+        if(cmd.argcount == 2) {
+          if(cmd.args[1].type != CF_ASM_ARG_REG) {
+            fprintf(stderr,"ADD with two arguments and second argument NOT a register!\n");
+            return -1;
+          }
+
+          dstreg = &me->registers[cmd.args[1].bval];
+        }
+        else {
+          if(cmd.args[2].type != CF_ASM_ARG_REG) {
+            fprintf(stderr,"ADD with three arguments and third argument NOT a register!\n");
+            return -1;
+          }
+
+          dstreg = &me->registers[cmd.args[2].bval];
+        }
+
+        if(cmd.args[0].type == CF_ASM_ARG_REG) srcreg = &me->registers[cmd.args[0].bval];
+        else srcreg = &cmd.args[0];
+
+        if(cmd.args[1].type == CF_ASM_ARG_REG) srcreg1 = &me->registers[cmd.args[1].bval];
+        else srcreg1 = &cmd.args[1];
+
+        /* {{{ first arg: num */
+        if(srcreg->type == CF_ASM_ARG_NUM) {
+          /* {{{ second arg: num */
+          if(srcreg1->type == CF_ASM_ARG_NUM) i32 = srcreg->i32val + srcreg1->i32val;
+          /* }}} */
+          /* {{{ second arg: string */
+          else if(srcreg1->type == CF_ASM_ARG_STR) {
+            i32 = strtoll(srcreg1->cval,NULL,10);
+            i32 = srcreg->i32val + i32;
+          }
+          /* }}} */
+          /* {{{ second arg: config val */
+          else if(srcreg1->type == CF_ASM_ARG_CFG) {
+            /* {{{ second arg: config val: num */
+            if(srcreg1->cfgval->type == CF_ASM_ARG_NUM) i32 = srcreg->i32val + srcreg1->cfgval->ival;
+            /* }}} */
+            /* {{{ second arg: config val: string */
+            else if(srcreg1->cfgval->type == CF_ASM_ARG_STR) {
+              i32 = strtoll(srcreg1->cfgval->sval,NULL,10);
+              i32 = srcreg->i32val + i32;
+            }
+            /* }}} */
+            /* {{{ failure: config val: not num or string */
+            else {
+              fprintf("ADD with second arg an invalid type!\n");
+              return -1;
+            }
+            /* }}} */
+          }
+          /* }}} */
+          /* {{{ failure:  not num or string or config val */
+          else {
+            fprintf("ADD with second arg an invalid type!\n");
+            return -1;
+          }
+          /* }}} */
+
+          cf_cleanup_register(dstreg);
+          dstreg->type   = CF_ASM_ARG_NUM;
+          dstreg->i32val = i32;
+        }
+        /* }}} */
+        /* {{{ first arg: string */
+        else if(srcreg->type == CF_ASM_ARG_STR) {
+          len = strlen(srcreg->cval);
+
+          /* {{{ second arg: string */
+          if(srcreg1->type == CF_ASM_ARG_STR) {
+            len1  = strlen(srcreg1->cval);
+            sval1 = cf_alloc(NULL,1,len+len1+1,CF_ALLOC_MALLOC);
+            strcpy(sval1,srcreg->cval);
+            strcpy(sval1+len,srcreg1->cval);
+          }
+          /* }}} */
+          /* {{{ second arg: num */
+          else if(srcreg1->type == CF_ASM_ARG_NUM) {
+            len1  = snprintf(buff,512,"%"PRId32,srcreg1->i32val);
+            sval1 = cf_alloc(NULL,1,len+len1+1,CF_ALLOC_MALLOC);
+            strcpy(sval1,srcreg->cval);
+            strcpy(sval1+len,buff);
+          }
+          /* }}} */
+          /* {{{ second arg: config */
+          else if(srcreg1->type == CF_ASM_ARG_CFG) {
+            /* {{{ second arg: config: string */
+            if(srcreg1->cfgval->type == CF_ASM_ARG_STR) {
+              len1  = strlen(srcreg1->cfgval->sval);
+              sval1 = cf_alloc(NULL,1,len+len1+1,CF_ALLOC_MALLOC);
+              strcpy(sval1,srcreg->cval);
+              strcpy(sval1+len,srcreg1->cfgval->sval);
+            }
+            /* }}} */
+            /* {{{ second arg: config: num */
+            else if(srcreg1->cfgval->type == CF_ASM_ARG_NUM) {
+              len1  = snprintf(buff,512,"%"PRId32,srcreg1->cfgval->ival);
+              sval1 = cf_alloc(NULL,1,len+len1+1,CF_ALLOC_MALLOC);
+              strcpy(sval1,srcreg->cval);
+              strcpy(sval1+len,buff);
+            }
+            /* }}} */
+            /* {{{ second arg: config: failure */
+            else {
+              fprintf(stderr,"ADD with second arg an invalid type!\n");
+              return -1;
+            }
+            /* }}} */
+          }
+          /* }}} */
+          /* {{{ second arg: failure, not string, nor num neither config */
+          else {
+            fprintf(stderr,"ADD with second arg an invalid type!\n");
+            return -1;
+          }
+          /* }}} */
+
+          cf_cleanup_register(dstreg);
+          dstreg->type = CF_ASM_ARG_STR;
+          dstreg->cval = sval1;
+        }
+        /* }}} */
+        /* {{{ first arg: config */
+        else if(srcreg->type == CF_ASM_ARG_CFG) {
+          /* {{{ first arg: config: num */
+          if(srcreg->cfgval->type == CF_ASM_ARG_NUM) {
+            /* {{{ second arg: num */
+            if(srcreg1->type == CF_ASM_ARG_NUM) i32 = srcreg->cfgval->ival + srcreg1->i32val;
+            /* }}} */
+            /* {{{ second arg: string */
+            else if(srcreg1->type == CF_ASM_ARG_STR) {
+              i32 = strtoll(srcreg1->cval,NULL,10);
+              i32 = srcreg->cfgval->ival + i32,
+            }
+            /* }}} */
+            /* {{{ second arg: config */
+            else if(srcreg1->type == CF_ASM_ARG_CFG) {
+              /* {{{ second arg: config: num */
+              if(srcreg1->cfgval->type == CF_ASM_ARG_NUM) i32 = srcreg->cfgval->ival + srcreg1->cfgval->ival;
+              /* }}} */
+              /* {{{ second arg: config: string */
+              else if(srcreg1->cfgval->type == CF_ASM_ARG_STR) {
+                i32 = strtoll(srcreg1->cfgval->sval,NULL,10);
+                i32 = srcreg->cfgval->ival + i32,
+              }
+              /* }}} */
+              /* {{{ second arg: config: failure (not num nor string) */
+              else {
+                fprintf(stderr,"ADD with second arg an invalid type!\n");
+                return -1;
+              }
+              /* }}} */
+            }
+            /* }}} */
+            /* {{{ second arg not string, not num, nor config */
+            else {
+              fprintf(stderr,"ADD with second arg an invalid type!\n");
+              return -1;
+            }
+            /* }}} */
+
+            cf_cleanup_register(dstreg);
+            dstreg->type   = CF_ASM_ARG_NUM;
+            dstreg->i32val = i32;
+          }
+          /* }}} */
+          /* {{{ first arg: config: string */
+          else if(srcreg->cfgval->type == CF_ASM_ARG_STR) {
+            len = strlen(srcreg->cfgval->sval);
+
+            /* {{{ second arg: num */
+            if(srcreg1->type == CF_ASM_ARG_NUM) {
+              len1  = snprintf(buff,512,"%"PRId32,srcreg1->i32val);
+              sval1 = cf_alloc(NULL,1,len+len1+1,CF_ALLOC_MALLOC);
+              strcpy(sval1,srcreg->cfgval->sval);
+              strcpy(sval1+len,buff);
+            }
+            /* }}} */
+            /* {{{ second arg: string */
+            else if(srcreg1->type == CF_ASM_ARG_STR) {
+              len1  = strlen(srcreg1->cval);
+              sval1 = cf_alloc(NULL,1,len+len1+1,CF_ALLOC_MALLOC);
+              strcpy(sval1,srcreg->cfgval->sval);
+              strcpy(sval1+len,srcreg1->cval);
+            }
+            /* }}} */
+            /* {{{ second arg: config */
+            else if(srcreg1->type == CF_ASM_ARG_CFG) {
+              /* {{{ second arg: config: num */
+              if(srcreg1->cfgval->type == CF_ASM_ARG_NUM) {
+                len1  = snprintf(buff,512,"%"PRId32,srcreg1->cfgval->ival);
+                sval1 = cf_alloc(NULL,1,len+len1+1,CF_ALLOC_MALLOC);
+                strcpy(sval1,srcreg->cfgval->sval);
+                strcpy(sval1+len,buff);
+              }
+              /* }}} */
+              /* {{{ second arg: config: string */
+              else if(srcreg1->cfgval->type == CF_ASM_ARG_STR) {
+                len1  = strlen(srcreg1->cfgval->sval);
+                sval1 = cf_alloc(NULL,1,len+len1+1,CF_ALLOC_MALLOC);
+                strcpy(sval1,srcreg->cfgval->sval);
+                strcpy(sval1+len,srcreg1->cfgval->sval);
+              }
+              /* }}} */
+              /* {{{ second arg: config: failure, not string nor num */
+              else {
+                fprintf(stderr,"ADD with second arg an invalid type!\n");
+                return -1;
+              }
+              /* }}} */
+            }
+            /* }}} */
+            /* {{{ second arg: failure: not string, not num, nor config */
+            else {
+              fprintf(stderr,"ADD with second arg invalid type!\n");
+              return -1;
+            }
+            /* }}} */
+
+            cf_cleanup_register(dstreg);
+            dstreg->type = CF_ASM_ARG_STR;
+            dstreg->cval = sval1;
+          }
+          /* }}} */
+          /* {{{ first arg: config: failure, not num nor string */
+          else {
+            fprintf(stderr,"ADD with first arg an invalid type!\n");
+            return -1;
+          }
+          /* }}} */
+        }
+        /* }}} */
+        /* {{{ first arg: failure: not string, not num nor config */
+        else {
+          fprintf(stderr,"ADD with first arg an invalid type!\n");
+          return -1;
+        }
+        /* }}} */
+        /* }}} */
         break;
+
       case CF_ASM_SUB:
+        /* {{{ subtract two values */
+        if(cmd.argcount < 2 || cmd.argcount > 3) {
+          fprintf(stderr,"SUB with %zu arguments!\n",cmd.argcount);
+          return -1;
+        }
+
+        if(cmd.argcount == 2) {
+          if(cmd.args[1].type != CF_ASM_ARG_REG) {
+            fprintf(stderr,"SUB with two arguments and second argument NOT a register!\n");
+            return -1;
+          }
+
+          dstreg = &me->registers[cmd.args[1].bval];
+        }
+        else {
+          if(cmd.args[2].type != CF_ASM_ARG_REG) {
+            fprintf(stderr,"SUB with three arguments and third argument NOT a register!\n");
+            return -1;
+          }
+
+          dstreg = &me->registers[cmd.args[2].bval];
+        }
+
+        if(cmd.args[0].type == CF_ASM_ARG_REG) srcreg = &me->registers[cmd.args[0].bval];
+        else srcreg = &cmd.args[0];
+
+        if(cmd.args[1].type == CF_ASM_ARG_REG) srcreg1 = &me->registers[cmd.args[1].bval];
+        else srcreg1 = &cmd.args[1];
+
+        if(srcreg->type != CF_ASM_ARG_NUM) {
+          if(srcreg->type != CF_ASM_ARG_CFG || (srcreg->type == CF_ASM_ARG_CFG && srcreg->cfgval->type != CF_ASM_ARG_NUM)) {
+            fprintf(stderr,"SUB with first argument not a number!\n");
+            return -1;
+          }
+        }
+
+        if(srcreg1->type != CF_ASM_ARG_NUM) {
+          if(srcreg1->type != CF_ASM_ARG_CFG || (srcreg1->type == CF_ASM_ARG_CFG && srcreg1->cfgval->type != CF_ASM_ARG_NUM)) {
+            fprintf(stderr,"SUB with first argument not a number!\n");
+            return -1;
+          }
+        }
+
+        if(srcreg->type == CF_ASM_ARG_NUM) {
+          if(srcreg1->type == CF_ASM_ARG_NUM) i32 = srcreg->i32val - srcreg1->i32val;
+          else i32 = srcreg->i32val * srcreg1->cfgval->ival;
+        }
+        else {
+          if(srcreg1->type == CF_ASM_ARG_NUM) i32 = srcreg->cfgval->ival - srcreg1->i32val;
+          else i32 = srcreg->cfgval->ival - srcreg1->cfgval->ival;
+        }
+
+        cf_cleanup_register(dstreg);
+        dstreg->type   = CF_ASM_ARG_NUM;
+        dstreg->i32val = i32;
+        /* }}} */
         break;
+
       case CF_ASM_DIV:
+        /* {{{ divide two values */
+        if(cmd.argcount < 2 || cmd.argcount > 3) {
+          fprintf(stderr,"DIV with %zu arguments!\n",cmd.argcount);
+          return -1;
+        }
+
+        if(cmd.argcount == 2) {
+          if(cmd.args[1].type != CF_ASM_ARG_REG) {
+            fprintf(stderr,"DIV with two arguments and second argument NOT a register!\n");
+            return -1;
+          }
+
+          dstreg = &me->registers[cmd.args[1].bval];
+        }
+        else {
+          if(cmd.args[2].type != CF_ASM_ARG_REG) {
+            fprintf(stderr,"DIV with three arguments and third argument NOT a register!\n");
+            return -1;
+          }
+
+          dstreg = &me->registers[cmd.args[2].bval];
+        }
+
+        if(cmd.args[0].type == CF_ASM_ARG_REG) srcreg = &me->registers[cmd.args[0].bval];
+        else srcreg = &cmd.args[0];
+
+        if(cmd.args[1].type == CF_ASM_ARG_REG) srcreg1 = &me->registers[cmd.args[1].bval];
+        else srcreg1 = &cmd.args[1];
+
+        if(srcreg->type != CF_ASM_ARG_NUM) {
+          if(srcreg->type != CF_ASM_ARG_CFG || (srcreg->type == CF_ASM_ARG_CFG && srcreg->cfgval->type != CF_ASM_ARG_NUM)) {
+            fprintf(stderr,"DIV with first argument not a number!\n");
+            return -1;
+          }
+        }
+
+        if(srcreg1->type != CF_ASM_ARG_NUM) {
+          if(srcreg1->type != CF_ASM_ARG_CFG || (srcreg1->type == CF_ASM_ARG_CFG && srcreg1->cfgval->type != CF_ASM_ARG_NUM)) {
+            fprintf(stderr,"DIV with first argument not a number!\n");
+            return -1;
+          }
+        }
+
+        if(srcreg->type == CF_ASM_ARG_NUM) {
+          if(srcreg1->type == CF_ASM_ARG_NUM) i32 = srcreg->i32val / srcreg1->i32val;
+          else i32 = srcreg->i32val / srcreg1->cfgval->ival;
+        }
+        else {
+          if(srcreg1->type == CF_ASM_ARG_NUM) i32 = srcreg->cfgval->ival / srcreg1->i32val;
+          else i32 = srcreg->cfgval->ival / srcreg1->cfgval->ival;
+        }
+
+        cf_cleanup_register(dstreg);
+        dstreg->type   = CF_ASM_ARG_NUM;
+        dstreg->i32val = i32;
+        /* }}} */
         break;
+
       case CF_ASM_MUL:
+        /* {{{ multiply two values */
+        if(cmd.argcount < 2 || cmd.argcount > 3) {
+          fprintf(stderr,"MUL with %zu arguments!\n",cmd.argcount);
+          return -1;
+        }
+
+        if(cmd.argcount == 2) {
+          if(cmd.args[1].type != CF_ASM_ARG_REG) {
+            fprintf(stderr,"MUL with two arguments and second argument NOT a register!\n");
+            return -1;
+          }
+
+          dstreg = &me->registers[cmd.args[1].bval];
+        }
+        else {
+          if(cmd.args[2].type != CF_ASM_ARG_REG) {
+            fprintf(stderr,"MUL with three arguments and third argument NOT a register!\n");
+            return -1;
+          }
+
+          dstreg = &me->registers[cmd.args[2].bval];
+        }
+
+        if(cmd.args[0].type == CF_ASM_ARG_REG) srcreg = &me->registers[cmd.args[0].bval];
+        else srcreg = &cmd.args[0];
+
+        if(cmd.args[1].type == CF_ASM_ARG_REG) srcreg1 = &me->registers[cmd.args[1].bval];
+        else srcreg1 = &cmd.args[1];
+
+        if(srcreg->type != CF_ASM_ARG_NUM) {
+          if(srcreg->type != CF_ASM_ARG_CFG || (srcreg->type == CF_ASM_ARG_CFG && srcreg->cfgval->type != CF_ASM_ARG_NUM)) {
+            fprintf(stderr,"MUL with first argument not a number!\n");
+            return -1;
+          }
+        }
+
+        if(srcreg1->type != CF_ASM_ARG_NUM) {
+          if(srcreg1->type != CF_ASM_ARG_CFG || (srcreg1->type == CF_ASM_ARG_CFG && srcreg1->cfgval->type != CF_ASM_ARG_NUM)) {
+            fprintf(stderr,"MUL with first argument not a number!\n");
+            return -1;
+          }
+        }
+
+        if(srcreg->type == CF_ASM_ARG_NUM) {
+          if(srcreg1->type == CF_ASM_ARG_NUM) i32 = srcreg->i32val * srcreg1->i32val;
+          else i32 = srcreg->i32val * srcreg1->cfgval->ival;
+        }
+        else {
+          if(srcreg1->type == CF_ASM_ARG_NUM) i32 = srcreg->cfgval->ival * srcreg1->i32val;
+          else i32 = srcreg->cfgval->ival * srcreg1->cfgval->ival;
+        }
+
+        cf_cleanup_register(dstreg);
+        dstreg->type   = CF_ASM_ARG_NUM;
+        dstreg->i32val = i32;
+        /* }}} */
         break;
+
       case CF_ASM_JMP:
         /* {{{ jump to address */
         if(cmd.argcount != 1) {

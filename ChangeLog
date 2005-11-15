@@ -1,3 +1,13 @@
+2005-11-15 Christian Kruse <ckruse@wwwtech.de>
+	* conf/fo_server.conf.in, conf/fo_view.conf.in, conf/fo_vote.conf.in,
+		conf/fo_default.conf.in, conf/fo_userconf.conf.in, conf/fo_post.conf.in,
+		conf/fo_feeds.conf.in, conf/fo_cleanup.conf.in, conf/fo_arcview.conf.in:
+		Changed format of config files to CFCL and renamed them to .cfcl.in
+	* src/cfgcomp_vm.c, src/cfgcomp.c, src/cfgcomp.h: Implemented some more
+		functions; now only Load and the framework are missing.
+	* repair.pl.in, configure.in, src/clientlib.c, src/configparser.c,
+		src/fo_server.c: Changed to .cfcl suffix
+
 2005-11-14 Christian Kruse <ckruse@wwwtech.de>
 	* src/cf_pthread.c, src/datautils.c, src/arrayutils.c, src/treeutils.c,
 		src/stringutils.c, src/listutils.c, src/serverutils.c, src/memoryutils.c:

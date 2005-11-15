@@ -15,7 +15,7 @@ my $top_srcdir = "@top_srcdir@";
 opendir DIR,'conf' or die "$top_srcdir: $!";
 
 while(my $f = readdir DIR) {
-  next unless $f =~ /\.conf$/;
+  next unless $f =~ /\.cfcl$/;
   local $/;
 
   open DAT,'<',"conf/$f" or die "conf/$f: $!";

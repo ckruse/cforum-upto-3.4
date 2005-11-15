@@ -1,0 +1,117 @@
+#
+# \file fo_post.conf.in
+# \author Christian Kruse, <ckruse@wwwtech.de>
+#
+# The fo_post config file
+#
+# $LastChangedDate$
+# $LastChangedRevision$
+# $LastChangedBy$
+#
+
+ModulePath = "@libdir@/cforum/";
+
+Load "flt_tplmode";
+Load "flt_http";
+Load "flt_directives";
+Load "flt_visited";
+Load "flt_include";
+Load "flt_httpauth";
+Load "flt_posting";
+Load "flt_list";
+Load "flt_nested";
+Load "flt_remotesignature";
+Load "flt_postingassistant";
+Load "flt_spellcheck";
+Load "flt_preview";
+Load "flt_syntax";
+Load "flt_checkregisteredname";
+Load "flt_mailonpost";
+
+Syntax:PatternsDirectory = "@sysconfdir@/cforum/patterns/";
+DF:ReadMode          = "thread";
+
+FP:PostingUrl = (
+  "^http://wwwtech.de/forum/\\?",
+  "^http://wwwtech.de/forum/my/\\?",
+  "^/forum/\\?",
+  "^/forum/my/\\?",
+  "^\./\\?"
+);
+
+FP:FieldConfig = (
+  ("Name",    60,    2),
+  ("subject", 64,    4),
+  ("body",    12288, 10),
+  ("EMail",   60,    2),
+  ("unid",    50,    5),
+  ("qchar",   10,    1),
+  ("cat",     18,    3)
+);
+
+FP:FieldNeeded = (
+  ("Name",    "yes", "yes"),
+  ("EMail",   "yes", "yes"),
+  ("subject", "yes", "no"),
+  ("body",    "yes", "yes"),
+  ("unid",    "yes", "yes"),
+  ("qchar",   "yes", "yes"),
+  ("cat",     "yes", "no")
+);
+
+FP:FieldValidate = (
+  ("EMail", "email"),
+  ("HomepageUrl", "http"),
+  ("ImageUrl", "http-strict")
+);
+
+FP:PreviewDateFormat = "%d. %B %Y, %H:%M";
+FP:DateFormat        = "%d. %B %Y, %H:%M";
+
+Postingassistant:MustValidate = "yes";
+
+Postingassistant:BadWords        = ("fick","wichs","arschloch","nutte","hure","muschi");
+Postingassistant:BadwordsAllowed = 3;
+
+Postingassistant:FormateDeficitesAllowed = 5;
+
+Postingassistant:QuotingPercent    = 50;
+Postingassistant:QuoteMustValidate = "yes";
+
+Spellcheck:Enabled       = "yes";
+Spellcheck:Path          = "/usr/bin/ispell";
+Spellcheck:Dictionary    = "german";
+Spellcheck:FormatterType = "utf8";
+
+WITH(FORUM1)
+  Mailonpost:SMTPHost     = "localhost";
+  Mailonpost:SMTPFrom     = "cforum@wwwtech.de";
+  Mailonpost:SMTPReverse  = "devnull@wwwtech.de";
+  Mailonpost:MailDatabase = "@localstatedir@/cforum/mail_forum1.db";
+
+  FP:ThreadTemplate = "@sysconfdir@/cforum/templates/forum1/%s_%s_thread.so";
+  FP:FatalTemplate  = "@sysconfdir@/cforum/templates/forum1/%s_%s_fatal.so";
+  FP:OkTemplate     = "@sysconfdir@/cforum/templates/forum1/%s_%s_post_ok.so";
+end;
+
+FP:Images = (
+  ("selbermachen" "/images/01.gif" "Für dein Problem gibt es nur eine Lösung: SELFmade von Selbermachen."),
+  ("archiv" "/images/02.gif" "Die Antwort auf deine Frage findest du im Archiv."),
+  ("formulierung" "/images/03.gif" "Was willst du jetzt eigentlich wissen?"),
+  ("selfhtml" "/images/04.gif" "Schau mal in SELFHTML nach, um eine Antwort auf deine Frage zu finden!"),
+  ("ende" "/images/05.gif" "Jetzt reicht's aber!"),
+  ("reihenfolge" "/images/06.gif" "Erstmal selber probieren, dann bei Problemen: SELFHTML, danach: dieses Forum."),
+  ("fehlamplatz" "/images/07.gif" "Stopp! So etwas hat hier nichts zu suchen."),
+  ("links" "/images/08.gif" "Schau mal unter folgenden Links nach:"),
+  ("panik" "/images/10.gif" "??!%${"),
+  ("elfgebote" "/images/11.gif" "Die elf Gebote des SELF-Forums"),
+  ("baustelle" "/images/12.gif" "ZU DIESEM FORUM"),
+  ("trolls" "/images/13.gif" "Don't feed the trolls"),
+  ("dumm" "/images/14.gif" "Ein bischen dumm?"),
+  ("nein" "/images/15.gif" "Nein!"),
+  ("noe" "/images/16.gif" "Noe!"),
+  ("board" "/images/17.gif" "Board?")
+);
+
+# eof
+

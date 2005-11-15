@@ -76,7 +76,6 @@
 
 #define CF_ASM_MODULE    0x1
 #define CF_ASM_SET       0x2
-#define CF_ASM_PUSHDIR   0x3
 #define CF_ASM_UNSET     0x4
 #define CF_ASM_LOAD      0x5
 

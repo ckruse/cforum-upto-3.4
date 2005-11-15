@@ -1,0 +1,57 @@
+#
+# \file fo_server.conf.in
+# \author Christian Kruse, <ckruse@wwwtech.de>
+#
+# The configuration for the server
+#
+# $LastChangedDate$
+# $LastChangedRevision$
+# $LastChangedBy$
+#
+
+
+ModulePath = "@libdir@/cforum/";
+
+Load "flt_tid_index";
+Load "flt_cftp";
+Load "flt_registerednames";
+Load "flt_extern";
+Load "flt_voting";
+Load "flt_xmlstorage";
+
+DF:Forums       = ("FORUM1");
+
+FS:RunArchiver  = 1800;
+FS:MinThreads   = 10;
+FS:SpareThreads = 5;
+FS:MaxThreads   = 120;
+
+FS:UserGroup    = ("ckruse","users");
+FS:Chroot       = ("/home/ckruse/tmp/cforum/chroot/");
+
+# We want logfiles to be 2MB max
+FS:LogMaxSize   = 2097152;
+
+FS:ErrorLog     = "@localstatedir@/log/cf_errors";
+FS:StdLog       = "@localstatedir@/log/cf_stdlog";
+FS:PIDFile      = "@localstatedir@/run/cf_pid";
+
+# external interface
+FS:ExternPort   = 6666;
+# ExternInterface = "192.168.50.2";
+
+FS:SortThreads  = "ascending";
+FS:SortMessages = "ascending";
+
+FS:ArchiveOnVote       = 10; # archive on 10% votings
+FS:MainFileMaxBytes    = 250000; # archive at 250k bytes
+FS:MainFileMaxPostings = 2000;
+FS:MainFileMaxThreads  = 150;
+
+WITH(FORUM1)
+  Xmlstorage:MessagePath = "@localstatedir@/cforum/messages/forum1/";
+  Xmlstorage:ArchivePath = "@localstatedir@/cforum/archive/forum1/";
+  Registerednames:DB     = "@localstatedir@/cforum/registered_names_forum1.db";
+end;
+
+# eof

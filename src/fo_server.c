@@ -389,12 +389,12 @@ int main(int argc,char *argv[]) {
   }
   else {
     if((uid = getuid()) == 0) {
-      fprintf(stderr,"You should not run this server as root! Set UserGroup in fo_server.conf to an appropriate value!\n");
+      fprintf(stderr,"You should not run this server as root! Set UserGroup in fo_server.cfcl to an appropriate value!\n");
       return EXIT_FAILURE;
     }
 
     if((gid = getgid()) == 0) {
-      fprintf(stderr,"You should not run this server with gid 0! Set UserGroup in fo_server.conf to an appropriate value!\n");
+      fprintf(stderr,"You should not run this server with gid 0! Set UserGroup in fo_server.cfcl to an appropriate value!\n");
       return EXIT_FAILURE;
     }
   }
