@@ -36,74 +36,74 @@
 /* }}} */
 
 typedef struct s_directive_callback {
-  directive_filter_t callback;
+  cf_directive_filter_t callback;
   int type;
-} directive_callback_t;
+} cf_directive_callback_t;
 
 typedef struct s_validator_callback {
-  directive_validator_t callback;
+  cf_directive_validator_t callback;
   int type;
-} validator_callback_t;
+} cf_validator_callback_t;
 
 typedef struct s_html_stack {
   u_char *begin;
   u_char *name;
   u_char **args;
   size_t argnum;
-} html_stack_elem_t;
+} cf_html_stack_elem_t;
 
-typedef struct s_html_tree {
+typedef struct cf_html_tree_s {
   u_char c;
-  struct s_html_tree **nodes;
-  directive_filter_t cb;
-} html_tree_t;
+  struct cf_html_tree_s **nodes;
+  cf_directive_filter_t cb;
+} cf_html_tree_t;
 
 static cf_hash_t *registered_directives = NULL;
 static cf_hash_t *registered_validators = NULL;
-static html_tree_t *parser_tree[256];
+static cf_html_tree_t *parser_tree[256];
 
 
 /* {{{ run_content_filters */
-void run_content_filters(int mode,cl_thread_t *thr,cf_string_t *content,cf_string_t *cite,const u_char *qchars) {
+void cf_run_content_filters(cf_cfg_config_t *cfg,int mode,cf_cl_thread_t *thr,cf_string_t *content,cf_string_t *cite,const u_char *qchars) {
   int ret = FLT_OK;
   cf_handler_config_t *handler;
   size_t i;
-  content_filter_t fkt;
+  cf_content_filter_t fkt;
 
-  if(Modules[mode].elements) {
-    for(i=0;i<Modules[mode].elements;i++) {
-      handler = cf_array_element_at(&Modules[mode],i);
-      fkt     = (content_filter_t)handler->func;
-      ret     = fkt(&fo_default_conf,&fo_view_conf,thr,content,cite,qchars);
+  if(cfg->modules[mode].elements) {
+    for(i=0;i<cfg->modules[mode].elements;i++) {
+      handler = cf_array_element_at(&cfg->modules[mode],i);
+      fkt     = (cf_content_filter_t)handler->func;
+      ret     = fkt(cfg,thr,content,cite,qchars);
     }
   }
 }
 /* }}} */
 
 /* {{{ run_inline_directive_filters */
-int run_inline_directive_filters(cl_thread_t *thread,const u_char *directive,const u_char **parameters,cf_string_t *content,cf_string_t *cite,const u_char *qchars,int sig) {
-  directive_callback_t *cb;
+int cf_run_inline_directive_filters(cf_cfg_config_t *cfg,cf_cl_thread_t *thread,const u_char *directive,const u_char **parameters,cf_string_t *content,cf_string_t *cite,const u_char *qchars,int sig) {
+  cf_directive_callback_t *cb;
 
   if((cb = cf_hash_get(registered_directives,(u_char *)directive,strlen(directive))) == NULL) return FLT_DECLINE;
 
-  if(cb->type & CF_HTML_DIR_TYPE_INLINE) return cb->callback(&fo_default_conf,&fo_view_conf,thread,directive,parameters,1,NULL,NULL,content,cite,qchars,sig);
+  if(cb->type & CF_HTML_DIR_TYPE_INLINE) return cb->callback(cfg,thread,directive,parameters,1,NULL,NULL,content,cite,qchars,sig);
   return FLT_DECLINE;
 }
 /* }}} */
 
 /* {{{ run_validate_inline */
-int run_validate_inline(const u_char *directive,const u_char **parameters,cf_tpl_variable_t *var) {
-  validator_callback_t *cb;
+int cf_run_validate_inline(cf_cfg_config_t *cfg,const u_char *directive,const u_char **parameters,cf_tpl_variable_t *var) {
+  cf_validator_callback_t *cb;
 
   if((cb = cf_hash_get(registered_validators,(u_char *)directive,strlen(directive))) == NULL) return FLT_DECLINE;
 
-  if(cb->type & CF_HTML_DIR_TYPE_INLINE) return cb->callback(&fo_default_conf,&fo_view_conf,directive,parameters,1,var);
+  if(cb->type & CF_HTML_DIR_TYPE_INLINE) return cb->callback(cfg,directive,parameters,1,var);
   return FLT_DECLINE;
 }
 /* }}} */
 
 /* {{{ next_line_is_no_quote_line */
-static int next_line_is_no_quote_line(const u_char *ptr) {
+static int cf_next_line_is_no_quote_line(const u_char *ptr) {
   int eq;
 
   for(;*ptr && ((eq = cf_strncmp(ptr,"<br />",6)) == 0 || *ptr == ' ');ptr++) {
@@ -116,9 +116,9 @@ static int next_line_is_no_quote_line(const u_char *ptr) {
 /* }}} */
 
 /* {{{ is_open */
-static int is_open(const u_char *name,cf_array_t *stack) {
+static int cf_is_open(const u_char *name,cf_array_t *stack) {
   int i;
-  html_stack_elem_t *s_el;
+  cf_html_stack_elem_t *s_el;
 
   for(i=stack->elements-1;i>=0;--i) {
     s_el = cf_array_element_at(stack,i);
@@ -130,35 +130,35 @@ static int is_open(const u_char *name,cf_array_t *stack) {
 /* }}} */
 
 /* {{{ run_block_directive_filters */
-static int run_block_directive_filters(cl_thread_t *thread,const u_char *directive,const u_char **parameters,size_t len,cf_string_t *bcontent,cf_string_t *bcite,cf_string_t *content,cf_string_t *cite,const u_char *qchars,int sig) {
-  directive_callback_t *cb;
+static int cf_run_block_directive_filters(cf_cfg_config_t *cfg,cf_cl_thread_t *thread,const u_char *directive,const u_char **parameters,size_t len,cf_string_t *bcontent,cf_string_t *bcite,cf_string_t *content,cf_string_t *cite,const u_char *qchars,int sig) {
+  cf_directive_callback_t *cb;
 
   if((cb = cf_hash_get(registered_directives,(u_char *)directive,strlen(directive))) == NULL) return FLT_DECLINE;
 
-  if(cb->type & CF_HTML_DIR_TYPE_BLOCK) return cb->callback(&fo_default_conf,&fo_view_conf,thread,directive,parameters,len,bcontent,bcite,content,cite,qchars,sig);
+  if(cb->type & CF_HTML_DIR_TYPE_BLOCK) return cb->callback(cfg,thread,directive,parameters,len,bcontent,bcite,content,cite,qchars,sig);
   return FLT_DECLINE;
 }
 /* }}} */
 
 /* {{{ run_validate_block_directive */
-static int run_validate_block_directive(const u_char *directive,const u_char **parameters,size_t len,cf_tpl_variable_t *var) {
-  validator_callback_t *cb;
+static int cf_run_validate_block_directive(cf_cfg_config_t *cfg,const u_char *directive,const u_char **parameters,size_t len,cf_tpl_variable_t *var) {
+  cf_validator_callback_t *cb;
 
   if((cb = cf_hash_get(registered_validators,(u_char *)directive,strlen(directive))) == NULL) return FLT_DECLINE;
 
-  if(cb->type & CF_HTML_DIR_TYPE_BLOCK) return cb->callback(&fo_default_conf,&fo_view_conf,directive,parameters,len,var);
+  if(cb->type & CF_HTML_DIR_TYPE_BLOCK) return cb->callback(cfg,directive,parameters,len,var);
   return FLT_DECLINE;
 }
 /* }}} */
 
 /* {{{ parse_message */
-static u_char *parse_message(cl_thread_t *thread,u_char *start,cf_array_t *stack,cf_string_t *content,cf_string_t *cite,const u_char *qchars,size_t qclen,int utf8,int xml,int max_sig_lines,int show_sig,int linebrk,int sig,int quotemode,int line) {
+static u_char *cf_parse_message(cf_cfg_config_t *cfg,cf_cl_thread_t *thread,u_char *start,cf_array_t *stack,cf_string_t *content,cf_string_t *cite,const u_char *qchars,size_t qclen,int utf8,int xml,int max_sig_lines,int show_sig,int linebrk,int sig,int quotemode,int line) {
   const u_char *ptr,*tmp,*ptr1;
   int rc,run = 1,sb = 0,fail,ending,doit;
   u_char *directive,*parameter,*safe,*buff,*retval;
   cf_string_t d_content,d_cite,strtmp;
-  html_stack_elem_t stack_elem,*stack_tmp;
-  html_tree_t *telem1,*telem2;
+  cf_html_stack_elem_t stack_elem,*stack_tmp;
+  cf_html_tree_t *telem1,*telem2;
 
   for(ptr=start;*ptr && run;++ptr) {
     switch(*ptr) {
@@ -186,7 +186,7 @@ static u_char *parse_message(cl_thread_t *thread,u_char *start,cf_array_t *stack
         if(ending) {
           directive = strndup(ptr+1,ptr1-ptr-1);
 
-          if(is_open(directive,stack)) {
+          if(cf_is_open(directive,stack)) {
             stack_tmp = cf_array_element_at(stack,stack->elements-1);
 
             /* nesting is ok */
@@ -229,7 +229,7 @@ static u_char *parse_message(cl_thread_t *thread,u_char *start,cf_array_t *stack
             parameter = htmlentities_decode(buff,NULL);
             free(buff);
 
-            rc = run_inline_directive_filters(thread,directive,(const u_char **)&parameter,content,cite,qchars,sig);
+            rc = cf_run_inline_directive_filters(cfg,thread,directive,(const u_char **)&parameter,content,cite,qchars,sig);
 
             free(directive);
             free(parameter);
@@ -275,7 +275,7 @@ static u_char *parse_message(cl_thread_t *thread,u_char *start,cf_array_t *stack
             cf_str_init(&d_content);
             cf_str_init(&d_cite);
 
-            retval = parse_message(thread,(u_char *)ptr1+1,stack,&d_content,cite ? &d_cite : NULL,qchars,qclen,utf8,xml,max_sig_lines,show_sig,linebrk,sig,quotemode,line);
+            retval = cf_parse_message(cfg,thread,(u_char *)ptr1+1,stack,&d_content,cite ? &d_cite : NULL,qchars,qclen,utf8,xml,max_sig_lines,show_sig,linebrk,sig,quotemode,line);
 
             cf_array_pop(stack);
 
@@ -291,7 +291,7 @@ static u_char *parse_message(cl_thread_t *thread,u_char *start,cf_array_t *stack
             }
 
             /* ok, go and run directive filters */
-            rc = run_block_directive_filters(thread,directive,(const u_char **)&parameter,1,content,cite,&d_content,cite ? &d_cite : NULL,qchars,sig);
+            rc = cf_run_block_directive_filters(cfg,thread,directive,(const u_char **)&parameter,1,content,cite,&d_content,cite ? &d_cite : NULL,qchars,sig);
 
             cf_str_cleanup(&d_content);
             cf_str_cleanup(&d_cite);
@@ -355,7 +355,7 @@ static u_char *parse_message(cl_thread_t *thread,u_char *start,cf_array_t *stack
             cf_str_init(&d_content);
             cf_str_init(&d_cite);
 
-            retval = parse_message(thread,(u_char *)ptr1+1,stack,&d_content,cite ? &d_cite : NULL,qchars,qclen,utf8,xml,max_sig_lines,show_sig,linebrk,sig,quotemode,line);
+            retval = cf_parse_message(cfg,thread,(u_char *)ptr1+1,stack,&d_content,cite ? &d_cite : NULL,qchars,qclen,utf8,xml,max_sig_lines,show_sig,linebrk,sig,quotemode,line);
             cf_array_pop(stack);
 
             /* directive is invalid (e.g. no content, wrong nesting), get defined state */
@@ -369,7 +369,7 @@ static u_char *parse_message(cl_thread_t *thread,u_char *start,cf_array_t *stack
             }
 
             /* ok, go and run directive filters */
-            rc = run_block_directive_filters(thread,directive,(const u_char **)stack_elem.args,stack_elem.argnum,content,cite,&d_content,cite ? &d_cite : NULL,qchars,sig);
+            rc = cf_run_block_directive_filters(cfg,thread,directive,(const u_char **)stack_elem.args,stack_elem.argnum,content,cite,&d_content,cite ? &d_cite : NULL,qchars,sig);
 
             cf_str_cleanup(&d_content);
             cf_str_cleanup(&d_cite);
@@ -410,7 +410,7 @@ static u_char *parse_message(cl_thread_t *thread,u_char *start,cf_array_t *stack
             cf_str_chars_append(cite,qchars,qclen);
           }
 
-          if(quotemode && next_line_is_no_quote_line(ptr+6)) {
+          if(quotemode && cf_next_line_is_no_quote_line(ptr+6)) {
             cf_str_chars_append(content,"</span>",7);
             quotemode = 0;
           }
@@ -482,7 +482,7 @@ static u_char *parse_message(cl_thread_t *thread,u_char *start,cf_array_t *stack
 
           if(telem2 && telem2->cb) {
             directive = strndup(safe,ptr-safe);
-            rc        = telem2->cb(&fo_default_conf,&fo_view_conf,thread,directive,NULL,0,NULL,NULL,content,cite,qchars,sig);
+            rc        = telem2->cb(cfg,thread,directive,NULL,0,NULL,NULL,content,cite,qchars,sig);
 
             if(rc == FLT_OK) {
               doit = 0;
@@ -506,13 +506,13 @@ static u_char *parse_message(cl_thread_t *thread,u_char *start,cf_array_t *stack
 }
 /* }}} */
 
-/* {{{ validate_message */
-int validate_message(cf_array_t *stack,cl_thread_t *thread,const u_char *msg,u_char **pos,cf_tpl_variable_t *var) {
+/* {{{ cf_validate_message */
+int cf_validate_message(cf_cfg_config_t *cfg,cf_array_t *stack,cf_cl_thread_t *thread,const u_char *msg,u_char **pos,cf_tpl_variable_t *var) {
   const u_char *ptr,*tmp,*ptr1;
   int rc,run = 1,sb = 0,fail,ending,retval,ret = 1;
   u_char *directive,*parameter,*safe,*buff;
   cf_string_t strtmp;
-  html_stack_elem_t stack_elem,*stack_tmp;
+  cf_html_stack_elem_t stack_elem,*stack_tmp;
 
   for(ptr=(u_char *)msg;*ptr && run;++ptr) {
     switch(*ptr) {
@@ -540,7 +540,7 @@ int validate_message(cf_array_t *stack,cl_thread_t *thread,const u_char *msg,u_c
         if(ending) {
           directive = strndup(ptr+1,ptr1-ptr-1);
 
-          if(is_open(directive,stack)) {
+          if(cf_is_open(directive,stack)) {
             stack_tmp = cf_array_element_at(stack,stack->elements-1);
 
             /* nesting is ok */
@@ -591,7 +591,7 @@ int validate_message(cf_array_t *stack,cl_thread_t *thread,const u_char *msg,u_c
             parameter = htmlentities_decode(buff,NULL);
             free(buff);
 
-            rc = run_validate_inline(directive,(const u_char **)&parameter,var);
+            rc = cf_run_validate_inline(cfg,directive,(const u_char **)&parameter,var);
 
             free(directive);
             free(parameter);
@@ -636,7 +636,7 @@ int validate_message(cf_array_t *stack,cl_thread_t *thread,const u_char *msg,u_c
 
             cf_array_push(stack,&stack_elem);
 
-            retval = validate_message(stack,thread,ptr1+1,(u_char **)&ptr,var);
+            retval = cf_validate_message(cfg,stack,thread,ptr1+1,(u_char **)&ptr,var);
 
             cf_array_pop(stack);
 
@@ -659,7 +659,7 @@ int validate_message(cf_array_t *stack,cl_thread_t *thread,const u_char *msg,u_c
             }
 
             /* ok, go and run directive filters */
-            rc = run_validate_block_directive(directive,(const u_char **)&parameter,1,var);
+            rc = cf_run_validate_block_directive(cfg,directive,(const u_char **)&parameter,1,var);
 
             if(rc == FLT_ERROR) ret = FLT_ERROR;
             else if(rc == FLT_DECLINE) {
@@ -716,7 +716,7 @@ int validate_message(cf_array_t *stack,cl_thread_t *thread,const u_char *msg,u_c
             stack_elem.begin = (u_char *)ptr1;
             cf_array_push(stack,&stack_elem);
 
-            retval = validate_message(stack,thread,ptr1+1,(u_char **)&ptr,var);
+            retval = cf_validate_message(cfg,stack,thread,ptr1+1,(u_char **)&ptr,var);
 
             cf_array_pop(stack);
 
@@ -738,7 +738,7 @@ int validate_message(cf_array_t *stack,cl_thread_t *thread,const u_char *msg,u_c
             }
 
             /* ok, go and run directive filters */
-            rc = run_validate_block_directive(directive,(const u_char **)stack_elem.args,stack_elem.argnum,var);
+            rc = cf_run_validate_block_directive(cfg,directive,(const u_char **)stack_elem.args,stack_elem.argnum,var);
 
             if(rc == FLT_ERROR) ret = FLT_ERROR;
             else if(rc == FLT_DECLINE) {
@@ -772,8 +772,8 @@ int validate_message(cf_array_t *stack,cl_thread_t *thread,const u_char *msg,u_c
 
 
 /* {{{ cf_html_register_validator */
-int cf_html_register_validator(const u_char *name,directive_validator_t filter,int type) {
-  validator_callback_t clbck;
+int cf_html_register_validator(const u_char *name,cf_directive_validator_t filter,int type) {
+  cf_validator_callback_t clbck;
   size_t len = strlen(name);
 
   if(!registered_validators) registered_validators = cf_hash_new(NULL);
@@ -788,14 +788,14 @@ int cf_html_register_validator(const u_char *name,directive_validator_t filter,i
 /* }}} */
 
 /* {{{ cf_validate_msg */
-int cf_validate_msg(cl_thread_t *thread,const u_char *msg,cf_tpl_variable_t *var) {
+int cf_validate_msg(cf_cfg_config_t *cfg,cf_cl_thread_t *thread,const u_char *msg,cf_tpl_variable_t *var) {
   cf_array_t my_stack;
   int rc;
 
   if(registered_validators == NULL) registered_validators = cf_hash_new(NULL);
 
-  cf_array_init(&my_stack,sizeof(html_stack_elem_t),NULL);
-  rc = validate_message(&my_stack,thread,msg,NULL,var);
+  cf_array_init(&my_stack,sizeof(cf_html_stack_elem_t),NULL);
+  rc = cf_validate_message(cfg,&my_stack,thread,msg,NULL,var);
 
   cf_array_destroy(&my_stack);
 
@@ -804,8 +804,8 @@ int cf_validate_msg(cl_thread_t *thread,const u_char *msg,cf_tpl_variable_t *var
 /* }}} */
 
 /* {{{ cf_html_register_directive */
-int cf_html_register_directive(const u_char *name,directive_filter_t filter,int type) {
-  directive_callback_t clbck;
+int cf_html_register_directive(const u_char *name,cf_directive_filter_t filter,int type) {
+  cf_directive_callback_t clbck;
   size_t len = strlen(name);
 
   if(!registered_directives) registered_directives = cf_hash_new(NULL);
@@ -820,9 +820,9 @@ int cf_html_register_directive(const u_char *name,directive_filter_t filter,int 
 /* }}} */
 
 /* {{{ cf_html_register_textfilter */
-int cf_html_register_textfilter(const u_char *text,directive_filter_t filter) {
+int cf_html_register_textfilter(const u_char *text,cf_directive_filter_t filter) {
   u_char *ptr;
-  html_tree_t *elem,*elem1;
+  cf_html_tree_t *elem,*elem1;
 
   /* there isn't an entry starting with *text */
   if(parser_tree[*text] == NULL) {
@@ -875,48 +875,47 @@ int cf_html_register_textfilter(const u_char *text,directive_filter_t filter) {
 }
 /* }}} */
 
-/* {{{ msg_to_html */
-void msg_to_html(cl_thread_t *thread,const u_char *msg,cf_string_t *content,cf_string_t *cite,u_char *quote_chars,int max_sig_lines,int show_sig) {
-  u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
-  cf_name_value_t *cs   = cf_cfg_get_first_value(&fo_default_conf,forum_name,"ExternCharset");
-  cf_name_value_t *xmlm = cf_cfg_get_first_value(&fo_default_conf,forum_name,"XHTMLMode");
+/* {{{ cf_msg_to_html */
+void cf_msg_to_html(cf_cfg_config_t *cfg,cf_cl_thread_t *thread,const u_char *msg,cf_string_t *content,cf_string_t *cite,u_char *quote_chars,int max_sig_lines,int show_sig) {
+  cf_cfg_config_value_t *cs   = cf_cfg_get_value(cfg,"ExternCharset");
+  cf_cfg_config_value_t *xmlm = cf_cfg_get_value(cfg,"XHTMLMode");
   u_char *qchars;
   size_t qclen;
-  int utf8 = cf_strcmp(cs->values[0],"UTF-8") == 0,xml;
+  int utf8 = cf_strcmp(cs->sval,"UTF-8") == 0,xml;
   cf_array_t my_stack;
 
   if(registered_directives == NULL) registered_directives = cf_hash_new(NULL);
 
-  xml = cf_strcmp(xmlm->values[0],"yes") == 0;
+  xml = cf_strcmp(xmlm->sval,"yes") == 0;
 
-  if(utf8 || (qchars = htmlentities_charset_convert(quote_chars,"UTF-8",cs->values[0],&qclen,0)) == NULL) {
+  if(utf8 || (qchars = htmlentities_charset_convert(quote_chars,"UTF-8",cs->sval,&qclen,0)) == NULL) {
     qchars = htmlentities(quote_chars,0);
     qclen  = strlen(qchars);
   }
 
-  run_content_filters(PRE_CONTENT_FILTER,thread,content,cite,qchars);
+  cf_run_content_filters(cfg,PRE_CONTENT_FILTER,thread,content,cite,qchars);
 
   /* first line has no linebreak, so append quoting chars to cite */
   if(cite) cf_str_chars_append(cite,qchars,qclen);
 
-  cf_array_init(&my_stack,sizeof(html_stack_elem_t),NULL);
-  parse_message(thread,(u_char *)msg,&my_stack,content,cite,qchars,qclen,utf8,xml,max_sig_lines,show_sig,0,0,0,0);
+  cf_array_init(&my_stack,sizeof(cf_html_stack_elem_t),NULL);
+  cf_parse_message(cfg,thread,(u_char *)msg,&my_stack,content,cite,qchars,qclen,utf8,xml,max_sig_lines,show_sig,0,0,0,0);
 
-  run_content_filters(POST_CONTENT_FILTER,thread,content,cite,qchars);
+  cf_run_content_filters(cfg,POST_CONTENT_FILTER,thread,content,cite,qchars);
 
   free(qchars);
 }
 /* }}} */
 
 /* {{{ _do_html */
-void _do_html(hierarchical_node_t *ary,cl_thread_t *thread,int ShowInvisible,const u_char *linktpl,cf_name_value_t *cs,cf_name_value_t *dft,cf_name_value_t *locale) {
+void _do_html(cf_hierarchical_node_t *ary,cf_cl_thread_t *thread,int ShowInvisible,const u_char *linktpl,const u_char *cs,const u_char *dft,const u_char *locale) {
   size_t len,i;
   u_char *date,*link;
   cf_tpl_variable_t ary_tpl;
   cf_string_t tmpstr;
-  hierarchical_node_t *ary1;
+  cf_hierarchical_node_t *ary1;
 
-  date = cf_general_get_time(dft->values[0],locale->values[0],&len,&ary->msg->date);
+  date = cf_general_get_time(dft,locale,&len,&ary->msg->date);
   link = cf_get_link(linktpl,thread->tid,ary->msg->mid);
 
   cf_set_variable_hash(&ary->msg->hashvar,cs,"author",ary->msg->author.content,ary->msg->author.len,1);
@@ -961,8 +960,8 @@ void _do_html(hierarchical_node_t *ary,cl_thread_t *thread,int ShowInvisible,con
 /* }}} */
 
 /* {{{ _starthread_tlist */
-int _starthread_tlist(cl_thread_t *thread,int ShowInvisible,const u_char *linktpl,cf_name_value_t *cs,cf_name_value_t *dft,cf_name_value_t *locale) {
-  hierarchical_node_t ary,*ary1;
+int _starthread_tlist(cf_cl_thread_t *thread,int ShowInvisible,const u_char *linktpl,const u_char *cs,const u_char *dft,const u_char *locale) {
+  cf_hierarchical_node_t ary,*ary1;
   size_t i;
   cf_tpl_variable_t tpl_ary;
 
@@ -997,18 +996,16 @@ int _starthread_tlist(cl_thread_t *thread,int ShowInvisible,const u_char *linktp
 /* }}} */
 
 /* {{{ cf_gen_threadlist */
-int cf_gen_threadlist(cl_thread_t *thread,cf_hash_t *head,cf_string_t *threadlist,const u_char *tplname,const u_char *type,const u_char *linktpl,int mode) {
+int cf_gen_threadlist(cf_cfg_config_t *cfg,cf_cl_thread_t *thread,cf_hash_t *head,cf_string_t *threadlist,const u_char *tplname,const u_char *type,const u_char *linktpl,int mode) {
   cf_template_t tpl;
-  message_t *msg;
+  cf_message_t *msg;
   int ShowInvisible = cf_hash_get(GlobalValues,"ShowInvisible",13) == NULL ? 0 : 1;
-
-  u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
 
   int ret,level;
 
-  cf_name_value_t *dft = cf_cfg_get_first_value(&fo_view_conf,forum_name,"DateFormatThreadList"),
-    *locale = cf_cfg_get_first_value(&fo_default_conf,forum_name,"DateLocale"),
-    *cs = cf_cfg_get_first_value(&fo_default_conf,forum_name,"ExternCharset");
+  cf_cfg_config_value_t *dft = cf_cfg_get_value(cfg,"DateFormatThreadList"),
+    *locale = cf_cfg_get_value(cfg,"DateLocale"),
+    *cs = cf_cfg_get_value(cfg,"ExternCharset");
 
   cf_str_init(threadlist);
 
@@ -1037,23 +1034,23 @@ int cf_gen_threadlist(cl_thread_t *thread,cf_hash_t *head,cf_string_t *threadlis
 
     /* {{{ run handlers in pre and post mode */
     if(mode == CF_MODE_THREADLIST) {
-      ret = cf_run_view_handlers(thread,head,CF_MODE_THREADLIST|CF_MODE_PRE);
+      ret = cf_run_view_handlers(cfg,thread,head,CF_MODE_THREADLIST|CF_MODE_PRE);
       if(ret == FLT_OK || ret == FLT_DECLINE || ShowInvisible) {
-        for(msg=thread->messages;msg;msg=msg->next) cf_run_view_list_handlers(msg,head,thread->tid,mode);
-        ret = cf_run_view_handlers(thread,head,mode|CF_MODE_POST);
+        for(msg=thread->messages;msg;msg=msg->next) cf_run_view_list_handlers(cfg,msg,head,thread->tid,mode);
+        ret = cf_run_view_handlers(cfg,thread,head,mode|CF_MODE_POST);
 
         if(ret == FLT_EXIT && !ShowInvisible) return FLT_EXIT;
       }
 
     }
     else {
-      cf_run_view_handlers(thread,head,mode|CF_MODE_PRE);
-      for(msg=thread->messages;msg;msg=msg->next) cf_run_view_list_handlers(msg,head,thread->tid,mode);
-      cf_run_view_handlers(thread,head,mode|CF_MODE_POST);
+      cf_run_view_handlers(cfg,thread,head,mode|CF_MODE_PRE);
+      for(msg=thread->messages;msg;msg=msg->next) cf_run_view_list_handlers(cfg,msg,head,thread->tid,mode);
+      cf_run_view_handlers(cfg,thread,head,mode|CF_MODE_POST);
     }
     /* }}} */
 
-    if(_starthread_tlist(thread,ShowInvisible,linktpl,cs,dft,locale) == 0) {
+    if(_starthread_tlist(thread,ShowInvisible,linktpl,cs->sval,dft->sval,locale->sval) == 0) {
       cf_tpl_setvar(&tpl,"thread",&thread->messages->hashvar);
       cf_tpl_parse_to_mem(&tpl);
       threadlist->content  = tpl.parsed.content;

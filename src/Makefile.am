@@ -24,9 +24,9 @@ pkglib_LTLIBRARIES= \
 	libcfcgi.la \
 	libcfconfigparser.la \
 	libcftemplate.la \
-	libcfclientlib.la
+	libcfclientlib.la \
+	libcfhtml.la
 #	libcfserverutils.la \
-#	libcfhtml.la \
 #	libcfserverlib.la \
 #	libcfuserconfig.la
 
@@ -60,9 +60,9 @@ libcfclientlib_la_SOURCES=clientlib.c handlerrunners.c communication.c messageut
 libcfclientlib_la_LIBADD=libcfconfigparser.la libcfcharconvert.la libcfreadline.la libcfutils.la libcfhashlib.la libcfcgi.la libcftemplate.la $(BDB_LIB)
 libcfclientlib_la_LDFLAGS=-export-dynamic -avoid-version
 
-#libcfhtml_la_SOURCES=htmllib.c
-#libcfhtml_la_LIBADD=libcfutils.la libcfcharconvert.la libcfclientlib.la
-#libcfhtml_la_LDFLAGS=-export-dynamic -avoid-version
+libcfhtml_la_SOURCES=htmllib.c
+libcfhtml_la_LIBADD=libcfutils.la libcfcharconvert.la libcfclientlib.la
+libcfhtml_la_LDFLAGS=-export-dynamic -avoid-version
 
 libcfconfigparser_la_SOURCES=cfgcomp_assembler.c cfgcomp.c cfgcomp_codegenerator.c cfgcomp_lexer.c cfgcomp_parser.c cfgcomp_vm.c
 libcfconfigparser_la_LIBADD=libcfutils.la libcfcharconvert.la $(DL)
