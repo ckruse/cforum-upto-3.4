@@ -20,13 +20,13 @@ pkglib_LTLIBRARIES= \
 	libcfreadline.la \
 	libcfhashlib.la \
 	libcfutils.la \
+	libcfvalidate.la \
+	libcfcgi.la \
 	libcfconfigparser.la \
-	libcfcgi.la
+	libcftemplate.la \
+	libcfclientlib.la
 #	libcfserverutils.la \
-#	libcfclientlib.la \
-#	libcfvalidate.la \
 #	libcfhtml.la \
-#	libcftemplate.la \
 #	libcfserverlib.la \
 #	libcfuserconfig.la
 
@@ -44,18 +44,22 @@ libcfutils_la_SOURCES=utils.c arrayutils.c listutils.c memoryutils.c stringutils
 libcfutils_la_LIBADD=libcfhashlib.la libcfcharconvert.la -lz $(CURL_LIBS)
 libcfutils_la_LDFLAGS=-export-dynamic -avoid-version
 
-#libcftemplate_la_SOURCES=template.c
-#libcftemplate_la_LIBADD=libcfutils.la libcfhashlib.la libcfcharconvert.la $(DL)
-#libcftemplate_la_LDFLAGS=-export-dynamic -avoid-version
-
 libcfcgi_la_SOURCES=cfcgi.c
 libcfcgi_la_LIBADD=libcfhashlib.la
 libcfcgi_la_LDFLAGS=-export-dynamic -avoid-version
 
-#libcfvalidate_la_SOURCES=validate.c
-#libcfvalidate_la_LIBADD=libcfutils.la $(IDN)
-#libcfvalidate_la_LDFLAGS=-export-dynamic -avoid-version
-#
+libcfvalidate_la_SOURCES=validate.c
+libcfvalidate_la_LIBADD=libcfutils.la $(IDN)
+libcfvalidate_la_LDFLAGS=-export-dynamic -avoid-version
+
+libcftemplate_la_SOURCES=template.c
+libcftemplate_la_LIBADD=libcfutils.la libcfhashlib.la libcfcharconvert.la $(DL)
+libcftemplate_la_LDFLAGS=-export-dynamic -avoid-version
+
+libcfclientlib_la_SOURCES=clientlib.c handlerrunners.c communication.c messageutils.c semaphores.c
+libcfclientlib_la_LIBADD=libcfconfigparser.la libcfcharconvert.la libcfreadline.la libcfutils.la libcfhashlib.la libcfcgi.la libcftemplate.la $(BDB_LIB)
+libcfclientlib_la_LDFLAGS=-export-dynamic -avoid-version
+
 #libcfhtml_la_SOURCES=htmllib.c
 #libcfhtml_la_LIBADD=libcfutils.la libcfcharconvert.la libcfclientlib.la
 #libcfhtml_la_LDFLAGS=-export-dynamic -avoid-version
@@ -71,9 +75,6 @@ libcfconfigparser_la_LDFLAGS=-export-dynamic -avoid-version
 #libcfserverlib_la_LIBADD=libcfhashlib.la libcfutils.la libcfreadline.la $(PTHREAD_LIB)
 #libcfserverlib_la_LDFLAGS=-export-dynamic -avoid-version
 #
-#libcfclientlib_la_SOURCES=clientlib.c handlerrunners.c communication.c messageutils.c semaphores.c
-#libcfclientlib_la_LIBADD=libcfconfigparser.la libcfcharconvert.la libcfreadline.la libcfutils.la libcfhashlib.la libcfcgi.la libcftemplate.la $(BDB_LIB)
-#libcfclientlib_la_LDFLAGS=-export-dynamic -avoid-version
 #
 #libcfuserconfig_la_SOURCES=userconf.c xml_handling.c
 #libcfuserconfig_la_LIBADD=libcfhashlib.la libcfutils.la libcfconfigparser.la libcfclientlib.la libcfvalidate.la $(PCRE_LIBS) $(GDOME_LIBS)

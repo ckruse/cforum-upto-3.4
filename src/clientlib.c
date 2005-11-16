@@ -81,9 +81,7 @@ int   shm_id        = -1;   /**< Shared memory id */
 void *shm_ptr       = NULL; /**< Shared memory pointer */
 int   shm_lock_sem  = -1;   /**< semaphore showing which shared memory segment we shall use */
 
-void *cf_reget_shm_ptr(void) {
-  u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
-  cf_name_value_t *shm  = cf_cfg_get_first_value(&fo_default_conf,forum_name,"SharedMemIds");
+void *cf_reget_shm_ptr(int ids[3]) {
   unsigned short val;
 
   if(shm_ptr) {
@@ -92,43 +90,31 @@ void *cf_reget_shm_ptr(void) {
   }
 
   if(cf_sem_getval(shm_lock_sem,0,1,&val) == 0) {
-    if((shm_id = shmget(atoi(shm->values[val]),0,0)) == -1) {
-      return NULL;
-    }
+    if((shm_id = shmget(ids[val],0,0)) == -1) return NULL;
 
     /*
      * we don't have and don't *need* write-permissions.
      * So set SHM_RDONLY in the shmat-flag.
      */
-    if((shm_ptr = shmat(shm_id,0,SHM_RDONLY)) == (void *)-1) {
-      return NULL;
-    }
+    if((shm_ptr = shmat(shm_id,0,SHM_RDONLY)) == (void *)-1) return NULL;
   }
 
   return shm_ptr;
 }
 
-void *cf_get_shm_ptr(void) {
-  u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
-  cf_name_value_t *shm  = cf_cfg_get_first_value(&fo_default_conf,forum_name,"SharedMemIds");
+void *cf_get_shm_ptr(int ids[3]) {
   unsigned short val;
 
   if(shm_lock_sem == -1) {
     /* create a new segment */
-    if((shm_lock_sem = semget(atoi(shm->values[2]),0,0)) == -1) {
-      //perror("semget");
-      return NULL;
-    }
+    if((shm_lock_sem = semget(ids[2],0,0)) == -1) return NULL;
   }
 
   if(cf_sem_getval(shm_lock_sem,0,1,&val) == 0) {
     val = val == 1 ? 0 : 1;
 
     if(shm_id == -1) {
-      if((shm_id = shmget(atoi(shm->values[val]),0,0)) == -1) {
-        //perror("shmget");
-        return NULL;
-      }
+      if((shm_id = shmget(ids[val],0,0)) == -1) return NULL;
     }
 
     if(shm_ptr == NULL) {
@@ -136,10 +122,7 @@ void *cf_get_shm_ptr(void) {
        * we don't have and don't *need* write-permissions.
        * So set SHM_RDONLY in the shmat-flag.
        */
-      if((shm_ptr = shmat(shm_id,0,SHM_RDONLY)) == (void *)-1) {
-        //perror("shmat");
-        return NULL;
-      }
+      if((shm_ptr = shmat(shm_id,0,SHM_RDONLY)) == (void *)-1) return NULL;
     }
   }
 
@@ -150,95 +133,83 @@ void *cf_get_shm_ptr(void) {
 #endif
 
 /* {{{ cf_get_uconf_name */
-u_char *cf_get_uconf_name(const u_char *uname) {
-  u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
-  u_char *path,*name;
+u_char *cf_get_uconf_name(const u_char *confpath,const u_char *uname) {
+  u_char *path;
   u_char *ptr;
   struct stat sb;
-  cf_name_value_t *confpath = cf_cfg_get_first_value(&fo_default_conf,forum_name,"ConfigDirectory");
 
-  if(!uname) return NULL;
+  cf_string_t str;
 
-  name = strdup(uname);
-  if(!name) return NULL;
+  if(!uname || !confpath) return NULL;
 
-  for(ptr = name;*ptr;ptr++) {
-    if(isupper(*ptr)) {
-      *ptr = tolower(*ptr);
-    }
-  }
+  cf_str_init_growth(&str,256);
+  cf_str_cstr_set(&str,confpath);
 
-  path = cf_alloc(NULL,strlen(confpath->values[0]) + strlen(name) + 12,1,CF_ALLOC_MALLOC);
+  if(str.content[str.len-1] != '/') cf_str_char_append(&str,'/');
+  cf_str_char_append(&str,tolower(uname[0]));
+  cf_str_char_append(&str,'/');
+  cf_str_char_append(&str,tolower(uname[1]));
+  cf_str_char_append(&str,'/');
+  cf_str_char_append(&str,tolower(uname[2]));
+  cf_str_char_append(&str,'/');
 
-  sprintf(path,"%s%c/%c/%c/%s.cfcl",confpath->values[0],name[0],name[1],name[2],name);
+  for(ptr=(u_char *)uname;*ptr;ptr++) cf_str_char_append(&str,tolower(*ptr));
+
+  cf_str_chars_append(&str,".cfcl",5);
 
   if(stat(path,&sb) == -1) {
-    fprintf(stderr,"clientlib: user config file '%s' not found!\n",path);
-    free(path);
-    free(name);
+    fprintf(stderr,"clientlib: user config file '%s' not found!\n",str.content);
+    cf_str_cleanup(&str);
     return NULL;
   }
 
-  free(name);
-
-  return path;
+  return str.content;
 }
 /* }}} */
 
 
 /* {{{ cf_socket_setup */
-int cf_socket_setup(void) {
+int cf_socket_setup(const u_char *sockpath) {
   int sock;
   struct sockaddr_un addr;
-  cf_name_value_t *sockpath = cf_cfg_get_first_value(&fo_default_conf,NULL,"SocketName");
 
-  if(sockpath) {
-    memset(&addr,0,sizeof(addr));
-    addr.sun_family = AF_LOCAL;
-    (void)strncpy(addr.sun_path,sockpath->values[0],103);
+  memset(&addr,0,sizeof(addr));
+  addr.sun_family = AF_LOCAL;
+  (void)strncpy(addr.sun_path,sockpath,103);
 
-    if((sock = socket(AF_LOCAL,SOCK_STREAM,0)) == -1) {
-      strcpy(ErrorString,"E_NO_SOCK");
-      return -1;
-    }
-
-    if((connect(sock,(struct sockaddr *)&addr,sizeof(addr))) != 0) {
-      strcpy(ErrorString,"E_NO_CONN");
-      return -1;
-    }
-
-    return sock;
+  if((sock = socket(AF_LOCAL,SOCK_STREAM,0)) == -1) {
+    strcpy(ErrorString,"E_NO_SOCK");
+    return -1;
   }
 
-  strcpy(ErrorString,"E_CONFIG_ERR");
-  return -1;
+  if((connect(sock,(struct sockaddr *)&addr,sizeof(addr))) != 0) {
+    strcpy(ErrorString,"E_NO_CONN");
+    return -1;
+  }
+
+  return sock;
 }
 /* }}} */
 
 
 /* {{{ cf_gen_tpl_name */
-void cf_gen_tpl_name(u_char *buff,size_t len,const u_char *name) {
-  u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
-
-  cf_name_value_t *vn = cf_cfg_get_first_value(&fo_default_conf,forum_name,"TemplateMode");
-  cf_name_value_t *lang = cf_cfg_get_first_value(&fo_default_conf,forum_name,"Language");
-
-  snprintf(buff,len,name,lang->values[0],vn->values[0]);
+size_t cf_gen_tpl_name(u_char *buff,size_t len,const u_char *mode,const u_char *lang,const u_char *name) {
+  return snprintf(buff,len,name,lang,mode);
 }
 /* }}} */
 
 /* {{{ cf_set_variable */
-void cf_set_variable(cf_template_t *tpl,cf_name_value_t *cs,u_char *vname,const u_char *val,size_t len,int html) {
+void cf_set_variable(cf_template_t *tpl,const u_char *cs,u_char *vname,const u_char *val,size_t len,int html) {
   u_char *tmp;
   size_t len1;
 
   if(cs) {
-    if(cf_strcmp(cs->values[0],"UTF-8")) {
+    if(cf_strcmp(cs,"UTF-8")) {
       if(html) {
-        tmp = htmlentities_charset_convert(val,"UTF-8",cs->values[0],&len1,0);
+        tmp = htmlentities_charset_convert(val,"UTF-8",cs,&len1,0);
         html = 0;
       }
-      else tmp = charset_convert_entities(val,len,"UTF-8",cs->values[0],&len1);
+      else tmp = charset_convert_entities(val,len,"UTF-8",cs,&len1);
 
       /* This should only happen if we use charset_convert() -- and we should not use it. */
       if(!tmp) {
@@ -275,17 +246,17 @@ void cf_set_variable(cf_template_t *tpl,cf_name_value_t *cs,u_char *vname,const 
 /* }}} */
 
 /* {{{ cf_add_variable */
-void cf_add_variable(cf_tpl_variable_t *ary,cf_name_value_t *cs,const u_char *val,size_t len,int html) {
+void cf_add_variable(cf_tpl_variable_t *ary,const u_char *cs,const u_char *val,size_t len,int html) {
   u_char *tmp;
   size_t len1;
 
   if(cs) {
-    if(cf_strcmp(cs->values[0],"UTF-8")) {
+    if(cf_strcmp(cs,"UTF-8")) {
       if(html) {
-        tmp = htmlentities_charset_convert(val,"UTF-8",cs->values[0],&len1,0);
+        tmp = htmlentities_charset_convert(val,"UTF-8",cs,&len1,0);
         html = 0;
       }
-      else tmp = charset_convert_entities(val,len,"UTF-8",cs->values[0],&len1);
+      else tmp = charset_convert_entities(val,len,"UTF-8",cs,&len1);
 
       /* This should only happen if we use charset_convert() -- and we should not use it. */
       if(!tmp) {
@@ -322,17 +293,17 @@ void cf_add_variable(cf_tpl_variable_t *ary,cf_name_value_t *cs,const u_char *va
 /* }}} */
 
 /* {{{ cf_set_variable_hash */
-void cf_set_variable_hash(cf_tpl_variable_t *hash,cf_name_value_t *cs,u_char *key,const u_char *val,size_t len,int html) {
+void cf_set_variable_hash(cf_tpl_variable_t *hash,const u_char *cs,u_char *key,const u_char *val,size_t len,int html) {
   u_char *tmp;
   size_t len1;
 
   if(cs) {
-    if(cf_strcmp(cs->values[0],"UTF-8")) {
+    if(cf_strcmp(cs,"UTF-8")) {
       if(html) {
-        tmp = htmlentities_charset_convert(val,"UTF-8",cs->values[0],&len1,0);
+        tmp = htmlentities_charset_convert(val,"UTF-8",cs,&len1,0);
         html = 0;
       }
-      else tmp = charset_convert_entities(val,len,"UTF-8",cs->values[0],&len1);
+      else tmp = charset_convert_entities(val,len,"UTF-8",cs,&len1);
 
       /* This should only happen if we use charset_convert() -- and we should not use it. */
       if(!tmp) {
@@ -370,13 +341,14 @@ void cf_set_variable_hash(cf_tpl_variable_t *hash,cf_name_value_t *cs,u_char *ke
 
 
 /* {{{ cf_error_message */
-void cf_error_message(const u_char *err,FILE *out, ...) {
-  u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
-  cf_name_value_t *v = cf_cfg_get_first_value(&fo_default_conf,forum_name,"ErrorTemplate");
-  cf_name_value_t *db = cf_cfg_get_first_value(&fo_default_conf,forum_name,"MessagesDatabase");
-  cf_name_value_t *lang = cf_cfg_get_first_value(&fo_default_conf,forum_name,"Language");
-  cf_name_value_t *cs = cf_cfg_get_first_value(&fo_default_conf,forum_name,"ExternCharset");
-  cf_name_value_t *vs = cf_cfg_get_first_value(&fo_default_conf,forum_name,cf_hash_get(GlobalValues,"UserName",8) ? "UBaseURL" : "BaseURL");
+void cf_error_message(cf_cfg_config_t *cfg,const u_char *err,FILE *out, ...) {
+  cf_cfg_config_value_t *v = cf_cfg_get_value(cfg,"ErrorTemplate");
+  cf_cfg_config_value_t *db = cf_cfg_get_value(cfg,"MessagesDatabase");
+  cf_cfg_config_value_t *lang = cf_cfg_get_value(cfg,"Language");
+  cf_cfg_config_value_t *cs = cf_cfg_get_value(cfg,"ExternCharset");
+  cf_cfg_config_value_t *vs = cf_cfg_get_value(cfg,"BaseURL");
+  cf_cfg_config_value_t *mode = cf_cfg_get_value(cfg,"TemplateMode");
+  int isuser = cf_hash_get(GlobalValues,"UserName",8) != NULL;
   cf_template_t tpl;
   u_char tplname[256];
   u_char errname[256];
@@ -394,17 +366,17 @@ void cf_error_message(const u_char *err,FILE *out, ...) {
   DBT key,value;
 
   if(v && db && lang) {
-    cf_gen_tpl_name(tplname,256,v->values[0]);
+    cf_gen_tpl_name(tplname,256,mode->sval,lang->sval,v->sval);
 
     if(cf_tpl_init(&tpl,tplname) == 0) {
-      cf_set_variable(&tpl,cs,"forumbase",vs->values[0],strlen(vs->values[0]),1);
+      cf_set_variable(&tpl,cs->sval,"forumbase",vs->avals[isuser].sval,strlen(vs->avals[isuser].sval),1);
 
       cf_str_init(&msg);
 
       if(Msgs == NULL) {
         if((ret = db_create(&Msgs,NULL,0)) == 0) {
-          if((ret = Msgs->open(Msgs,NULL,db->values[0],NULL,DB_BTREE,DB_RDONLY,0)) != 0) {
-            fprintf(stderr,"clientlib: DB->open(%s) error: %s\n",db->values[0],db_strerror(ret));
+          if((ret = Msgs->open(Msgs,NULL,db->sval,NULL,DB_BTREE,DB_RDONLY,0)) != 0) {
+            fprintf(stderr,"clientlib: DB->open(%s) error: %s\n",db->sval,db_strerror(ret));
           }
         }
         else fprintf(stderr,"clientlib: db_create() error: %s\n",db_strerror(ret));
@@ -414,7 +386,7 @@ void cf_error_message(const u_char *err,FILE *out, ...) {
         memset(&key,0,sizeof(key));
         memset(&value,0,sizeof(value));
 
-        size = snprintf(errname,256,"%s_%s",lang->values[0],err);
+        size = snprintf(errname,256,"%s_%s",lang->sval,err);
 
         key.data = errname;
         key.size = size;
@@ -429,7 +401,7 @@ void cf_error_message(const u_char *err,FILE *out, ...) {
 
         for(ptr=buff;*ptr;ptr++) {
           if(*ptr == '%') {
-            ptr++;
+            ++ptr;
 
             switch(*ptr) {
               case '%':
@@ -459,7 +431,7 @@ void cf_error_message(const u_char *err,FILE *out, ...) {
 
         va_end(ap);
 
-        cf_set_variable(&tpl,cs,"error",msg.content,msg.len,1);
+        cf_set_variable(&tpl,cs->sval,"error",msg.content,msg.len,1);
         cf_str_cleanup(&msg);
         free(buff);
 
@@ -482,10 +454,9 @@ void cf_error_message(const u_char *err,FILE *out, ...) {
 /* }}} */
 
 /* {{{ cf_get_error_message */
-u_char *cf_get_error_message(const u_char *err,size_t *len, ...) {
-  u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
-  cf_name_value_t *db = cf_cfg_get_first_value(&fo_default_conf,forum_name,"MessagesDatabase");
-  cf_name_value_t *lang = cf_cfg_get_first_value(&fo_default_conf,forum_name,"Language");
+u_char *cf_get_error_message(cf_cfg_config_t *cfg,const u_char *err,size_t *len, ...) {
+  cf_cfg_config_value_t *db = cf_cfg_get_value(cfg,"MessagesDatabase");
+  cf_cfg_config_value_t *lang = cf_cfg_get_value(cfg,"Language");
   va_list ap;
 
   u_char *buff = NULL,ibuff[256],errname[256];
@@ -503,8 +474,8 @@ u_char *cf_get_error_message(const u_char *err,size_t *len, ...) {
 
   if(Msgs == NULL) {
     if((ret = db_create(&Msgs,NULL,0)) == 0) {
-      if((ret = Msgs->open(Msgs,NULL,db->values[0],NULL,DB_BTREE,DB_RDONLY,0)) != 0) {
-        fprintf(stderr,"clientlib: DB->open(%s) error: %s\n",db->values[0],db_strerror(ret));
+      if((ret = Msgs->open(Msgs,NULL,db->sval,NULL,DB_BTREE,DB_RDONLY,0)) != 0) {
+        fprintf(stderr,"clientlib: DB->open(%s) error: %s\n",db->sval,db_strerror(ret));
         return NULL;
       }
     }
@@ -517,7 +488,7 @@ u_char *cf_get_error_message(const u_char *err,size_t *len, ...) {
   memset(&key,0,sizeof(key));
   memset(&value,0,sizeof(value));
 
-  size = snprintf(errname,256,"%s_%s",lang->values[0],err);
+  size = snprintf(errname,256,"%s_%s",lang->sval,err);
 
   key.data = errname;
   key.size = size;
@@ -874,26 +845,21 @@ cf_post_flag_t *cf_flag_by_name(cf_list_head_t *flags,const u_char *name) {
 
 
 /* {{{ cf_register_mod_api_ent */
-int cf_register_mod_api_ent(const u_char *mod_name,const u_char *unique_identifier,mod_api_t func) {
+int cf_register_mod_api_ent(const u_char *mod_name,const u_char *unique_identifier,cf_mod_api_t func) {
   size_t len2 = strlen(unique_identifier);
-  mod_api_ent_t *ent;
+  cf_mod_api_ent_t *ent,ent1;
 
   if((ent = cf_hash_get(APIEntries,(u_char *)unique_identifier,len2)) != NULL) {
-    if(cf_strcmp(ent->mod_name,mod_name)) {
-      return -1;
-    }
+    if(cf_strcmp(ent->mod_name,mod_name)) return -1;
 
     ent->function          = func;
   }
   else {
-    ent                    = cf_alloc(NULL,1,sizeof(*ent),CF_ALLOC_MALLOC);
-    ent->mod_name          = strdup(mod_name);
-    ent->unique_identifier = strdup(unique_identifier);
-    ent->function          = func;
+    ent1.mod_name          = strdup(mod_name);
+    ent1.unique_identifier = strdup(unique_identifier);
+    ent1.function          = func;
 
-    cf_hash_set(APIEntries,(u_char *)unique_identifier,len2,ent,sizeof(*ent));
-
-    free(ent);
+    cf_hash_set(APIEntries,(u_char *)unique_identifier,len2,&ent1,sizeof(ent1));
   }
 
   return 0;
@@ -903,11 +869,9 @@ int cf_register_mod_api_ent(const u_char *mod_name,const u_char *unique_identifi
 /* {{{ cf_unregister_mod_api_ent */
 int cf_unregister_mod_api_ent(const u_char *unid) {
   size_t len1 = strlen(unid);
-  mod_api_ent_t *ent;
+  cf_mod_api_ent_t *ent;
 
-  if((ent = cf_hash_get(APIEntries,(u_char *)unid,len1)) == NULL) {
-    return -1;
-  }
+  if((ent = cf_hash_get(APIEntries,(u_char *)unid,len1)) == NULL) return -1;
 
   cf_hash_entry_delete(APIEntries,(u_char *)unid,len1);
   return 0;
@@ -915,14 +879,11 @@ int cf_unregister_mod_api_ent(const u_char *unid) {
 /* }}} */
 
 /* {{{ cf_get_mod_api_ent */
-mod_api_t cf_get_mod_api_ent(const u_char *unid) {
-  mod_api_ent_t *ent;
+cf_mod_api_t cf_get_mod_api_ent(const u_char *unid) {
+  cf_mod_api_ent_t *ent;
   size_t len1 = strlen(unid);
 
-  if((ent = cf_hash_get(APIEntries,(u_char *)unid,len1)) == NULL) {
-    return NULL;
-  }
-
+  if((ent = cf_hash_get(APIEntries,(u_char *)unid,len1)) == NULL) return NULL;
   return ent->function;
 }
 /* }}} */
@@ -932,10 +893,9 @@ mod_api_t cf_get_mod_api_ent(const u_char *unid) {
 /* {{{ cf_api_destroy_entry */
 /**
  * private function for destroying a module api entry
- * \param elem The element
+ * \param a The element
  */
-void cf_api_destroy_entry(void *elem) {
-  mod_api_ent_t *a = (mod_api_ent_t *)elem;
+void cf_api_destroy_entry(cf_mod_api_ent_t *a) {
   free(a->mod_name);
   free(a->unique_identifier);
 }
@@ -949,7 +909,7 @@ void cf_init(void) {
   u_char *val = getenv("CF_FORUM_NAME");
 
   GlobalValues = cf_hash_new(NULL);
-  APIEntries = cf_hash_new(cf_api_destroy_entry);
+  APIEntries = cf_hash_new((void (*)(void *))cf_api_destroy_entry);
   memset(ErrorString,0,sizeof(ErrorString));
 
   cf_list_init(&uri_flags);

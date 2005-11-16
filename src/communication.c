@@ -46,16 +46,16 @@
 #ifndef CF_SHARED_MEM
 int cf_get_threadlist(cf_array_t *ary,int sock,rline_t *tsd)
 #else
-int cf_get_threadlist(cf_array_t *ary,void *ptr)
+int cf_get_threadlist(cf_array_t *ary,int shmids[3],void *ptr)
 #endif
 {
-  cl_thread_t thread;
+  cf_cl_thread_t thread;
   cf_array_init(ary,sizeof(thread),(void (*)(void *))cf_cleanup_thread);
 
   #ifndef CF_SHARED_MEM
   while(cf_get_next_thread_through_sock(sock,tsd,&thread) == 0)
   #else
-  while((ptr = cf_get_next_thread_through_shm(ptr,&thread)) != NULL)
+  while((ptr = cf_get_next_thread_through_shm(ptr,shmids,&thread)) != NULL)
   #endif
   {
     cf_array_push(ary,&thread);
@@ -68,10 +68,10 @@ int cf_get_threadlist(cf_array_t *ary,void *ptr)
 
 
 /* {{{ cf_get_next_thread_through_sock */
-int cf_get_next_thread_through_sock(int sock,rline_t *tsd,cl_thread_t *thr) {
+int cf_get_next_thread_through_sock(int sock,rline_t *tsd,cf_cl_thread_t *thr) {
   u_char *line,*chtmp;
   int shallRun = 1;
-  message_t *x;
+  cf_message_t *x;
   int ok = 0;
   cf_post_flag_t flag;
 
@@ -88,7 +88,7 @@ int cf_get_next_thread_through_sock(int sock,rline_t *tsd,cl_thread_t *thr) {
       else if(cf_strncmp(line,"THREAD t",8) == 0) {
         chtmp = strstr(line,"m");
 
-        thr->messages           = cf_alloc(NULL,1,sizeof(message_t),CF_ALLOC_CALLOC);
+        thr->messages           = cf_alloc(NULL,1,sizeof(*thr->messages),CF_ALLOC_CALLOC);
         thr->last               = thr->messages;
         thr->newest             = thr->messages;
         thr->last->mid          = cf_str_to_uint64(chtmp+1);
@@ -102,12 +102,12 @@ int cf_get_next_thread_through_sock(int sock,rline_t *tsd,cl_thread_t *thr) {
         x = thr->last;
 
         if(thr->last) {
-          thr->last->next = cf_alloc(NULL,1,sizeof(message_t),CF_ALLOC_CALLOC);
+          thr->last->next = cf_alloc(NULL,1,sizeof(*thr->last->next),CF_ALLOC_CALLOC);
           thr->last->next->prev = thr->last;
           thr->last       = thr->last->next;
         }
         else {
-          thr->messages = cf_alloc(NULL,1,sizeof(message_t),CF_ALLOC_CALLOC);
+          thr->messages = cf_alloc(NULL,1,sizeof(thr->messages),CF_ALLOC_CALLOC);
           thr->last     = thr->messages;
         }
 
@@ -174,11 +174,11 @@ int cf_get_next_thread_through_sock(int sock,rline_t *tsd,cl_thread_t *thr) {
 
 /* {{{ cf_get_next_thread_through_shm */
 #ifdef CF_SHARED_MEM
-void *cf_get_next_thread_through_shm(void *shm_ptr,cl_thread_t *thr) {
+void *cf_get_next_thread_through_shm(int shmids[3],void *shm_ptr,cf_cl_thread_t *thr) {
   register void *ptr = shm_ptr;
   u_int32_t post,i,val,val1;
   struct shmid_ds shm_buf;
-  void *ptr1 = cf_get_shm_ptr();
+  void *ptr1 = cf_get_shm_ptr(shmids);
   u_int32_t msglen;
   cf_post_flag_t flag;
 
@@ -208,9 +208,9 @@ void *cf_get_next_thread_through_shm(void *shm_ptr,cl_thread_t *thr) {
   ptr += sizeof(u_int32_t);
 
   for(post = 0;post < msglen;++post) {
-    if(thr->last == NULL) thr->messages = thr->last = cf_alloc(NULL,1,sizeof(message_t),CF_ALLOC_CALLOC);
+    if(thr->last == NULL) thr->messages = thr->last = cf_alloc(NULL,1,sizeof(*thr->last),CF_ALLOC_CALLOC);
     else {
-      thr->last->next = cf_alloc(NULL,1,sizeof(message_t),CF_ALLOC_CALLOC);
+      thr->last->next = cf_alloc(NULL,1,sizeof(*thr->last->next),CF_ALLOC_CALLOC);
       thr->last->next->prev = thr->last;
       thr->last       = thr->last->next;
     }
@@ -369,10 +369,10 @@ void *cf_get_next_thread_through_shm(void *shm_ptr,cl_thread_t *thr) {
 /* }}} */
 
 /* {{{ cf_get_message_through_sock */
-int cf_get_message_through_sock(int sock,rline_t *tsd,cl_thread_t *thr,u_int64_t tid,u_int64_t mid,int del) {
+int cf_get_message_through_sock(int sock,rline_t *tsd,cf_cl_thread_t *thr,u_int64_t tid,u_int64_t mid,int del) {
   size_t len;
   u_char buff[128],*line;
-  message_t *msg;
+  cf_message_t *msg;
   u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
 
   memset(thr,0,sizeof(*thr));
@@ -441,12 +441,12 @@ int cf_get_message_through_sock(int sock,rline_t *tsd,cl_thread_t *thr,u_int64_t
 
 /* {{{ cf_get_message_through_shm */
 #ifdef CF_SHARED_MEM
-int cf_get_message_through_shm(void *shm_ptr,cl_thread_t *thr,u_int64_t tid,u_int64_t mid,int del) {
+int cf_get_message_through_shm(int shmids[3],void *shm_ptr,cf_cl_thread_t *thr,u_int64_t tid,u_int64_t mid,int del) {
   struct shmid_ds shm_buf;
   register void *ptr1;
   u_int64_t val = 0;
   size_t posts,post,x,flagnum;
-  message_t *msg;
+  cf_message_t *msg;
 
   if(shmctl(shm_id,IPC_STAT,&shm_buf) != 0) {
     strcpy(ErrorString,"E_CONFIG_ERR");
@@ -541,7 +541,7 @@ int cf_get_message_through_shm(void *shm_ptr,cl_thread_t *thr,u_int64_t tid,u_in
     return -1;
   }
 
-  if((ptr1 = cf_get_next_thread_through_shm(ptr1,thr)) == NULL) return -1;
+  if((ptr1 = cf_get_next_thread_through_shm(shmids,ptr1,thr)) == NULL) return -1;
 
   if(mid == 0) thr->threadmsg = thr->messages;
   else {

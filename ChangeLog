@@ -2,6 +2,12 @@
 	* cfgcomp*: Implemented configparser API (should be complete now)
 	* *: Did some changes (cfgcomp.h instead of configparser.h, etc) for new
 		configparser API
+	* configure.in: Added check for libiconv type (const vs. no const)
+	* src/charconvert.c: Added CF_ICONV_CONST constant
+	* src/arrayutils.c: Removed < 0 check
+	* src/clientlib.[ch], src/communication.c, src/handlerrunners.c,
+		src/messageutils.c: Changed to new config parser API, changed some
+		interfaces, changed datatype names
 
 2005-11-15 Christian Kruse <ckruse@wwwtech.de>
 	* conf/fo_server.conf.in, conf/fo_view.conf.in, conf/fo_vote.conf.in,

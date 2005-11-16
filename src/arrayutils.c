@@ -99,7 +99,7 @@ void *cf_array_bsearch(cf_array_t *ary,const void *key,int (*compar)(const void 
 
 /* {{{ cf_array_element_at */
 void *cf_array_element_at(cf_array_t *ary,size_t index) {
-  if(index < 0 || index >= ary->elements) {
+  if(index >= ary->elements) { /* size_t is an unsigned type, so it cannot by < 0 */
     errno = EINVAL;
     return NULL;
   }

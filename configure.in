@@ -78,6 +78,28 @@ AC_CHECK_FUNC(iconv,ICONV="",[
   AC_CHECK_LIB(iconv,iconv,ICONV="-liconv",[AC_MSG_ERROR([iconv library cannot be found])])
 ])
 
+AC_CACHE_CHECK(for iconv declaration, ac_cv_iconv_const,
+  [AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <stdlib.h>
+      #include <iconv.h>]],
+      [[#ifdef __cplusplus
+        "C"
+        #endif
+        #if defined(__STDC__) || defined(__cplusplus)
+        size_t iconv (iconv_t cd, char **inbuf, size_t *inbytesleft, char **outbuf, size_t *outbytesleft);
+        #else
+        size_t iconv();
+        #endif]])],
+    [iconv_const=no-const],
+    [iconv_const=const])
+  ]
+)
+if test $iconv_const = const; then
+  AC_DEFINE([CF_ICONV_CONST], const, [Define as const if the declaration of iconv() needs const.])
+else
+  AC_DEFINE([CF_ICONV_CONST], /* no-const */)
+fi
+
+
 dnl check for dlopen funktion
 AC_CHECK_FUNC(dlopen,DL="",[
   AC_CHECK_LIB(dl,dlopen,DL="-ldl",[AC_MSG_ERROR([dl library cannot be found])])
