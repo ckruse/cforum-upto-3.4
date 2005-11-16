@@ -21,7 +21,7 @@
 /* }}} */
 
 /* {{{ Includes */
-#include "config.h"
+#include "cfconfig.h"
 #include "defines.h"
 
 #include <stdlib.h>
@@ -44,7 +44,7 @@ struct sockaddr_un;
 
 #include "hashlib.h"
 #include "utils.h"
-#include "configparser.h"
+#include "cfgcomp.h"
 #include "readline.h"
 
 #include "serverutils.h"

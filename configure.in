@@ -23,7 +23,7 @@ sinclude(m4/cf_check_type.m4)
 
 AC_INIT
 
-AM_CONFIG_HEADER(src/config.h)
+AM_CONFIG_HEADER(src/cfconfig.h)
 AM_INIT_AUTOMAKE(cforum,2.0)
 
 AC_LIBTOOL_DLOPEN

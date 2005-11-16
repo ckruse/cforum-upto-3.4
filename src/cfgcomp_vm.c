@@ -6,7 +6,7 @@
  */
 
 /* {{{ includes */
-#include "config.h"
+#include "cfconfig.h"
 #include "defines.h"
 
 #include <stdio.h>
@@ -298,9 +298,77 @@ int cf_cfg_vm_cmp_reg(cf_cfg_vm_val_t *a,cf_cfg_vm_val_t *b) {
 }
 /* }}} */
 
+/* {{{ cf_cfg_vm_loadmod */
+int cf_cfg_vm_loadmod(cf_cfg_config_t *cfg,const u_char *path,const u_char *name) {
+  void *mod = dlopen(path,RTLD_LAZY);
+  void *mod_cfg_p;
+  char *error;
+  cf_module_t module = { NULL, NULL, NULL };
+  cf_module_config_t *mod_cfg;
+  int i;
+
+  if(mod) {
+    mod_cfg_p = dlsym(mod,name);
+
+    if((error = (u_char *)dlerror()) == NULL) {
+      mod_cfg = (cf_module_config_t *)mod_cfg_p;
+
+      if(!mod_cfg_p) {
+        fprintf(stderr,"ERROR: cannot load plugin configuration for plugin %s!\n",name);
+        return -1;
+      }
+
+      if(mod_cfg->module_magic_cookie != MODULE_MAGIC_COOKIE) {
+        #ifdef DEBUG
+        fprintf(stderr,"module magic number: %" PRIu32 ", constant: %" PRIu32 "\n",mod_cfg->module_magic_cookie,MODULE_MAGIC_COOKIE);
+        #endif
+
+        /* check what's the problem */
+        if((mod_cfg->module_magic_cookie >> 16) == MODULE_MAGIC_NUMBER_MAJOR) fprintf(stderr,"CAUTION! module '%s': bad minor magic number, you should really update the module!\n",name);
+        else {
+          fprintf(stderr,"FATAL ERROR! bad magic number! Maybe module '%s' is to old or to new?\n",name);
+          return -1;
+        }
+      }
+
+      if(mod_cfg->config_init) {
+        if(mod_cfg->config_init(cfg) != 0) return -1;
+      }
+
+      /* register the module in the module list */
+      if(!cfg->modules[0].element_size) cf_array_init(&cfg->modules[0],sizeof(cf_module_t),(void (*)(void *))cf_cfg_destroy_module);
+
+      module.module = mod;
+      module.cfg    = mod_cfg;
+
+      cf_array_push(&cfg->modules[0],&module);
+
+      /* register all handlers */
+      for(i=0;mod_cfg->handlers[i].handler;i++) {
+        if(!cfg->modules[mod_cfg->handlers[i].handler].element_size) cf_array_init(&cfg->modules[mod_cfg->handlers[i].handler],sizeof(cf_handler_config_t),NULL);
+
+        cf_array_push(&cfg->modules[mod_cfg->handlers[i].handler],&mod_cfg->handlers[i]);
+      }
+    }
+    else {
+      dlclose(mod);
+      fprintf(stderr,"could not get module conmfig: %s\n",error);
+      return -1;
+    }
+  }
+  else {
+    fprintf(stderr,"%s\n",dlerror());
+    return -1;
+  }
+
+  return 0;
+}
+/* }}} */
+
+/* {{{ cf_cfg_vm_start */
 int cf_cfg_vm_start(cf_cfg_vm_t *me,cf_cfg_config_t *cfg) {
   int ret,ret1;
-  u_char *sval1,*sval2;
+  u_char *sval1,*sval2,buff[512];
   cf_cfg_vm_command_t cmd;
   cf_tree_dataset_t dt,*dtp;
   cf_cfg_vm_val_t *dstreg,*srcreg,*srcreg1;
@@ -319,6 +387,8 @@ int cf_cfg_vm_start(cf_cfg_vm_t *me,cf_cfg_config_t *cfg) {
 
     switch(cmd.instruction) {
       case CF_ASM_MODULE:
+
+
         break;
 
       case CF_ASM_SET:
@@ -812,7 +882,7 @@ int cf_cfg_vm_start(cf_cfg_vm_t *me,cf_cfg_config_t *cfg) {
             /* }}} */
             /* {{{ failure: config val: not num or string */
             else {
-              fprintf("ADD with second arg an invalid type!\n");
+              fprintf(stderr,"ADD with second arg an invalid type!\n");
               return -1;
             }
             /* }}} */
@@ -820,7 +890,7 @@ int cf_cfg_vm_start(cf_cfg_vm_t *me,cf_cfg_config_t *cfg) {
           /* }}} */
           /* {{{ failure:  not num or string or config val */
           else {
-            fprintf("ADD with second arg an invalid type!\n");
+            fprintf(stderr,"ADD with second arg an invalid type!\n");
             return -1;
           }
           /* }}} */
@@ -898,7 +968,7 @@ int cf_cfg_vm_start(cf_cfg_vm_t *me,cf_cfg_config_t *cfg) {
             /* {{{ second arg: string */
             else if(srcreg1->type == CF_ASM_ARG_STR) {
               i32 = strtoll(srcreg1->cval,NULL,10);
-              i32 = srcreg->cfgval->ival + i32,
+              i32 = srcreg->cfgval->ival + i32;
             }
             /* }}} */
             /* {{{ second arg: config */
@@ -909,7 +979,7 @@ int cf_cfg_vm_start(cf_cfg_vm_t *me,cf_cfg_config_t *cfg) {
               /* {{{ second arg: config: string */
               else if(srcreg1->cfgval->type == CF_ASM_ARG_STR) {
                 i32 = strtoll(srcreg1->cfgval->sval,NULL,10);
-                i32 = srcreg->cfgval->ival + i32,
+                i32 = srcreg->cfgval->ival + i32;
               }
               /* }}} */
               /* {{{ second arg: config: failure (not num nor string) */
@@ -1467,6 +1537,6 @@ int cf_cfg_vm_start(cf_cfg_vm_t *me,cf_cfg_config_t *cfg) {
 
   return 0;
 }
-
+/* }}} */
 
 /* eof */

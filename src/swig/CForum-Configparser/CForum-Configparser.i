@@ -1,7 +1,7 @@
 %module "CForum::Configparser"
 %{
 
-#include "config.h"
+#include "cfconfig.h"
 #include "defines.h"
 
 #include <stdio.h>
@@ -23,7 +23,7 @@
 
 #include "utils.h"
 #include "hashlib.h"
-#include "configparser.h"
+#include "cfgcomp.h"
 
 static SV *callback = NULL;
 

@@ -16,7 +16,7 @@
 /* }}} */
 
 /* {{{ Includes */
-#include "config.h"
+#include "cfconfig.h"
 #include "defines.h"
 
 #include <stdlib.h>
@@ -28,7 +28,7 @@
 
 #include "hashlib.h"
 #include "utils.h"
-#include "configparser.h"
+#include "cfgcomp.h"
 #include "template.h"
 #include "readline.h"
 #include "charconvert.h"

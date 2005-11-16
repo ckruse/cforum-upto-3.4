@@ -5,7 +5,7 @@
  * Helper functions for the template parser
  */
 
-#include "config.h"
+#include "cfconfig.h"
 #include "defines.h"
 
 #include <stdio.h>

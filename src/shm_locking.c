@@ -15,7 +15,7 @@
 /* }}} */
 
 /* {{{ Includes */
-#include "config.h"
+#include "cfconfig.h"
 #include "defines.h"
 
 #ifdef CF_SHARED_MEM

@@ -22,7 +22,7 @@
  * Magic numbers change with every API change. Binary backwards compatibility
  * leads to a minor change, backwards incompatibility leads to a major change
  */
-#define MODULE_MAGIC_NUMBER_MAJOR ((u_int16_t)0x3) /* upper 16 bit */
+#define MODULE_MAGIC_NUMBER_MAJOR ((u_int16_t)0x4) /* upper 16 bit */
 #define MODULE_MAGIC_NUMBER_MINOR ((u_int16_t)0x1) /* lower 16 bit */
 #define MODULE_MAGIC_COOKIE ((u_int32_t)((MODULE_MAGIC_NUMBER_MAJOR << 16) | (MODULE_MAGIC_NUMBER_MINOR)))
 
@@ -30,7 +30,7 @@
 #define CF_SORT_DESCENDING 2
 #define CF_SORT_NEWESTFIRST 3
 
-#define CF_VERSION "3.4"
+#define CF_VERSION "4.0"
 
 #define CF_BUFSIZ BUFSIZ
 

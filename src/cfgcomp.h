@@ -8,6 +8,7 @@
 #ifndef _CF_CONFIG_H
 #define _CF_CONFIG_H
 
+/* {{{ parser constants */
 #define CF_NO_TOK       0x0
 #define CF_TOK_DQ       0x1
 #define CF_TOK_SQ       0x2
@@ -51,12 +52,16 @@
 #define CF_TOK_NEXTTOK  0x28
 
 #define CF_TOK_IFELSEELSEIF 0x21
+/* }}} */
 
+/* {{{ return values (parser and lexer) */
 #define CF_RETVAL_OK               0
 #define CF_RETVAL_NOSUCHFILE      -1
 #define CF_RETVAL_FILENOTREADABLE -2
 #define CF_RETVAL_PARSEERROR      -3
+/* }}} */
 
+/* {{{ precedences */
 #define CF_PREC_ATOM        100
 #define CF_PREC_PT           90
 #define CF_PREC_BR           83
@@ -68,12 +73,15 @@
 #define CF_PREC_AND          40
 #define CF_PREC_OR           30
 #define CF_PREC_SET          10
+/* }}} */
 
+/* {{{ parser type constants */
 #define CF_TYPE_INT 0x1
 #define CF_TYPE_STR 0x2
 #define CF_TYPE_ID  0x3
+/* }}} */
 
-
+/* {{{ ASM command constants */
 #define CF_ASM_MODULE    0x1
 #define CF_ASM_SET       0x2
 #define CF_ASM_UNSET     0x4
@@ -99,17 +107,23 @@
 #define CF_ASM_ARRAY     0x17
 #define CF_ASM_ARRAYSUBS 0x18
 #define CF_ASM_ARRAYPUSH 0x19
+/* }}} */
 
+/* {{{ ASM arg types */
 #define CF_ASM_ARG_REG 0x1
 #define CF_ASM_ARG_NUM 0x2
 #define CF_ASM_ARG_STR 0x3
 #define CF_ASM_ARG_CFG 0x4
 #define CF_ASM_ARG_ARY 0x5
+/* }}} */
 
+/* {{{ assembler type constants */
 #define CF_ASM_T_STR  0x1
 #define CF_ASM_T_ATOM 0x2
 #define CF_ASM_T_LBL  0x3
+/* }}} */
 
+/* {{{ datatypes */
 typedef struct {
   int type;
   u_char *val;
@@ -167,9 +181,6 @@ typedef struct {
   int lbls_used;
 } cf_cfg_vmstate_t;
 
-
-
-
 typedef struct cf_cfg_config_value_s cf_cfg_config_value_t;
 typedef struct cf_cfg_vm_val_s {
   int type;
@@ -207,15 +218,70 @@ struct cf_cfg_config_value_s {
 };
 
 typedef struct cf_cfg_config_s {
+  cf_array_t modules[MOD_MAX+1]; /**< Array containing all modules */
+
   u_char *name;
   cf_array_t nmspcs;
 
   cf_tree_t args;
   
 } cf_cfg_config_t;
+/* }}} */
 
+/* {{{ module API */
+/** Plugin API. This structure saves handler configurations */
+typedef struct {
+  int handler; /**< The handler hook */
+  void *func; /**< A pointer to the handler function */
+} cf_handler_config_t;
 
+/** This function type is used for cleaning up module specific data */
+typedef void (*cf_finish_t)(void);
 
+/** This function type is used for the configuration init hook */
+typedef int (*cf_config_init_hook_t)(cf_cfg_config_t *file);
+
+/** This function type is used for cache revalidation */
+#ifndef CF_SHARED_MEM
+typedef int (*cf_cache_revalidator_t)(cf_hash_t *,cf_cfg_config_t *,time_t,int);
+#else
+typedef int (*cf_cache_revalidator_t)(cf_hash_t *,cf_cfg_config_t *,time_t,void *);
+#endif
+
+/** This function type is used for the HTTP header hook */
+#ifndef CF_SHARED_MEM
+typedef int (*cf_header_hook_t)(cf_hash_t *,cf_hash_t *,cf_cfg_config_t *,int);
+#else
+typedef int (*cf_header_hook_t)(cf_hash_t *,cf_hash_t *,cf_cfg_config_t *,void *);
+#endif
+
+/** This function type is used for the Last Modified header revalidation */
+#ifndef CF_SHARED_MEM
+typedef time_t (*cf_last_modified_t)(cf_hash_t *,cf_cfg_config_t *,int);
+#else
+typedef time_t (*cf_last_modified_t)(cf_hash_t *,cf_cfg_config_t *,void *);
+#endif
+
+/** This structure saves a configuration of a module */
+typedef struct {
+  u_int32_t module_magic_cookie;
+  cf_handler_config_t *handlers; /**< The handler configuration */
+  cf_config_init_hook_t config_init;
+  cf_cache_revalidator_t revalidator; /**< The cache revalidation hook */
+  cf_last_modified_t last_modified; /**< The last modified validation hook */
+  cf_header_hook_t header_hook; /**< Hook for http headers */
+  cf_finish_t finish; /**< The cleanup function handler */
+} cf_module_config_t;
+
+/** This structure saves the information of all modules in a linked list */
+typedef struct s_module {
+  void *module; /**< The pointer to the module object */
+  cf_handler_config_t *handler; /**< The handlers of the actual module */
+  cf_module_config_t *cfg; /**< The module configuration */
+} cf_module_t;
+/* }}} */
+
+/* {{{ prototypes */
 int cf_cfg_lexer(cf_cfg_stream_t *stream,int changestate);
 u_char *cf_dbg_get_token(int ttype);
 
@@ -232,6 +298,36 @@ void cf_cfg_parser_destroy_trees(cf_cfg_trees_t *tree);
 void cf_cfg_init_cfg(cf_cfg_config_t *cfg);
 void cf_cfg_config_destroy(cf_cfg_config_t *cfg);
 int cf_cfg_cmp(cf_tree_dataset_t *dt,cf_tree_dataset_t *dt1);
+/* }}} */
 
+
+/**
+ * This function expects a list of config names (e.g. fo_default, fo_view, fo_post)
+ * and its length. It uses the CF_CONF_DIR environment variable to decide where
+ * the config files can be found. It returns successfully an array, when all
+ * wanted files could be found. It returns NULL if one of them could not be found.
+ * \param which The list of wanted configuration files
+ * \param llen The length of the list
+ * \return An array containing the full path to the config files in the order given by the list
+ */
+cf_array_t *cf_get_conf_file(const u_char **which,size_t llen);
+
+/**
+ * destructor function for the modules array
+ * \param mod The module structure
+ */
+void cf_cfg_destroy_module(cf_module_t *mod);
+
+
+/**
+ * This function returns the configuration entry named by name
+ * \param cfg The configuration file structure
+ * \param name The configuration entry name
+ * \return NULL if not found, the cf_cfg_config_value_t structure on success
+ */
+cf_cfg_config_value_t *cf_cfg_get_value(cf_cfg_config_t *cfg,const u_char *name);
+
+int cf_cfg_get_conf(cf_cfg_config_t *cfg,const u_char **which, size_t llen);
 
 #endif
+/* eof */

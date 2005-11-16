@@ -14,7 +14,7 @@
 /* }}} */
 
 /* {{{ includes */
-#include "config.h"
+#include "cfconfig.h"
 #include "defines.h"
 
 #include <stdio.h>
@@ -50,7 +50,7 @@
 
 #include "hashlib.h"
 #include "utils.h"
-#include "configparser.h"
+#include "cfgcomp.h"
 #include "readline.h"
 
 #include "serverutils.h"

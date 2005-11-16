@@ -1,6 +1,6 @@
 %module "CForum::Validator"
 %{
-#include "config.h"
+#include "cfconfig.h"
 #include "defines.h"
 
 #include "utils.h"

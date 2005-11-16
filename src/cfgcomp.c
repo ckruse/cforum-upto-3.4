@@ -6,7 +6,7 @@
  */
 
 /* {{{ includes */
-#include "config.h"
+#include "cfconfig.h"
 #include "defines.h"
 
 #include <stdio.h>
@@ -150,9 +150,13 @@ void cf_cfg_destroy_node(cf_tree_dataset_t *dt) {
 
 /* {{{ cf_cfg_config_destroy */
 void cf_cfg_config_destroy(cf_cfg_config_t *cfg) {
+  size_t i;
+
   if(cfg->name) free(cfg->name);
   cf_tree_destroy(&cfg->args);
   cf_array_destroy(&cfg->nmspcs);
+
+  for(i=0;i<=MOD_MAX;++i) cf_array_destroy(&cfg->modules[i]);
 }
 /* }}} */
 
@@ -164,22 +168,118 @@ void cf_cfg_init_cfg(cf_cfg_config_t *cfg) {
 }
 /* }}} */
 
-int main(int argc,char *argv[]) {
-  cf_cfg_config_t cfg;
+/* {{{ cf_cfg_destroy_module */
+void cf_cfg_destroy_module(cf_module_t *mod) {
+  if(mod->module) {
+    if(mod->cfg->finish) mod->cfg->finish();
+    dlclose(mod->module);
+  }
+}
+/* }}} */
 
-  if(argc < 2) {
-    fprintf(stderr,"usage: %s <file>\n",argv[0]);
-    return EXIT_FAILURE;
+/* {{{ cf_cfg_get_value */
+cf_cfg_config_value_t *cf_cfg_get_value(cf_cfg_config_t *cfg,const u_char *name) {
+  u_char *fn = getenv("CF_FORUM_NAME");
+  size_t i;
+
+  cf_cfg_config_t *cfgns;
+
+  cf_tree_dataset_t dt,*dtp;
+
+  if(!fn) {
+    fprintf(stderr,"CF_FORUM_NAME not set!\n");
+    return NULL;
   }
 
-  memset(&cfg,0,sizeof(cfg));
-  cf_cfg_init_cfg(&cfg);
+  memset(&dt,0,sizeof(dt));
+  dt.key = (void *)name;
 
-  if(cf_cfg_cfgcomp_compile_if_needed(argv[1]) != 0) return EXIT_FAILURE;
-  if(cf_cfg_interprete_file(argv[1],&cfg) != 0) return EXIT_FAILURE;
+  for(i=0;i<cfg->nmspcs.elements;++i) {
+    cfgns = cf_array_element_at(&cfg->nmspcs,i);
 
+    if(cf_strcmp(cfgns->name,fn) == 0) {
+      if((dtp = (cf_tree_dataset_t *)cf_tree_find(&cfgns->args,cfgns->args.root,&dt)) != NULL) return dtp->data;
+    }
+  }
 
-  return EXIT_SUCCESS;
+  if((dtp = (cf_tree_dataset_t *)cf_tree_find(&cfg->args,cfg->args.root,&dt)) != NULL) return dtp->data;
+
+  return NULL;
 }
+/* }}} */
+
+/* {{{ cf_get_conf_file */
+cf_array_t *cf_get_conf_file(const u_char **which,size_t llen) {
+  cf_array_t *ary = cf_alloc(NULL,1,sizeof(*ary),CF_ALLOC_CALLOC);
+  u_char *env;
+  cf_string_t file;
+  size_t len;
+  struct stat st;
+  size_t i;
+
+  if((env = getenv("CF_CONF_DIR")) == NULL) {
+    fprintf(stderr,"CF_CONF_DIR has not been set!\n");
+    return NULL;
+  }
+
+  len = strlen(env);
+
+  cf_array_init(ary,sizeof(u_char **),NULL);
+
+  for(i=0;i<llen;++i) {
+    cf_str_init_growth(&file,256);
+    cf_str_char_set(&file,env,len);
+
+    if(file.content[file.len-1] != '/') cf_str_char_append(&file,'/');
+
+    cf_str_chars_append(&file,which[i],strlen(which[i]));
+    cf_str_chars_append(&file,".cfcl",5);
+
+    memset(&st,0,sizeof(st));
+    if(stat(file.content,&st) == -1) {
+      cf_str_cleanup(&file);
+      fprintf(stderr,"could not find config file '%s': %s\n",file.content,strerror(errno));
+      return NULL;
+    }
+
+    cf_array_push(ary,&file.content);
+  }
+
+  return ary;
+}
+/* }}} */
+
+/* {{{ cf_cfg_get_conf */
+int cf_cfg_get_conf(cf_cfg_config_t *cfg,const u_char **which, size_t llen) {
+  cf_array_t *ary;
+  u_char **fname;
+  size_t i;
+
+  if((ary = cf_get_conf_file(which,llen)) == NULL) return -1;
+
+  cf_cfg_init_cfg(cfg);
+
+  for(i=0;i<llen;++i) {
+    fname = cf_array_element_at(ary,i);
+
+    if(cf_cfg_cfgcomp_compile_if_needed(*fname) != 0) {
+      fprintf(stderr,"compilation of config file %s failed!\n",*fname);
+      return -1;
+    }
+
+    if(cf_cfg_interprete_file(*fname,cfg) != 0) {
+      fprintf(stderr,"interpreting of config file %s failed!\n",*fname);
+      return -1;
+    }
+
+    free(*fname);
+  }
+
+  cf_array_destroy(ary);
+  free(ary);
+
+  return 0;
+}
+/* }}} */
 
 /* eof */
