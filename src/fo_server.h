@@ -81,7 +81,7 @@ typedef struct s_head {
 extern int    RUN; /**< Shall the server still run or shall we shutdown? */
 extern head_t head; /**< The head variable. Contains all neccessary information about the server. */
 
-typedef int (*server_init_filter_t)(int); /**< Used for server initialization plugins */
+typedef int (*cf_server_init_filter_t)(cf_cfg_config_t *,int); /**< Used for server initialization plugins */
 
 #endif
 

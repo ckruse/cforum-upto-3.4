@@ -1,6 +1,7 @@
 2005-11-17 Christian Kruse <ckruse@wwwtech.de>
 	* src/cf_pthread.[ch], src/serverlib.[ch], src/archiver.[ch],
-		src/serverutils.[ch]: Did more work to be compatible to new API
+		src/serverutils.[ch], src/fo_server.[ch]: Did more work to be compatible to
+		new API
 
 2005-11-16 Christian Kruse <ckruse@wwwtech.de>
 	* cfgcomp*: Implemented configparser API (should be complete now)

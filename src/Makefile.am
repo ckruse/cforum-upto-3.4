@@ -2,8 +2,8 @@
 SUBDIRS=. parsetpl
 #modules swig perl
 
-#bin_PROGRAMS= \
-#	fo_server \
+bin_PROGRAMS= \
+	fo_server
 #	fo_view \
 #	fo_vote \
 #	cf-tid_index \
@@ -123,9 +123,9 @@ libcfserverlib_la_LDFLAGS=-export-dynamic -avoid-version
 #fo_view_SOURCES=fo_view.c
 #fo_view_LDADD=libcfconfigparser.la libcftemplate.la libcfcharconvert.la libcfreadline.la libcfutils.la libcfhashlib.la libcfclientlib.la libcfcgi.la libcfhtml.la
 #fo_view_LDFLAGS=-export-dynamic
-#
-#fo_server_SOURCES=fo_server.c
-#fo_server_LDADD=libcfcharconvert.la libcfreadline.la libcfutils.la libcfserverlib.la libcfconfigparser.la libcfserverutils.la libcfhashlib.la $(PTHREAD_LIB)
-#fo_server_LDFLAGS=-export-dynamic
+
+fo_server_SOURCES=fo_server.c
+fo_server_LDADD=libcfcharconvert.la libcfreadline.la libcfutils.la libcfserverlib.la libcfconfigparser.la libcfserverutils.la libcfhashlib.la $(PTHREAD_LIB)
+fo_server_LDFLAGS=-export-dynamic
 
 # eof
