@@ -1,5 +1,6 @@
 
-#SUBDIRS=. modules parsetpl swig perl
+SUBDIRS=. parsetpl
+#modules swig perl
 
 #bin_PROGRAMS= \
 #	fo_server \
@@ -25,9 +26,9 @@ pkglib_LTLIBRARIES= \
 	libcfconfigparser.la \
 	libcftemplate.la \
 	libcfclientlib.la \
-	libcfhtml.la
-#	libcfserverutils.la \
-#	libcfserverlib.la \
+	libcfhtml.la \
+	libcfserverutils.la \
+	libcfserverlib.la
 #	libcfuserconfig.la
 
 libcfcharconvert_la_SOURCES=charconvert.c
@@ -68,14 +69,13 @@ libcfconfigparser_la_SOURCES=cfgcomp_assembler.c cfgcomp.c cfgcomp_codegenerator
 libcfconfigparser_la_LIBADD=libcfutils.la libcfcharconvert.la $(DL)
 libcfconfigparser_la_LDFLAGS=-export-dynamic -avoid-version
 
-#libcfserverutils_la_SOURCES=serverutils.c cf_pthread.c
-#libcfserverutils_la_LDFLAGS=-export-dynamic -avoid-version
-#
-#libcfserverlib_la_SOURCES=serverlib.c shm_locking.c semaphores.c archiver.c cf_pthread.c
-#libcfserverlib_la_LIBADD=libcfhashlib.la libcfutils.la libcfreadline.la $(PTHREAD_LIB)
-#libcfserverlib_la_LDFLAGS=-export-dynamic -avoid-version
-#
-#
+libcfserverutils_la_SOURCES=serverutils.c cf_pthread.c
+libcfserverutils_la_LDFLAGS=-export-dynamic -avoid-version
+
+libcfserverlib_la_SOURCES=serverlib.c shm_locking.c semaphores.c archiver.c cf_pthread.c
+libcfserverlib_la_LIBADD=libcfhashlib.la libcfutils.la libcfreadline.la $(PTHREAD_LIB)
+libcfserverlib_la_LDFLAGS=-export-dynamic -avoid-version
+
 #libcfuserconfig_la_SOURCES=userconf.c xml_handling.c
 #libcfuserconfig_la_LIBADD=libcfhashlib.la libcfutils.la libcfconfigparser.la libcfclientlib.la libcfvalidate.la $(PCRE_LIBS) $(GDOME_LIBS)
 #libcfuserconfig_la_LDFLAGS=-export-dynamic -avoid-version

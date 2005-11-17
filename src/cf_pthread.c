@@ -33,12 +33,12 @@
 
 struct sockaddr_un;
 
-#include "cf_pthread.h"
-
 #include "hashlib.h"
 #include "utils.h"
 #include "cfgcomp.h"
 #include "readline.h"
+
+#include "cf_pthread.h"
 
 #include "serverutils.h"
 #include "serverlib.h"
@@ -63,7 +63,7 @@ void cf_mutex_destroy(cf_mutex_t *mutex) {
 /* }}} */
 
 /* {{{ cf_lock_mutex */
-void cf_lock_mutex(const u_char *file,const int line,cf_mutex_t *mutex) {
+void cf_lock_mutex(cf_cfg_config_t *cfg,const u_char *file,const int line,cf_mutex_t *mutex) {
   #ifdef _FO_LOCK_DEBUG
   struct timeval tv1,tv2;
   struct timezone tz;
@@ -76,11 +76,11 @@ void cf_lock_mutex(const u_char *file,const int line,cf_mutex_t *mutex) {
   #ifdef _FO_LOCK_DEBUG
   if(gettimeofday(&tv1,&tz) == -1) return;
 
-  cf_log(CF_ERR,file,line,"PTHREAD MUTEX TRY LOCK '%s'\n",mutex->name);
+  cf_log(cfg,CF_ERR,file,line,"PTHREAD MUTEX TRY LOCK '%s'\n",mutex->name);
   #endif
 
   if((status = pthread_mutex_lock(&mutex->mutex)) != 0) {
-    cf_log(CF_ERR,__FILE__,__LINE__,"%s:%d:pthread_mutex_lock(%s) %s\n",file,line,mutex->name,strerror(status));
+    cf_log(cfg,CF_ERR,__FILE__,__LINE__,"%s:%d:pthread_mutex_lock(%s) %s\n",file,line,mutex->name,strerror(status));
     exit(-1);
   }
 
@@ -93,13 +93,13 @@ void cf_lock_mutex(const u_char *file,const int line,cf_mutex_t *mutex) {
   /* why does this happen? it shall not... */
   if(diff < 0) diff = 0;
 
-  cf_log(CF_ERR,file,line,"PTHREAD MUTEX LOCKED '%s' %lld\n",mutex->name,diff);
+  cf_log(cfg,CF_ERR,file,line,"PTHREAD MUTEX LOCKED '%s' %lld\n",mutex->name,diff);
   #endif
 }
 /* }}} */
 
 /* {{{ cf_unlock_mutex */
-void cf_unlock_mutex(const u_char *file,const int line,cf_mutex_t *mutex) {
+void cf_unlock_mutex(cf_cfg_config_t *cfg,const u_char *file,const int line,cf_mutex_t *mutex) {
   #ifdef _FO_LOCK_DEBUG
   struct timeval tv1,tv2;
   struct timezone tz;
@@ -111,11 +111,11 @@ void cf_unlock_mutex(const u_char *file,const int line,cf_mutex_t *mutex) {
   #ifdef _FO_LOCK_DEBUG
   if(gettimeofday(&tv1,&tz) == -1) return;
 
-  cf_log(CF_ERR,file,line,"PTHREAD MUTEX TRY UNLOCK '%s'\n",mutex->name);
+  cf_log(cfg,CF_ERR,file,line,"PTHREAD MUTEX TRY UNLOCK '%s'\n",mutex->name);
   #endif
 
   if((status = pthread_mutex_unlock(&mutex->mutex)) != 0) {
-    cf_log(CF_ERR,__FILE__,__LINE__,"%s:%d:pthread_mutex_unlock(%s): %s\n",file,line,mutex->name,strerror(status));
+    cf_log(cfg,CF_ERR,__FILE__,__LINE__,"%s:%d:pthread_mutex_unlock(%s): %s\n",file,line,mutex->name,strerror(status));
     exit(-1);
   }
 
@@ -128,7 +128,7 @@ void cf_unlock_mutex(const u_char *file,const int line,cf_mutex_t *mutex) {
   /* why does this happen? it shall not... */
   if(diff < 0) diff = 0;
 
-  cf_log(CF_ERR,file,line,"PTHREAD MUTEX UNLOCK '%s' %lld\n",mutex->name,diff);
+  cf_log(cfg,CF_ERR,file,line,"PTHREAD MUTEX UNLOCK '%s' %lld\n",mutex->name,diff);
   #endif
 }
 /* }}} */
@@ -151,7 +151,7 @@ void cf_rwlock_destroy(cf_rwlock_t *rwlock) {
 /* }}} */
 
 /* {{{ cf_rwlock_rdlock */
-void cf_rwlock_rdlock(const u_char *file,const int line,cf_rwlock_t *rwlock) {
+void cf_rwlock_rdlock(cf_cfg_config_t *cfg,const u_char *file,const int line,cf_rwlock_t *rwlock) {
   #ifdef _FO_LOCK_DEBUG
   struct timeval tv1,tv2;
   struct timezone tz;
@@ -163,11 +163,11 @@ void cf_rwlock_rdlock(const u_char *file,const int line,cf_rwlock_t *rwlock) {
   #ifdef _FO_LOCK_DEBUG
   if(gettimeofday(&tv1,&tz) == -1) return;
 
-  cf_log(CF_ERR,file,line,"PTHREAD RWLOCK TRY RDLOCK '%s'\n",rwlock->name);
+  cf_log(cfg,CF_ERR,file,line,"PTHREAD RWLOCK TRY RDLOCK '%s'\n",rwlock->name);
   #endif
 
   if((status = pthread_rwlock_rdlock(&rwlock->rwlock)) != 0) {
-    cf_log(CF_ERR,__FILE__,__LINE__,"%s:%d:pthread_rwlock_rdlock(%s): %s\n",file,line,rwlock->name,strerror(status));
+    cf_log(cfg,CF_ERR,__FILE__,__LINE__,"%s:%d:pthread_rwlock_rdlock(%s): %s\n",file,line,rwlock->name,strerror(status));
     exit(-1);
   }
 
@@ -180,13 +180,13 @@ void cf_rwlock_rdlock(const u_char *file,const int line,cf_rwlock_t *rwlock) {
   /* why does this happen? it shall not... */
   if(diff < 0) diff = 0;
 
-  cf_log(CF_ERR,file,line,"PTHREAD RWLOCK RDLOCKED '%s' %lld\n",rwlock->name,diff);
+  cf_log(cfg,CF_ERR,file,line,"PTHREAD RWLOCK RDLOCKED '%s' %lld\n",rwlock->name,diff);
   #endif
 }
 /* }}} */
 
 /* {{{ cf_rwlock_wrlock */
-void cf_rwlock_wrlock(const u_char *file,const int line,cf_rwlock_t *rwlock) {
+void cf_rwlock_wrlock(cf_cfg_config_t *cfg,const u_char *file,const int line,cf_rwlock_t *rwlock) {
   #ifdef _FO_LOCK_DEBUG
   struct timeval tv1,tv2;
   struct timezone tz;
@@ -198,11 +198,11 @@ void cf_rwlock_wrlock(const u_char *file,const int line,cf_rwlock_t *rwlock) {
   #ifdef _FO_LOCK_DEBUG
   if(gettimeofday(&tv1,&tz) == -1) return;
 
-  cf_log(CF_ERR,file,line,"PTHREAD RWLOCK TRY WRLOCK '%s'\n",rwlock->name);
+  cf_log(cfg,CF_ERR,file,line,"PTHREAD RWLOCK TRY WRLOCK '%s'\n",rwlock->name);
   #endif
 
   if((status = pthread_rwlock_wrlock(&rwlock->rwlock)) != 0) {
-    cf_log(CF_ERR,__FILE__,__LINE__,"%s:%d:pthread_rwlock_wrlock(%s): %s\n",file,line,rwlock->name,strerror(status));
+    cf_log(cfg,CF_ERR,__FILE__,__LINE__,"%s:%d:pthread_rwlock_wrlock(%s): %s\n",file,line,rwlock->name,strerror(status));
     exit(-1);
   }
 
@@ -215,17 +215,17 @@ void cf_rwlock_wrlock(const u_char *file,const int line,cf_rwlock_t *rwlock) {
   /* why does this happen? it shall not... */
   if(diff < 0) diff = 0;
 
-  cf_log(CF_ERR,file,line,"PTHREAD RWLOCK WRLOCKED '%s' %lld\n",rwlock->name,diff);
+  cf_log(cfg,CF_ERR,file,line,"PTHREAD RWLOCK WRLOCKED '%s' %lld\n",rwlock->name,diff);
   #endif
 }
 /* }}} */
 
 /* {{{ cf_rwlock_unlock */
-void cf_rwlock_unlock(const u_char *file,const int line,cf_rwlock_t *rwlock) {
+void cf_rwlock_unlock(cf_cfg_config_t *cfg,const u_char *file,const int line,cf_rwlock_t *rwlock) {
   int status;
 
   if((status = pthread_rwlock_unlock(&rwlock->rwlock)) != 0) {
-    cf_log(CF_ERR,__FILE__,__LINE__,"%s:%d:pthread_rwlock_unlock(%s): %s\n",file,line,rwlock->name,strerror(status));
+    cf_log(cfg,CF_ERR,__FILE__,__LINE__,"%s:%d:pthread_rwlock_unlock(%s): %s\n",file,line,rwlock->name,strerror(status));
     exit(-1);
   }
 
@@ -238,7 +238,7 @@ void cf_rwlock_unlock(const u_char *file,const int line,cf_rwlock_t *rwlock) {
   /* why does this happen? it shall not... */
   if(diff < 0) diff = 0;
 
-  cf_log(CF_ERR,file,line,"PTHREAD RWLOCK UNLOCK '%s' %lld\n",rwlock->name,diff);
+  cf_log(cfg,CF_ERR,file,line,"PTHREAD RWLOCK UNLOCK '%s' %lld\n",rwlock->name,diff);
   #endif
 }
 /* }}} */
@@ -263,7 +263,7 @@ void cf_cond_destroy(cf_cond_t *cond) {
 /* }}} */
 
 /* {{{ cf_cond_signal */
-void cf_cond_signal(const u_char *file,int line,cf_cond_t *cond) {
+void cf_cond_signal(cf_cfg_config_t *cfg,const u_char *file,int line,cf_cond_t *cond) {
   #ifdef _FO_LOCK_DEBUG
   struct timeval tv1,tv2;
   struct timezone tz;
@@ -275,16 +275,16 @@ void cf_cond_signal(const u_char *file,int line,cf_cond_t *cond) {
   #ifdef _FO_LOCK_DEBUG
   if(gettimeofday(&tv1,&tz) == -1) return;
 
-  cf_log(CF_ERR,file,line,"PTHREAD COND SIGNAL '%s'\n",cond->name);
+  cf_log(cfg,CF_ERR,file,line,"PTHREAD COND SIGNAL '%s'\n",cond->name);
   #endif
 
   if((status = pthread_mutex_lock(&cond->lock)) != 0) {
-    cf_log(CF_ERR,__FILE__,__LINE__,"%s:%d:pthread_mutex_lock(%s): %s\n",file,line,cond->name,strerror(status));
+    cf_log(cfg,CF_ERR,__FILE__,__LINE__,"%s:%d:pthread_mutex_lock(%s): %s\n",file,line,cond->name,strerror(status));
     exit(-1);
   }
 
   if((status = pthread_cond_signal(&cond->cond)) != 0) {
-    cf_log(CF_ERR,__FILE__,__LINE__,"%s:%d:pthread_cond_signal(%s): %s\n",file,line,cond->name,strerror(status));
+    cf_log(cfg,CF_ERR,__FILE__,__LINE__,"%s:%d:pthread_cond_signal(%s): %s\n",file,line,cond->name,strerror(status));
     exit(-1);
   }
 
@@ -299,13 +299,13 @@ void cf_cond_signal(const u_char *file,int line,cf_cond_t *cond) {
   /* why does this happen? it shall not... */
   if(diff < 0) diff = 0;
 
-  cf_log(CF_ERR,file,line,"PTHREAD COND SIGNAL '%s' %lld\n",lock->name,diff);
+  cf_log(cfg,CF_ERR,file,line,"PTHREAD COND SIGNAL '%s' %lld\n",lock->name,diff);
   #endif
 }
 /* }}} */
 
 /* {{{ cf_cond_broadcast */
-void cf_cond_broadcast(const u_char *file,int line,cf_cond_t *cond) {
+void cf_cond_broadcast(cf_cfg_config_t *cfg,const u_char *file,int line,cf_cond_t *cond) {
   #ifdef _FO_LOCK_DEBUG
   struct timeval tv1,tv2;
   struct timezone tz;
@@ -317,16 +317,16 @@ void cf_cond_broadcast(const u_char *file,int line,cf_cond_t *cond) {
   #ifdef _FO_LOCK_DEBUG
   if(gettimeofday(&tv1,&tz) == -1) return;
 
-  cf_log(CF_ERR,file,line,"PTHREAD COND BROADCAST '%s'\n",cond->name);
+  cf_log(cfg,CF_ERR,file,line,"PTHREAD COND BROADCAST '%s'\n",cond->name);
   #endif
 
   if((status = pthread_mutex_lock(&cond->lock)) != 0) {
-    cf_log(CF_ERR,__FILE__,__LINE__,"%s:%d:pthread_mutex_lock(%s): %s\n",file,line,cond->name,strerror(status));
+    cf_log(cfg,CF_ERR,__FILE__,__LINE__,"%s:%d:pthread_mutex_lock(%s): %s\n",file,line,cond->name,strerror(status));
     exit(-1);
   }
 
   if((status = pthread_cond_broadcast(&cond->cond)) != 0) {
-    cf_log(CF_ERR,__FILE__,__LINE__,"%s:%d:pthread_cond_broadcast(%s): %s\n",file,line,cond->name,strerror(status));
+    cf_log(cfg,CF_ERR,__FILE__,__LINE__,"%s:%d:pthread_cond_broadcast(%s): %s\n",file,line,cond->name,strerror(status));
     exit(-1);
   }
 
@@ -341,13 +341,13 @@ void cf_cond_broadcast(const u_char *file,int line,cf_cond_t *cond) {
   /* why does this happen? it shall not... */
   if(diff < 0) diff = 0;
 
-  cf_log(CF_ERR,file,line,"PTHREAD COND BROADCAST '%s' %lld\n",lock->name,diff);
+  cf_log(cfg,CF_ERR,file,line,"PTHREAD COND BROADCAST '%s' %lld\n",lock->name,diff);
   #endif
 }
 /* }}} */
 
 /* {{{ cf_cond_wait */
-void cf_cond_wait(const u_char *file,int line,cf_cond_t *cond) {
+void cf_cond_wait(cf_cfg_config_t *cfg,const u_char *file,int line,cf_cond_t *cond) {
   #ifdef _FO_LOCK_DEBUG
   struct timeval tv1,tv2;
   struct timezone tz;
@@ -359,16 +359,16 @@ void cf_cond_wait(const u_char *file,int line,cf_cond_t *cond) {
   #ifdef _FO_LOCK_DEBUG
   if(gettimeofday(&tv1,&tz) == -1) return;
 
-  cf_log(CF_ERR,file,line,"PTHREAD COND WAIT '%s'\n",cond->name);
+  cf_log(cfg,CF_ERR,file,line,"PTHREAD COND WAIT '%s'\n",cond->name);
   #endif
 
   if((status = pthread_mutex_lock(&cond->lock)) != 0) {
-    cf_log(CF_ERR,__FILE__,__LINE__,"%s:%d:pthread_mutex_lock(%s): %s\n",file,line,cond->name,strerror(status));
+    cf_log(cfg,CF_ERR,__FILE__,__LINE__,"%s:%d:pthread_mutex_lock(%s): %s\n",file,line,cond->name,strerror(status));
     exit(-1);
   }
 
   if((status = pthread_cond_wait(&cond->cond,&cond->lock)) != 0) {
-    cf_log(CF_ERR,__FILE__,__LINE__,"%s:%d:pthread_cond_wait(%s): %s\n",file,line,cond->name,strerror(status));
+    cf_log(cfg,CF_ERR,__FILE__,__LINE__,"%s:%d:pthread_cond_wait(%s): %s\n",file,line,cond->name,strerror(status));
     exit(-1);
   }
 
@@ -383,13 +383,13 @@ void cf_cond_wait(const u_char *file,int line,cf_cond_t *cond) {
   /* why does this happen? it shall not... */
   if(diff < 0) diff = 0;
 
-  cf_log(CF_ERR,file,line,"PTHREAD COND WAIT '%s' %lld\n",lock->name,diff);
+  cf_log(cfg,CF_ERR,file,line,"PTHREAD COND WAIT '%s' %lld\n",lock->name,diff);
   #endif
 }
 /* }}} */
 
 /* {{{ cf_cond_timedwait */
-int cf_cond_timedwait(const u_char *file,int line,cf_cond_t *cond,const struct timespec *ts) {
+int cf_cond_timedwait(cf_cfg_config_t *cfg,const u_char *file,int line,cf_cond_t *cond,const struct timespec *ts) {
   #ifdef _FO_LOCK_DEBUG
   struct timeval tv1,tv2;
   struct timezone tz;
@@ -401,17 +401,17 @@ int cf_cond_timedwait(const u_char *file,int line,cf_cond_t *cond,const struct t
   #ifdef _FO_LOCK_DEBUG
   if(gettimeofday(&tv1,&tz) == -1) return;
 
-  cf_log(CF_ERR,file,line,"PTHREAD COND WAIT '%s'\n",cond->name);
+  cf_log(cfg,CF_ERR,file,line,"PTHREAD COND WAIT '%s'\n",cond->name);
   #endif
 
   if((status = pthread_mutex_lock(&cond->lock)) != 0) {
-    cf_log(CF_ERR,__FILE__,__LINE__,"%s:%d:pthread_mutex_lock(%s): %s\n",file,line,cond->name,strerror(status));
+    cf_log(cfg,CF_ERR,__FILE__,__LINE__,"%s:%d:pthread_mutex_lock(%s): %s\n",file,line,cond->name,strerror(status));
     exit(-1);
   }
 
   if((status = pthread_cond_timedwait(&cond->cond,&cond->lock,ts)) != 0) {
     if(status != ETIMEDOUT) {
-      cf_log(CF_ERR,__FILE__,__LINE__,"%s:%d:pthread_cond_wait(%s): %s\n",file,line,cond->name,strerror(status));
+      cf_log(cfg,CF_ERR,__FILE__,__LINE__,"%s:%d:pthread_cond_wait(%s): %s\n",file,line,cond->name,strerror(status));
       exit(-1);
     }
   }
@@ -427,7 +427,7 @@ int cf_cond_timedwait(const u_char *file,int line,cf_cond_t *cond,const struct t
   /* why does this happen? it shall not... */
   if(diff < 0) diff = 0;
 
-  cf_log(CF_ERR,file,line,"PTHREAD COND TIMEDWAIT '%s' %lld\n",lock->name,diff);
+  cf_log(cfg,CF_ERR,file,line,"PTHREAD COND TIMEDWAIT '%s' %lld\n",lock->name,diff);
   #endif
 
   return status;

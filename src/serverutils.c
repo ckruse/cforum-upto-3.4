@@ -20,12 +20,12 @@
 #include <pthread.h>
 #include <sys/types.h>
 
-#include "cf_pthread.h"
-
 #include "hashlib.h"
 #include "utils.h"
 #include "cfgcomp.h"
 #include "readline.h"
+
+#include "cf_pthread.h"
 
 #include "serverutils.h"
 /* }}} */
@@ -47,70 +47,70 @@ void cf_rw_list_init(const u_char *name,cf_rw_list_head_t *head) {
 /* }}} */
 
 /* {{{ cf_rw_list_append */
-void cf_rw_list_append(cf_rw_list_head_t *head,void *data,size_t size) {
-  CF_RW_WR(&head->lock);
+void cf_rw_list_append(cf_cfg_config_t *cfg,cf_rw_list_head_t *head,void *data,size_t size) {
+  CF_RW_WR(cfg,&head->lock);
   cf_list_append(&head->head,data,size);
-  CF_RW_UN(&head->lock);
+  CF_RW_UN(cfg,&head->lock);
 }
 /* }}} */
 
 /* {{{ cf_rw_list_append_static */
-void cf_rw_list_append_static(cf_rw_list_head_t *head,void *data,size_t size) {
-  CF_RW_WR(&head->lock);
+void cf_rw_list_append_static(cf_cfg_config_t *cfg,cf_rw_list_head_t *head,void *data,size_t size) {
+  CF_RW_WR(cfg,&head->lock);
   cf_list_append_static(&head->head,data,size);
-  CF_RW_UN(&head->lock);
+  CF_RW_UN(cfg,&head->lock);
 }
 /* }}} */
 
 /* {{{ cf_rw_list_prepend */
-void cf_rw_list_prepend(cf_rw_list_head_t *head,void *data,size_t size) {
-  CF_RW_WR(&head->lock);
+void cf_rw_list_prepend(cf_cfg_config_t *cfg,cf_rw_list_head_t *head,void *data,size_t size) {
+  CF_RW_WR(cfg,&head->lock);
   cf_list_prepend(&head->head,data,size);
-  CF_RW_UN(&head->lock);
+  CF_RW_UN(cfg,&head->lock);
 }
 /* }}} */
 
 /* {{{ cf_rw_list_prepend_static */
-void cf_rw_list_prepend_static(cf_rw_list_head_t *head,void *data,size_t size) {
-  CF_RW_WR(&head->lock);
+void cf_rw_list_prepend_static(cf_cfg_config_t *cfg,cf_rw_list_head_t *head,void *data,size_t size) {
+  CF_RW_WR(cfg,&head->lock);
   cf_list_prepend_static(&head->head,data,size);
-  CF_RW_UN(&head->lock);
+  CF_RW_UN(cfg,&head->lock);
 }
 /* }}} */
 
 /* {{{ cf_rw_list_insert */
-void cf_rw_list_insert(cf_rw_list_head_t *head,cf_list_element_t *prev,void *data,size_t size) {
-  CF_RW_WR(&head->lock);
+void cf_rw_list_insert(cf_cfg_config_t *cfg,cf_rw_list_head_t *head,cf_list_element_t *prev,void *data,size_t size) {
+  CF_RW_WR(cfg,&head->lock);
   cf_list_insert(&head->head,prev,data,size);
-  CF_RW_UN(&head->lock);
+  CF_RW_UN(cfg,&head->lock);
 }
 /* }}} */
 
 /* {{{ cf_rw_list_search */
-void *cf_rw_list_search(cf_rw_list_head_t *head,void *data,int (*compare)(const void *data1,const void *data2)) {
+void *cf_rw_list_search(cf_cfg_config_t *cfg,cf_rw_list_head_t *head,void *data,int (*compare)(const void *data1,const void *data2)) {
   void *tmp;
 
-  CF_RW_RD(&head->lock);
+  CF_RW_RD(cfg,&head->lock);
   tmp = cf_list_search(&head->head,data,compare);
-  CF_RW_UN(&head->lock);
+  CF_RW_UN(cfg,&head->lock);
 
   return tmp;
 }
 /* }}} */
 
 /* {{{ cf_rw_list_delete */
-void cf_rw_list_delete(cf_rw_list_head_t *head,cf_list_element_t *elem) {
-  CF_RW_WR(&head->lock);
+void cf_rw_list_delete(cf_cfg_config_t *cfg,cf_rw_list_head_t *head,cf_list_element_t *elem) {
+  CF_RW_WR(cfg,&head->lock);
   cf_list_delete(&head->head,elem);
-  CF_RW_UN(&head->lock);
+  CF_RW_UN(cfg,&head->lock);
 }
 /* }}} */
 
 /* {{{ cf_rw_list_destroy */
-void cf_rw_list_destroy(cf_rw_list_head_t *head,void (*destroy)(void *data)) {
-  CF_RW_WR(&head->lock);
+void cf_rw_list_destroy(cf_cfg_config_t *cfg,cf_rw_list_head_t *head,void (*destroy)(void *data)) {
+  CF_RW_WR(cfg,&head->lock);
   cf_list_destroy(&head->head,destroy);
-  CF_RW_UN(&head->lock);
+  CF_RW_UN(cfg,&head->lock);
 
   cf_rwlock_destroy(&head->lock);
 }
