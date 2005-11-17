@@ -25,9 +25,11 @@ DF:ArchiveURL        = "http://wwwtech.de/forum/archiv/";
 
 DF:PostScript        = ("http://wwwtech.de/forum/neues-posting","http://wwwtech.de/forum/my/neuesposting");
 
-DF:UserConfig        = "http://wwwtech.de/cgi-bin/user/fo_userconf";
-DF:UserRegister      = "http://wwwtech.de/cgi-bin/fo_usermanagement";
-DF:UserManagement    = "http://wwwtech.de/cgi-bin/user/fo_usermanagement";
+DF:UserManage        = (
+  "http://wwwtech.de/cgi-bin/user/fo_userconf",
+  "http://wwwtech.de/cgi-bin/fo_usermanagement",
+  "http://wwwtech.de/cgi-bin/user/fo_usermanagement"
+);
 
 DF:ExternCharset     = "UTF-8";
 DF:AuthMode          = "http";

@@ -249,6 +249,22 @@ cf_array_t *cf_get_conf_file(const u_char **which,size_t llen) {
 }
 /* }}} */
 
+/* {{{ cf_cfg_read_conffile */
+int cf_cfg_read_conffile(cf_cfg_config_t *cfg,const u_char *fname) {
+  if(cf_cfg_cfgcomp_compile_if_needed(fname) != 0) {
+    fprintf(stderr,"compilation of config file %s failed!\n",fname);
+    return -1;
+  }
+
+  if(cf_cfg_interprete_file(fname,cfg) != 0) {
+    fprintf(stderr,"interpreting of config file %s failed!\n",fname);
+    return -1;
+  }
+
+  return 0;
+}
+/* }}} */
+
 /* {{{ cf_cfg_get_conf */
 int cf_cfg_get_conf(cf_cfg_config_t *cfg,const u_char **which, size_t llen) {
   cf_array_t *ary;
@@ -262,15 +278,7 @@ int cf_cfg_get_conf(cf_cfg_config_t *cfg,const u_char **which, size_t llen) {
   for(i=0;i<llen;++i) {
     fname = cf_array_element_at(ary,i);
 
-    if(cf_cfg_cfgcomp_compile_if_needed(*fname) != 0) {
-      fprintf(stderr,"compilation of config file %s failed!\n",*fname);
-      return -1;
-    }
-
-    if(cf_cfg_interprete_file(*fname,cfg) != 0) {
-      fprintf(stderr,"interpreting of config file %s failed!\n",*fname);
-      return -1;
-    }
+    if(cf_cfg_read_conffile(cfg,*fname)) return -1;
 
     free(*fname);
   }

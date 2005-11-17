@@ -327,6 +327,7 @@ void cf_cfg_destroy_module(cf_module_t *mod);
  */
 cf_cfg_config_value_t *cf_cfg_get_value(cf_cfg_config_t *cfg,const u_char *name);
 
+int cf_cfg_read_conffile(cf_cfg_config_t *cfg,const u_char *fname);
 int cf_cfg_get_conf(cf_cfg_config_t *cfg,const u_char **which, size_t llen);
 
 #endif

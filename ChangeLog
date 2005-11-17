@@ -1,7 +1,11 @@
 2005-11-17 Christian Kruse <ckruse@wwwtech.de>
 	* src/cf_pthread.[ch], src/serverlib.[ch], src/archiver.[ch],
-		src/serverutils.[ch], src/fo_server.[ch]: Did more work to be compatible to
-		new API
+		src/serverutils.[ch], src/fo_server.[ch], src/fo_view.[ch]: Did more work to
+		be compatible to new API
+	* conf/fo_default.cfcl.in: Removed DF:User*-entries and made names better.
+	* src/parsetpl/parsetpl.lex: Changed regex for recognizing variables; - is now
+		allowed as a variable character
+	* src/cfgcomp.[ch]: Added function to parse only one specific file
 
 2005-11-16 Christian Kruse <ckruse@wwwtech.de>
 	* cfgcomp*: Implemented configparser API (should be complete now)
