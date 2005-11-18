@@ -1,3 +1,6 @@
+2005-11-18 Christian Kruse <ckruse@wwwtech.de>
+	* src/fo_vote.c: Changes for new API
+
 2005-11-17 Christian Kruse <ckruse@wwwtech.de>
 	* src/cf_pthread.[ch], src/serverlib.[ch], src/archiver.[ch],
 		src/serverutils.[ch], src/fo_server.[ch], src/fo_view.[ch]: Did more work to

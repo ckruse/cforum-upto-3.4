@@ -4,8 +4,8 @@ SUBDIRS=. parsetpl
 
 bin_PROGRAMS= \
 	fo_server \
-	fo_view
-#	fo_vote \
+	fo_view \
+	fo_vote 
 #	cf-tid_index \
 #	cf-recovery \
 #	fo_post \
@@ -99,11 +99,11 @@ libcfserverlib_la_LDFLAGS=-export-dynamic -avoid-version
 #cf_recovery_SOURCES=cf-recovery.c
 #cf_recovery_LDADD=libcfcharconvert.la libcfreadline.la libcfutils.la libcfserverlib.la libcfconfigparser.la libcfserverutils.la libcfhashlib.la
 #cf_recovery_LDFLAGS=-export-dynamic
-#
-#fo_vote_SOURCES=fo_vote.c
-#fo_vote_LDADD=libcfutils.la libcfhashlib.la libcfreadline.la libcfconfigparser.la libcfclientlib.la libcfcgi.la libcftemplate.la $(BDB_LIB)
-#fo_vote_LDFLAGS=-export-dynamic
-#
+
+fo_vote_SOURCES=fo_vote.c
+fo_vote_LDADD=libcfutils.la libcfhashlib.la libcfreadline.la libcfconfigparser.la libcfclientlib.la libcfcgi.la libcftemplate.la $(BDB_LIB)
+fo_vote_LDFLAGS=-export-dynamic
+
 #fo_userconf_SOURCES=fo_userconf.c
 #fo_userconf_LDADD=libcfuserconfig.la libcfutils.la libcfhashlib.la libcfreadline.la libcfconfigparser.la libcfclientlib.la libcfcgi.la libcftemplate.la
 #fo_userconf_LDFLAGS=-export-dynamic

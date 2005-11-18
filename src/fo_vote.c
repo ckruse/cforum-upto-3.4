@@ -93,13 +93,11 @@ int is_id(const u_char *id) {
 /* }}} */
 
 /* {{{ send_ok_output */
-void send_ok_output(cf_hash_t *head,cf_name_value_t *cs) {
-  cf_name_value_t *fbase;
-  cf_name_value_t *cf_cfg_tpl;
+void send_ok_output(cf_cfg_config_t *cfg,cf_hash_t *head,cf_cfg_config_value_t *cs) {
+  cf_cfg_config_value_t *fbase,*cf_cfg_tpl,*mode,*lang;
   u_char tpl_name[256];
   cf_template_t tpl;
-  u_char *uname = cf_hash_get(GlobalValues,"UserName",8);
-  u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
+  int uname = cf_hash_get(GlobalValues,"UserName",8) != NULL;
   u_char *link;
 
   cf_string_t *ctid = cf_cgi_get(head,"t"),
@@ -107,40 +105,35 @@ void send_ok_output(cf_hash_t *head,cf_name_value_t *cs) {
 
   u_int64_t tid,mid;
 
-  cf_cfg_tpl = cf_cfg_get_first_value(&fo_vote_conf,forum_name,"OkTemplate");
-  cf_gen_tpl_name(tpl_name,256,cf_cfg_tpl->values[0]);
+  mode = cf_cfg_get_value(cfg,"TemplateMode");
+  lang = cf_cfg_get_value(cfg,"Language");
+  cf_cfg_tpl = cf_cfg_get_value(cfg,"OkTemplate");
+
+  cf_gen_tpl_name(tpl_name,256,mode->sval,lang->sval,cf_cfg_tpl->sval);
 
   tid   = cf_str_to_uint64(ctid->content);
   mid   = cf_str_to_uint64(cmid->content);
   link  = cf_get_link(NULL,tid,mid);
 
   if(cf_tpl_init(&tpl,tpl_name) != 0) {
-    printf("500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
-    cf_error_message("E_TPL_NOT_FOUND",NULL);
+    printf("500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->sval);
+    cf_error_message(cfg,"E_TPL_NOT_FOUND",NULL);
     return;
   }
 
-  if(uname) fbase = cf_cfg_get_first_value(&fo_default_conf,forum_name,"UBaseURL");
-  else      fbase = cf_cfg_get_first_value(&fo_default_conf,forum_name,"BaseURL");
+  fbase = cf_cfg_get_value(cfg,"BaseURL");
 
-  cf_set_variable(&tpl,cs,"backlink",link,strlen(link),0);
-  cf_set_variable(&tpl,cs,"forumbase",fbase->values[0],strlen(fbase->values[0]),1);
-  cf_set_variable(&tpl,cs,"charset",cs->values[0],strlen(cs->values[0]),1);
+  cf_set_variable(&tpl,cs->sval,"backlink",link,strlen(link),0);
+  cf_set_variable(&tpl,cs->sval,"forum-base-uri",fbase->avals[uname].sval,strlen(fbase->avals[uname].sval),1);
+  cf_set_variable(&tpl,cs->sval,"charset",cs->sval,strlen(cs->sval),1);
 
   free(link);
 
-  printf("Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
+  printf("Content-Type: text/html; charset=%s\015\012\015\012",cs->sval);
   cf_tpl_parse(&tpl);
   cf_tpl_finish(&tpl);
 }
 /* }}} */
-
-/**
- * Dummy function, for ignoring unknown directives
- */
-int ignre(cf_configfile_t *cf,const u_char *context,u_char *name,u_char **args,size_t argnum) {
-  return 0;
-}
 
 /**
  * The main function of the forum voting program. No command line switches
@@ -157,25 +150,21 @@ int main(int argc,char *argv[],char *env[]) {
   };
 
   int sock,ret;
-  cf_array_t *cfgfiles;
-  cf_configfile_t dconf,conf,vconf;
-  u_char *fname,buff[512],*uname,*ucfg,*line;
+  u_char buff[512],*uname,*ucfg,*line;
   cf_hash_t *head;
   size_t len;
   DB *db;
   DBT key,data;
-  cf_name_value_t *dbname,*cs,*send204;
+  cf_cfg_config_value_t *dbname,*cs,*send204,*cfgpath;
   int fd;
   u_char *forum_name;
   rline_t rsd;
 
-  size_t i;
-  filter_begin_t exec;
-  cf_handler_config_t *handler;
-  
   cf_readmode_t rm_infos;
 
   cf_string_t *ctid,*cmid,*a,*mode = NULL;
+
+  cf_cfg_config_t cfg;
 
   /* set signal handler for SIGSEGV (for error reporting) */
   signal(SIGSEGV,sighandler);
@@ -183,62 +172,26 @@ int main(int argc,char *argv[],char *env[]) {
   signal(SIGFPE,sighandler);
   signal(SIGBUS,sighandler);
 
-  if((cfgfiles = cf_get_conf_file(wanted,3)) == NULL) {
-    fprintf(stderr,"Could not find config files!\n");
-    return EXIT_FAILURE;
-  }
-
   cf_init();
-  init_modules();
-  cf_cfg_init();
 
   forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   sock = 0;
 
-  fname = *((u_char **)cf_array_element_at(cfgfiles,0));
-  cf_cfg_init_file(&dconf,fname);
-  free(fname);
-
-  fname = *((u_char **)cf_array_element_at(cfgfiles,1));
-  cf_cfg_init_file(&vconf,fname);
-  free(fname);
-
-  fname = *((u_char **)cf_array_element_at(cfgfiles,2));
-  cf_cfg_init_file(&conf,fname);
-  free(fname);
-
-  cf_cfg_register_options(&dconf,default_options);
-  cf_cfg_register_options(&vconf,fo_view_options);
-  cf_cfg_register_options(&conf,fo_vote_options);
-
-  if(cf_read_config(&dconf,NULL,CF_CFG_MODE_CONFIG) != 0 || cf_read_config(&conf,NULL,CF_CFG_MODE_CONFIG) != 0 || cf_read_config(&vconf,NULL,CF_CFG_MODE_CONFIG) != 0) {
-    fprintf(stderr,"config file error!\n");
-    cf_cfg_cleanup_file(&dconf);
-    cf_cfg_cleanup_file(&conf);
+  if(cf_cfg_get_conf(&cfg,wanted,3) != 0) {
+    fprintf(stderr,"Config file error\n");
     return EXIT_FAILURE;
   }
 
   head   = cf_cgi_new();
-  dbname = cf_cfg_get_first_value(&fo_vote_conf,forum_name,"VotingDatabase");
-  cs     = cf_cfg_get_first_value(&fo_default_conf,forum_name,"ExternCharset");
+  dbname = cf_cfg_get_value(&cfg,"VotingDatabase");
+  cs     = cf_cfg_get_value(&cfg,"ExternCharset");
+  cfgpath= cf_cfg_get_value(&cfg,"ConfigDirectory");
 
-  /* {{{ first action: authorization modules */
-  if(Modules[AUTH_HANDLER].elements) {
-    ret = FLT_DECLINE;
-
-    for(i=0;i<Modules[AUTH_HANDLER].elements && ret == FLT_DECLINE;i++) {
-      handler = cf_array_element_at(&Modules[AUTH_HANDLER],i);
-
-      exec = (filter_begin_t)handler->func;
-      ret = exec(head,&fo_default_conf,&fo_vote_conf);
-    }
-  }
-  /* }}} */
-  /* }}} */
+  ret = cf_run_auth_handlers(&cfg,head);
 
   if((uname = cf_hash_get(GlobalValues,"UserName",8)) == NULL) {
-    printf("Status: 403 Forbidden\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
-    cf_error_message("E_VOTE_AUTH",NULL);
+    printf("Status: 403 Forbidden\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->sval);
+    cf_error_message(&cfg,"E_VOTE_AUTH",NULL);
     return EXIT_SUCCESS;
   }
 
@@ -249,19 +202,12 @@ int main(int argc,char *argv[],char *env[]) {
     mode = cf_cgi_get(head,"mode");
 
     /* {{{ read user config */
-    ucfg = cf_get_uconf_name(uname);
-    if(ucfg) {
-      free(conf.filename);
-      conf.filename = ucfg;
-
-      if(cf_read_config(&conf,ignre,CF_CFG_MODE_USER) != 0) {
+    if((ucfg = cf_get_uconf_name(cfgpath->sval,uname)) != NULL) {
+      if(cf_cfg_read_conffile(&cfg,ucfg) != 0) {
         fprintf(stderr,"config file error!\n");
 
-        printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
-        cf_error_message("E_VOTE_INTERNAL",NULL);
-
-        cf_cfg_cleanup_file(&conf);
-        cf_cfg_cleanup_file(&dconf);
+        printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->sval);
+        cf_error_message(&cfg,"E_VOTE_INTERNAL",NULL);
 
         return EXIT_FAILURE;
       }
@@ -270,45 +216,47 @@ int main(int argc,char *argv[],char *env[]) {
 
     /* {{{ get readmode information */
     memset(&rm_infos,0,sizeof(rm_infos));
-    if((ret = cf_run_readmode_collectors(head,&fo_view_conf,&rm_infos)) != FLT_OK) {
-      printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
+    if((ret = cf_run_readmode_collectors(&cfg,head,&rm_infos)) != FLT_OK) {
+      printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->sval);
       fprintf(stderr,"cf_run_readmode_collectors() returned %d!\n",ret);
-      cf_error_message("E_CONFIG_ERR",NULL);
+      cf_error_message(&cfg,"E_CONFIG_ERR",NULL);
       ret = FLT_EXIT;
     }
     else cf_hash_set(GlobalValues,"RM",2,&rm_infos,sizeof(rm_infos));
-  /* }}} */
+    /* }}} */
 
-    send204 = cf_cfg_get_first_value(&fo_vote_conf,forum_name,"Send204");
+    send204 = cf_cfg_get_value(&cfg,"Send204");
 
 
     if(cmid && ctid && a && is_id(cmid->content) && is_id(ctid->content)) {
-      if((sock = cf_socket_setup()) != -1) {
+      cfgpath = cf_cfg_get_value(&cfg,"SocketName");
+
+      if((sock = cf_socket_setup(cfgpath->sval)) != -1) {
         /* {{{ open database and lock it */
         if((ret = db_create(&db,NULL,0)) != 0) {
-          printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
-          cf_error_message("E_FO_500",NULL);
+          printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->sval);
+          cf_error_message(&cfg,"E_FO_500",NULL);
           fprintf(stderr,"fo_vote: db_create() error: %s\n",db_strerror(ret));
           return EXIT_FAILURE;
         }
 
-        if((ret = db->open(db,NULL,dbname->values[0],NULL,DB_BTREE,DB_CREATE,0644)) != 0) {
-          printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
-          cf_error_message("E_FO_500",NULL);
+        if((ret = db->open(db,NULL,dbname->sval,NULL,DB_BTREE,DB_CREATE,0644)) != 0) {
+          printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->sval);
+          cf_error_message(&cfg,"E_FO_500",NULL);
           fprintf(stderr,"fo_vote: db->open() error: %s\n",db_strerror(ret));
           return EXIT_FAILURE;
         }
 
         if((ret = db->fd(db,&fd)) != 0) {
-          printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
-          cf_error_message("E_FO_500",NULL);
+          printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->sval);
+          cf_error_message(&cfg,"E_FO_500",NULL);
           fprintf(stderr,"fo_vote: db->fd() error: %s\n",db_strerror(ret));
           return EXIT_FAILURE;
         }
 
         if((ret = flock(fd,LOCK_EX)) != 0) {
-          printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
-          cf_error_message("E_FO_500",NULL);
+          printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->sval);
+          cf_error_message(&cfg,"E_FO_500",NULL);
           fprintf(stderr,"fo_vote: db->fd() error: %s\n",strerror(errno));
           return EXIT_FAILURE;
         }
@@ -323,16 +271,16 @@ int main(int argc,char *argv[],char *env[]) {
         key.size = len;
 
         if((ret = db->get(db,NULL,&key,&data,0)) == 0) {
-          printf("Status: 403 Forbidden\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
+          printf("Status: 403 Forbidden\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->sval);
           if(mode && cf_strcmp(mode->content,"xmlhttp") == 0) printf("0\n");
-          else cf_error_message("E_VOTE_MULTIPLE",NULL);
+          else cf_error_message(&cfg,"E_VOTE_MULTIPLE",NULL);
           return EXIT_FAILURE;
         }
 
         if(ret != DB_NOTFOUND) {
-          printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
+          printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->sval);
           if(mode && cf_strcmp(mode->content,"xmlhttp") == 0) printf("0\n");
-          else cf_error_message("E_VOTE_INTERNAL",NULL);
+          else cf_error_message(&cfg,"E_VOTE_INTERNAL",NULL);
           fprintf(stderr,"fo_vote: db->get() error: %s\n",db_strerror(ret));
           return EXIT_FAILURE;
         }
@@ -341,9 +289,9 @@ int main(int argc,char *argv[],char *env[]) {
         data.size = 1;
 
         if((ret = db->put(db,NULL,&key,&data,0)) != 0) {
-          printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
+          printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->sval);
           if(mode && cf_strcmp(mode->content,"xmlhttp") == 0) printf("0\n");
-          else cf_error_message("E_VOTE_INTERNAL",NULL);
+          else cf_error_message(&cfg,"E_VOTE_INTERNAL",NULL);
           fprintf(stderr,"fo_vote: db->put() error: %s\n",db_strerror(ret));
           return EXIT_FAILURE;
         }
@@ -388,32 +336,32 @@ int main(int argc,char *argv[],char *env[]) {
 
           close(sock);
         }
-        else if(send204 && cf_strcmp(send204->values[0],"yes") == 0) {
+        else if(send204 && cf_strcmp(send204->sval,"yes") == 0) {
           close(sock);
           printf("Status: 204 No Content\015\012\015\012");
         }
         else {
           close(sock);
-          send_ok_output(head,cs);
+          send_ok_output(&cfg,head,cs);
         }
       }
       else {
-        printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
+        printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->sval);
         fprintf(stderr,"fo_vote: could not socket: %s\n",strerror(errno));
         if(mode && cf_strcmp(mode->content,"xmlhttp") == 0) printf("0\n");
-        else cf_error_message("E_VOTE_INTERNAL",NULL);
+        else cf_error_message(&cfg,"E_VOTE_INTERNAL",NULL);
       }
     }
     else {
-      printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
+      printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->sval);
       if(mode && cf_strcmp(mode->content,"xmlhttp") == 0) printf("0\n");
-      else cf_error_message("E_VOTE_INTERNAL",NULL);
+      else cf_error_message(&cfg,"E_VOTE_INTERNAL",NULL);
     }
   }
   else {
-    printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
+    printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->sval);
     if(mode && cf_strcmp(mode->content,"xmlhttp") == 0) printf("0\n");
-    else cf_error_message("E_VOTE_INTERNAL",NULL);
+    else cf_error_message(&cfg,"E_VOTE_INTERNAL",NULL);
   }
 
 
@@ -421,15 +369,8 @@ int main(int argc,char *argv[],char *env[]) {
   if(head) cf_hash_destroy(head);
 
   /* cleanup source */
-  cf_cfg_cleanup_file(&dconf);
-  cf_cfg_cleanup_file(&conf);
-
-  cf_array_destroy(cfgfiles);
-  free(cfgfiles);
-
-  cf_cleanup_modules(Modules);
   cf_fini();
-  cf_cfg_destroy();
+  cf_cfg_config_destroy(&cfg);
 
   return EXIT_SUCCESS;
   /* }}} */
