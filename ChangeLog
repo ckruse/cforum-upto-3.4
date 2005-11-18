@@ -1,5 +1,5 @@
 2005-11-18 Christian Kruse <ckruse@wwwtech.de>
-	* src/fo_vote.c: Changes for new API
+	* src/fo_vote.c, src/cf-tid_index.c, src/fo_post.[ch]: Changes for new API
 
 2005-11-17 Christian Kruse <ckruse@wwwtech.de>
 	* src/cf_pthread.[ch], src/serverlib.[ch], src/archiver.[ch],

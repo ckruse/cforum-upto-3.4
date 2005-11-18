@@ -56,9 +56,6 @@
 /** Database containig the index entries */
 DB *Tdb = NULL;
 
-/** contains forum name */
-static u_char *forum_name = NULL;
-
 /* {{{ is_digit */
 /**
  * function checking if a directory entry consists of numbers
@@ -102,8 +99,8 @@ int is_thread(const char *path) {
  * \param year The year
  * \param month The month
  */
-void index_month(char *year,char *month) {
-  cf_name_value_t *apath = cf_cfg_get_first_value(&fo_server_conf,forum_name,"ArchivePath");
+void index_month(cf_cfg_config_t *cfg,char *year,char *month) {
+  cf_cfg_config_value_t *apath = cf_cfg_get_value(cfg,"ArchivePath");
   char path[256],path1[256],ym[256];
   struct stat st;
   DBT key,data;
@@ -116,8 +113,8 @@ void index_month(char *year,char *month) {
   DIR *m;
   struct dirent *ent;
 
-  (void)snprintf(path,256,"%s/%s/%s",apath->values[0],year,month);
-  (void)snprintf(path1,256,"%s/%s/%s/.leave",apath->values[0],year,month);
+  (void)snprintf(path,256,"%s/%s/%s",apath->sval,year,month);
+  (void)snprintf(path1,256,"%s/%s/%s/.leave",apath->sval,year,month);
   ym_len = snprintf(ym,256,"%s/%s",year,month);
 
   if(stat(path1,&st) == 0) return;
@@ -176,14 +173,14 @@ void index_month(char *year,char *month) {
  * Function for indexing a complete year
  * \param year The year
  */
-void do_year(char *year) {
-  cf_name_value_t *apath = cf_cfg_get_first_value(&fo_server_conf,forum_name,"ArchivePath");
+void do_year(cf_cfg_config_t *cfg,char *year) {
+  cf_cfg_config_value_t *apath = cf_cfg_get_value(cfg,"ArchivePath");
   char path[256];
 
   DIR *months;
   struct dirent *ent;
 
-  (void)snprintf(path,256,"%s/%s",apath->values[0],year);
+  (void)snprintf(path,256,"%s/%s",apath->sval,year);
 
   if((months = opendir(path)) == NULL) {
     fprintf(stderr,"cf-tid_index: opendir(%s): %s\n",path,strerror(errno));
@@ -192,20 +189,12 @@ void do_year(char *year) {
 
   while((ent = readdir(months)) != NULL) {
     if(is_digit(ent) == -1) continue;
-    index_month(year,ent->d_name);
+    index_month(cfg,year,ent->d_name);
   }
 
   closedir(months);
-
 }
 /* }}} */
-
-/**
- * Dummy function, for ignoring unknown directives
- */
-int ignre(cf_configfile_t *cfile,const u_char *context,u_char *name,u_char **args,size_t len) {
-  return 0;
-}
 
 static struct option cmdline_options[] = {
   { "config-directory", 1, NULL, 'c' },
@@ -228,11 +217,6 @@ void usage(void) {
 }
 /* }}} */
 
-cf_conf_opt_t extra_opts[] = {
-  { "ArchivePath", cf_handle_command, CF_CFG_OPT_NEEDED|CF_CFG_OPT_CONFIG|CF_CFG_OPT_LOCAL, &fo_server_conf },
-  { NULL, NULL, 0, NULL }
-};
-
 /**
  * Main function
  * \param argc Argument count
@@ -240,11 +224,10 @@ cf_conf_opt_t extra_opts[] = {
  * \param envp Environment vector
  */
 int main(int argc,char *argv[],char *envp[]) {
-  cf_array_t *cfgfiles;
-  u_char *file;
-  cf_configfile_t sconf,dconf;
-  cf_name_value_t *ent,*idxfile;
+  cf_cfg_config_value_t *ent,*idxfile;
   char c;
+
+  u_char *forum_name = NULL;
 
   DIR *years;
   struct dirent *year;
@@ -253,6 +236,8 @@ int main(int argc,char *argv[],char *envp[]) {
   static const u_char *wanted[] = {
     "fo_server","fo_default"
   };
+
+  cf_cfg_config_t cfg;
 
   /* {{{ read options from commandline */
   while((c = getopt_long(argc,argv,"c:f:",cmdline_options,NULL)) > 0) {
@@ -283,38 +268,17 @@ int main(int argc,char *argv[],char *envp[]) {
     usage();
   }
 
-  cf_cfg_init();
-
   /* {{{ configuration files */
-  if((cfgfiles = cf_get_conf_file(wanted,2)) == NULL) {
-    fprintf(stderr,"error getting config files\n");
-    return EXIT_FAILURE;
-  }
+  setenv("CF_FORUM_NAME",forum_name,1);
 
-  file = *((u_char **)cf_array_element_at(cfgfiles,0));
-  cf_cfg_init_file(&sconf,file);
-  free(file);
-
-  file = *((u_char **)cf_array_element_at(cfgfiles,1));
-  cf_cfg_init_file(&dconf,file);
-  free(file);
-
-
-  cf_cfg_register_options(&dconf,default_options);
-  cf_cfg_register_options(&sconf,fo_server_options);
-  cf_cfg_register_options(&sconf,extra_opts);
-
-  if(cf_read_config(&dconf,NULL,CF_CFG_MODE_CONFIG) != 0 || cf_read_config(&sconf,ignre,CF_CFG_MODE_CONFIG|CF_CFG_MODE_NOLOAD)) {
-    fprintf(stderr,"config file error!\n");
-
-    cf_cfg_cleanup_file(&dconf);
-
+  if(cf_cfg_get_conf(&cfg,wanted,2)) {
+    fprintf(stderr,"Config error\n");
     return EXIT_FAILURE;
   }
   /* }}} */
 
-  ent = cf_cfg_get_first_value(&fo_server_conf,forum_name,"ArchivePath");
-  idxfile = cf_cfg_get_first_value(&fo_default_conf,forum_name,"ThreadIndexFile");
+  ent = cf_cfg_get_value(&cfg,"ArchivePath");
+  idxfile = cf_cfg_get_value(&cfg,"ThreadIndexFile");
 
   /* {{{ open database */
   if((ret = db_create(&Tdb,NULL,0)) != 0) {
@@ -322,34 +286,28 @@ int main(int argc,char *argv[],char *envp[]) {
     return EXIT_FAILURE;
   }
 
-  if((ret = Tdb->open(Tdb,NULL,idxfile->values[0],NULL,DB_BTREE,DB_CREATE,0644)) != 0) {
-    fprintf(stderr,"cf-tid_index: db->open(%s) error: %s\n",idxfile->values[0],db_strerror(ret));
+  if((ret = Tdb->open(Tdb,NULL,idxfile->sval,NULL,DB_BTREE,DB_CREATE,0644)) != 0) {
+    fprintf(stderr,"cf-tid_index: db->open(%s) error: %s\n",idxfile->sval,db_strerror(ret));
     return EXIT_FAILURE;
   }
   /* }}} */
 
-  if((years = opendir(ent->values[0])) == NULL) {
-    fprintf(stderr,"cf-tid_index: opendir(%s): %s\n",ent->values[0],strerror(errno));
+  if((years = opendir(ent->sval)) == NULL) {
+    fprintf(stderr,"cf-tid_index: opendir(%s): %s\n",ent->sval,strerror(errno));
     return EXIT_FAILURE;
   }
 
   while((year = readdir(years)) != NULL) {
     if(is_digit(year) == -1) continue;
 
-    do_year(year->d_name);
+    do_year(&cfg,year->d_name);
   }
 
   closedir(years);
 
-  /* {{{ close database */
   if(Tdb) Tdb->close(Tdb,0);
-  /* }}} */
 
-  cf_cfg_cleanup(&fo_default_conf);
-  cf_cfg_cleanup_file(&dconf);
-
-  cf_array_destroy(cfgfiles);
-  free(cfgfiles);
+  cf_cfg_config_destroy(&cfg);
 
   return EXIT_SUCCESS;
 }
