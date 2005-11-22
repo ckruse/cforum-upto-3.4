@@ -812,7 +812,6 @@ int main(int argc,char *argv[],char *env[]) {
   #endif
 
   ret  = FLT_OK;
-  /* }}} */
 
   if(cf_cfg_get_conf(&cfg,wanted,2) != 0) {
     fprintf(stderr,"Config error!\n");

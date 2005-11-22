@@ -45,12 +45,13 @@
 #include "semaphores.h"
 #endif
 
-#include "cf_pthread.h"
-
 #include "hashlib.h"
 #include "utils.h"
 #include "cfgcomp.h"
 #include "readline.h"
+
+#include "cf_pthread.h"
+
 #include "serverutils.h"
 #include "serverlib.h"
 #include "archiver.h"
@@ -64,12 +65,12 @@ head_t head;
 #define CFFS_SUPPORTED_VERSION "0.2"
 
 /* {{{ read_posting_from_file */
-void read_posting_from_file(FILE *fd,posting_t *p) {
-  posting_t n;
+void read_posting_from_file(FILE *fd,cf_posting_t *p) {
+  cf_posting_t n;
   int fr = 0;
   u_int32_t flagnum = 0,i,len;
 
-  posting_flag_t flag;
+  cf_posting_flag_t flag;
 
   /* in this case we only want to have the filepointer to the next posting */
   if(p == NULL) {
@@ -217,11 +218,6 @@ void usage(void) {
 }
 /* }}} */
 
-cf_conf_opt_t extra_opts[] = {
-  { "BackupFile", cf_handle_command, CF_CFG_OPT_CONFIG|CF_CFG_OPT_NEEDED|CF_CFG_OPT_LOCAL, &fo_server_conf },
-  { NULL, NULL, 0, NULL }
-};
-
 head_t head;
 int RUN = 1;
 
@@ -229,21 +225,18 @@ int main(int argc,char *argv[]) {
   u_char *forum_name = NULL,*bf = NULL,buff[512];
   char c;
 
-  u_char *file;
-  cf_array_t *cfgfiles;
-
   FILE *fd;
 
   int n,sort_m;
   u_int64_t int64_val;
-  thread_t *t;
-  posting_t *p,*p1,*p2;
+  cf_thread_t *t;
+  cf_posting_t *p,*p1,*p2;
 
-  cf_configfile_t sconf,dconf;
+  cf_forum_t *forum;
 
-  forum_t *forum;
+  cf_cfg_config_value_t *v,*sort_m_v;
 
-  cf_name_value_t *v,*sort_m_v;
+  cf_cfg_config_t cfg;
 
   struct stat st;
 
@@ -313,40 +306,16 @@ int main(int argc,char *argv[]) {
     usage();
   }
 
-  cf_cfg_init();
-
-  /* {{{ configuration files */
-  if((cfgfiles = cf_get_conf_file(wanted,2)) == NULL) {
-    fprintf(stderr,"error getting config files\n");
-    return EXIT_FAILURE;
-  }
-
-  file = *((u_char **)cf_array_element_at(cfgfiles,0));
-  cf_cfg_init_file(&sconf,file);
-  free(file);
-
-  file = *((u_char **)cf_array_element_at(cfgfiles,1));
-  cf_cfg_init_file(&dconf,file);
-  free(file);
-
-
-  cf_cfg_register_options(&dconf,default_options);
-  cf_cfg_register_options(&sconf,fo_server_options);
-  cf_cfg_register_options(&sconf,extra_opts);
-
-  if(cf_read_config(&dconf,NULL,CF_CFG_MODE_CONFIG) != 0 || cf_read_config(&sconf,NULL,CF_CFG_MODE_CONFIG) != 0) {
+  /* read config */
+  if(cf_cfg_get_conf(&cfg,wanted,2) != 0) {
     fprintf(stderr,"config file error!\n");
-
-    cf_cfg_cleanup_file(&dconf);
-
     return EXIT_FAILURE;
   }
-  /* }}} */
 
   /* {{{ check if backup file exists */
   if(bf == NULL) {
-    v = cf_cfg_get_first_value(&fo_server_conf,forum_name,"BackupFile");
-    bf = strdup(v->values[0]);
+    v = cf_cfg_get_value(&cfg,"BackupFile");
+    bf = strdup(v->sval);
   }
 
   if(stat(bf,&st) == -1) {
@@ -356,19 +325,19 @@ int main(int argc,char *argv[]) {
   /* }}} */
 
   /* {{{ register forum and load forum data */
-  if((forum = cf_register_forum(forum_name)) == NULL) {
+  if((forum = cf_register_forum(&cfg,forum_name)) == NULL) {
     fprintf(stderr,"could not register forum %s!\n",forum_name);
     return EXIT_FAILURE;
   }
 
-  if(cf_load_data(forum) == -1) {
+  if(cf_load_data(&cfg,forum) == -1) {
     fprintf(stderr,"could not load forum data for forum %s\n",forum_name);
     return EXIT_FAILURE;
   }
   /* }}} */
 
-  sort_m_v = cf_cfg_get_first_value(&fo_server_conf,forum_name,"SortMessages");
-  sort_m = cf_strcmp(sort_m_v->values[0],"ascending") == 0 ? CF_SORT_ASCENDING : CF_SORT_DESCENDING;
+  sort_m_v = cf_cfg_get_value(&cfg,"SortMessages");
+  sort_m = cf_strcmp(sort_m_v->sval,"ascending") == 0 ? CF_SORT_ASCENDING : CF_SORT_DESCENDING;
 
   /* open recovery file */
   if((fd = fopen(bf,"rb")) == NULL) {
@@ -399,7 +368,7 @@ int main(int argc,char *argv[]) {
     /* read thread id */
     if(fread(&int64_val,sizeof(int64_val),1,fd) <= 0) break;
 
-    if((t  = cf_get_thread(forum,int64_val)) == NULL) {
+    if((t  = cf_get_thread(&cfg,forum,int64_val)) == NULL) {
       t = cf_alloc(NULL,1,sizeof(*t),CF_ALLOC_CALLOC);
       t->tid = int64_val;
       n = 1;
@@ -409,7 +378,7 @@ int main(int argc,char *argv[]) {
     fread(&int64_val,sizeof(int64_val),1,fd);
 
     /* ok, we already got this posting, fine -- next one, please! */
-    if((p1 = cf_get_posting(t,int64_val)) != NULL) {
+    if((p1 = cf_get_posting(&cfg,t,int64_val)) != NULL) {
       if(n) free(t);
       fread(&int64_val,sizeof(int64_val),1,fd);
       read_posting_from_file(fd,NULL);
@@ -425,7 +394,7 @@ int main(int argc,char *argv[]) {
     read_posting_from_file(fd,p);
 
     if(t->postings) {
-      p1 = cf_get_posting(t,int64_val);
+      p1 = cf_get_posting(&cfg,t,int64_val);
 
       if(sort_m == CF_SORT_DESCENDING || p1->next == NULL) {
         p->next       = p1->next;
@@ -464,7 +433,7 @@ int main(int argc,char *argv[]) {
   fclose(fd);
 
   /* ok, we read everything, now write threads to disk */
-  cf_write_threadlist(forum);
+  cf_write_threadlist(&cfg,forum);
 
   return EXIT_SUCCESS;
 }

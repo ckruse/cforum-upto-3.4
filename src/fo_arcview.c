@@ -56,24 +56,25 @@ cf_hash_t *ArcviewHandlers = NULL;
 static int ArcSortMeth = CF_SORT_ASCENDING;
 
 /* {{{ get_month_name */
-size_t get_month_name(int month,const u_char *fn,u_char **name) {
+size_t get_month_name(cf_cfg_config_t *cfg,int month,u_char **name) {
   struct tm tm;
-  cf_name_value_t *v = cf_cfg_get_first_value(&fo_default_conf,fn,"DateLocale");
+  cf_cfg_config_value_t *v = cf_cfg_get_value(cfg,"DateLocale");
+
   if(!v) return 0;
 
-  *name = cf_alloc(NULL,BUFSIZ,1,CF_ALLOC_MALLOC);
+  *name = cf_alloc(NULL,CF_BUFSIZ,1,CF_ALLOC_MALLOC);
 
   memset(&tm,0,sizeof(tm));
   tm.tm_mon = month-1;
 
-  setlocale(LC_TIME,v->values[0]);
+  setlocale(LC_TIME,v->sval);
   return strftime(*name,BUFSIZ,"%B",&tm);
 }
 /* }}} */
 
 /* {{{ validation wrapper functions */
 int validate_year(const u_char *year) {
-  is_valid_year_t pi;
+  cf_is_valid_year_t pi;
 
   if((pi = cf_hash_get(ArcviewHandlers,"av_validate_year",16)) != NULL) return pi(year);
 
@@ -81,7 +82,7 @@ int validate_year(const u_char *year) {
 }
 
 int validate_month(const u_char *year,const u_char *month) {
-  is_valid_month_t pi;
+  cf_is_valid_month_t pi;
 
   if((pi = cf_hash_get(ArcviewHandlers,"av_validate_month",17)) != NULL) return pi(year,month);
 
@@ -89,7 +90,7 @@ int validate_month(const u_char *year,const u_char *month) {
 }
 
 int validate_thread(const u_char *year,const u_char *month,const u_char *tid) {
-  is_valid_thread_t pi;
+  cf_is_valid_thread_t pi;
 
   if((pi = cf_hash_get(ArcviewHandlers,"av_validate_thread",18)) != NULL) return pi(year,month,tid);
 
@@ -157,19 +158,20 @@ int cf_array_numeric_compare(const void *elem1,const void *elem2) {
 /* }}} */
 
 /* {{{ show_years */
-void show_years() {
+void show_years(cf_cfg_config_t *cfg) {
   size_t i;
   int *y;
 
   cf_array_t *ary;
-  get_years_t gy;
+  cf_get_years_t gy;
 
-  u_char *fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   u_char *username = cf_hash_get(GlobalValues,"UserName",8),*script;
-  cf_name_value_t *cs = cf_cfg_get_first_value(&fo_default_conf,fn,"ExternCharset");
-  cf_name_value_t *sy = cf_cfg_get_first_value(&fo_arcview_conf,fn,"SortYearList");
-  cf_name_value_t *yt = cf_cfg_get_first_value(&fo_arcview_conf,fn,"YearsTemplate");
-  cf_name_value_t *forumpath = cf_cfg_get_first_value(&fo_default_conf,fn,username?"UBaseURL":"BaseURL");
+  cf_cfg_config_value_t *cs = cf_cfg_get_value(cfg,"ExternCharset"),
+    *sy = cf_cfg_get_value(cfg,"SortYearList"),
+    *yt = cf_cfg_get_value(cfg,"YearsTemplate"),
+    *forumpath = cf_cfg_get_value(cfg,"BaseURL"),
+    *mode = cf_cfg_get_value(cfg,"TemplateMode"),
+    *lang = cf_cfg_get_value(cfg,"Language");
 
   cf_template_t tpl;
 
@@ -177,25 +179,27 @@ void show_years() {
 
   cf_tpl_variable_t array;
 
+  int authed = username ? 1 : 0;
+
   if((gy = cf_hash_get(ArcviewHandlers,"av_get_years",12)) == NULL) {
-    printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
-    cf_error_message("E_ARCHIVE_ERROR",NULL);
+    printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->sval);
+    cf_error_message(cfg,"E_ARCHIVE_ERROR",NULL);
     return;
   }
 
   if((ary = gy()) == NULL) {
-    printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
-    cf_error_message("E_ARCHIVE_ERROR",NULL);
+    printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->sval);
+    cf_error_message(cfg,"E_ARCHIVE_ERROR",NULL);
     return;
   }
 
-  ArcSortMeth = cf_strcmp(sy->values[0],"ascending") == 0 ? CF_SORT_ASCENDING : CF_SORT_DESCENDING;
+  ArcSortMeth = cf_strcmp(sy->sval,"ascending") == 0 ? CF_SORT_ASCENDING : CF_SORT_DESCENDING;
   cf_array_sort(ary,cf_array_numeric_compare);
 
-  cf_gen_tpl_name(yt_name,256,yt->values[0]);
+  cf_gen_tpl_name(yt_name,256,mode->sval,lang->sval,yt->sval);
   if(cf_tpl_init(&tpl,yt_name) != 0) {
-    printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
-    cf_error_message("E_CONFIG_ERR",NULL);
+    printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->sval);
+    cf_error_message(cfg,"E_CONFIG_ERR",NULL);
     return;
   }
 
@@ -207,12 +211,12 @@ void show_years() {
   }
 
   cf_tpl_setvar(&tpl,"years",&array);
-  cf_set_variable(&tpl,cs,"forumbase",forumpath->values[0],strlen(forumpath->values[0]),1);
+  cf_set_variable(&tpl,cs->sval,"forum-base-uri",forumpath->avals[authed].sval,strlen(forumpath->avals[authed].sval),1);
 
-  cf_set_variable(&tpl,cs,"charset",cs->values[0],strlen(cs->values[0]),1);
-  if((script = getenv("SCRIPT_NAME")) != NULL) cf_set_variable(&tpl,cs,"script",script,strlen(script),1);
+  cf_set_variable(&tpl,cs->sval,"charset",cs->sval,strlen(cs->sval),1);
+  if((script = getenv("SCRIPT_NAME")) != NULL) cf_set_variable(&tpl,cs->sval,"script",script,strlen(script),1);
 
-  printf("Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
+  printf("Content-Type: text/html; charset=%s\015\012\015\012",cs->sval);
   cf_tpl_parse(&tpl);
 
   cf_tpl_finish(&tpl);
@@ -223,20 +227,21 @@ void show_years() {
 /* }}} */
 
 /* {{{ show_year_content */
-void show_year_content(const u_char *year) {
-  int *y;
+void show_year_content(cf_cfg_config_t *cfg,const u_char *year) {
+  int *y,authed;
   size_t i,len;
 
-  get_monthlist_t ml;
+  cf_get_monthlist_t ml;
 
-  u_char *fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   u_char *username = cf_hash_get(GlobalValues,"UserName",8),*script;
   u_char mt_name[256],*mname;
 
-  cf_name_value_t *mt = cf_cfg_get_first_value(&fo_arcview_conf,fn,"MonthsTemplate");
-  cf_name_value_t *cs = cf_cfg_get_first_value(&fo_default_conf,fn,"ExternCharset");
-  cf_name_value_t *sm = cf_cfg_get_first_value(&fo_arcview_conf,fn,"SortMonthList");
-  cf_name_value_t *forumpath = cf_cfg_get_first_value(&fo_default_conf,fn,username?"UBaseURL":"BaseURL");
+  cf_cfg_config_value_t *mt = cf_cfg_get_value(cfg,"MonthsTemplate"),
+    *cs = cf_cfg_get_value(cfg,"ExternCharset"),
+    *sm = cf_cfg_get_value(cfg,"SortMonthList"),
+    *forumpath = cf_cfg_get_value(cfg,"BaseURL"),
+    *mode = cf_cfg_get_value(cfg,"TemplateMode"),
+    *lang = cf_cfg_get_value(cfg,"Language");
 
   cf_array_t *ary;
 
@@ -244,24 +249,26 @@ void show_year_content(const u_char *year) {
 
   cf_tpl_variable_t array,array1;
 
+  authed = username ? 1 : 0;
+
   if((ml = cf_hash_get(ArcviewHandlers,"av_get_monthlist",16)) == NULL) {
-    printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
-    cf_error_message("E_ARCHIVE_ERROR",NULL);
+    printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->sval);
+    cf_error_message(cfg,"E_ARCHIVE_ERROR",NULL);
     return;
   }
 
   if((ary = ml(year)) == NULL) {
-    printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
-    cf_error_message("E_ARCHIVE_ERROR",NULL);
+    printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->sval);
+    cf_error_message(cfg,"E_ARCHIVE_ERROR",NULL);
     return;
   }
 
-  ArcSortMeth = cf_strcmp(sm->values[0],"ascending") == 0 ? CF_SORT_ASCENDING : CF_SORT_DESCENDING;
+  ArcSortMeth = cf_strcmp(sm->sval,"ascending") == 0 ? CF_SORT_ASCENDING : CF_SORT_DESCENDING;
   cf_array_sort(ary,cf_array_numeric_compare);
 
-  cf_gen_tpl_name(mt_name,256,mt->values[0]);
+  cf_gen_tpl_name(mt_name,256,mode->sval,lang->sval,mt->sval);
   if(cf_tpl_init(&mt_tpl,mt_name) != 0) {
-    cf_error_message("E_CONFIG_ERR",NULL);
+    cf_error_message(cfg,"E_CONFIG_ERR",NULL);
     return;
   }
 
@@ -269,7 +276,7 @@ void show_year_content(const u_char *year) {
 
   for(i=0;i<ary->elements;++i) {
     y   = cf_array_element_at(ary,i);
-    len = get_month_name(*y,fn,&mname);
+    len = get_month_name(cfg,*y,&mname);
 
     cf_tpl_var_init(&array1,TPL_VARIABLE_ARRAY);
     cf_tpl_var_addvalue(&array1,TPL_VARIABLE_INT,*y);
@@ -281,13 +288,13 @@ void show_year_content(const u_char *year) {
   }
 
   cf_tpl_setvar(&mt_tpl,"months",&array);
-  cf_set_variable(&mt_tpl,cs,"forumbase",forumpath->values[0],strlen(forumpath->values[0]),1);
-  cf_set_variable(&mt_tpl,cs,"year",year,strlen(year),1);
+  cf_set_variable(&mt_tpl,cs->sval,"forum-base-uri",forumpath->avals[authed].sval,strlen(forumpath->avals[authed].sval),1);
+  cf_set_variable(&mt_tpl,cs->sval,"year",year,strlen(year),1);
 
-  cf_set_variable(&mt_tpl,cs,"charset",cs->values[0],strlen(cs->values[0]),1);
-  if((script = getenv("SCRIPT_NAME")) != NULL) cf_set_variable(&mt_tpl,cs,"script",script,strlen(script),1);
+  cf_set_variable(&mt_tpl,cs->sval,"charset",cs->sval,strlen(cs->sval),1);
+  if((script = getenv("SCRIPT_NAME")) != NULL) cf_set_variable(&mt_tpl,cs->sval,"script",script,strlen(script),1);
 
-  printf("Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
+  printf("Content-Type: text/html; charset=%s\015\012\015\012",cs->sval);
   cf_tpl_parse(&mt_tpl);
 
   cf_tpl_finish(&mt_tpl);
@@ -299,8 +306,8 @@ void show_year_content(const u_char *year) {
 
 /* {{{ sort_threadlist */
 int sort_threadlist(const void *a,const void *b) {
-  arc_tl_ent_t *ea = (arc_tl_ent_t *)a;
-  arc_tl_ent_t *eb = (arc_tl_ent_t *)b;
+  cf_arc_tl_ent_t *ea = (cf_arc_tl_ent_t *)a;
+  cf_arc_tl_ent_t *eb = (cf_arc_tl_ent_t *)b;
 
   switch(ArcSortMeth) {
     case CF_SORT_ASCENDING:
@@ -320,16 +327,16 @@ int sort_threadlist(const void *a,const void *b) {
 /* }}} */
 
 /* {{{ prep_var */
-size_t prep_var(const u_char *val,size_t len,u_char **out,cf_name_value_t *cs,int html) {
+size_t prep_var(const u_char *val,size_t len,u_char **out,cf_cfg_config_value_t *cs,int html) {
   u_char *tmp = NULL;
   size_t len1 = 0;
 
-  if(cf_strcmp(cs->values[0],"UTF-8") != 0) {
+  if(cf_strcmp(cs->sval,"UTF-8") != 0) {
     if(html) {
-      tmp = htmlentities_charset_convert(val,"UTF-8",cs->values[0],&len1,0);
+      tmp = htmlentities_charset_convert(val,"UTF-8",cs->sval,&len1,0);
       html = 0;
     }
-    else tmp = charset_convert_entities(val,len,"UTF-8",cs->values[0],&len1);
+    else tmp = charset_convert_entities(val,len,"UTF-8",cs->sval,&len1);
 
     /* This should only happen if we use charset_convert() -- and we should not use it. */
     if(!tmp) {
@@ -351,30 +358,30 @@ size_t prep_var(const u_char *val,size_t len,u_char **out,cf_name_value_t *cs,in
 /* }}} */
 
 /* {{{ show_month_content */
-void show_month_content(const u_char *year,const u_char *month) {
-  get_threadlist_t gt;
-  month_last_modified_t mt;
+void show_month_content(cf_cfg_config_t *cfg,const u_char *year,const u_char *month) {
+  cf_get_threadlist_t gt;
+  cf_month_last_modified_t mt;
 
   int cache_level = 0,do_cache = 0,show_invisible = cf_hash_get(GlobalValues,"ShowInvisible",13) != NULL;
   size_t i,len,len1;
   time_t last_modified;
 
-  u_char *fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   u_char mt_name[256],pi[256],*tmp,*tmp1,*script;
 
-  cf_name_value_t *cs = cf_cfg_get_first_value(&fo_default_conf,fn,"ExternCharset");
-  cf_name_value_t *stl = cf_cfg_get_first_value(&fo_arcview_conf,fn,"SortThreadList");
-  cf_name_value_t *m_tp = cf_cfg_get_first_value(&fo_arcview_conf,fn,"MonthsTemplate");
-  cf_name_value_t *forumpath = cf_cfg_get_first_value(&fo_default_conf,fn,"BaseURL");
-  cf_name_value_t *ecache = cf_cfg_get_first_value(&fo_arcview_conf,fn,"EnableCache");
-  cf_name_value_t *df = cf_cfg_get_first_value(&fo_arcview_conf,fn,"DateFormatList");
-  cf_name_value_t *lc = cf_cfg_get_first_value(&fo_default_conf,fn,"DateLocale");
-  cf_name_value_t *cache  = NULL;
-  cf_name_value_t *clevel = NULL;
+  cf_cfg_config_value_t *cs = cf_cfg_get_value(cfg,"ExternCharset"),
+    *stl = cf_cfg_get_value(cfg,"SortThreadList"),
+    *m_tp = cf_cfg_get_value(cfg,"MonthsTemplate"),
+    *forumpath = cf_cfg_get_value(cfg,"BaseURL"),
+    *ecache = cf_cfg_get_value(cfg,"EnableCache"),
+    *df = cf_cfg_get_value(cfg,"DateFormatList"),
+    *lc = cf_cfg_get_value(cfg,"DateLocale"),
+    *cache  = NULL,*clevel = NULL,
+    *mode = cf_cfg_get_value(cfg,"TemplateMode"),
+    *lang = cf_cfg_get_value(cfg,"Language");
 
   cf_array_t *ary;
 
-  arc_tl_ent_t *ent;
+  cf_arc_tl_ent_t *ent;
 
   cf_cache_entry_t *cent;
 
@@ -382,20 +389,20 @@ void show_month_content(const u_char *year,const u_char *month) {
   cf_tpl_variable_t array,array1;
 
   /* {{{ check for cache */
-  if(ecache && *ecache->values[0] == 'y' && !show_invisible) {
+  if(ecache && *ecache->sval == 'y' && !show_invisible) {
     do_cache = 1;
-    cache  = cf_cfg_get_first_value(&fo_arcview_conf,fn,"CacheDir");
-    clevel = cf_cfg_get_first_value(&fo_arcview_conf,fn,"CacheLevel");
+    cache  = cf_cfg_get_value(cfg,"CacheDir");
+    clevel = cf_cfg_get_value(cfg,"CacheLevel");
 
-    if(ecache) cache_level = atoi(clevel->values[0]);
+    if(ecache) cache_level = clevel->ival;
     else       cache_level = 6;
 
     snprintf(pi,256,"%s/%s.idx",year,month);
 
     if((mt = cf_hash_get(ArcviewHandlers,"av_threadlist_lm",16)) != NULL) {
       if((last_modified = mt(year,month)) != 0) {
-        if(cf_cache_outdated_date(cache->values[0],pi,last_modified) != -1 && (cent = cf_get_cache(cache->values[0],pi,cache_level)) != NULL) {
-          printf("Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
+        if(cf_cache_outdated_date(cache->sval,pi,last_modified) != -1 && (cent = cf_get_cache(cache->sval,pi,cache_level)) != NULL) {
+          printf("Content-Type: text/html; charset=%s\015\012\015\012",cs->sval);
           fwrite(cent->ptr,1,cent->size,stdout);
           cf_cache_destroy(cent);
           return;
@@ -406,25 +413,25 @@ void show_month_content(const u_char *year,const u_char *month) {
   /* }}} */
 
   if((gt = cf_hash_get(ArcviewHandlers,"av_get_threadlist",17)) == NULL) {
-    printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
-    cf_error_message("E_ARCHIVE_ERROR",NULL);
+    printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->sval);
+    cf_error_message(cfg,"E_ARCHIVE_ERROR",NULL);
     return;
   }
 
   if((ary = gt(year,month)) == NULL) {
-    printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
-    cf_error_message("E_ARCHIVE_ERROR",NULL);
+    printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->sval);
+    cf_error_message(cfg,"E_ARCHIVE_ERROR",NULL);
     return;
   }
 
-  ArcSortMeth = cf_strcmp(stl->values[0],"ascending") == 0 ? CF_SORT_ASCENDING : CF_SORT_DESCENDING;
+  ArcSortMeth = cf_strcmp(stl->sval,"ascending") == 0 ? CF_SORT_ASCENDING : CF_SORT_DESCENDING;
   cf_array_sort(ary,sort_threadlist);
 
-  cf_gen_tpl_name(mt_name,256,m_tp->values[0]);
+  cf_gen_tpl_name(mt_name,256,mode->sval,lang->sval,m_tp->sval);
 
   if(cf_tpl_init(&m_tpl,mt_name) != 0) {
-    printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
-    cf_error_message("E_CONFIG_ERR",NULL);
+    printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->sval);
+    cf_error_message(cfg,"E_CONFIG_ERR",NULL);
     return;
   }
 
@@ -448,7 +455,7 @@ void show_month_content(const u_char *year,const u_char *month) {
 
     cf_tpl_var_addvalue(&array1,TPL_VARIABLE_STRING,ent->tid,ent->tlen);
 
-    tmp1 = cf_general_get_time(df->values[0],lc->values[0],&len1,&ent->date);
+    tmp1 = cf_general_get_time(df->sval,lc->sval,&len1,&ent->date);
     if(tmp1) {
       len = prep_var(tmp1,len1,&tmp,cs,1);
       cf_tpl_var_addvalue(&array1,TPL_VARIABLE_STRING,tmp?tmp:tmp1,tmp?len:len1);
@@ -467,22 +474,22 @@ void show_month_content(const u_char *year,const u_char *month) {
     cf_tpl_var_add(&array,&array1);
   }
 
-  len = get_month_name(atoi(month),fn,&tmp);
-  cf_set_variable(&m_tpl,cs,"month",tmp,len,1);
+  len = get_month_name(cfg,atoi(month),&tmp);
+  cf_set_variable(&m_tpl,cs->sval,"month",tmp,len,1);
   free(tmp);
-  cf_set_variable(&m_tpl,cs,"year",year,strlen(year),1);
-  cf_set_variable(&m_tpl,cs,"forumbase",forumpath->values[0],strlen(forumpath->values[0]),1);
+  cf_set_variable(&m_tpl,cs->sval,"year",year,strlen(year),1);
+  cf_set_variable(&m_tpl,cs->sval,"forum-base-uri",forumpath->avals[show_invisible].sval,strlen(forumpath->avals[show_invisible].sval),1);
 
   cf_tpl_setvar(&m_tpl,"threads",&array);
 
-  cf_set_variable(&m_tpl,cs,"charset",cs->values[0],strlen(cs->values[0]),1);
-  if((script = getenv("SCRIPT_NAME")) != NULL) cf_set_variable(&m_tpl,cs,"script",script,strlen(script),1);
+  cf_set_variable(&m_tpl,cs->sval,"charset",cs->sval,strlen(cs->sval),1);
+  if((script = getenv("SCRIPT_NAME")) != NULL) cf_set_variable(&m_tpl,cs->sval,"script",script,strlen(script),1);
 
-  printf("Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
+  printf("Content-Type: text/html; charset=%s\015\012\015\012",cs->sval);
   cf_tpl_parse_to_mem(&m_tpl);
 
   fwrite(m_tpl.parsed.content,1,m_tpl.parsed.len,stdout);
-  if(show_invisible == 0 && do_cache) cf_cache(cache->values[0],pi,m_tpl.parsed.content,m_tpl.parsed.len,cache_level);
+  if(show_invisible == 0 && do_cache) cf_cache(cache->sval,pi,m_tpl.parsed.content,m_tpl.parsed.len,cache_level);
 
   cf_tpl_finish(&m_tpl);
 
@@ -493,8 +500,8 @@ void show_month_content(const u_char *year,const u_char *month) {
 
 /* {{{ msgs_cmp */
 int msgs_cmp(const void *a,const void *b) {
-  hierarchical_node_t *na = (hierarchical_node_t *)a;
-  hierarchical_node_t *nb = (hierarchical_node_t *)b;
+  cf_hierarchical_node_t *na = (cf_hierarchical_node_t *)a;
+  cf_hierarchical_node_t *nb = (cf_hierarchical_node_t *)b;
 
   switch(ArcSortMeth) {
     case CF_SORT_ASCENDING:
@@ -511,7 +518,7 @@ int msgs_cmp(const void *a,const void *b) {
 /* }}} */
 
 /* {{{ sort_messages */
-void sort_messages(hierarchical_node_t *h) {
+void sort_messages(cf_hierarchical_node_t *h) {
   size_t i;
 
   cf_array_sort(&h->childs,msgs_cmp);
@@ -521,21 +528,20 @@ void sort_messages(hierarchical_node_t *h) {
 /* }}} */
 
 /* {{{ generate_thread_output */
-void generate_thread_output(cl_thread_t *thread,hierarchical_node_t *msg,cf_tpl_variable_t *threads,cf_string_t *threadlist,cf_template_t *tl_tpl,cf_name_value_t *cs,int admin,int show_invisible,const u_char *fn) {
+void generate_thread_output(cf_cfg_config_t *cfg,cf_cl_thread_t *thread,cf_hierarchical_node_t *msg,cf_tpl_variable_t *threads,cf_string_t *threadlist,cf_template_t *tl_tpl,cf_cfg_config_value_t *cs,int admin,int show_invisible,const u_char *fn) {
   size_t i;
-  hierarchical_node_t *child;
+  cf_hierarchical_node_t *child;
   size_t len,len1,cntlen;
   cf_string_t str;
   u_char *cnt = NULL;
   int printed = 0;
   u_char *date,*tmp;
   cf_string_t strbuffer;
-  cf_name_value_t *qc = cf_cfg_get_first_value(&fo_arcview_conf,fn,"QuotingChars"),
-               *ms = cf_cfg_get_first_value(&fo_arcview_conf,fn,"MaxSigLines"),
-               *ss = cf_cfg_get_first_value(&fo_arcview_conf,fn,"ShowSig");
-
-  cf_name_value_t *tf = cf_cfg_get_first_value(&fo_arcview_conf,fn,"DateFormatViewList");
-  cf_name_value_t *dl = cf_cfg_get_first_value(&fo_default_conf,fn,"DateLocale");
+  cf_cfg_config_value_t *qc = cf_cfg_get_value(cfg,"QuotingChars"),
+    *ms = cf_cfg_get_value(cfg,"MaxSigLines"),
+    *ss = cf_cfg_get_value(cfg,"ShowSig"),
+    *tf = cf_cfg_get_value(cfg,"DateFormatViewList"),
+    *dl = cf_cfg_get_value(cfg,"DateLocale");
 
   cf_tpl_variable_t ary;
 
@@ -549,9 +555,9 @@ void generate_thread_output(cl_thread_t *thread,hierarchical_node_t *msg,cf_tpl_
   cf_str_char_append(&strbuffer,'m');
   cf_uint64_to_str(&strbuffer,msg->msg->mid);
 
-  cf_set_variable(tl_tpl,cs,"mid",strbuffer.content,strbuffer.len,1);
-  cf_set_variable(tl_tpl,cs,"subject",msg->msg->subject.content,msg->msg->subject.len,1);
-  cf_set_variable(tl_tpl,cs,"author",msg->msg->author.content,msg->msg->author.len,1);
+  cf_set_variable(tl_tpl,cs->sval,"mid",strbuffer.content,strbuffer.len,1);
+  cf_set_variable(tl_tpl,cs->sval,"subject",msg->msg->subject.content,msg->msg->subject.len,1);
+  cf_set_variable(tl_tpl,cs->sval,"author",msg->msg->author.content,msg->msg->author.len,1);
   if(msg->msg->invisible) cf_tpl_setvalue(tl_tpl,"deleted",TPL_VARIABLE_INT,1);
   else cf_tpl_freevar(tl_tpl,"deleted");
 
@@ -565,8 +571,8 @@ void generate_thread_output(cl_thread_t *thread,hierarchical_node_t *msg,cf_tpl_
   cf_tpl_var_addvalue(&ary,TPL_VARIABLE_STRING,tmp?tmp:msg->msg->author.content,tmp?len:msg->msg->author.len);
   if(tmp) free(tmp);
 
-  if((date = cf_general_get_time(tf->values[0],dl->values[0],&len,&msg->msg->date)) != NULL) {
-    cf_set_variable(tl_tpl,cs,"date",date,len,1);
+  if((date = cf_general_get_time(tf->sval,dl->sval,&len,&msg->msg->date)) != NULL) {
+    cf_set_variable(tl_tpl,cs->sval,"date",date,len,1);
 
     len1 = prep_var(date,len,&tmp,cs,1);
     cf_tpl_var_addvalue(&ary,TPL_VARIABLE_STRING,tmp?tmp:date,tmp?len1:len);
@@ -577,12 +583,12 @@ void generate_thread_output(cl_thread_t *thread,hierarchical_node_t *msg,cf_tpl_
 
   /* {{{ add message content to array */
   /* convert message to the right charset */
-  if(cf_strcmp(cs->values[0],"UTF-8") == 0 || (cnt = charset_convert_entities(msg->msg->content.content,msg->msg->content.len,"UTF-8",cs->values[0],&cntlen)) == NULL) {
+  if(cf_strcmp(cs->sval,"UTF-8") == 0 || (cnt = charset_convert_entities(msg->msg->content.content,msg->msg->content.len,"UTF-8",cs->sval,&cntlen)) == NULL) {
     cnt = strdup(msg->msg->content.content);
   }
 
   /* convert message to html */
-  msg_to_html(thread,cnt,&str,NULL,qc->values[0],ms ? atoi(ms->values[0]) : -1,ss ? cf_strcmp(ss->values[0],"yes") == 0 : 1);
+  cf_msg_to_html(cfg,thread,cnt,&str,NULL,qc->sval,ms ? atoi(ms->sval) : -1,ss ? cf_strcmp(ss->sval,"yes") == 0 : 1);
 
   free(cnt);
 
@@ -590,7 +596,7 @@ void generate_thread_output(cl_thread_t *thread,hierarchical_node_t *msg,cf_tpl_
   cf_str_cleanup(&str);
   /* }}} */
 
-  if(msg->msg->category.len) cf_set_variable(tl_tpl,cs,"category",msg->msg->category.content,msg->msg->category.len,1);
+  if(msg->msg->category.len) cf_set_variable(tl_tpl,cs->sval,"category",msg->msg->category.content,msg->msg->category.len,1);
   else cf_tpl_freevar(tl_tpl,"category");
 
   /* category */
@@ -644,7 +650,7 @@ void generate_thread_output(cl_thread_t *thread,hierarchical_node_t *msg,cf_tpl_
       printed = 1;
 
       cf_str_chars_append(threadlist,"<li>",4);
-      generate_thread_output(thread,child,threads,threadlist,tl_tpl,cs,admin,show_invisible,fn);
+      generate_thread_output(cfg,thread,child,threads,threadlist,tl_tpl,cs,admin,show_invisible,fn);
       cf_str_chars_append(threadlist,"</li>",5);
     }
 
@@ -658,16 +664,19 @@ void generate_thread_output(cl_thread_t *thread,hierarchical_node_t *msg,cf_tpl_
 /* }}} */
 
 /* {{{ print_thread */
-void print_thread(cl_thread_t *thr,const u_char *year,const u_char *month,const u_char *pi,int admin,int show_invisible) {
+void print_thread(cf_cfg_config_t *cfg,cf_cl_thread_t *thr,const u_char *year,const u_char *month,const u_char *pi,int admin,int show_invisible) {
   u_char *fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
 
-  cf_name_value_t *main_tpl_cfg       = cf_cfg_get_first_value(&fo_arcview_conf,fn,"ThreadTemplate");
-  cf_name_value_t *threadlist_tpl_cfg = cf_cfg_get_first_value(&fo_arcview_conf,fn,"ThreadListTemplate");
-  cf_name_value_t *forumpath          = cf_cfg_get_first_value(&fo_default_conf,fn,"BaseURL");
-  cf_name_value_t *ecache = cf_cfg_get_first_value(&fo_arcview_conf,fn,"EnableCache");
-  cf_name_value_t *cache, *clevel;
+  cf_cfg_config_value_t *main_tpl_cfg = cf_cfg_get_value(cfg,"ThreadTemplate"),
+    *threadlist_tpl_cfg = cf_cfg_get_value(cfg,"ThreadListTemplate"),
+    *forumpath = cf_cfg_get_value(cfg,"BaseURL"),
+    *ecache = cf_cfg_get_value(cfg,"EnableCache"),
+    *cache, *clevel,
+    *cs = cf_cfg_get_value(cfg,"ExternCharset"),
+    *mode = cf_cfg_get_value(cfg,"TemplateMode"),
+    *lang = cf_cfg_get_value(cfg,"Language");
 
-  cf_name_value_t *cs = cf_cfg_get_first_value(&fo_default_conf,fn,"ExternCharset");
+  int authed = cf_hash_get(GlobalValues,"ShowInvisible",13) != NULL;
 
   u_char main_tpl_name[256],threadlist_tpl_name[256];
   cf_template_t main_tpl,threadlist_tpl;
@@ -680,49 +689,49 @@ void print_thread(cl_thread_t *thr,const u_char *year,const u_char *month,const 
   cf_tpl_variable_t ary;
 
   /* Buarghs. Four templates. This is fucking bad. */
-  cf_gen_tpl_name(main_tpl_name,256,main_tpl_cfg->values[0]);
-  cf_gen_tpl_name(threadlist_tpl_name,256,threadlist_tpl_cfg->values[0]);
+  cf_gen_tpl_name(main_tpl_name,256,mode->sval,lang->sval,main_tpl_cfg->sval);
+  cf_gen_tpl_name(threadlist_tpl_name,256,mode->sval,lang->sval,threadlist_tpl_cfg->sval);
 
   if(cf_tpl_init(&main_tpl,main_tpl_name) != 0 || cf_tpl_init(&threadlist_tpl,threadlist_tpl_name) != 0) {
-    printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
-    cf_error_message("E_TPL_NOT_FOUND",NULL);
+    printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->sval);
+    cf_error_message(cfg,"E_TPL_NOT_FOUND",NULL);
     return;
   }
 
-  len = get_month_name(atoi(month),fn,&tmp);
+  len = get_month_name(cfg,atoi(month),&tmp);
 
-  cf_set_variable(&main_tpl,cs,"month",tmp,len,1);
-  cf_set_variable(&main_tpl,cs,"year",year,strlen(year),1);
-  cf_set_variable(&main_tpl,cs,"subject",thr->messages->subject.content,thr->messages->subject.len,1);
-  cf_set_variable(&main_tpl,cs,"charset",cs->values[0],strlen(cs->values[0]),1);
-  cf_set_variable(&main_tpl,cs,"forumbase",forumpath->values[0],strlen(forumpath->values[0]),1);
+  cf_set_variable(&main_tpl,cs->sval,"month",tmp,len,1);
+  cf_set_variable(&main_tpl,cs->sval,"year",year,strlen(year),1);
+  cf_set_variable(&main_tpl,cs->sval,"subject",thr->messages->subject.content,thr->messages->subject.len,1);
+  cf_set_variable(&main_tpl,cs->sval,"charset",cs->sval,strlen(cs->sval),1);
+  cf_set_variable(&main_tpl,cs->sval,"forum-base-uri",forumpath->avals[authed].sval,strlen(forumpath->avals[authed].sval),1);
 
   free(tmp);
 
   cf_str_init(&threadlist);
   cf_tpl_var_init(&ary,TPL_VARIABLE_ARRAY);
 
-  generate_thread_output(thr,thr->ht,&ary,&threadlist,&threadlist_tpl,cs,admin,show_invisible,fn);
+  generate_thread_output(cfg,thr,thr->ht,&ary,&threadlist,&threadlist_tpl,cs,admin,show_invisible,fn);
 
   cf_tpl_setvar(&main_tpl,"threads",&ary);
   cf_tpl_setvalue(&main_tpl,"threadlist",TPL_VARIABLE_STRING,threadlist.content,threadlist.len);
 
-  cf_set_variable(&main_tpl,cs,"charset",cs->values[0],strlen(cs->values[0]),1);
-  if((script = getenv("SCRIPT_NAME")) != NULL) cf_set_variable(&main_tpl,cs,"script",script,strlen(script),1);
+  cf_set_variable(&main_tpl,cs->sval,"charset",cs->sval,strlen(cs->sval),1);
+  if((script = getenv("SCRIPT_NAME")) != NULL) cf_set_variable(&main_tpl,cs->sval,"script",script,strlen(script),1);
 
   cf_tpl_parse_to_mem(&main_tpl);
 
-  printf("Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
+  printf("Content-Type: text/html; charset=%s\015\012\015\012",cs->sval);
   fwrite(main_tpl.parsed.content,1,main_tpl.parsed.len,stdout);
 
-  if(show_invisible == 0 && ecache && *ecache->values[0] == 'y') {
-    cache  = cf_cfg_get_first_value(&fo_arcview_conf,fn,"CacheDir");
-    clevel = cf_cfg_get_first_value(&fo_arcview_conf,fn,"CacheLevel");
+  if(show_invisible == 0 && ecache && *ecache->sval == 'y') {
+    cache  = cf_cfg_get_value(cfg,"CacheDir");
+    clevel = cf_cfg_get_value(cfg,"CacheLevel");
 
-    if(clevel) cache_level = atoi(clevel->values[0]);
+    if(clevel) cache_level = clevel->ival;
     else       cache_level = 6;
 
-    cf_cache(cache->values[0],pi,main_tpl.parsed.content,main_tpl.parsed.len,cache_level);
+    cf_cache(cache->sval,pi,main_tpl.parsed.content,main_tpl.parsed.len,cache_level);
   }
 
   cf_tpl_finish(&main_tpl);
@@ -731,44 +740,43 @@ void print_thread(cl_thread_t *thr,const u_char *year,const u_char *month,const 
 /* }}} */
 
 /* {{{ show_thread */
-void show_thread(const u_char *year,const u_char *month,const u_char *tid) {
-  get_thread_t gt;
-  thread_last_modified_t tlm;
+void show_thread(cf_cfg_config_t *cfg,const u_char *year,const u_char *month,const u_char *tid) {
+  cf_get_thread_t gt;
+  cf_thread_last_modified_t tlm;
 
   int cache_level;
   int show_invisible = cf_hash_get(GlobalValues,"ShowInvisible",13) != NULL;
   time_t last_modified;
 
-  u_char *fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   u_char *uname = cf_hash_get(GlobalValues,"UserName",8);
   u_char pi[256];
 
-  mod_api_t is_admin = cf_get_mod_api_ent("is_admin");
+  cf_mod_api_t is_admin = cf_get_mod_api_ent("is_admin");
   int admin = uname ? is_admin(uname) == NULL ? 0 : 1 : 0;
 
-  cf_name_value_t *cs = cf_cfg_get_first_value(&fo_default_conf,fn,"ExternCharset");
-  cf_name_value_t *sm = cf_cfg_get_first_value(&fo_arcview_conf,fn,"SortMessages");
-  cf_name_value_t *ecache = cf_cfg_get_first_value(&fo_arcview_conf,fn,"EnableCache");
-  cf_name_value_t *cache, *clevel;
+  cf_cfg_config_value_t *cs = cf_cfg_get_value(cfg,"ExternCharset"),
+    *sm = cf_cfg_get_value(cfg,"SortMessages"),
+    *ecache = cf_cfg_get_value(cfg,"EnableCache"),
+    *cache, *clevel;
 
   cf_cache_entry_t *cent;
 
-  cl_thread_t *thr;
+  cf_cl_thread_t *thr;
 
   /* {{{ check for cache */
-  if(ecache && *ecache->values[0] == 'y' && !show_invisible) {
-    cache  = cf_cfg_get_first_value(&fo_arcview_conf,fn,"CacheDir");
-    clevel = cf_cfg_get_first_value(&fo_arcview_conf,fn,"CacheLevel");
+  if(ecache && *ecache->sval == 'y' && !show_invisible) {
+    cache  = cf_cfg_get_value(cfg,"CacheDir");
+    clevel = cf_cfg_get_value(cfg,"CacheLevel");
 
-    if(ecache) cache_level = atoi(clevel->values[0]);
-    else       cache_level = 6;
+    if(clevel) cache_level = clevel->ival;
+    else cache_level = 6;
 
     snprintf(pi,256,"%s/%s/t%s",year,month,*tid == 't' ? tid+1 : tid);
 
     if((tlm = cf_hash_get(ArcviewHandlers,"av_thread_lm",12)) != NULL) {
       if((last_modified = tlm(year,month,tid)) != 0) {
-        if(cf_cache_outdated_date(cache->values[0],pi,last_modified) != -1 && (cent = cf_get_cache(cache->values[0],pi,cache_level)) != NULL) {
-          printf("Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
+        if(cf_cache_outdated_date(cache->sval,pi,last_modified) != -1 && (cent = cf_get_cache(cache->sval,pi,cache_level)) != NULL) {
+          printf("Content-Type: text/html; charset=%s\015\012\015\012",cs->sval);
           fwrite(cent->ptr,1,cent->size,stdout);
           cf_cache_destroy(cent);
           return;
@@ -779,14 +787,14 @@ void show_thread(const u_char *year,const u_char *month,const u_char *tid) {
   /* }}} */
 
   if((gt = cf_hash_get(ArcviewHandlers,"av_get_thread",13)) == NULL) {
-    printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
-    cf_error_message("E_ARCHIVE_ERROR",NULL);
+    printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->sval);
+    cf_error_message(cfg,"E_ARCHIVE_ERROR",NULL);
     return;
   }
 
   if((thr = gt(year,month,tid)) == NULL) {
-    printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
-    cf_error_message("E_ARCHIVE_ERROR",NULL);
+    printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->sval);
+    cf_error_message(cfg,"E_ARCHIVE_ERROR",NULL);
     return;
   }
 
@@ -794,14 +802,14 @@ void show_thread(const u_char *year,const u_char *month,const u_char *tid) {
    * we have to sort the messages in the thread; due to our hierarchical
    * structure this is very easy
    */
-  ArcSortMeth = cf_strcmp(sm->values[0],"ascending") == 0 ? CF_SORT_ASCENDING : CF_SORT_DESCENDING;
+  ArcSortMeth = cf_strcmp(sm->sval,"ascending") == 0 ? CF_SORT_ASCENDING : CF_SORT_DESCENDING;
   sort_messages(thr->ht);
   cf_msg_linearize(thr,thr->ht);
 
-  if(thr->messages->invisible == 0 || (admin == 1 && show_invisible == 1)) print_thread(thr,year,month,pi,admin,show_invisible);
+  if(thr->messages->invisible == 0 || (admin == 1 && show_invisible == 1)) print_thread(cfg,thr,year,month,pi,admin,show_invisible);
   else {
-    printf("Status: 404 Not Found\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
-    cf_error_message("E_FO_404",NULL);
+    printf("Status: 404 Not Found\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->sval);
+    cf_error_message(cfg,"E_FO_404",NULL);
   }
 
 }
@@ -819,10 +827,8 @@ int main(int argc,char *argv[],char *env[]) {
     "fo_default", "fo_arcview"
   };
 
-  u_char *forum_name = NULL,*fname;
-  cf_array_t *cfgfiles;
-  cf_configfile_t conf,dconf;
-  cf_name_value_t *cs,*v;
+  u_char *forum_name = NULL;
+  cf_cfg_config_value_t *cs,*v;
   u_char **infos = NULL,*pi;
   cf_hash_t *head;
   cf_string_t tmp;
@@ -832,99 +838,50 @@ int main(int argc,char *argv[],char *env[]) {
   size_t len;
   int ret = 0;
 
+  cf_cfg_config_t cfg;
+
   /* set signal handler for SIGSEGV (for error reporting) */
   signal(SIGSEGV,sighandler);
   signal(SIGILL,sighandler);
   signal(SIGFPE,sighandler);
   signal(SIGBUS,sighandler);
 
-  if((cfgfiles = cf_get_conf_file(wanted,2)) == NULL) {
-    fprintf(stderr,"Could not find configuration files...\n");
-    return EXIT_FAILURE;
-  }
-
   ArcviewHandlers = cf_hash_new(NULL);
 
   head = cf_cgi_new();
   len  = cf_cgi_path_info_parsed(&infos);
 
-  cf_cfg_init();
-  init_modules();
   cf_init();
   cf_htmllib_init();
-
-  /* {{{ read configuration */
-  fname = *((u_char **)cf_array_element_at(cfgfiles,0));
-  cf_cfg_init_file(&dconf,fname);
-  free(fname);
-
-  fname = *((u_char **)cf_array_element_at(cfgfiles,1));
-  cf_cfg_init_file(&conf,fname);
-  free(fname);
-
-  cf_cfg_register_options(&dconf,default_options);
-  cf_cfg_register_options(&conf,fo_arcview_options);
-
-  if(cf_read_config(&dconf,NULL,CF_CFG_MODE_CONFIG) != 0 || cf_read_config(&conf,NULL,CF_CFG_MODE_CONFIG) != 0) {
-    fprintf(stderr,"config file error!\n");
-
-    cf_cfg_cleanup_file(&conf);
-    cf_cfg_cleanup_file(&dconf);
-
-    return EXIT_FAILURE;
-  }
-  /* }}} */
 
   /* {{{ ensure that CF_FORUM_NAME is set and we have got a context in every file */
   if((forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10)) == NULL) {
     fprintf(stderr,"Could not get forum name!");
 
-    cf_cfg_cleanup_file(&conf);
-    cf_cfg_cleanup_file(&dconf);
-
-    cf_cfg_destroy();
-    cf_fini();
-
-    return EXIT_FAILURE;
-  }
-
-  if(cf_cfg_get_first_value(&fo_default_conf,forum_name,"ThreadIndexFile") == NULL) {
-    fprintf(stderr,"Have no context for forum %s in default configuration file!\n",forum_name);
-
-    cf_cfg_cleanup_file(&conf);
-    cf_cfg_cleanup_file(&dconf);
-
-    cf_cfg_destroy();
-    cf_fini();
-
-    return EXIT_FAILURE;
-  }
-
-  if(cf_cfg_get_first_value(&fo_arcview_conf,forum_name,"SortYearList") == NULL) {
-    fprintf(stderr,"Have no context for forum %s in fo_view configuration file!\n",forum_name);
-
-    cf_cfg_cleanup_file(&conf);
-    cf_cfg_cleanup_file(&dconf);
-
-    cf_cfg_destroy();
     cf_fini();
 
     return EXIT_FAILURE;
   }
   /* }}} */
 
-  cs = cf_cfg_get_first_value(&fo_default_conf,forum_name,"ExternCharset");
+  /* read configuration */
+  if(cf_cfg_get_conf(&cfg,wanted,2) != 0) {
+    fprintf(stderr,"config file error\n");
+    return EXIT_FAILURE;
+  }
+
+  cs = cf_cfg_get_value(&cfg,"ExternCharset");
 
   /* first action: authorization modules */
-  ret = cf_run_auth_handlers(head);
+  ret = cf_run_auth_handlers(&cfg,head);
 
   /* {{{ check if URI ends with a slash */
   if((pi = getenv("PATH_INFO")) != NULL && ret != FLT_EXIT) {
     if(*pi && pi[strlen(pi)-1] != '/') {
       cf_str_init(&tmp);
 
-      v = cf_cfg_get_first_value(&fo_default_conf,forum_name,"ArchiveURL");
-      cf_str_chars_append(&tmp,v->values[0],strlen(v->values[0]));
+      v = cf_cfg_get_value(&cfg,"ArchiveURL");
+      cf_str_chars_append(&tmp,v->sval,strlen(v->sval));
       cf_str_chars_append(&tmp,pi,strlen(pi));
       cf_str_char_append(&tmp,'/');
 
@@ -938,15 +895,13 @@ int main(int argc,char *argv[],char *env[]) {
 
   if(ret != FLT_EXIT) {
     memset(&rm_infos,0,sizeof(rm_infos));
-    v = cf_cfg_get_first_value(&fo_default_conf,forum_name,"PostingURL");
-    rm_infos.posting_uri[0] = v->values[0];
-
-    v = cf_cfg_get_first_value(&fo_default_conf,forum_name,"UPostingURL");
-    rm_infos.posting_uri[1] = v->values[0];
+    v = cf_cfg_get_value(&cfg,"PostingURL");
+    rm_infos.posting_uri[0] = v->avals[0].sval;
+    rm_infos.posting_uri[1] = v->avals[1].sval;
     cf_hash_set(GlobalValues,"RM",2,&rm_infos,sizeof(rm_infos));
   }
 
-  if(ret != FLT_EXIT && (ret = cf_run_init_handlers(head)) != FLT_EXIT) {
+  if(ret != FLT_EXIT && (ret = cf_run_init_handlers(&cfg,head)) != FLT_EXIT) {
     switch(len) {
       case 3:
         ret = validate_thread(infos[0],infos[1],infos[2]);
@@ -963,24 +918,24 @@ int main(int argc,char *argv[],char *env[]) {
         break;
 
       default:
-        printf("Status: 404 Not Found\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
-        cf_error_message("E_ARCHIVE_GENERIC404",NULL);
+        printf("Status: 404 Not Found\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->sval);
+        cf_error_message(&cfg,"E_ARCHIVE_GENERIC404",NULL);
         ret = FLT_EXIT;
     }
 
     if(ret != FLT_EXIT) {
       switch(len) {
         case 0:
-          show_years();
+          show_years(&cfg);
           break;
         case 1:
-          show_year_content(infos[0]);
+          show_year_content(&cfg,infos[0]);
           break;
         case 2:
-          show_month_content(infos[0],infos[1]);
+          show_month_content(&cfg,infos[0],infos[1]);
           break;
         case 3:
-          show_thread(infos[0],infos[1],infos[2]);
+          show_thread(&cfg,infos[0],infos[1],infos[2]);
           break;
       }
     }

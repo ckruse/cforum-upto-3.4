@@ -7,9 +7,9 @@ bin_PROGRAMS= \
 	fo_view \
 	fo_vote \
 	cf-tid_index \
-	fo_post
-#	cf-recovery \
-#	fo_arcview \
+	fo_post \
+	cf-recovery \
+	fo_arcview
 #	fo_threadlookup \
 #	fo_feeds \
 #	fo_userconf \
@@ -87,18 +87,18 @@ libcfserverlib_la_LDFLAGS=-export-dynamic -avoid-version
 #fo_xmlrpc_SOURCES=fo_xmlrpc.c
 #fo_xmlrpc_LDADD=libcfclientlib.la libcfutils.la libcfconfigparser.la libcfcgi.la $(XMLRPC_C_LIBS)
 #fo_xmlrpc_LDFLAGS=-export-dynamic
-#
-#fo_arcview_SOURCES=fo_arcview.c
-#fo_arcview_LDADD=libcfconfigparser.la libcftemplate.la libcfcharconvert.la libcfutils.la libcfhashlib.la libcfclientlib.la libcfcgi.la libcfhtml.la
-#fo_arcview_LDFLAGS=-export-dynamic
+
+fo_arcview_SOURCES=fo_arcview.c
+fo_arcview_LDADD=libcfconfigparser.la libcftemplate.la libcfcharconvert.la libcfutils.la libcfhashlib.la libcfclientlib.la libcfcgi.la libcfhtml.la
+fo_arcview_LDFLAGS=-export-dynamic
 
 cf_tid_index_SOURCES=cf-tid_index.c
 cf_tid_index_LDADD=libcfutils.la libcfconfigparser.la $(BDB_LIB)
 cf_tid_index_LDFLAGS=-export-dynamic
 
-#cf_recovery_SOURCES=cf-recovery.c
-#cf_recovery_LDADD=libcfcharconvert.la libcfreadline.la libcfutils.la libcfserverlib.la libcfconfigparser.la libcfserverutils.la libcfhashlib.la
-#cf_recovery_LDFLAGS=-export-dynamic
+cf_recovery_SOURCES=cf-recovery.c
+cf_recovery_LDADD=libcfcharconvert.la libcfreadline.la libcfutils.la libcfserverlib.la libcfconfigparser.la libcfserverutils.la libcfhashlib.la
+cf_recovery_LDFLAGS=-export-dynamic
 
 fo_vote_SOURCES=fo_vote.c
 fo_vote_LDADD=libcfutils.la libcfhashlib.la libcfreadline.la libcfconfigparser.la libcfclientlib.la libcfcgi.la libcftemplate.la $(BDB_LIB)
