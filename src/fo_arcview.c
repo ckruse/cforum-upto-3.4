@@ -73,26 +73,26 @@ size_t get_month_name(cf_cfg_config_t *cfg,int month,u_char **name) {
 /* }}} */
 
 /* {{{ validation wrapper functions */
-int validate_year(const u_char *year) {
+int validate_year(cf_cfg_config_t *cfg,const u_char *year) {
   cf_is_valid_year_t pi;
 
-  if((pi = cf_hash_get(ArcviewHandlers,"av_validate_year",16)) != NULL) return pi(year);
+  if((pi = cf_hash_get(ArcviewHandlers,"av_validate_year",16)) != NULL) return pi(cfg,year);
 
   return FLT_EXIT;
 }
 
-int validate_month(const u_char *year,const u_char *month) {
+int validate_month(cf_cfg_config_t *cfg,const u_char *year,const u_char *month) {
   cf_is_valid_month_t pi;
 
-  if((pi = cf_hash_get(ArcviewHandlers,"av_validate_month",17)) != NULL) return pi(year,month);
+  if((pi = cf_hash_get(ArcviewHandlers,"av_validate_month",17)) != NULL) return pi(cfg,year,month);
 
   return FLT_EXIT;
 }
 
-int validate_thread(const u_char *year,const u_char *month,const u_char *tid) {
+int validate_thread(cf_cfg_config_t *cfg,const u_char *year,const u_char *month,const u_char *tid) {
   cf_is_valid_thread_t pi;
 
-  if((pi = cf_hash_get(ArcviewHandlers,"av_validate_thread",18)) != NULL) return pi(year,month,tid);
+  if((pi = cf_hash_get(ArcviewHandlers,"av_validate_thread",18)) != NULL) return pi(cfg,year,month,tid);
 
   return FLT_EXIT;
 }
@@ -187,7 +187,7 @@ void show_years(cf_cfg_config_t *cfg) {
     return;
   }
 
-  if((ary = gy()) == NULL) {
+  if((ary = gy(cfg)) == NULL) {
     printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->sval);
     cf_error_message(cfg,"E_ARCHIVE_ERROR",NULL);
     return;
@@ -257,7 +257,7 @@ void show_year_content(cf_cfg_config_t *cfg,const u_char *year) {
     return;
   }
 
-  if((ary = ml(year)) == NULL) {
+  if((ary = ml(cfg,year)) == NULL) {
     printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->sval);
     cf_error_message(cfg,"E_ARCHIVE_ERROR",NULL);
     return;
@@ -400,7 +400,7 @@ void show_month_content(cf_cfg_config_t *cfg,const u_char *year,const u_char *mo
     snprintf(pi,256,"%s/%s.idx",year,month);
 
     if((mt = cf_hash_get(ArcviewHandlers,"av_threadlist_lm",16)) != NULL) {
-      if((last_modified = mt(year,month)) != 0) {
+      if((last_modified = mt(cfg,year,month)) != 0) {
         if(cf_cache_outdated_date(cache->sval,pi,last_modified) != -1 && (cent = cf_get_cache(cache->sval,pi,cache_level)) != NULL) {
           printf("Content-Type: text/html; charset=%s\015\012\015\012",cs->sval);
           fwrite(cent->ptr,1,cent->size,stdout);
@@ -418,7 +418,7 @@ void show_month_content(cf_cfg_config_t *cfg,const u_char *year,const u_char *mo
     return;
   }
 
-  if((ary = gt(year,month)) == NULL) {
+  if((ary = gt(cfg,year,month)) == NULL) {
     printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->sval);
     cf_error_message(cfg,"E_ARCHIVE_ERROR",NULL);
     return;
@@ -774,7 +774,7 @@ void show_thread(cf_cfg_config_t *cfg,const u_char *year,const u_char *month,con
     snprintf(pi,256,"%s/%s/t%s",year,month,*tid == 't' ? tid+1 : tid);
 
     if((tlm = cf_hash_get(ArcviewHandlers,"av_thread_lm",12)) != NULL) {
-      if((last_modified = tlm(year,month,tid)) != 0) {
+      if((last_modified = tlm(cfg,year,month,tid)) != 0) {
         if(cf_cache_outdated_date(cache->sval,pi,last_modified) != -1 && (cent = cf_get_cache(cache->sval,pi,cache_level)) != NULL) {
           printf("Content-Type: text/html; charset=%s\015\012\015\012",cs->sval);
           fwrite(cent->ptr,1,cent->size,stdout);
@@ -792,7 +792,7 @@ void show_thread(cf_cfg_config_t *cfg,const u_char *year,const u_char *month,con
     return;
   }
 
-  if((thr = gt(year,month,tid)) == NULL) {
+  if((thr = gt(cfg,year,month,tid)) == NULL) {
     printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->sval);
     cf_error_message(cfg,"E_ARCHIVE_ERROR",NULL);
     return;
@@ -904,13 +904,13 @@ int main(int argc,char *argv[],char *env[]) {
   if(ret != FLT_EXIT && (ret = cf_run_init_handlers(&cfg,head)) != FLT_EXIT) {
     switch(len) {
       case 3:
-        ret = validate_thread(infos[0],infos[1],infos[2]);
+        ret = validate_thread(&cfg,infos[0],infos[1],infos[2]);
         break;
       case 2:
-        ret = validate_month(infos[0],infos[1]);
+        ret = validate_month(&cfg,infos[0],infos[1]);
         break;
       case 1:
-        ret = validate_year(infos[0]);
+        ret = validate_year(&cfg,infos[0]);
         break;
 
       case 0:

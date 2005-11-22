@@ -133,16 +133,12 @@ void gen_archive_url(u_char *buff,u_char *aurl,u_char *url,u_int64_t tid,u_int64
  * \return EXIT_SUCCESS or EXIT_FAILURE
  */
 int main(int argc,char *argv[],char *envp[]) {
-  /* {{{ variables */
   u_char *forum_name;
-  cf_array_t *cfgfiles;
-  u_char *file;
-  cf_configfile_t dconf;
   u_int64_t tid,mid = 0;
   u_char *ctid,buff[256];
   struct stat st;
-  cf_name_value_t *v;
-  cf_name_value_t *archive_path,*cs;
+  cf_cfg_config_value_t *v,*archive_path,*cs;
+  cf_cfg_config_t cfg;
   cf_array_t infos;
   DB *Tdb;
   DBT key,data;
@@ -152,80 +148,61 @@ int main(int argc,char *argv[],char *envp[]) {
   static const u_char *wanted[] = {
     "fo_default"
   };
-  /* }}} */
 
-  /* {{{ initialization */
-  cf_cfg_init();
   cf_init();
 
   forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
 
   cf_cgi_parse_path_info(&infos);
 
-  if((cfgfiles = cf_get_conf_file(wanted,1)) == NULL) {
-    fprintf(stderr,"error getting config files\n");
+  if(cf_cfg_get_conf(&cfg,wanted,1) != 0) {
+    fprintf(stderr,"Config file error!\n");
     return EXIT_FAILURE;
   }
 
-  file = *((u_char **)cf_array_element_at(cfgfiles,0));
-  cf_cfg_init_file(&dconf,file);
-  cf_cfg_register_options(&dconf,default_options);
-  free(file);
+  cs = cf_cfg_get_value(&cfg,"ExternCharset");
 
-  if(cf_read_config(&dconf,NULL,CF_CFG_MODE_CONFIG) != 0) {
-    fprintf(stderr,"config file error!\n");
-
-    cf_cfg_cleanup_file(&dconf);
-    return EXIT_FAILURE;
-  }
-
-  cs = cf_cfg_get_first_value(&fo_default_conf,forum_name,"ExternCharset");
-
-  /* {{{ check for right number of arguments */
+  /* check for right number of arguments */
   if(infos.elements != 2 && infos.elements != 4) {
-    printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]),
-    cf_error_message("E_FO_500",NULL);
+    printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->sval),
+    cf_error_message(&cfg,"E_FO_500",NULL);
     fprintf(stderr,"Wrong argument count: %zu\n",infos.elements);
     return EXIT_FAILURE;
   }
-  /* }}} */
 
-  /* {{{ check if parameters are valid */
+  /* check if parameters are valid */
   ctid = *((u_char **)cf_array_element_at(&infos,1));
   if(is_tid(ctid) == -1) {
-    printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]),
-    cf_error_message("E_FO_500",NULL);
+    printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->sval),
+    cf_error_message(&cfg,"E_FO_500",NULL);
     fprintf(stderr,"Wrong argument, no tid\n");
     return EXIT_FAILURE;
   }
-  /* }}} */
 
-  v = cf_cfg_get_first_value(&fo_default_conf,forum_name,"ThreadIndexFile");
-  archive_path = cf_cfg_get_first_value(&fo_default_conf,forum_name,"ArchiveURL");
-  /* }}} */
+  v = cf_cfg_get_value(&cfg,"ThreadIndexFile");
+  archive_path = cf_cfg_get_value(&cfg,"ArchiveURL");
 
   /* {{{ open database */
-  if(stat(v->values[0],&st) == -1) {
-    printf("Status: 404 Not Found\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
-    cf_error_message("E_FO_404",NULL);
+  if(stat(v->sval,&st) == -1) {
+    printf("Status: 404 Not Found\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->sval);
+    cf_error_message(&cfg,"E_FO_404",NULL);
     return EXIT_FAILURE;
   }
   if((ret = db_create(&Tdb,NULL,0)) != 0) {
-    printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]),
-    cf_error_message("E_FO_500",NULL);
+    printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->sval),
+    cf_error_message(&cfg,"E_FO_500",NULL);
     fprintf(stderr,"db_create() error: %s\n",db_strerror(ret));
     return EXIT_FAILURE;
   }
 
-  if((ret = Tdb->open(Tdb,NULL,v->values[0],NULL,DB_BTREE,DB_RDONLY,0)) != 0) {
-    printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]),
-    cf_error_message("E_FO_500",NULL);
-    fprintf(stderr,"db->open(%s) error: %s\n",v->values[0],db_strerror(ret));
+  if((ret = Tdb->open(Tdb,NULL,v->sval,NULL,DB_BTREE,DB_RDONLY,0)) != 0) {
+    printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->sval),
+    cf_error_message(&cfg,"E_FO_500",NULL);
+    fprintf(stderr,"db->open(%s) error: %s\n",v->sval,db_strerror(ret));
     return EXIT_FAILURE;
   }
   /* }}} */
 
-  /* {{{ get URLs */
   tid = cf_str_to_uint64(ctid);
   if(infos.elements == 4) mid = cf_str_to_uint64(*((u_char **)cf_array_element_at(&infos,3)));
 
@@ -236,31 +213,19 @@ int main(int argc,char *argv[],char *envp[]) {
   key.size = strlen(ctid);
 
   if((ret = Tdb->get(Tdb,NULL,&key,&data,0)) != 0) {
-    printf("Status: 404 Not Found\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
-    cf_error_message("E_FO_404",NULL);
+    printf("Status: 404 Not Found\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->sval);
+    cf_error_message(&cfg,"E_FO_404",NULL);
     return EXIT_FAILURE;
   }
-  /* }}} */
 
-  /* {{{ check if there is more than one entry */
+  /* check if there is more than one entry */
   len = strlen(data.data);
   if(len < data.size) {
     /* k, we have got more than one thread. What to do? At the moment we ignore it. */
   }
-  /* }}} */
 
-  /* {{{ redirect */
-  gen_archive_url(buff,archive_path->values[0],data.data,tid,mid);
+  gen_archive_url(buff,archive_path->sval,data.data,tid,mid);
   cf_http_redirect_with_nice_uri(buff,1);
-  /* }}} */
-
-  /* {{{ cleanup */
-  cf_cfg_cleanup_file(&dconf);
-
-  cf_array_destroy(cfgfiles);
-  free(cfgfiles);
-  cf_cfg_destroy();
-  /* }}} */
 
   return EXIT_SUCCESS;
 }

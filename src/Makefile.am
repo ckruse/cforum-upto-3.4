@@ -9,9 +9,9 @@ bin_PROGRAMS= \
 	cf-tid_index \
 	fo_post \
 	cf-recovery \
-	fo_arcview
-#	fo_threadlookup \
-#	fo_feeds \
+	fo_arcview \
+	fo_threadlookup \
+	fo_feeds
 #	fo_userconf \
 #	fo_usermanagement \
 #	fo_xmlrpc
@@ -79,11 +79,11 @@ libcfserverlib_la_LDFLAGS=-export-dynamic -avoid-version
 #libcfuserconfig_la_SOURCES=userconf.c xml_handling.c
 #libcfuserconfig_la_LIBADD=libcfhashlib.la libcfutils.la libcfconfigparser.la libcfclientlib.la libcfvalidate.la $(PCRE_LIBS) $(GDOME_LIBS)
 #libcfuserconfig_la_LDFLAGS=-export-dynamic -avoid-version
-#
-#fo_threadlookup_SOURCES=fo_threadlookup.c
-#fo_threadlookup_LDADD=libcfclientlib.la libcfutils.la libcfconfigparser.la libcfcgi.la $(BDB_LIB)
-#fo_threadlookup_LDFLAGS=-export-dynamic
-#
+
+fo_threadlookup_SOURCES=fo_threadlookup.c
+fo_threadlookup_LDADD=libcfclientlib.la libcfutils.la libcfconfigparser.la libcfcgi.la $(BDB_LIB)
+fo_threadlookup_LDFLAGS=-export-dynamic
+
 #fo_xmlrpc_SOURCES=fo_xmlrpc.c
 #fo_xmlrpc_LDADD=libcfclientlib.la libcfutils.la libcfconfigparser.la libcfcgi.la $(XMLRPC_C_LIBS)
 #fo_xmlrpc_LDFLAGS=-export-dynamic
@@ -116,9 +116,9 @@ fo_post_SOURCES=fo_post.c
 fo_post_LDADD=libcfconfigparser.la libcftemplate.la libcfcharconvert.la libcfreadline.la libcfutils.la libcfhashlib.la libcfclientlib.la libcfcgi.la libcfhtml.la libcfvalidate.la $(PCRE_LIBS)
 fo_post_LDFLAGS=-export-dynamic
 
-#fo_feeds_SOURCES=fo_feeds.c
-#fo_feeds_LDADD=libcfconfigparser.la libcftemplate.la libcfcharconvert.la libcfreadline.la libcfutils.la libcfhashlib.la libcfclientlib.la libcfcgi.la libcfhtml.la
-#fo_feeds_LDFLAGS=-export-dynamic
+fo_feeds_SOURCES=fo_feeds.c
+fo_feeds_LDADD=libcfconfigparser.la libcftemplate.la libcfcharconvert.la libcfreadline.la libcfutils.la libcfhashlib.la libcfclientlib.la libcfcgi.la libcfhtml.la
+fo_feeds_LDFLAGS=-export-dynamic
 
 fo_view_SOURCES=fo_view.c
 fo_view_LDADD=libcfconfigparser.la libcftemplate.la libcfcharconvert.la libcfreadline.la libcfutils.la libcfhashlib.la libcfclientlib.la libcfcgi.la libcfhtml.la
