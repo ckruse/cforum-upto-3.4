@@ -1,3 +1,7 @@
+2005-12-26 Christian Seiler <self@christian-seiler.de>
+	* src/modules/flt_noanswer.c: bugfix
+	* configure.in: --with-disable-modules now *really* works.
+
 2005-11-14 Christian Kruse <ckruse@wwwtech.de>
 	* src/cf_pthread.c, src/datautils.c, src/arrayutils.c, src/treeutils.c,
 		src/stringutils.c, src/listutils.c, src/serverutils.c,

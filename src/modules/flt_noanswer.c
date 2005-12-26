@@ -96,8 +96,10 @@ int flt_noanswer_gogogo(cf_hash_t *cgi,configuration_t *dc,configuration_t *vc,v
       u_int64_to_str(&str,itid);
       str_chars_append(&str," m",2);
       u_int64_to_str(&str,imid);
-      str_chars_append(&str,"\n Flag: no-answer",16);
-      if(cf_strcmp(action,"set-na") == 0) str_chars_append(&str,"=yes",4);
+      if(cf_strcmp(action,"set-na") == 0)
+        str_chars_append(&str,"\nFlag: no-answer=yes",20);
+      else
+        str_chars_append(&str,"\nFlags: no-answer",17);
       str_chars_append(&str,"\n\n",2);
 
       writen(sock,str.content,str.len);

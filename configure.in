@@ -202,7 +202,7 @@ if test "${OPTIONAL_MODULES}" = "all"; then
 fi
 
 for mod in ${DISABLE_MODULES}; do
-  OPTIONAL_MODULES="`echo -n $OPTIONAL_MODULES | $SED \"s~\\s*$mod\\s*~~\"`";
+  OPTIONAL_MODULES="`echo -n $OPTIONAL_MODULES | $SED \"s~$mod\\s*~~\" | $SED \"s~\\s$~~\"`";
 done
 AC_MSG_NOTICE([Activating modules: ${OPTIONAL_MODULES}])
 
