@@ -1,3 +1,6 @@
+2005-12-25 Christian Seiler <self@christian-seiler.de>
+	* configure.in: --with-disable-modules now *really* works.
+
 2005-11-18 Christian Kruse <ckruse@wwwtech.de>
 	* src/fo_vote.c, src/cf-tid_index.c, src/fo_post.[ch]: Changes for new API
 
