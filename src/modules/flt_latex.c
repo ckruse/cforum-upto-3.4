@@ -109,7 +109,8 @@ int flt_latex_create_cache(const u_char *cnt,size_t len,const u_char *our_sum,in
 
   if(elatex == 0) str_chars_append(&document,"\\[",2);
   str_chars_append(&document,cnt,len);
-  if(elatex == 0) str_chars_append(&document,"\n\\]",3);
+  if(elatex == 0 && cnt[len-1] != '\n') str_char_append(&document,'\n');
+  if(elatex == 0) str_chars_append(&document,"\\]",2);
   str_chars_append(&document,"\n\\end{document}\n",16);
 
   str_chars_append(&path,"file.tex",8);
@@ -252,21 +253,29 @@ u_char *flt_latex_filter(const u_char *cnt,size_t *len) {
   u_char *val;
   string_t str;
   register u_char *ptr;
+  register short had_lineend = 0;
 
   str_init(&str);
 
   for(ptr=(u_char *)cnt;*ptr;++ptr) {
     switch(*ptr) {
       case '<':
-        if(cf_strncmp(ptr,"<br>",4) == 0 || cf_strncmp(ptr,"<br />",6) == 0) str_char_append(&str,'\n');
+        if(cf_strncmp(ptr,"<br>",4) == 0 || cf_strncmp(ptr,"<br />",6) == 0) {
+          if(!had_lineend) str_char_append(&str,'\n');
+          had_lineend = 1;
+        }
         for(;*ptr && *ptr != '>';++ptr);
         continue;
+      case '\n':
+        if(!had_lineend) str_char_append(&str,'\n');
+        had_lineend = 1;
       case '\\':
         if(cf_strncmp(ptr,"\\include",8) == 0 || cf_strncmp(ptr,"\\newcommand",11) == 0 || cf_strncmp(ptr,"\\renewcommand",13) == 0) {
           str_cleanup(&str);
           return NULL;
         }
       default:
+        had_lineend = 0;
         str_char_append(&str,*ptr);
     }
   }
