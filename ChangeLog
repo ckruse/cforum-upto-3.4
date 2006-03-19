@@ -1,3 +1,6 @@
+2006-03-19 Christian Seiler <self@christian-seiler.de>
+	* src/modules/flt_noarchive.c: bugfix
+
 2006-03-17 Christian Seiler <self@christian-seiler.de>
 	* src/modules/flt_latex.c: now handles newlines better
 

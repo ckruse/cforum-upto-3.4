@@ -92,15 +92,18 @@ int flt_noarchive_gogogo(cf_hash_t *cgi,configuration_t *dc,configuration_t *vc,
 
     if(x == 0 || x == 200) {
       str_init_growth(&str,256);
+
       if(cf_strcmp(action,"set-noarchive") == 0)         str_char_set(&str,"FLAG SET ",9);
       else if(cf_strcmp(action,"remove-noarchive") == 0) str_char_set(&str,"FLAG REMOVE ",12);
 
       str_char_append(&str,'t');
-      u_int32_to_str(&str,itid);
+      u_int64_to_str(&str,itid);
       str_chars_append(&str," m",2);
-      u_int32_to_str(&str,imid);
-      str_chars_append(&str,"\nFlag: no-archive",17);
-      if(cf_strcmp(action,"set-noarchive") == 0) str_chars_append(&str,"=yes",4);
+      u_int64_to_str(&str,imid);
+      if(cf_strcmp(action,"set-noarchive") == 0)
+        str_chars_append(&str,"\nFlag: no-archive=yes",21);
+      else
+        str_chars_append(&str,"\nFlags: no-archive",18);
       str_chars_append(&str,"\n\n",2);
 
       writen(sock,str.content,str.len);
