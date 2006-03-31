@@ -1,3 +1,7 @@
+2006-03-31 Christian Seiler <self@christian-seiler.de>
+	* src/htmllib.c: now assign template variable that differentiates
+		between threadlist / threadview mode
+
 2006-03-19 Christian Seiler <self@christian-seiler.de>
 	* src/modules/flt_noarchive.c: bugfix
 

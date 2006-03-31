@@ -1027,11 +1027,15 @@ int cf_gen_threadlist(cl_thread_t *thread,cf_hash_t *head,string_t *threadlist,c
     }
     /* }}} */
     /* {{{ set some standard variables */
-    else if(mode == CF_MODE_THREADVIEW) cf_tpl_hashvar_setvalue(&thread->threadmsg->hashvar,"active",TPL_VARIABLE_INT,1);
+    else if(mode == CF_MODE_THREADVIEW) {
+      cf_tpl_hashvar_setvalue(&thread->threadmsg->hashvar,"active",TPL_VARIABLE_INT,1);
+      cf_tpl_setvalue(&tpl,"mode",TPL_VARIABLE_STRING,"threadview",10);
+    }
     else if(mode == CF_MODE_THREADLIST) {
       cf_tpl_hashvar_setvalue(&thread->messages->hashvar,"start",TPL_VARIABLE_INT,1);
       cf_tpl_hashvar_setvalue(&thread->messages->hashvar,"msgnum",TPL_VARIABLE_INT,thread->msg_len);
       cf_tpl_hashvar_setvalue(&thread->messages->hashvar,"answers",TPL_VARIABLE_INT,thread->msg_len-1);
+      cf_tpl_setvalue(&tpl,"mode",TPL_VARIABLE_STRING,"threadlist",10);
     }
     /* }}} */
 
