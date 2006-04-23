@@ -1,3 +1,6 @@
+2006-04-21 Christian Seiler <self@christian-seiler.de>
+	* src/perl/Plugins/RegisterNames.pm: bugfix
+
 2006-03-31 Christian Seiler <self@christian-seiler.de>
 	* src/htmllib.c: now assign template variable that differentiates
 		between threadlist / threadview mode

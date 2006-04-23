@@ -115,25 +115,27 @@ sub unregister {
   return unless $main::UserName;
   return unless $name;
   return unless $regist;
-
+  
   if($regist eq 'yes') {
     my $sock = new IO::Socket::UNIX(
       Type => SOCK_STREAM,
-      Peer => get_conf_val($fo_default_conf,$main::Forum,'SocketName')
+      Peer => get_conf_val($fo_default_conf,'global','SocketName')
     ) or die(get_error($fo_default_conf,'NO_CONN'));
 
     print $sock "SELECT ".$main::Forum."\n";
     my $line = <$sock>;
-
-    print $sock "AUTH DELETE\nName: ".$user_config->{Name}->[0]->[0]."\nPass: ".$main::UserName."\n\n";
+    
+    print $sock "AUTH DELETE\nName: ".$name."\nPass: ".$main::UserName."\n\n";
 
     $line = <$sock>;
+
+    print $sock "QUIT\n";
+    close $sock;
+    
     if(!defined $line || $line !~ /^200/) {
       die(recode($fo_default_conf,get_error($fo_default_conf,'error')));
     }
 
-    print $sock "QUIT\n";
-    close $sock;
   }
 }
 
