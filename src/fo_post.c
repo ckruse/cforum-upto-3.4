@@ -456,7 +456,7 @@ int validate_cgi_variables(cf_hash_t *head) {
   int erroffset;
 
   size_t maxlen,minlen,len;
-  int fupto = cf_cgi_get(head,"fupto") != NULL,ret = -1;
+  int fupto = cf_cgi_get(head,"fupto") != NULL,ret = -1,negate;
 
   /* {{{ check if every needed field exists */
   if((list = cfg_get_value(&fo_post_conf,forum_name,"FieldNeeded")) != NULL) {
@@ -507,6 +507,7 @@ int validate_cgi_variables(cf_hash_t *head) {
   /* {{{ Check if every field is valid by validation function */
   if((list = cfg_get_value(&fo_post_conf,forum_name,"FieldValidate")) != NULL) {
     for(elem=list->elements;elem;elem=elem->next) {
+      negate = 0;
       cfg = (name_value_t *)elem->data;
 
       if((value = cf_cgi_get(head,cfg->values[0])) != NULL) {
@@ -516,8 +517,10 @@ int validate_cgi_variables(cf_hash_t *head) {
           if(cf_strcasecmp(cfg->values[0]+len-3,"url") == 0) continue;
         }
         /* }}} */
+        
+        if(*cfg->values[1] == '!') negate = 1;
 
-        switch(*cfg->values[1]) {
+        switch(*(cfg->values[1]+negate)) {
           case 'e':
             ret = is_valid_mailaddress(value);
             break;
@@ -545,7 +548,11 @@ int validate_cgi_variables(cf_hash_t *head) {
             break;
         }
 
-        if(ret == -1) {
+        /*
+         * negative result and negate = 0 => error.
+         * positive result and negate = 1 => error.
+         */
+        if((ret == -1 && negate == 0) || (ret != -1 && negate == 1)) {
           snprintf(ErrorString,50,"E_%s_invalid",cfg->values[0]);
           return -1;
         }
