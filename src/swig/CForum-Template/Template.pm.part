@@ -1,0 +1,7 @@
+sub new {
+  # remove package name
+  shift @_;
+  return new CForum::Template::cf_template_t(@_);
+}
+
+1;

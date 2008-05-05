@@ -14,6 +14,6 @@ AddModule "Plugins::HTTPAuth"
 Forum FORUM1 {
   Umask "0022"
 
-  MainTemplate "@sysconfdir@/cforum/templates/forum1/%s_%s_admin_main.so"
+  MainTemplate "@CMAKE_INSTALL_SYSCONFDIR_FULL@/cforum/templates/forum1/%s_%s_admin_main.so"
 }
 

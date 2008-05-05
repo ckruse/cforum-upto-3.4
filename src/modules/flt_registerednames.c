@@ -65,7 +65,7 @@ u_char *flt_registerednames_transform(const u_char *val) {
   register int ws = 0;
   string_t str;
 
-  if(!ptr) return NULL;
+  if(!ptr || !strlen(ptr)) return NULL;
 
   str_init(&str);
 
@@ -112,6 +112,17 @@ int flt_registerednames_check_auth(names_db_t *ndb,u_char *name,u_char *pass) {
   if(cf_strcmp(data.data,pass) == 0) return 0;
 
   return 1;
+}
+/* }}} */
+
+/* {{{ flt_registerednames_syncer */
+void flt_registerednames_syncer(forum_t *forum) {
+  int ret;
+  names_db_t *ndb = cf_hash_get(flt_rn_namesdb,forum->name,strlen(forum->name));
+
+  if((ret = ndb->NamesDB->sync(ndb->NamesDB,0)) != 0) {
+    cf_log(CF_ERR,__FILE__,__LINE__,"DB->sync: %s\n",db_strerror(ret));
+  }
 }
 /* }}} */
 
@@ -384,6 +395,7 @@ conf_opt_t flt_registerednames_config[] = {
 
 handler_config_t flt_registerednames_handlers[] = {
   { INIT_HANDLER,            flt_registerednames_init_module   },
+  { THRDLST_WRITTEN_HANDLER, flt_registerednames_syncer        },
   { 0, NULL }
 };
 

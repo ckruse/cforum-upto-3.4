@@ -244,7 +244,7 @@ int main(int argc,char *argv[],char *envp[]) {
   u_char *file;
   configfile_t sconf,dconf;
   name_value_t *ent,*idxfile;
-  char c;
+  int c;
 
   DIR *years;
   struct dirent *year;

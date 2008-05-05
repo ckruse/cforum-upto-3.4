@@ -44,7 +44,7 @@ BEGIN {
 sub VERSION {(q$Revision$ =~ /([\d.]+)\s*$/)[0] or '0.0'}
 
 use BerkeleyDB;
-use POSIX qw/setlocale strftime LC_ALL/;
+use POSIX qw/setlocale mktime strftime LC_ALL/;
 
 use Storable qw/dclone/;
 
@@ -560,6 +560,7 @@ sub merge_config {
         my $validate = get_node_data($vali);
         my $enc      = $arg->getAttribute('encode');
         my $val;
+        my $saveval;
 
         $val = join ',',$cgi->param($pname) if defined $cgi->param($pname);
 
@@ -593,20 +594,29 @@ sub merge_config {
 
         }
         # }}}
+        
+        # {{{ date value
+        if ($arg->getAttribute('parse') eq 'date' && defined($val) && length($val) && $val =~ /^\d\d?\.\s*\d\d?\.\s*\d\d\d\d$/) {
+          my @p = split /\./, $val;
+          $saveval = mktime(0, 0, 0, $p[0], $p[1] - 1, $p[2] - 1900);
+        } else {
+          $saveval = $val;
+        }
+        # }}}
 
         # {{{ we deleted the first value
         unless(exists $own_ucfg->{global}->{$dname}) {
           $own_ucfg->{global}->{$dname} = [ [ ] ];
           if($enc eq 'html') {
-            $own_ucfg->{global}->{$dname}->[0]->[$i++] = encode_entities($val);
+            $own_ucfg->{global}->{$dname}->[0]->[$i++] = encode_entities($saveval);
           }
           else {
-            $own_ucfg->{global}->{$dname}->[0]->[$i++] = $val;
+            $own_ucfg->{global}->{$dname}->[0]->[$i++] = $saveval;
           }
         }
         # }}}
         else {
-          $own_ucfg->{global}->{$dname}->[0]->[$i++] = $val;
+          $own_ucfg->{global}->{$dname}->[0]->[$i++] = $saveval;
         }
 
         # {{{ directive value validation

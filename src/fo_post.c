@@ -62,7 +62,7 @@
  * Function for displaying the user the 'Ok, posting has been processed' site
  * \param p The message struct
  */
-void display_finishing_screen(message_t *p) {
+void display_finishing_screen(message_t *p,u_char *link) {
   cf_template_t tpl;
   u_char tplname[256],*forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10),*uname = cf_hash_get(GlobalValues,"UserName",8);
   name_value_t *tt = cfg_get_first_value(&fo_post_conf,forum_name,"OkTemplate");
@@ -101,6 +101,7 @@ void display_finishing_screen(message_t *p) {
   cf_set_variable(&tpl,cs,"charset",cs->values[0],strlen(cs->values[0]),1);
   cf_set_variable(&tpl,cs,"script",ps->values[0],strlen(ps->values[0]),1);
   cf_set_variable(&tpl,cs,"forumbase",fb->values[0],strlen(fb->values[0]),1);
+  cf_set_variable(&tpl,cs,"new_link",link,strlen(link),1);
 
   cf_set_variable(&tpl,cs,"Name",p->author.content,p->author.len,1);
   cf_set_variable(&tpl,cs,"subject",p->subject.content,p->subject.len,1);
@@ -977,7 +978,6 @@ int main(int argc,char *argv[],char *env[]) {
           display_posting_form(head,NULL,NULL);
         }
         else {
-          *ErrorString = '\0';
           display_posting_form(head,thr.threadmsg,NULL);
           cf_cleanup_thread(&thr);
         }
@@ -990,7 +990,6 @@ int main(int argc,char *argv[],char *env[]) {
       if(validate_cgi_variables(head) != 0) {
         if(gethread_t(&thr,head,1) == -1) display_posting_form(head,NULL,NULL);
         else {
-          *ErrorString = '\0';
           display_posting_form(head,thr.threadmsg,NULL);
           cf_cleanup_thread(&thr);
         }
@@ -1243,14 +1242,14 @@ int main(int argc,char *argv[],char *env[]) {
 
           writen(sock,"QUIT\n",5);
 
-          if(cfg_val && cf_strcmp(cfg_val->values[0],"yes") == 0) {
-            link = cf_get_link(rm_infos.posting_uri[UserName?1:0],tid,mid);
+          link = cf_get_link(rm_infos.posting_uri[UserName?1:0],tid,mid);
+          if(cfg_val && cf_strcmp(cfg_val->values[0],"yes") == 0)
             cf_http_redirect_with_nice_uri(link,0);
-            free(link);
-          }
-          else display_finishing_screen(p);
+          else
+            display_finishing_screen(p,link);
 
           cf_cleanup_message(p);
+          free(link);
           free(p);
 
           close(sock);

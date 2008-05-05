@@ -227,7 +227,7 @@ int RUN = 1;
 
 int main(int argc,char *argv[]) {
   u_char *forum_name = NULL,*bf = NULL,buff[512];
-  char c;
+  int c;
 
   u_char *file;
   array_t *cfgfiles;

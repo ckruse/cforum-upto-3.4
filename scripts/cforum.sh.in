@@ -1,11 +1,11 @@
 #!/bin/sh
 
-prefix="@prefix@"
-exec_prefix="@exec_prefix@"
+prefix="@CMAKE_INSTALL_PREFIX@"
+exec_prefix="@CMAKE_INSTALL_PREFIX@"
 
-PID_FILE="@localstatedir@/cforum/cf_pid"
-SERVER_BIN="@bindir@/fo_server"
-CONF_PATH="@sysconfdir@/cforum"
+PID_FILE="@CMAKE_INSTALL_LOCALSTATEDIR_FULL@/cforum/cf_pid"
+SERVER_BIN="@CMAKE_INSTALL_BINDIR_FULL@/fo_server"
+CONF_PATH="@CMAKE_INSTALL_SYSCONFDIR_FULL@/cforum"
 
 case $1 in
     start)

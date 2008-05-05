@@ -14,7 +14,21 @@
 #include "cfcgi.h"
 #include "template.h"
 #include "clientlib.h"
+#include "charconvert.h"
 #include "fo_view.h"
+
+#ifndef HAVE_BOOL
+
+typedef unsigned char bool;
+#ifndef true
+#define true 1
+#endif
+#ifndef false
+#define false 0
+#endif
+
+#endif
+
 %}
 
 %init %{
@@ -127,49 +141,49 @@ const char *message_t_get_author(message_t *msg) {
   return msg->author.content;
 }
 void message_t_set_author(message_t *msg,const u_char *author) {
-  str_chars_set(&msg->author,author,strlen(author));
+  str_char_set(&msg->author,author,strlen(author));
 }
 
 const char *message_t_get_email(message_t *msg) {
   return msg->email.content;
 }
 void message_t_set_email(message_t *msg,const u_char *email) {
-  str_chars_set(&msg->email,email,strlen(email));
+  str_char_set(&msg->email,email,strlen(email));
 }
 
 const char *message_t_get_hp(message_t *msg) {
   return msg->hp.content;
 }
 void message_t_set_hp(message_t *msg,const u_char *hp) {
-  str_chars_set(&msg->hp,hp,strlen(hp));
+  str_char_set(&msg->hp,hp,strlen(hp));
 }
 
 const char *message_t_get_img(message_t *msg) {
   return msg->img.content;
 }
 void message_t_set_img(message_t *msg,const u_char *img) {
-  str_chars_set(&msg->img,img,strlen(img));
+  str_char_set(&msg->img,img,strlen(img));
 }
 
 const char *message_t_get_subject(message_t *msg) {
   return msg->subject.content;
 }
 void message_t_set_subject(message_t *msg,const u_char *subj) {
-  str_chars_set(&msg->subject,subj,strlen(subj));
+  str_char_set(&msg->subject,subj,strlen(subj));
 }
 
 const char *message_t_get_category(message_t *msg) {
   return msg->category.content;
 }
 void message_t_set_category(message_t *msg,const u_char *cat) {
-  str_chars_set(&msg->category,cat,strlen(cat));
+  str_char_set(&msg->category,cat,strlen(cat));
 }
 
 const char *message_t_get_content(message_t *msg) {
   return msg->content.content;
 }
 void message_t_set_content(message_t *msg,const u_char *cnt) {
-  str_chars_set(&msg->content,cnt,strlen(cnt));
+  str_char_set(&msg->content,cnt,strlen(cnt));
 }
 
 %}
@@ -329,7 +343,7 @@ int utf8_to_unicode(const char *s,int n,int *num);
 char *htmlentities_charset_convert(const char *toencode, const char *from, const char *to,int *outlen,bool sq);
 char *charset_convert_entities(const char *toencode, int in_len,const char *from, const char *to,size_t *outlen);
 int is_valid_utf8_string(const char *str,int len);
-char *htmlentities_decode(const char *string);
+char *htmlentities_decode(const char *string,int *len);
 
 %{
 bool cf_has_shm(void) {

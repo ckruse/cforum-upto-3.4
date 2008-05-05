@@ -9,7 +9,7 @@
 # $LastChangedBy$
 #
 
-ModulePath "@libdir@/cforum/"
+ModulePath "@CMAKE_INSTALL_LIBDIR_FULL@/cforum/"
 
 Load "flt_tplmode"
 Load "flt_http"
@@ -28,7 +28,7 @@ Load "flt_syntax"
 Load "flt_checkregisteredname"
 Load "flt_mailonpost"
 
-PatternsDirectory "@sysconfdir@/cforum/patterns/"
+PatternsDirectory "@CMAKE_INSTALL_SYSCONFDIR_FULL@/cforum/patterns/"
 
 Forum FORUM1 {
  ReadMode "thread"
@@ -81,7 +81,7 @@ Forum FORUM1 {
  SMTPHost "localhost"
  SMTPFrom "cforum@wwwtech.de"
  SMTPReverse "devnull@wwwtech.de"
- MailDatabase "@localstatedir@/cforum/mail_forum1.db"
+ MailDatabase "@CMAKE_INSTALL_LOCALSTATEDIR_FULL@/cforum/mail_forum1.db"
 
  Image "selbermachen" "/images/01.gif" "Für dein Problem gibt es nur eine Lösung: SELFmade von Selbermachen."
  Image "archiv" "/images/02.gif" "Die Antwort auf deine Frage findest du im Archiv."
@@ -100,9 +100,9 @@ Forum FORUM1 {
  Image "noe" "/images/16.gif" "Noe!"
  Image "board" "/images/17.gif" "Board?"
 
- ThreadTemplate "@sysconfdir@/cforum/templates/forum1/%s_%s_thread.so"
- FatalTemplate "@sysconfdir@/cforum/templates/forum1/%s_%s_fatal.so"
- OkTemplate "@sysconfdir@/cforum/templates/forum1/%s_%s_post_ok.so"
+ ThreadTemplate "@CMAKE_INSTALL_SYSCONFDIR_FULL@/cforum/templates/forum1/%s_%s_thread.so"
+ FatalTemplate "@CMAKE_INSTALL_SYSCONFDIR_FULL@/cforum/templates/forum1/%s_%s_fatal.so"
+ OkTemplate "@CMAKE_INSTALL_SYSCONFDIR_FULL@/cforum/templates/forum1/%s_%s_post_ok.so"
 }
 
 

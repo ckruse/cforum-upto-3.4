@@ -2,7 +2,7 @@
  * \file parsetpl.lex
  * \author Christian Seiler, <self@christian-seiler.de>
  *
- * The temaplte parser
+ * The template parser
  */
 %{
 #include "config.h"

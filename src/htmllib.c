@@ -262,7 +262,12 @@ static u_char *parse_message(cl_thread_t *thread,u_char *start,array_t *stack,st
               goto default_action;
             }
 
-            parameter = strndup(tmp+1,ptr-tmp-1);
+            if(ptr1 == tmp) {
+              parameter = fo_alloc(NULL,1,1,FO_ALLOC_MALLOC);
+              *parameter = '\0';
+            } else {
+              parameter = strndup(tmp+1,ptr-tmp-1);
+            }
 
             stack_elem.begin   = (u_char *)ptr1;
             stack_elem.name    = directive;
@@ -340,7 +345,12 @@ static u_char *parse_message(cl_thread_t *thread,u_char *start,array_t *stack,st
             }
 
             stack_elem.args = fo_alloc(stack_elem.args,++stack_elem.argnum,sizeof(*stack_elem.args),FO_ALLOC_REALLOC);
-            stack_elem.args[stack_elem.argnum-1] = strndup(tmp,ptr1-tmp);
+            if(ptr1 == tmp) {
+              stack_elem.args[stack_elem.argnum-1] = fo_alloc(NULL,1,1,FO_ALLOC_MALLOC);
+              *(stack_elem.args[stack_elem.argnum-1]) = '\0';
+            } else {
+              stack_elem.args[stack_elem.argnum-1] = strndup(tmp,ptr1-tmp);
+            }
 
             sb = *ptr1 == ']';
           }

@@ -240,6 +240,10 @@ int flt_syntax_load(const u_char *path,const u_char *lang) {
   flt_syntax_block_t block;
   flt_syntax_statement_t statement;
 
+  if(!lang || !strlen(lang)) {
+    return 1;
+  }
+
   if((fd = fopen(path,"r")) == NULL) {
     fprintf(stderr,"flt_syntax: I/O error opening file %s: %s\n",path,strerror(errno));
     return 1;
@@ -1135,6 +1139,11 @@ int flt_syntax_doit(flt_syntax_pattern_file_t *file,flt_syntax_block_t *block,u_
               ptr += x;
 
               str = array_element_at(&statement->args,0);
+              // HACK: make sure we get the whole lineend
+              // (this should actually be rewritten cleaner someday...)
+              if(cf_strncmp(ptr,"<br />",6) == 0 && stdvec[1]-stdvec[0] < 6) {
+                stdvec[1] = stdvec[0] + 6;
+              }
               if(cf_strcmp(str->content,"highlight") == 0) {
                 tmpchar = strndup(ptr+stdvec[0],stdvec[1]-stdvec[0]);
 
@@ -1288,11 +1297,15 @@ int flt_syntax_highlight(string_t *content,string_t *bco,const u_char *lang,cons
     return 1;
   }
 
-  str_chars_append(bco,"<code title=\"",13);
-  str_chars_append(bco,lang,strlen(lang));
-  str_chars_append(bco,"\" class=\"",9);
-  str_chars_append(bco,lang,strlen(lang));
-  str_chars_append(bco,"\">",2);
+  if(!lang || !strlen(lang)) {
+    str_chars_append(bco,"<code>",6);
+  } else {
+    str_chars_append(bco,"<code title=\"",13);
+    str_chars_append(bco,lang,strlen(lang));
+    str_chars_append(bco,"\" class=\"",9);
+    str_chars_append(bco,lang,strlen(lang));
+    str_chars_append(bco,"\">",2);
+  }
   str_str_append(bco,&code);
   str_cleanup(&code);
   str_chars_append(bco,"</code>",7);
@@ -1308,7 +1321,7 @@ int flt_syntax_execute(configuration_t *fdc,configuration_t *fvc,cl_thread_t *th
   u_char *lang,*ptr;
 
   /* {{{ we don't know what language we got, so just put a <code> around it */
-  if(flt_syntax_active == 0 || plen != 2 || cf_strcmp(parameters[0],"lang") != 0) {
+  if(flt_syntax_active == 0 || plen != 2 || cf_strcmp(parameters[0],"lang") != 0 || !parameters[1] || !strlen((u_char*)parameters[1])) {
     str_chars_append(bco,"<code>",6);
     str_str_append(bco,content);
     str_chars_append(bco,"</code>",7);

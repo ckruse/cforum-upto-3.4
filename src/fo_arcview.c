@@ -454,6 +454,8 @@ void show_month_content(const u_char *year,const u_char *month) {
       cf_tpl_var_addvalue(&array1,TPL_VARIABLE_STRING,tmp?tmp:tmp1,tmp?len:len1);
       free(tmp1);
       if(tmp) free(tmp);
+    } else {
+      cf_tpl_var_addvalue(&array1,TPL_VARIABLE_STRING," ",1);
     }
 
     cf_tpl_var_addvalue(&array1,TPL_VARIABLE_INT,ent->invisible);
@@ -462,6 +464,8 @@ void show_month_content(const u_char *year,const u_char *month) {
       len = prep_var(ent->cat,ent->clen,&tmp,cs,1);
       cf_tpl_var_addvalue(&array1,TPL_VARIABLE_STRING,tmp?tmp:ent->cat,tmp?len:ent->clen);
       if(tmp) free(tmp);
+    } else {
+      cf_tpl_var_addvalue(&array1,TPL_VARIABLE_STRING," ",1);
     }
 
     cf_tpl_var_add(&array,&array1);

@@ -9,7 +9,7 @@
 # $LastChangedBy$
 #
 
-ModulePath "@libdir@/cforum/"
+ModulePath "@CMAKE_INSTALL_LIBDIR_FULL@/cforum/"
 
 Load "flt_tplmode"
 Load "flt_http"
@@ -39,7 +39,7 @@ Load "flt_mailonpost"
 Load "flt_preview"
 Load "flt_cgiconfig"
 
-PatternsDirectory "@sysconfdir@/cforum/patterns/"
+PatternsDirectory "@CMAKE_INSTALL_SYSCONFDIR_FULL@/cforum/patterns/"
 
 Forum FORUM1 {
  ThreadsOpenByDefault    "yes"
@@ -64,15 +64,15 @@ Forum FORUM1 {
  MotdFile "/etc/motd"
  EnableMotd "yes"
 
- TemplatesFrameset      "@sysconfdir@/cforum/templates/forum1/%s_%s_frameset.so" "@sysconfdir@/cforum/templates/forum1/%s_%s_blank.so"
+ TemplatesFrameset      "@CMAKE_INSTALL_SYSCONFDIR_FULL@/cforum/templates/forum1/%s_%s_frameset.so" "@CMAKE_INSTALL_SYSCONFDIR_FULL@/cforum/templates/forum1/%s_%s_blank.so"
 
- TemplateForumBegin     "@sysconfdir@/cforum/templates/forum1/%s_%s_forum_begin.so"
- TemplateForumEnd       "@sysconfdir@/cforum/templates/forum1/%s_%s_forum_end.so"
- TemplateForumThread    "@sysconfdir@/cforum/templates/forum1/%s_%s_forum_thread.so"
- TemplateForumList      "@sysconfdir@/cforum/templates/forum1/%s_%s_forum_list.so"
- TemplateForumNested    "@sysconfdir@/cforum/templates/forum1/%s_%s_forum_nested.so"
+ TemplateForumBegin     "@CMAKE_INSTALL_SYSCONFDIR_FULL@/cforum/templates/forum1/%s_%s_forum_begin.so"
+ TemplateForumEnd       "@CMAKE_INSTALL_SYSCONFDIR_FULL@/cforum/templates/forum1/%s_%s_forum_end.so"
+ TemplateForumThread    "@CMAKE_INSTALL_SYSCONFDIR_FULL@/cforum/templates/forum1/%s_%s_forum_thread.so"
+ TemplateForumList      "@CMAKE_INSTALL_SYSCONFDIR_FULL@/cforum/templates/forum1/%s_%s_forum_list.so"
+ TemplateForumNested    "@CMAKE_INSTALL_SYSCONFDIR_FULL@/cforum/templates/forum1/%s_%s_forum_nested.so"
 
- TemplatePosting        "@sysconfdir@/cforum/templates/forum1/%s_%s_forum_posting.so"
+ TemplatePosting        "@CMAKE_INSTALL_SYSCONFDIR_FULL@/cforum/templates/forum1/%s_%s_forum_posting.so"
 
  # Date format
  #
@@ -84,7 +84,7 @@ Forum FORUM1 {
  DateFormatThreadList   "%d. %m. %Y, %H:%M"
  DateFormatThreadView   "%d. %B %Y, %H:%M"
 
- MailDatabase "@localstatedir@/cforum/mail_forum1.db"
+ MailDatabase "@CMAKE_INSTALL_LOCALSTATEDIR_FULL@/cforum/mail_forum1.db"
 }
 
 # eof

@@ -10,7 +10,7 @@
 #
 
 
-ModulePath "@libdir@/cforum/"
+ModulePath "@CMAKE_INSTALL_LIBDIR_FULL@/cforum/"
 
 Load "flt_tid_index"
 Load "flt_cftp"
@@ -31,18 +31,18 @@ Chroot "/home/ckruse/tmp/cforum/chroot/"
 
 # We want logfiles to be 2MB max
 LogMaxSize "2097152"
-ErrorLog "@localstatedir@/log/cf_errors"
-StdLog "@localstatedir@/log/cf_stdlog"
+ErrorLog "@CMAKE_INSTALL_LOCALSTATEDIR_FULL@/log/cf_errors"
+StdLog "@CMAKE_INSTALL_LOCALSTATEDIR_FULL@/log/cf_stdlog"
 
-PIDFile "@localstatedir@/run/cf_pid"
+PIDFile "@CMAKE_INSTALL_LOCALSTATEDIR_FULL@/run/cf_pid"
 
 # external interface
 ExternPort "6666"
 # ExternInterface 192.168.50.2
 
 Forum FORUM1 {
- MessagePath "@localstatedir@/cforum/messages/forum1/"
- ArchivePath "@localstatedir@/cforum/archive/forum1/"
+ MessagePath "@CMAKE_INSTALL_LOCALSTATEDIR_FULL@/cforum/messages/forum1/"
+ ArchivePath "@CMAKE_INSTALL_LOCALSTATEDIR_FULL@/cforum/archive/forum1/"
 
  SortThreads "ascending"
  SortMessages "ascending"
@@ -52,7 +52,7 @@ Forum FORUM1 {
  MainFileMaxPostings "2000"
  MainFileMaxThreads "150"
 
- AuthNames "@localstatedir@/cforum/registered_names_forum1.db"
+ AuthNames "@CMAKE_INSTALL_LOCALSTATEDIR_FULL@/cforum/registered_names_forum1.db"
 }
 
 

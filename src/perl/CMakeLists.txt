@@ -1,0 +1,6 @@
+install (
+  DIRECTORY .
+  DESTINATION ${CMAKE_INSTALL_LIBDIR}/cforum
+  PATTERN "CMakeLists.txt" EXCLUDE
+  PATTERN "*~" EXCLUDE
+)

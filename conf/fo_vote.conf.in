@@ -9,12 +9,12 @@
 # $LastChangedBy$
 #
 
-ModulePath "@libdir@/cforum/"
+ModulePath "@CMAKE_INSTALL_LIBDIR_FULL@/cforum/"
 Load "flt_httpauth"
 
 
 Forum FORUM1 {
-  VotingDatabase "@localstatedir@/cforum/forum1_voting.dat"
-  OkTemplate "@sysconfdir@/cforum/templates/forum1/%s_%s_vote_ok.so"
+  VotingDatabase "@CMAKE_INSTALL_LOCALSTATEDIR_FULL@/cforum/forum1_voting.dat"
+  OkTemplate "@CMAKE_INSTALL_SYSCONFDIR_FULL@/cforum/templates/forum1/%s_%s_vote_ok.so"
 }
 

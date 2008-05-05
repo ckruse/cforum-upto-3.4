@@ -1,3 +1,38 @@
+2008-05-05 Christian Seiler <self@christian-seiler.de>
+	* **/Makefile.am, **/Makefile.PL.in, **/Makefile.in,
+		**/CMakeLists.txt, src/config.h.in, src/config.h.cmake,
+		**/*.in, m4/, cmake/, bootstrap, scripts/adjust-exports.sh:
+		Changed buildsystem from autotools to cmake-based build
+		system.
+	* conf/modules.de.xml: Several options were not stored correctly
+		due to wrong defaults. Fixed.
+	* conf/patterns/apache.pat: Charset regexp sometimes matched
+		parts other than the beginning of the string. Fixed.
+	* src/fo_view.c: Added support for different output content types.
+	* src/cf-recovery.c, src/cf-tid_index.c: Fixed segfault.
+	* src/modules/flt_registerednames.c: Sync names db to disk every
+		time the archiver is run. Fixed segfault.
+	* src/modules/flt_xmlstorage: Don't save ip address in archived
+		threads.
+	* src/modules/flt_livefilter.c: Added support for filtering for
+		thread ids.
+	* src/modules/flt_basic.c: Always add all the available categories
+		to the begin template.
+	* src/modules/flt_syntax.c: Semi-fixed bug in onregexp_after
+		processing. Fixed segfault if [code=] is specified.
+	* src/perl/Plugins/RegisterName.pm: Fixed code for unreg handler
+		(still contained CForum 2.0 code).
+	* src/perl/ForumUtils.pm, scripts/fo_userconf.in: Fixed date
+		handling in fo_userconf.
+	* src/fo_arcview.c: Small bugfix in threadlist.
+	* src/swig/CForum-Clientlib/CForum-Clientlib.i: Minor fixes,
+		compiles again.
+	* src/fo_post.c: Set new_link for post_ok template.
+	* src/fo_feeds.c: Ensure generated CDATA sections are always valid.
+	* src/defines.h: Removed autoconf-related parts.
+	* src/htmllib.c: Fixed segfault.
+	* scripts/cf-compile-templates.pl: Added --cforum-headers option.
+
 2006-04-21 Christian Seiler <self@christian-seiler.de>
 	* src/perl/Plugins/RegisterNames.pm: bugfix
 

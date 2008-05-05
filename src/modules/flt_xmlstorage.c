@@ -627,7 +627,7 @@ void flt_xmlstorage_handle_header(posting_t *p,GdomeNode *n) {
 /* }}} */
 
 /* {{{ flt_xmlstorage_stringify_posting */
-posting_t *flt_xmlstorage_stringify_posting(GdomeDocument *doc1,GdomeElement *t1,GdomeDocument *doc2,GdomeElement *t2,posting_t *p) {
+posting_t *flt_xmlstorage_stringify_posting(GdomeDocument *doc1,GdomeElement *t1,GdomeDocument *doc2,GdomeElement *t2,posting_t *p,int for_archive) {
   int lvl = p->level;
   GdomeException e;
   string_t mstr;
@@ -676,7 +676,7 @@ posting_t *flt_xmlstorage_stringify_posting(GdomeDocument *doc1,GdomeElement *t1
   if(p->unid.len) xml_set_attribute(m1,"unid",p->unid.content);
 
   xml_set_attribute(m2,"id",mstr.content);
-  xml_set_attribute(m2,"ip",p->user.ip.content);
+  if(!for_archive) xml_set_attribute(m2,"ip",p->user.ip.content);
 
   str_cleanup(&mstr);
 
@@ -850,7 +850,7 @@ posting_t *flt_xmlstorage_stringify_posting(GdomeDocument *doc1,GdomeElement *t1
   /* }}} */
 
   for(p=p->next;p;) {
-    if(p->level > lvl) p = flt_xmlstorage_stringify_posting(doc1,m1,doc2,m2,p);
+    if(p->level > lvl) p = flt_xmlstorage_stringify_posting(doc1,m1,doc2,m2,p,for_archive);
     else {
       gdome_el_unref(m1,&e);
       gdome_el_unref(m2,&e);
@@ -867,7 +867,7 @@ posting_t *flt_xmlstorage_stringify_posting(GdomeDocument *doc1,GdomeElement *t1
 /* }}} */
 
 /* {{{ flt_xmlstorage_thread2xml */
-GdomeDocument *flt_xmlstorage_thread2xml(GdomeDOMImplementation *impl,GdomeDocument *doc1,thread_t *t) {
+GdomeDocument *flt_xmlstorage_thread2xml(GdomeDOMImplementation *impl,GdomeDocument *doc1,thread_t *t,int for_archive) {
   GdomeException e;
   GdomeDocument *doc2   = xml_create_doc(impl,"Forum",FORUM_DTD);
   GdomeElement *thread1 = xml_create_element(doc1,"Thread");
@@ -883,7 +883,7 @@ GdomeDocument *flt_xmlstorage_thread2xml(GdomeDOMImplementation *impl,GdomeDocum
   xml_set_attribute(thread2,"id",str.content);
   str_cleanup(&str);
 
-  flt_xmlstorage_stringify_posting(doc1,thread1,doc2,thread2,t->postings);
+  flt_xmlstorage_stringify_posting(doc1,thread1,doc2,thread2,t->postings,for_archive);
 
   root = gdome_doc_documentElement(doc1,&e);
   gdome_el_appendChild(root,(GdomeNode *)thread1,&e);
@@ -966,7 +966,7 @@ int flt_xmlstorage_threadlist_writer(forum_t *forum) {
   }
 
   for(;t;t=t->next) {
-    doc_thread = flt_xmlstorage_thread2xml(impl,doc,t);
+    doc_thread = flt_xmlstorage_thread2xml(impl,doc,t,0);
 
     /* save doc to file... */
     str_cstr_append(&str,mpath->values[0]);
@@ -1071,7 +1071,7 @@ int flt_xmlstorage_archive_threads(forum_t *forum,thread_t **threads,size_t len)
       str.len -= 10;
     }
 
-    doc_thread = flt_xmlstorage_thread2xml(impl,doc,threads[i]);
+    doc_thread = flt_xmlstorage_thread2xml(impl,doc,threads[i],1);
 
     olen = str.len;
     str_chars_append(&str,"/t",2);

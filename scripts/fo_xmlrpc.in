@@ -25,8 +25,8 @@ BEGIN {
 
   $Plugins = {};
   $UserName = '';
-  $prefix  = "@prefix@";
-  $exec_prefix = "@exec_prefix@";
+  $prefix  = "@CMAKE_INSTALL_PREFIX@";
+  $exec_prefix = "@CMAKE_INSTALL_PREFIX@";
   
   $fo_default_conf = undef;
   $fo_xmlrpc_conf  = undef;
@@ -35,7 +35,7 @@ BEGIN {
   $methods = {};
 }
 
-use lib "@libdir@/cforum";
+use lib "@CMAKE_INSTALL_LIBDIR_FULL@/cforum";
 
 sub VERSION {(q$Revision$ =~ /([\d.]+)\s*$/)[0] or '0.0'}
 

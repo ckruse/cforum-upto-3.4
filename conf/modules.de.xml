@@ -163,7 +163,7 @@
     </argument>
   </directive>
 
-  <directive name="HideCategoriesInThreadView" arguments="1" ifNotCommitted="yes">
+  <directive name="HideCategoriesInThreadView" arguments="1" ifNotCommitted="no">
     <argument paramname="hidecategoriesinthreadview">
       <validate>^(yes|no)$</validate>
       <error>Sollen ausgeblendete Kategorien auch in der Thread-Ansicht ausgeblendet werden? Bitte geben Sie &quot;ja&quot; oder &quot;nein&quot; an!</error>
@@ -241,7 +241,7 @@
   </directive>
 
   <directive name="ThreadsOpenByDefault" arguments="1">
-    <argument paramname="threadsopen" ifNotCommitted="yes">
+    <argument paramname="threadsopen" ifNotCommitted="no">
       <validate>^(?:yes|no)$</validate>
       <error>Sollen Threads per Default geöffnet oder geschlossen dargestellt werden? Bitte geben Sie &quot;Geöffnet&quot; oder &quot;Geschlossen&quot; an!</error>
     </argument>
@@ -297,7 +297,7 @@
   </directive>
 
   <directive name="ShowSig" arguments="1">
-    <argument paramname="showsig" ifNotCommitted="yes">
+    <argument paramname="showsig" ifNotCommitted="no">
       <validate>^(?:yes|no)$</validate>
       <error>Bitte geben Sie &quot;Ja&quot; oder &quot;Nein&quot; ein!</error>
     </argument>
@@ -343,7 +343,7 @@
   </directive>
 
   <directive name="SetLinkTags" arguments="1">
-    <argument paramname="fltlinksettags" ifNotCommitted="yes">
+    <argument paramname="fltlinksettags" ifNotCommitted="no">
       <validate>^(yes|no)$</validate>
       <error>Bitte geben Sie &quot;ja&quot; oder &quot;nein&quot; bei der Frage nach den Link-Elementen an!</error>
     </argument>
@@ -592,7 +592,7 @@
   </directive>
 
   <directive name="BlacklistInThreadview" arguments="1">
-    <argument paramname="blacklistthreadview" ifNotCommitted="yes">
+    <argument paramname="blacklistthreadview" ifNotCommitted="no">
       <validate>^(?:yes|no)$</validate>
       <error>Soll die Blacklist auch in der Thread-Anzeige wirken? Bitte geben Sie &quot;ja&quot; oder &quot;nein&quot; an!</error>
     </argument>

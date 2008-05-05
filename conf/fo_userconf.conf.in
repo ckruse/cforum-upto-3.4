@@ -31,12 +31,12 @@ Forum FORUM1 {
   MinVal "AutoReload"   "2"
   MaxVal "AutoReload"   "30"
 
-  ModuleConfig "@sysconfdir@/cforum/modules.%s.xml"
+  ModuleConfig "@CMAKE_INSTALL_SYSCONFDIR_FULL@/cforum/modules.%s.xml"
 
   FromUntilFormat "%d. %m. %Y, %H:%M"
 
-  Edit "@sysconfdir@/cforum/templates/forum1/%s_%s_usersettings.so"
-  ImportForm "@sysconfdir@/cforum/templates/forum1/%s_%s_importform.so"
-  ImportOk "@sysconfdir@/cforum/templates/forum1/%s_%s_importok.so"
+  Edit "@CMAKE_INSTALL_SYSCONFDIR_FULL@/cforum/templates/forum1/%s_%s_usersettings.so"
+  ImportForm "@CMAKE_INSTALL_SYSCONFDIR_FULL@/cforum/templates/forum1/%s_%s_importform.so"
+  ImportOk "@CMAKE_INSTALL_SYSCONFDIR_FULL@/cforum/templates/forum1/%s_%s_importok.so"
 }
 

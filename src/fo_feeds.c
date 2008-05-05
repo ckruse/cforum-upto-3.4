@@ -122,6 +122,22 @@ void gen_description(string_t *str,const u_char *descr,cl_thread_t *thread) {
 }
 /* }}} */
 
+/* {{{ replace problematic ]]> in CDATA sections with ]]]><![CDATA[]> */
+void str_str_cdata_append (string_t *dest, string_t *src) {
+  // don't be binary-safe! xml doesn't allow 0-bytes anyway
+  u_char *ptr = src->content;
+  u_char *found;
+
+  while((found = strstr(ptr,"]]>")) != NULL) {
+    str_chars_append(dest,ptr,(size_t)(found-ptr));
+    str_chars_append(dest,"]]]><![CDATA[]>",15);
+    ptr = found + 3;
+  }
+
+  str_cstr_append(dest,ptr);
+}
+/* }}} */
+
 /* {{{ atom_ and rss_head */
 void atom_head(string_t *str,cl_thread_t *thread) {
   u_char *fn = cf_hash_get(GlobalValues,"FORUM_NAME",10),*tmp = NULL,*tmp1 = NULL;
@@ -156,7 +172,7 @@ void atom_head(string_t *str,cl_thread_t *thread) {
   str_chars_append(str,"<title>",7);
   if(thread) {
     str_chars_append(str,"<![CDATA[",9);
-    str_str_append(str,&thread->messages->subject);
+    str_str_cdata_append(str,&thread->messages->subject);
     str_chars_append(str,"]]>",3);
   }
   else str_chars_append(str,atom_title->values[0],strlen(atom_title->values[0]));
@@ -186,18 +202,18 @@ void atom_head(string_t *str,cl_thread_t *thread) {
     str_chars_append(str,"<author>",8);
 
     str_chars_append(str,"<name><![CDATA[",15);
-    str_str_append(str,&thread->messages->author);
+    str_str_cdata_append(str,&thread->messages->author);
     str_chars_append(str,"]]></name>",10);
 
     if(thread->messages->hp.len) {
       str_chars_append(str,"<url><![CDATA[",14);
-      str_str_append(str,&thread->messages->hp);
+      str_str_cdata_append(str,&thread->messages->hp);
       str_chars_append(str,"]]></url>",9);
     }
 
     if(thread->messages->email.len) {
       str_chars_append(str,"<email><![CDATA[",16);
-      str_str_append(str,&thread->messages->email);
+      str_str_cdata_append(str,&thread->messages->email);
       str_chars_append(str,"]]></email>",11);
     }
 
@@ -229,7 +245,7 @@ void rss_head(string_t *str,cl_thread_t *thread) {
   str_chars_append(str,"<title>",7);
   if(thread) {
     str_chars_append(str,"<![CDATA[",9);
-    str_str_append(str,&thread->messages->subject);
+    str_str_cdata_append(str,&thread->messages->subject);
     str_chars_append(str,"]]>",3);
   }
   else str_chars_append(str,rss_title->values[0],strlen(rss_title->values[0]));
@@ -321,18 +337,18 @@ void atom_thread(string_t *str,cl_thread_t *thread,cf_hash_t *head) {
       str_chars_append(str,"<author>",8);
 
       str_chars_append(str,"<name><![CDATA[",15);
-      str_str_append(str,&thread->messages->author);
+      str_str_cdata_append(str,&msg->author);
       str_chars_append(str,"]]></name>",10);
 
       if(msg->hp.len) {
         str_chars_append(str,"<url><![CDATA[",14);
-        str_str_append(str,&msg->hp);
+        str_str_cdata_append(str,&msg->hp);
         str_chars_append(str,"]]></url>",9);
       }
 
       if(msg->email.len) {
         str_chars_append(str,"<email><![CDATA[",16);
-        str_str_append(str,&msg->email);
+        str_str_cdata_append(str,&msg->email);
         str_chars_append(str,"]]></email>",11);
       }
 
@@ -340,7 +356,7 @@ void atom_thread(string_t *str,cl_thread_t *thread,cf_hash_t *head) {
       /* }}} */
 
       str_chars_append(str,"<title><![CDATA[",16);
-      str_str_append(str,&msg->subject);
+      str_str_cdata_append(str,&msg->subject);
       str_chars_append(str,"]]></title>",11);
 
       str_chars_append(str,"<link rel=\"alternate\" type=\"text/html\" href=\"",45);
@@ -371,7 +387,7 @@ void atom_thread(string_t *str,cl_thread_t *thread,cf_hash_t *head) {
         ms ? atoi(ms->values[0]) : -1,
         ss ? cf_strcmp(ss->values[0],"yes") == 0 : 0
       );
-      str_str_append(str,&tmpstr);
+      str_str_cdata_append(str,&tmpstr);
       str_chars_append(str,"]]></content>",13);
       str_cleanup(&tmpstr);
       /* }}} */
@@ -418,7 +434,7 @@ void rss_thread(string_t *str,cl_thread_t *thread,cf_hash_t *head) {
       str_chars_append(str,"<item>",6);
 
       str_chars_append(str,"<dc:creator><![CDATA[",21);
-      str_str_append(str,&msg->author);
+      str_str_cdata_append(str,&msg->author);
       if(msg->email.len) {
         str_chars_append(str," (mailto:",9);
         str_str_append(str,&msg->email);
@@ -427,7 +443,7 @@ void rss_thread(string_t *str,cl_thread_t *thread,cf_hash_t *head) {
       str_chars_append(str,"]]></dc:creator>",16);
 
       str_chars_append(str,"<title><![CDATA[",16);
-      str_str_append(str,&msg->subject);
+      str_str_cdata_append(str,&msg->subject);
       str_chars_append(str,"]]></title>",11);
 
       str_chars_append(str,"<link><![CDATA[",15);
@@ -440,7 +456,7 @@ void rss_thread(string_t *str,cl_thread_t *thread,cf_hash_t *head) {
 
       if(msg->category.len) {
         str_chars_append(str,"<category>",10);
-        str_str_append(str,&msg->category);
+        str_str_cdata_append(str,&msg->category);
         str_chars_append(str,"</category>",11);
       }
 
@@ -462,7 +478,7 @@ void rss_thread(string_t *str,cl_thread_t *thread,cf_hash_t *head) {
         ss ? cf_strcmp(ss->values[0],"yes") == 0 : 0
       );
       str_chars_append(str,"<![CDATA[",9);
-      str_str_append(str,&tmpstr);
+      str_str_cdata_append(str,&tmpstr);
       str_cleanup(&tmpstr);
 
       str_chars_append(str,"]]>",3);
@@ -597,18 +613,18 @@ void gen_threadlist_atom(cl_thread_t *thread,string_t *str) {
   str_chars_append(str,"<author>",8);
 
   str_chars_append(str,"<name><![CDATA[",15);
-  str_str_append(str,&thread->messages->author);
+  str_str_cdata_append(str,&thread->messages->author);
   str_chars_append(str,"]]></name>",10);
 
   if(thread->messages->hp.len) {
     str_chars_append(str,"<url><![CDATA[",14);
-    str_str_append(str,&thread->messages->hp);
+    str_str_cdata_append(str,&thread->messages->hp);
     str_chars_append(str,"]]></url>",9);
   }
 
   if(thread->messages->email.len) {
     str_chars_append(str,"<email><![CDATA[",16);
-    str_str_append(str,&thread->messages->email);
+    str_str_cdata_append(str,&thread->messages->email);
     str_chars_append(str,"]]></email>",11);
   }
 
@@ -616,7 +632,7 @@ void gen_threadlist_atom(cl_thread_t *thread,string_t *str) {
   /* }}} */
 
   str_chars_append(str,"<title><![CDATA[",16);
-  str_str_append(str,&thread->messages->subject);
+  str_str_cdata_append(str,&thread->messages->subject);
   str_chars_append(str,"]]></title>",11);
 
   str_chars_append(str,"<link rel=\"alternate\" type=\"text/html\" href=\"",45);
@@ -647,7 +663,7 @@ void gen_threadlist_atom(cl_thread_t *thread,string_t *str) {
     ms ? atoi(ms->values[0]) : -1,
     ss ? cf_strcmp(ss->values[0],"yes") == 0 : 0
   );
-  str_str_append(str,&tmpstr);
+  str_str_cdata_append(str,&tmpstr);
   str_chars_append(str,"]]></content>",13);
   str_cleanup(&tmpstr);
   /* }}} */
@@ -685,7 +701,7 @@ void gen_threadlist_rss(cl_thread_t *thread,string_t *str) {
   str_chars_append(str,"<item>",6);
 
   str_chars_append(str,"<dc:creator><![CDATA[",21);
-  str_str_append(str,&thread->messages->author);
+  str_str_cdata_append(str,&thread->messages->author);
   if(thread->messages->email.len) {
     str_chars_append(str," (mailto:",9);
     str_str_append(str,&thread->messages->email);
@@ -694,7 +710,7 @@ void gen_threadlist_rss(cl_thread_t *thread,string_t *str) {
   str_chars_append(str,"]]></dc:creator>",16);
 
   str_chars_append(str,"<title><![CDATA[",16);
-  str_str_append(str,&thread->messages->subject);
+  str_str_cdata_append(str,&thread->messages->subject);
   str_chars_append(str,"]]></title>",11);
 
   str_chars_append(str,"<link><![CDATA[",15);
@@ -729,7 +745,7 @@ void gen_threadlist_rss(cl_thread_t *thread,string_t *str) {
     ss ? cf_strcmp(ss->values[0],"yes") == 0 : 0
   );
   str_chars_append(str,"<![CDATA[",9);
-  str_str_append(str,&tmpstr);
+  str_str_cdata_append(str,&tmpstr);
   str_cleanup(&tmpstr);
 
   str_chars_append(str,"]]>",3);

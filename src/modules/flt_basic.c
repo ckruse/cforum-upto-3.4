@@ -25,6 +25,7 @@
 #include <time.h>
 #include <sys/types.h>
 
+#include "charconvert.h"
 #include "readline.h"
 #include "hashlib.h"
 #include "utils.h"
@@ -54,16 +55,31 @@ int flt_basic_execute(cf_hash_t *head,configuration_t *dc,configuration_t *vc,cf
   u_char *UserName = cf_hash_get(GlobalValues,"UserName",8);
   name_value_t *dflt = cfg_get_first_value(vc,forum_name,"DateFormatLoadTime");
   name_value_t *loc = cfg_get_first_value(dc,forum_name,"DateLocale");
+  name_value_t *cats = cfg_get_first_value(dc,forum_name,"Categories");
   name_value_t *ucfg;
+  cf_tpl_variable_t array;
 
   u_char buff[20];
   time_t tm  = time(NULL);
   size_t len  = 0;
   size_t n;
+  size_t i;
   u_char *time;
+  u_char *tmp;
 
   cf_set_variable(begin,cs,"ubase",ubase->values[0],strlen(ubase->values[0]),1);
   cf_set_variable(end,cs,"ubase",ubase->values[0],strlen(ubase->values[0]),1);
+
+  /* {{{ set categories */
+  cf_tpl_var_init(&array,TPL_VARIABLE_ARRAY);
+
+  for(i=0;i<cats->valnum;++i) {
+    tmp   = charset_convert_entities(cats->values[i],strlen(cats->values[i]),"UTF-8",cs->values[0],&len);
+    cf_tpl_var_addvalue(&array,TPL_VARIABLE_STRING,tmp,len);
+    free(tmp);
+  }
+  cf_tpl_setvar(begin,"cats",&array);
+  /* }}} */
 
   if(UserName) {
     ucfg = cfg_get_first_value(dc,forum_name,"UserConfig");

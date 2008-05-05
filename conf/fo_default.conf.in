@@ -9,15 +9,15 @@
 # $LastChangedBy$
 #
 
-SocketName "@with_socket_path@"
+SocketName "@SOCKET_PATH@"
 
 Forum FORUM1 {
  TemplateMode "html4"
  XHTMLMode "no"
 
- ErrorTemplate "@sysconfdir@/cforum/templates/forum1/%s_%s_fatal.so"
+ ErrorTemplate "@CMAKE_INSTALL_SYSCONFDIR_FULL@/cforum/templates/forum1/%s_%s_fatal.so"
 
- ThreadIndexFile "@localstatedir@/cforum/forum1_tididx.dat"
+ ThreadIndexFile "@CMAKE_INSTALL_LOCALSTATEDIR_FULL@/cforum/forum1_tididx.dat"
 
  BaseURL "/"
  PostingURL "?t=%t&m=%m"
@@ -48,11 +48,11 @@ Forum FORUM1 {
 
  DateLocale "de_DE.UTF-8"
  Language "de"
- MessagesDatabase "@localstatedir@/cforum/forum1_messages.db"
+ MessagesDatabase "@CMAKE_INSTALL_LOCALSTATEDIR_FULL@/cforum/forum1_messages.db"
 
  Categories "ASP" "BROWSER" "CGI" "CSS" "DATENBANK" "DESIGN" "DHTML" "E-MAIL" "FTP" "GRAFIK" "HTML" "HTTP" "INTERNET-ANBINDUNG" "JAVA" "JAVASCRIPT" "MEINUNG" "MENSCHELEI" "PERL" "PHP" "PROGRAMMIERTECHNIK" "PROJEKTVERWALTUNG" "PROVIDER" "RECHT" "SERVER" "SOFTWARE" "SONSTIGES" "VB-SCRIPT" "XML" "XML-DERIVAT" "XSL" "ZUR INFO" "ZU DIESEM FORUM"
 
- ConfigDirectory "@localstatedir@/cforum/forum1/users/"
+ ConfigDirectory "@CMAKE_INSTALL_LOCALSTATEDIR_FULL@/cforum/forum1/users/"
  InactivityDelete "50"
  SendMailBeforeDelete "yes"
 }

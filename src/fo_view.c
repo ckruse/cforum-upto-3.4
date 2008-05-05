@@ -65,6 +65,7 @@ void show_xmlhttp_thread(cf_hash_t *head,void *shm_ptr,u_int64_t tid,u_int64_t m
 {
   int ret;
   u_char fo_thread_tplname[256],buff[512],*line = NULL,*UserName = cf_hash_get(GlobalValues,"UserName",8);
+  u_char *content_type = cf_hash_get(GlobalValues,"OutputContentType",17);
   name_value_t *fo_thread_tpl,*cs;
   u_char *fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   int show_invi = cf_hash_get(GlobalValues,"ShowInvisible",13) != NULL;
@@ -87,7 +88,7 @@ void show_xmlhttp_thread(cf_hash_t *head,void *shm_ptr,u_int64_t tid,u_int64_t m
 
   #ifdef CF_SHARED_MEM
   if((sock = cf_socket_setup()) == -1) {
-    printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=UTF-8\015\012\015\012");
+    printf("Status: 500 Internal Server Error\015\012Content-Type: %s; charset=UTF-8\015\012\015\012",content_type?content_type:"text/html");
     cf_error_message("E_NO_CONN",NULL,strerror(errno));
     return;
   }
@@ -101,7 +102,7 @@ void show_xmlhttp_thread(cf_hash_t *head,void *shm_ptr,u_int64_t tid,u_int64_t m
       fprintf(stderr,"fo_view: xmlhttp: Server returned: %s\n",line);
       free(line);
     }
-    printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=UTF-8\015\012\015\012");
+    printf("Status: 500 Internal Server Error\015\012Content-Type: %s; charset=UTF-8\015\012\015\012",content_type?content_type:"text/html");
     cf_error_message("E_DATA_FAILURE",NULL);
     return;
   }
@@ -110,7 +111,7 @@ void show_xmlhttp_thread(cf_hash_t *head,void *shm_ptr,u_int64_t tid,u_int64_t m
   ret = cf_get_message_through_sock(sock,&tsd,&thread,tid,0,show_invi ? CF_KEEP_DELETED : CF_KILL_DELETED);
 
   if(ret == -1) {
-    printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
+    printf("Status: 500 Internal Server Error\015\012Content-Type: %s; charset=%s\015\012\015\012",content_type?content_type:"text/html",cs->values[0]);
     if(*ErrorString) cf_error_message(ErrorString,NULL);
     else cf_error_message("E_DATA_FAILURE",NULL);
     return;
@@ -128,12 +129,12 @@ void show_xmlhttp_thread(cf_hash_t *head,void *shm_ptr,u_int64_t tid,u_int64_t m
 
   str_init(&str);
   if(cf_gen_threadlist(&thread,head,&str,rm->threadlist_thread_tpl,"full",rm->posting_uri[UserName?1:0],CF_MODE_THREADLIST) != FLT_EXIT) {
-    printf("Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
+    printf("Content-Type: %s; charset=%s\015\012\015\012",content_type?content_type:"text/html",cs->values[0]);
     fwrite(str.content,1,str.len,stdout);
     str_cleanup(&str);
   }
   else {
-    printf("Status: 500 Internal Server Error\015\012Content-Type: text/html\015\012\015\012");
+    printf("Status: 500 Internal Server Error\015\012Content-Type: %s\015\012\015\012",content_type?content_type:"text/html");
     cf_error_message("E_DATA_FAILURE",NULL);
   }
 
@@ -157,7 +158,8 @@ void show_posting(cf_hash_t *head,void *shm_ptr,u_int64_t tid,u_int64_t mid)
   u_char buff[256],
     *tmp,
     *UserName = cf_hash_get(GlobalValues,"UserName",8),
-    *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
+    *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10),
+    *content_type = cf_hash_get(GlobalValues,"OutputContentType",17);
 
   name_value_t *tm  = cfg_get_first_value(&fo_view_conf,forum_name,"ThreadMode"),
     *rm             = cfg_get_first_value(&fo_view_conf,forum_name,"ReadMode"),
@@ -183,7 +185,7 @@ void show_posting(cf_hash_t *head,void *shm_ptr,u_int64_t tid,u_int64_t mid)
     free(rm->values[0]);
     rm->values[0] = strdup(tm->values[0]);
     if(cf_run_readmode_collectors(head,&fo_view_conf,rmi) != FLT_OK) {
-      printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
+      printf("Status: 500 Internal Server Error\015\012Content-Type: %s; charset=%s\015\012\015\012",content_type?content_type:"text/html",cs->values[0]);
       cf_error_message("E_CONFIG_ERR",NULL);
       return;
     }
@@ -207,12 +209,12 @@ void show_posting(cf_hash_t *head,void *shm_ptr,u_int64_t tid,u_int64_t mid)
   {
     if(cf_strcmp(ErrorString,"E_FO_404") == 0) {
       if(cf_run_404_handlers(head,tid,mid) != FLT_EXIT) {
-        printf("Status: 404 Not Found\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
+        printf("Status: 404 Not Found\015\012Content-Type: %s; charset=%s\015\012\015\012",content_type?content_type:"text/html",cs->values[0]);
         cf_error_message(ErrorString,NULL);
       }
     }
     else {
-      printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
+      printf("Status: 500 Internal Server Error\015\012Content-Type: %s; charset=%s\015\012\015\012",content_type?content_type:"text/html",cs->values[0]);
       cf_error_message(ErrorString,NULL);
     }
     return;
@@ -261,7 +263,7 @@ void show_posting(cf_hash_t *head,void *shm_ptr,u_int64_t tid,u_int64_t mid)
   cf_tpl_setvalue(&tpl,"cf_version",TPL_VARIABLE_STRING,CF_VERSION,strlen(CF_VERSION));
   /* }}} */
 
-  printf("Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
+  printf("Content-Type: %s; charset=%s\015\012\015\012",content_type?content_type:"text/html",cs->values[0]);
 
   #ifndef CF_NO_SORTING
   #ifdef CF_SHARED_MEM
@@ -298,7 +300,8 @@ void show_threadlist(void *shm_ptr,cf_hash_t *head)
 
   u_char *ltime,
     *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10),
-    *UserName = cf_hash_get(GlobalValues,"UserName",8);
+    *UserName = cf_hash_get(GlobalValues,"UserName",8),
+    *content_type = cf_hash_get(GlobalValues,"OutputContentType",17);
 
   name_value_t *cs = cfg_get_first_value(&fo_default_conf,forum_name,"ExternCharset"),
     *fbase         = NULL,
@@ -353,7 +356,7 @@ void show_threadlist(void *shm_ptr,cf_hash_t *head)
   /* {{{ Check if request was ok. If not, send error message. */
   #ifndef CF_SHARED_MEM
   if(!line || cf_strcmp(line,"200 Ok\n")) {
-    printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
+    printf("Status: 500 Internal Server Error\015\012Content-Type: %s; charset=%s\015\012\015\012",content_type?content_type:"text/html",cs->values[0]);
 
     if(line) {
       ret = snprintf(buff,128,"E_FO_%d",atoi(line));
@@ -364,7 +367,7 @@ void show_threadlist(void *shm_ptr,cf_hash_t *head)
   }
   #else
   if(!ptr) {
-    printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
+    printf("Status: 500 Internal Server Error\015\012Content-Type: %s; charset=%s\015\012\015\012",content_type?content_type:"text/html",cs->values[0]);
     cf_error_message("E_NO_CONN",NULL,strerror(errno));
   }
   #endif
@@ -380,13 +383,13 @@ void show_threadlist(void *shm_ptr,cf_hash_t *head)
     pbase    = cfg_get_first_value(&fo_default_conf,forum_name,UserName ? "UPostScript" : "PostScript");
 
     if(cf_tpl_init(&tpl_begin,rm->pre_threadlist_tpl) != 0) {
-      printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
+      printf("Status: 500 Internal Server Error\015\012Content-Type: %s; charset=%s\015\012\015\012",content_type?content_type:"text/html",cs->values[0]);
 
       cf_error_message("E_TPL_NOT_FOUND",NULL);
       return;
     }
     if(cf_tpl_init(&tpl_end,rm->post_threadlist_tpl) != 0) {
-      printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
+      printf("Status: 500 Internal Server Error\015\012Content-Type: %s; charset=%s\015\012\015\012",content_type?content_type:"text/html",cs->values[0]);
 
       cf_error_message("E_TPL_NOT_FOUND",NULL);
       return;
@@ -422,7 +425,7 @@ void show_threadlist(void *shm_ptr,cf_hash_t *head)
     }
 
     /* ok, seems to be all right, send headers */
-    printf("Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
+    printf("Content-Type: %s; charset=%s\015\012\015\012",content_type?content_type:"text/html",cs->values[0]);
 
     cf_tpl_parse(&tpl_begin);
     cf_tpl_finish(&tpl_begin);
@@ -553,7 +556,7 @@ int main(int argc,char *argv[],char *env[]) {
   };
 
   int ret;
-  u_char  *ucfg,*m  = NULL,*t = NULL,*UserName,*fname,*mode = NULL;
+  u_char  *ucfg,*m  = NULL,*t = NULL,*UserName,*fname,*mode = NULL,*content_type;
   array_t *cfgfiles;
   cf_hash_t *head;
   configfile_t conf,dconf;
@@ -687,12 +690,13 @@ int main(int argc,char *argv[],char *env[]) {
   if(ret != FLT_EXIT) ret = cf_run_init_handlers(head);
 
   cs = cfg_get_first_value(&fo_default_conf,forum_name,"ExternCharset");
+  content_type = cf_hash_get(GlobalValues,"OutputContentType",17);
 
   /* {{{ get readmode information */
   if(ret != FLT_EXIT) {
     memset(&rm_infos,0,sizeof(rm_infos));
     if((ret = cf_run_readmode_collectors(head,&fo_view_conf,&rm_infos)) != FLT_OK) {
-      printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
+      printf("Status: 500 Internal Server Error\015\012Content-Type: %s; charset=%s\015\012\015\012",content_type?content_type:"text/html",cs->values[0]);
       fprintf(stderr,"cf_run_readmode_collectors() returned %d!\n",ret);
       cf_error_message("E_CONFIG_ERR",NULL);
       ret = FLT_EXIT;
@@ -705,13 +709,13 @@ int main(int argc,char *argv[],char *env[]) {
     /* {{{ now, we need a socket connection/shared mem pointer */
     #ifndef CF_SHARED_MEM
     if((sock = cf_socket_setup()) < 0) {
-      printf("Content-Type: text/html; charset=%s\015\012Status: 500 Internal Server Error\015\012\015\012",cs?cs->values[0]?cs->values[0]:(u_char *)"UTF-8":(u_char *)"UTF-8");
+      printf("Content-Type: %s; charset=%s\015\012Status: 500 Internal Server Error\015\012\015\012",content_type?content_type:"text/html",cs?cs->values[0]?cs->values[0]:(u_char *)"UTF-8":(u_char *)"UTF-8");
       cf_error_message("E_NO_SOCK",NULL,strerror(errno));
       exit(0);
     }
     #else
     if((sock = cf_get_shm_ptr()) == NULL) {
-      printf("Content-Type: text/html; charset=%s\015\012Status: 500 Internal Server Error\015\012\015\012",cs?cs->values[0]?cs->values[0]:(u_char *)"UTF-8":(u_char *)"UTF-8");
+      printf("Content-Type: %s; charset=%s\015\012Status: 500 Internal Server Error\015\012\015\012",content_type?content_type:"text/html",cs?cs->values[0]?cs->values[0]:(u_char *)"UTF-8":(u_char *)"UTF-8");
       cf_error_message("E_NO_CONN",NULL,strerror(errno));
       exit(0);
     }
