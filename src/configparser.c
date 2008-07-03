@@ -168,6 +168,7 @@ conf_opt_t fo_server_options[] = {
 
   { "SortThreads",          handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL,  &fo_server_conf },
   { "SortMessages",         handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL,  &fo_server_conf },
+  { "ArchiveIp",            handle_command,   CFG_OPT_CONFIG|CFG_OPT_LOCAL,                 &fo_server_conf },
   { "ArchiveOnVote",        handle_command,   CFG_OPT_CONFIG|CFG_OPT_LOCAL,                 &fo_server_conf },
   { "MainFileMaxBytes",     handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL,  &fo_server_conf },
   { "MainFileMaxPostings",  handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL,  &fo_server_conf },

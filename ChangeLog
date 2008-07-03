@@ -1,3 +1,8 @@
+2008-07-03 Christian Seiler <self@christian-seiler.de>
+	* src/modules/flt_xmlstorage.c, src/configparser.c: Added option
+		to configure whether IP addresses should be stored in the
+		archive or not.
+
 2008-05-05 Christian Seiler <self@christian-seiler.de>
 	* **/Makefile.am, **/Makefile.PL.in, **/Makefile.in,
 		**/CMakeLists.txt, src/config.h.in, src/config.h.cmake,

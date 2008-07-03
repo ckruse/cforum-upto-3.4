@@ -57,6 +57,7 @@ struct sockaddr_un;
 
 static int sorthread_ts  = 0;
 static int sort_messages = 0;
+static int archive_ip    = 0;
 
 void flt_xmlstorage_create_threadtree(forum_t *forum,thread_t *thread,posting_t *post,GdomeNode *msg_elem_index,GdomeNode *msg_elem_thread,short level);
 void flt_xmlstorage_handle_header(posting_t *p,GdomeNode *n);
@@ -291,6 +292,7 @@ int flt_xmlstorage_make_forumtree(forum_t *forum) {
   name_value_t *p = cfg_get_first_value(&fo_default_conf,forum->name,"MessagePath");
   name_value_t *sort_t = cfg_get_first_value(&fo_server_conf,forum->name,"SortThreads");
   name_value_t *sort_m = cfg_get_first_value(&fo_server_conf,forum->name,"SortMessages");
+  name_value_t *arch_ip = cfg_get_first_value(&fo_server_conf,forum->name,"ArchiveIp");
   string_t path;
 
   u_char *ctid;
@@ -314,6 +316,7 @@ int flt_xmlstorage_make_forumtree(forum_t *forum) {
 
   sorthread_ts  = cf_strcmp(sort_t->values[0],"ascending") == 0 ? CF_SORT_ASCENDING : CF_SORT_DESCENDING;
   sort_messages = cf_strcmp(sort_m->values[0],"ascending") == 0 ? CF_SORT_ASCENDING : CF_SORT_DESCENDING;
+  archive_ip    = arch_ip && cf_strcmp(arch_ip->values[0],"yes") == 0;
 
   str_init(&path);
   str_char_set(&path,p->values[0],strlen(p->values[0]));
@@ -676,7 +679,7 @@ posting_t *flt_xmlstorage_stringify_posting(GdomeDocument *doc1,GdomeElement *t1
   if(p->unid.len) xml_set_attribute(m1,"unid",p->unid.content);
 
   xml_set_attribute(m2,"id",mstr.content);
-  if(!for_archive) xml_set_attribute(m2,"ip",p->user.ip.content);
+  if(!for_archive || archive_ip) xml_set_attribute(m2,"ip",p->user.ip.content);
 
   str_cleanup(&mstr);
 
