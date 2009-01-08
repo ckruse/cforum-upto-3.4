@@ -1,3 +1,6 @@
+2008-01-08 Christian Kruse <cjk@wwwtech.de>
+	* conf/conf/CMakeLists.txt: Installing config files to cforum/dist (to avoid
+		overwriting existing config files)
 2009-01-08 Christian Seiler <self@christian-seiler.de>
 	* conf/modules.de.xml: Fixed processing of ShowSig directive
 	* scripts/adjust-exports.sh: Cope with whitespace changes in newer

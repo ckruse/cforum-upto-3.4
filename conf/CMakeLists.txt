@@ -5,20 +5,29 @@ foreach (config ${CONFIGS})
   install (FILES ${CMAKE_CURRENT_BINARY_DIR}/${config} DESTINATION ${CMAKE_INSTALL_SYSCONFDIR}/cforum)
 endforeach (config ${CONFIGS})
 
+
+
+install (
+  FILES
+    config.dtd
+    modconf.dtd
+  DESTINATION
+    ${CMAKE_INSTALL_SYSCONFDIR}/cforum
+)
+
+
 install (
   FILES
     config.de.xml
-    config.dtd
     errormessages.de.txt
     errormessages.fr.txt
-    modconf.dtd
     modules.de.xml
     modules.en.xml
     modules.fr.xml
     quotings.xml
     tipoftheday.txt
   DESTINATION
-    ${CMAKE_INSTALL_SYSCONFDIR}/cforum
+    ${CMAKE_INSTALL_SYSCONFDIR}/cforum/dist
 )
 
 install (
