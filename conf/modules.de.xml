@@ -297,7 +297,7 @@
   </directive>
 
   <directive name="ShowSig" arguments="1">
-    <argument paramname="showsig" ifNotCommitted="no">
+    <argument paramname="showsig" ifNotCommitted="yes">
       <validate>^(?:yes|no)$</validate>
       <error>Bitte geben Sie &quot;Ja&quot; oder &quot;Nein&quot; ein!</error>
     </argument>

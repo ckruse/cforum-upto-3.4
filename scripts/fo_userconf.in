@@ -160,7 +160,6 @@ sub generate_edit_output {
 
         if($arg->getAttribute('parse') eq 'date' and defined($val) and length($val)) {
           my ($sec,$min,$hour,$day,$mon,$year) = localtime $val;
-          print STDERR "$val | $year - $mon - $day\n";
 
           $mon  += 1;
           $year += 1900;

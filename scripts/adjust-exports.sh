@@ -8,4 +8,4 @@ shift
 shift
 QW="$*"
 
-${PERL} -pi -e "s!\@EXPORT = qw\( \);!\@EXPORT_OK = qw($QW);!g" $FILE
+${PERL} -pi -e "s!\@EXPORT = qw\(\s*\);!\@EXPORT_OK = qw($QW);!g" $FILE
