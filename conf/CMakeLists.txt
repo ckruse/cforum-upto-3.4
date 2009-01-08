@@ -2,7 +2,7 @@ set (CONFIGS fo_admin.conf fo_default.conf fo_server.conf fo_view.conf fo_arcvie
 
 foreach (config ${CONFIGS})
   configure_file (${CMAKE_CURRENT_SOURCE_DIR}/${config}.in ${CMAKE_CURRENT_BINARY_DIR}/${config} @ONLY)
-  install (FILES ${CMAKE_CURRENT_BINARY_DIR}/${config} DESTINATION ${CMAKE_INSTALL_SYSCONFDIR}/cforum)
+  install (FILES ${CMAKE_CURRENT_BINARY_DIR}/${config} DESTINATION ${CMAKE_INSTALL_SYSCONFDIR}/cforum/dist)
 endforeach (config ${CONFIGS})
 
 
