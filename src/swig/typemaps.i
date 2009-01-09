@@ -47,9 +47,11 @@ typedef unsigned char u_char;
   argvi++;
 }
 
-%typemap(perl5,in) SV *cllbck {
+#ifdef SWIGPERL
+%typemap(in) SV *cllbck {
   if(!SvROK($input)) croak("Expected a reference.\n");
   $1 = SvRV($input);
 }
+#endif
 
 /* eof */

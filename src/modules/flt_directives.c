@@ -21,6 +21,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <errno.h>
 
 #include <string.h>
 #include <ctype.h>
@@ -500,7 +501,8 @@ int flt_directives_execute(configuration_t *fdc,configuration_t *fvc,cl_thread_t
             /* check for title */
             if((title_alt = strstr(list[1],"@title=")) != NULL) {
               if(*(title_alt+7) && flt_directives_is_valid_title(title_alt+7,strlen(title_alt+7))) {
-                tmp2 = strndup(list[1],title_alt-list[1]);
+                if(title_alt != list[1]) tmp2 = strndup(list[1],title_alt-list[1]);
+                else tmp2 = NULL;
                 title_alt = htmlentities(title_alt+7,0);
               }
               else return FLT_DECLINE;
@@ -513,7 +515,7 @@ int flt_directives_execute(configuration_t *fdc,configuration_t *fvc,cl_thread_t
 
             str_init(&tmpstr);
             str_chars_append(&tmpstr,uri->uri,strlen(uri->uri));
-            str_chars_append(&tmpstr,tmp2,strlen(tmp2));
+            if(tmp2) str_chars_append(&tmpstr,tmp2,strlen(tmp2));
 
             flt_directives_generate_uri(tmpstr.content,title_alt,content,NULL,0,fdc,fvc,1);
 
@@ -521,7 +523,7 @@ int flt_directives_execute(configuration_t *fdc,configuration_t *fvc,cl_thread_t
               str_chars_append(cite,"[ref:",5);
               str_chars_append(cite,tmp,strlen(tmp));
               str_char_append(cite,';');
-              str_chars_append(cite,ptr,strlen(ptr));
+              if(tmp2) str_chars_append(cite,tmp2,strlen(ptr));
               if(title_alt) {
                 str_chars_append(cite,"@title=",7);
                 str_chars_append(cite,title_alt,strlen(title_alt));
@@ -549,6 +551,37 @@ int flt_directives_execute(configuration_t *fdc,configuration_t *fvc,cl_thread_t
       }
     }
     /* }}} */
+    /* {{{ [char:] */
+    else if(cf_strcmp(directive,"char") == 0) {
+      u_char *start = parameter,utf8_chr[10];
+      u_int32_t chr;
+      int cls;
+
+      if(*start == 'U' || *start == 'u') {
+        start = parameter + 1;
+        if(*start == '-' || start == '+') start += 1;
+      }
+
+      if(strlen(start) > 6 || strlen(start) < 1) return FLT_DECLINE;
+
+      chr = strtoull(start,NULL,16);
+      cls = cf_classify_char(chr);
+
+      if(cls == CF_UNI_CLS_CC || cls == CF_UNI_CLS_CF || cls == CF_UNI_CLS_CS || cls == CF_UNI_CLS_CN || cls == -1) return FLT_DECLINE;
+
+      if((cls = unicode_to_utf8(chr,utf8_chr,10)) == EINVAL) return FLT_DECLINE;
+      str_chars_append(content,utf8_chr,cls);
+
+      if(sig == 0 && cite) {
+        str_chars_append(cite,"[char:",6);
+        str_cstr_append(cite,parameter);
+        str_char_append(cite,']');
+      }
+
+      return FLT_OK;
+    }
+    /* }}} */
+
   }
 
   return FLT_DECLINE;
@@ -750,6 +783,39 @@ int flt_directives_validate(configuration_t *fdc,configuration_t *fvc,const u_ch
       }
     }
     /* }}} */
+    /* {{{ [char:] */
+    else if(cf_strcmp(directive,"char") == 0) {
+      u_char *start = parameter;
+      u_int64_t chr;
+      int cls;
+
+      if(*start == 'U' || *start == 'u') {
+        start = parameter + 1;
+        if(*start == '-' || start == '+') start += 1;
+      }
+
+      if(strlen(start) > 6 || strlen(start) < 1) {
+        if((err = cf_get_error_message("E_unicodechar",&len)) != NULL) {
+          cf_tpl_var_addvalue(var,TPL_VARIABLE_STRING,err,len);
+          free(err);
+        }
+        return FLT_ERROR;
+      }
+
+      chr = strtoull(start,NULL,16);
+      cls = cf_classify_char(chr);
+
+      if(cls == CF_UNI_CLS_CC || cls == CF_UNI_CLS_CF || cls == CF_UNI_CLS_CS || cls == CF_UNI_CLS_CN || cls == -1) {
+        if((err = cf_get_error_message("E_unicodechar",&len)) != NULL) {
+          cf_tpl_var_addvalue(var,TPL_VARIABLE_STRING,err,len);
+          free(err);
+        }
+        return FLT_ERROR;
+      }
+
+      return FLT_OK;
+    }
+    /* }}} */
   }
 
   return FLT_DECLINE;
@@ -862,11 +928,15 @@ int flt_directives_init(cf_hash_t *cgi,configuration_t *dc,configuration_t *vc) 
   cf_html_register_directive("image",flt_directives_execute,CF_HTML_DIR_TYPE_ARG|CF_HTML_DIR_TYPE_INLINE);
   cf_html_register_directive("iframe",flt_directives_execute,CF_HTML_DIR_TYPE_ARG|CF_HTML_DIR_TYPE_INLINE);
 
+  cf_html_register_directive("char",flt_directives_execute,CF_HTML_DIR_TYPE_ARG|CF_HTML_DIR_TYPE_INLINE);
+
   cf_html_register_validator("link",flt_directives_validate,CF_HTML_DIR_TYPE_ARG|CF_HTML_DIR_TYPE_INLINE);
   cf_html_register_validator("pref",flt_directives_validate,CF_HTML_DIR_TYPE_ARG|CF_HTML_DIR_TYPE_INLINE);
   cf_html_register_validator("ref",flt_directives_validate,CF_HTML_DIR_TYPE_ARG|CF_HTML_DIR_TYPE_INLINE);
   cf_html_register_validator("image",flt_directives_validate,CF_HTML_DIR_TYPE_ARG|CF_HTML_DIR_TYPE_INLINE);
   cf_html_register_validator("iframe",flt_directives_validate,CF_HTML_DIR_TYPE_ARG|CF_HTML_DIR_TYPE_INLINE);
+
+  cf_html_register_validator("char",flt_directives_validate,CF_HTML_DIR_TYPE_ARG|CF_HTML_DIR_TYPE_INLINE);
 
   return FLT_DECLINE;
 }

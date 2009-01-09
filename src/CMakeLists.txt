@@ -1,7 +1,7 @@
 configure_file (${CMAKE_CURRENT_SOURCE_DIR}/config.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/config.h)
 include_directories (BEFORE ${CMAKE_CURRENT_BINARY_DIR})
 
-add_library (cfcharconvert SHARED charconvert.c)
+add_library (cfcharconvert SHARED charconvert.c unicode_classes.c)
 if (HAVE_LIBICONV)
   target_link_libraries (cfcharconvert iconv)
 endif (HAVE_LIBICONV)
