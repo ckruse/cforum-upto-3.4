@@ -35,6 +35,10 @@ endif (ENABLE_SHARED_MEM STREQUAL "ON")
 
 add_definitions (-Wall -W -D_REENTRANT -D_GNU_SOURCE -funsigned-char -Wno-pointer-sign -Wno-unused-parameter)
 
+if (ENABLE_DEBUG STREQUAL "ON")
+  add_definitions (-g)
+endif (ENABLE_DEBUG STREQUAL "ON")
+
 # Differences between UNIX systems:
 #   Some define dlopen()/... in -ldl
 #   Others define it in the C library

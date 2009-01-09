@@ -340,6 +340,7 @@ void cf_error_message(const u_char *err,FILE *out, ...) {
   string_t msg;
 
   int ivar,ret;
+  double fvar;
   u_char *svar;
 
   size_t size;
@@ -397,7 +398,13 @@ void cf_error_message(const u_char *err,FILE *out, ...) {
               case 'd':
                 ivar = va_arg(ap,int);
                 size = snprintf(ibuff,50,"%d",ivar);
-                str_chars_append(&msg,ibuff,50);
+                str_chars_append(&msg,ibuff,size);
+                break;
+
+              case 'f':
+                fvar = va_arg(ap,double);
+                size = snprintf(ibuff,50,"%.2f",fvar);
+                str_chars_append(&msg,ibuff,size);
                 break;
 
               default:
@@ -446,6 +453,7 @@ u_char *cf_get_error_message(const u_char *err,size_t *len, ...) {
   string_t msg;
 
   int ivar,ret;
+  double fvar;
   u_char *svar;
 
   size_t size;
@@ -497,7 +505,13 @@ u_char *cf_get_error_message(const u_char *err,size_t *len, ...) {
         case 'd':
           ivar = va_arg(ap,int);
           size = snprintf(ibuff,50,"%d",ivar);
-          str_chars_append(&msg,ibuff,50);
+          str_chars_append(&msg,ibuff,size);
+          break;
+
+        case 'f':
+          fvar = va_arg(ap,double);
+          size = snprintf(ibuff,50,"%.2f",fvar);
+          str_chars_append(&msg,ibuff,size);
           break;
 
         default:

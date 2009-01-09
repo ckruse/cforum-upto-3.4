@@ -25,7 +25,7 @@ my $help = 0;
 GetOptions(
   "message-file=s" => \$messagefile_in,
   "message-db=s" => \$messagefile_out,
-  "lang" => \$lang,
+  "lang=s" => \$lang,
   "help" => \$help
 );
 

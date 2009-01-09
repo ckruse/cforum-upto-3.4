@@ -795,7 +795,7 @@ int flt_directives_validate(configuration_t *fdc,configuration_t *fvc,const u_ch
       }
 
       if(strlen(start) > 6 || strlen(start) < 1) {
-        if((err = cf_get_error_message("E_unicodechar",&len)) != NULL) {
+        if((err = cf_get_error_message("E_invalid_char",&len)) != NULL) {
           cf_tpl_var_addvalue(var,TPL_VARIABLE_STRING,err,len);
           free(err);
         }
@@ -806,7 +806,7 @@ int flt_directives_validate(configuration_t *fdc,configuration_t *fvc,const u_ch
       cls = cf_classify_char(chr);
 
       if(cls == CF_UNI_CLS_CC || cls == CF_UNI_CLS_CF || cls == CF_UNI_CLS_CS || cls == CF_UNI_CLS_CN || cls == -1) {
-        if((err = cf_get_error_message("E_unicodechar",&len)) != NULL) {
+        if((err = cf_get_error_message("E_invalid_char",&len)) != NULL) {
           cf_tpl_var_addvalue(var,TPL_VARIABLE_STRING,err,len);
           free(err);
         }

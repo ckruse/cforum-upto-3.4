@@ -34,6 +34,17 @@ E_server: Der Server hat zurückgegeben:
 E_posting_format: Das Format Ihres Postings scheint unsauber zu sein (z. B. keine Zeilenumbrüche, keine Satzzeichen, alles klein geschrieben oder ähnliches). Solche Postings sind ungern gesehen, da sie oft schwer zu lesen sind. Sind Sie sicher, dass Sie so posten möchten?
 E_posting_badwords: Ihr Posting scheint mehr als die erlaubte Zahl von Schimpfwörtern zu enthalten.
 E_posting_quoting: Sie haben mehr als 25%% zitierte Zeichen in Ihrem Posting. Sind Sie sicher, dass Sie das Posting so abschicken wollen?
+E_pa_signs_subject: Der Betreff enthält drei oder mehr gleiche Zeichen hintereinander (-%f Punkte). Sind Sie sicher, dass Sie das Posting so abschicken wollen?
+E_pa_signs_author: Der Name enthält drei oder mehr gleiche Zeichen hintereinander (-%f Punkte). Sind Sie sicher, dass Sie das Posting so abschicken wollen?
+E_pa_signs_content: Der Text enthält drei oder mehr gleiche Zeichen hintereinander oder enthält keine Satzzeichen (-%f Punkte). Sind Sie sicher, dass Sie das Posting so abschicken wollen?
+E_pa_cases_small_subject: Der Betreff enthält nur große Buchstaben (-%f Punkte). Sind Sie sicher, dass Sie das Posting so abschicken wollen?
+E_pa_cases_capital_subject: Der Betreff enthält nur kleine Buchstaben (-%f Punkte). Sind Sie sicher, dass Sie das Posting so abschicken wollen?
+E_pa_cases_small_author: Der Name enthält nur große Buchstaben (-%f Punkte). Sind Sie sicher, dass Sie das Posting so abschicken wollen?
+E_pa_cases_capital_author: Der Name enthält nur kleine Buchstaben (-%f Punkte). Sind Sie sicher, dass Sie das Posting so abschicken wollen?
+E_pa_cases_small_content: Der Text enthält nur große Buchstaben (-%f Punkte). Sind Sie sicher, dass Sie das Posting so abschicken wollen?
+E_pa_cases_capital_content: Der Text enthält nur kleine Buchstaben (-%f Punkte). Sind Sie sicher, dass Sie das Posting so abschicken wollen?
+E_pa_newlines_content: Der Text enthält weniger als oder genau zwei Zeilenumbrüche (-%f Punkte). Sind Sie sicher, dass Sie das Posting so abschicken wollen?
+E_pa_sig: Die Signatur ist nicht Spezifikations-gemäß (maximal 4 Zeilen, pro Zeile maximal 72 Zeichen, keine Bilder, Signatur länger als Inhalt: -%f Punkte). Sind Sie sicher, dass Sie das Posting so abschicken wollen?
 E_UserName_short: Der Username muss mindestens %d Zeichen lang sein.
 E_pass_short: Das Passwort muss mindestens %d Zeichen lang sein.
 E_pass_match: Die Passwörter stimmen nicht überein!

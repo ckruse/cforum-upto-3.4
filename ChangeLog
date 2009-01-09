@@ -3,4 +3,11 @@
 	src/unicode_classes.c, src/CMakeLists.txt: Added function to classify
 		characters as described in the Unicode standard.
 	* src/modules/flt_directives.c: Fixed bug #117, implemented #119
+	* scripts/cf-msgs2db.pl: Fixed a bug with the --lang parameter
+	* CMakeLists.txt: Added -g compiler flag when debug mode is activated
+	* conf/errormessages.de.txt: Added new messages for posting assistant
+	* src/clientlib.c: Fixed really nasty bug in error messages functions, added
+		%f as format char for double values
+	* src/modules/flt_postingassistant.c: Implemented #126
+	* src/fo_post.c: search&replace is the root of all evil!
 
