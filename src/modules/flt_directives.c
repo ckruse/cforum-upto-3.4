@@ -523,7 +523,7 @@ int flt_directives_execute(configuration_t *fdc,configuration_t *fvc,cl_thread_t
               str_chars_append(cite,"[ref:",5);
               str_chars_append(cite,tmp,strlen(tmp));
               str_char_append(cite,';');
-              if(tmp2) str_chars_append(cite,tmp2,strlen(ptr));
+              if(tmp2) str_chars_append(cite,tmp2,strlen(tmp2));
               if(title_alt) {
                 str_chars_append(cite,"@title=",7);
                 str_chars_append(cite,title_alt,strlen(title_alt));
@@ -585,6 +585,22 @@ int flt_directives_execute(configuration_t *fdc,configuration_t *fvc,cl_thread_t
   }
 
   return FLT_DECLINE;
+}
+/* }}} */
+
+/* {{{ flt_directives_execute_irony */
+int flt_directives_execute_irony(configuration_t *fdc,configuration_t *fvc,cl_thread_t *thread,const u_char *directive,const u_char **parameters,size_t plen,string_t *bco,string_t *bci,string_t *content,string_t *cite,const u_char *qchars,int sig) {
+  str_chars_append(bco,"<span class=\"IRONY\">",20);
+  str_str_append(bco,content);
+  str_chars_append(bco,"</span>",7);
+
+  if(sig && bci && cite) {
+    str_chars_append(bci,"[irony]",7);
+    str_str_append(bci,cite);
+    str_chars_append(bci,"[/irony]",8);
+  }
+
+  return FLT_OK;
 }
 /* }}} */
 
@@ -927,6 +943,7 @@ int flt_directives_init(cf_hash_t *cgi,configuration_t *dc,configuration_t *vc) 
   cf_html_register_directive("ref",flt_directives_execute,CF_HTML_DIR_TYPE_ARG|CF_HTML_DIR_TYPE_INLINE);
   cf_html_register_directive("image",flt_directives_execute,CF_HTML_DIR_TYPE_ARG|CF_HTML_DIR_TYPE_INLINE);
   cf_html_register_directive("iframe",flt_directives_execute,CF_HTML_DIR_TYPE_ARG|CF_HTML_DIR_TYPE_INLINE);
+  cf_html_register_directive("irony",flt_directives_execute_irony,CF_HTML_DIR_TYPE_NOARG|CF_HTML_DIR_TYPE_BLOCK);
 
   cf_html_register_directive("char",flt_directives_execute,CF_HTML_DIR_TYPE_ARG|CF_HTML_DIR_TYPE_INLINE);
 
