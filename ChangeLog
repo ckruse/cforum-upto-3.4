@@ -4,6 +4,9 @@
 		some cases one gets really weird results, removed
 	* src/modules/flt_cgiconfig.c: fixed weird bug where I was brain afk when I
 		wrote this code
+	* src/configparser.c: Added config options necessary config options to
+		provide Atom 1.0
+	* src/feeds.c: Changed to Atom 1.0
 
 2009-01-09 Christian Kruse <cjk@wwwtech.de>
 	* scripts/gen_unicode_class_table.pl, src/charconvert.h,

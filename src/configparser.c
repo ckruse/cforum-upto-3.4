@@ -225,6 +225,11 @@ conf_opt_t fo_feeds_options[] = {
   { "FeedLang",             handle_command,   CFG_OPT_CONFIG|CFG_OPT_LOCAL,                &fo_feeds_conf },
   { "RSSWebMaster",         handle_command,   CFG_OPT_CONFIG|CFG_OPT_LOCAL,                &fo_feeds_conf },
   { "RSSCategory",          handle_command,   CFG_OPT_CONFIG|CFG_OPT_LOCAL,                &fo_feeds_conf },
+  { "RSSUri",               handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_feeds_conf },
+  { "RSSUriThread",         handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_feeds_conf },
+  { "AtomUri",              handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_feeds_conf },
+  { "AtomUriThread",        handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_feeds_conf },
+  { "AtomId",               handle_command,   CFG_OPT_NEEDED|CFG_OPT_CONFIG|CFG_OPT_LOCAL, &fo_feeds_conf },
 
   { NULL, NULL, 0, NULL }
 };

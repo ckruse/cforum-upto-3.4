@@ -140,12 +140,15 @@ void str_str_cdata_append (string_t *dest, string_t *src) {
 
 /* {{{ atom_ and rss_head */
 void atom_head(string_t *str,cl_thread_t *thread) {
-  u_char *fn = cf_hash_get(GlobalValues,"FORUM_NAME",10),*tmp = NULL,*tmp1 = NULL;
+  u_char *fn = cf_hash_get(GlobalValues,"FORUM_NAME",10),*tmp = NULL,*tmp1 = NULL,*tmp2 = NULL;
   u_char *uname = cf_hash_get(GlobalValues,"UserName",8);
 
   name_value_t *atom_title  = cfg_get_first_value(&fo_feeds_conf,fn,"AtomTitle");
   name_value_t *atom_tgline = cfg_get_first_value(&fo_feeds_conf,fn,"AtomTagline");
   name_value_t *atom_lang   = cfg_get_first_value(&fo_feeds_conf,fn,"FeedLang");
+
+  name_value_t *atom_uri    = cfg_get_first_value(&fo_feeds_conf,fn,thread?"AtomUriThread":"AtomUri");
+  name_value_t *atom_id     = cfg_get_first_value(&fo_feeds_conf,fn,"AtomId");
 
   name_value_t *burl = cfg_get_first_value(&fo_default_conf,fn,uname ? "UBaseURL":"BaseURL");
   //name_value_t *purl = cfg_get_first_value(&fo_default_conf,fn,cf_hash_get(GlobalValues,"UserName",8) ? "UPostingURL":"PostingURL");
@@ -160,8 +163,8 @@ void atom_head(string_t *str,cl_thread_t *thread) {
   }
 
   str_chars_append(str,"<?xml version=\"1.0\"?>\n" \
-    "<feed version=\"0.3\" xmlns=\"http://purl.org/atom/ns#",
-    73
+    "<feed xmlns=\"http://www.w3.org/2005/Atom",
+    62
   );
   if(atom_lang) {
     str_chars_append(str,"\" xml:lang=\"",12);
@@ -177,22 +180,32 @@ void atom_head(string_t *str,cl_thread_t *thread) {
   }
   else str_chars_append(str,atom_title->values[0],strlen(atom_title->values[0]));
   str_chars_append(str,"</title>",8);
+  if(atom_tgline) {
+    str_chars_append(str,"<subtitle>",10);
+    str_chars_append(str,atom_tgline->values[0],strlen(atom_tgline->values[0]));
+    str_chars_append(str,"</subtitle>",11);
+  }
+
+  str_chars_append(str,"<id>",4);
+  str_cstr_append(str,atom_id->values[0]);
+  str_chars_append(str,"</id>",5);
+
+  str_chars_append(str,"<link rel=\"self\" href=\"",23);
+  if(thread) tmp2 = cf_get_link(atom_uri->values[0],thread->tid,thread->messages->mid);
+  else tmp2 = cf_get_link(atom_uri->values[0],0,0);
+  str_chars_append(str,tmp2,strlen(tmp2));
+  free(tmp2);
+  str_chars_append(str,"\"/>",3);
 
   str_chars_append(str,"<link rel=\"alternate\" type=\"text/html\" href=\"",45);
   if(thread) str_chars_append(str,tmp1,strlen(tmp1));
   else str_chars_append(str,burl->values[0],strlen(burl->values[0]));
   str_chars_append(str,"\"/>",3);
 
-  if(atom_tgline) {
-    str_chars_append(str,"<tagline>",9);
-    str_chars_append(str,atom_tgline->values[0],strlen(atom_tgline->values[0]));
-    str_chars_append(str,"</tagline>",10);
-  }
-
-  str_chars_append(str,"<modified>",10);
+  str_chars_append(str,"<updated>",9);
   if(thread) w3c_datetime(str,thread->newest->date);
   else w3c_datetime(str,t);
-  str_chars_append(str,"</modified>",11);
+  str_chars_append(str,"</updated>",10);
 
   str_chars_append(str,"<generator>Classic Forum V.",27);
   str_chars_append(str,CF_VERSION,strlen(CF_VERSION));
@@ -367,16 +380,16 @@ void atom_thread(string_t *str,cl_thread_t *thread,cf_hash_t *head) {
       str_chars_append(str,tmp1,len1);
       str_chars_append(str,"</id>",5);
 
-      str_chars_append(str,"<modified>",10);
+      str_chars_append(str,"<updated>",9);
       w3c_datetime(str,thread->newest->date);
-      str_chars_append(str,"</modified>",11);
+      str_chars_append(str,"</updated>",10);
 
-      str_chars_append(str,"<issued>",8);
+      str_chars_append(str,"<published>",11);
       w3c_datetime(str,thread->messages->date);
-      str_chars_append(str,"</issued>",9);
+      str_chars_append(str,"</published>",12);
 
       /* {{{ content */
-      str_chars_append(str,"<content type=\"text/html\" mode=\"escaped\"><![CDATA[",50);
+      str_chars_append(str,"<content type=\"html\"><![CDATA[",30);
       str_init(&tmpstr);
       msg_to_html(
         thread,
@@ -643,16 +656,16 @@ void gen_threadlist_atom(cl_thread_t *thread,string_t *str) {
   str_chars_append(str,tmp3,len2);
   str_chars_append(str,"</id>",5);
 
-  str_chars_append(str,"<modified>",10);
+  str_chars_append(str,"<updated>",9);
   w3c_datetime(str,thread->newest->date);
-  str_chars_append(str,"</modified>",11);
+  str_chars_append(str,"</updated>",10);
 
-  str_chars_append(str,"<issued>",8);
+  str_chars_append(str,"<published>",11);
   w3c_datetime(str,thread->messages->date);
-  str_chars_append(str,"</issued>",9);
+  str_chars_append(str,"</published>",12);
 
   /* {{{ content */
-  str_chars_append(str,"<content type=\"text/html\" mode=\"escaped\"><![CDATA[",50);
+  str_chars_append(str,"<content type=\"html\"><![CDATA[",30);
   str_init(&tmpstr);
   msg_to_html(
     thread,
