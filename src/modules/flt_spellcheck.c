@@ -49,6 +49,7 @@ typedef struct s_flt_spellcheck_replacement {
 } flt_spellcheck_replacement_t;
 
 static int flt_spellcheck_enabled        = 0;
+static int flt_spellcheck_activated_dflt = 0;
 static u_char *flt_spellcheck_language   = NULL;
 
 static u_char *flt_spellcheck_fn         = NULL;
@@ -126,7 +127,7 @@ int flt_spellcheck_execute(cf_hash_t *head,configuration_t *dc,configuration_t *
     }
 
     array_sort(&replacements,(int (*)(const void *,const void *))flt_spellcheck_replacement_compare);
-    
+
     cpos = 0;
     str_init(&html_out);
     str_init(&tmp);
@@ -152,7 +153,7 @@ int flt_spellcheck_execute(cf_hash_t *head,configuration_t *dc,configuration_t *
 
       if((size_t)cpos > p->content.len) break;
     }
-    
+
     for(i = cpos; (size_t)i < p->content.len; i++) {
       ptr = p->content.content + i;
 
@@ -169,38 +170,38 @@ int flt_spellcheck_execute(cf_hash_t *head,configuration_t *dc,configuration_t *
     }
 
     for(i = cpos; (size_t)i < p->content.len; i++) str_char_append(&tmp,p->content.content[i]);
-    
+
     cf_cgi_set(head,"ne_body",html_out.content);
     str_cleanup(&p->content);
     str_init(&p->content);
     str_str_set(&p->content,&tmp);
-    
+
     str_cleanup(&html_out);
     str_cleanup(&tmp);
-    
+
     array_destroy(&replacements);
-    
+
     cf_cgi_set(head,"preview","1");
     cf_hash_entry_delete(head,"spellcheck",10);
     cf_hash_entry_delete(head,"spellcheck_ok",13);
 
     return FLT_OK;
   }
-  
+
   // Initialize ASPELL
   aspell_config_replace(spell_config, "lang", flt_spellcheck_language ? (char *)flt_spellcheck_language : "en_US");
   aspell_config_replace(spell_config, "encoding", "utf-8");
   possible_err = new_aspell_speller(spell_config);
   if (aspell_error_number(possible_err) != 0) {
     fprintf(stderr, "[warning] aspell initialization error: %s\n", aspell_error_message(possible_err));
-	return FLT_DECLINE;
+  return FLT_DECLINE;
   }
 
   spell_checker = to_aspell_speller(possible_err);
   possible_err = new_aspell_document_checker(spell_checker);
   if (aspell_error_number(possible_err) != 0) {
     fprintf(stderr, "[warning] aspell initialization error: %s\n", aspell_error_message(possible_err));
-	return FLT_DECLINE;
+    return FLT_DECLINE;
   }
 
   document_checker = to_aspell_document_checker(possible_err);
@@ -251,7 +252,7 @@ int flt_spellcheck_execute(cf_hash_t *head,configuration_t *dc,configuration_t *
 
   while(miss = aspell_document_checker_next_misspelling(document_checker), miss.len > 0) {
     for(i = cpos; (unsigned int)i < miss.offset; i++) {
-      if(p->content.content[i] == '\x7f') str_cstr_append(&html_out,v->values[0]); 
+      if(p->content.content[i] == '\x7f') str_cstr_append(&html_out,v->values[0]);
       else str_char_append(&html_out,p->content.content[i]);
     }
 
@@ -285,7 +286,7 @@ int flt_spellcheck_execute(cf_hash_t *head,configuration_t *dc,configuration_t *
   delete_aspell_config(spell_config);
 
   for(i = cpos; (size_t)i < p->content.len; i++) {
-    if(p->content.content[i] == '\x7f') str_cstr_append(&html_out,v->values[0]); 
+    if(p->content.content[i] == '\x7f') str_cstr_append(&html_out,v->values[0]);
     else if(!cf_strncmp(p->content.content+i,"_/_SIG_/_",9)) {
       str_cstr_append(&html_out,"<br />-- <br />"); // BUG: XHTML Mode Checking
       i += 8;
@@ -346,7 +347,7 @@ int flt_spellcheck_execute(cf_hash_t *head,configuration_t *dc,configuration_t *
 /* {{{ flt_spellcheck_variables */
 int flt_spellcheck_variables(cf_hash_t *head,configuration_t *dc,configuration_t *vc,cl_thread_t *thread,cf_template_t *tpl) {
   if(flt_spellcheck_enabled) cf_tpl_setvalue(tpl,"spellcheck_enabled",TPL_VARIABLE_INT,1);
-  
+  if(flt_spellcheck_activated_dflt) cf_tpl_setvalue(tpl,"spellcheck_activated",TPL_VARIABLE_INT,1);
   return FLT_OK;
 }
 /* }}} */
@@ -367,14 +368,16 @@ int flt_spellcheck_cmd(configfile_t *cfile,conf_opt_t *opt,const u_char *context
     if(flt_spellcheck_language) free(flt_spellcheck_language);
     flt_spellcheck_language = strdup(args[0]);
   }
+  else flt_spellcheck_activated_dflt = cf_strcmp(args[0],"yes") == 0;
 
   return 0;
 }
 /* }}} */
 
 conf_opt_t flt_spellcheck_config[] = {
-  { "SpellCheckerEnabled",       flt_spellcheck_cmd, CFG_OPT_CONFIG|CFG_OPT_NEEDED|CFG_OPT_LOCAL, NULL },
-  { "SpellCheckerLanguage",      flt_spellcheck_cmd, CFG_OPT_CONFIG|CFG_OPT_NEEDED|CFG_OPT_LOCAL, NULL },
+  { "SpellCheckerEnabled",          flt_spellcheck_cmd, CFG_OPT_CONFIG|CFG_OPT_NEEDED|CFG_OPT_LOCAL, NULL },
+  { "SpellCheckerLanguage",         flt_spellcheck_cmd, CFG_OPT_CONFIG|CFG_OPT_NEEDED|CFG_OPT_LOCAL, NULL },
+  { "SpellCheckerDefaultActivated", flt_spellcheck_cmd, CFG_OPT_CONFIG|CFG_OPT_LOCAL|CFG_OPT_USER,   NULL },
   { NULL, NULL, 0, NULL }
 };
 

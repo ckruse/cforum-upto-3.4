@@ -15,6 +15,13 @@
     </argument>
   </directive>
 
+  <directive name="SpellCheckerDefaultActivated" arguments="1">
+    <argument paramname="spellcheckerdefaultactivated" ifNotCommitted="no">
+      <validate>^(?:yes|no)$</validate>
+      <error>Soll die Rechtschreib-Prüfung per Default aktiviert sein? Geben Sie &quot;ja&quot; oder &quot;nein&quot; an!</error>
+    </argument>
+  </directive>
+
   <directive name="TPLMode" arguments="1">
     <argument paramname="tplmode">
       <validate>^\S+$</validate>
