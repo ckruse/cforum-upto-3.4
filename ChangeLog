@@ -2,6 +2,8 @@
 	* src/htmllib.c: Fixed #123, made quoting char handling much better
 	* src/modules/flt_syntax.c: This addon removed the first newline. But in
 		some cases one gets really weird results, removed
+	* src/modules/flt_cgiconfig.c: fixed weird bug where I was brain afk when I
+		wrote this code
 
 2009-01-09 Christian Kruse <cjk@wwwtech.de>
 	* scripts/gen_unicode_class_table.pl, src/charconvert.h,
