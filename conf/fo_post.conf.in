@@ -74,9 +74,7 @@ Forum FORUM1 {
  QuoteMustValidate "yes"
 
  SpellCheckerEnabled "yes"
- SpellCheckerPath "/usr/bin/ispell"
- SpellCheckerDictionary "german"
- SpellCheckerFormatterType "utf8"
+ SpellCheckerLanguage "de_DE"
 
  SMTPHost "localhost"
  SMTPFrom "cforum@wwwtech.de"

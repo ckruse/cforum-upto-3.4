@@ -92,6 +92,12 @@ if (ENABLE_flt_admin_mysql STREQUAL "ON")
   SET (EXTRALIBS_flt_admin_mysql ${MYSQL_LIBRARIES})
 endif (ENABLE_flt_admin_mysql STREQUAL "ON")
 
+if (ENABLE_flt_spellcheck STREQUAL "ON")
+  find_package (ASPELL REQUIRED)
+  include_directories (${ASPELL_INCLUDE_DIR})
+  SET (EXTRALIBS_flt_spellcheck ${ASPELL_LIBRARIES})
+endif (ENABLE_flt_spellcheck STREQUAL "ON")
+
 if (ENABLE_flt_latex STREQUAL "ON")
   find_package (OpenSSL REQUIRED)
   include_directories (${OPENSSL_INCLUDE_DIR})
