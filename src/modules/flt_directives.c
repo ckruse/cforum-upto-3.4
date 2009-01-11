@@ -559,7 +559,7 @@ int flt_directives_execute(configuration_t *fdc,configuration_t *fvc,cl_thread_t
 
       if(*start == 'U' || *start == 'u') {
         start = parameter + 1;
-        if(*start == '-' || start == '+') start += 1;
+        if(*start == '-' || *start == '+') start += 1;
       }
 
       if(strlen(start) > 6 || strlen(start) < 1) return FLT_DECLINE;
@@ -807,7 +807,7 @@ int flt_directives_validate(configuration_t *fdc,configuration_t *fvc,const u_ch
 
       if(*start == 'U' || *start == 'u') {
         start = parameter + 1;
-        if(*start == '-' || start == '+') start += 1;
+        if(*start == '-' || *start == '+') start += 1;
       }
 
       if(strlen(start) > 6 || strlen(start) < 1) {
