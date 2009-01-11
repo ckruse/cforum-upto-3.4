@@ -138,6 +138,18 @@ static int run_validate_block_directive(const u_char *directive,const u_char **p
 }
 /* }}} */
 
+/* {{{ next_line_is_no_quote_line */ 	 
+static int next_line_is_no_quote_line(const u_char *ptr) {
+  int eq;
+  for(;*ptr && ((eq = cf_strncmp(ptr,"<br />",6)) == 0 || *ptr == ' ');ptr++) {
+    if(eq == 0) ptr += 5;
+  }
+
+  if(*ptr == (u_char)127) return 0;
+  return 1;
+}
+/* }}} */
+
 /* {{{ parse_message */
 static u_char *parse_message(cl_thread_t *thread,u_char *start,array_t *stack,string_t *content,string_t *cite,const u_char *qchars,size_t qclen,int utf8,int xml,int max_sig_lines,int show_sig,int sig,int *qmode,int line) {
   const u_char *ptr,*tmp,*ptr1;
@@ -420,7 +432,7 @@ static u_char *parse_message(cl_thread_t *thread,u_char *start,array_t *stack,st
           if(quotemode) {
             if(qmode) {
               stack_tmp = array_element_at(stack,stack->elements-1);
-              if(cf_strcmp(stack_tmp->name,"_QUOTING_") == 0) {
+              if(cf_strcmp(stack_tmp->name,"_QUOTING_") == 0 && next_line_is_no_quote_line(ptr)) {
                 *qmode = 0;
                 return (u_char *)ptr + 5;
               }
