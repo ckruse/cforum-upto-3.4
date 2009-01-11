@@ -152,13 +152,15 @@ static int run_validate_block_directive(const u_char *directive,const u_char **p
 /* }}} */
 
 /* {{{ parse_message */
-static u_char *parse_message(cl_thread_t *thread,u_char *start,array_t *stack,string_t *content,string_t *cite,const u_char *qchars,size_t qclen,int utf8,int xml,int max_sig_lines,int show_sig,int linebrk,int sig,int quotemode,int line) {
+static u_char *parse_message(cl_thread_t *thread,u_char *start,array_t *stack,string_t *content,string_t *cite,const u_char *qchars,size_t qclen,int utf8,int xml,int max_sig_lines,int show_sig,int sig,int *qmode,int line) {
   const u_char *ptr,*tmp,*ptr1;
-  int rc,run = 1,sb = 0,fail,ending,doit;
+  int rc,run = 1,sb = 0,fail,ending,doit,quotemode = 0;
   u_char *directive,*parameter,*safe,*buff,*retval;
   string_t d_content,d_cite,strtmp;
   html_stack_elem_t stack_elem,*stack_tmp;
   html_tree_t *telem1,*telem2;
+
+  if(qmode) quotemode = *qmode;
 
   for(ptr=start;*ptr && run;++ptr) {
     switch(*ptr) {
@@ -196,8 +198,17 @@ static u_char *parse_message(cl_thread_t *thread,u_char *start,array_t *stack,st
             }
             /* nesting error */
             else {
-              free(directive);
-              return NULL;
+              if(quotemode) {
+                free(directive);
+                if(qmode) {
+                  *qmode = 0;
+                  return (u_char *)ptr-2;
+                }
+              }
+              else {
+                free(directive);
+                return NULL;
+              }
             }
           }
           /* not open, ignore it, user error */
@@ -280,7 +291,7 @@ static u_char *parse_message(cl_thread_t *thread,u_char *start,array_t *stack,st
             str_init(&d_content);
             str_init(&d_cite);
 
-            retval = parse_message(thread,(u_char *)ptr1+1,stack,&d_content,cite ? &d_cite : NULL,qchars,qclen,utf8,xml,max_sig_lines,show_sig,linebrk,sig,quotemode,line);
+            retval = parse_message(thread,(u_char *)ptr1+1,stack,&d_content,cite ? &d_cite : NULL,qchars,qclen,utf8,xml,max_sig_lines,show_sig,sig,&quotemode,line);
 
             array_pop(stack);
 
@@ -365,7 +376,7 @@ static u_char *parse_message(cl_thread_t *thread,u_char *start,array_t *stack,st
             str_init(&d_content);
             str_init(&d_cite);
 
-            retval = parse_message(thread,(u_char *)ptr1+1,stack,&d_content,cite ? &d_cite : NULL,qchars,qclen,utf8,xml,max_sig_lines,show_sig,linebrk,sig,quotemode,line);
+            retval = parse_message(thread,(u_char *)ptr1+1,stack,&d_content,cite ? &d_cite : NULL,qchars,qclen,utf8,xml,max_sig_lines,show_sig,sig,&quotemode,line);
             array_pop(stack);
 
             /* directive is invalid (e.g. no content, wrong nesting), get defined state */
@@ -405,11 +416,10 @@ static u_char *parse_message(cl_thread_t *thread,u_char *start,array_t *stack,st
         break;
       case '<':
         if(cf_strncmp(ptr,"<br />",6) == 0) {
-          linebrk = 1;
           line++;
 
-          if(xml) str_chars_append(content,"<br />",6);
-          else    str_chars_append(content,"<br>",4);
+          if(xml) str_chars_append(content,"<br />\015\012",8);
+          else    str_chars_append(content,"<br>\015\012",6);
 
           if(sig && max_sig_lines > 0 && line >= max_sig_lines) {
             run = 0;
@@ -420,9 +430,15 @@ static u_char *parse_message(cl_thread_t *thread,u_char *start,array_t *stack,st
             str_chars_append(cite,qchars,qclen);
           }
 
-          if(quotemode && next_line_is_no_quote_line(ptr+6)) {
-            str_chars_append(content,"</span>",7);
-            quotemode = 0;
+          if(quotemode) {
+            if(qmode) {
+              stack_tmp = array_element_at(stack,stack->elements-1);
+              if(cf_strcmp(stack_tmp->name,"_QUOTING_") == 0) {
+                *qmode = 0;
+                return (u_char *)ptr + 5;
+              }
+            }
+            else quotemode = 0;
           }
 
           ptr += 5;
@@ -431,16 +447,56 @@ static u_char *parse_message(cl_thread_t *thread,u_char *start,array_t *stack,st
         break;
 
       case 127:
-        linebrk = 0;
+        //if(!quotemode) str_chars_append(content,"<span class=\"q\">",16);
+        if(quotemode == 0) {
+          quotemode = 1;
 
-        if(!quotemode) str_chars_append(content,"<span class=\"q\">",16);
-        str_chars_append(content,qchars,qclen);
-        quotemode = 1;
-        if(sig == 0 && cite) str_chars_append(cite,qchars,qclen);
+          /* start special quoting block (ended by <br />) */
+          memset(&stack_elem,0,sizeof(stack_elem));
 
+          stack_elem.name = "_QUOTING_";
+          stack_elem.begin = (u_char *)ptr;
+          array_push(stack,&stack_elem);
+
+          str_init(&d_content);
+          str_init(&d_cite);
+
+          retval = parse_message(thread,(u_char *)ptr+1,stack,&d_content,cite ? &d_cite : NULL,qchars,qclen,utf8,xml,max_sig_lines,show_sig,sig,&quotemode,line);
+          array_pop(stack);
+          quotemode = 0;
+
+          /* directive is invalid (e.g. no content, wrong nesting), get defined state */
+          if(retval == NULL || d_content.len == 0) {
+            ptr += 1;
+            str_char_append(content,0x7F);
+            if(sig == 0 && cite) str_chars_append(cite,qchars,qclen);
+            str_cleanup(&d_content);
+            str_cleanup(&d_cite);
+            goto default_action;
+          }
+
+          str_chars_append(content,"<span class=\"q\">",16);
+          str_char_append(content,0x7F);
+          if(sig == 0 && cite) str_chars_append(cite,qchars,qclen);
+
+          /* ok, go and run append content */
+          str_str_append(content,&d_content);
+          str_chars_append(content,"</span>",7);
+          if(sig == 0 && cite) str_str_append(cite,&d_cite);
+
+          str_cleanup(&d_content);
+          str_cleanup(&d_cite);
+
+          ptr = retval;
+        }
+        else {
+          str_char_append(content,0x7F);
+          if(sig == 0 && cite) str_chars_append(cite,qchars,qclen);
+        }
         break;
 
       case '_':
+        /* {{{ check for sig */
         if(cf_strncmp(ptr,"_/_SIG_/_",9) == 0) {
           if(quotemode) {
             str_chars_append(content,"</span>",7);
@@ -469,9 +525,11 @@ static u_char *parse_message(cl_thread_t *thread,u_char *start,array_t *stack,st
         }
         else goto default_action;
         break;
+        /* }}} */
 
       default:
         default_action:
+        /* {{{ default action */
         doit = 1;
         safe = (u_char *)ptr;
 
@@ -506,6 +564,7 @@ static u_char *parse_message(cl_thread_t *thread,u_char *start,array_t *stack,st
           str_chars_append(content,ptr,1);
           if(sig == 0 && cite) str_chars_append(cite,ptr,1);
         }
+        /* }}} */
     }
   }
 
@@ -890,10 +949,11 @@ void msg_to_html(cl_thread_t *thread,const u_char *msg,string_t *content,string_
   u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   name_value_t *cs   = cfg_get_first_value(&fo_default_conf,forum_name,"ExternCharset");
   name_value_t *xmlm = cfg_get_first_value(&fo_default_conf,forum_name,"XHTMLMode");
-  u_char *qchars;
+  u_char *qchars,*ptr;
   size_t qclen;
   int utf8 = cf_strcmp(cs->values[0],"UTF-8") == 0,xml;
   array_t my_stack;
+  string_t content1;
 
   if(registered_directives == NULL) registered_directives = cf_hash_new(NULL);
 
@@ -910,7 +970,17 @@ void msg_to_html(cl_thread_t *thread,const u_char *msg,string_t *content,string_
   if(cite) str_chars_append(cite,qchars,qclen);
 
   array_init(&my_stack,sizeof(html_stack_elem_t),NULL);
-  parse_message(thread,(u_char *)msg,&my_stack,content,cite,qchars,qclen,utf8,xml,max_sig_lines,show_sig,0,0,0,0);
+  str_init(&content1);
+
+  parse_message(thread,(u_char *)msg,&my_stack,&content1,cite,qchars,qclen,utf8,xml,max_sig_lines,show_sig,0,NULL,0);
+
+  /* doin this because of plugins like the syntax parser; they could match quoting chars as operators */
+  for(ptr=content1.content;*ptr;++ptr) {
+    if(*ptr == 0x7F) str_chars_append(content,qchars,qclen);
+    else str_char_append(content,*ptr);
+  }
+
+  str_cleanup(&content1);
 
   run_content_filters(POST_CONTENT_FILTER,thread,content,cite,qchars);
 

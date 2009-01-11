@@ -262,6 +262,9 @@ int flt_posting_post_display(cf_hash_t *head,configuration_t *dc,configuration_t
 
   cl_thread_t thr;
 
+  if(flt_posting_cfg.TWidth) cf_tpl_setvalue(tpl,"twidth",TPL_VARIABLE_STRING,flt_posting_cfg.TWidth,strlen(flt_posting_cfg.TWidth));
+  if(flt_posting_cfg.THeight) cf_tpl_setvalue(tpl,"theight",TPL_VARIABLE_STRING,flt_posting_cfg.THeight,strlen(flt_posting_cfg.THeight));
+
   if(head) {
     /* set if none of the values have been given */
     if(!cf_cgi_get(head,"Name") && !cf_cgi_get(head,"EMail") && !cf_cgi_get(head,"HomepageUrl") && !cf_cgi_get(head,"ImageUrl") && !cf_cgi_get(head,"body")) {

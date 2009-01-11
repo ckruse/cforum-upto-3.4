@@ -822,14 +822,15 @@ int flt_syntax_doit(flt_syntax_pattern_file_t *file,flt_syntax_block_t *block,u_
       return 1;
     }
 
-    if(cf_strncmp(text,"<br />",6) == 0) {
-      text += 6;
-      len  -= 6;
-    }
-    else if(cf_strncmp(text,"<br>",4) == 0) {
-      text += 4;
-      len  -= 4;
-    }
+    /* removed because of strange results */
+    //if(cf_strncmp(text,"<br />",6) == 0) {
+      //text += 6;
+      //len  -= 6;
+    //}
+    //else if(cf_strncmp(text,"<br>",4) == 0) {
+      //text += 4;
+      //len  -= 4;
+    //}
   }
 
   begin = *pos ? *pos : text;
@@ -1297,9 +1298,8 @@ int flt_syntax_highlight(string_t *content,string_t *bco,const u_char *lang,cons
     return 1;
   }
 
-  if(!lang || !strlen(lang)) {
-    str_chars_append(bco,"<code>",6);
-  } else {
+  if(!lang || !strlen(lang)) str_chars_append(bco,"<code>",6);
+  else {
     str_chars_append(bco,"<code title=\"",13);
     str_chars_append(bco,lang,strlen(lang));
     str_chars_append(bco,"\" class=\"",9);

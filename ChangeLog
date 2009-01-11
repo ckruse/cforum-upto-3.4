@@ -11,4 +11,8 @@
 		%f as format char for double values
 	* src/modules/flt_postingassistant.c: Implemented #126
 	* src/fo_post.c: search&replace is the root of all evil!
+	* src/modules/flt_posting.c: Implemented #37
+	* src/htmllib.c: Fixed #123, made quoting char handling much better
+	* src/modules/flt_syntax.c: This addon removed the first newline. But in
+		some cases one gets really weird results, removed
 
