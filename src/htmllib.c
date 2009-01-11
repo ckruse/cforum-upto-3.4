@@ -102,19 +102,6 @@ int run_validate_inline(const u_char *directive,const u_char **parameters,cf_tpl
 }
 /* }}} */
 
-/* {{{ next_line_is_no_quote_line */
-static int next_line_is_no_quote_line(const u_char *ptr) {
-  int eq;
-
-  for(;*ptr && ((eq = cf_strncmp(ptr,"<br />",6)) == 0 || *ptr == ' ');ptr++) {
-    if(eq == 0) ptr += 5;
-  }
-
-  if(*ptr == (u_char)127) return 0;
-  return 1;
-}
-/* }}} */
-
 /* {{{ is_open */
 static int is_open(const u_char *name,array_t *stack) {
   int i;
@@ -418,8 +405,8 @@ static u_char *parse_message(cl_thread_t *thread,u_char *start,array_t *stack,st
         if(cf_strncmp(ptr,"<br />",6) == 0) {
           line++;
 
-          if(xml) str_chars_append(content,"<br />\015\012",8);
-          else    str_chars_append(content,"<br>\015\012",6);
+          if(xml) str_chars_append(content,"<br />",6);
+          else    str_chars_append(content,"<br>",4);
 
           if(sig && max_sig_lines > 0 && line >= max_sig_lines) {
             run = 0;
