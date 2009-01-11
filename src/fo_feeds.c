@@ -219,9 +219,9 @@ void atom_head(string_t *str,cl_thread_t *thread) {
     str_chars_append(str,"]]></name>",10);
 
     if(thread->messages->hp.len) {
-      str_chars_append(str,"<url><![CDATA[",14);
+      str_chars_append(str,"<uri><![CDATA[",14);
       str_str_cdata_append(str,&thread->messages->hp);
-      str_chars_append(str,"]]></url>",9);
+      str_chars_append(str,"]]></uri>",9);
     }
 
     if(thread->messages->email.len) {
@@ -354,9 +354,9 @@ void atom_thread(string_t *str,cl_thread_t *thread,cf_hash_t *head) {
       str_chars_append(str,"]]></name>",10);
 
       if(msg->hp.len) {
-        str_chars_append(str,"<url><![CDATA[",14);
+        str_chars_append(str,"<uri><![CDATA[",14);
         str_str_cdata_append(str,&msg->hp);
-        str_chars_append(str,"]]></url>",9);
+        str_chars_append(str,"]]></uri>",9);
       }
 
       if(msg->email.len) {
@@ -630,9 +630,9 @@ void gen_threadlist_atom(cl_thread_t *thread,string_t *str) {
   str_chars_append(str,"]]></name>",10);
 
   if(thread->messages->hp.len) {
-    str_chars_append(str,"<url><![CDATA[",14);
+    str_chars_append(str,"<uri><![CDATA[",14);
     str_str_cdata_append(str,&thread->messages->hp);
-    str_chars_append(str,"]]></url>",9);
+    str_chars_append(str,"]]></uri>",9);
   }
 
   if(thread->messages->email.len) {
