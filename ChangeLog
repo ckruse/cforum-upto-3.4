@@ -14,6 +14,8 @@
 	* src/feeds.c: Changed to Atom 1.0
 	* src/modules/flt_spellcheck.c, conf/modules.de.xml: Implemented #16
 	* src/defines.h: Changed version to 3.4.13
+	* src/modules/flt_remotesignature.c: Fixed
+		<https://redaktion.selfhtml.org/ticket/384>
 
 2009-01-09 Christian Kruse <cjk@wwwtech.de>
 	* scripts/gen_unicode_class_table.pl, src/charconvert.h,
