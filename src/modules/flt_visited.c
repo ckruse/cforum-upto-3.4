@@ -495,13 +495,13 @@ void flt_visited_cleanup(void) {
 /* }}} */
 
 conf_opt_t flt_visited_config[] = {
-  { "HighlightVisitedPostings", flt_visit_handle_command, CFG_OPT_USER|CFG_OPT_LOCAL,                NULL },
-  { "VisitedPostingsColors",    flt_visit_handle_command, CFG_OPT_USER|CFG_OPT_LOCAL,                NULL },
+  { "HighlightVisitedPostings", flt_visit_handle_command, CFG_OPT_USER|CFG_OPT_LOCAL|CFG_OPT_CONFIG, NULL },
+  { "VisitedPostingsColors",    flt_visit_handle_command, CFG_OPT_USER|CFG_OPT_LOCAL|CFG_OPT_CONFIG, NULL },
   { "VisitedFile",              flt_visit_handle_command, CFG_OPT_USER|CFG_OPT_LOCAL|CFG_OPT_NEEDED, NULL },
-  { "MarkOwnPostsVisited",      flt_visit_handle_command, CFG_OPT_USER|CFG_OPT_LOCAL,                NULL },
+  { "MarkOwnPostsVisited",      flt_visit_handle_command, CFG_OPT_USER|CFG_OPT_LOCAL|CFG_OPT_CONFIG, NULL },
   { "MarkThreadResponse204",    flt_visit_handle_command, CFG_OPT_USER|CFG_OPT_CONFIG|CFG_OPT_LOCAL, NULL },
-  { "MarkThreadVisitedInLN",    flt_visit_handle_command, CFG_OPT_USER|CFG_OPT_LOCAL,                NULL },
-  { "VisitedUseXMLHttp",        flt_visit_handle_command, CFG_OPT_USER|CFG_OPT_LOCAL,                NULL },
+  { "MarkThreadVisitedInLN",    flt_visit_handle_command, CFG_OPT_USER|CFG_OPT_LOCAL|CFG_OPT_CONFIG, NULL },
+  { "VisitedUseXMLHttp",        flt_visit_handle_command, CFG_OPT_USER|CFG_OPT_LOCAL|CFG_OPT_CONFIG, NULL },
   { NULL, NULL, 0, NULL }
 };
 

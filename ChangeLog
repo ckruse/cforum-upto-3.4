@@ -17,6 +17,7 @@
 	* src/modules/flt_remotesignature.c: Fixed
 		<https://redaktion.selfhtml.org/ticket/384>
 	* src/fo_post.c: Fixed <https://redaktion.selfhtml.org/ticket/527>
+	* src/modules/flt_visited.c: Implemented #87
 
 2009-01-09 Christian Kruse <cjk@wwwtech.de>
 	* scripts/gen_unicode_class_table.pl, src/charconvert.h,
