@@ -77,7 +77,7 @@ int flt_charta_handle_command(configfile_t *cfile,conf_opt_t *opt,const u_char *
 
   if(cf_strcmp(opt->name,"ChartaEnable") == 0) {
     if(argnum != 1) return 0;
-    flt_charta_charta_enabled = cf_strcmp(args[0],"yes");
+    flt_charta_charta_enabled = cf_strcmp(args[0],"yes") == 0;
   }
 
   return 0;
