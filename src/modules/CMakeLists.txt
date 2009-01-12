@@ -57,7 +57,17 @@ install (
 )
 
 # Optional modules
-set (ALL_MODULES flt_basic flt_category flt_deleted flt_frameset flt_http flt_link flt_listhighlight flt_livefilter flt_openclose flt_include flt_registerednames flt_tplmode flt_urlrewrite flt_visited flt_extern flt_threadreturnanchor flt_tipoftheday flt_postingassistant flt_remotesignature flt_preview flt_spellcheck flt_handle404 flt_voting flt_scoring flt_motd flt_votingvariables flt_sorting flt_latex flt_syntax flt_checkregisteredname flt_mailonpost flt_cgiconfig flt_rot13 flt_gummizelle flt_noanonymous flt_noanswer flt_chooser flt_moderated flt_cookieauth flt_noarchive flt_noarchive_server flt_stdreplacements flt_interesting flt_admin_mysql flt_shortcuts flt_phpsessauth flt_bbcodes flt_pavatar)
+set (ALL_MODULES flt_basic flt_category flt_deleted flt_frameset flt_http
+  flt_link flt_listhighlight flt_livefilter flt_openclose flt_include
+  flt_registerednames flt_tplmode flt_urlrewrite flt_visited flt_extern
+  flt_threadreturnanchor flt_tipoftheday flt_postingassistant
+  flt_remotesignature flt_preview flt_spellcheck flt_handle404 flt_voting
+  flt_scoring flt_motd flt_votingvariables flt_sorting flt_latex flt_syntax
+  flt_checkregisteredname flt_mailonpost flt_cgiconfig flt_rot13
+  flt_gummizelle flt_noanonymous flt_noanswer flt_chooser flt_moderated
+  flt_cookieauth flt_noarchive flt_noarchive_server flt_stdreplacements
+  flt_interesting flt_admin_mysql flt_shortcuts flt_phpsessauth flt_bbcodes
+  flt_pavatar flt_charta)
 
 SET (EXTRALIBS_flt_deleted ${BERKELEY_DB_LIBRARIES})
 SET (EXTRALIBS_flt_registerednames ${BERKELEY_DB_LIBRARIES})

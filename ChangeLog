@@ -1,3 +1,7 @@
+2009-01-12 Christian Kruse <cjk@wwwtech.de>
+	* src/modules/flt_charta.c: Added charta module of the SELFHTML Forum. It's
+		a nice spam filter :)
+
 2009-01-11 Christian Seiler <webmaster@christian-seiler.de>
 	* src/modules/CMakeLists.txt, src/modules/flt_spellcheck.c,
 		conf/fo_post.conf.in: Ported spellchecker to apsell (library
