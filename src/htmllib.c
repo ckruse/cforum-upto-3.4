@@ -568,7 +568,12 @@ static u_char *parse_message(cl_thread_t *thread,u_char *start,array_t *stack,st
   }
 
   if(sig) str_chars_append(content,"</span>",7);
-  if(quotemode) str_chars_append(content,"</span>",7);
+  if(quotemode && stack->elements == 0) str_chars_append(content,"</span>",7);
+
+  if(quotemode && stack->elements > 0) {
+    stack_tmp = array_element_at(stack,stack->elements-1);
+    if(cf_strcmp(stack_tmp->name,"_QUOTING_") == 0) return ptr;
+  }
 
   return NULL;
 }
