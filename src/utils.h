@@ -898,6 +898,8 @@ cf_http_response_t *cf_http_simple_post_uri(const u_char *uri,const u_char *post
 void cf_http_destroy_response(cf_http_response_t *rsp);
 
 void cf_http_redirect_with_nice_uri(const u_char *ruri,int perm);
+
+u_char *cf_urlify(const u_char *val);
 /* }}} */
 
 time_t cf_timegm (struct tm *tm);

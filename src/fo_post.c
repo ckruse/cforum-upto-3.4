@@ -673,7 +673,8 @@ string_t *body_plain2coded(const u_char *text) {
   str_init(str);
 
   for(ptr=body;*ptr;ptr++) {
-    if(cf_strncmp(ptr,"\012-- \012",5) == 0) { /* we prereserve \n-- \n for sig handling; special cases suck! */
+    if(cf_strncmp(ptr,"\012-- \012",5) == 0 && sig == 0 && strstr(ptr+1,"\012-- \012") == NULL) { /* we prereserve \n-- \n for sig handling; special cases suck! */
+      sig = 1;
       ptr += 4;
       str_chars_append(str,"<br />-- <br />",15);
     }
