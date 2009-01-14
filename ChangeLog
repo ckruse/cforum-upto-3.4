@@ -1,6 +1,7 @@
 2009-01-14 Christian Kruse <cjk@wwwtech.de>
-  * src/fo_post.c, src/htmllib.c: Change signature handling; got rid of
-    silly _/_SIG_/_
+	* src/fo_post.c, src/htmllib.c: Change signature handling; got rid of
+		silly _/_SIG_/_
+	* scripts/update_sighandling.sh: Added script to update sig handling
 
 2009-01-12 Christian Kruse <cjk@wwwtech.de>
 	* src/modules/flt_charta.c: Added charta module of the SELFHTML Forum. It's
