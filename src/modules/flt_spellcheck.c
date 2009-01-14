@@ -162,10 +162,6 @@ int flt_spellcheck_execute(cf_hash_t *head,configuration_t *dc,configuration_t *
         str_char_append(&html_out,'\n');
       }
       else if(*ptr == '\x7f') str_cstr_append(&html_out,v->values[0]);
-      else if(!cf_strncmp(ptr,"_/_SIG_/_",9)) {
-        str_cstr_append(&html_out,"\n-- \n");
-        i += 8;
-      }
       else str_char_append(&html_out,*ptr);
     }
 
@@ -220,7 +216,6 @@ int flt_spellcheck_execute(cf_hash_t *head,configuration_t *dc,configuration_t *
       had_break = 1;
       continue;
     }
-    else if(!cf_strncmp(ptr,"_/_SIG_/_",9)) break; // ignore signature
     else if(*ptr == '\x7f') { // ignore cites
       while((size_t)i < p->content.len && p->content.content[i] != '<') {
         str_char_append(&spellchecker_input,' ');
@@ -287,10 +282,6 @@ int flt_spellcheck_execute(cf_hash_t *head,configuration_t *dc,configuration_t *
 
   for(i = cpos; (size_t)i < p->content.len; i++) {
     if(p->content.content[i] == '\x7f') str_cstr_append(&html_out,v->values[0]);
-    else if(!cf_strncmp(p->content.content+i,"_/_SIG_/_",9)) {
-      str_cstr_append(&html_out,"<br />-- <br />"); // BUG: XHTML Mode Checking
-      i += 8;
-    }
     else str_char_append(&html_out,p->content.content[i]);
   }
 
@@ -327,10 +318,6 @@ int flt_spellcheck_execute(cf_hash_t *head,configuration_t *dc,configuration_t *
       else {
         str_char_append(&html_out,*ptr);
       }
-    }
-    else if(!cf_strncmp(ptr,"_/_SIG_/_",9)) {
-      str_cstr_append(&html_out,"\n-- \n");
-      i += 8;
     }
     else str_char_append(&html_out,*ptr);
   }

@@ -247,14 +247,16 @@ int flt_poas_check_newlines(u_char *str) {
 /* {{{ flt_poas_check_sig */
 float flt_poas_check_sig(u_char *str) {
   float score = 0;
-  register u_char *ptr;
-  u_char *sigstart;
+  register u_char *ptr = str;
+  u_char *sigstart = NULL;
   int newlines = 0;
   size_t normal,sig;
 
-  if((sigstart = strstr(str,"_/_SIG_/_")) == NULL) return .0;
+  /* I know, that this is not a correct search for the signature. But it doesn't matter: user will in worst case get a "bad boy!" warning */
+  while((ptr = strstr(ptr+1,"<br />-- <br />")) != NULL) sigstart = ptr;
+  if(sigstart == NULL) return .0;
 
-  for(ptr=sigstart+9;*ptr;++ptr) {
+  for(ptr=sigstart+15;*ptr;++ptr) {
     if(*ptr == '[' && cf_strncmp(ptr,"[image:",7) == 0) score += 3.0;
     else if(*ptr == '<' && cf_strncmp(ptr,"<br />",6) == 0) ++newlines;
   }
