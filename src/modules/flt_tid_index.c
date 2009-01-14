@@ -1,6 +1,6 @@
 /**
  * \file flt_tid_index.c
- * \author Christian Kruse
+ * \author Christian Kruse, <cjk@wwwtech.de>
  *
  * This plugin indexes a thread id of a newly archived thread
  */

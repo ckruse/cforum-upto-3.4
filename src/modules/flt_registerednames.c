@@ -1,6 +1,6 @@
 /**
  * \file flt_registerednames.c
- * \author Christian Kruse
+ * \author Christian Kruse, <cjk@wwwtech.de>
  *
  * This plugin ensures that posters cannot post with registered names
  */

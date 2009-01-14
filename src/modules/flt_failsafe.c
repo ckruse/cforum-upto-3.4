@@ -1,6 +1,6 @@
 /**
  * \file flt_failsafe.c
- * \author Christian Kruse
+ * \author Christian Kruse, <cjk@wwwtech.de>
  *
  * This plugin writes every new posting in an special format to
  * the hard disc. In case of a crash the data can be restored from

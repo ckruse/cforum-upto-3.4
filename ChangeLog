@@ -1,3 +1,7 @@
+2009-01-14 Christian Kruse <cjk@wwwtech.de>
+  * src/fo_post.c, src/htmllib.c: Change signature handling; got rid of
+    silly _/_SIG_/_
+
 2009-01-12 Christian Kruse <cjk@wwwtech.de>
 	* src/modules/flt_charta.c: Added charta module of the SELFHTML Forum. It's
 		a nice spam filter :)

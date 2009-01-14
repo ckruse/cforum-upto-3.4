@@ -417,6 +417,18 @@ static u_char *parse_message(cl_thread_t *thread,u_char *start,array_t *stack,st
         if(cf_strncmp(ptr,"<br />",6) == 0) {
           line++;
 
+          if(cf_strncmp(ptr,"<br />-- <br />",15) == 0 && stack->elements == 0) {
+            if(!show_sig) {
+              run = 0;
+              break;
+            }
+
+            if(xml) str_chars_append(content,"<span class=\"q\"><br />-- ",25);
+            else str_chars_append(content,"<span class=\"q\"><br>-- ",23);
+            ptr += 9;
+            sig = 1;
+          }
+
           if(xml) str_chars_append(content,"<br />",6);
           else    str_chars_append(content,"<br>",4);
 
@@ -493,38 +505,6 @@ static u_char *parse_message(cl_thread_t *thread,u_char *start,array_t *stack,st
           if(sig == 0 && cite) str_chars_append(cite,qchars,qclen);
         }
         break;
-
-      case '_':
-        /* {{{ check for sig */
-        if(cf_strncmp(ptr,"_/_SIG_/_",9) == 0) {
-          if(quotemode) {
-            str_chars_append(content,"</span>",7);
-            quotemode = 0;
-          }
-
-          /* some users don't like sigs */
-          if(!show_sig) {
-            run = 0;
-            break;
-          }
-
-          sig  = 1;
-          line = 0;
-
-          if(xml) {
-            str_chars_append(content,"<br /><span class=\"sig\">",24);
-            str_chars_append(content,"-- <br />",9);
-          }
-          else {
-            str_chars_append(content,"<br><span class=\"sig\">",22);
-            str_chars_append(content,"-- <br>",7);
-          }
-
-          ptr += 8;
-        }
-        else goto default_action;
-        break;
-        /* }}} */
 
       default:
         default_action:
@@ -840,7 +820,6 @@ int validate_message(array_t *stack,cl_thread_t *thread,const u_char *msg,u_char
 
   return ret;
 }
-
 /* }}} */
 
 

@@ -194,7 +194,7 @@ int flt_spellcheck_execute(cf_hash_t *head,configuration_t *dc,configuration_t *
   possible_err = new_aspell_speller(spell_config);
   if (aspell_error_number(possible_err) != 0) {
     fprintf(stderr, "[warning] aspell initialization error: %s\n", aspell_error_message(possible_err));
-  return FLT_DECLINE;
+    return FLT_DECLINE;
   }
 
   spell_checker = to_aspell_speller(possible_err);

@@ -673,10 +673,9 @@ string_t *body_plain2coded(const u_char *text) {
   str_init(str);
 
   for(ptr=body;*ptr;ptr++) {
-    if(cf_strncmp(ptr,"\012-- \012",5) == 0 && sig == 0) {
-      sig = 1;
-      str_chars_append(str,"_/_SIG_/_",9);
+    if(cf_strncmp(ptr,"\012-- \012",5) == 0) { /* we prereserve \n-- \n for sig handling; special cases suck! */
       ptr += 4;
+      str_chars_append(str,"<br />-- <br />",15);
     }
     else if(*ptr == '\012') str_chars_append(str,"<br />",6);
     else if(isspace(*ptr)) {
