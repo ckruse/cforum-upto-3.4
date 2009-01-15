@@ -50,7 +50,7 @@ typedef struct s_cf_tpl_variable {
     array_t d_array; /**< Array data */
     cf_hash_t *d_hash; /**< Hash data */
   } data; /**< The actual template data */
-  
+
   unsigned short temporary; /**< Internal flag: Is this a temporary variable? */
   unsigned short arrayref; /**< Internal flag: Is this a variable created in a foreach loop? */
 } cf_tpl_variable_t ;
