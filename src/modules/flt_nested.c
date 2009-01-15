@@ -45,7 +45,7 @@ static u_char *flt_nested_pt_tpl = NULL;
 static u_char *flt_nested_fn     = NULL;
 
 /* {{{ flt_nested_make_hierarchical */
-void flt_nested_make_hierarchical(configuration_t *vc,cf_template_t *tpl,cl_thread_t *thread,hierarchical_node_t *msg,cf_hash_t *head,int first,int ShowInvisible,int utf8,cf_tpl_variable_t *hash,name_value_t *cs,name_value_t *df,name_value_t *locale,name_value_t *qc,name_value_t *ms,name_value_t *ss) {
+void flt_nested_make_hierarchical(configuration_t *vc,cf_template_t *tpl,cl_thread_t *thread,hierarchical_node_t *msg,cf_hash_t *head,int first,int ShowInvisible,int utf8,cf_tpl_variable_t *hash,name_value_t *cs,name_value_t *df,name_value_t *locale,name_value_t *qc,name_value_t *ms,name_value_t *ss,name_value_t *lt) {
   size_t len,msgcntlen,i;
   u_char *msgcnt,*tmp,buff[512];
   cf_tpl_variable_t my_hash,subposts;
@@ -56,6 +56,10 @@ void flt_nested_make_hierarchical(configuration_t *vc,cf_template_t *tpl,cl_thre
   cf_tpl_var_init(hash,TPL_VARIABLE_HASH);
 
   if(first) cf_tpl_hashvar_setvalue(hash,"first",TPL_VARIABLE_INT,1);
+
+  tmp = cf_get_link(lt->values[0],thread->tid,msg->msg->mid);
+  cf_set_variable_hash(hash,cs,"p_link",tmp,strlen(tmp),1);
+  free(tmp);
 
   cf_set_variable_hash(hash,cs,"title",msg->msg->subject.content,msg->msg->subject.len,1);
   cf_set_variable_hash(hash,cs,"name",msg->msg->author.content,msg->msg->author.len,1);
@@ -102,7 +106,7 @@ void flt_nested_make_hierarchical(configuration_t *vc,cf_template_t *tpl,cl_thre
   cf_run_posting_handlers(head,thread,tpl,vc);
 
   if(msg->msg->next == NULL) cf_tpl_hashvar_setvalue(hash,"last",TPL_VARIABLE_INT,1);
-  
+
   if(msg->childs.elements) { /* this message has at least one answer */
     cf_tpl_var_init(&subposts,TPL_VARIABLE_ARRAY);
 
@@ -111,13 +115,13 @@ void flt_nested_make_hierarchical(configuration_t *vc,cf_template_t *tpl,cl_thre
 
       if(ShowInvisible || (msg1->msg->may_show == 1 && msg1->msg->invisible == 0)) {
         cf_tpl_var_init(&my_hash,TPL_VARIABLE_HASH);
-        flt_nested_make_hierarchical(vc,tpl,thread,msg1,head,0,ShowInvisible,utf8,&my_hash,cs,df,locale,qc,ms,ss);
+        flt_nested_make_hierarchical(vc,tpl,thread,msg1,head,0,ShowInvisible,utf8,&my_hash,cs,df,locale,qc,ms,ss,lt);
         cf_tpl_var_add(&subposts,&my_hash);
       }
       else {
         if((msg1 = cf_msg_ht_get_first_visible(msg1)) != NULL) {
           cf_tpl_var_init(&my_hash,TPL_VARIABLE_HASH);
-          flt_nested_make_hierarchical(vc,tpl,thread,msg1,head,0,ShowInvisible,utf8,&my_hash,cs,df,locale,qc,ms,ss);
+          flt_nested_make_hierarchical(vc,tpl,thread,msg1,head,0,ShowInvisible,utf8,&my_hash,cs,df,locale,qc,ms,ss,lt);
           cf_tpl_var_add(&subposts,&my_hash);
         }
       }
@@ -128,14 +132,14 @@ void flt_nested_make_hierarchical(configuration_t *vc,cf_template_t *tpl,cl_thre
 }
 /* }}} */
 
-void flt_nested_start_hierarchical(configuration_t *vc,cf_hash_t *head,cf_template_t *tpl,cl_thread_t *thread,int ShowInvisible,int utf8,cf_tpl_variable_t *hash,name_value_t *cs,name_value_t *df,name_value_t *locale,name_value_t *qc,name_value_t *ms,name_value_t *ss) {
+void flt_nested_start_hierarchical(configuration_t *vc,cf_hash_t *head,cf_template_t *tpl,cl_thread_t *thread,int ShowInvisible,int utf8,cf_tpl_variable_t *hash,name_value_t *cs,name_value_t *df,name_value_t *locale,name_value_t *qc,name_value_t *ms,name_value_t *ss,name_value_t *lt) {
   cf_tpl_variable_t ary,l_hash;
   hierarchical_node_t *ht = thread->ht,*ht1;
   size_t i;
   int did_push = 0,first = 1;
 
   if(ShowInvisible || (ht->msg->invisible == 0 && ht->msg->may_show)) {
-    flt_nested_make_hierarchical(vc,tpl,thread,ht,head,1,ShowInvisible,utf8,hash,cs,df,locale,qc,ms,ss);
+    flt_nested_make_hierarchical(vc,tpl,thread,ht,head,1,ShowInvisible,utf8,hash,cs,df,locale,qc,ms,ss,lt);
   }
   else {
     if(ht->childs.elements) {
@@ -145,10 +149,10 @@ void flt_nested_start_hierarchical(configuration_t *vc,cf_hash_t *head,cf_templa
         ht1 = array_element_at(&ht->childs,i);
 
         if(ht1->msg->invisible == 0 && ht1->msg->may_show) {
-          if(first) flt_nested_make_hierarchical(vc,tpl,thread,ht1,head,first,ShowInvisible,utf8,hash,cs,df,locale,qc,ms,ss);
+          if(first) flt_nested_make_hierarchical(vc,tpl,thread,ht1,head,first,ShowInvisible,utf8,hash,cs,df,locale,qc,ms,ss,lt);
           else {
             cf_tpl_var_init(&l_hash,TPL_VARIABLE_HASH);
-            flt_nested_make_hierarchical(vc,tpl,thread,ht1,head,first,ShowInvisible,utf8,&l_hash,cs,df,locale,qc,ms,ss);
+            flt_nested_make_hierarchical(vc,tpl,thread,ht1,head,first,ShowInvisible,utf8,&l_hash,cs,df,locale,qc,ms,ss,lt);
             cf_tpl_var_add(&ary,&l_hash);
           }
 
@@ -157,10 +161,10 @@ void flt_nested_start_hierarchical(configuration_t *vc,cf_hash_t *head,cf_templa
         }
         else {
           if((ht1 = cf_msg_ht_get_first_visible(ht1)) != NULL) {
-            if(first) flt_nested_make_hierarchical(vc,tpl,thread,ht1,head,first,ShowInvisible,utf8,hash,cs,df,locale,qc,ms,ss);
+            if(first) flt_nested_make_hierarchical(vc,tpl,thread,ht1,head,first,ShowInvisible,utf8,hash,cs,df,locale,qc,ms,ss,lt);
             else {
               cf_tpl_var_init(&l_hash,TPL_VARIABLE_HASH);
-              flt_nested_make_hierarchical(vc,tpl,thread,ht1,head,first,ShowInvisible,utf8,&l_hash,cs,df,locale,qc,ms,ss);
+              flt_nested_make_hierarchical(vc,tpl,thread,ht1,head,first,ShowInvisible,utf8,&l_hash,cs,df,locale,qc,ms,ss,lt);
               cf_tpl_var_add(&ary,&l_hash);
             }
 
@@ -232,7 +236,7 @@ int flt_nested_execute_filter(cf_hash_t *head,configuration_t *dc,configuration_
   }
 
   flt_nested_inprogress = 1;
-  flt_nested_start_hierarchical(vc,head,tpl,thread,ShowInvisible,utf8,&hash,cs,df,locale,qc,ms,ss);
+  flt_nested_start_hierarchical(vc,head,tpl,thread,ShowInvisible,utf8,&hash,cs,df,locale,qc,ms,ss,lt);
   flt_nested_inprogress = 0;
 
   cf_tpl_setvar(tpl,"thread",&hash);

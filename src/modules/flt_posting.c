@@ -159,6 +159,12 @@ int flt_posting_execute_filter(cf_hash_t *head,configuration_t *dc,configuration
 
   len = gen_unid(buff,50);
   cf_tpl_setvalue(tpl,"unid",TPL_VARIABLE_STRING,buff,len);
+
+  len = sprintf(buff,"%"PRIu64,thread->tid);
+  cf_tpl_setvalue(tpl,"tid",buff,len);
+
+  len = sprintf(buff,"%"PRIu64,thread->threadmsg->mid);
+  cf_tpl_setvalue(tpl,"mid",buff,len);
   /* }}} */
 
   if((v = cfg_get_first_value(vc,forum_name,"Name")) != NULL) cf_set_variable(tpl,cs,"aname",v->values[0],strlen(v->values[0]),1);
