@@ -1,3 +1,6 @@
+2009-01-15 Christian Kruse <cjk@wwwtech.de>
+	* src/modules/flt_include.c: Implemented #118
+
 2009-01-14 Christian Kruse <cjk@wwwtech.de>
 	* src/fo_post.c, src/htmllib.c: Change signature handling; got rid of
 		silly _/_SIG_/_
