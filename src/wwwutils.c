@@ -318,13 +318,13 @@ void cf_http_redirect_with_nice_uri(const u_char *ruri,int perm) {
  */
 u_char *cf_urlify(const u_char *val) {
   string_t str;
-  register u_char *ptr = val;
+  register u_char *ptr;
   int i;
   u_int32_t num;
 
   str_init(&str);
 
-  for(ptr=val;*ptr;++ptr) {
+  for(ptr=(u_char *)val;*ptr;++ptr) {
     if(isalnum(*ptr) || *ptr == '_' || *ptr == '-') str_char_append(&str,tolower(*ptr));
     else if(isspace(*ptr)) str_char_append(&str,'-');
     else {

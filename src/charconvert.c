@@ -174,7 +174,7 @@ u_char *charset_convert(const u_char *toencode,size_t in_len,const u_char *from_
   out_p    = out_buf;
 
   while(in_left > 0) {
-    result = iconv(cd,(u_char **)&toencode,&in_left,(u_char **)&out_p,&out_left);
+    result = iconv(cd,(char **)&toencode,&in_left,(char **)&out_p,&out_left);
     out_size = bsz - out_left;
     if(result == (size_t)(-1)) {
       if(errno == E2BIG && in_left > 0) {
@@ -456,7 +456,7 @@ u_char *htmlentities_charset_convert(const u_char *toencode, const u_char *from,
   out_p    = out_buf;
 
   while(in_left > 0) {
-    result = iconv(cd,&in_ptr,&in_left,(u_char **)&out_p,&out_left);
+    result = iconv(cd,(char **)&in_ptr,&in_left,(char **)&out_p,&out_left);
     out_size = bsz - out_left;
     if(result == (size_t)(-1)) {
       if(errno == E2BIG && in_left > 0) {
@@ -564,7 +564,7 @@ u_char *charset_convert_entities(const u_char *toencode, size_t in_len,const u_c
   out_p    = out_buf;
 
   while(in_left > 0) {
-    result = iconv(cd,&in_ptr,&in_left,(u_char **)&out_p,&out_left);
+    result = iconv(cd,(char **)&in_ptr,&in_left,(char **)&out_p,&out_left);
     out_size = bsz - out_left;
     if(result == (size_t)(-1)) {
       if(errno == E2BIG && in_left > 0) {

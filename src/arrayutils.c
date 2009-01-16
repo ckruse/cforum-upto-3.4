@@ -99,7 +99,7 @@ void *array_bsearch(array_t *ary,const void *key,int (*compar)(const void *, con
 
 /* {{{ array_element_at */
 void *array_element_at(array_t *ary,size_t index) {
-  if(index < 0 || index >= ary->elements) {
+  if(index >= ary->elements) {
     errno = EINVAL;
     return NULL;
   }
