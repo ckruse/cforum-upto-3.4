@@ -67,7 +67,7 @@ set (ALL_MODULES flt_basic flt_category flt_deleted flt_frameset flt_http
   flt_gummizelle flt_noanonymous flt_noanswer flt_chooser flt_moderated
   flt_cookieauth flt_noarchive flt_noarchive_server flt_stdreplacements
   flt_interesting flt_admin_mysql flt_shortcuts flt_phpsessauth flt_bbcodes
-  flt_pavatar flt_charta)
+  flt_pavatar flt_charta flt_replace)
 
 SET (EXTRALIBS_flt_deleted ${BERKELEY_DB_LIBRARIES})
 SET (EXTRALIBS_flt_registerednames ${BERKELEY_DB_LIBRARIES})
@@ -75,6 +75,7 @@ SET (EXTRALIBS_flt_urlrewrite ${PCRE_LIBRARIES})
 SET (EXTRALIBS_flt_visited ${BERKELEY_DB_LIBRARIES})
 SET (EXTRALIBS_flt_scoring ${BERKELEY_DB_LIBRARIES} ${PCRE_LIBRARIES})
 SET (EXTRALIBS_flt_syntax ${PCRE_LIBRARIES})
+SET (EXTRALIBS_flt_replace ${PCRE_LIBRARIES} cfvalidate)
 
 add_custom_command (
   OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/flt_scoring.c

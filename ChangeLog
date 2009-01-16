@@ -1,3 +1,6 @@
+2009-01-16 Christian Kruse <cjk@wwwtech.de>
+	* src/modules/CMakeLists.txt, src/modules/flt_replace.c: Implemented #90
+
 2009-01-15 Christian Kruse <cjk@wwwtech.de>
 	* src/modules/flt_include.c: Implemented #118
 
