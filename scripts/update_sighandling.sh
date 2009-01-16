@@ -1,3 +1,4 @@
+#!/bin/bash
 
 dir="$@"
 if test -z "$dir"; then
