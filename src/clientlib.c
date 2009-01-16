@@ -1,6 +1,6 @@
 /**
  * \file clientlib.c
- * \author Christian Kruse, <ckruse@wwwtech.de>
+ * \author Christian Kruse, <cjk@wwwtech.de>
  * \brief client library functions
  *
  * This file contains some functions and datatypes used in client modus,

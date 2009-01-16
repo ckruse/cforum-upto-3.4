@@ -1,6 +1,6 @@
 /**
  * \file flt_postingassistant.c
- * \author Christian Kruse, <ckruse@wwwtech.de>
+ * \author Christian Kruse, <cjk@wwwtech.de>
  * \brief Posting assistant
  *
  * This file is a plugin for fo_post. It tries to make

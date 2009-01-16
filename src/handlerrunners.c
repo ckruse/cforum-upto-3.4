@@ -1,6 +1,6 @@
 /**
  * \file handlerrunners.c
- * \author Christian Kruse, <ckruse@wwwtech.de>
+ * \author Christian Kruse, <cjk@wwwtech.de>
  * \brief handler running functions
  *
  * This file contains handler running functions on client side

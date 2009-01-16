@@ -1,6 +1,6 @@
 /**
  * \file fo_threadlookup.c
- * \author Christian Kruse, <ckruse@wwwtech.de>
+ * \author Christian Kruse, <cjk@wwwtech.de>
  * \brief This program creates a tid index
  *
  * This file does a thread id lookup in the index files

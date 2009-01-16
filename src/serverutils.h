@@ -1,6 +1,6 @@
 /**
  * \file serverutils.h
- * \author Christian Kruse, <ckruse@wwwtech.de>
+ * \author Christian Kruse, <cjk@wwwtech.de>
  *
  * Utility function definitions for the server
  *

@@ -1,6 +1,6 @@
 /**
  * \file entitytable.h
- * \author Christian Kruse, <ckruse@wwwtech.de>
+ * \author Christian Kruse, <cjk@wwwtech.de>
  * \brief table of all entities defined in xhtml 1.0
  *
  */

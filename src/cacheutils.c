@@ -1,6 +1,6 @@
 /**
  * \file cacheutils.c
- * \author Christian Kruse, <ckruse@wwwtech.de>
+ * \author Christian Kruse, <cjk@wwwtech.de>
  * \brief cache utilities for the Classic Forum
  *
  * These utilities are written for the Classic Forum. Hope, they're useful.

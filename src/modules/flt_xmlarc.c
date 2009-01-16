@@ -1,6 +1,6 @@
 /**
  * \file flt_xmlarc.c
- * \author Christian Kruse, <ckruse@wwwtech.de>
+ * \author Christian Kruse, <cjk@wwwtech.de>
  *
  * This plugin handles the XML archive format
  */

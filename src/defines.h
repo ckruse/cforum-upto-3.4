@@ -1,6 +1,6 @@
 /**
  * \file defines.h
- * \author Christian Kruse, <ckruse@wwwtech.de>
+ * \author Christian Kruse, <cjk@wwwtech.de>
  * \brief the standard defines
  *
  * This file contains some standard definitions needed in nearly any source file of the Classic Forum.

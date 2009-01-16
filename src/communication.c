@@ -1,6 +1,6 @@
 /**
  * \file handlerrunners.c
- * \author Christian Kruse, <ckruse@wwwtech.de>
+ * \author Christian Kruse, <cjk@wwwtech.de>
  * \brief server communication functions
  *
  * This file contains functions to communicate with the forum server

@@ -1,6 +1,6 @@
 /**
  * \file cfcgi.h
- * \author Christian Kruse, <ckruse@wwwtech.de>
+ * \author Christian Kruse, <cjk@wwwtech.de>
  * \brief Classic Forum CGI-Library
  *
  * This is a small but hopefully fast CGI library. It was

@@ -1,6 +1,6 @@
 /**
  * \file utils.h
- * \author Christian Kruse, <ckruse@wwwtech.de>
+ * \author Christian Kruse, <cjk@wwwtech.de>
  * \brief Utilities for the Classic Forum
  *
  * This file contains some utility functions for the Classic Forum, e.g. a string abstraction and a

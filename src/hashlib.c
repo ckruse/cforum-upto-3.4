@@ -1,6 +1,6 @@
 /**
  * \file hashlib.c
- * \author Christian Kruse, <ckruse@wwwtech.de>
+ * \author Christian Kruse, <cjk@wwwtech.de>
  * \brief the implementation of the hashing library
  *
  * The hashing library was developed within the Classic Forum project, <http://cforum.teamone.de/>

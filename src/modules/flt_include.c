@@ -1,6 +1,6 @@
 /**
  * \file flt_include.c
- * \author Christian Kruse, <ckruse@wwwtech.de>
+ * \author Christian Kruse, <cjk@wwwtech.de>
  *
  * Let the user include some own files (e.g. CSS or JS)
  */

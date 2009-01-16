@@ -1,6 +1,6 @@
 /**
  * \file validate.c
- * \author Christian Kruse, <ckruse@wwwtech.de>
+ * \author Christian Kruse, <cjk@wwwtech.de>
  * \brief Validation functions
  *
  * This file contains validation functions (e.g. link and mail validation)

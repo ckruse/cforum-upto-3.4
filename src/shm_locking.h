@@ -1,6 +1,6 @@
 /**
  * \file shm_locking.h
- * \author Christian Kruse, <ckruse@wwwtech.de>
+ * \author Christian Kruse, <cjk@wwwtech.de>
  * \brief Implementation of a read-write lock
  *
  * This module implements a read-write-lock of a shared memory segment using SysV semaphores.

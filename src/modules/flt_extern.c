@@ -1,6 +1,6 @@
 /**
  * \file flt_extern.c
- * \author Christian Kruse, <ckruse@wwwtech.de>
+ * \author Christian Kruse, <cjk@wwwtech.de>
  *
  * Implementation of the Classic Forum Transfer Protocol for
  * external read-only access

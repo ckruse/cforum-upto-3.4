@@ -1,6 +1,6 @@
 /**
  * \file wwwutils.c
- * \author Christian Kruse, <ckruse@wwwtech.de>
+ * \author Christian Kruse, <cjk@wwwtech.de>
  * \brief WWW utilities for the Classic Forum
  *
  * This file contains some WWW utility functions for the Classic Forum, e.g. GET-request, POST-request,

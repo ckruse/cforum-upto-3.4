@@ -2,7 +2,7 @@
 
 #
 # \file testsuite.pl
-# \author Christian Kruse, <ckruse@wwwtech.de>
+# \author Christian Kruse, <cjk@wwwtech.de>
 # \brief This script creates a "test suite" for the Classic Forum
 #
 # This script creates a test suite for the Classic Forum. It can do new postings, create new threads
@@ -170,7 +170,7 @@ sub writer($) {
     unid => { min => 5, max => 10, newline => 0 },
     qchar => "\377> ",
     Name => ["Christian","Erwin","Günther","Hugo","Harald","Herbert","Ina","Iris","Veronika","Daniela","Daniel","Andres","Gundula","Raimund","Richard","Bernhard","Hinrich","Anne","Stefanie","Christine","Anja"],
-    EMail => 'ckruse@wwwtech.de',
+    EMail => 'cjk@wwwtech.de',
     cat => ["ZU DIESEM FORUM","ZUR INFO","BROWSER","HTTP","HTML","E-MAIL","DHTML","GRAFIK","PROVIDER","RECHT","DESIGN","INTERNET-ANBINDUNG","FTP","ASP","CGI","CSS","DATENBANK","JAVA","JAVASCRIPT","MEINUNG","MENSCHELEI","PERL","PHP","PROGRAMMIERTECHNIK"],
     subject => { min => 15, max => 20, newline => 0 },
     body => { min => 50, max => 500, newline => 1 }

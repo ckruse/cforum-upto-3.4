@@ -1,6 +1,6 @@
 /**
  * \file flt_phpsessauth.c
- * \author Christian Kruse, <ckruse@wwwtech.de>
+ * \author Christian Kruse, <cjk@wwwtech.de>
  *
  * This plugin implements user authentification over the HTTP authentification
  */

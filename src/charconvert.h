@@ -1,6 +1,6 @@
 /**
  * \file charconvert.h
- * \author Christian Kruse, <ckruse@wwwtech.de>
+ * \author Christian Kruse, <cjk@wwwtech.de>
  * \brief Character converting functions
  *
  * This file contains general character converting functions.

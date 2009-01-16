@@ -1,6 +1,6 @@
 /**
  * \file flt_rot13.c
- * \author Christian Kruse, <ckruse@wwwtech.de>
+ * \author Christian Kruse, <cjk@wwwtech.de>
  *
  * This plugin implements the rot13-feature for the forum
  */

@@ -1,6 +1,6 @@
 /**
  * \file fo_post.c
- * \author Christian Kruse, <ckruse@wwwtech.de>
+ * \author Christian Kruse, <cjk@wwwtech.de>
  * \brief Implementation of fo_post
  *
  * This file implements fo_post in C

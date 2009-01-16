@@ -1,6 +1,6 @@
 /**
  * \file flt_sorting.c
- * \author Christian Kruse, <ckruse@wwwtech.de>
+ * \author Christian Kruse, <cjk@wwwtech.de>
  *
  * This plugin sorts messages and threads
  */

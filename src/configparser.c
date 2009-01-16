@@ -1,6 +1,6 @@
 /**
  * \file configparser.c
- * \author Christian Kruse, <ckruse@wwwtech.de>
+ * \author Christian Kruse, <cjk@wwwtech.de>
  * \brief configuration parser functions and datatypes
  *
  * This file contains the configuration parser used by this project

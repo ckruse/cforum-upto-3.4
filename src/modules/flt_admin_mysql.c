@@ -1,6 +1,6 @@
 /**
  * \file flt_admin_mysql.c
- * \author Christian Kruse, <ckruse@wwwtech.de>
+ * \author Christian Kruse, <cjk@wwwtech.de>
  *
  * This plugin checks if a user is admin with MySQL as storage
  */

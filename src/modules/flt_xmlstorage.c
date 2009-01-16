@@ -1,6 +1,6 @@
 /**
  * \file flt_xmlstorage.c
- * \author Christian Kruse, <ckruse@wwwtech.de>
+ * \author Christian Kruse, <cjk@wwwtech.de>
  * \brief XML storage plugin
  *
  * This file contains a storage plugin implementation and

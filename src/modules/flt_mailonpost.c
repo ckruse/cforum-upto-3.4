@@ -1,6 +1,6 @@
 /**
  * \file flt_mailonpost.c
- * \author Christian Kruse, <ckruse@wwwtech.de>
+ * \author Christian Kruse, <cjk@wwwtech.de>
  * \brief Send a message to user if answer to a message has been sent
  *
  * This file is a plugin for fo_post. If user wants so, a message will be

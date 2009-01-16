@@ -1,6 +1,6 @@
 /**
  * \file flt_tipoftheday.c
- * \author Christian Kruse, <ckruse@wwwtech.de>
+ * \author Christian Kruse, <cjk@wwwtech.de>
  *
  * This plug-in provides »tip of the day« functionality
  */

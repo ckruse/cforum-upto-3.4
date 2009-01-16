@@ -1,7 +1,7 @@
 package Plugins::ImportExport;
 
 # \file ImportExport.pm
-# \author Christian Kruse, <ckruse@wwwtech.de>
+# \author Christian Kruse, <cjk@wwwtech.de>
 #
 # a plugin to import or export configuration data
 

@@ -1,6 +1,6 @@
 /**
  * \file template.c
- * \author Christian Kruse, <ckruse@wwwtech.de>
+ * \author Christian Kruse, <cjk@wwwtech.de>
  *         Christian Seiler, <self@christian-seiler.de>
  * \brief the template library function implementations
  */

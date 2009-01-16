@@ -1,6 +1,6 @@
 /**
  * \file fo_feeds.c
- * \author Christian Kruse, <ckruse@wwwtech.de>
+ * \author Christian Kruse, <cjk@wwwtech.de>
  * \brief The forum feeds manager program
  */
 

@@ -1,6 +1,6 @@
 /**
  * \file flt_directives.c
- * \author Christian Kruse, <ckruse@wwwtech.de>
+ * \author Christian Kruse, <cjk@wwwtech.de>
  *
  * This plugin handles lot of standard directives
  */

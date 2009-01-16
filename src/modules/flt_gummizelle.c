@@ -1,6 +1,6 @@
 /**
  * \file flt_gummizelle.c
- * \author Christian Kruse, <ckruse@wwwtech.de>
+ * \author Christian Kruse, <cjk@wwwtech.de>
  *
  * This plugin provides gummizelle-functionality
  */

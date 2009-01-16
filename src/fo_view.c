@@ -1,6 +1,6 @@
 /**
  * \file fo_view.c
- * \author Christian Kruse, <ckruse@wwwtech.de>
+ * \author Christian Kruse, <cjk@wwwtech.de>
  * \brief The forum viewer program
  */
 

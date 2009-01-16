@@ -1,6 +1,6 @@
 /**
  * \file flt_preview.c
- * \author Christian Kruse, <ckruse@wwwtech.de>
+ * \author Christian Kruse, <cjk@wwwtech.de>
  * \brief Posting preview
  *
  * This file is a plugin for fo_post. It gives the user the

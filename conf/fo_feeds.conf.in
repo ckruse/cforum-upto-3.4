@@ -16,7 +16,7 @@ Forum FORUM1 {
  RSSDescriptionThread "Feed fuer Thread %t"
 
  RSSCopyright "Copyright 2005"
- RSSWebMaster "ckruse@wwwtech.de (Christian Kruse)"
+ RSSWebMaster "cjk@wwwtech.de (Christian Kruse)"
  RSSCategory "Web-Entwicklung"
 }
 

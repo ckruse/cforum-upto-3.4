@@ -1,6 +1,6 @@
 /**
  * \file flt_http.c
- * \author Christian Kruse, <ckruse@wwwtech.de>
+ * \author Christian Kruse, <cjk@wwwtech.de>
  *
  * This plugin sends enhanced HTTP headers and handles If-Modified-Since
  */

@@ -1,6 +1,6 @@
 /**
  * \file fo_tid_index.c
- * \author Christian Kruse, <ckruse@wwwtech.de>
+ * \author Christian Kruse, <cjk@wwwtech.de>
  * \brief This program creates a tid index
  *
  * This file creates an mid index to ensure access to messages in the
