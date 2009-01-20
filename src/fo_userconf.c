@@ -1,6 +1,6 @@
 /**
  * \file fo_userconf.c
- * \author Christian Kruse, <ckruse@wwwtech.de>
+ * \author Christian Kruse, <cjk@wwwtech.de>
  * \brief The forum userconfig program
  */
 

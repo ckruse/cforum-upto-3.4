@@ -1,6 +1,6 @@
 /**
  * \file hashlib.h
- * \author Christian Kruse, <ckruse@wwwtech.de>
+ * \author Christian Kruse, <cjk@wwwtech.de>
  * \brief the header definitions for the hashing library
  *
  * The original hashing algorithm has been developed by Bob Jenkins. I made a hash table library around

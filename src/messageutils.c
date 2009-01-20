@@ -1,6 +1,6 @@
 /**
  * \file messageutils.c
- * \author Christian Kruse, <ckruse@wwwtech.de>
+ * \author Christian Kruse, <cjk@wwwtech.de>
  * \brief message handling utilities
  *
  * This file contains utility functions for handling messages

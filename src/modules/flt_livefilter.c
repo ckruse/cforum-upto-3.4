@@ -1,6 +1,6 @@
 /**
  * \file flt_livefilter.c
- * \author Christian Kruse, <ckruse@wwwtech.de>
+ * \author Christian Kruse, <cjk@wwwtech.de>
  *
  * Live category and poster filter
  */

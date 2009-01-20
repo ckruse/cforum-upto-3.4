@@ -1,6 +1,6 @@
 /**
  * \file archiver.c
- * \author Christian Kruse, <ckruse@wwwtech.de>
+ * \author Christian Kruse, <cjk@wwwtech.de>
  * \brief The archiver functions
  *
  * This file contains the archiver functions. The archiver is complex enough to

@@ -1,6 +1,6 @@
 /**
  * \file clientlib.c
- * \author Christian Kruse, <ckruse@wwwtech.de>
+ * \author Christian Kruse, <cjk@wwwtech.de>
  * \brief client library functions
  *
  * This file contains some functions and datatypes used in client modus,
@@ -359,6 +359,7 @@ void cf_error_message(cf_cfg_config_t *cfg,const u_char *err,FILE *out, ...) {
   cf_string_t msg;
 
   int ivar,ret;
+  double fvar;
   u_char *svar;
 
   size_t size;
@@ -416,7 +417,13 @@ void cf_error_message(cf_cfg_config_t *cfg,const u_char *err,FILE *out, ...) {
               case 'd':
                 ivar = va_arg(ap,int);
                 size = snprintf(ibuff,50,"%d",ivar);
-                cf_str_chars_append(&msg,ibuff,50);
+                cf_str_chars_append(&msg,ibuff,size);
+                break;
+
+              case 'f':
+                fvar = va_arg(ap,double);
+                size = snprintf(ibuff,50,"%.2f",fvar);
+                str_chars_append(&msg,ibuff,size);
                 break;
 
               default:
@@ -464,6 +471,7 @@ u_char *cf_get_error_message(cf_cfg_config_t *cfg,const u_char *err,size_t *len,
   cf_string_t msg;
 
   int ivar,ret;
+  double fvar;
   u_char *svar;
 
   size_t size;
@@ -515,7 +523,13 @@ u_char *cf_get_error_message(cf_cfg_config_t *cfg,const u_char *err,size_t *len,
         case 'd':
           ivar = va_arg(ap,int);
           size = snprintf(ibuff,50,"%d",ivar);
-          cf_str_chars_append(&msg,ibuff,50);
+          cf_str_chars_append(&msg,ibuff,size);
+          break;
+
+        case 'f':
+          fvar = va_arg(ap,double);
+          size = snprintf(ibuff,50,"%.2f",fvar);
+          str_chars_append(&msg,ibuff,size);
           break;
 
         default:

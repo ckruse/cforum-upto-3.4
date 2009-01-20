@@ -1,6 +1,6 @@
 /**
  * \file fo_userconf.h
- * \author Christian Kruse, <ckruse@wwwtech.de>
+ * \author Christian Kruse, <cjk@wwwtech.de>
  *
  * This file contains the API for fo_userconf
  */

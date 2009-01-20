@@ -1,6 +1,6 @@
 /**
  * \file fo_tid_index.h
- * \author Christian Kruse, <ckruse@wwwtech.de>
+ * \author Christian Kruse, <cjk@wwwtech.de>
  * \brief Forum message indexer program
  *
  * This header file defines the data types for the

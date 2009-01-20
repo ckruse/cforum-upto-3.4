@@ -1,6 +1,6 @@
 /**
  * \file utils.h
- * \author Christian Kruse, <ckruse@wwwtech.de>
+ * \author Christian Kruse, <cjk@wwwtech.de>
  * \brief Utilities for the Classic Forum
  *
  * This file contains some utility functions for the Classic Forum, e.g. a string abstraction and a
@@ -897,6 +897,8 @@ cf_http_response_t *cf_http_simple_post_uri(const u_char *uri,const u_char *post
 void cf_http_destroy_response(cf_http_response_t *rsp);
 
 void cf_http_redirect_with_nice_uri(const u_char *ruri,int perm);
+
+u_char *cf_urlify(const u_char *val);
 /* }}} */
 
 time_t cf_timegm(struct tm *tm);

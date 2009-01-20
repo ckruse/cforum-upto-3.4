@@ -1,6 +1,6 @@
 /**
  * \file flt_niceuserconf.c
- * \author Christian Kruse, <ckruse@wwwtech.de>
+ * \author Christian Kruse, <cjk@wwwtech.de>
  *
  * This plugin sets userconf values to a nicer representation
  */

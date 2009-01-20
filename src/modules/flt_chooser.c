@@ -1,6 +1,6 @@
 /**
  * \file flt_chooser.c
- * \author Christian Kruse, <ckruse@wwwtech.de>
+ * \author Christian Kruse, <cjk@wwwtech.de>
  *
  * This plugin implements a board-like category chooser
  */

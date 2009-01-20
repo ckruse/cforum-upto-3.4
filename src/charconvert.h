@@ -1,6 +1,6 @@
 /**
  * \file charconvert.h
- * \author Christian Kruse, <ckruse@wwwtech.de>
+ * \author Christian Kruse, <cjk@wwwtech.de>
  * \brief Character converting functions
  *
  * This file contains general character converting functions.
@@ -19,6 +19,45 @@
 
 #ifndef _CF_CHARCONVERT_H
 #define _CF_CHARCONVERT_H
+
+#define CF_UNI_CLS_SC  1
+#define CF_UNI_CLS_CC  2
+#define CF_UNI_CLS_NL  3
+#define CF_UNI_CLS_PF  4
+#define CF_UNI_CLS_PO  5
+#define CF_UNI_CLS_ND  6
+#define CF_UNI_CLS_NO  7
+#define CF_UNI_CLS_PD  8
+#define CF_UNI_CLS_ZP  9
+#define CF_UNI_CLS_LL  10
+#define CF_UNI_CLS_CN  11
+#define CF_UNI_CLS_CO  12
+#define CF_UNI_CLS_LU  13
+#define CF_UNI_CLS_LO  14
+#define CF_UNI_CLS_ZL  15
+#define CF_UNI_CLS_LT  16
+#define CF_UNI_CLS_MN  17
+#define CF_UNI_CLS_PC  18
+#define CF_UNI_CLS_CS  19
+#define CF_UNI_CLS_ME  20
+#define CF_UNI_CLS_LM  21
+#define CF_UNI_CLS_ZS  22
+#define CF_UNI_CLS_CF  23
+#define CF_UNI_CLS_MC  24
+#define CF_UNI_CLS_SM  25
+#define CF_UNI_CLS_SO  26
+#define CF_UNI_CLS_PE  27
+#define CF_UNI_CLS_PI  28
+#define CF_UNI_CLS_SK  29
+#define CF_UNI_CLS_PS  30
+
+/**
+ * This function tries to classify a unicode character as described in
+ * <http://www.unicode.org/Public/UNIDATA/UCD.html#General_Category_Values>
+ * \param c The unicode character to classify
+ * \return The unicode class
+ */
+int cf_classify_char(u_int32_t c);
 
 /**
  * This function tries to convert a string from charset from_charset to charset to_charset.
@@ -63,6 +102,16 @@ size_t print_htmlentities_encoded(const u_char *string,int sq,FILE *handle);
  * \return EILSEQ on failure, length of byte sequence on success
  */
 int utf8_to_unicode(const u_char *s,size_t n,u_int32_t *num);
+
+/**
+ * This function converts a unicode char number to a utf8 u_char string sequence
+ *
+ * \param num The unicode char number
+ * \param c The character buffer
+ * \param n The size of the character buffer (more than 7 bytes will never be used)
+ * \return EINVAL on failure, length of byte sequence on success
+ */
+int unicode_to_utf8(u_int32_t num, u_char *c,size_t n);
 
 /**
  * This function converts a string from a given charset to a given charset

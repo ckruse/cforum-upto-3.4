@@ -1,6 +1,6 @@
 /**
  * \file fo_feeds.c
- * \author Christian Kruse, <ckruse@wwwtech.de>
+ * \author Christian Kruse, <cjk@wwwtech.de>
  * \brief The forum feeds manager program
  */
 
@@ -119,6 +119,22 @@ void gen_description(cf_string_t *str,const u_char *descr,cf_cl_thread_t *thread
 }
 /* }}} */
 
+/* {{{ replace problematic ]]> in CDATA sections with ]]]><![CDATA[]> */
+void str_str_cdata_append(cf_string_t *dest, cf_string_t *src) {
+  // don't be binary-safe! xml doesn't allow 0-bytes anyway
+  u_char *ptr = src->content;
+  u_char *found;
+
+  while((found = strstr(ptr,"]]>")) != NULL) {
+    cf_str_chars_append(dest,ptr,(size_t)(found-ptr));
+    cf_str_chars_append(dest,"]]]><![CDATA[]>",15);
+    ptr = found + 3;
+  }
+
+  cf_str_cstr_append(dest,ptr);
+}
+/* }}} */
+
 /* {{{ atom_ and rss_head */
 void atom_head(cf_cfg_config_t *cfg,cf_string_t *str,cf_cl_thread_t *thread) {
   u_char *tmp = NULL,*tmp1 = NULL,*uname = cf_hash_get(GlobalValues,"UserName",8);
@@ -128,7 +144,10 @@ void atom_head(cf_cfg_config_t *cfg,cf_string_t *str,cf_cl_thread_t *thread) {
   cf_cfg_config_value_t *atom_title = cf_cfg_get_value(cfg,"AtomTitle"),
     *atom_tgline = cf_cfg_get_value(cfg,"AtomTagline"),
     *atom_lang = cf_cfg_get_value(cfg,"FeedLang"),
-    *burl = cf_cfg_get_value(cfg,"BaseURL");
+    *burl = cf_cfg_get_value(cfg,"BaseURL"),
+    *atom_uri = cf_cfg_get_value(cfg,thread?"AtomUriThread":"AtomUri"),
+    *atom_id = cf_cfg_get_value(cfg,"AtomId"),
+    *burl = cf_cfg_get_value(cfg,uname ? "UBaseURL":"BaseURL");
 
   cf_readmode_t *rm = cf_hash_get(GlobalValues,"RM",2);
 
@@ -140,8 +159,8 @@ void atom_head(cf_cfg_config_t *cfg,cf_string_t *str,cf_cl_thread_t *thread) {
   }
 
   cf_str_chars_append(str,"<?xml version=\"1.0\"?>\n" \
-    "<feed version=\"0.3\" xmlns=\"http://purl.org/atom/ns#",
-    73
+    "<feed xmlns=\"http://www.w3.org/2005/Atom",
+    62
   );
   if(atom_lang) {
     cf_str_chars_append(str,"\" xml:lang=\"",12);
@@ -158,21 +177,32 @@ void atom_head(cf_cfg_config_t *cfg,cf_string_t *str,cf_cl_thread_t *thread) {
   else cf_str_chars_append(str,atom_title->sval,strlen(atom_title->sval));
   cf_str_chars_append(str,"</title>",8);
 
-  cf_str_chars_append(str,"<link rel=\"alternate\" type=\"text/html\" href=\"",45);
-  if(thread) cf_str_chars_append(str,tmp1,strlen(tmp1));
-  else cf_str_chars_append(str,burl->avals[authed].sval,strlen(burl->avals[authed].sval));
-  cf_str_chars_append(str,"\"/>",3);
-
   if(atom_tgline) {
-    cf_str_chars_append(str,"<tagline>",9);
+    cf_str_chars_append(str,"<subtitle>",10);
     cf_str_chars_append(str,atom_tgline->sval,strlen(atom_tgline->sval));
-    cf_str_chars_append(str,"</tagline>",10);
+    cf_str_chars_append(str,"</subtitle>",11);
   }
 
-  cf_str_chars_append(str,"<modified>",10);
+  cf_str_chars_append(str,"<id>",4);
+  cf_str_cstr_append(str,atom_id->sval);
+  cf_str_chars_append(str,"</id>",5);
+
+  cf_str_chars_append(str,"<link rel=\"self\" href=\"",23);
+  if(thread) tmp2 = cf_get_link(atom_uri->sval,thread->tid,thread->messages->mid);
+  else tmp2 = cf_get_link(atom_uri->sval,0,0);
+  cf_str_chars_append(str,tmp2,strlen(tmp2));
+  free(tmp2);
+  cf_str_chars_append(str,"\"/>",3);
+
+  cf_str_chars_append(str,"<link rel=\"alternate\" type=\"text/html\" href=\"",45);
+  if(thread) str_chars_append(str,tmp1,strlen(tmp1));
+  else str_chars_append(str,burl->sval,strlen(burl->sval));
+  str_chars_append(str,"\"/>",3);
+
+  cf_str_chars_append(str,"<updated>",9);
   if(thread) w3c_datetime(str,thread->newest->date);
   else w3c_datetime(str,t);
-  cf_str_chars_append(str,"</modified>",11);
+  cf_str_chars_append(str,"</updated>",10);
 
   cf_str_chars_append(str,"<generator>Classic Forum V.",27);
   cf_str_chars_append(str,CF_VERSION,strlen(CF_VERSION));
@@ -186,9 +216,9 @@ void atom_head(cf_cfg_config_t *cfg,cf_string_t *str,cf_cl_thread_t *thread) {
     cf_str_chars_append(str,"]]></name>",10);
 
     if(thread->messages->hp.len) {
-      cf_str_chars_append(str,"<url><![CDATA[",14);
+      cf_str_chars_append(str,"<uri><![CDATA[",14);
       cf_str_str_append(str,&thread->messages->hp);
-      cf_str_chars_append(str,"]]></url>",9);
+      cf_str_chars_append(str,"]]></uri>",9);
     }
 
     if(thread->messages->email.len) {
@@ -320,9 +350,9 @@ void atom_thread(cf_cfg_config_t *cfg,cf_string_t *str,cf_cl_thread_t *thread,cf
       cf_str_chars_append(str,"]]></name>",10);
 
       if(msg->hp.len) {
-        cf_str_chars_append(str,"<url><![CDATA[",14);
+        cf_str_chars_append(str,"<uri><![CDATA[",14);
         cf_str_str_append(str,&msg->hp);
-        cf_str_chars_append(str,"]]></url>",9);
+        cf_str_chars_append(str,"]]></uri>",9);
       }
 
       if(msg->email.len) {
@@ -346,16 +376,16 @@ void atom_thread(cf_cfg_config_t *cfg,cf_string_t *str,cf_cl_thread_t *thread,cf
       cf_str_chars_append(str,tmp1,len1);
       cf_str_chars_append(str,"</id>",5);
 
-      cf_str_chars_append(str,"<modified>",10);
+      cf_str_chars_append(str,"<updated>",9);
       w3c_datetime(str,thread->newest->date);
-      cf_str_chars_append(str,"</modified>",11);
+      cf_str_chars_append(str,"</updated>",10);
 
-      cf_str_chars_append(str,"<issued>",8);
+      cf_str_chars_append(str,"<published>",11);
       w3c_datetime(str,thread->messages->date);
-      cf_str_chars_append(str,"</issued>",9);
+      cf_str_chars_append(str,"</published>",12);
 
       /* {{{ content */
-      cf_str_chars_append(str,"<content type=\"text/html\" mode=\"escaped\"><![CDATA[",50);
+      cf_str_chars_append(str,"<content type=\"html\"><![CDATA[",30);
       cf_str_init(&tmpstr);
       cf_msg_to_html(
         cfg,
@@ -598,9 +628,9 @@ void gen_threadlist_atom(cf_cfg_config_t *cfg,cf_cl_thread_t *thread,cf_string_t
   cf_str_chars_append(str,"]]></name>",10);
 
   if(thread->messages->hp.len) {
-    cf_str_chars_append(str,"<url><![CDATA[",14);
+    cf_str_chars_append(str,"<uri><![CDATA[",14);
     cf_str_str_append(str,&thread->messages->hp);
-    cf_str_chars_append(str,"]]></url>",9);
+    cf_str_chars_append(str,"]]></uri>",9);
   }
 
   if(thread->messages->email.len) {
@@ -624,16 +654,16 @@ void gen_threadlist_atom(cf_cfg_config_t *cfg,cf_cl_thread_t *thread,cf_string_t
   cf_str_chars_append(str,tmp3,len2);
   cf_str_chars_append(str,"</id>",5);
 
-  cf_str_chars_append(str,"<modified>",10);
+  cf_str_chars_append(str,"<updated>",10);
   w3c_datetime(str,thread->newest->date);
-  cf_str_chars_append(str,"</modified>",11);
+  cf_str_chars_append(str,"</updated>",11);
 
-  cf_str_chars_append(str,"<issued>",8);
+  cf_str_chars_append(str,"<published>",11);
   w3c_datetime(str,thread->messages->date);
-  cf_str_chars_append(str,"</issued>",9);
+  cf_str_chars_append(str,"</published>",12);
 
   /* {{{ content */
-  cf_str_chars_append(str,"<content type=\"text/html\" mode=\"escaped\"><![CDATA[",50);
+  cf_str_chars_append(str,"<content type=\"html\"><![CDATA[",30);
   cf_str_init(&tmpstr);
   cf_msg_to_html(
     cfg,

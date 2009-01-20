@@ -1,6 +1,6 @@
 /**
  * \file fo_vote.c
- * \author Christian Kruse, <ckruse@wwwtech.de>
+ * \author Christian Kruse, <cjk@wwwtech.de>
  * \brief The forum voting program
  */
 
@@ -123,8 +123,8 @@ void send_ok_output(cf_cfg_config_t *cfg,cf_hash_t *head,cf_cfg_config_value_t *
 
   fbase = cf_cfg_get_value(cfg,"BaseURL");
 
-  cf_set_variable(&tpl,cs->sval,"backlink",link,strlen(link),0);
-  cf_set_variable(&tpl,cs->sval,"forum-base-uri",fbase->avals[uname].sval,strlen(fbase->avals[uname].sval),1);
+  cf_set_variable(&tpl,cs->sval,"backlink",link,strlen(link),0); //TODO: forum-backlink
+  cf_set_variable(&tpl,cs->sval,"forumbase",fbase->avals[uname].sval,strlen(fbase->avals[uname].sval),1); //TODO: forum-base-uri
   cf_set_variable(&tpl,cs->sval,"charset",cs->sval,strlen(cs->sval),1);
 
   free(link);

@@ -1,6 +1,6 @@
 /**
  * \file flt_moderated.c
- * \author Christian Kruse, <ckruse@wwwtech.de>
+ * \author Christian Kruse, <cjk@wwwtech.de>
  *
  * This plugin gives the user the ability to moderate the forum. Therefore,
  * every posting has to be approved.

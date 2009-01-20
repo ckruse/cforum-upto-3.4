@@ -1,6 +1,6 @@
 /**
  * \file validate.c
- * \author Christian Kruse, <ckruse@wwwtech.de>
+ * \author Christian Kruse, <cjk@wwwtech.de>
  * \brief Validation functions
  *
  * This file contains validation functions (e.g. link and mail validation)
@@ -1235,7 +1235,7 @@ int is_valid_link(const u_char *link) {
 #ifdef CF_VALIDATE_AS_PROGRAM
 int main(int argc,char *argv[]) {
   int i;
-  
+
   if(argc == 1) {
     fprintf(stderr,"Usage:\n\t%s uris\n",argv[0]);
     return EXIT_FAILURE;

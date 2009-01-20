@@ -1,6 +1,6 @@
 /**
  * \file readline.h
- * \author Christian Kruse, <ckruse@wwwtech.de>
+ * \author Christian Kruse, <cjk@wwwtech.de>
  * \brief the readline definitions
  *
  * This file includes the definitions for a thread-safe, buffered readline algorithm. It was originally

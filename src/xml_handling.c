@@ -1,6 +1,6 @@
 /**
  * \file xml_handling.c
- * \author Christian Kruse, <ckruse@wwwtech.de>
+ * \author Christian Kruse, <cjk@wwwtech.de>
  * \brief XML handling function definitions
  *
  * This file contains functions making it easier to

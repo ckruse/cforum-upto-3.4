@@ -1,6 +1,6 @@
 /*
  * \file flt_remotesignature.c
- * \author Christian Kruse, <ckruse@wwwtech.de>
+ * \author Christian Kruse, <cjk@wwwtech.de>
  * \brief Remote signature plugin
  *
  * This file is a plugin for fo_post. It fetches signature lines

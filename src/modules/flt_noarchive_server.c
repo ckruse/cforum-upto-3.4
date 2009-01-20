@@ -1,6 +1,6 @@
 /**
  * \file flt_noarchive_server.c
- * \author Christian Kruse, <ckruse@wwwtech.de>
+ * \author Christian Kruse, <cjk@wwwtech.de>
  *
  * Returns FLT_EXIT if the thread has the no-archive flag
  */

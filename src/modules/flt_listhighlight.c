@@ -1,6 +1,6 @@
 /**
  * \file flt_listhighlight.c
- * \author Christian Kruse, <ckruse@wwwtech.de>
+ * \author Christian Kruse, <cjk@wwwtech.de>
  *
  * This plugin implements the highlighting of VIP persons, etc
  */

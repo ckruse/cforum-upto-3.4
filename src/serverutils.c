@@ -1,6 +1,6 @@
 /**
  * \file serverutils.c
- * \author Christian Kruse, <ckruse@wwwtech.de>
+ * \author Christian Kruse, <cjk@wwwtech.de>
  *
  * Implementation of the server utility functions
  */

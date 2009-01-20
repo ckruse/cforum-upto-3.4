@@ -1,6 +1,6 @@
 /**
  * \file shm_locking.c
- * \author Christian Kruse, <ckruse@wwwtech.de>
+ * \author Christian Kruse, <cjk@wwwtech.de>
  * \brief Implementation of a read-write lock using semaphores.
  *
  */

@@ -1,6 +1,6 @@
 /**
  * \file configparser.c
- * \author Christian Kruse, <ckruse@wwwtech.de>
+ * \author Christian Kruse, <cjk@wwwtech.de>
  *
  * This file contains the config parser
  */

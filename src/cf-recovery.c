@@ -1,6 +1,6 @@
 /**
  * \file fo_recovery.c
- * \author Christian Kruse, <ckruse@wwwtech.de>
+ * \author Christian Kruse, <cjk@wwwtech.de>
  * \brief The forum recovery program
  */
 

@@ -1,6 +1,6 @@
 /**
  * \file flt_handle404.c
- * \author Christian Kruse, <ckruse@wwwtech.de>
+ * \author Christian Kruse, <cjk@wwwtech.de>
  *
  * This plug-in provides administrator functions
  */

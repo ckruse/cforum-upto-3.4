@@ -1,6 +1,6 @@
 /**
  * \file cfgcomp_vm.c
- * \author Christian Kruse, <ckruse@wwwtech.de>
+ * \author Christian Kruse, <cjk@wwwtech.de>
  *
  * This file contains the config vm
  */

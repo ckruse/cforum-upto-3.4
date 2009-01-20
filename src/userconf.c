@@ -1,6 +1,6 @@
 /**
  * \file userconf.c
- * \author Christian Kruse, <ckruse@wwwtech.de>
+ * \author Christian Kruse, <cjk@wwwtech.de>
  *
  * User config utilities
  */

@@ -1,6 +1,6 @@
 /**
  * \file hashlib.c
- * \author Christian Kruse, <ckruse@wwwtech.de>
+ * \author Christian Kruse, <cjk@wwwtech.de>
  * \brief the implementation of the hashing library
  *
  * The hashing library was developed within the Classic Forum project, <http://cforum.teamone.de/>
@@ -558,6 +558,8 @@ int cf_hash_entry_delete(cf_hash_t *hsh,unsigned char *key,size_t keylen) {
 
       if(ent->keyelem->next) ent->keyelem->next->prev = ent->keyelem->prev;
       if(ent->keyelem->prev) ent->keyelem->prev->next = ent->keyelem->next;
+      if(hsh->keys.elems == ent->keyelem) hsh->keys.elems = ent->keyelem->next;
+      if(hsh->keys.last == ent->keyelem) hsh->keys.last = ent->keyelem->prev;
 
       free(ent->keyelem);
 

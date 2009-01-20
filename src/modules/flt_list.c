@@ -1,6 +1,6 @@
 /**
  * \file flt_list.c
- * \author Christian Kruse, <ckruse@wwwtech.de>
+ * \author Christian Kruse, <cjk@wwwtech.de>
  *
  * This plugin handles a posting read request in list mode
  */

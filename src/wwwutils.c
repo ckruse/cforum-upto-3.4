@@ -1,6 +1,6 @@
 /**
  * \file wwwutils.c
- * \author Christian Kruse, <ckruse@wwwtech.de>
+ * \author Christian Kruse, <cjk@wwwtech.de>
  * \brief WWW utilities for the Classic Forum
  *
  * This file contains some WWW utility functions for the Classic Forum, e.g. GET-request, POST-request,
@@ -309,5 +309,160 @@ void cf_http_redirect_with_nice_uri(const u_char *ruri,int perm) {
 }
 /* }}} */
 
+/* {{{ cf_urlify */
+/**
+ * generates a string from a  given value which can be used as an URL
+ * \param val The value to create the URL string from
+ * \return The URL string
+ */
+u_char *cf_urlify(const u_char *val) {
+  cf_string_t str;
+  register u_char *ptr;
+  int i;
+  u_int32_t num;
+
+  cf_str_init(&str);
+
+  for(ptr=(u_char *)val;*ptr;++ptr) {
+    if(isalnum(*ptr) || *ptr == '_' || *ptr == '-') cf_str_char_append(&str,tolower(*ptr));
+    else if(isspace(*ptr)) cf_str_char_append(&str,'-');
+    else {
+      i = utf8_to_unicode(ptr,strlen(ptr),&num);
+      ptr += i - 1;
+
+      switch(num) {
+        case 0xC4:
+        case 0xE4:
+          cf_str_chars_append(&str,"ae",2);
+          break;
+        case 0xD6:
+        case 0xF6:
+          cf_str_chars_append(&str,"oe",2);
+          break;
+        case 0xDC:
+        case 0xFC:
+          cf_str_chars_append(&str,"ue",2);
+          break;
+        case 0xDF:
+          cf_str_chars_append(&str,"ss",2);
+          break;
+
+        case 0xC0:
+        case 0xC1:
+        case 0xC2:
+        case 0xC3:
+        case 0xC5:
+        case 0xC6:
+        case 0xE0:
+        case 0xE1:
+        case 0xE2:
+        case 0xE3:
+        case 0xE5:
+        case 0xE6:
+        case 0x100:
+        case 0x101:
+        case 0x102:
+        case 0x103:
+        case 0x104:
+        case 0x105:
+          cf_str_char_append(&str,'a');
+          break;
+
+        case 0xC7:
+        case 0xE7:
+        case 0x106:
+        case 0x107:
+        case 0x108:
+        case 0x109:
+        case 0x10A:
+        case 0x10B:
+        case 0x10C:
+        case 0x10D:
+          cf_str_char_append(&str,'c');
+          break;
+
+        case 0xD0:
+        case 0x10E:
+        case 0x10F:
+        case 0x110:
+        case 0x111:
+          cf_str_char_append(&str,'d');
+          break;
+
+        case 0xC8:
+        case 0xC9:
+        case 0xCA:
+        case 0xCB:
+        case 0xE8:
+        case 0xE9:
+        case 0xEA:
+        case 0xEB:
+        case 0x112:
+        case 0x113:
+        case 0x114:
+        case 0x115:
+        case 0x116:
+        case 0x117:
+        case 0x118:
+        case 0x119:
+        case 0x11A:
+        case 0x11B:
+          cf_str_char_append(&str,'e');
+          break;
+
+        case 0xCC:
+        case 0xCD:
+        case 0xCE:
+        case 0xCF:
+        case 0xEC:
+        case 0xED:
+        case 0xEE:
+        case 0xEF:
+          cf_str_char_append(&str,'i');
+          break;
+
+        case 0xD1:
+        case 0xF1:
+          cf_str_char_append(&str,'n');
+          break;
+
+        case 0xD2:
+        case 0xD3:
+        case 0xD4:
+        case 0xD5:
+        case 0xD7:
+        case 0xD8:
+        case 0xF2:
+        case 0xF3:
+        case 0xF4:
+        case 0xF5:
+        case 0xF8:
+          cf_str_char_append(&str,'o');
+          break;
+
+        case 0xD9:
+        case 0xDA:
+        case 0xDB:
+        case 0xF9:
+        case 0xFA:
+        case 0xFB:
+          cf_str_char_append(&str,'u');
+          break;
+
+        case 0xDD:
+        case 0xFD:
+        case 0xFF:
+          cf_str_char_append(&str,'y');
+          break;
+
+        default:
+          cf_str_char_append(&str,'-');
+      }
+    }
+  }
+
+  return str.content;
+}
+/* }}} */
 
 /* eof */

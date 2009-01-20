@@ -1,6 +1,6 @@
 /**
  * \file flt_cgiconfig.c
- * \author Christian Kruse, <ckruse@wwwtech.de>
+ * \author Christian Kruse, <cjk@wwwtech.de>
  *
  * This filter can changes several config options by cgi
  * parameters

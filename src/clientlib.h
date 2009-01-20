@@ -1,6 +1,6 @@
 /**
  * \file clientlib.h
- * \author Christian Kruse, <ckruse@wwwtech.de>
+ * \author Christian Kruse, <cjk@wwwtech.de>
  * \brief client library functions
  *
  * This file contains some functions and datatypes used in client modus,
@@ -73,7 +73,7 @@ typedef struct cf_message_s {
 
   u_int32_t votes_good; /**< The good votings */
   u_int32_t votes_bad; /**< The bad votings */
-  
+
   short may_show; /**< The visibility flag for plugins to use to hide postings */
   short invisible; /**< The visibility flag (if 0, posting is deleted) */
 

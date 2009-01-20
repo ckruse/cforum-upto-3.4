@@ -1,6 +1,6 @@
 /**
  * \file flt_jsvalidation.c
- * \author Christian Kruse, <ckruse@wwwtech.de>
+ * \author Christian Kruse, <cjk@wwwtech.de>
  *
  * This plugin can validate user input by JS
  */

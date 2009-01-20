@@ -1,6 +1,6 @@
 /**
  * \file semaphores.c
- * \author Christian Kruse, <ckruse@wwwtech.de>
+ * \author Christian Kruse, <cjk@wwwtech.de>
  * \brief Wrappers around the sem* functions
  *
  * This module provides some wrapper functions for the semaphore

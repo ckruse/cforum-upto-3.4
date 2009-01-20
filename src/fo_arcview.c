@@ -1,6 +1,6 @@
 /**
  * \file fo_arcview.c
- * \author Christian Kruse, <ckruse@wwwtech.de>
+ * \author Christian Kruse, <cjk@wwwtech.de>
  * \brief The forum archive viewer program
  */
 

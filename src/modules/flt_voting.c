@@ -1,6 +1,6 @@
 /**
  * \file flt_voting.c
- * \author Christian Kruse, <ckruse@wwwtech.de>
+ * \author Christian Kruse, <cjk@wwwtech.de>
  *
  * Implementation of the voting protocol stack
  */

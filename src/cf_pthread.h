@@ -1,6 +1,6 @@
 /**
  * \file cf_pthread.h
- * \author Christian Kruse, <ckruse@wwwtech.de>
+ * \author Christian Kruse, <cjk@wwwtech.de>
  * \brief Pthread function and datatype wrappers
  *
  * This file contains some datatypes to debug pthread

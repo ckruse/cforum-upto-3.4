@@ -1,6 +1,6 @@
 /**
  * \file flt_link.c
- * \author Christian Kruse, <ckruse@wwwtech.de>
+ * \author Christian Kruse, <cjk@wwwtech.de>
  *
  * This plugin sets <link> elements in the postings and the threadlist
  */
