@@ -500,7 +500,8 @@ int flt_directives_execute(cf_configuration_t *fdc,cf_configuration_t *fvc,cl_th
             /* check for title */
             if((title_alt = strstr(list[1],"@title=")) != NULL) {
               if(*(title_alt+7) && flt_directives_is_valid_title(title_alt+7,strlen(title_alt+7))) {
-                tmp2 = strndup(list[1],title_alt-list[1]);
+                if(title_alt != list[1]) tmp2 = strndup(list[1],title_alt-list[1]);
+                else tmp2 = NULL;
                 title_alt = htmlentities(title_alt+7,0);
               }
               else return FLT_DECLINE;
@@ -513,7 +514,7 @@ int flt_directives_execute(cf_configuration_t *fdc,cf_configuration_t *fvc,cl_th
 
             cf_str_init(&tmpstr);
             cf_str_chars_append(&tmpstr,uri->uri,strlen(uri->uri));
-            cf_str_chars_append(&tmpstr,tmp2,strlen(tmp2));
+            if(tmp2) cf_str_chars_append(&tmpstr,tmp2,strlen(tmp2));
 
             flt_directives_generate_uri(tmpstr.content,title_alt,content,NULL,0,fdc,fvc,1);
 
@@ -521,7 +522,7 @@ int flt_directives_execute(cf_configuration_t *fdc,cf_configuration_t *fvc,cl_th
               cf_str_chars_append(cite,"[ref:",5);
               cf_str_chars_append(cite,tmp,strlen(tmp));
               cf_str_char_append(cite,';');
-              cf_str_chars_append(cite,ptr,strlen(ptr));
+              if(tmp2) cf_str_chars_append(cite,tmp2,strlen(tmp2));
               if(title_alt) {
                 cf_str_chars_append(cite,"@title=",7);
                 cf_str_chars_append(cite,title_alt,strlen(title_alt));
@@ -549,9 +550,56 @@ int flt_directives_execute(cf_configuration_t *fdc,cf_configuration_t *fvc,cl_th
       }
     }
     /* }}} */
+    /* {{{ [char:] */
+    else if(cf_strcmp(directive,"char") == 0) {
+      u_char *start = parameter,utf8_chr[10];
+      u_int32_t chr;
+      int cls;
+
+      if(*start == 'U' || *start == 'u') {
+        start = parameter + 1;
+        if(*start == '-' || *start == '+') start += 1;
+      }
+
+      if(strlen(start) > 6 || strlen(start) < 1) return FLT_DECLINE;
+
+      chr = strtoull(start,NULL,16);
+      cls = cf_classify_char(chr);
+
+      if(cls == CF_UNI_CLS_CC || cls == CF_UNI_CLS_CF || cls == CF_UNI_CLS_CS || cls == CF_UNI_CLS_CN || cls == -1) return FLT_DECLINE;
+
+      if((cls = unicode_to_utf8(chr,utf8_chr,10)) == EINVAL) return FLT_DECLINE;
+      cf_str_chars_append(content,utf8_chr,cls);
+
+      if(sig == 0 && cite) {
+        cf_str_chars_append(cite,"[char:",6);
+        cf_str_cstr_append(cite,parameter);
+        cf_str_char_append(cite,']');
+      }
+
+      return FLT_OK;
+    }
+    /* }}} */
+
   }
 
   return FLT_DECLINE;
+}
+/* }}} */
+
+/* {{{ flt_directives_execute_irony */
+int flt_directives_execute_irony(cf_configuration_t *fdc,cf_configuration_t *fvc,cl_thread_t *thread,const u_char *directive,const u_char **parameters,size_t plen,cf_string_t *bco,cf_string_t *bci,cf_string_t *content,cf_string_t *cite,const u_char *qchars,int sig) {
+  cf_str_chars_append(bco,"<span class=\"IRONY\">",20);
+  cf_str_str_append(bco,content);
+  cf_str_chars_append(bco,"</span>",7);
+
+  if(sig && bci && cite) {
+    cf_str_chars_append(bci,"[irony]",7);
+    cf_str_str_append(bci,cite);
+    cf_str_chars_append(bci,"[/irony]",8);
+  }
+
+  return FLT_OK;
 }
 /* }}} */
 
@@ -750,6 +798,39 @@ int flt_directives_validate(cf_configuration_t *fdc,cf_configuration_t *fvc,cons
       }
     }
     /* }}} */
+    /* {{{ [char:] */
+    else if(cf_strcmp(directive,"char") == 0) {
+      u_char *start = parameter;
+      u_int64_t chr;
+      int cls;
+
+      if(*start == 'U' || *start == 'u') {
+        start = parameter + 1;
+        if(*start == '-' || *start == '+') start += 1;
+      }
+
+      if(strlen(start) > 6 || strlen(start) < 1) {
+        if((err = cf_get_error_message("E_invalid_char",&len)) != NULL) {
+          cf_tpl_var_addvalue(var,TPL_VARIABLE_STRING,err,len);
+          free(err);
+        }
+        return FLT_ERROR;
+      }
+
+      chr = strtoull(start,NULL,16);
+      cls = cf_classify_char(chr);
+
+      if(cls == CF_UNI_CLS_CC || cls == CF_UNI_CLS_CF || cls == CF_UNI_CLS_CS || cls == CF_UNI_CLS_CN || cls == -1) {
+        if((err = cf_get_error_message("E_invalid_char",&len)) != NULL) {
+          cf_tpl_var_addvalue(var,TPL_VARIABLE_STRING,err,len);
+          free(err);
+        }
+        return FLT_ERROR;
+      }
+
+      return FLT_OK;
+    }
+    /* }}} */
   }
 
   return FLT_DECLINE;
@@ -861,12 +942,17 @@ int flt_directives_init(cf_hash_t *cgi,cf_configuration_t *dc,cf_configuration_t
   cf_html_register_directive("ref",flt_directives_execute,CF_HTML_DIR_TYPE_ARG|CF_HTML_DIR_TYPE_INLINE);
   cf_html_register_directive("image",flt_directives_execute,CF_HTML_DIR_TYPE_ARG|CF_HTML_DIR_TYPE_INLINE);
   cf_html_register_directive("iframe",flt_directives_execute,CF_HTML_DIR_TYPE_ARG|CF_HTML_DIR_TYPE_INLINE);
+  cf_html_register_directive("irony",flt_directives_execute_irony,CF_HTML_DIR_TYPE_NOARG|CF_HTML_DIR_TYPE_BLOCK);
+
+  cf_html_register_directive("char",flt_directives_execute,CF_HTML_DIR_TYPE_ARG|CF_HTML_DIR_TYPE_INLINE);
 
   cf_html_register_validator("link",flt_directives_validate,CF_HTML_DIR_TYPE_ARG|CF_HTML_DIR_TYPE_INLINE);
   cf_html_register_validator("pref",flt_directives_validate,CF_HTML_DIR_TYPE_ARG|CF_HTML_DIR_TYPE_INLINE);
   cf_html_register_validator("ref",flt_directives_validate,CF_HTML_DIR_TYPE_ARG|CF_HTML_DIR_TYPE_INLINE);
   cf_html_register_validator("image",flt_directives_validate,CF_HTML_DIR_TYPE_ARG|CF_HTML_DIR_TYPE_INLINE);
   cf_html_register_validator("iframe",flt_directives_validate,CF_HTML_DIR_TYPE_ARG|CF_HTML_DIR_TYPE_INLINE);
+
+  cf_html_register_validator("char",flt_directives_validate,CF_HTML_DIR_TYPE_ARG|CF_HTML_DIR_TYPE_INLINE);
 
   return FLT_DECLINE;
 }

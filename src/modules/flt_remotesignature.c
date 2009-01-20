@@ -65,7 +65,7 @@ int flt_remotesignature_execute(cf_hash_t *head,cf_configuration_t *dc,cf_config
       /* we only accept strict URLs */
       if(is_valid_http_link(url,1) == 0) {
         /* get content from URL */
-        if((rsp = cf_http_simple_get_uri(url,0)) != NULL) {
+        if((rsp = cf_http_simple_get_uri(url,0)) != NULL && rsp->content.content != NULL) {
           str = body_plain2coded(rsp->content.content);
 
           cf_http_destroy_response(rsp);

@@ -828,6 +828,10 @@ flt_lf_result_t *flt_lf_evaluate(flt_lf_node_t *n,message_t *msg,u_int64_t tid) 
             }
             else result->val = (void *)(msg->may_show == 0 ? 0 : 1);
             return result;
+          case 't':
+            result->type = T_INT;
+            result->val = (void *)tid;
+            return result;
         }
       }
       else {

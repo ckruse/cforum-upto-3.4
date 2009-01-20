@@ -118,6 +118,8 @@ int flt_admin_gogogo(cf_hash_t *cgi,cf_configuration_t *dc,cf_configuration_t *v
     }
     if(answer) free(answer);
 
+    cf_str_init_growth(&str,256);
+
     if(x == 0 || x == 200) {
       if(cf_strcmp(action->content,"del") == 0)          cf_str_char_set(&str,"DELETE ",7);
       else if(cf_strcmp(action->content,"undel") == 0)   cf_str_char_set(&str,"UNDELETE ",9);
@@ -130,6 +132,8 @@ int flt_admin_gogogo(cf_hash_t *cgi,cf_configuration_t *dc,cf_configuration_t *v
       cf_str_chars_append(&str,"\nUser-Name: ",11);
       cf_str_cstr_append(&str,UserName);
       cf_str_char_append(&str,'\n');
+
+      writen(sock,str.content,str.len);
 
       cf_str_cleanup(&str);
 

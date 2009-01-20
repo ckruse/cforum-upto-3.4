@@ -57,6 +57,10 @@ void flt_nested_make_hierarchical(cf_configuration_t *vc,cf_template_t *tpl,cl_t
 
   if(first) cf_tpl_hashvar_setvalue(hash,"first",TPL_VARIABLE_INT,1);
 
+  tmp = cf_get_link(lt->values[0],thread->tid,msg->msg->mid);
+  cf_set_variable_hash(hash,cs,"p_link",tmp,strlen(tmp),1);
+  free(tmp);
+
   cf_set_variable_hash(hash,cs,"title",msg->msg->subject.content,msg->msg->subject.len,1);
   cf_set_variable_hash(hash,cs,"name",msg->msg->author.content,msg->msg->author.len,1);
   if(msg->msg->email.len) cf_set_variable_hash(hash,cs,"email",msg->msg->email.content,msg->msg->email.len,1);
@@ -102,7 +106,7 @@ void flt_nested_make_hierarchical(cf_configuration_t *vc,cf_template_t *tpl,cl_t
   cf_run_posting_handlers(head,thread,tpl,vc);
 
   if(msg->msg->next == NULL) cf_tpl_hashvar_setvalue(hash,"last",TPL_VARIABLE_INT,1);
-  
+
   if(msg->childs.elements) { /* this message has at least one answer */
     cf_tpl_var_init(&subposts,TPL_VARIABLE_ARRAY);
 

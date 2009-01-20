@@ -55,7 +55,9 @@ int flt_basic_execute(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t 
   u_char *UserName = cf_hash_get(GlobalValues,"UserName",8);
   cf_name_value_t *dflt = cf_cfg_get_first_value(vc,forum_name,"DateFormatLoadTime");
   cf_name_value_t *loc = cf_cfg_get_first_value(dc,forum_name,"DateLocale");
+  cf_name_value_t *cats = cfg_get_first_value(dc,forum_name,"Categories");
   cf_name_value_t *ucfg;
+  cf_tpl_variable_t array;
 
   u_char buff[20];
   time_t tm  = time(NULL);
@@ -65,6 +67,17 @@ int flt_basic_execute(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t 
 
   cf_set_variable(begin,cs,"ubase",ubase->values[0],strlen(ubase->values[0]),1);
   cf_set_variable(end,cs,"ubase",ubase->values[0],strlen(ubase->values[0]),1);
+
+  /* {{{ set categories */
+  cf_tpl_var_init(&array,TPL_VARIABLE_ARRAY);
+
+  for(i=0;i<cats->valnum;++i) {
+    tmp   = charset_convert_entities(cats->values[i],strlen(cats->values[i]),"UTF-8",cs->values[0],&len);
+    cf_tpl_var_addvalue(&array,TPL_VARIABLE_STRING,tmp,len);
+    free(tmp);
+  }
+  cf_tpl_setvar(begin,"cats",&array);
+  /* }}} */
 
   if(UserName) {
     ucfg = cf_cfg_get_first_value(dc,forum_name,"UserConfig");

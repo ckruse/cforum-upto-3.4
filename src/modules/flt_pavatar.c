@@ -509,7 +509,7 @@ int flt_pavatar_conf(cf_configfile_t *cfile,cf_conf_opt_t *opt,const u_char *con
     if(flt_pavatar_cacheuri) free(flt_pavatar_cacheuri);
     flt_pavatar_cacheuri = strdup(args[0]);
   }
-  else if(cf_strcmp(opt->name,"PavatarCacheURI") == 0) flt_pavatar_umask = strtol(args[0],NULL,8);
+  else if(cf_strcmp(opt->name,"PavatarUmask") == 0) flt_pavatar_umask = strtol(args[0],NULL,8);
 
   return 0;
 }

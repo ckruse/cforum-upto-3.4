@@ -33,8 +33,11 @@
 #include "clientlib.h"
 /* }}} */
 
-static u_char *CSSUri = NULL;
-static u_char *JSFile = NULL;
+static u_char **CSSUri   = NULL;
+static size_t CSSLen     = 0;
+static u_char **JSFile   = NULL;
+static size_t JSLen      = 0;
+
 static u_char **XSLTUri = NULL;
 static int    CSS_Overwrite = 0;
 static u_char *InlineCSS = NULL;
@@ -44,18 +47,29 @@ static u_char *flt_include_fn = NULL;
 /* {{{ flt_include_exec_list */
 int flt_include_exec_list(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t *vc,cf_template_t *begin,cf_template_t *end) {
   int rc = FLT_DECLINE;
+  cf_tpl_variable_t ary;
+  size_t i;
 
-  if(CSSUri) {
-    cf_tpl_setvalue(begin,"owncss",TPL_VARIABLE_STRING,CSSUri,strlen(CSSUri));
+  if(CSSLen) {
+    cf_tpl_var_init(&ary,TPL_VARIABLE_ARRAY);
+
+    for(i=0;i<CSSLen;++i) cf_tpl_var_addvalue(&ary,TPL_VARIABLE_STRING,CSSUri[i],strlen(CSSUri[i]));
+    //cf_tpl_setvalue(begin,"owncss",TPL_VARIABLE_STRING,CSSUri,strlen(CSSUri));
+    cf_tpl_setvar(begin,"owncss",&ary);
 
     if(CSS_Overwrite) cf_tpl_setvalue(begin,"cssoverwrite",TPL_VARIABLE_STRING,"1",1);
 
     rc = FLT_OK;
   }
 
-  if(JSFile) {
+  if(JSLen) {
+    cf_tpl_var_init(&ary,TPL_VARIABLE_ARRAY);
+
+    for(i=0;i<JSLen;++i) cf_tpl_var_addvalue(&ary,TPL_VARIABLE_STRING,JSFile[i],strlen(JSFile[i]));
+    //cf_tpl_setvalue(begin,"ownjs",TPL_VARIABLE_STRING,JSFile,strlen(JSFile));
+    cf_tpl_setvar(begin,"ownjs",&ary);
+
     rc = FLT_OK;
-    cf_tpl_setvalue(begin,"ownjs",TPL_VARIABLE_STRING,JSFile,strlen(JSFile));
   }
 
   if(XSLTUri) {
@@ -71,9 +85,7 @@ int flt_include_exec_list(cf_hash_t *head,cf_configuration_t *dc,cf_configuratio
     }
   }
 
-  if(InlineCSS) {
-    cf_tpl_setvalue(begin,"inlinecss",TPL_VARIABLE_STRING,InlineCSS,strlen(InlineCSS));
-  }
+  if(InlineCSS) cf_tpl_setvalue(begin,"inlinecss",TPL_VARIABLE_STRING,InlineCSS,strlen(InlineCSS));
 
   return rc;
 }
@@ -90,14 +102,8 @@ int flt_include_handle(cf_configfile_t *cf,cf_conf_opt_t *opt,const u_char *cont
   if(flt_include_fn == NULL) flt_include_fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   if(!context || cf_strcmp(flt_include_fn,context) != 0) return 0;
 
-  if(cf_strcmp(opt->name,"OwnCSSFile") == 0) {
-    if(CSSUri) free(CSSUri);
-    CSSUri = strdup(args[0]);
-  }
-  else if(cf_strcmp(opt->name,"OwnJSFile") == 0) {
-    if(JSFile) free(JSFile);
-    JSFile = strdup(args[0]);
-  }
+  if(cf_strcmp(opt->name,"OwnCSSFile") == 0) CSSLen = split(args[0],",",&CSSUri);
+  else if(cf_strcmp(opt->name,"OwnJSFile") == 0) JSLen = split(args[0],",",&JSFile);
   else if(cf_strcmp(opt->name,"OwnXSLTFile") == 0) {
     if(XSLTUri) free(XSLTUri);
     XSLTUri = args;
@@ -114,9 +120,18 @@ int flt_include_handle(cf_configfile_t *cf,cf_conf_opt_t *opt,const u_char *cont
 /* }}} */
 
 void flt_include_finish(void) {
-  if(CSSUri) free(CSSUri);
+  size_t i;
+  if(CSSUri) {
+    for(i=0;i<CSSLen;++i) free(CSSUri[i]);
+    free(CSSUri);
+    CSSLen = 0;
+  }
   if(InlineCSS) free(InlineCSS);
-  if(JSFile) free(JSFile);
+  if(JSFile) {
+    for(i=0;i<JSLen;++i) free(JSFile[i]);
+    free(JSFile);
+    JSLen = 0;
+  }
 
   if(XSLTUri) {
     if(XSLTUri[0]) free(XSLTUri[0]);

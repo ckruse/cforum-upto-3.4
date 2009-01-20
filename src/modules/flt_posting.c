@@ -159,6 +159,12 @@ int flt_posting_execute_filter(cf_hash_t *head,cf_configuration_t *dc,cf_configu
 
   len = cf_gen_unid(buff,50);
   cf_tpl_setvalue(tpl,"unid",TPL_VARIABLE_STRING,buff,len);
+
+  len = sprintf(buff,"%"PRIu64,thread->tid);
+  cf_tpl_setvalue(tpl,"tid",TPL_VARIABLE_STRING,buff,len);
+
+  len = sprintf(buff,"%"PRIu64,thread->threadmsg->mid);
+  cf_tpl_setvalue(tpl,"mid",TPL_VARIABLE_STRING,buff,len);
   /* }}} */
 
   if((v = cf_cfg_get_first_value(vc,forum_name,"Name")) != NULL) cf_set_variable(tpl,cs,"aname",v->values[0],strlen(v->values[0]),1);
@@ -261,6 +267,9 @@ int flt_posting_post_display(cf_hash_t *head,cf_configuration_t *dc,cf_configura
   cf_string_t body,tmp;
 
   cl_thread_t thr;
+
+  if(flt_posting_cfg.TWidth) cf_tpl_setvalue(tpl,"twidth",TPL_VARIABLE_STRING,flt_posting_cfg.TWidth,strlen(flt_posting_cfg.TWidth));
+  if(flt_posting_cfg.THeight) cf_tpl_setvalue(tpl,"theight",TPL_VARIABLE_STRING,flt_posting_cfg.THeight,strlen(flt_posting_cfg.THeight));
 
   if(head) {
     /* set if none of the values have been given */

@@ -240,6 +240,10 @@ int flt_syntax_load(const u_char *path,const u_char *lang) {
   flt_syntax_block_t block;
   flt_syntax_statement_t statement;
 
+  if(!lang || !strlen(lang)) {
+    return 1;
+  }
+
   if((fd = fopen(path,"r")) == NULL) {
     fprintf(stderr,"flt_syntax: I/O error opening file %s: %s\n",path,strerror(errno));
     return 1;
@@ -818,14 +822,15 @@ int flt_syntax_doit(flt_syntax_pattern_file_t *file,flt_syntax_block_t *block,u_
       return 1;
     }
 
-    if(cf_strncmp(text,"<br />",6) == 0) {
-      text += 6;
-      len  -= 6;
-    }
-    else if(cf_strncmp(text,"<br>",4) == 0) {
-      text += 4;
-      len  -= 4;
-    }
+    /* removed because of strange results */
+    //if(cf_strncmp(text,"<br />",6) == 0) {
+      //text += 6;
+      //len  -= 6;
+    //}
+    //else if(cf_strncmp(text,"<br>",4) == 0) {
+      //text += 4;
+      //len  -= 4;
+    //}
   }
 
   begin = *pos ? *pos : text;
@@ -961,7 +966,7 @@ int flt_syntax_doit(flt_syntax_pattern_file_t *file,flt_syntax_block_t *block,u_
             str = cf_array_element_at(&statement->args,1);
             if(cf_strcmp(str->content,"highlight") == 0) {
               str = cf_array_element_at(&statement->args,2);
-              
+
               cf_str_chars_append(cnt,"<span class=\"",13);
               cf_str_str_append(cnt,str);
               cf_str_chars_append(cnt,"\">",2);
@@ -1135,6 +1140,9 @@ int flt_syntax_doit(flt_syntax_pattern_file_t *file,flt_syntax_block_t *block,u_
               ptr += x;
 
               str = cf_array_element_at(&statement->args,0);
+              // HACK: make sure we get the whole lineend
+              // (this should actually be rewritten cleaner someday...)
+              if(cf_strncmp(ptr,"<br />",6) == 0 && stdvec[1]-stdvec[0] < 6) stdvec[1] = stdvec[0] + 6;
               if(cf_strcmp(str->content,"highlight") == 0) {
                 tmpchar = strndup(ptr+stdvec[0],stdvec[1]-stdvec[0]);
 
@@ -1288,11 +1296,14 @@ int flt_syntax_highlight(cf_string_t *content,cf_string_t *bco,const u_char *lan
     return 1;
   }
 
-  cf_str_chars_append(bco,"<code title=\"",13);
-  cf_str_chars_append(bco,lang,strlen(lang));
-  cf_str_chars_append(bco,"\" class=\"",9);
-  cf_str_chars_append(bco,lang,strlen(lang));
-  cf_str_chars_append(bco,"\">",2);
+  if(!lang || !strlen(lang)) str_chars_append(bco,"<code>",6);
+  else {
+    cf_str_chars_append(bco,"<code title=\"",13);
+    cf_str_chars_append(bco,lang,strlen(lang));
+    cf_str_chars_append(bco,"\" class=\"",9);
+    cf_str_chars_append(bco,lang,strlen(lang));
+    cf_str_chars_append(bco,"\">",2);
+  }
   cf_str_str_append(bco,&code);
   cf_str_cleanup(&code);
   cf_str_chars_append(bco,"</code>",7);

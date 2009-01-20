@@ -55,8 +55,9 @@ struct sockaddr_un;
 /** The URL of the selfforum DTD */
 #define FORUM_DTD "http://wwwtech.de/cforum/download/cforum-3.dtd"
 
-static int sorthread_ts  = 0;
+static int sort_threads  = 0;
 static int sort_messages = 0;
+static int archive_ip    = 0;
 
 void flt_xmlstorage_create_threadtree(forum_t *forum,thread_t *thread,posting_t *post,GdomeNode *msg_elem_index,GdomeNode *msg_elem_thread,short level);
 void flt_xmlstorage_handle_header(posting_t *p,GdomeNode *n);
@@ -66,8 +67,8 @@ int flt_xmlstorage_cmp_thread(const void *a,const void *b) {
   thread_t *ta = *((thread_t **)a);
   thread_t *tb = *((thread_t **)b);
 
-  if(ta->tid > tb->tid) return sorthread_ts == CF_SORT_ASCENDING ? 1 : -1;
-  else return sorthread_ts == CF_SORT_ASCENDING ? -1 : 1;
+  if(ta->tid > tb->tid) return sort_threads == CF_SORT_ASCENDING ? 1 : -1;
+  else return sort_threads == CF_SORT_ASCENDING ? -1 : 1;
 }
 /* }}} */
 
@@ -291,6 +292,7 @@ int flt_xmlstorage_make_forumtree(forum_t *forum) {
   cf_name_value_t *p = cf_cfg_get_first_value(&fo_default_conf,forum->name,"MessagePath");
   cf_name_value_t *sort_t = cf_cfg_get_first_value(&fo_server_conf,forum->name,"SortThreads");
   cf_name_value_t *sort_m = cf_cfg_get_first_value(&fo_server_conf,forum->name,"SortMessages");
+  cf_name_value_t *arch_ip = cf_cfg_get_first_value(&fo_server_conf,forum->name,"ArchiveIp");
   cf_string_t path;
 
   u_char *ctid;
@@ -312,8 +314,9 @@ int flt_xmlstorage_make_forumtree(forum_t *forum) {
 
   cf_array_init(&ary,sizeof(thread),NULL);
 
-  sorthread_ts  = cf_strcmp(sort_t->values[0],"ascending") == 0 ? CF_SORT_ASCENDING : CF_SORT_DESCENDING;
+  sort_threads  = cf_strcmp(sort_t->values[0],"ascending") == 0 ? CF_SORT_ASCENDING : CF_SORT_DESCENDING;
   sort_messages = cf_strcmp(sort_m->values[0],"ascending") == 0 ? CF_SORT_ASCENDING : CF_SORT_DESCENDING;
+  archive_ip    = arch_ip && cf_strcmp(arch_ip->values[0],"yes") == 0;
 
   cf_str_init(&path);
   cf_str_char_set(&path,p->values[0],strlen(p->values[0]));
@@ -676,7 +679,7 @@ posting_t *flt_xmlstorage_stringify_posting(GdomeDocument *doc1,GdomeElement *t1
   if(p->unid.len) xml_set_attribute(m1,"unid",p->unid.content);
 
   xml_set_attribute(m2,"id",mstr.content);
-  xml_set_attribute(m2,"ip",p->user.ip.content);
+  if(!for_archive || archive_ip) xml_set_attribute(m2,"ip",p->user.ip.content);
 
   cf_str_cleanup(&mstr);
 
@@ -867,7 +870,7 @@ posting_t *flt_xmlstorage_stringify_posting(GdomeDocument *doc1,GdomeElement *t1
 /* }}} */
 
 /* {{{ flt_xmlstorage_thread2xml */
-GdomeDocument *flt_xmlstorage_thread2xml(GdomeDOMImplementation *impl,GdomeDocument *doc1,thread_t *t) {
+GdomeDocument *flt_xmlstorage_thread2xml(GdomeDOMImplementation *impl,GdomeDocument *doc1,thread_t *t,int for_archive) {
   GdomeException e;
   GdomeDocument *doc2   = xml_create_doc(impl,"Forum",FORUM_DTD);
   GdomeElement *thread1 = xml_create_element(doc1,"Thread");
@@ -947,7 +950,7 @@ int flt_xmlstorage_threadlist_writer(forum_t *forum) {
   doc = xml_create_doc(impl,"Forum",FORUM_DTD);
   elm = gdome_doc_documentElement(doc,&e);
 
-  cf_log(CF_DBG,__FILE__,__LINE__,"tid %llu, mid: %llu\n",ltid,lmid);
+  cf_log(CF_DBG,__FILE__,__LINE__,"tid %"PRIu64", mid: %"PRIu64"\n",ltid,lmid);
 
   cf_str_init_growth(&str,10);
 
@@ -966,7 +969,7 @@ int flt_xmlstorage_threadlist_writer(forum_t *forum) {
   }
 
   for(;t;t=t->next) {
-    doc_thread = flt_xmlstorage_thread2xml(impl,doc,t);
+    doc_thread = flt_xmlstorage_thread2xml(impl,doc,t,0);
 
     /* save doc to file... */
     cf_str_cstr_append(&str,mpath->values[0]);
@@ -1071,7 +1074,7 @@ int flt_xmlstorage_archive_threads(forum_t *forum,thread_t **threads,size_t len)
       str.len -= 10;
     }
 
-    doc_thread = flt_xmlstorage_thread2xml(impl,doc,threads[i]);
+    doc_thread = flt_xmlstorage_thread2xml(impl,doc,threads[i],1);
 
     olen = str.len;
     cf_str_chars_append(&str,"/t",2);

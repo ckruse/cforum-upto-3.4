@@ -247,14 +247,16 @@ int flt_poas_check_newlines(u_char *str) {
 /* {{{ flt_poas_check_sig */
 float flt_poas_check_sig(u_char *str) {
   float score = 0;
-  register u_char *ptr;
-  u_char *sigstart;
+  register u_char *ptr = str;
+  u_char *sigstart = NULL;
   int newlines = 0;
   size_t normal,sig;
 
-  if((sigstart = strstr(str,"_/_SIG_/_")) == NULL) return .0;
+  /* I know, that this is not a correct search for the signature. But it doesn't matter: user will in worst case get a "bad boy!" warning */
+  while((ptr = strstr(ptr+1,"<br />-- <br />")) != NULL) sigstart = ptr;
+  if(sigstart == NULL) return .0;
 
-  for(ptr=sigstart+9;*ptr;++ptr) {
+  for(ptr=sigstart+15;*ptr;++ptr) {
     if(*ptr == '[' && cf_strncmp(ptr,"[image:",7) == 0) score += 3.0;
     else if(*ptr == '<' && cf_strncmp(ptr,"<br />",6) == 0) ++newlines;
   }
@@ -271,54 +273,128 @@ float flt_poas_check_sig(u_char *str) {
 /* }}} */
 
 /* {{{ flt_poas_standardchecks */
-int flt_poas_standardchecks(message_t *p) {
+int flt_poas_standardchecks(message_t *p,cf_tpl_variable_t *var) {
   float score = flt_poas_conf.fds_allowed;
+  float min_score;
+  u_char *err;
+  size_t len;
 
   #ifdef DEBUG
   fprintf(stderr,"score is: %3.3f\n",score);
   #endif
 
-  score -= flt_poas_check_for_signs(p->subject.content,0,0);
+  min_score = flt_poas_check_for_signs(p->subject.content,0,0);
+  if(min_score != .0) {
+    score -= min_score;
+
+    if((err = cf_get_error_message("E_pa_signs_subject",&len,min_score)) != NULL) {
+      cf_tpl_var_addvalue(var,TPL_VARIABLE_STRING,err,len);
+      free(err);
+    }
+  }
   #ifdef DEBUG
   fprintf(stderr,"score after signs-check in subject is: %3.3f\n",score);
   #endif
 
-  score -= flt_poas_check_for_signs(p->author.content,2,0);
+  min_score = flt_poas_check_for_signs(p->author.content,2,0);
+  if(min_score != .0) {
+    score -= min_score;
+
+    if((err = cf_get_error_message("E_pa_signs_author",&len,min_score)) != NULL) {
+      cf_tpl_var_addvalue(var,TPL_VARIABLE_STRING,err,len);
+      free(err);
+    }
+  }
   #ifdef DEBUG
   fprintf(stderr,"score after signs-check in author is: %3.3f\n",score);
   #endif
 
-  score -= flt_poas_check_for_signs(p->content.content,1,1);
+  min_score = flt_poas_check_for_signs(p->content.content,1,1);
+  if(min_score != .0) {
+    score -= min_score;
+
+    if((err = cf_get_error_message("E_pa_signs_content",&len,min_score)) != NULL) {
+      cf_tpl_var_addvalue(var,TPL_VARIABLE_STRING,err,len);
+      free(err);
+    }
+  }
   #ifdef DEBUG
   fprintf(stderr,"score after signs-check in content is: %3.3f\n",score);
   #endif
 
-  score -= flt_poas_check_for_cases(p->subject.content);
+  min_score = flt_poas_check_for_cases(p->subject.content);
+  if(min_score != .0) {
+    score -= min_score;
+
+    if((err = cf_get_error_message(min_score == 3.0 ? "E_pa_cases_small_subject" : "E_pa_cases_capital_subject",&len,min_score)) != NULL) {
+      cf_tpl_var_addvalue(var,TPL_VARIABLE_STRING,err,len);
+      free(err);
+    }
+  }
   #ifdef DEBUG
   fprintf(stderr,"score after cases-check in subject is: %3.3f\n",score);
   #endif
 
-  score -= flt_poas_check_for_cases(p->author.content);
+  min_score = flt_poas_check_for_cases(p->author.content);
+  if(min_score != .0) {
+    score -= min_score;
+
+    if((err = cf_get_error_message(min_score == 3.0 ? "E_pa_cases_small_author" : "E_pa_cases_capital_author",&len,min_score)) != NULL) {
+      cf_tpl_var_addvalue(var,TPL_VARIABLE_STRING,err,len);
+      free(err);
+    }
+  }
   #ifdef DEBUG
   fprintf(stderr,"score after cases-check in author is: %3.3f\n",score);
   #endif
 
-  score -= flt_poas_check_for_cases(p->content.content);
+  min_score = flt_poas_check_for_cases(p->content.content);
+  if(min_score != .0) {
+    score -= min_score;
+
+    if((err = cf_get_error_message(min_score == 3.0 ? "E_pa_cases_small_content" : "E_pa_cases_capital_content",&len,min_score)) != NULL) {
+      cf_tpl_var_addvalue(var,TPL_VARIABLE_STRING,err,len);
+      free(err);
+    }
+  }
   #ifdef DEBUG
   fprintf(stderr,"score after cases-check in content is: %3.3f\n",score);
   #endif
 
-  score -= flt_poas_check_newlines(p->content.content);
+  min_score = flt_poas_check_newlines(p->content.content);
+  if(min_score != .0) {
+    score -= min_score;
+
+    if((err = cf_get_error_message("E_pa_newlines_content",&len,min_score)) != NULL) {
+      cf_tpl_var_addvalue(var,TPL_VARIABLE_STRING,err,len);
+      free(err);
+    }
+  }
   #ifdef DEBUG
   fprintf(stderr,"score after newlines-check in content is: %3.3f\n",score);
   #endif
 
-  score -= flt_poas_check_sig(p->content.content);
+  min_score = flt_poas_check_sig(p->content.content);
+  if(min_score != .0) {
+    score -= min_score;
+
+    if((err = cf_get_error_message("E_pa_sig",&len,min_score)) != NULL) {
+      cf_tpl_var_addvalue(var,TPL_VARIABLE_STRING,err,len);
+      free(err);
+    }
+  }
   #ifdef DEBUG
   fprintf(stderr,"score after sig-check is: %3.3f\n",score);
   #endif
 
-  if(p->email.len == 0) score -= 1.0;
+  if(p->email.len == 0) {
+    score -= 1.0;
+
+    if((err = cf_get_error_message("E_pa_email",&len,1.0)) != NULL) {
+      cf_tpl_var_addvalue(var,TPL_VARIABLE_STRING,err,len);
+      free(err);
+    }
+  }
   #ifdef DEBUG
   fprintf(stderr,"score after mail-check is: %3.3f\n",score);
   #endif
@@ -399,14 +475,20 @@ int flt_poas_execute(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t *
 int flt_poas_execute(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t *pc,message_t *p,cl_thread_t *thr,int sock,int mode)
 #endif
 {
+  cf_tpl_variable_t var;
+
   /* first: standard checks */
   if(cf_cgi_get(head,"assicheck") == NULL || flt_poas_conf.poas_must_validate) {
-    if(flt_poas_standardchecks(p) != 0) {
-      cf_cgi_set(head,"assicheck","1",2);
-      strcpy(ErrorString,"E_posting_format");
-      display_posting_form(head,p,NULL);
+    cf_tpl_var_init(&var,TPL_VARIABLE_ARRAY);
+
+    if(flt_poas_standardchecks(p,&var) != 0) {
+      cf_cgi_set(head,"assicheck","1");
+      //strcpy(ErrorString,"E_posting_format");
+      display_posting_form(head,p,&var);
       return FLT_EXIT;
     }
+
+    cf_tpl_var_destroy(&var);
   }
 
   /* check for bad words */

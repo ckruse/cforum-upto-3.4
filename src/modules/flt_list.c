@@ -95,6 +95,10 @@ int flt_list_execute_filter(cf_hash_t *head,cf_configuration_t *dc,cf_configurat
       if(msg->img.len) cf_set_variable_hash(&hash,cs,"image",msg->img.content,msg->img.len,1);
       if(msg->category.len) cf_set_variable_hash(&hash,cs,"category",msg->category.content,msg->category.len,1);
 
+      tmp = cf_get_link(lt->values[0],thread->tid,msg->mid);
+      cf_set_variable_hash(&hash,cs,"p_link",tmp,strlen(tmp),1);
+      free(tmp);
+
       tmp = cf_general_get_time(df->values[0],locale->values[0],&len,&msg->date);
       cf_set_variable_hash(&hash,cs,"time",tmp,len,1);
       free(tmp);
