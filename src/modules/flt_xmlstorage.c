@@ -55,7 +55,7 @@ struct sockaddr_un;
 /** The URL of the selfforum DTD */
 #define FORUM_DTD "http://wwwtech.de/cforum/download/cforum-3.dtd"
 
-static int sorthread_ts  = 0;
+static int sort_threads  = 0;
 static int sort_messages = 0;
 static int archive_ip    = 0;
 
@@ -67,8 +67,8 @@ int flt_xmlstorage_cmp_thread(const void *a,const void *b) {
   thread_t *ta = *((thread_t **)a);
   thread_t *tb = *((thread_t **)b);
 
-  if(ta->tid > tb->tid) return sorthread_ts == CF_SORT_ASCENDING ? 1 : -1;
-  else return sorthread_ts == CF_SORT_ASCENDING ? -1 : 1;
+  if(ta->tid > tb->tid) return sort_threads == CF_SORT_ASCENDING ? 1 : -1;
+  else return sort_threads == CF_SORT_ASCENDING ? -1 : 1;
 }
 /* }}} */
 
@@ -314,7 +314,7 @@ int flt_xmlstorage_make_forumtree(forum_t *forum) {
 
   array_init(&ary,sizeof(thread),NULL);
 
-  sorthread_ts  = cf_strcmp(sort_t->values[0],"ascending") == 0 ? CF_SORT_ASCENDING : CF_SORT_DESCENDING;
+  sort_threads  = cf_strcmp(sort_t->values[0],"ascending") == 0 ? CF_SORT_ASCENDING : CF_SORT_DESCENDING;
   sort_messages = cf_strcmp(sort_m->values[0],"ascending") == 0 ? CF_SORT_ASCENDING : CF_SORT_DESCENDING;
   archive_ip    = arch_ip && cf_strcmp(arch_ip->values[0],"yes") == 0;
 

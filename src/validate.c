@@ -94,27 +94,34 @@ static int isuchar_wo_escape(u_char c) {
 int is_valid_hostname(const u_char *hostname) {
   register const u_char *ptr;
   u_char *out = NULL;
-  int count = 0;
 
-  for(ptr=hostname;*ptr;ptr++) {
-    if(!isalnum(*ptr) || !isascii(*ptr)) {
+  if(*hostname == '-') return -1;
+
+  /* Since we're not IDN-aware, let's change hostname to ASCII form */
+  if(idna_to_ascii_8z(hostname,(char **)&out,IDNA_USE_STD3_ASCII_RULES) != IDNA_SUCCESS) return -1;
+
+  for(ptr=out;*ptr;ptr++) {
+    if((!isalnum(*ptr) && *ptr != '-') || !isascii(*ptr)) {
       if(*ptr == '.') {
-        ++count;
-        /* two dots after another are not allowed, neither a dot at the beginning */
-        if(ptr == hostname || *(ptr-1) == '.') return -1;
+        /*
+         * two dots after another are not allowed, neither a dot at the beginning
+         * A dash at the beginning or end of a label isn't allowed, too
+         */
+        if(ptr == out || *(ptr-1) == '.' || *(ptr-1) == '-' || *(ptr+1) == '-') {
+          free(out);
+          return -1;
+        }
+
+        continue;
       }
-      else continue;
 
-      /* hu, we got a not-alnum ascii character. IDN? */
-      if(idna_to_ascii_8z(hostname,(char **)&out,IDNA_USE_STD3_ASCII_RULES) != IDNA_SUCCESS) return -1;
-
-      /* idna did the check for us; it's valid */
       free(out);
-      return 0;
+      return -1;
     }
   }
 
   /* ok, all characters are alnum and ascii or dots. Hostname is valid */
+  free(out);
   return 0;
 }
 /* }}} */
@@ -1126,7 +1133,7 @@ int is_valid_file_link(const u_char *link) {
 
     /* we got a hostname without port number */
     if((dp = strstr(link+7,":")) == NULL) {
-      hostname = strndup(link+7,ptr-link+7);
+      hostname = strndup(link+7,slash-link+7);
       if(!is_valid_hostname(hostname)) {
         free((void *)hostname);
         return -1;
@@ -1228,7 +1235,7 @@ int is_valid_link(const u_char *link) {
 #ifdef CF_VALIDATE_AS_PROGRAM
 int main(int argc,char *argv[]) {
   int i;
-  
+
   if(argc == 1) {
     fprintf(stderr,"Usage:\n\t%s uris\n",argv[0]);
     return EXIT_FAILURE;
