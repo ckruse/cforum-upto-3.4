@@ -50,7 +50,7 @@ typedef struct {
 
 static u_char *flt_captcha_fn = NULL;
 static int flt_captcha_enabled = 0;
-static array_t flt_captcha_questions;
+static cf_array_t flt_captcha_questions;
 static int flt_captcha_must_init = 1;
 
 #ifdef CF_SHARED_MEM
@@ -66,7 +66,7 @@ int flt_captcha_new_posting(cf_hash_t *head,configuration_t *dc,configuration_t 
   if(head && (anum = cf_cgi_get(head,"captcha_num")) != NULL) {
     num = atoi(anum);
     answer = cf_cgi_get(head,"captcha_answer");
-    q = array_element_at(&flt_captcha_questions,num);
+    q = cf_array_element_at(&flt_captcha_questions,num);
 
     if(answer == NULL || cf_strcmp(answer,q->answer) != 0) {
       strcpy(ErrorString,"E_captcha");
@@ -99,7 +99,7 @@ int flt_captcha_post_display(cf_hash_t *head,configuration_t *dc,configuration_t
         if(num >= flt_captcha_questions.elements) num = flt_captcha_questions.elements - 1;
       }
 
-      q = array_element_at(&flt_captcha_questions,num);
+      q = cf_array_element_at(&flt_captcha_questions,num);
       cf_tpl_setvalue(tpl,"captcha",TPL_VARIABLE_INT,(int)num);
       cf_tpl_setvalue(tpl,"captcha_question",TPL_VARIABLE_STRING,q->question,strlen(q->question));
       cf_tpl_setvalue(tpl,"captcha_answer",TPL_VARIABLE_STRING,q->answer,strlen(q->answer));
@@ -131,7 +131,7 @@ int flt_captcha_handle_command(configfile_t *cfile,conf_opt_t *opt,const u_char 
 
   if(flt_captcha_must_init == 1) {
     flt_captcha_must_init = 0;
-    array_init(&flt_captcha_questions,sizeof(flt_captcha_question_t),flt_captcha_destroy);
+    cf_array_init(&flt_captcha_questions,sizeof(flt_captcha_question_t),flt_captcha_destroy);
   }
 
   if(cf_strcmp(opt->name,"CaptchaEnable") == 0) {
@@ -148,7 +148,7 @@ int flt_captcha_handle_command(configfile_t *cfile,conf_opt_t *opt,const u_char 
     q.answer = args[1];
     free(args);
 
-    array_push(&flt_captcha_questions,&q);
+    cf_array_push(&flt_captcha_questions,&q);
 
     return -1;
   }
@@ -158,20 +158,20 @@ int flt_captcha_handle_command(configfile_t *cfile,conf_opt_t *opt,const u_char 
 /* }}} */
 
 
-conf_opt_t flt_captcha_config[] = {
+cf_conf_opt_t flt_captcha_config[] = {
   { "CaptchaEnable",   flt_captcha_handle_command, CFG_OPT_CONFIG|CFG_OPT_LOCAL, NULL},
   { "CaptchaQuestion", flt_captcha_handle_command, CFG_OPT_CONFIG|CFG_OPT_LOCAL, NULL},
   { NULL, NULL, 0, NULL }
 };
 
-handler_config_t flt_captcha_handlers[] = {
+cf_handler_config_t flt_captcha_handlers[] = {
   { NEW_POST_HANDLER,      flt_captcha_new_posting },
   { POSTING_HANDLER,       flt_captcha_posting },
   { POST_DISPLAY_HANDLER,  flt_captcha_post_display },
   { 0, NULL }
 };
 
-module_config_t flt_captcha = {
+cf_module_config_t flt_captcha = {
   MODULE_MAGIC_COOKIE,
   flt_captcha_config,
   flt_captcha_handlers,

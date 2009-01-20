@@ -327,18 +327,18 @@ void flt_replace_finish() {
 }
 /* }}} */
 
-conf_opt_t flt_replace_config[] = {
+cf_conf_opt_t flt_replace_config[] = {
   { "Replace", flt_replace_handle, CFG_OPT_CONFIG|CFG_OPT_LOCAL, NULL },
   { NULL, NULL, 0, NULL }
 };
 
-handler_config_t flt_replace_handlers[] = {
+cf_handler_config_t flt_replace_handlers[] = {
   { POSTING_HANDLER,  flt_replace_showpost },
   { NEW_POST_HANDLER, flt_replace_newpost },
   { 0, NULL }
 };
 
-module_config_t flt_replace = {
+cf_module_config_t flt_replace = {
   MODULE_MAGIC_COOKIE,
   flt_replace_config,
   flt_replace_handlers,

@@ -82,18 +82,18 @@ int flt_charta_handle_command(configfile_t *cfile,conf_opt_t *opt,const u_char *
 }
 /* }}} */
 
-conf_opt_t flt_charta_config[] = {
+cf_conf_opt_t flt_charta_config[] = {
   { "ChartaEnable",            flt_charta_handle_command,     CFG_OPT_CONFIG|CFG_OPT_LOCAL, NULL},
   { NULL, NULL, 0, NULL }
 };
 
-handler_config_t flt_charta_handlers[] = {
+cf_handler_config_t flt_charta_handlers[] = {
   { POSTING_HANDLER,       flt_charta_execute_filter },
   { POST_DISPLAY_HANDLER,  flt_charta_post_display },
   { 0, NULL }
 };
 
-module_config_t flt_charta = {
+cf_module_config_t flt_charta = {
   MODULE_MAGIC_COOKIE,
   flt_charta_config,
   flt_charta_handlers,
