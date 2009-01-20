@@ -67,7 +67,7 @@ set (ALL_MODULES flt_basic flt_category flt_deleted flt_frameset flt_http
   flt_gummizelle flt_noanonymous flt_noanswer flt_chooser flt_moderated
   flt_cookieauth flt_noarchive flt_noarchive_server flt_stdreplacements
   flt_interesting flt_admin_mysql flt_shortcuts flt_phpsessauth flt_bbcodes
-  flt_pavatar flt_charta flt_replace)
+  flt_pavatar flt_charta flt_replace flt_captcha)
 
 SET (EXTRALIBS_flt_deleted ${BERKELEY_DB_LIBRARIES})
 SET (EXTRALIBS_flt_registerednames ${BERKELEY_DB_LIBRARIES})

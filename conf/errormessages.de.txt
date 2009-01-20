@@ -105,3 +105,5 @@ E_dontknow: Es ist ein Fehler aufgetreten. Leider ist unklar, was das Problem is
 E_CONFIG_BROKEN: Ihre Benutzer-Konfiguration scheint kaputt zu sein. Kontaktieren sie den System-Administrator. Geben Sie dabei Ihren Benutzernamen an!
 E_BADCHAR: Sie haben ein Zeichen eingegeben, dass vom W3C als „discouraged character“ gekennzeichnet ist. Leider können solche Zeichen nicht verarbeitet werden. Zu der Gruppe von Zeichen gehören z. B. alle Steuerzeichen ausser dem Zeilenumbruch, dem Zeilenvorschub und dem Tabulator-Zeichen.
 E_INVALID_CHAR: Sie haben ein Zeichen angegeben, dass in XML- und SGML-Dokumenten verboten ist. Dazu gehören vor allem die Steuerzeichen aus dem ASCII-Bereich (ausser Zeilenumbruch, Zeilenvorschub und Tabulator). Das kann z.B. passieren, wenn Sie den Inhalt einer Binär-Datei posten möchten.
+E_charta_accept_missing: Sie müssen der Charta zustimmen!
+E_captcha: Das Captcha muss korrekt beantwortet werden!

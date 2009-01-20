@@ -1,3 +1,9 @@
+2009-01-20 Christian Kruse <cjk@wwwtech.de>
+	* src/modules/CMakeLists.txt, src/modules/flt_captcha.c: Implemented an easy
+		captcha: admin can define questions which the user has to answer before he
+		can post.
+	* conf/errormessages.de.txt: Added two new messages
+
 2009-01-16 Christian Kruse <cjk@wwwtech.de>
 	* src/modules/CMakeLists.txt, src/modules/flt_replace.c: Implemented #90
 

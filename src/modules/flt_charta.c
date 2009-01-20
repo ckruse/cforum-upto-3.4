@@ -26,8 +26,6 @@
 #include <ctype.h>
 #include <sys/types.h>
 
-#include <pcre.h>
-
 #include "readline.h"
 #include "hashlib.h"
 #include "utils.h"
