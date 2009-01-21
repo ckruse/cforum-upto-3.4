@@ -213,7 +213,7 @@ int flt_failsafe_post_handler(forum_t *forum,u_int64_t tid,posting_t *p) {
 int flt_failsafe_init(int main_socket) {
   FILE *fd;
   struct stat st;
-  cf_name_value_t *forums = cf_cfg_get_first_value(&fo_server_conf,NULL,"Forums");
+  cf_name_value_t *forums = cf_cfg_get_first_value(&fo_server_conf,NULL,"DF:Forums");
   size_t i;
   cf_failsafe_t *fl;
 

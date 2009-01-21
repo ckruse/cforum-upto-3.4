@@ -144,7 +144,7 @@ void destroy_server(void *data) {
 
 /* {{{ logfile_worker */
 void logfile_worker(cf_cfg_config_t *cfg) {
-  cf_cfg_config_value_t *v = cf_cfg_get_value(cfg,"LogMaxSize");
+  cf_cfg_config_value_t *v = cf_cfg_get_value(cfg,"FS:LogMaxSize");
   cf_cfg_config_value_t *log;
   off_t size = v->ival;
   struct stat st;
@@ -159,7 +159,7 @@ void logfile_worker(cf_cfg_config_t *cfg) {
   time(&t);
   localtime_r(&t,&tm);
 
-  log = cf_cfg_get_value(cfg,"StdLog");
+  log = cf_cfg_get_value(cfg,"FS:StdLog");
   if(stat(log->sval,&st) == 0) {
     if(st.st_size >= size) {
       pthread_mutex_lock(&head.log.lock);
@@ -179,7 +179,7 @@ void logfile_worker(cf_cfg_config_t *cfg) {
     }
   }
 
-  log = cf_cfg_get_value(cfg,"ErrorLog");
+  log = cf_cfg_get_value(cfg,"FS:ErrorLog");
   if(stat(log->sval,&st) == 0) {
     if(st.st_size >= size) {
       pthread_mutex_lock(&head.log.lock);
@@ -346,7 +346,7 @@ int main(int argc,char *argv[]) {
 
   /* {{{ security handling... never run as root, give ability to chroot() somewhere */
   /* {{{ get GID and UID */
-  if((usergroup = cf_cfg_get_value(&cfg,"UserGroup")) != NULL) {
+  if((usergroup = cf_cfg_get_value(&cfg,"FS:UserGroup")) != NULL) {
     if(usergroup->avals[1].type == CF_ASM_ARG_NUM) gid = usergroup->avals[1].ival;
     else{
       if((gid = get_gid(usergroup->avals[1].sval)) == 0) {
@@ -377,7 +377,7 @@ int main(int argc,char *argv[]) {
   /* }}} */
 
   /* {{{ chroot() */
-  if((chrootv = cf_cfg_get_value(&cfg,"Chroot")) != NULL) {
+  if((chrootv = cf_cfg_get_value(&cfg,"FS:Chroot")) != NULL) {
     if(chdir(chrootv->sval) == -1) {
       fprintf(stderr,"could not chdir to chroot dir '%s': %s\n",chrootv->sval,strerror(errno));
       return EXIT_SUCCESS;
@@ -408,7 +408,7 @@ int main(int argc,char *argv[]) {
   /* }}} */
 
   if(!pidfile) {
-    pidfile_nv = cf_cfg_get_value(&cfg,"PIDFile");
+    pidfile_nv = cf_cfg_get_value(&cfg,"FS:PIDFile");
     pidfile    = strdup(pidfile_nv->sval);
   }
 
@@ -442,7 +442,7 @@ int main(int argc,char *argv[]) {
    *
    * this can take a while, maybe we should send a message to the user?
    */
-  forums = cf_cfg_get_value(&cfg,"Forums");
+  forums = cf_cfg_get_value(&cfg,"DF:Forums");
   for(i=0;i<forums->alen;i++) {
     if((actforum = cf_register_forum(&cfg,forums->avals[i].sval)) == NULL) {
       cf_log(&cfg,CF_ERR,__FILE__,__LINE__,"could not register forum %s\n",forums->avals[i].sval);
@@ -501,7 +501,7 @@ int main(int argc,char *argv[]) {
   #endif
 
   /* ok, start worker threads */
-  threads = cf_cfg_get_value(&cfg,"MinThreads");
+  threads = cf_cfg_get_value(&cfg,"FS:MinThreads");
   start_threads = threads->ival;
 
   for(j=0;j<start_threads;++j) {
@@ -515,14 +515,14 @@ int main(int argc,char *argv[]) {
   }
 
   /* needed later */
-  threads = cf_cfg_get_value(&cfg,"SpareThreads");
+  threads = cf_cfg_get_value(&cfg,"FS:SpareThreads");
   spare_threads = threads->ival;
 
-  threads = cf_cfg_get_value(&cfg,"MaxThreads");
+  threads = cf_cfg_get_value(&cfg,"FS:MaxThreads");
   max_threads = threads->ival;
 
   /* {{{ register periodicals */
-  run_archiver = cf_cfg_get_value(&cfg,"RunArchiver");
+  run_archiver = cf_cfg_get_value(&cfg,"FS:RunArchiver");
   per.periode = run_archiver->ival;
   per.worker = cf_io_worker;
   cf_list_append(&head.periodicals,&per,sizeof(per));
@@ -652,7 +652,7 @@ int main(int argc,char *argv[]) {
   /* {{{ destroy forums */
   cf_log(&cfg,CF_STD|CF_FLSH,__FILE__,__LINE__,"Destroying forums...\n");
 
-  forums = cf_cfg_get_value(&cfg,"Forums");
+  forums = cf_cfg_get_value(&cfg,"DF:Forums");
   for(i=0;i<forums->alen;++i) {
     actforum = cf_hash_get(head.forums,forums->avals[i].sval,strlen(forums->avals[i].sval));
     cf_destroy_forum(&cfg,actforum);

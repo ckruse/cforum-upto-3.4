@@ -45,8 +45,8 @@ struct sockaddr_un;
 /* }}} */
 
 int flt_cftp_handler(int sockfd,forum_t *forum,const u_char **tokens,int tnum,rline_t *tsd) {
-  cf_name_value_t *sort_t_v = cf_cfg_get_first_value(&fo_server_conf,forum->name,"SortThreads"),
-               *sort_m_v = cf_cfg_get_first_value(&fo_server_conf,forum->name,"SortMessages");
+  cf_name_value_t *sort_t_v = cf_cfg_get_first_value(&fo_server_conf,forum->name,"FS:SortThreads"),
+               *sort_m_v = cf_cfg_get_first_value(&fo_server_conf,forum->name,"FS:SortMessages");
 
   int sort_m = cf_strcmp(sort_m_v->values[0],"ascending") == 0 ? CF_SORT_ASCENDING : CF_SORT_DESCENDING,
       sort_t = cf_strcmp(sort_t_v->values[0],"ascending") == 0 ? CF_SORT_ASCENDING : CF_SORT_DESCENDING,

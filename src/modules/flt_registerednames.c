@@ -328,7 +328,7 @@ int flt_registerednames_handler(int connfd,forum_t *forum,const u_char **tokens,
 int flt_registerednames_init_module(int sock) {
   int ret;
   names_db_t *ndb;
-  cf_name_value_t *forums = cf_cfg_get_first_value(&fo_server_conf,NULL,"Forums");
+  cf_name_value_t *forums = cf_cfg_get_first_value(&fo_server_conf,NULL,"DF:Forums");
   size_t i;
 
   if(!flt_rn_namesdb) {
@@ -393,7 +393,7 @@ void flt_registerednames_cleanup(void) {
 }
 
 cf_conf_opt_t flt_registerednames_config[] = {
-  { "AuthNames", flt_registerednames_handle_command, CF_CFG_OPT_CONFIG|CF_CFG_OPT_NEEDED|CF_CFG_OPT_LOCAL, NULL },
+  { "RegisteredNames:DB", flt_registerednames_handle_command, CF_CFG_OPT_CONFIG|CF_CFG_OPT_NEEDED|CF_CFG_OPT_LOCAL, NULL },
   { NULL, NULL, 0, NULL }
 };
 

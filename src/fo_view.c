@@ -156,7 +156,7 @@ void show_posting(cf_cfg_config_t *cfg,cf_hash_t *head,void *shm_ptr,u_int64_t t
   u_char buff[256],*tmp,*content_type = cf_hash_get(GlobalValues,"OutputContentType",17);
 
   cf_cfg_config_value_t *tm  = cf_cfg_get_value(cfg,"ThreadMode"),
-    *rm             = cf_cfg_get_value(cfg,"ReadMode"),
+    *rm             = cf_cfg_get_value(cfg,"DF:ReadMode"),
     *cs             = cf_cfg_get_value(cfg,"DF:ExternCharset"),
     *fbase          = NULL,
     *name           = cf_cfg_get_value(cfg,"Name"),
@@ -656,7 +656,7 @@ int main(int argc,char *argv[],char *env[]) {
   if(ret != FLT_EXIT) {
     /* {{{ now, we need a socket connection/shared mem pointer */
     #ifndef CF_SHARED_MEM
-    sockpath = cf_cfg_get_value(&cfg,"SocketPath");
+    sockpath = cf_cfg_get_value(&cfg,"DF:SocketName");
     if((sock = cf_socket_setup(sockpath->sval)) < 0) {
       printf("Content-Type: %s; charset=%s\015\012Status: 500 Internal Server Error\015\012\015\012",content_type?content_type:(u_char *)"text/html",cs->sval);
       cf_error_message(&cfg,"E_NO_SOCK",NULL,strerror(errno));

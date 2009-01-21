@@ -67,12 +67,12 @@ void display_finishing_screen(cf_cfg_config_t *cfg,cf_message_t *p) {
   u_char tplname[256];
   int uname = cf_hash_get(GlobalValues,"UserName",8) != NULL;
 
-  cf_cfg_config_value_t *tt = cf_cfg_get_value(cfg,"OkTemplate"),
+  cf_cfg_config_value_t *tt = cf_cfg_get_value(cfg,"FP:OkTemplate"),
     *cs = cf_cfg_get_value(cfg,"DF:ExternCharset"),
     *qc = cf_cfg_get_value(cfg,"DF:QuotingChars"),
     *ps = cf_cfg_get_value(cfg,"DF:PostScript"),
     *fb = cf_cfg_get_value(cfg,"DF:BaseURL"),
-    *df = cf_cfg_get_value(cfg,"DateFormat"),
+    *df = cf_cfg_get_value(cfg,"FP:DateFormat"),
     *lc = cf_cfg_get_value(cfg,"DF:DateLocale"),
     *mode = cf_cfg_get_value(cfg,"DF:TemplateMode"),
     *lang = cf_cfg_get_value(cfg,"DF:Language");
@@ -130,7 +130,7 @@ void display_posting_form(cf_cfg_config_t *cfg,cf_hash_t *head,cf_message_t *p,c
   cf_template_t tpl;
   u_char tplname[256];
   int uname = cf_hash_get(GlobalValues,"UserName",8) != NULL;
-  cf_cfg_config_value_t *tt  = cf_cfg_get_value(cfg,"ThreadTemplate"),
+  cf_cfg_config_value_t *tt  = cf_cfg_get_value(cfg,"FP:ThreadTemplate"),
     *cs  = cf_cfg_get_value(cfg,"DF:ExternCharset"),
     *cats = cf_cfg_get_value(cfg,"DF:Categories"),
     *qc = cf_cfg_get_value(cfg,"DF:QuotingChars"),
@@ -459,7 +459,7 @@ int validate_cgi_variables(cf_cfg_config_t *conf,cf_hash_t *head) {
   cf_string_t *value;
 
   /* {{{ check if every needed field exists */
-  if((cfg = cf_cfg_get_value(conf,"FieldNeeded")) != NULL) {
+  if((cfg = cf_cfg_get_value(conf,"FP:FieldNeeded")) != NULL) {
     for(i=0;i<cfg->alen;++i) {
       if((value = cf_cgi_get(head,cfg->avals[i].avals[0].sval)) == NULL || *value->content == '\0') {
         /*
@@ -476,7 +476,7 @@ int validate_cgi_variables(cf_cfg_config_t *conf,cf_hash_t *head) {
   /* }}} */
 
   /* {{{ check if every field is valid in length */
-  if((cfg = cf_cfg_get_value(conf,"FieldConfig")) != NULL) {
+  if((cfg = cf_cfg_get_value(conf,"FP:FieldConfig")) != NULL) {
     for(i=0;i<cfg->alen;++i) {
       if((value = cf_cgi_get(head,cfg->avals[i].avals[0].sval)) != NULL) {
         maxlen = cfg->avals[i].avals[1].ival;
@@ -500,7 +500,7 @@ int validate_cgi_variables(cf_cfg_config_t *conf,cf_hash_t *head) {
   /* }}} */
 
   /* {{{ Check if every field is valid by validation function */
-  if((cfg = cf_cfg_get_value(conf,"FieldValidate")) != NULL) {
+  if((cfg = cf_cfg_get_value(conf,"FP:FieldValidate")) != NULL) {
     for(i=0;i<cfg->alen;++i) {
       if((value = cf_cgi_get(head,cfg->avals[i].avals[0].sval)) != NULL) {
         /* {{{ ignore default values for URLs */

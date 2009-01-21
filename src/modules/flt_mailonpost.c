@@ -679,13 +679,13 @@ void flt_mailonpost_cleanup(void) {
 }
 
 cf_conf_opt_t flt_mailonpost_config[] = {
-  { "SMTPHost",     flt_mailonpost_cmd, CF_CFG_OPT_CONFIG|CF_CFG_OPT_LOCAL, NULL },
-  { "SMTPFrom",     flt_mailonpost_cmd, CF_CFG_OPT_CONFIG|CF_CFG_OPT_LOCAL, NULL },
-  { "SMTPReverse",  flt_mailonpost_cmd, CF_CFG_OPT_CONFIG|CF_CFG_OPT_LOCAL, NULL },
-  { "MailDatabase", flt_mailonpost_cmd, CF_CFG_OPT_CONFIG|CF_CFG_OPT_LOCAL|CF_CFG_OPT_NEEDED, NULL },
-  { "MailUserDB",   flt_mailonpost_cmd, CF_CFG_OPT_USER|CF_CFG_OPT_LOCAL,   NULL },
-  { "UserMail",     flt_mailonpost_cmd, CF_CFG_OPT_USER|CF_CFG_OPT_LOCAL,   NULL },
-  { "AlwaysMail",   flt_mailonpost_cmd, CF_CFG_OPT_CONFIG|CF_CFG_OPT_LOCAL, NULL },
+  { "MailOnPost:SMTPHost",     flt_mailonpost_cmd, CF_CFG_OPT_CONFIG|CF_CFG_OPT_LOCAL, NULL },
+  { "MailOnPost:SMTPFrom",     flt_mailonpost_cmd, CF_CFG_OPT_CONFIG|CF_CFG_OPT_LOCAL, NULL },
+  { "MailOnPost:SMTPReverse",  flt_mailonpost_cmd, CF_CFG_OPT_CONFIG|CF_CFG_OPT_LOCAL, NULL },
+  { "MailOnPost:MailDatabase", flt_mailonpost_cmd, CF_CFG_OPT_CONFIG|CF_CFG_OPT_LOCAL|CF_CFG_OPT_NEEDED, NULL },
+  { "MailOnPost:MailUserDB",   flt_mailonpost_cmd, CF_CFG_OPT_USER|CF_CFG_OPT_LOCAL,   NULL },
+  { "MailOnPost:UserMail",     flt_mailonpost_cmd, CF_CFG_OPT_USER|CF_CFG_OPT_LOCAL,   NULL },
+  { "MailOnPost:AlwaysMail",   flt_mailonpost_cmd, CF_CFG_OPT_CONFIG|CF_CFG_OPT_LOCAL, NULL },
   { NULL, NULL, 0, NULL }
 };
 

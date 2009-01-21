@@ -556,12 +556,12 @@ void flt_poas_finish(void) {
 /* }}} */
 
 cf_conf_opt_t flt_poas_config[] = {
-  { "PostingAssistantMustValidate", flt_poas_handle, CF_CFG_OPT_CONFIG|CF_CFG_OPT_LOCAL, NULL },
-  { "BadWords",                     flt_poas_handle, CF_CFG_OPT_CONFIG|CF_CFG_OPT_LOCAL, NULL },
-  { "BadwordsAllowed",              flt_poas_handle, CF_CFG_OPT_CONFIG|CF_CFG_OPT_LOCAL, NULL },
-  { "FormateDeficitesAllowed",      flt_poas_handle, CF_CFG_OPT_CONFIG|CF_CFG_OPT_LOCAL, NULL },
-  { "QuotingPercent",               flt_poas_handle, CF_CFG_OPT_CONFIG|CF_CFG_OPT_LOCAL, NULL },
-  { "QuoteMustValidate",            flt_poas_handle, CF_CFG_OPT_CONFIG|CF_CFG_OPT_LOCAL, NULL },
+  { "PostingAssistant:MustValidate", flt_poas_handle, CF_CFG_OPT_CONFIG|CF_CFG_OPT_LOCAL, NULL },
+  { "PostingAssistant:BadWords",                     flt_poas_handle, CF_CFG_OPT_CONFIG|CF_CFG_OPT_LOCAL, NULL },
+  { "PostingAssistant:BadwordsAllowed",              flt_poas_handle, CF_CFG_OPT_CONFIG|CF_CFG_OPT_LOCAL, NULL },
+  { "PostingAssistant:FormateDeficitesAllowed",      flt_poas_handle, CF_CFG_OPT_CONFIG|CF_CFG_OPT_LOCAL, NULL },
+  { "PostingAssistant:QuotingPercent",               flt_poas_handle, CF_CFG_OPT_CONFIG|CF_CFG_OPT_LOCAL, NULL },
+  { "PostingAssistant:QuoteMustValidate",            flt_poas_handle, CF_CFG_OPT_CONFIG|CF_CFG_OPT_LOCAL, NULL },
   { NULL, NULL, 0, NULL }
 };
 

@@ -366,8 +366,8 @@ int flt_extern_handle(cf_configfile_t *cf,cf_conf_opt_t *opt,const u_char *conte
 /* }}} */
 
 cf_conf_opt_t flt_extern_config[] = {
-  { "ExternPort",      flt_extern_handle, CF_CFG_OPT_CONFIG|CF_CFG_OPT_NEEDED|CF_CFG_OPT_GLOBAL, NULL },
-  { "ExternInterface", flt_extern_handle, CF_CFG_OPT_CONFIG|CF_CFG_OPT_GLOBAL,                NULL },
+  { "Extern:Port",      flt_extern_handle, CF_CFG_OPT_CONFIG|CF_CFG_OPT_NEEDED|CF_CFG_OPT_GLOBAL, NULL },
+  { "Extern:Interface", flt_extern_handle, CF_CFG_OPT_CONFIG|CF_CFG_OPT_GLOBAL,                NULL },
   { NULL, NULL, 0, NULL }
 };
 

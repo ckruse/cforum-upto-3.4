@@ -11,6 +11,10 @@
 
 Syntax:PatternsDirectory  = "@CMAKE_INSTALL_SYSCONFDIR_FULL@/cforum/patterns/";
 
+DF:Forums            = ("FORUM1");
+
+DF:ReadMode          = "thread";
+
 DF:SocketName        = "@SOCKET_PATH@";
 DF:TemplateMode      = "html4";
 DF:XHTMLMode         = No;

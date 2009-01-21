@@ -46,7 +46,7 @@ int flt_list_execute_filter(cf_hash_t *head,cf_configuration_t *dc,cf_configurat
   cf_tpl_variable_t array,hash;
 
   u_char *qchars,*UserName,*tmp,*msgcnt,buff[256],*forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
-  cf_name_value_t *cs,*st,*qc,*ms,*ss,*locale,*df,*dft,*rm = cf_cfg_get_first_value(vc,forum_name,"ReadMode"),*lt;
+  cf_name_value_t *cs,*st,*qc,*ms,*ss,*locale,*df,*dft,*rm = cf_cfg_get_first_value(vc,forum_name,"DF:ReadMode"),*lt;
   size_t len,qclen,msgcntlen;
   cf_string_t content,threadlist;
   int utf8,ShowInvisible;
@@ -154,7 +154,7 @@ int flt_list_execute_filter(cf_hash_t *head,cf_configuration_t *dc,cf_configurat
 int flt_list_rm_collector(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t *vc,cf_readmode_t *rm_infos) {
   u_char *fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
 
-  cf_name_value_t *rm = cf_cfg_get_first_value(vc,fn,"ReadMode");
+  cf_name_value_t *rm = cf_cfg_get_first_value(vc,fn,"DF:ReadMode");
   cf_name_value_t *v;
 
   u_char buff[256];

@@ -289,10 +289,10 @@ void flt_xmlstorage_sormessage_ts(thread_t *thread) {
 
 /* {{{ flt_xmlstorage_make_forumtree */
 int flt_xmlstorage_make_forumtree(forum_t *forum) {
-  cf_name_value_t *p = cf_cfg_get_first_value(&fo_default_conf,forum->name,"MessagePath");
-  cf_name_value_t *sort_t = cf_cfg_get_first_value(&fo_server_conf,forum->name,"SortThreads");
-  cf_name_value_t *sort_m = cf_cfg_get_first_value(&fo_server_conf,forum->name,"SortMessages");
-  cf_name_value_t *arch_ip = cf_cfg_get_first_value(&fo_server_conf,forum->name,"ArchiveIp");
+  cf_name_value_t *p = cf_cfg_get_first_value(&fo_default_conf,forum->name,"FS:MessagePath");
+  cf_name_value_t *sort_t = cf_cfg_get_first_value(&fo_server_conf,forum->name,"FS:SortThreads");
+  cf_name_value_t *sort_m = cf_cfg_get_first_value(&fo_server_conf,forum->name,"FS:SortMessages");
+  cf_name_value_t *arch_ip = cf_cfg_get_first_value(&fo_server_conf,forum->name,"FS:ArchiveIp");
   cf_string_t path;
 
   u_char *ctid;
@@ -910,7 +910,7 @@ int flt_xmlstorage_threadlist_writer(forum_t *forum) {
   u_char buff[256];
   pid_t pid;
 
-  cf_name_value_t *mpath = cf_cfg_get_first_value(&fo_default_conf,forum->name,"MessagePath");
+  cf_name_value_t *mpath = cf_cfg_get_first_value(&fo_default_conf,forum->name,"XmlStorage:MessagePath");
 
   GdomeException e;
   GdomeDOMImplementation *impl;
@@ -1044,7 +1044,7 @@ int flt_xmlstorage_archive_threads(forum_t *forum,thread_t **threads,size_t len)
   }
 
   path  = cf_cfg_get_first_value(&fo_default_conf,forum->name,"OL:ArchivePath");
-  mpath = cf_cfg_get_first_value(&fo_default_conf,forum->name,"MessagePath");
+  mpath = cf_cfg_get_first_value(&fo_default_conf,forum->name,"XmlStorage:MessagePath");
   impl  = gdome_di_mkref();
 
   cf_str_init(&str);
@@ -1111,7 +1111,7 @@ int flt_xmlstorage_archive_threads(forum_t *forum,thread_t **threads,size_t len)
 
 /* {{{ flt_xmlstorage_remove_thread */
 int flt_xmlstorage_remove_thread(forum_t *forum,thread_t *thr) {
-  cf_name_value_t *mpath = cf_cfg_get_first_value(&fo_default_conf,forum->name,"MessagePath");
+  cf_name_value_t *mpath = cf_cfg_get_first_value(&fo_default_conf,forum->name,"XmlStorage:MessagePath");
   u_char buff[512];
 
   snprintf(buff,512,"%s/t%"PRIu64".xml",mpath->values[0],thr->tid);
@@ -1122,7 +1122,7 @@ int flt_xmlstorage_remove_thread(forum_t *forum,thread_t *thr) {
 /* }}} */
 
 cf_conf_opt_t flt_xmlstorage_config[] = {
-  { "MessagePath", cf_handle_command, CF_CFG_OPT_NEEDED|CF_CFG_OPT_CONFIG|CF_CFG_OPT_LOCAL, &fo_default_conf },
+  { "XmlStorage:MessagePath", cf_handle_command, CF_CFG_OPT_NEEDED|CF_CFG_OPT_CONFIG|CF_CFG_OPT_LOCAL, &fo_default_conf },
   { "OL:ArchivePath", cf_handle_command, CF_CFG_OPT_NEEDED|CF_CFG_OPT_CONFIG|CF_CFG_OPT_LOCAL, &fo_default_conf },
   { NULL, NULL, 0, NULL }
 };

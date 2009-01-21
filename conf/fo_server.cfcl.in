@@ -19,8 +19,6 @@ Load "flt_extern";
 Load "flt_voting";
 Load "flt_xmlstorage";
 
-DF:Forums       = ("FORUM1");
-
 FS:RunArchiver  = 1800;
 FS:MinThreads   = 10;
 FS:SpareThreads = 5;
@@ -46,8 +44,8 @@ FS:MainFileMaxThreads  = 150;
 
 WITH(FORUM1)
   # external interface
-  FS:ExternPort   = 6666;
-  # ExternInterface = "192.168.50.2";
+  Extern:Port   = 6666;
+  # Extern:Interface = "192.168.50.2";
 
   Xmlstorage:MessagePath = "@CMAKE_INSTALL_LOCALSTATEDIR_FULL@/cforum/messages/forum1/";
   Registerednames:DB     = "@CMAKE_INSTALL_LOCALSTATEDIR_FULL@/cforum/registered_names_forum1.db";

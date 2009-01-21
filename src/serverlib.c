@@ -202,11 +202,11 @@ void cf_log(cf_cfg_config_t *cfg,int mode,const u_char *file,unsigned int line,c
   }
 
   if(!head.log.std) {
-    v = cf_cfg_get_value(cfg,"StdLog");
+    v = cf_cfg_get_value(cfg,"FS:StdLog");
     head.log.std = fopen(v->sval,"a");
   }
   if(!head.log.err) {
-    v = cf_cfg_get_value(cfg,"ErrorLog");
+    v = cf_cfg_get_value(cfg,"FS:ErrorLog");
     head.log.err = fopen(v->sval,"a");
   }
 
@@ -1284,7 +1284,7 @@ void cf_generate_cache(cf_cfg_config_t *cfg,cf_forum_t *forum) {
   /* }}} */
   /* {{{ make cache for all forums */
   else {
-    forums = cf_cfg_get_value(cfg,"Forums");
+    forums = cf_cfg_get_value(cfg,"DF:Forums");
 
     for(i=0;i<forums->alen;i++) {
       if((forum = cf_hash_get(head.forums,forums->avals[i].sval,strlen(forums->avals[i].sval))) != NULL) {
@@ -1317,7 +1317,7 @@ void cf_generate_cache(cf_cfg_config_t *cfg,cf_forum_t *forum) {
   #else
   if(forum) cf_generate_shared_memory(cfg,forum);
   else {
-    forums = cf_cfg_get_value(cfg,"Forums");
+    forums = cf_cfg_get_value(cfg,"DF:Forums");
 
     for(i=0;i<forums->alen;i++) {
       if((forum = cf_hash_get(head.forums,forums->avals[i].sval,strlen(forums->avals[i].sval))) != NULL) cf_generate_shared_memory(cfg,forum);

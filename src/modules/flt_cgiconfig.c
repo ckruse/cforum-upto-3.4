@@ -127,7 +127,7 @@ int flt_cgiconfig_init_handler(cf_hash_t *head,cf_configuration_t *dc,cf_configu
     }
 
     if((val = cf_cgi_get(head,"readmode")) != NULL) {
-      v = cf_cfg_get_first_value(vc,forum_name,"ReadMode");
+      v = cf_cfg_get_first_value(vc,forum_name,"DF:ReadMode");
 
       if(cf_strcmp(val->content,"list") == 0) {
         free(v->values[0]);

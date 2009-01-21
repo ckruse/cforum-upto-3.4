@@ -73,21 +73,21 @@ sub exprt {
 sub imprt {
   my ($fo_default_conf,$fo_view_conf,$fo_userconf_conf,$user_config,$cgi) = @_;
 
-  fatal($cgi,$fo_default_conf,$user_config,sprintf(get_error($fo_default_conf,'MUST_AUTH'),"$!"),get_conf_val($fo_userconf_conf,$main::Forum,'FatalTemplate')) unless $main::UserName;
+  fatal($cgi,$fo_default_conf,$user_config,sprintf(get_error($fo_default_conf,'MUST_AUTH'),"$!"),get_conf_val($fo_userconf_conf,$main::Forum,'FP:FatalTemplate')) unless $main::UserName;
 
   my $own_conf = dclone($user_config);
   my $fh = $cgi->upload('import');
   my $str = '';
 
   if(!$fh) {
-    fatal($cgi,$fo_default_conf,$user_config,get_error($fo_default_conf,'IMPORT_DATAFAILURE'),get_conf_val($fo_userconf_conf,$main::Forum,'FatalTemplate')) unless $str = $cgi->param('importstr'); 
+    fatal($cgi,$fo_default_conf,$user_config,get_error($fo_default_conf,'IMPORT_DATAFAILURE'),get_conf_val($fo_userconf_conf,$main::Forum,'FP:FatalTemplate')) unless $str = $cgi->param('importstr'); 
   }
   else {
     $str .= $_ while(<$fh>);
   }
 
-  my $idoc = XML::GDOME->createDocFromString($str,0) or fatal($cgi,$fo_default_conf,$user_config,sprintf(get_error($fo_default_conf,'XML_PARSE'),"$!"),get_conf_val($fo_userconf_conf,$main::Forum,'FatalTemplate'));
-  my $moddoc = XML::GDOME->createDocFromURI(sprintf(get_conf_val($fo_userconf_conf,$main::Forum,'ModuleConfig'),get_conf_val($fo_default_conf,$main::Forum,'DF:Language'))) or fatal($cgi,$fo_default_conf,$user_config,sprintf(get_error($fo_default_conf,'XML_PARSE'),"$!"),get_conf_val($fo_userconf_conf,$main::Forum,'FatalTemplate'));
+  my $idoc = XML::GDOME->createDocFromString($str,0) or fatal($cgi,$fo_default_conf,$user_config,sprintf(get_error($fo_default_conf,'XML_PARSE'),"$!"),get_conf_val($fo_userconf_conf,$main::Forum,'FP:FatalTemplate'));
+  my $moddoc = XML::GDOME->createDocFromURI(sprintf(get_conf_val($fo_userconf_conf,$main::Forum,'ModuleConfig'),get_conf_val($fo_default_conf,$main::Forum,'DF:Language'))) or fatal($cgi,$fo_default_conf,$user_config,sprintf(get_error($fo_default_conf,'XML_PARSE'),"$!"),get_conf_val($fo_userconf_conf,$main::Forum,'FP:FatalTemplate'));
 
   my $dhash = {};
   my @directives = $moddoc->findnodes('/config/directive');
@@ -101,7 +101,7 @@ sub imprt {
   my $root = $idoc->documentElement;
   my $ver = $root->getAttribute('version');
 
-  fatal($cgi,$fo_default_conf,$user_config,get_error($fo_default_conf,'IMPORT_VERSION'),get_conf_val($fo_userconf_conf,$main::Forum,'FatalTemplate')) if $ver > CF_VER;
+  fatal($cgi,$fo_default_conf,$user_config,get_error($fo_default_conf,'IMPORT_VERSION'),get_conf_val($fo_userconf_conf,$main::Forum,'FP:FatalTemplate')) if $ver > CF_VER;
 
   @directives = $idoc->findnodes('/CFConfig/Directive');
   foreach my $directive (@directives) {
@@ -114,7 +114,7 @@ sub imprt {
     my @arguments_user = $directive->getElementsByTagName('Argument');
     my @arguments_mod  = $uconf_directive->findnodes('./argument/validate');
 
-    fatal($cgi,$fo_default_conf,$user_config,get_error($fo_default_conf,'IMPORT_DATAFAILURE'),get_conf_val($fo_userconf_conf,$main::Forum,'FatalTemplate')) if @arguments_user > @arguments_mod;
+    fatal($cgi,$fo_default_conf,$user_config,get_error($fo_default_conf,'IMPORT_DATAFAILURE'),get_conf_val($fo_userconf_conf,$main::Forum,'FP:FatalTemplate')) if @arguments_user > @arguments_mod;
 
     for(my $i=0;$i<@arguments_user;++$i) {
       my $type = $arguments_mod[$i]->getAttribute('type') || '';
@@ -123,18 +123,18 @@ sub imprt {
       # {{{ validate user input
       if($val) {
         if($type eq 'http-url') {
-          fatal($cgi,$fo_default_conf,$user_config,get_error($fo_default_conf,'IMPORT_DATAINVALID'),get_conf_val($fo_userconf_conf,$main::Forum,'FatalTemplate')) if is_valid_http_link($val);
+          fatal($cgi,$fo_default_conf,$user_config,get_error($fo_default_conf,'IMPORT_DATAINVALID'),get_conf_val($fo_userconf_conf,$main::Forum,'FP:FatalTemplate')) if is_valid_http_link($val);
         }
         elsif($type eq 'url') {
-          fatal($cgi,$fo_default_conf,$user_config,get_error($fo_default_conf,'IMPORT_DATAINVALID'),get_conf_val($fo_userconf_conf,$main::Forum,'FatalTemplate')) if is_valid_link($val);
+          fatal($cgi,$fo_default_conf,$user_config,get_error($fo_default_conf,'IMPORT_DATAINVALID'),get_conf_val($fo_userconf_conf,$main::Forum,'FP:FatalTemplate')) if is_valid_link($val);
         }
         elsif($type eq 'email') {
-          fatal($cgi,$fo_default_conf,$user_config,get_error($fo_default_conf,'IMPORT_DATAINVALID'),get_conf_val($fo_userconf_conf,$main::Forum,'FatalTemplate')) if is_valid_mailaddress($val);
+          fatal($cgi,$fo_default_conf,$user_config,get_error($fo_default_conf,'IMPORT_DATAINVALID'),get_conf_val($fo_userconf_conf,$main::Forum,'FP:FatalTemplate')) if is_valid_mailaddress($val);
         }
         else {
           my $validate = get_node_data($arguments_mod[$i]);
           if($validate) {
-            fatal($cgi,$fo_default_conf,$user_config,get_error($fo_default_conf,'IMPORT_DATAINVALID'),get_conf_val($fo_userconf_conf,$main::Forum,'FatalTemplate')) unless $val =~ /$validate/;
+            fatal($cgi,$fo_default_conf,$user_config,get_error($fo_default_conf,'IMPORT_DATAINVALID'),get_conf_val($fo_userconf_conf,$main::Forum,'FP:FatalTemplate')) unless $val =~ /$validate/;
           }
         }
       }
@@ -166,7 +166,7 @@ sub imprt {
 sub imprtform {
   my ($fo_default_conf,$fo_view_conf,$fo_userconf_conf,$user_config,$cgi) = @_;
 
-  fatal($cgi,$fo_default_conf,$user_config,sprintf(get_error($fo_default_conf,'MUST_AUTH'),"$!"),get_conf_val($fo_userconf_conf,$main::Forum,'FatalTemplate')) unless $main::UserName;
+  fatal($cgi,$fo_default_conf,$user_config,sprintf(get_error($fo_default_conf,'MUST_AUTH'),"$!"),get_conf_val($fo_userconf_conf,$main::Forum,'FP:FatalTemplate')) unless $main::UserName;
 
   my $tpl = new CForum::Template(get_template($fo_default_conf,$user_config,get_conf_val($fo_userconf_conf,$main::Forum,'ImportForm')));
   $tpl->setvalue('forumbase',recode($fo_default_conf,get_conf_val($fo_default_conf,$main::Forum,'UDF:BaseURL')));

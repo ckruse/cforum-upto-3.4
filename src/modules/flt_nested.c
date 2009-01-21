@@ -187,7 +187,7 @@ int flt_nested_execute_filter(cf_hash_t *head,cf_configuration_t *dc,cf_configur
 
   u_char *qchars,*UserName,*forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   cf_name_value_t *cs,*st,*qc,*ms,*ss,*locale,*df,*dft,
-    *rm = cf_cfg_get_first_value(vc,forum_name,"ReadMode"),*lt,*fbase,*ps,*reg;
+    *rm = cf_cfg_get_first_value(vc,forum_name,"DF:ReadMode"),*lt,*fbase,*ps,*reg;
   size_t qclen;
   cf_string_t threadlist;
   int utf8,ShowInvisible;
@@ -256,7 +256,7 @@ int flt_nested_execute_filter(cf_hash_t *head,cf_configuration_t *dc,cf_configur
 int flt_nested_rm_collector(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t *vc,cf_readmode_t *rm_infos) {
   u_char *fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
 
-  cf_name_value_t *rm = cf_cfg_get_first_value(vc,fn,"ReadMode");
+  cf_name_value_t *rm = cf_cfg_get_first_value(vc,fn,"DF:ReadMode");
   cf_name_value_t *v;
 
   u_char buff[256];

@@ -58,7 +58,7 @@ void cf_run_archiver(cf_cfg_config_t *cfg) {
   cf_thread_t *t,*oldest_t,*prev = NULL,**to_archive = NULL;
   long size,threadnum,pnum,max_bytes,max_threads,max_posts;
   int shall_archive = 0,len = 0,ret = FLT_OK,j,mb = 0;
-  cf_cfg_config_value_t *max_bytes_v, *max_posts_v, *max_threads_v, *forums = cf_cfg_get_value(cfg,"Forums");
+  cf_cfg_config_value_t *max_bytes_v, *max_posts_v, *max_threads_v, *forums = cf_cfg_get_value(cfg,"DF:Forums");
   cf_handler_config_t *handler;
   cf_archive_filter_t fkt;
   size_t i;
@@ -69,9 +69,9 @@ void cf_run_archiver(cf_cfg_config_t *cfg) {
     forum = cf_hash_get(head.forums,forums->avals[i].sval,strlen(forums->avals[i].sval));
     CF_RW_UN(cfg,&head.lock);
 
-    max_bytes_v     = cf_cfg_get_value(cfg,"MainFileMaxBytes");
-    max_posts_v     = cf_cfg_get_value(cfg,"MainFileMaxPostings");
-    max_threads_v   = cf_cfg_get_value(cfg,"MainFileMaxThreads");
+    max_bytes_v     = cf_cfg_get_value(cfg,"FS:MainFileMaxBytes");
+    max_posts_v     = cf_cfg_get_value(cfg,"FS:MainFileMaxPostings");
+    max_threads_v   = cf_cfg_get_value(cfg,"FS:MainFileMaxThreads");
 
     max_bytes     = max_bytes_v->ival;
     max_posts     = max_posts_v->ival;
@@ -232,7 +232,7 @@ void cf_archive_threads(cf_cfg_config_t *cfg,cf_forum_t *forum,cf_thread_t **to_
 void cf_write_threadlist(cf_cfg_config_t *cfg,cf_forum_t *forum) {
   int ret;
   size_t i,j,k;
-  cf_cfg_config_value_t *forums = cf_cfg_get_value(cfg,"Forums");
+  cf_cfg_config_value_t *forums = cf_cfg_get_value(cfg,"DF:Forums");
   cf_handler_config_t *handler;
   cf_archive_thrdlst_writer_t fkt;
 

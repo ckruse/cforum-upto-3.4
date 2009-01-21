@@ -1199,7 +1199,7 @@ void flt_directives_cleanup(void) {
 /* }}} */
 
 cf_conf_opt_t flt_directives_config[] = {
-  { "PostingUrl",           flt_directives_handle_purl,     CF_CFG_OPT_CONFIG|CF_CFG_OPT_LOCAL,               NULL },
+  { "Directives:PostingUrl",           flt_directives_handle_purl,     CF_CFG_OPT_CONFIG|CF_CFG_OPT_LOCAL,               NULL },
   { "ShowIframeAsLink",     flt_directives_handle_iframe,   CF_CFG_OPT_CONFIG|CF_CFG_OPT_USER|CF_CFG_OPT_LOCAL,  NULL },
   { "ShowImageAsLink",      flt_directives_handle_image,    CF_CFG_OPT_CONFIG|CF_CFG_OPT_USER|CF_CFG_OPT_LOCAL,  NULL },
   { "PostingLinkTarget",    flt_directives_handle_link,     CF_CFG_OPT_CONFIG|CF_CFG_OPT_USER|CF_CFG_OPT_LOCAL,  NULL },

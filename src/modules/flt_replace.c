@@ -248,7 +248,7 @@ int flt_replace_showpost(cf_hash_t *head,configuration_t *dc,configuration_t *vc
 
   if(flt_replace_fn == NULL) flt_replace_fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
 
-  rm = cfg_get_first_value(vc,flt_replace_fn,"ReadMode");
+  rm = cfg_get_first_value(vc,flt_replace_fn,"DF:ReadMode");
 
   if(flt_replace_mustinit) {
     flt_replace_mustinit = 0;

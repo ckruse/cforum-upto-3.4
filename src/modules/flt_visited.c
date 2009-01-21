@@ -146,7 +146,7 @@ int flt_visited_execute_filter(cf_hash_t *head,cf_configuration_t *dc,cf_configu
   u_char buff[256];
   cf_cgi_param_t *parm;
   size_t len;
-  cf_name_value_t *rm = cf_cfg_get_first_value(vc,fn,"ReadMode");
+  cf_name_value_t *rm = cf_cfg_get_first_value(vc,fn,"DF:ReadMode");
   cf_string_t *mav,*cmid,*ctid,*mode,*a;
 
   if(uname && Cfg.VisitedFile) {

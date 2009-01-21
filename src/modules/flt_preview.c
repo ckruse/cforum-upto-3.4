@@ -132,9 +132,9 @@ int flt_preview_cmd(cf_configfile_t *cfile,cf_conf_opt_t *opt,const u_char *cont
 /* }}} */
 
 cf_conf_opt_t flt_preview_config[] = {
-  { "PreviewDateFormat", flt_preview_cmd, CF_CFG_OPT_CONFIG|CF_CFG_OPT_LOCAL, NULL },
-  { "GeneratePreview",   flt_preview_cmd, CF_CFG_OPT_CONFIG|CF_CFG_OPT_USER|CF_CFG_OPT_LOCAL, NULL },
-  { "PreviewSwitchType", flt_preview_cmd, CF_CFG_OPT_CONFIG|CF_CFG_OPT_USER|CF_CFG_OPT_LOCAL, NULL },
+  { "Preview:DateFormat", flt_preview_cmd, CF_CFG_OPT_CONFIG|CF_CFG_OPT_LOCAL, NULL },
+  { "Preview:Generate",   flt_preview_cmd, CF_CFG_OPT_CONFIG|CF_CFG_OPT_USER|CF_CFG_OPT_LOCAL, NULL },
+  { "Preview:SwitchType", flt_preview_cmd, CF_CFG_OPT_CONFIG|CF_CFG_OPT_USER|CF_CFG_OPT_LOCAL, NULL },
   { NULL, NULL, 0, NULL }
 };
 

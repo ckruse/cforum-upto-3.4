@@ -83,7 +83,7 @@ void rfc822_date(cf_cfg_config_t *cfg,cf_string_t *str,time_t date) {
   size_t len;
   struct tm *tm;
 
-  cf_cfg_config_value_t *lc = cf_cfg_get_value(cfg,"DF:DateLocaleEn");
+  cf_cfg_config_value_t *lc = cf_cfg_get_value(cfg,"FF:DateLocaleEn");
 
   setlocale(LC_TIME,lc->sval);
 
@@ -141,11 +141,11 @@ void atom_head(cf_cfg_config_t *cfg,cf_string_t *str,cf_cl_thread_t *thread) {
 
   int authed = uname ? 1 : 0;
 
-  cf_cfg_config_value_t *atom_title = cf_cfg_get_value(cfg,"AtomTitle"),
-    *atom_tgline = cf_cfg_get_value(cfg,"AtomTagline"),
-    *atom_lang = cf_cfg_get_value(cfg,"FeedLang"),
-    *atom_uri = cf_cfg_get_value(cfg,thread?"AtomUriThread":"AtomUri"),
-    *atom_id = cf_cfg_get_value(cfg,"AtomId"),
+  cf_cfg_config_value_t *atom_title = cf_cfg_get_value(cfg,"FF:AtomTitle"),
+    *atom_tgline = cf_cfg_get_value(cfg,"FF:AtomTagline"),
+    *atom_lang = cf_cfg_get_value(cfg,"FF:FeedLang"),
+    *atom_uri = cf_cfg_get_value(cfg,thread?"FF:AtomUriThread":"FF:AtomUri"),
+    *atom_id = cf_cfg_get_value(cfg,"FF:AtomId"),
     *burl = cf_cfg_get_value(cfg,uname ? "UDF:BaseURL":"DF:BaseURL");
 
   cf_readmode_t *rm = cf_hash_get(GlobalValues,"RM",2);
@@ -235,12 +235,12 @@ void rss_head(cf_cfg_config_t *cfg,cf_string_t *str,cf_cl_thread_t *thread) {
   u_char *tmp;
   int authed = cf_hash_get(GlobalValues,"UserName",8) != NULL;
 
-  cf_cfg_config_value_t *rss_title = cf_cfg_get_value(cfg,"RSSTitle"),
-    *rss_descr = cf_cfg_get_value(cfg,thread ? "RSSDescriptionThread" : "RSSDescription"),
-    *rss_copy  = cf_cfg_get_value(cfg,"RSSCopyright"),
-    *rss_lang  = cf_cfg_get_value(cfg,"FeedLang"),
-    *rss_wbm   = cf_cfg_get_value(cfg,"RSSWebMaster"),
-    *rss_cat   = cf_cfg_get_value(cfg,"RSSCategory"),
+  cf_cfg_config_value_t *rss_title = cf_cfg_get_value(cfg,"FF:RSSTitle"),
+    *rss_descr = cf_cfg_get_value(cfg,thread ? "FF:RSSDescriptionThread" : "FF:RSSDescription"),
+    *rss_copy  = cf_cfg_get_value(cfg,"FF:RSSCopyright"),
+    *rss_lang  = cf_cfg_get_value(cfg,"FF:FeedLang"),
+    *rss_wbm   = cf_cfg_get_value(cfg,"FF:RSSWebMaster"),
+    *rss_cat   = cf_cfg_get_value(cfg,"FF:RSSCategory"),
     *burl      = cf_cfg_get_value(cfg,"DF:BaseURL"),
     *purl;
 
@@ -1145,7 +1145,7 @@ int main(int argc,char *argv[],char *env[]) {
   if(ret != FLT_EXIT) {
     /* now, we need a socket connection/shared mem pointer */
     #ifndef CF_SHARED_MEM
-    sockpath = cf_cfg_get_value(&cfg,"SocketPath");
+    sockpath = cf_cfg_get_value(&cfg,"DF:SocketName");
     if((sock = cf_socket_setup(sockpath->sval)) < 0) {
       printf("Content-Type: text/html; charset=%s\015\012Status: 500 Internal Server Error\015\012\015\012",cs->sval);
       cf_error_message(&cfg,"E_NO_SOCK",NULL,strerror(errno));

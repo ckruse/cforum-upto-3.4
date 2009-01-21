@@ -104,7 +104,7 @@ void flt_posting_replace_placeholders(const u_char *str,cf_string_t *appender,cl
 /* {{{ flt_posting_execute_filter */
 int flt_posting_execute_filter(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t *vc,cl_thread_t *thread,cf_template_t *tpl) {
   u_char buff[256],*tmp,*qchars,*msgcnt,*UserName,*forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
-  cf_name_value_t *ps,*v,*cs = cf_cfg_get_first_value(dc,forum_name,"DF:ExternCharset"),*dq,*st,*qc,*ms,*ss,*locale,*df,*rm = cf_cfg_get_first_value(vc,forum_name,"ReadMode");
+  cf_name_value_t *ps,*v,*cs = cf_cfg_get_first_value(dc,forum_name,"DF:ExternCharset"),*dq,*st,*qc,*ms,*ss,*locale,*df,*rm = cf_cfg_get_first_value(vc,forum_name,"DF:ReadMode");
   int utf8;
   size_t len,qclen,msgcntlen;
   cf_string_t cite,content,threadlist;
@@ -390,7 +390,7 @@ int flt_posting_rm_collector(cf_hash_t *head,cf_configuration_t *dc,cf_configura
   u_char buff[256];
 
   if(flt_posting_fn == NULL) flt_posting_fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
-  rm = cf_cfg_get_first_value(vc,flt_posting_fn,"ReadMode");
+  rm = cf_cfg_get_first_value(vc,flt_posting_fn,"DF:ReadMode");
 
   if(cf_strcmp(rm->values[0],"thread") == 0) {
     v = cf_cfg_get_first_value(dc,flt_posting_fn,"DF:PostingURL");

@@ -28,10 +28,8 @@ Load "flt_syntax";
 Load "flt_checkregisteredname";
 Load "flt_mailonpost";
 
-Syntax:PatternsDirectory = "@CMAKE_INSTALL_SYSCONFDIR_FULL@/cforum/patterns/";
-DF:ReadMode          = "thread";
 
-FP:PostingUrl = (
+Directives:PostingUrl = (
   "^http://wwwtech.de/forum/\\?",
   "^http://wwwtech.de/forum/my/\\?",
   "^/forum/\\?",
@@ -65,29 +63,27 @@ FP:FieldValidate = (
   ("ImageUrl", "http-strict")
 );
 
-FP:PreviewDateFormat = "%d. %B %Y, %H:%M";
+Preview:DateFormat = "%d. %B %Y, %H:%M";
 FP:DateFormat        = "%d. %B %Y, %H:%M";
 
-Postingassistant:MustValidate = Yes;
+PostingAssistant:MustValidate = Yes;
 
-Postingassistant:BadWords        = ("fick","wichs","arschloch","nutte","hure","muschi");
-Postingassistant:BadwordsAllowed = 3;
+PostingAssistant:BadWords        = ("fick","wichs","arschloch","nutte","hure","muschi");
+PostingAssistant:BadwordsAllowed = 3;
 
-Postingassistant:FormateDeficitesAllowed = 5;
+PostingAssistant:FormateDeficitesAllowed = 5;
 
-Postingassistant:QuotingPercent    = 50;
-Postingassistant:QuoteMustValidate = Yes;
+PostingAssistant:QuotingPercent    = 50;
+PostingAssistant:QuoteMustValidate = No;
 
-Spellcheck:Enabled       = Yes;
-Spellcheck:Path          = "/usr/bin/ispell";
-Spellcheck:Dictionary    = "german";
-Spellcheck:FormatterType = "utf8";
+SpellChecker:Enabled       = Yes;
+SpellChecker:Language      = "de_DE";
 
 WITH(FORUM1)
-  Mailonpost:SMTPHost     = "localhost";
-  Mailonpost:SMTPFrom     = "cforum@wwwtech.de";
-  Mailonpost:SMTPReverse  = "devnull@wwwtech.de";
-  Mailonpost:MailDatabase = "@CMAKE_INSTALL_LOCALSTATEDIR_FULL@/cforum/mail_forum1.db";
+  MailOnPost:SMTPHost     = "localhost";
+  MailOnPost:SMTPFrom     = "cforum@wwwtech.de";
+  MailOnPost:SMTPReverse  = "devnull@wwwtech.de";
+  MailOnPost:MailDatabase = "@CMAKE_INSTALL_LOCALSTATEDIR_FULL@/cforum/mail_forum1.db";
 
   FP:ThreadTemplate = "@CMAKE_INSTALL_SYSCONFDIR_FULL@/cforum/templates/forum1/%s_%s_thread.so";
   FP:FatalTemplate  = "@CMAKE_INSTALL_SYSCONFDIR_FULL@/cforum/templates/forum1/%s_%s_fatal.so";

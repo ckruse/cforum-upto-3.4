@@ -112,7 +112,7 @@ int flt_link_set_links_post(cf_hash_t *head,cf_configuration_t *dc,cf_configurat
   message_t *msg;
   cf_string_t str;
   cf_name_value_t *cs = cf_cfg_get_first_value(&fo_default_conf,forum_name,"DF:ExternCharset"),
-    *rm = cf_cfg_get_first_value(vc,forum_name,"ReadMode");
+    *rm = cf_cfg_get_first_value(vc,forum_name,"DF:ReadMode");
 
   /* user doesn't want <link> tags */
   if(SetLinks == 0 || cf_strcmp(rm->values[0],"thread") != 0) return FLT_DECLINE;

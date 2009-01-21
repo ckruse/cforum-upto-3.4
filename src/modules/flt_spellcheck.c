@@ -362,9 +362,9 @@ int flt_spellcheck_cmd(configfile_t *cfile,conf_opt_t *opt,const u_char *context
 /* }}} */
 
 conf_opt_t flt_spellcheck_config[] = {
-  { "SpellCheckerEnabled",          flt_spellcheck_cmd, CFG_OPT_CONFIG|CFG_OPT_NEEDED|CFG_OPT_LOCAL, NULL },
-  { "SpellCheckerDF:Language",         flt_spellcheck_cmd, CFG_OPT_CONFIG|CFG_OPT_NEEDED|CFG_OPT_LOCAL, NULL },
-  { "SpellCheckerDefaultActivated", flt_spellcheck_cmd, CFG_OPT_CONFIG|CFG_OPT_LOCAL|CFG_OPT_USER,   NULL },
+  { "SpellChecker:Enabled",          flt_spellcheck_cmd, CFG_OPT_CONFIG|CFG_OPT_NEEDED|CFG_OPT_LOCAL, NULL },
+  { "SpellChecker:Language",         flt_spellcheck_cmd, CFG_OPT_CONFIG|CFG_OPT_NEEDED|CFG_OPT_LOCAL, NULL },
+  { "SpellChecker:DefaultActivated", flt_spellcheck_cmd, CFG_OPT_CONFIG|CFG_OPT_LOCAL|CFG_OPT_USER,   NULL },
   { NULL, NULL, 0, NULL }
 };
 
