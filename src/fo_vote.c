@@ -107,7 +107,7 @@ void send_ok_output(cf_cfg_config_t *cfg,cf_hash_t *head,cf_cfg_config_value_t *
 
   mode = cf_cfg_get_value(cfg,"DF:TemplateMode");
   lang = cf_cfg_get_value(cfg,"DF:Language");
-  cf_cfg_tpl = cf_cfg_get_value(cfg,"OkTemplate");
+  cf_cfg_tpl = cf_cfg_get_value(cfg,"FVO:OkTemplate");
 
   cf_gen_tpl_name(tpl_name,256,mode->sval,lang->sval,cf_cfg_tpl->sval);
 
@@ -183,7 +183,7 @@ int main(int argc,char *argv[],char *env[]) {
   }
 
   head   = cf_cgi_new();
-  dbname = cf_cfg_get_value(&cfg,"VotingDatabase");
+  dbname = cf_cfg_get_value(&cfg,"FVO:VotingDatabase");
   cs     = cf_cfg_get_value(&cfg,"DF:ExternCharset");
   cfgpath= cf_cfg_get_value(&cfg,"DF:ConfigDirectory");
 
