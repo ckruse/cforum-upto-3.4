@@ -9,7 +9,7 @@
 # $LastChangedBy$
 #
 
-ModulePath = "@libdir@/cforum/";
+ModulePath = "@CMAKE_INSTALL_LIBDIR_FULL@/cforum/";
 
 Load "flt_httpauth";
 Load "flt_niceuserconf";
@@ -40,13 +40,13 @@ FU:MaxVal = (
   ("AutoReload", 30)
 );
 
-FU:ModuleConfig    = "@sysconfdir@/cforum/modules.de.xml";
+FU:ModuleConfig    = "@CMAKE_INSTALL_SYSCONFDIR_FULL@/cforum/modules.de.xml";
 FU:FromUntilFormat = "%d. %m. %Y, %H:%M";
 
 WITH(FORUM1)
-  FU:Edit       = "@sysconfdir@/cforum/templates/forum1/%s_%s_usersettings.so";
-  FU:ImportForm = "@sysconfdir@/cforum/templates/forum1/%s_%s_importform.so";
-  FU:ImportOk   = "@sysconfdir@/cforum/templates/forum1/%s_%s_importok.so";
+  FU:Edit       = "@CMAKE_INSTALL_SYSCONFDIR_FULL@/cforum/templates/forum1/%s_%s_usersettings.so";
+  FU:ImportForm = "@CMAKE_INSTALL_SYSCONFDIR_FULL@/cforum/templates/forum1/%s_%s_importform.so";
+  FU:ImportOk   = "@CMAKE_INSTALL_SYSCONFDIR_FULL@/cforum/templates/forum1/%s_%s_importok.so";
 end;
 
 # eof

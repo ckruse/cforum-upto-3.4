@@ -15,13 +15,13 @@ use strict;
 use vars qw($prefix $exec_prefix $Forum $conffiles);
 
 BEGIN {
-  $prefix      = "@prefix@";
-  $exec_prefix = "@exec_prefix@";
+  $prefix      = "@CMAKE_INSTALL_PREFIX@";
+  $exec_prefix = "@CMAKE_INSTALL_PREFIX@";
   $Forum       = '';
   $conffiles   = {};
 }
 
-use lib "@libdir@/cforum";
+use lib "@CMAKE_INSTALL_LIBDIR_FULL@/cforum";
 
 sub VERSION {(q$Revision$ =~ /([\d.]+)\s*$/)[0] or '0.0'}
 

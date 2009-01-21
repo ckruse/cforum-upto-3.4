@@ -8,6 +8,7 @@ my $template_dir = '';
 my $template_lang = '';
 my $template_theme = '';
 my $cforum_source = '';
+my $cforum_headers = '';
 my $libdir = '';
 my $install = '';
 my $help = 0;
@@ -19,6 +20,7 @@ GetOptions(
   "install=s" => \$install,
   "libdir=s" => \$libdir,
   "cforum-source=s" => \$cforum_source,
+  "cforum-headers=s" => \$cforum_headers,
   "help" => \$help
 );
 
@@ -35,6 +37,7 @@ if(!$template_dir || !$template_lang || !$template_theme || !$libdir || !$instal
 }
 
 $cforum_source = "-I$cforum_source/src" if $cforum_source;
+$cforum_source = "-I$cforum_headers" if $cforum_headers and not $cforum_source;
 
 opendir DIR,$template_dir or die "could not open directory $template_dir: $!";
 

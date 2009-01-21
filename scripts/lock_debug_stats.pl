@@ -2,7 +2,7 @@
 
 #
 # \file testsuite.pl
-# \author Christian Kruse, <ckruse@wwwtech.de>
+# \author Christian Kruse, <cjk@wwwtech.de>
 #
 # This script makes some statistics for the locking mechanisms in the forum
 #

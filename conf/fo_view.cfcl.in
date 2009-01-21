@@ -9,7 +9,7 @@
 # $LastChangedBy$
 #
 
-ModulePath = "@libdir@/cforum/";
+ModulePath = "@CMAKE_INSTALL_LIBDIR_FULL@/cforum/";
 
 Load "flt_tplmode";
 Load "flt_http";
@@ -39,7 +39,7 @@ Load "flt_mailonpost";
 Load "flt_preview";
 Load "flt_cgiconfig";
 
-Syntax:PatternsDirectory       = "@sysconfdir@/cforum/patterns/";
+Syntax:PatternsDirectory       = "@CMAKE_INSTALL_SYSCONFDIR_FULL@/cforum/patterns/";
 Openclose:ThreadsOpenByDefault = "yes";
 Posting:DoQuote                = "yes";
 DF:ReadMode                = "thread"; # thread, list, nested
@@ -72,17 +72,17 @@ FV:DateFormatThreadList    = "%d. %m. %Y, %H:%M";
 FV:DateFormatThreadView    = "%d. %B %Y, %H:%M";
 
 WITH(FORUM1)
-  Frameset:TemplatesFrameset     = ("@sysconfdir@/cforum/templates/forum1/%s_%s_frameset.so", "@sysconfdir@/cforum/templates/forum1/%s_%s_blank.so");
+  Frameset:TemplatesFrameset     = ("@CMAKE_INSTALL_SYSCONFDIR_FULL@/cforum/templates/forum1/%s_%s_frameset.so", "@CMAKE_INSTALL_SYSCONFDIR_FULL@/cforum/templates/forum1/%s_%s_blank.so");
 
-  FV:TemplateForumBegin    = "@sysconfdir@/cforum/templates/forum1/%s_%s_forum_begin.so";
-  FV:TemplateForumEnd      = "@sysconfdir@/cforum/templates/forum1/%s_%s_forum_end.so";
-  Posting:TemplateForumThread   = "@sysconfdir@/cforum/templates/forum1/%s_%s_forum_thread.so";
-  List:TemplateForumList     = "@sysconfdir@/cforum/templates/forum1/%s_%s_forum_list.so";
-  Nested:TemplateForumNested   = "@sysconfdir@/cforum/templates/forum1/%s_%s_forum_nested.so";
+  FV:TemplateForumBegin    = "@CMAKE_INSTALL_SYSCONFDIR_FULL@/cforum/templates/forum1/%s_%s_forum_begin.so";
+  FV:TemplateForumEnd      = "@CMAKE_INSTALL_SYSCONFDIR_FULL@/cforum/templates/forum1/%s_%s_forum_end.so";
+  Posting:TemplateForumThread   = "@CMAKE_INSTALL_SYSCONFDIR_FULL@/cforum/templates/forum1/%s_%s_forum_thread.so";
+  List:TemplateForumList     = "@CMAKE_INSTALL_SYSCONFDIR_FULL@/cforum/templates/forum1/%s_%s_forum_list.so";
+  Nested:TemplateForumNested   = "@CMAKE_INSTALL_SYSCONFDIR_FULL@/cforum/templates/forum1/%s_%s_forum_nested.so";
 
-  Posting:TemplatePosting       = "@sysconfdir@/cforum/templates/forum1/%s_%s_forum_posting.so";
+  Posting:TemplatePosting       = "@CMAKE_INSTALL_SYSCONFDIR_FULL@/cforum/templates/forum1/%s_%s_forum_posting.so";
 
-  Mailonpost:MailDatabase          = "@localstatedir@/cforum/mail_forum1.db";
+  Mailonpost:MailDatabase          = "@CMAKE_INSTALL_LOCALSTATEDIR_FULL@/cforum/mail_forum1.db";
 end;
 
 

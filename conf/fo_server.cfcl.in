@@ -10,7 +10,7 @@
 #
 
 
-ModulePath = "@libdir@/cforum/";
+ModulePath = "@CMAKE_INSTALL_LIBDIR_FULL@/cforum/";
 
 Load "flt_tid_index";
 Load "flt_cftp";
@@ -32,13 +32,9 @@ FS:Chroot       = ("/home/ckruse/tmp/cforum/chroot/");
 # We want logfiles to be 2MB max
 FS:LogMaxSize   = 2097152;
 
-FS:ErrorLog     = "@localstatedir@/log/cf_errors";
-FS:StdLog       = "@localstatedir@/log/cf_stdlog";
-FS:PIDFile      = "@localstatedir@/run/cf_pid";
-
-# external interface
-FS:ExternPort   = 6666;
-# ExternInterface = "192.168.50.2";
+FS:ErrorLog     = "@CMAKE_INSTALL_LOCALSTATEDIR_FULL@/log/cf_errors";
+FS:StdLog       = "@CMAKE_INSTALL_LOCALSTATEDIR_FULL@/log/cf_stdlog";
+FS:PIDFile      = "@CMAKE_INSTALL_LOCALSTATEDIR_FULL@/run/cf_pid";
 
 FS:SortThreads  = "ascending";
 FS:SortMessages = "ascending";
@@ -49,9 +45,13 @@ FS:MainFileMaxPostings = 2000;
 FS:MainFileMaxThreads  = 150;
 
 WITH(FORUM1)
-  Xmlstorage:MessagePath = "@localstatedir@/cforum/messages/forum1/";
-  Xmlstorage:ArchivePath = "@localstatedir@/cforum/archive/forum1/";
-  Registerednames:DB     = "@localstatedir@/cforum/registered_names_forum1.db";
+  # external interface
+  FS:ExternPort   = 6666;
+  # ExternInterface = "192.168.50.2";
+
+  Xmlstorage:MessagePath = "@CMAKE_INSTALL_LOCALSTATEDIR_FULL@/cforum/messages/forum1/";
+  Xmlstorage:ArchivePath = "@CMAKE_INSTALL_LOCALSTATEDIR_FULL@/cforum/archive/forum1/";
+  Registerednames:DB     = "@CMAKE_INSTALL_LOCALSTATEDIR_FULL@/cforum/registered_names_forum1.db";
 end;
 
 # eof

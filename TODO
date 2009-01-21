@@ -1,5 +1,6 @@
 TODO:
 
+- (buildsystem) Reinclude docs and Doxygen in build
 - Write NNTP Interface
 - Handling of multiple entries in thread id index in fo_threadlookup and
   flt_handle404

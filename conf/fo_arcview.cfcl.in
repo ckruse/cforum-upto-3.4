@@ -9,7 +9,7 @@
 # $LastChangedBy$
 #
 
-ModulePath = "@libdir@/cforum/";
+ModulePath = "@CMAKE_INSTALL_LIBDIR_FULL@/cforum/";
 
 Load "flt_http";
 Load "flt_posting";
@@ -19,7 +19,7 @@ Load "flt_directives";
 Load "flt_syntax";
 Load "flt_xmlarc";
 
-AV:PatternsDirectory  = "@sysconfdir@/cforum/patterns/";
+AV:PatternsDirectory  = "@CMAKE_INSTALL_SYSCONFDIR_FULL@/cforum/patterns/";
 AV:SortYearList       = "ascending"; # ascending/descending
 AV:SortMonthList      = "descending"; # ascending/descending
 AV:SortThreadList     = "ascending"; # ascending/descending
@@ -33,13 +33,13 @@ AV:CacheLevel         = 6;
 
 
 WITH(FORUM1)
-  XmlArc:ArchivePath    = "@localstatedir@/cforum/archive/forum1/";
-  AV:CacheDir           = "@localstatedir@/cforum/cache/forum1/";
+  XmlArc:ArchivePath    = "@CMAKE_INSTALL_LOCALSTATEDIR_FULL@/cforum/archive/forum1/";
+  AV:CacheDir           = "@CMAKE_INSTALL_LOCALSTATEDIR_FULL@/cforum/cache/forum1/";
 
-  AV:YearsTemplate      = "@sysconfdir@/cforum/templates/forum1/%s_%s_arcyears.so";
-  AV:MonthsTemplate     = "@sysconfdir@/cforum/templates/forum1/%s_%s_arcmonths.so";
+  AV:YearsTemplate      = "@CMAKE_INSTALL_SYSCONFDIR_FULL@/cforum/templates/forum1/%s_%s_arcyears.so";
+  AV:MonthsTemplate     = "@CMAKE_INSTALL_SYSCONFDIR_FULL@/cforum/templates/forum1/%s_%s_arcmonths.so";
 
-  AV:ThreadTemplate     = "@sysconfdir@/cforum/templates/forum1/%s_%s_arcthread.so";
-  AV:ThreadListTemplate = "@sysconfdir@/cforum/templates/forum1/%s_%s_arcthreadlist.so";
+  AV:ThreadTemplate     = "@CMAKE_INSTALL_SYSCONFDIR_FULL@/cforum/templates/forum1/%s_%s_arcthread.so";
+  AV:ThreadListTemplate = "@CMAKE_INSTALL_SYSCONFDIR_FULL@/cforum/templates/forum1/%s_%s_arcthreadlist.so";
 end;
 

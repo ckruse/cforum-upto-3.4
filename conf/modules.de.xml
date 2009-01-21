@@ -10,15 +10,22 @@
 
   <directive name="ReplaceSmileys" arguments="1">
     <argument paramname="replacesmileys" ifNotCommitted="no">
-      <validate>^(yes|no)$</validate>
+      <validate>^(?:yes|no)$</validate>
       <error>Sollen Text-Smileys durch grafische ersetzt werden? Geben Sie &quot;ja&quot; oder &quot;nein&quot; an!</error>
+    </argument>
+  </directive>
+
+  <directive name="SpellCheckerDefaultActivated" arguments="1">
+    <argument paramname="spellcheckerdefaultactivated" ifNotCommitted="no">
+      <validate>^(?:yes|no)$</validate>
+      <error>Soll die Rechtschreib-Prï¿½fung per Default aktiviert sein? Geben Sie &quot;ja&quot; oder &quot;nein&quot; an!</error>
     </argument>
   </directive>
 
   <directive name="TPLMode" arguments="1">
     <argument paramname="tplmode">
       <validate>^\S+$</validate>
-      <error>Bitte geben Sie einen gültigen Darstellungsmodus an!</error>
+      <error>Bitte geben Sie einen gï¿½ltigen Darstellungsmodus an!</error>
     </argument>
   </directive>
 
@@ -32,88 +39,88 @@
   <directive name="OwnCSSFile" arguments="1">
     <argument paramname="owncssfile">
       <validate type="url"/>
-      <error>Bitte geben Sie eine gültige URL für die eigene CSS-Datei an!</error>
+      <error>Bitte geben Sie eine gï¿½ltige URL fï¿½r die eigene CSS-Datei an!</error>
     </argument>
   </directive>
 
   <directive name="OverwriteStandardCSS" arguments="1">
     <argument paramname="overwritecss" ifNotCommitted="no">
-      <validate>^(yes|no)$</validate>
-      <error>Bitte geben Sie bei der Frage, ob Ihre CSS-Datei die Standard-CSS-Datei ergänzen soll, &quot;ja&quot; oder &quot;nein&quot; an!</error>
+      <validate>^(?:yes|no)$</validate>
+      <error>Bitte geben Sie bei der Frage, ob Ihre CSS-Datei die Standard-CSS-Datei ergï¿½nzen soll, 'ja' oder 'nein' an!</error>
     </argument>
   </directive>
 
   <directive name="OwnJSFile" arguments="1">
     <argument paramname="ownjsfile">
       <validate type="url"/>
-      <error>Bitte geben Sie eine gültige URL für die eigene CSS-Datei an!</error>
+      <error>Bitte geben Sie eine gï¿½ltige URL fï¿½r die eigene CSS-Datei an!</error>
     </argument>
   </directive>
 
   <directive name="OwnXSLTFile" arguments="2">
     <argument paramname="ownxsltfile_list">
       <validate type="url"/>
-      <error>Bitte geben Sie eine gültige URL für die eigene XSLT-Datei für die Forumshauptseite an!</error>
+      <error>Bitte geben Sie eine gï¿½ltige URL fï¿½r die eigene XSLT-Datei fï¿½r die Forumshauptseite an!</error>
     </argument>
 
     <argument paramname="ownxsltfile_post">
       <validate type="url"/>
-      <error>Bitte geben Sie eine gültige URL für die eigene XSLT-Datei für die Postingseiten an!</error>
+      <error>Bitte geben Sie eine gï¿½ltige URL fï¿½r die eigene XSLT-Datei fï¿½r die Postingseiten an!</error>
     </argument>
   </directive>
 
   <directive name="TextBox" arguments="2">
     <argument paramname="tboxw">
       <validate>^\d+$</validate>
-      <error>Bitte geben Sie für die Spalten der Textbox eine ganze Zahl größer 0 ein!</error>
+      <error>Bitte geben Sie fï¿½r die Spalten der Textbox eine ganze Zahl grï¿½ï¿½er 0 ein!</error>
     </argument>
 
     <argument paramname="tboxh">
       <validate>^\d+$</validate>
-      <error>Bitte geben Sie für die Textbox-Reihen eine ganze Zahl größer 0 ein!</error>
+      <error>Bitte geben Sie fï¿½r die Textbox-Reihen eine ganze Zahl grï¿½ï¿½er 0 ein!</error>
     </argument>
   </directive>
 
   <directive name="ActivePostingColor" arguments="2">
     <argument paramname="activepostingcolorf">
-      <validate>^#([\da-fA-F]{3}|[\da-fA-F]{6})$</validate>
-      <error>Bitte geben Sie eine valide Vordergrundfarbe für aktive Nachrichten an!</error>
+      <validate>^#(?:[\da-fA-F]{3}|[\da-fA-F]{6})$</validate>
+      <error>Bitte geben Sie eine valide Vordergrundfarbe fï¿½r aktive Nachrichten an!</error>
     </argument>
     <argument paramname="activepostingcolorb">
-      <validate>^#([\da-fA-F]{3}|[\da-fA-F]{6})$</validate>
-      <error>Bitte geben Sie eine valide Hintergrundfarbe für aktive Nachrichten an!</error>
+      <validate>^#(?:[\da-fA-F]{3}|[\da-fA-F]{6})$</validate>
+      <error>Bitte geben Sie eine valide Hintergrundfarbe fï¿½r aktive Nachrichten an!</error>
     </argument>
   </directive>
 
   <directive name="FontSize" arguments="1">
     <argument paramname="fontsize">
       <validate>^\d+(\.\d+)?(px|pt|mm|cm|pc|in)$</validate>
-      <error>Bitte geben Sie eine valide Schriftgröße mit Einheit an! Beispiel: 10pt</error>
+      <error>Bitte geben Sie eine valide Schriftgrï¿½ï¿½e mit Einheit an! Beispiel: 10pt</error>
      </argument>
   </directive>
 
   <directive name="FontFamily" arguments="1">
     <argument paramname="fontfamily">
-      <validate>^(.*, *((serif|sans-serif|cursive|fantasy|monospace)|default))$</validate>
+      <validate>^(?:.*, *(?:(?:serif|sans-serif|cursive|fantasy|monospace)|default))$</validate>
       <error>Bitte geben Sie eine valide Schriftart an!</error>
     </argument>
   </directive>
 
   <directive name="FontColor" arguments="1">
     <argument paramname="fontcol">
-      <validate>^#([\da-fA-F]{3}|[\da-fA-F]{6})$</validate>
+      <validate>^#(?:[\da-fA-F]{3}|[\da-fA-F]{6})$</validate>
       <error>Bitte geben Sie eine valide Standard-Schriftfarbe an!</error>
     </argument>
   </directive>
 
   <directive name="QuoteColor" arguments="2">
     <argument paramname="quoteforecol">
-      <validate>^#([\da-fA-F]{3}|[\da-fA-F]{6})$</validate>
-      <error>Bitte geben Sie eine valide Schriftfarbe für Zitate an!</error>
+      <validate>^#(?:[\da-fA-F]{3}|[\da-fA-F]{6})$</validate>
+      <error>Bitte geben Sie eine valide Schriftfarbe fï¿½r Zitate an!</error>
     </argument>
     <argument paramname="quotebackcol">
-      <validate>^#([\da-fA-F]{3}|[\da-fA-F]{6})$</validate>
-      <error>Bitte geben Sie eine valide Hintergrundfarbe für Zitate an!</error>
+      <validate>^#(?:[\da-fA-F]{3}|[\da-fA-F]{6})$</validate>
+      <error>Bitte geben Sie eine valide Hintergrundfarbe fï¿½r Zitate an!</error>
     </argument>
   </directive>
 
@@ -126,12 +133,12 @@
 
   <directive name="OwnPostingsColors" arguments="2">
     <argument paramname="ownforepostcol">
-      <validate>^#([\da-fA-F]{3}|[\da-fA-F]{6})$</validate>
-      <error>Bitte geben Sie eine valide Schriftfarbe für Ihre eigenen Nachrichten an!</error>
+      <validate>^#(?:[\da-fA-F]{3}|[\da-fA-F]{6})$</validate>
+      <error>Bitte geben Sie eine valide Schriftfarbe fï¿½r Ihre eigenen Nachrichten an!</error>
     </argument>
     <argument paramname="ownbackpostcol">
-      <validate>^#([\da-fA-F]{3}|[\da-fA-F]{6})$</validate>
-      <error>Bitte geben Sie eine valide Hintergrundfarbe für Ihre eigenen Nachrichten an!</error>
+      <validate>^#(?:[\da-fA-F]{3}|[\da-fA-F]{6})$</validate>
+      <error>Bitte geben Sie eine valide Hintergrundfarbe fï¿½r Ihre eigenen Nachrichten an!</error>
     </argument>
   </directive>
 
@@ -145,7 +152,7 @@
   <directive name="SortThreads" arguments="1">
     <argument paramname="sortthreads">
       <validate>^(ascending|descending|newestfirst|default)$</validate>
-      <error>Wie sollen die Threads sortiert werden? Bitte geben Sie &quot;ansteigend&quot;, &quot;absteigend&quot;, &quot;nach jüngstem Posting&quot; oder &quot;Default-Reihenfolge&quot; an!</error>
+      <error>Wie sollen die Threads sortiert werden? Bitte geben Sie &quot;ansteigend&quot;, &quot;absteigend&quot;, &quot;nach jï¿½ngstem Posting&quot; oder &quot;Default-Reihenfolge&quot; an!</error>
     </argument>
   </directive>
 
@@ -163,8 +170,8 @@
     </argument>
   </directive>
 
-  <directive name="HideCategoriesInThreadView" arguments="1">
-    <argument paramname="hidecategoriesinthreadview" ifNotCommitted="yes">
+  <directive name="HideCategoriesInThreadView" arguments="1" ifNotCommitted="no">
+    <argument paramname="hidecategoriesinthreadview">
       <validate>^(yes|no)$</validate>
       <error>Sollen ausgeblendete Kategorien auch in der Thread-Ansicht ausgeblendet werden? Bitte geben Sie &quot;ja&quot; oder &quot;nein&quot; an!</error>
     </argument>
@@ -173,21 +180,21 @@
   <directive name="LinkTemplate" arguments="1">
     <argument paramname="linktemplate">
       <validate>.?</validate>
-      <error>Bitte geben Sie ein gültiges Link-Template an!</error>
+      <error>Bitte geben Sie ein gï¿½ltiges Link-Template an!</error>
     </argument>
   </directive>
 
   <directive name="ReplaceNormal" arguments="1">
     <argument paramname="replacenormal" ifNotCommitted="no">
-      <validate>^(yes|no)$</validate>
-      <error>Möchten Sie, dass %t beim Link-Template durch die URL ersetzt wird, wenn kein Link-Titel angegeben wurde? Bitte geben Sie &quot;Ja&quot; oder &quot;Nein&quot; an!</error>
+      <validate>^(?:yes|no)$</validate>
+      <error>Mï¿½chten Sie, dass %t beim Link-Template durch die URL ersetzt wird, wenn kein Link-Titel angegeben wurde? Bitte geben Sie &quot;Ja&quot; oder &quot;Nein&quot; an!</error>
     </argument>
   </directive>
 
   <directive name="LinkShowIcons" arguments="1">
     <argument paramname="LinkShowIcons" ifNotCommitted="no">
-      <validate>^(yes|no)$</validate>
-      <error>Möchten Sie Link-Icons benutzen? Bitte geben Sie &quot;ja&quot; oder &quot;nein&quot; an!</error>
+      <validate>^(?:yes|no)$</validate>
+      <error>Mï¿½chten Sie Link-Icons benutzen? Bitte geben Sie &quot;ja&quot; oder &quot;nein&quot; an!</error>
     </argument>
   </directive>
 
@@ -200,7 +207,7 @@
 
   <directive name="Interesting204" arguments="1">
     <argument paramname="interesting_send204" ifNotCommitted="no">
-      <validate>^(yes|no)$</validate>
+      <validate>^(?:yes|no)$</validate>
       <error>Soll die Interessant-Markierung &quot;204 No Content&quot; als Antwort liefern? Bitte geben Sie &quot;ja&quot; oder &quot;nein&quot; an!</error>
     </argument>
   </directive>
@@ -208,7 +215,7 @@
   <directive name="VotingUseJS" arguments="1">
     <argument paramname="votingusejs" ifNotCommitted="no">
       <validate>^(yes|no)$</validate>
-      <error>Soll JavaScript für das Voting-Programm genutzt werden? Bitte geben Sie &quot;ja&quot; oder &quot;nein&quot; an!</error>
+      <error>Soll JavaScript fï¿½r das Voting-Programm genutzt werden? Bitte geben Sie &quot;ja&quot; oder &quot;nein&quot; an!</error>
     </argument>
   </directive>
 
@@ -221,14 +228,14 @@
 
   <directive name="DeletedUseXMLHttp" arguments="1">
     <argument paramname="deletedusexmlhttp" ifNotCommitted="no">
-      <validate>^(yes|no)$</validate>
+      <validate>^(?:yes|no)$</validate>
       <error>Soll JavaScript zum Ausblenden von Threads benutzt werden? Bitte geben Sie &quot;Ja&quot; oder &quot;Nein&quot; ein!</error>
     </argument>
   </directive>
 
   <directive name="VisitedUseXMLHttp" arguments="1">
     <argument paramname="visitedusexmlhttp" ifNotCommitted="no">
-      <validate>^(yes|no)$</validate>
+      <validate>^(?:yes|no)$</validate>
       <error>Soll JavaScript benutzt werden, um Threads als gelesen zu markieren? Bitte geben Sie &quot;Ja&quot; oder &quot;Nein&quot; ein!</error>
     </argument>
   </directive>
@@ -241,23 +248,23 @@
   </directive>
 
   <directive name="ThreadsOpenByDefault" arguments="1">
-    <argument paramname="threadsopen" ifNotCommitted="yes">
-      <validate>^(yes|no)$</validate>
-      <error>Sollen Threads per Default geöffnet oder geschlossen dargestellt werden? Bitte geben Sie &quot;Geöffnet&quot; oder &quot;Geschlossen&quot; an!</error>
+    <argument paramname="threadsopen" ifNotCommitted="no">
+      <validate>^(?:yes|no)$</validate>
+      <error>Sollen Threads per Default geï¿½ffnet oder geschlossen dargestellt werden? Bitte geben Sie &quot;Geï¿½ffnet&quot; oder &quot;Geschlossen&quot; an!</error>
     </argument>
   </directive>
 
   <directive name="OpenThreadIfNew" arguments="1">
     <argument paramname="openifnew" ifNotCommitted="no">
-      <validate>^(yes|no)$</validate>
-      <error>Sollen Threads automatisch geöffnet werden, wenn sie ungelesene Postings enthalten? Bitte geben Sie &quot;Ja&quot; oder &quot;Nein&quot; an!</error>
+      <validate>^(?:yes|no)$</validate>
+      <error>Sollen Threads automatisch geï¿½ffnet werden, wenn sie ungelesene Postings enthalten? Bitte geben Sie &quot;Ja&quot; oder &quot;Nein&quot; an!</error>
     </argument>
   </directive>
 
   <directive name="UseJavaScript" arguments="1">
     <argument paramname="usejs" ifNotCommitted="no">
-      <validate>^(yes|no)$</validate>
-      <error>Soll JavaScript zum öffnen/schliessen der Threads genutzt werden? Bitte geben Sie &quot;Ja&quot; oder &quot;Nein&quot; an!</error>
+      <validate>^(?:yes|no)$</validate>
+      <error>Soll JavaScript zum ï¿½ffnen/schliessen der Threads genutzt werden? Bitte geben Sie &quot;Ja&quot; oder &quot;Nein&quot; an!</error>
     </argument>
   </directive>
 
@@ -292,20 +299,20 @@
   <directive name="ThreadReturnAnchor" arguments="1">
     <argument paramname="threadreturnanchor">
       <validate>^(yes|no)$</validate>
-      <error>Soll der &quot;Zurück zum Forum&quot;-Link in Postings per Anker auf den eben besuchten Thread zeigen? Geben Sie &quot;Ja&quot; oder &quot;Nein&quot; an!</error>
+      <error>Soll der &quot;Zurï¿½ck zum Forum&quot;-Link in Postings per Anker auf den eben besuchten Thread zeigen? Geben Sie &quot;Ja&quot; oder &quot;Nein&quot; an!</error>
     </argument>
   </directive>
 
   <directive name="ShowSig" arguments="1">
     <argument paramname="showsig" ifNotCommitted="yes">
-      <validate>^(yes|no)$</validate>
+      <validate>^(?:yes|no)$</validate>
       <error>Bitte geben Sie &quot;Ja&quot; oder &quot;Nein&quot; ein!</error>
     </argument>
   </directive>
 
   <directive name="DeletedUseCheckboxes" arguments="1">
     <argument paramname="deletedusecheckbox" ifNotCommitted="no">
-      <validate>^(yes|no)$</validate>
+      <validate>^(?:yes|no)$</validate>
       <error>Sollen Checkboxen zum Ausblenden von Threads benutzt werden? Bitte geben Sie &quot;Ja&quot; oder &quot;Nein&quot; ein!</error>
     </argument>
   </directive>
@@ -333,17 +340,17 @@
 
   <directive name="VisitedPostingsColors" arguments="2">
     <argument paramname="highlightvisiforecol">
-      <validate>^#([\da-fA-F]{3}|[\da-fA-F]{6})$</validate>
-      <error>Bitte geben Sie eine valide Vordergrundfarbe für Hervorhebung bereits besuchter Nachrichten an!</error>
+      <validate>^#(?:[\da-fA-F]{3}|[\da-fA-F]{6})$</validate>
+      <error>Bitte geben Sie eine valide Vordergrundfarbe fï¿½r Hervorhebung bereits besuchter Nachrichten an!</error>
     </argument>
     <argument paramname="highlightvisibackcol">
-      <validate>^#([\da-fA-F]{3}|[\da-fA-F]{6})$</validate>
-      <error>Bitte geben Sie eine valide Hintergrundfarbe für die Hervorhebung bereits besuchter Nachrichten an!</error>
+      <validate>^#(?:[\da-fA-F]{3}|[\da-fA-F]{6})$</validate>
+      <error>Bitte geben Sie eine valide Hintergrundfarbe fï¿½r die Hervorhebung bereits besuchter Nachrichten an!</error>
     </argument>
   </directive>
 
   <directive name="SetLinkTags" arguments="1">
-    <argument paramname="fltlinksettags" ifNotCommitted="yes">
+    <argument paramname="fltlinksettags" ifNotCommitted="no">
       <validate>^(yes|no)$</validate>
       <error>Bitte geben Sie &quot;ja&quot; oder &quot;nein&quot; bei der Frage nach den Link-Elementen an!</error>
     </argument>
@@ -358,35 +365,35 @@
 
   <directive name="TipOfTheDayActivate" arguments="1">
     <argument paramname="totdactivate" ifNotCommitted="no">
-      <validate>^(yes|no)$</validate>
+      <validate>^(?:yes|no)$</validate>
       <error>Sollen die Tips des Tages angezeigt werden? Bitte geben Sie &quot;Ja&quot; oder &quot;Nein&quot; an!</error>
     </argument>
   </directive>
 
   <directive name="EnableMotd" arguments="1">
     <argument paramname="enablemotd" ifNotCommitted="no">
-      <validate>^(yes|no)$</validate>
+      <validate>^(?:yes|no)$</validate>
       <error>Soll die Nachricht des Tages angezeigt werden? Bitte geben Sie &quot;Ja&quot; oder &quot;Nein&quot; an!</error>
     </argument>
   </directive>
 
   <directive name="ShowIframeAsLink" arguments="1">
     <argument paramname="showiframeaslink" ifNotCommitted="no">
-      <validate>^(yes|no)$</validate>
+      <validate>^(?:yes|no)$</validate>
       <error>Sollen IFrames als Links angezeigt werden? Bitte geben Sie &quot;Ja&quot; oder &quot;Nein&quot; an!</error>
     </argument>
   </directive>
 
   <directive name="ShowImageAsLink" arguments="1">
     <argument paramname="showimageaslink" ifNotCommitted="no">
-      <validate>^(yes|no)$</validate>
+      <validate>^(?:yes|no)$</validate>
       <error>Sollen Bilder als Links angezeigt werden? Bitte geben Sie &quot;Ja&quot; oder &quot;Nein&quot; an!</error>
     </argument>
   </directive>
 
   <directive name="ShowUserImageAsLink" arguments="1">
     <argument paramname="showuserimageaslink" ifNotCommitted="no">
-      <validate>^(yes|no)$</validate>
+      <validate>^(?:yes|no)$</validate>
       <error>Sollen die Benutzer-Bilder als Links angezeigt werden? Bitte geben Sie &quot;Ja&quot; oder &quot;Nein&quot; an!</error>
     </argument>
   </directive>
@@ -400,7 +407,7 @@
 
   <directive name="RegisteredName" arguments="1">
     <argument paramname="registeredname" ifNotCommitted="no">
-      <validate>^(yes|no)$</validate>
+      <validate>^(?:yes|no)$</validate>
       <error>Soll Ihr Name registriert werden? Bitte geben Sie &quot;ja&quot; oder &quot;nein&quot; an!</error>
     </argument>
   </directive>
@@ -408,35 +415,35 @@
   <directive name="EMail" arguments="1">
     <argument paramname="email">
       <validate type="email"/>
-      <error>Ihre Angabe ist keine syntaktisch korrekte E-Mail-Adresse. Sie können dieses Feld auch leer lassen.</error>
+      <error>Ihre Angabe ist keine syntaktisch korrekte E-Mail-Adresse. Sie kï¿½nnen dieses Feld auch leer lassen.</error>
     </argument>
   </directive>
 
   <directive name="UserMail" arguments="1">
     <argument paramname="usermail">
       <validate type="email"/>
-      <error>Welche E-Mail-Adresse soll zum abonnieren von Threads benutzt werden? Ihre Angabe ist keine syntaktisch korrekte E-Mail-Adresse. Sie können dieses Feld auch leer lassen.</error>
+      <error>Welche E-Mail-Adresse soll zum abonnieren von Threads benutzt werden? Ihre Angabe ist keine syntaktisch korrekte E-Mail-Adresse. Sie kï¿½nnen dieses Feld auch leer lassen.</error>
     </argument>
   </directive>
 
   <directive name="HomepageUrl" arguments="1">
     <argument paramname="hp">
       <validate type="http-url"/>
-      <error>Bitte geben Sie eine korrekte Homepage-URL an! Sie können dieses Feld auch leer lassen.</error>
+      <error>Bitte geben Sie eine korrekte Homepage-URL an! Sie kï¿½nnen dieses Feld auch leer lassen.</error>
     </argument>
   </directive>
 
   <directive name="ImageUrl" arguments="1">
     <argument paramname="image">
       <validate type="http-url"/>
-      <error>Bitte geben Sie eine korrekte Bild-URL an! Sie können dieses Feld auch leer lassen.</error>
+      <error>Bitte geben Sie eine korrekte Bild-URL an! Sie kï¿½nnen dieses Feld auch leer lassen.</error>
     </argument>
   </directive>
 
   <directive name="Hi" arguments="1">
     <argument paramname="hi">
       <validate>.*</validate>
-      <error>Ihre Begrüßung scheint entweder zu lang oder zu kurz zu sein.</error>
+      <error>Ihre Begrï¿½ï¿½ung scheint entweder zu lang oder zu kurz zu sein.</error>
     </argument>
   </directive>
 
@@ -456,7 +463,7 @@
 
   <directive name="DoQuote" arguments="1">
     <argument paramname="doquote">
-      <validate>^(yes|no)$</validate>
+      <validate>^(?:yes|no)$</validate>
       <error>Sollen Nachrichten im Antwortfeld zitiert werden? Bitte geben Sie &quot;Ja&quot; oder &quot;Nein&quot; an!</error>
     </argument>
   </directive>
@@ -470,22 +477,22 @@
 
   <directive name="RedirectOnPost" arguments="1">
     <argument paramname="redrctonpost" ifNotCommitted="no">
-      <validate>^(yes|no)$</validate>
+      <validate>^(?:yes|no)$</validate>
       <error>Bitte geben Sie &quot;Ja&quot; oder &quot;Nein&quot; an!</error>
     </argument>
   </directive>
 
   <directive name="GeneratePreview" arguments="1">
     <argument paramname="prev" ifNotCommitted="no">
-      <validate>^(yes|no)$</validate>
+      <validate>^(?:yes|no)$</validate>
       <error>Bitte geben Sie &quot;Ja&quot; oder &quot;Nein&quot; ein</error>
     </argument>
   </directive>
 
   <directive name="PreviewSwitchType" arguments="1">
     <argument paramname="previewswitchtype">
-      <validate>^(checkbox|button)$</validate>
-      <error>Bitte wählen Sie &quot;Checkbox&quot; oder &quot;Button&quot;!</error>
+      <validate>^(?:checkbox|button)$</validate>
+      <error>Bitte wï¿½hlen Sie &quot;Checkbox&quot; oder &quot;Button&quot;!</error>
     </argument>
   </directive>
 
@@ -513,21 +520,21 @@
   <directive name="ScoringNormalColor" arguments="1">
     <argument paramname="scoringnormalcol">
       <validate>^#[0-9a-fA-f]{3,6}$</validate>
-      <error>Mit welcher Farbe sollen neutral gepunktete Postings gefärbt werden? Bitte geben Sie eine korrekte Farbe an!</error>
+      <error>Mit welcher Farbe sollen neutral gepunktete Postings gefï¿½rbt werden? Bitte geben Sie eine korrekte Farbe an!</error>
     </argument>
   </directive>
 
   <directive name="ScoringMaxColor" arguments="1">
     <argument paramname="scoringmaxcol">
       <validate>^#[0-9a-fA-f]{3,6}$</validate>
-      <error>Mit welcher Farbe sollen maximal gut gepunktete Postings gefärbt werden? Bitte geben Sie eine korrekte Farbe an!</error>
+      <error>Mit welcher Farbe sollen maximal gut gepunktete Postings gefï¿½rbt werden? Bitte geben Sie eine korrekte Farbe an!</error>
     </argument>
   </directive>
 
   <directive name="ScoringMinColor" arguments="1">
     <argument paramname="scoringmincol">
       <validate>^#[0-9a-fA-f]{3,6}$</validate>
-      <error>Mit welcher Farbe sollen maximal schlecht gepunktete Postings gefärbt werden? Bitte geben Sie eine korrekte Farbe an!</error>
+      <error>Mit welcher Farbe sollen maximal schlecht gepunktete Postings gefï¿½rbt werden? Bitte geben Sie eine korrekte Farbe an!</error>
     </argument>
   </directive>
 
@@ -548,52 +555,52 @@
   <directive name="ActivateLiveFilter" arguments="1">
     <argument paramname="activatelivefilter" ifNotCommitted="no">
       <validate>^(yes|no)$</validate>
-      <error>Möchten Sie den Live-Filter aktivieren? Bitte geben Sie hier &quot;ja&quot; oder &quot;nein&quot; an!</error>
+      <error>Mï¿½chten Sie den Live-Filter aktivieren? Bitte geben Sie hier &quot;ja&quot; oder &quot;nein&quot; an!</error>
     </argument>
   </directive>
 
   <directive name="LiveFilterOverwrite" arguments="1">
     <argument paramname="livefilteroverwrite" ifNotCommitted="no">
       <validate>^(yes|no)$</validate>
-      <error>Möchten Sie, dass der Live-Filter bereits ausgeblendete Postings (z. B. durch die BlackList) wieder einblendent? Bitte geben Sie &quot;ja&quot; oder &quot;nein&quot; an!</error>
+      <error>Mï¿½chten Sie, dass der Live-Filter bereits ausgeblendete Postings (z. B. durch die BlackList) wieder einblendent? Bitte geben Sie &quot;ja&quot; oder &quot;nein&quot; an!</error>
     </argument>
   </directive>
 
   <directive name="WhiteList" arguments="1">
     <argument paramname="whitelst">
-      <validate>^([^,]+,)*[^,]+$</validate>
-      <error>Bitte geben Sie für die Whitelist eine durch Kommata getrennte Liste von Namen an!</error>
+      <validate>^(?:[^,]+,)*[^,]+$</validate>
+      <error>Bitte geben Sie fï¿½r die Whitelist eine durch Kommata getrennte Liste von Namen an!</error>
     </argument>
   </directive>
 
   <directive name="WhiteListColors" arguments="2">
     <argument paramname="whitelistforecol">
-      <validate>^#([\da-fA-F]{3}|[\da-fA-F]{6})$</validate>
-      <error>Bitte geben Sie eine valide Vordergrundfarbe für die Whitelist an!</error>
+      <validate>^#(?:[\da-fA-F]{3}|[\da-fA-F]{6})$</validate>
+      <error>Bitte geben Sie eine valide Vordergrundfarbe fï¿½r die Whitelist an!</error>
     </argument>
     <argument paramname="whitelistbackcol">
-      <validate>^#([\da-fA-F]{3}|[\da-fA-F]{6})$</validate>
-      <error>Bitte geben Sie eine valide Hintergrundfarbe für die Whitelist an!</error>
+      <validate>^#(?:[\da-fA-F]{3}|[\da-fA-F]{6})$</validate>
+      <error>Bitte geben Sie eine valide Hintergrundfarbe fï¿½r die Whitelist an!</error>
     </argument>
   </directive>
 
   <directive name="BlackList" arguments="1">
     <argument paramname="blacklist">
       <validate>^([^,]+,)*[^,]+$</validate>
-      <error>Bitte geben Sie für die Blacklist eine durch Kommata getrennte Liste von Namen an!</error>
+      <error>Bitte geben Sie fï¿½r die Blacklist eine durch Kommata getrennte Liste von Namen an!</error>
     </argument>
   </directive>
 
   <directive name="ShowBlacklistFollowups" arguments="1">
     <argument paramname="blacklistfollowups" ifNotCommitted="no">
-      <validate>^(yes|no)$</validate>
+      <validate>^(?:yes|no)$</validate>
       <error>Bitte geben Sie auf die Frage, ob Antworten auf durch die Blacklist ausgeblendete Postings angezeigt werden sollen, ja oder nein an.</error>
     </argument>
   </directive>
 
   <directive name="BlacklistInThreadview" arguments="1">
-    <argument paramname="blacklistthreadview" ifNotCommitted="yes">
-      <validate>^(yes|no)$</validate>
+    <argument paramname="blacklistthreadview" ifNotCommitted="no">
+      <validate>^(?:yes|no)$</validate>
       <error>Soll die Blacklist auch in der Thread-Anzeige wirken? Bitte geben Sie &quot;ja&quot; oder &quot;nein&quot; an!</error>
     </argument>
   </directive>
@@ -601,18 +608,18 @@
   <directive name="HighlightCategories" arguments="1">
     <argument paramname="highlightcats">
       <validate>.</validate>
-      <error>Bitte geben Sie eine korrekte Kategorie für die Hervorhebung an!</error>
+      <error>Bitte geben Sie eine korrekte Kategorie fï¿½r die Hervorhebung an!</error>
     </argument>
   </directive>
 
   <directive name="CategoryHighlightColors" arguments="2">
     <argument paramname="highlightcatforecol">
-      <validate>^#([\da-fA-F]{3}|[\da-fA-F]{6})$</validate>
-      <error>Bitte geben Sie eine korrekte Vordergrundfarbe für die Hervorhebung von Kategorien an!</error>
+      <validate>^#(?:[\da-fA-F]{3}|[\da-fA-F]{6})$</validate>
+      <error>Bitte geben Sie eine korrekte Vordergrundfarbe fï¿½r die Hervorhebung von Kategorien an!</error>
     </argument>
     <argument paramname="highlightcatbackcol">
-      <validate>^#([\da-fA-F]{3}|[\da-fA-F]{6})$</validate>
-      <error>Bitte geben Sie eine korrekte Hintergrundfarbe für die Hervorhebung von Kategorien an!</error>
+      <validate>^#(?:[\da-fA-F]{3}|[\da-fA-F]{6})$</validate>
+      <error>Bitte geben Sie eine korrekte Hintergrundfarbe fï¿½r die Hervorhebung von Kategorien an!</error>
     </argument>
   </directive>
 
@@ -626,21 +633,21 @@
   <directive name="ShowFrom" arguments="1">
     <argument paramname="showfrom" parse="date">
       <validate>^\d\d?\.\s*\d\d?\.\s*\d\d\d\d$</validate>
-      <error>Ab welchem Datum möchten Sie die Forumshauptdatei angezeigt bekommen? Bitte geben Sie ein valides Datum an!</error>
+      <error>Ab welchem Datum mï¿½chten Sie die Forumshauptdatei angezeigt bekommen? Bitte geben Sie ein valides Datum an!</error>
     </argument>
   </directive>
 
   <directive name="ShowUntil" arguments="1">
     <argument paramname="showuntil" parse="date">
       <validate>^\d\d?\.\s*\d\d?\.\s*\d\d\d\d$</validate>
-      <error>Bis zu welchem Datum möchten Sie die Forumshauptdatei angezeigt bekommen? Bitte geben Sie ein valides Datum an!</error>
+      <error>Bis zu welchem Datum mï¿½chten Sie die Forumshauptdatei angezeigt bekommen? Bitte geben Sie ein valides Datum an!</error>
     </argument>
   </directive>
 
   <directive name="AutoReload" arguments="1">
     <argument paramname="autoreload">
       <validate>^\d+$</validate>
-      <error>Bitte geben Sie für den automatischen Reload eine Zahl zwischen 2 und 30 ein!</error>
+      <error>Bitte geben Sie fï¿½r den automatischen Reload eine Zahl zwischen 2 und 30 ein!</error>
     </argument>
   </directive>
 
@@ -668,14 +675,14 @@
   <directive name="AdminUseJS" arguments="1" for="admin">
     <argument paramname="adminusejs" ifNotCommitted="no">
       <validate>^(yes|no)$</validate>
-      <error>Soll JavaScript genutzt werden, um Administrator-Aktionen auszuführen? Bitte geben Sie &quot;Ja&quot; oder &quot;Nein&quot; an!</error>
+      <error>Soll JavaScript genutzt werden, um Administrator-Aktionen auszufï¿½hren? Bitte geben Sie &quot;Ja&quot; oder &quot;Nein&quot; an!</error>
     </argument>
   </directive>
 
   <directive name="LinkInvisible" arguments="1">
     <argument paramname="fltlinkinvisible" ifNotCommitted="no">
       <validate>^(yes|no)$</validate>
-      <error>Sollen Link-Tags im Administrator-Modus auf gelöschte/unsichtbare Postings zeigen? Bitte geben Sie &quot;ja&quot; oder &quot;nein&quot; an!</error>
+      <error>Sollen Link-Tags im Administrator-Modus auf gelï¿½schte/unsichtbare Postings zeigen? Bitte geben Sie &quot;ja&quot; oder &quot;nein&quot; an!</error>
     </argument>
   </directive>
 
@@ -688,108 +695,108 @@
 
   <directive name="ShortcutsThreadlist" arguments="1">
     <argument paramname="shortcutsthreadlist1" default="b" emptyIfNotCommitted="yes">
-      <validate>^(\\[CAS]-){0,3}[a-zA-Z]$</validate>
-      <error>Shortcut &quot;Zur Blacklist hinzufügen&quot; ist ungültig!</error>
+      <validate>^(?:\\[CAS]-){0,3}[a-zA-Z]$</validate>
+      <error>Shortcut &quot;Zur Blacklist hinzufï¿½gen&quot; ist ungï¿½ltig!</error>
     </argument>
 
     <argument paramname="shortcutsthreadlist2" default="\S-b" emptyIfNotCommitted="yes">
-      <validate>^(\\[CAS]-){0,3}[a-zA-Z]$</validate>
-      <error>Shortcut &quot;Von der Blacklist entfernen&quot; ist ungültig!</error>
+      <validate>^(?:\\[CAS]-){0,3}[a-zA-Z]$</validate>
+      <error>Shortcut &quot;Von der Blacklist entfernen&quot; ist ungï¿½ltig!</error>
     </argument>
 
     <argument paramname="shortcutsthreadlist3" default="w" emptyIfNotCommitted="yes">
-      <validate>^(\\[CAS]-){0,3}[a-zA-Z]$</validate>
-      <error>Shortcut &quot;Zur Whitelist hinzufügen&quot; ist ungültig!</error>
+      <validate>^(?:\\[CAS]-){0,3}[a-zA-Z]$</validate>
+      <error>Shortcut &quot;Zur Whitelist hinzufï¿½gen&quot; ist ungï¿½ltig!</error>
     </argument>
 
     <argument paramname="shortcutsthreadlist4" default="\S-w" emptyIfNotCommitted="yes">
-      <validate>^(\\[CAS]-){0,3}[a-zA-Z]$</validate>
-      <error>Shortcut &quot;Von der Whitelist entfernen&quot; ist ungültig!</error>
+      <validate>^(?:\\[CAS]-){0,3}[a-zA-Z]$</validate>
+      <error>Shortcut &quot;Von der Whitelist entfernen&quot; ist ungï¿½ltig!</error>
     </argument>
 
     <argument paramname="shortcutsthreadlist5" default="k" emptyIfNotCommitted="yes">
-      <validate>^(\\[CAS]-){0,3}[a-zA-Z]$</validate>
-      <error>Shortcut &quot;Kategorie hervorheben&quot; ist ungültig!</error>
+      <validate>^(?:\\[CAS]-){0,3}[a-zA-Z]$</validate>
+      <error>Shortcut &quot;Kategorie hervorheben&quot; ist ungï¿½ltig!</error>
     </argument>
 
     <argument paramname="shortcutsthreadlist6" default="\S-k" emptyIfNotCommitted="yes">
-      <validate>^(\\[CAS]-){0,3}[a-zA-Z]$</validate>
-      <error>Shortcut &quot;Kategorie nicht länger hervorheben&quot; ist ungültig!</error>
+      <validate>^(?:\\[CAS]-){0,3}[a-zA-Z]$</validate>
+      <error>Shortcut &quot;Kategorie nicht lï¿½nger hervorheben&quot; ist ungï¿½ltig!</error>
     </argument>
 
     <argument paramname="shortcutsthreadlist7" default="a" emptyIfNotCommitted="yes">
-      <validate>^(\\[CAS]-){0,3}[a-zA-Z]$</validate>
-      <error>Shortcut &quot;Alle Threads als gelesen markieren&quot; ist ungültig!</error>
+      <validate>^(?:\\[CAS]-){0,3}[a-zA-Z]$</validate>
+      <error>Shortcut &quot;Alle Threads als gelesen markieren&quot; ist ungï¿½ltig!</error>
     </argument>
   </directive>
 
   <directive name="ShortcutsPosting" arguments="1">
     <argument paramname="shortcutsposting1" default="n" emptyIfNotCommitted="yes">
-      <validate>^(\\[CAS]-){0,3}[a-zA-Z]$</validate>
-      <error>Shortcut &quot;Nächstes Posting&quot; ist ungültig!</error>
+      <validate>^(?:\\[CAS]-){0,3}[a-zA-Z]$</validate>
+      <error>Shortcut &quot;Nï¿½chstes Posting&quot; ist ungï¿½ltig!</error>
     </argument>
 
     <argument paramname="shortcutsposting2" default="p" emptyIfNotCommitted="yes">
-      <validate>^(\\[CAS]-){0,3}[a-zA-Z]$</validate>
-      <error>Shortcut &quot;Vorheriges Posting&quot; ist ungültig!</error>
+      <validate>^(?:\\[CAS]-){0,3}[a-zA-Z]$</validate>
+      <error>Shortcut &quot;Vorheriges Posting&quot; ist ungï¿½ltig!</error>
     </argument>
 
     <argument paramname="shortcutsposting3" default="h" emptyIfNotCommitted="yes">
-      <validate>^(\\[CAS]-){0,3}[a-zA-Z]$</validate>
-      <error>Shortcut &quot;Zurück zur Forums-Hauptseite&quot; ist ungültig!</error>
+      <validate>^(?:\\[CAS]-){0,3}[a-zA-Z]$</validate>
+      <error>Shortcut &quot;Zurï¿½ck zur Forums-Hauptseite&quot; ist ungï¿½ltig!</error>
     </argument>
 
     <argument paramname="shortcutsposting4" default="r" emptyIfNotCommitted="yes">
-      <validate>^(\\[CAS]-){0,3}[a-zA-Z]$</validate>
-      <error>Shortcut &quot;Fokussiere die Textarea&quot; ist ungültig!</error>
+      <validate>^(?:\\[CAS]-){0,3}[a-zA-Z]$</validate>
+      <error>Shortcut &quot;Fokussiere die Textarea&quot; ist ungï¿½ltig!</error>
     </argument>
 
     <argument paramname="shortcutsposting5" default="g" emptyIfNotCommitted="yes">
-      <validate>^(\\[CAS]-){0,3}[a-zA-Z]$</validate>
-      <error>Shortcut &quot;Als hilfreich bewerten&quot; ist ungültig!</error>
+      <validate>^(?:\\[CAS]-){0,3}[a-zA-Z]$</validate>
+      <error>Shortcut &quot;Als hilfreich bewerten&quot; ist ungï¿½ltig!</error>
     </argument>
 
     <argument paramname="shortcutsposting6" default="b" emptyIfNotCommitted="yes">
-      <validate>^(\\[CAS]-){0,3}[a-zA-Z]$</validate>
-      <error>Shortcut &quot;Als nicht hilfreich bewerten&quot; ist ungültig!</error>
+      <validate>^(?:\\[CAS]-){0,3}[a-zA-Z]$</validate>
+      <error>Shortcut &quot;Als nicht hilfreich bewerten&quot; ist ungï¿½ltig!</error>
     </argument>
 
     <argument paramname="shortcutsposting7" default="a" emptyIfNotCommitted="yes">
-      <validate>^(\\[CAS]-){0,3}[a-zA-Z]$</validate>
-      <error>Shortcut &quot;Das erste Unterposting in der Posting-Liste fokussieren&quot; ist ungültig!</error>
+      <validate>^(?:\\[CAS]-){0,3}[a-zA-Z]$</validate>
+      <error>Shortcut &quot;Das erste Unterposting in der Posting-Liste fokussieren&quot; ist ungï¿½ltig!</error>
     </argument>
 
     <argument paramname="shortcutsposting8" default="k" emptyIfNotCommitted="yes">
-      <validate>^(\\[CAS]-){0,3}[a-zA-Z]$</validate>
-      <error>Shortcut &quot;Thread ausblenden&quot; ist ungültig!</error>
+      <validate>^(?:\\[CAS]-){0,3}[a-zA-Z]$</validate>
+      <error>Shortcut &quot;Thread ausblenden&quot; ist ungï¿½ltig!</error>
     </argument>
 
     <argument paramname="shortcutsposting9" default="\S-r" emptyIfNotCommitted="yes">
-      <validate>^(\\[CAS]-){0,3}[a-zA-Z]$</validate>
-      <error>Shortcut &quot;Thread als gelesen markieren&quot; ist ungültig!</error>
+      <validate>^(?:\\[CAS]-){0,3}[a-zA-Z]$</validate>
+      <error>Shortcut &quot;Thread als gelesen markieren&quot; ist ungï¿½ltig!</error>
     </argument>
 
     <argument paramname="shortcutsposting10" default="l" emptyIfNotCommitted="yes">
-      <validate>^(\\[CAS]-){0,3}[a-zA-Z]$</validate>
-      <error>Shortcut &quot;Wikipedia-Lookup&quot; ist ungültig!</error>
+      <validate>^(?:\\[CAS]-){0,3}[a-zA-Z]$</validate>
+      <error>Shortcut &quot;Wikipedia-Lookup&quot; ist ungï¿½ltig!</error>
     </argument>
   </directive>
 
   <directive name="InterestingMarkOwnPosts" arguments="1">
     <argument paramname="interestingmarkownposts" ifNotCommitted="no">
       <validate>^(yes|no)$</validate>
-      <error>Sollen eigene Beiträge beim Posten automatisch als interessant markiert werden? Geben Sie &quot;ja&quot; oder &quot;nein&quot; an!</error>
+      <error>Sollen eigene Beitrï¿½ge beim Posten automatisch als interessant markiert werden? Geben Sie &quot;ja&quot; oder &quot;nein&quot; an!</error>
     </argument>
   </directive>
 
   <directive name="InterestingColors" arguments="1">
     <argument paramname="interesting_fgcol">
-      <validate>^#([0-9a-fA-F]{3}|[0-9a-fA-f]{6})$</validate>
+      <validate>^#(?:[0-9a-fA-F]{3}|[0-9a-fA-f]{6})$</validate>
       <error>Mit welcher Vordergrundfarbe sollen als interessant markierte Threads hervorgehoben werden? Geben sie eine korrekte Farbe an!</error>
     </argument>
 
     <argument paramname="interesting_bgcol">
-      <validate>^#([0-9a-fA-F]{3}|[0-9a-fA-f]{6})$</validate>
+      <validate>^#(?:[0-9a-fA-F]{3}|[0-9a-fA-f]{6})$</validate>
       <error>Mit welcher Hintergrundfarbe sollen als interessant markierte Threads hervorgehoben werden? Geben sie eine korrekte Farbe an!</error>
     </argument>
 
@@ -799,20 +806,6 @@
     <argument paramname="replace_tabs" default="8">
       <validate>^\d+$</validate>
       <error>Sollen Tabs durch Leerzeichen ersetzt werden? Geben Sie eine Zahl an!</error>
-    </argument>
-  </directive>
-
-  <directive name="WarnBadLinks" arguments="1">
-    <argument paramname="warn_bad_links" default="yes" ifNotCommitted="no">
-      <validate>^(yes|no)$</validate>
-      <error>Soll bei fehlerhaften Links gewarnt werden? Geben Sie &quot;ja&quot; oder &quot;nein&quot; an!</error>
-    </argument>
-  </directive>
-
-  <directive name="PavatarActive" arguments="1">
-    <argument paramname="pavatar_active" default="no" ifNotCommitted="no">
-      <validate>^(yes|no)$</validate>
-      <error>Sollen Pavatare angezeigt werden? Geben Sie &quot;ja&quot; oder &quot;nein&quot; an!</error>
     </argument>
   </directive>
 

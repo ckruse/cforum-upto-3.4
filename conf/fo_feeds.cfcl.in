@@ -9,6 +9,9 @@ FF:FeedLang "de"
 WITH(FORUM1)
   FF:AtomTitle            = "Classic Forum Feed";
   FF:AtomTagline          = "Classic Forum Entwickler-Feed";
+  FF:AtomUri              = "http://wwwtech.de/forum/atom/";
+  FF:AtomUriThread        = "http://wwwtech.de/forum/atom/%t";
+  FF:AtomId               = "http://wwwtech.de/forum/atom/";
 
   FF:RSSTitle             = "Classic Forum Feed";
   FF:RSSDescription       = "Classic Forum Entwickler-Feed";

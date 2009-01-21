@@ -9,11 +9,11 @@
 # $LastChangedBy$
 #
 
-DF:SocketName        = "@with_socket_path@";
+DF:SocketName        = "@SOCKET_PATH@";
 DF:TemplateMode      = "html4";
 DF:XHTMLMode         = "no";
-DF:ErrorTemplate     = "@sysconfdir@/cforum/templates/forum1/%s_%s_fatal.so";
-DF:ThreadIndexFile   = "@localstatedir@/cforum/forum1_tididx.dat";
+DF:ErrorTemplate     = "@CMAKE_INSTALL_SYSCONFDIR_FULL@/cforum/templates/forum1/%s_%s_fatal.so";
+DF:ThreadIndexFile   = "@CMAKE_INSTALL_LOCALSTATEDIR_FULL@/cforum/forum1_tididx.dat";
 
 DF:BaseURL           = ("http://wwwtech.de/forum/", "http://wwwtech.de/forum/my/");
 DF:PostingURL        = ("http://wwwtech.de/forum/?t=%t&m=%m", "http://wwwtech.de/forum/my/?t=%t&m=%m");
@@ -23,7 +23,7 @@ DF:VoteURL           = "http://wwwtech.de/cgi-bin/user/fo_vote";
 DF:ArchivePostingURL = "http://wwwtech.de/forum/archiv/t/%t/m/%m/";
 DF:ArchiveURL        = "http://wwwtech.de/forum/archiv/";
 
-DF:PostScript        = ("http://wwwtech.de/forum/neues-posting","http://wwwtech.de/forum/my/neuesposting");
+DF:PostScript        = ("http://wwwtech.de/forum/neues-posting","http://wwwtech.de/forum/my/neues-posting");
 
 DF:UserManage        = (
   "http://wwwtech.de/cgi-bin/user/fo_userconf",
@@ -35,7 +35,7 @@ DF:ExternCharset     = "UTF-8";
 DF:AuthMode          = "http";
 DF:DateLocale        = "de_DE.UTF-8";
 DF:Language          = "de";
-DF:MessagesDatabase  = "@localstatedir@/cforum/forum1_messages.db";
+DF:MessagesDatabase  = "@CMAKE_INSTALL_LOCALSTATEDIR_FULL@/cforum/forum1_messages.db";
 
 DF:InactivityDelete  = 50;
 DF:SendMailBeforeDelete = "yes";
@@ -43,7 +43,7 @@ DF:SendMailBeforeDelete = "yes";
 DF:QuotingChars       = "»» ";
 
 WITH(FORUM1)
-  DF:ConfigDirectory = "@localstatedir@/cforum/forum1/users/";
+  DF:ConfigDirectory = "@CMAKE_INSTALL_LOCALSTATEDIR_FULL@/cforum/forum1/users/";
   DF:SharedMemIds    = (10000,10001,10002);
   DF:Categories      = (
     "ASP", "BROWSER", "CGI",

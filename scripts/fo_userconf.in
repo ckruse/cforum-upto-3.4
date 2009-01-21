@@ -25,13 +25,13 @@ BEGIN {
 
   $Plugins = {};
   $UserName = '';
-  $prefix  = "@prefix@";
-  $exec_prefix = "@exec_prefix@";
+  $prefix  = "@CMAKE_INSTALL_PREFIX@";
+  $exec_prefix = "@CMAKE_INSTALL_PREFIX@";
 
   $Forum = $ENV{CF_FORUM_NAME};
 }
 
-use lib "@libdir@/cforum";
+use lib "@CMAKE_INSTALL_LIBDIR_FULL@/cforum";
 
 sub VERSION {(q$Revision$ =~ /([\d.]+)\s*$/)[0] or '0.0'}
 
@@ -90,7 +90,12 @@ sub generate_edit_output {
         if($source) {
           if($source eq 'cgi') {
             $val = join ',',$cgi->param($pname) if $cgi->param($pname);
+            if ($arg->getAttribute('parse') eq 'date' && defined($val) && length($val)) {
+              my @p = split /\./, $val;
+              $val = mktime(0, 0, 0, $p[0], $p[1] - 1, $p[2] - 1900);
+            }
           }
+            
           else {
             # {{{ get value cascading down from config
             unless(exists $user_config->{global}->{$dname}) {
@@ -143,19 +148,23 @@ sub generate_edit_output {
           # }}}
 
           $val = join ',',$cgi->param($pname) if $cgi->param($pname);
+          if ($arg->getAttribute('parse') eq 'date' && defined($val) && length($val) && $cgi->param($pname)) {
+            my @p = split /\./, $val;
+            $val = mktime(0, 0, 0, $p[0], $p[1] - 1, $p[2] - 1900);
+          }
         }
         # }}}
 
         ++$i;
         next if !defined($val) || !length($val);
 
-        if($arg->getAttribute('parse') eq 'date') {
+        if($arg->getAttribute('parse') eq 'date' and defined($val) and length($val)) {
           my ($sec,$min,$hour,$day,$mon,$year) = localtime $val;
 
           $mon  += 1;
           $year += 1900;
 
-          $val = sprintf('%02d. %02d. %4d %02d:%02d:%02d',$day,$mon,$year,$hour,$min,$sec);
+          $val = sprintf('%02d.%02d.%4d',$day,$mon,$year);
         }
         else {
           $val =~ s/\"/"/g;
