@@ -47,7 +47,7 @@ int flt_noanonymous_run(cf_hash_t *cgi,cf_configuration_t *dc,cf_configuration_t
 
   if(cf_hash_get(GlobalValues,"UserName",8) != NULL) return FLT_OK;
 
-  cs = cf_cfg_get_first_value(dc,flt_noanonymous_fn,"ExternCharset");
+  cs = cf_cfg_get_first_value(dc,flt_noanonymous_fn,"DF:ExternCharset");
   printf("Status: 403 Forbidden\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
   cf_error_message("E_noanonymous_read",NULL);
 
@@ -67,7 +67,7 @@ int flt_noanonymous_post(cf_hash_t *head,cf_configuration_t *dc,cf_configuration
 
   if(cf_hash_get(GlobalValues,"UserName",8) != NULL) return FLT_OK;
 
-  cs = cf_cfg_get_first_value(dc,flt_noanonymous_fn,"ExternCharset");
+  cs = cf_cfg_get_first_value(dc,flt_noanonymous_fn,"DF:ExternCharset");
   printf("Status: 403 Forbidden\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
   if(flt_noanonymous_cfg == FLT_NA_POST) cf_error_message("E_noanonymous_post",NULL);
   else cf_error_message("E_noanonymous_read",NULL);

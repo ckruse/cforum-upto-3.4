@@ -44,8 +44,8 @@ int flt_tplmode_execute(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_
   u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
 
   if(TPLMode) {
-    v1 = cf_cfg_get_first_value(dc,forum_name,"XHTMLMode");
-    v  = cf_cfg_get_first_value(dc,forum_name,"TemplateMode");
+    v1 = cf_cfg_get_first_value(dc,forum_name,"DF:XHTMLMode");
+    v  = cf_cfg_get_first_value(dc,forum_name,"DF:TemplateMode");
 
     free(v->values[0]);
 

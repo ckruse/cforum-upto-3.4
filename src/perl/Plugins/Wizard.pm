@@ -31,17 +31,17 @@ $main::Plugins->{wizard} = \&execute;
 sub execute {
   my ($fo_default_conf,$fo_view_conf,$fo_userconf_conf,$user_config,$cgi) = @_;
 
-  fatal($cgi,$fo_default_conf,$user_config,sprintf(get_error($fo_default_conf,'MUST_AUTH'),"$!"),get_conf_val($fo_default_conf,$main::Forum,'ErrorTemplate')) unless $main::UserName;
+  fatal($cgi,$fo_default_conf,$user_config,sprintf(get_error($fo_default_conf,'MUST_AUTH'),"$!"),get_conf_val($fo_default_conf,$main::Forum,'DF:ErrorTemplate')) unless $main::UserName;
 
   # {{{ get our template
   my $tpl_name = get_conf_val($fo_userconf_conf,$main::Forum,'WizardTemplate');
-  fatal($cgi,$fo_default_conf,$user_config,get_error($fo_default_conf,'CONFIG_ERR'),get_conf_val($fo_default_conf,$main::Forum,'ErrorTemplate')) unless $tpl_name;
+  fatal($cgi,$fo_default_conf,$user_config,get_error($fo_default_conf,'CONFIG_ERR'),get_conf_val($fo_default_conf,$main::Forum,'DF:ErrorTemplate')) unless $tpl_name;
 
   $tpl_name = get_template($fo_default_conf,$user_config,$tpl_name);
-  fatal($cgi,$fo_default_conf,$user_config,get_error($fo_default_conf,'CONFIG_ERR'),get_conf_val($fo_default_conf,$main::Forum,'ErrorTemplate')) unless $tpl_name;
+  fatal($cgi,$fo_default_conf,$user_config,get_error($fo_default_conf,'CONFIG_ERR'),get_conf_val($fo_default_conf,$main::Forum,'DF:ErrorTemplate')) unless $tpl_name;
 
   my $tpl = new CForum::Template($tpl_name);
-  fatal($cgi,$fo_default_conf,$user_config,get_error($fo_default_conf,'CONFIG_ERR'),get_conf_val($fo_default_conf,$main::Forum,'ErrorTemplate')) unless $tpl;
+  fatal($cgi,$fo_default_conf,$user_config,get_error($fo_default_conf,'CONFIG_ERR'),get_conf_val($fo_default_conf,$main::Forum,'DF:ErrorTemplate')) unless $tpl;
   # }}}
 
   my $own_conf = merge_config($fo_default_conf,$fo_userconf_conf,$user_config,$cgi,1);
@@ -50,7 +50,7 @@ sub execute {
   if(ref $own_conf) {
     my $cfile = get_user_config_file($fo_default_conf,$main::UserName);
     if(my $ret = write_userconf($fo_default_conf,$cfile,$own_conf)) {
-      fatal($cgi,$fo_default_conf,$user_config,$ret,get_conf_val($fo_default_conf,$main::Forum,'ErrorTemplate'));
+      fatal($cgi,$fo_default_conf,$user_config,$ret,get_conf_val($fo_default_conf,$main::Forum,'DF:ErrorTemplate'));
     }
   }
 
@@ -82,13 +82,13 @@ sub execute {
   # }}}
 
   $tpl->setvalue('err',recode($fo_default_conf,$own_conf)) unless ref $own_conf;
-  $tpl->setvalue('forumbase',recode($fo_default_conf,get_conf_val($fo_default_conf,$main::Forum,'UBaseURL')));
+  $tpl->setvalue('forumbase',recode($fo_default_conf,get_conf_val($fo_default_conf,$main::Forum,'UDF:BaseURL')));
   $tpl->setvalue('userconfig',recode($fo_default_conf,get_conf_val($fo_default_conf,$main::Forum,'UserConfig')));
   $tpl->setvalue('script',recode($fo_default_conf,get_conf_val($fo_default_conf,$main::Forum,'UserConfig')));
   $tpl->setvalue('usermanagement',get_conf_val($fo_default_conf,$main::Forum,'UserManagement'));
-  $tpl->setvalue('charset',get_conf_val($fo_default_conf,$main::Forum,'ExternCharset'));
+  $tpl->setvalue('charset',get_conf_val($fo_default_conf,$main::Forum,'DF:ExternCharset'));
 
-  print $cgi->header(-type => 'text/html; charset='.get_conf_val($fo_default_conf,$main::Forum,'ExternCharset'));
+  print $cgi->header(-type => 'text/html; charset='.get_conf_val($fo_default_conf,$main::Forum,'DF:ExternCharset'));
   print $tpl->parseToMem;
 }
 

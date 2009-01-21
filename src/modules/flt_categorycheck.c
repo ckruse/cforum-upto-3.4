@@ -46,7 +46,7 @@ int flt_categorycheck_execute(cf_hash_t *head,cf_configuration_t *dc,cf_configur
 #endif
 {
   u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
-  cf_name_value_t *v = cf_cfg_get_first_value(&fo_default_conf,forum_name,"Categories");
+  cf_name_value_t *v = cf_cfg_get_first_value(&fo_default_conf,forum_name,"DF:Categories");
   size_t i;
 
   if(!p->category.len) return FLT_DECLINE;

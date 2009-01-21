@@ -278,7 +278,7 @@ int main(int argc,char *argv[],char *envp[]) {
   /* }}} */
 
   ent = cf_cfg_get_value(&cfg,"ArchivePath");
-  idxfile = cf_cfg_get_value(&cfg,"ThreadIndexFile");
+  idxfile = cf_cfg_get_value(&cfg,"DF:ThreadIndexFile");
 
   /* {{{ open database */
   if((ret = db_create(&Tdb,NULL,0)) != 0) {

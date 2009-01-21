@@ -37,7 +37,7 @@
 /* {{{ flt_httpauth_run */
 int flt_httpauth_run(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t *vc) {
   u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
-  cf_name_value_t *v = cf_cfg_get_first_value(dc,forum_name,"AuthMode");
+  cf_name_value_t *v = cf_cfg_get_first_value(dc,forum_name,"DF:AuthMode");
   u_char *name,*path;
 
   if(!v || !v->values[0] || cf_strcmp(v->values[0],"http") != 0) return FLT_DECLINE;

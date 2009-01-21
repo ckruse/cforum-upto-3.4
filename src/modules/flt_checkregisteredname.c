@@ -111,7 +111,7 @@ int flt_checkregisteredname_register(cf_hash_t *cgi,cf_configuration_t *dc,cf_co
     *fn = cf_hash_get(GlobalValues,"FORUM_NAME",10),
     *uname = cf_hash_get(GlobalValues,"UserName",8);
 
-  cf_name_value_t *cs = cf_cfg_get_first_value(dc,fn,"ExternCharset"),*on,*or;
+  cf_name_value_t *cs = cf_cfg_get_first_value(dc,fn,"DF:ExternCharset"),*on,*or;
   int sock,status,doer;
   size_t len;
   rline_t tsd;

@@ -214,7 +214,7 @@ u_char *flt_phpsessauth_getvar(const u_char *vname) {
 /* {{{ flt_httpauth_run */
 int flt_phpsessauth_run(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t *vc) {
   u_char *fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
-  cf_name_value_t *v = cf_cfg_get_first_value(dc,fn,"AuthMode");
+  cf_name_value_t *v = cf_cfg_get_first_value(dc,fn,"DF:AuthMode");
   u_char *name = NULL,*path;
   cf_hash_t *cookies;
   cf_string_t *sess;

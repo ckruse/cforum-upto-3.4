@@ -105,8 +105,8 @@ void send_ok_output(cf_cfg_config_t *cfg,cf_hash_t *head,cf_cfg_config_value_t *
 
   u_int64_t tid,mid;
 
-  mode = cf_cfg_get_value(cfg,"TemplateMode");
-  lang = cf_cfg_get_value(cfg,"Language");
+  mode = cf_cfg_get_value(cfg,"DF:TemplateMode");
+  lang = cf_cfg_get_value(cfg,"DF:Language");
   cf_cfg_tpl = cf_cfg_get_value(cfg,"OkTemplate");
 
   cf_gen_tpl_name(tpl_name,256,mode->sval,lang->sval,cf_cfg_tpl->sval);
@@ -121,7 +121,7 @@ void send_ok_output(cf_cfg_config_t *cfg,cf_hash_t *head,cf_cfg_config_value_t *
     return;
   }
 
-  fbase = cf_cfg_get_value(cfg,"BaseURL");
+  fbase = cf_cfg_get_value(cfg,"DF:BaseURL");
 
   cf_set_variable(&tpl,cs->sval,"backlink",link,strlen(link),0); //TODO: forum-backlink
   cf_set_variable(&tpl,cs->sval,"forumbase",fbase->avals[uname].sval,strlen(fbase->avals[uname].sval),1); //TODO: forum-base-uri
@@ -184,8 +184,8 @@ int main(int argc,char *argv[],char *env[]) {
 
   head   = cf_cgi_new();
   dbname = cf_cfg_get_value(&cfg,"VotingDatabase");
-  cs     = cf_cfg_get_value(&cfg,"ExternCharset");
-  cfgpath= cf_cfg_get_value(&cfg,"ConfigDirectory");
+  cs     = cf_cfg_get_value(&cfg,"DF:ExternCharset");
+  cfgpath= cf_cfg_get_value(&cfg,"DF:ConfigDirectory");
 
   ret = cf_run_auth_handlers(&cfg,head);
 
@@ -229,7 +229,7 @@ int main(int argc,char *argv[],char *env[]) {
 
 
     if(cmid && ctid && a && is_id(cmid->content) && is_id(ctid->content)) {
-      cfgpath = cf_cfg_get_value(&cfg,"SocketName");
+      cfgpath = cf_cfg_get_value(&cfg,"DF:SocketName");
 
       if((sock = cf_socket_setup(cfgpath->sval)) != -1) {
         /* {{{ open database and lock it */

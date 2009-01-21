@@ -45,8 +45,8 @@ int flt_frameset_execute_filter(cf_hash_t *head,cf_configuration_t *dc,cf_config
   u_char buff[256];
   u_char *UserName = cf_hash_get(GlobalValues,"UserName",8);
   u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
-  cf_name_value_t *cs = cf_cfg_get_first_value(dc,forum_name,"ExternCharset");
-  cf_name_value_t *x = cf_cfg_get_first_value(dc,forum_name,UserName?"UBaseURL":"BaseURL");
+  cf_name_value_t *cs = cf_cfg_get_first_value(dc,forum_name,"DF:ExternCharset");
+  cf_name_value_t *x = cf_cfg_get_first_value(dc,forum_name,UserName?"UDF:BaseURL":"DF:BaseURL");
   cf_template_t tpl;
   cf_string_t *action = NULL;
 

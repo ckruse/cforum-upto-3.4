@@ -202,15 +202,15 @@ int flt_nested_execute_filter(cf_hash_t *head,cf_configuration_t *dc,cf_configur
   UserName = cf_hash_get(GlobalValues,"UserName",8);
   ShowInvisible = cf_hash_get(GlobalValues,"ShowInvisible",13) == NULL ? 0 : 1;
 
-  cs = cf_cfg_get_first_value(dc,forum_name,"ExternCharset");
+  cs = cf_cfg_get_first_value(dc,forum_name,"DF:ExternCharset");
   st = cf_cfg_get_first_value(vc,forum_name,"ShowThread");
-  qc = cf_cfg_get_first_value(vc,forum_name,"QuotingChars");
+  qc = cf_cfg_get_first_value(vc,forum_name,"DF:QuotingChars");
   ms = cf_cfg_get_first_value(vc,forum_name,"MaxSigLines");
   ss = cf_cfg_get_first_value(vc,forum_name,"ShowSig");
-  locale = cf_cfg_get_first_value(dc,forum_name,"DateLocale");
+  locale = cf_cfg_get_first_value(dc,forum_name,"DF:DateLocale");
   df = cf_cfg_get_first_value(vc,forum_name,"DateFormatThreadView");
   dft = cf_cfg_get_first_value(vc,forum_name,"DateFormatThreadList");
-  lt = cf_cfg_get_first_value(dc,forum_name,UserName ? "UPostingURL_Nested" : "PostingURL_Nested");
+  lt = cf_cfg_get_first_value(dc,forum_name,UserName ? "UDF:PostingURL_Nested" : "DF:PostingURL_Nested");
 
   utf8 = cf_strcmp(cs->values[0],"UTF-8") == 0;
   /* }}} */
@@ -225,13 +225,13 @@ int flt_nested_execute_filter(cf_hash_t *head,cf_configuration_t *dc,cf_configur
   if(thread->messages->category.len) cf_set_variable(tpl,cs,"category",thread->messages->category.content,thread->messages->category.len,1);
 
   if(UserName) {
-    fbase = cf_cfg_get_first_value(&fo_default_conf,forum_name,"UBaseURL");
-    ps = cf_cfg_get_first_value(&fo_default_conf,forum_name,"UPostScript");
+    fbase = cf_cfg_get_first_value(&fo_default_conf,forum_name,"UDF:BaseURL");
+    ps = cf_cfg_get_first_value(&fo_default_conf,forum_name,"UDF:PostScript");
     reg = cf_cfg_get_first_value(&fo_default_conf,forum_name,"UserConfig");
   }
   else {
-    fbase = cf_cfg_get_first_value(&fo_default_conf,forum_name,"BaseURL");
-    ps = cf_cfg_get_first_value(&fo_default_conf,forum_name,"PostScript");
+    fbase = cf_cfg_get_first_value(&fo_default_conf,forum_name,"DF:BaseURL");
+    ps = cf_cfg_get_first_value(&fo_default_conf,forum_name,"DF:PostScript");
     reg = cf_cfg_get_first_value(&fo_default_conf,forum_name,"UserRegister");
   }
 
@@ -262,10 +262,10 @@ int flt_nested_rm_collector(cf_hash_t *head,cf_configuration_t *dc,cf_configurat
   u_char buff[256];
 
   if(cf_strcmp(rm->values[0],"nested") == 0) {
-    v = cf_cfg_get_first_value(dc,fn,"PostingURL_Nested");
+    v = cf_cfg_get_first_value(dc,fn,"DF:PostingURL_Nested");
     rm_infos->posting_uri[0] = v->values[0];
 
-    v = cf_cfg_get_first_value(dc,fn,"UPostingURL_Nested");
+    v = cf_cfg_get_first_value(dc,fn,"UDF:PostingURL_Nested");
     rm_infos->posting_uri[1] = v->values[0];
 
     if((v = cf_cfg_get_first_value(vc,fn,"TemplateForumBegin")) != NULL) {

@@ -220,7 +220,7 @@ void cf_set_variable(cf_template_t *tpl,const u_char *cs,u_char *vname,const u_c
       cf_tpl_setvalue(tpl,vname,TPL_VARIABLE_STRING,tmp,len1);
       free(tmp);
     }
-    /* ExternCharset is also UTF-8 */
+    /* DF:ExternCharset is also UTF-8 */
     else {
       if(html) {
         tmp = htmlentities(val,0);
@@ -267,7 +267,7 @@ void cf_add_variable(cf_tpl_variable_t *ary,const u_char *cs,const u_char *val,s
       cf_tpl_var_addvalue(ary,TPL_VARIABLE_STRING,tmp,len1);
       free(tmp);
     }
-    /* ExternCharset is also UTF-8 */
+    /* DF:ExternCharset is also UTF-8 */
     else {
       if(html) {
         tmp = htmlentities(val,0);
@@ -314,7 +314,7 @@ void cf_set_variable_hash(cf_tpl_variable_t *hash,const u_char *cs,u_char *key,c
       cf_tpl_hashvar_setvalue(hash,key,TPL_VARIABLE_STRING,tmp,len1);
       free(tmp);
     }
-    /* ExternCharset is also UTF-8 */
+    /* DF:ExternCharset is also UTF-8 */
     else {
       if(html) {
         tmp = htmlentities(val,0);
@@ -342,12 +342,12 @@ void cf_set_variable_hash(cf_tpl_variable_t *hash,const u_char *cs,u_char *key,c
 
 /* {{{ cf_error_message */
 void cf_error_message(cf_cfg_config_t *cfg,const u_char *err,FILE *out, ...) {
-  cf_cfg_config_value_t *v = cf_cfg_get_value(cfg,"ErrorTemplate");
-  cf_cfg_config_value_t *db = cf_cfg_get_value(cfg,"MessagesDatabase");
-  cf_cfg_config_value_t *lang = cf_cfg_get_value(cfg,"Language");
-  cf_cfg_config_value_t *cs = cf_cfg_get_value(cfg,"ExternCharset");
-  cf_cfg_config_value_t *vs = cf_cfg_get_value(cfg,"BaseURL");
-  cf_cfg_config_value_t *mode = cf_cfg_get_value(cfg,"TemplateMode");
+  cf_cfg_config_value_t *v = cf_cfg_get_value(cfg,"DF:ErrorTemplate");
+  cf_cfg_config_value_t *db = cf_cfg_get_value(cfg,"DF:MessagesDatabase");
+  cf_cfg_config_value_t *lang = cf_cfg_get_value(cfg,"DF:Language");
+  cf_cfg_config_value_t *cs = cf_cfg_get_value(cfg,"DF:ExternCharset");
+  cf_cfg_config_value_t *vs = cf_cfg_get_value(cfg,"DF:BaseURL");
+  cf_cfg_config_value_t *mode = cf_cfg_get_value(cfg,"DF:TemplateMode");
   int isuser = cf_hash_get(GlobalValues,"UserName",8) != NULL;
   cf_template_t tpl;
   u_char tplname[256];
@@ -462,8 +462,8 @@ void cf_error_message(cf_cfg_config_t *cfg,const u_char *err,FILE *out, ...) {
 
 /* {{{ cf_get_error_message */
 u_char *cf_get_error_message(cf_cfg_config_t *cfg,const u_char *err,size_t *len, ...) {
-  cf_cfg_config_value_t *db = cf_cfg_get_value(cfg,"MessagesDatabase");
-  cf_cfg_config_value_t *lang = cf_cfg_get_value(cfg,"Language");
+  cf_cfg_config_value_t *db = cf_cfg_get_value(cfg,"DF:MessagesDatabase");
+  cf_cfg_config_value_t *lang = cf_cfg_get_value(cfg,"DF:Language");
   va_list ap;
 
   u_char *buff = NULL,ibuff[256],errname[256];

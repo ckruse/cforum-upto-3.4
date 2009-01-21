@@ -68,14 +68,14 @@ void display_finishing_screen(cf_cfg_config_t *cfg,cf_message_t *p) {
   int uname = cf_hash_get(GlobalValues,"UserName",8) != NULL;
 
   cf_cfg_config_value_t *tt = cf_cfg_get_value(cfg,"OkTemplate"),
-    *cs = cf_cfg_get_value(cfg,"ExternCharset"),
-    *qc = cf_cfg_get_value(cfg,"QuotingChars"),
-    *ps = cf_cfg_get_value(cfg,"PostScript"),
-    *fb = cf_cfg_get_value(cfg,"BaseURL"),
+    *cs = cf_cfg_get_value(cfg,"DF:ExternCharset"),
+    *qc = cf_cfg_get_value(cfg,"DF:QuotingChars"),
+    *ps = cf_cfg_get_value(cfg,"DF:PostScript"),
+    *fb = cf_cfg_get_value(cfg,"DF:BaseURL"),
     *df = cf_cfg_get_value(cfg,"DateFormat"),
-    *lc = cf_cfg_get_value(cfg,"DateLocale"),
-    *mode = cf_cfg_get_value(cfg,"TemplateMode"),
-    *lang = cf_cfg_get_value(cfg,"Language");
+    *lc = cf_cfg_get_value(cfg,"DF:DateLocale"),
+    *mode = cf_cfg_get_value(cfg,"DF:TemplateMode"),
+    *lang = cf_cfg_get_value(cfg,"DF:Language");
 
   size_t len;
   u_char *val;
@@ -131,13 +131,13 @@ void display_posting_form(cf_cfg_config_t *cfg,cf_hash_t *head,cf_message_t *p,c
   u_char tplname[256];
   int uname = cf_hash_get(GlobalValues,"UserName",8) != NULL;
   cf_cfg_config_value_t *tt  = cf_cfg_get_value(cfg,"ThreadTemplate"),
-    *cs  = cf_cfg_get_value(cfg,"ExternCharset"),
-    *cats = cf_cfg_get_value(cfg,"Categories"),
-    *qc = cf_cfg_get_value(cfg,"QuotingChars"),
-    *ps = cf_cfg_get_value(cfg,"PostScript"),
-    *fb = cf_cfg_get_value(cfg,"BaseURL"),
-    *mode = cf_cfg_get_value(cfg,"TemplateMode"),
-    *lang = cf_cfg_get_value(cfg,"Language");
+    *cs  = cf_cfg_get_value(cfg,"DF:ExternCharset"),
+    *cats = cf_cfg_get_value(cfg,"DF:Categories"),
+    *qc = cf_cfg_get_value(cfg,"DF:QuotingChars"),
+    *ps = cf_cfg_get_value(cfg,"DF:PostScript"),
+    *fb = cf_cfg_get_value(cfg,"DF:BaseURL"),
+    *mode = cf_cfg_get_value(cfg,"DF:TemplateMode"),
+    *lang = cf_cfg_get_value(cfg,"DF:Language");
   size_t len,i;
   u_char *val;
   u_char *tmp;
@@ -259,7 +259,7 @@ int normalize_cgi_variables(cf_cfg_config_t *cfg,cf_hash_t *head,const u_char *f
   register u_char *ptr;
   u_char c;
   u_char *converted;
-  cf_cfg_config_value_t *cs = cf_cfg_get_value(cfg,"ExternCharset");
+  cf_cfg_config_value_t *cs = cf_cfg_get_value(cfg,"DF:ExternCharset");
   cf_cgi_param_t *param;
   char *buff;
   cf_string_t str,*str1;
@@ -675,9 +675,9 @@ int get_thread(cf_cfg_config_t *cfg,cf_cl_thread_t *thr,cf_hash_t *head,int over
   #ifndef CF_SHARED_MEM
   int sock;
   rline_t rl;
-  cf_cfg_config_value_t *cfg_sock = cf_cfg_get_value(cfg,"SocketName");
+  cf_cfg_config_value_t *cfg_sock = cf_cfg_get_value(cfg,"DF:SocketName");
   #else
-  cf_cfg_config_value_t *shminf = cf_cfg_get_value(cfg,"SharedMemIds");
+  cf_cfg_config_value_t *shminf = cf_cfg_get_value(cfg,"DF:SharedMemIds");
   int shmids[3] = { shminf->avals[0].ival,shminf->avals[1].ival,shminf->avals[2].ival };
   void *shm;
   #endif
@@ -844,12 +844,12 @@ int main(int argc,char *argv[],char *env[]) {
   /* first state: let the begin-filters run! :-) */
   if(ret != FLT_EXIT) ret = cf_run_init_handlers(&cfg,head);
 
-  cs     = cf_cfg_get_value(&cfg,"ExternCharset");
-  qchars = cf_cfg_get_value(&cfg,"QuotingChars");
-  socknam = cf_cfg_get_value(&cfg,"SocketName");
+  cs     = cf_cfg_get_value(&cfg,"DF:ExternCharset");
+  qchars = cf_cfg_get_value(&cfg,"DF:QuotingChars");
+  socknam = cf_cfg_get_value(&cfg,"DF:SocketName");
 
   #ifdef CF_SHARED_MEM
-  shminf = cf_cfg_get_value(&cfg,"SharedMemIds");
+  shminf = cf_cfg_get_value(&cfg,"DF:SharedMemIds");
   shmids[0] = shminf->avals[0].ival;
   shmids[1] = shminf->avals[1].ival;
   shmids[2] = shminf->avals[2].ival;

@@ -28,7 +28,7 @@ push @{$main::Plugins->{auth}},\&execute;
 sub execute {
   my ($fo_default_conf,$fo_view_conf,$fo_script_conf) = @_;
 
-  return unless get_conf_val($fo_default_conf,$main::Forum,'AuthMode') eq 'http';
+  return unless get_conf_val($fo_default_conf,$main::Forum,'DF:AuthMode') eq 'http';
 
   if($ENV{REMOTE_USER}) {
     if(-f get_user_config_file($fo_default_conf,$ENV{'REMOTE_USER'})) {

@@ -71,7 +71,7 @@ int flt_votingvariables_setvars(cf_hash_t *head,cf_configuration_t *dc,cf_config
   u_char *UserName = cf_hash_get(GlobalValues,"UserName",8),*tmp,buff[512];
   u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
 
-  cf_name_value_t *v = cf_cfg_get_first_value(dc,forum_name,"VoteURL"),*cs = cf_cfg_get_first_value(dc,forum_name,"ExternCharset");
+  cf_name_value_t *v = cf_cfg_get_first_value(dc,forum_name,"DF:VoteURL"),*cs = cf_cfg_get_first_value(dc,forum_name,"ExternCharset");
 
   size_t len;
 

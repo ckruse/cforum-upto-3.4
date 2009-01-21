@@ -54,7 +54,7 @@ int flt_chooser_execute(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_
   }
 
   /* generate page */
-  cs = cf_cfg_get_first_value(dc,flt_chooser_fn,"ExternCharset");
+  cs = cf_cfg_get_first_value(dc,flt_chooser_fn,"DF:ExternCharset");
   cf_gen_tpl_name(buff,512,flt_chooser_template);
 
   if(cf_tpl_init(&tpl,buff) != 0) {
@@ -66,7 +66,7 @@ int flt_chooser_execute(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_
   printf("Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
 
   cf_tpl_var_init(&ary,TPL_VARIABLE_ARRAY);
-  cats = cf_cfg_get_first_value(dc,flt_chooser_fn,"Categories");
+  cats = cf_cfg_get_first_value(dc,flt_chooser_fn,"DF:Categories");
 
   for(i=0;i<cats->valnum;++i) cf_tpl_var_addvalue(&ary,TPL_VARIABLE_STRING,cats->values[i],strlen(cats->values[i]));
 

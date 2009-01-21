@@ -66,7 +66,7 @@ int flt_tipoftheday_execute(cf_hash_t *cgi,cf_configuration_t *dc,cf_configurati
       if((fd = fopen(TOTD_File,"r")) != NULL) {
         if(fseek(fd,(long)offset,SEEK_SET) != -1) {
           if((linelen = getline((char **)&line,&bufflen,fd)) != -1) {
-            cs = cf_cfg_get_first_value(dc,forum_name,"ExternCharset");
+            cs = cf_cfg_get_first_value(dc,forum_name,"DF:ExternCharset");
             cf_set_variable(top,cs,"tipoftheday",line,linelen-1,0);
 
             free(line);

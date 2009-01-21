@@ -160,7 +160,7 @@ int main(int argc,char *argv[],char *envp[]) {
     return EXIT_FAILURE;
   }
 
-  cs = cf_cfg_get_value(&cfg,"ExternCharset");
+  cs = cf_cfg_get_value(&cfg,"DF:ExternCharset");
 
   /* check for right number of arguments */
   if(infos.elements != 2 && infos.elements != 4) {
@@ -179,8 +179,8 @@ int main(int argc,char *argv[],char *envp[]) {
     return EXIT_FAILURE;
   }
 
-  v = cf_cfg_get_value(&cfg,"ThreadIndexFile");
-  archive_path = cf_cfg_get_value(&cfg,"ArchiveURL");
+  v = cf_cfg_get_value(&cfg,"DF:ThreadIndexFile");
+  archive_path = cf_cfg_get_value(&cfg,"DF:ArchiveURL");
 
   /* {{{ open database */
   if(stat(v->sval,&st) == -1) {

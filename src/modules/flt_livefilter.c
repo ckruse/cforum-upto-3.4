@@ -291,7 +291,7 @@ int flt_lf_parse_string(u_char *str,u_char **pos,cf_template_t *tpl,flt_lf_node_
   int ret = 0;
   flt_lf_node_t *current = NULL;
   u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
-  cf_name_value_t *cs = cf_cfg_get_first_value(dc,forum_name,"ExternCharset");
+  cf_name_value_t *cs = cf_cfg_get_first_value(dc,forum_name,"DF:ExternCharset");
 
   while((ret = flt_lf_scanner(str,pos)) > 0) {
     current       = cf_alloc(NULL,1,sizeof(*current),CF_ALLOC_CALLOC);

@@ -59,7 +59,7 @@ my $Msgs = undef;
 sub recode {
   my $fdc = shift; # default config
   my $str = shift;
-  my $cs = get_conf_val($fdc,$main::Forum,'ExternCharset');
+  my $cs = get_conf_val($fdc,$main::Forum,'DF:ExternCharset');
 
   return unless defined $str;
   if($cs eq 'UTF-8') {
@@ -121,7 +121,7 @@ sub get_user_config_file {
   my $default_conf = shift;
   my $uname        = shift;
 
-  my $cfgfile = sprintf '%s%s/%s/%s/%s%s',get_conf_val($default_conf,$main::Forum,'ConfigDirectory'),substr($uname,0,1),substr($uname,1,1),substr($uname,2,1),$uname,'.conf';
+  my $cfgfile = sprintf '%s%s/%s/%s/%s%s',get_conf_val($default_conf,$main::Forum,'DF:ConfigDirectory'),substr($uname,0,1),substr($uname,1,1),substr($uname,2,1),$uname,'.conf';
 
   return $cfgfile;
 }
@@ -132,7 +132,7 @@ sub create_directory_structure {
   my $default_conf = shift;
   my $uname        = shift;
 
-  my $dir = get_conf_val($default_conf,$main::Forum,'ConfigDirectory');
+  my $dir = get_conf_val($default_conf,$main::Forum,'DF:ConfigDirectory');
   $dir =~ s!/$!!;
 
   for(0..2) {
@@ -153,8 +153,8 @@ sub create_directory_structure {
 sub get_template {
   my ($fo_default_conf,$user_config,$tplname) = (shift,shift,shift);
   my $tplmode = get_conf_val($user_config,'global','TPLMode');
-  my $lang = get_conf_val($fo_default_conf,$main::Forum,'Language');
-  my $tplmode_global = get_conf_val($fo_default_conf,$main::Forum,'TemplateMode');
+  my $lang = get_conf_val($fo_default_conf,$main::Forum,'DF:Language');
+  my $tplmode_global = get_conf_val($fo_default_conf,$main::Forum,'DF:TemplateMode');
 
   if($user_config) {
     return sprintf($tplname,$lang,$tplmode) if $tplmode;
@@ -180,7 +180,7 @@ sub gen_time {
   my $time   = shift;
   my $dcfg   = shift;
   my $format = shift;
-  my $dl = get_conf_val($dcfg,$main::Forum,'DateLocale');
+  my $dl = get_conf_val($dcfg,$main::Forum,'DF:DateLocale');
 
   setlocale(LC_ALL,$dl);
   return strftime($format,localtime($time));
@@ -207,7 +207,7 @@ sub uniquify_params {
   my $dcfg  = shift;
   my $cgi   = shift;
   my $fname = shift;
-  my $cs    = get_conf_val($dcfg,$main::Forum,'ExternCharset');
+  my $cs    = get_conf_val($dcfg,$main::Forum,'DF:ExternCharset');
 
   my $val = $cgi->param($fname) or return get_error($dcfg,'manipulated');
 
@@ -304,8 +304,8 @@ sub decode_params {
 sub get_error {
   my ($dcfg,$err) = (shift,shift);
   my $variant     = shift || '';
-  my $msgdb       = get_conf_val($dcfg,$main::Forum,'MessagesDatabase');
-  my $lang        = get_conf_val($dcfg,$main::Forum,'Language');
+  my $msgdb       = get_conf_val($dcfg,$main::Forum,'DF:MessagesDatabase');
+  my $lang        = get_conf_val($dcfg,$main::Forum,'DF:Language');
 
   unless($Msgs) {
     $Msgs = new BerkeleyDB::Btree(
@@ -465,8 +465,8 @@ sub fatal {
   my $ftpl = get_template($dcfg,$ucfg,shift);
   my $sock = shift;
   my $hdr  = shift;
-  my $cs   = get_conf_val($dcfg,$main::Forum,'ExternCharset');
-  my $burl = get_conf_val($dcfg,$main::Forum,$main::UserName?'UBaseURL':'BaseURL');
+  my $cs   = get_conf_val($dcfg,$main::Forum,'DF:ExternCharset');
+  my $burl = get_conf_val($dcfg,$main::Forum,$main::UserName?'UDF:BaseURL':'DF:BaseURL');
 
   if(defined $sock) {
     print $sock "QUIT\n";
@@ -546,7 +546,7 @@ sub merge_config {
   my $own_ucfg = dclone($user_config);
 
   foreach my $modconf (@{$fo_userconf_conf->{$main::Forum}->{ModuleConfig}}) {
-    my $doc   = XML::GDOME->createDocFromURI(sprintf($modconf->[0],get_conf_val($fo_default_conf,$main::Forum,'Language'))) or die $!;
+    my $doc   = XML::GDOME->createDocFromURI(sprintf($modconf->[0],get_conf_val($fo_default_conf,$main::Forum,'DF:Language'))) or die $!;
     my @nodes = $doc->findnodes('/config/*');
 
     foreach my $directive (@nodes) {
@@ -631,7 +631,7 @@ sub merge_config {
             return get_node_data(($arg->getElementsByTagName('error'))[0]) if is_valid_mailaddress($val) || !validate_input($val,$dname,$fo_userconf_conf);
           }
           else {
-            fatal($cgi,$fo_default_conf,$user_config,get_error($fo_default_conf,'UNKNOWN_DIRECTIVE_TYPE'),get_conf_val($fo_default_conf,$main::Forum,'ErrorTemplate'));
+            fatal($cgi,$fo_default_conf,$user_config,get_error($fo_default_conf,'UNKNOWN_DIRECTIVE_TYPE'),get_conf_val($fo_default_conf,$main::Forum,'DF:ErrorTemplate'));
           }
         }
         # }}}
@@ -685,7 +685,7 @@ sub config_to_template {
   my $cgi              = shift;
 
   foreach my $modconf (@{$fo_userconf_conf->{$main::Forum}->{ModuleConfig}}) {
-    my $doc   = XML::GDOME->createDocFromURI(sprintf($modconf->[0],get_conf_val($fo_default_conf,$main::Forum,'Language'))) or die $!;
+    my $doc   = XML::GDOME->createDocFromURI(sprintf($modconf->[0],get_conf_val($fo_default_conf,$main::Forum,'DF:Language'))) or die $!;
     my @nodes = $doc->findnodes('/config/*');
 
     foreach my $directive (@nodes) {

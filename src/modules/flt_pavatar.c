@@ -464,7 +464,7 @@ int flt_pavatar_exec(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t *
 
   oumask = umask(flt_pavatar_umask);
 
-  cs = cf_cfg_get_first_value(dc,flt_pavatar_fn,"ExternCharset");
+  cs = cf_cfg_get_first_value(dc,flt_pavatar_fn,"DF:ExternCharset");
 
   if(thread && thread->messages->hp.content) {
     if((uri = flt_pavatar_handleit(thread->messages->hp.content)) != NULL) {

@@ -60,15 +60,15 @@ int flt_list_execute_filter(cf_hash_t *head,cf_configuration_t *dc,cf_configurat
   UserName = cf_hash_get(GlobalValues,"UserName",8);
   ShowInvisible = cf_hash_get(GlobalValues,"ShowInvisible",13) == NULL ? 0 : 1;
 
-  cs = cf_cfg_get_first_value(dc,forum_name,"ExternCharset");
+  cs = cf_cfg_get_first_value(dc,forum_name,"DF:ExternCharset");
   st = cf_cfg_get_first_value(vc,forum_name,"ShowThread");
-  qc = cf_cfg_get_first_value(vc,forum_name,"QuotingChars");
+  qc = cf_cfg_get_first_value(vc,forum_name,"DF:QuotingChars");
   ms = cf_cfg_get_first_value(vc,forum_name,"MaxSigLines");
   ss = cf_cfg_get_first_value(vc,forum_name,"ShowSig");
-  locale = cf_cfg_get_first_value(dc,forum_name,"DateLocale");
+  locale = cf_cfg_get_first_value(dc,forum_name,"DF:DateLocale");
   df = cf_cfg_get_first_value(vc,forum_name,"DateFormatThreadView");
   dft = cf_cfg_get_first_value(vc,forum_name,"DateFormatThreadList");
-  lt = cf_cfg_get_first_value(dc,forum_name,UserName ? "UPostingURL_List" : "PostingURL_List");
+  lt = cf_cfg_get_first_value(dc,forum_name,UserName ? "UDF:PostingURL_List" : "DF:PostingURL_List");
 
   utf8 = cf_strcmp(cs->values[0],"UTF-8") == 0;
   /* }}} */
@@ -160,10 +160,10 @@ int flt_list_rm_collector(cf_hash_t *head,cf_configuration_t *dc,cf_configuratio
   u_char buff[256];
 
   if(cf_strcmp(rm->values[0],"list") == 0) {
-    v = cf_cfg_get_first_value(dc,fn,"PostingURL_List");
+    v = cf_cfg_get_first_value(dc,fn,"DF:PostingURL_List");
     rm_infos->posting_uri[0] = v->values[0];
 
-    v = cf_cfg_get_first_value(dc,fn,"UPostingURL_List");
+    v = cf_cfg_get_first_value(dc,fn,"UDF:PostingURL_List");
     rm_infos->posting_uri[1] = v->values[0];
 
     if((v = cf_cfg_get_first_value(vc,fn,"TemplateForumBegin")) != NULL) {

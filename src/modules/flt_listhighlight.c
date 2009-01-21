@@ -41,7 +41,7 @@ struct {
   cf_hash_t *WhiteList;
   u_char *WhiteListColorF;
   u_char *WhiteListColorB;
-  cf_hash_t *HighlightCategories;
+  cf_hash_t *HighlightDF:Categories;
   u_char *CategoryHighlightColorF;
   u_char *CategoryHighlightColorB;
   cf_hash_t *VIPList;
@@ -100,7 +100,7 @@ int flt_lh_execute_filter(cf_hash_t *head,cf_configuration_t *dc,cf_configuratio
    */
   if(UserName) uname = cf_cfg_get_first_value(vc,flt_lh_fn,"Name");
 
-  if(!Cfg.VIPList && !Cfg.WhiteList && !Cfg.HighlightCategories && !Cfg.HighlightOwnPostings) return FLT_DECLINE;
+  if(!Cfg.VIPList && !Cfg.WhiteList && !Cfg.HighlightDF:Categories && !Cfg.HighlightOwnPostings) return FLT_DECLINE;
 
   if(Cfg.VIPList) {
     tmp = flt_lh_tolwer(msg->author.content,&len);
@@ -114,8 +114,8 @@ int flt_lh_execute_filter(cf_hash_t *head,cf_configuration_t *dc,cf_configuratio
     free(tmp);
   }
 
-  if(Cfg.HighlightCategories && msg->category.len) {
-    if(cf_hash_get(Cfg.HighlightCategories,msg->category.content,msg->category.len)) cf_tpl_hashvar_setvalue(&msg->hashvar,"cathigh",TPL_VARIABLE_INT,1);
+  if(Cfg.HighlightDF:Categories && msg->category.len) {
+    if(cf_hash_get(Cfg.HighlightDF:Categories,msg->category.content,msg->category.len)) cf_tpl_hashvar_setvalue(&msg->hashvar,"cathigh",TPL_VARIABLE_INT,1);
   }
 
   if(Cfg.HighlightOwnPostings && uname) {
@@ -133,7 +133,7 @@ void flt_listhighlight_cleanup(void) {
   if(Cfg.WhiteList)               cf_hash_destroy(Cfg.WhiteList);
   if(Cfg.WhiteListColorF)         free(Cfg.WhiteListColorF);
   if(Cfg.WhiteListColorB)         free(Cfg.WhiteListColorB);
-  if(Cfg.HighlightCategories)     cf_hash_destroy(Cfg.HighlightCategories);
+  if(Cfg.HighlightDF:Categories)     cf_hash_destroy(Cfg.HighlightDF:Categories);
   if(Cfg.CategoryHighlightColorF) free(Cfg.CategoryHighlightColorF);
   if(Cfg.CategoryHighlightColorB) free(Cfg.CategoryHighlightColorB);
   if(Cfg.VIPList)                 cf_hash_destroy(Cfg.VIPList);
@@ -144,7 +144,7 @@ void flt_listhighlight_cleanup(void) {
 
 /* {{{ flt_lh_set_colors */
 int flt_lh_set_colors(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t *vc,cf_template_t *begin,cf_template_t *end) {
-  cf_name_value_t *cs = cf_cfg_get_first_value(dc,NULL,"ExternCharset");
+  cf_name_value_t *cs = cf_cfg_get_first_value(dc,NULL,"DF:ExternCharset");
 
   if(Cfg.VIPColorF || Cfg.VIPColorB) {
     cf_tpl_setvalue(begin,"vipcol",TPL_VARIABLE_STRING,"1",1);
@@ -211,9 +211,9 @@ int flt_lh_handle_command(cf_configfile_t *cf,cf_conf_opt_t *opt,const u_char *c
     Cfg.WhiteListColorF = strdup(args[0]);
     Cfg.WhiteListColorB = strdup(args[1]);
   }
-  else if(cf_strcmp(opt->name,"HighlightCategories") == 0) {
-    if(!Cfg.HighlightCategories) Cfg.HighlightCategories = cf_hash_new(NULL);
-    flt_lh_parse_list((u_char *)args[0],Cfg.HighlightCategories);
+  else if(cf_strcmp(opt->name,"HighlightDF:Categories") == 0) {
+    if(!Cfg.HighlightDF:Categories) Cfg.HighlightDF:Categories = cf_hash_new(NULL);
+    flt_lh_parse_list((u_char *)args[0],Cfg.HighlightDF:Categories);
   }
   else if(cf_strcmp(opt->name,"CategoryHighlightColors") == 0) {
     if(Cfg.CategoryHighlightColorF) free(Cfg.CategoryHighlightColorF);
@@ -243,7 +243,7 @@ cf_conf_opt_t flt_listhighlight_config[] = {
   { "OwnPostingsColors",       flt_lh_handle_command, CF_CFG_OPT_CONFIG|CF_CFG_OPT_USER|CF_CFG_OPT_LOCAL, NULL },
   { "WhiteList",               flt_lh_handle_command, CF_CFG_OPT_CONFIG|CF_CFG_OPT_USER|CF_CFG_OPT_LOCAL, NULL },
   { "WhiteListColors",         flt_lh_handle_command, CF_CFG_OPT_CONFIG|CF_CFG_OPT_USER|CF_CFG_OPT_LOCAL, NULL },
-  { "HighlightCategories",     flt_lh_handle_command, CF_CFG_OPT_CONFIG|CF_CFG_OPT_USER|CF_CFG_OPT_LOCAL, NULL },
+  { "HighlightDF:Categories",     flt_lh_handle_command, CF_CFG_OPT_CONFIG|CF_CFG_OPT_USER|CF_CFG_OPT_LOCAL, NULL },
   { "CategoryHighlightColors", flt_lh_handle_command, CF_CFG_OPT_CONFIG|CF_CFG_OPT_USER|CF_CFG_OPT_LOCAL, NULL },
   { "VIPList",                 flt_lh_handle_command, CF_CFG_OPT_CONFIG|CF_CFG_OPT_LOCAL,              NULL },
   { "VIPColors",               flt_lh_handle_command, CF_CFG_OPT_CONFIG|CF_CFG_OPT_LOCAL,              NULL },

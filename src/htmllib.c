@@ -930,8 +930,8 @@ int cf_html_register_textfilter(const u_char *text,cf_directive_filter_t filter)
 
 /* {{{ cf_msg_to_html */
 void cf_msg_to_html(cf_cfg_config_t *cfg,cf_cl_thread_t *thread,const u_char *msg,cf_string_t *content,cf_string_t *cite,u_char *quote_chars,int max_sig_lines,int show_sig) {
-  cf_cfg_config_value_t *cs   = cf_cfg_get_value(cfg,"ExternCharset");
-  cf_cfg_config_value_t *xmlm = cf_cfg_get_value(cfg,"XHTMLMode");
+  cf_cfg_config_value_t *cs   = cf_cfg_get_value(cfg,"DF:ExternCharset");
+  cf_cfg_config_value_t *xmlm = cf_cfg_get_value(cfg,"DF:XHTMLMode");
   u_char *qchars,*ptr;
   size_t qclen;
   int utf8 = cf_strcmp(cs->sval,"UTF-8") == 0,xml;
@@ -1068,8 +1068,8 @@ int cf_gen_threadlist(cf_cfg_config_t *cfg,cf_cl_thread_t *thread,cf_hash_t *hea
   int ret,level;
 
   cf_cfg_config_value_t *dft = cf_cfg_get_value(cfg,"DateFormatThreadList"),
-    *locale = cf_cfg_get_value(cfg,"DateLocale"),
-    *cs = cf_cfg_get_value(cfg,"ExternCharset");
+    *locale = cf_cfg_get_value(cfg,"DF:DateLocale"),
+    *cs = cf_cfg_get_value(cfg,"DF:ExternCharset");
 
   cf_str_init(threadlist);
 

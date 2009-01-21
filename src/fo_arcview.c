@@ -58,7 +58,7 @@ static int ArcSortMeth = CF_SORT_ASCENDING;
 /* {{{ get_month_name */
 size_t get_month_name(cf_cfg_config_t *cfg,int month,u_char **name) {
   struct tm tm;
-  cf_cfg_config_value_t *v = cf_cfg_get_value(cfg,"DateLocale");
+  cf_cfg_config_value_t *v = cf_cfg_get_value(cfg,"DF:DateLocale");
 
   if(!v) return 0;
 
@@ -166,12 +166,12 @@ void show_years(cf_cfg_config_t *cfg) {
   cf_get_years_t gy;
 
   u_char *username = cf_hash_get(GlobalValues,"UserName",8),*script;
-  cf_cfg_config_value_t *cs = cf_cfg_get_value(cfg,"ExternCharset"),
+  cf_cfg_config_value_t *cs = cf_cfg_get_value(cfg,"DF:ExternCharset"),
     *sy = cf_cfg_get_value(cfg,"SortYearList"),
     *yt = cf_cfg_get_value(cfg,"YearsTemplate"),
-    *forumpath = cf_cfg_get_value(cfg,"BaseURL"),
-    *mode = cf_cfg_get_value(cfg,"TemplateMode"),
-    *lang = cf_cfg_get_value(cfg,"Language");
+    *forumpath = cf_cfg_get_value(cfg,"DF:BaseURL"),
+    *mode = cf_cfg_get_value(cfg,"DF:TemplateMode"),
+    *lang = cf_cfg_get_value(cfg,"DF:Language");
 
   cf_template_t tpl;
 
@@ -237,11 +237,11 @@ void show_year_content(cf_cfg_config_t *cfg,const u_char *year) {
   u_char mt_name[256],*mname;
 
   cf_cfg_config_value_t *mt = cf_cfg_get_value(cfg,"MonthsTemplate"),
-    *cs = cf_cfg_get_value(cfg,"ExternCharset"),
+    *cs = cf_cfg_get_value(cfg,"DF:ExternCharset"),
     *sm = cf_cfg_get_value(cfg,"SortMonthList"),
-    *forumpath = cf_cfg_get_value(cfg,"BaseURL"),
-    *mode = cf_cfg_get_value(cfg,"TemplateMode"),
-    *lang = cf_cfg_get_value(cfg,"Language");
+    *forumpath = cf_cfg_get_value(cfg,"DF:BaseURL"),
+    *mode = cf_cfg_get_value(cfg,"DF:TemplateMode"),
+    *lang = cf_cfg_get_value(cfg,"DF:Language");
 
   cf_array_t *ary;
 
@@ -344,7 +344,7 @@ size_t prep_var(const u_char *val,size_t len,u_char **out,cf_cfg_config_value_t 
       len1 = strlen(val);
     }
   }
-  /* ExternCharset is also UTF-8 */
+  /* DF:ExternCharset is also UTF-8 */
   else {
     if(html) {
       tmp = htmlentities(val,0);
@@ -368,16 +368,16 @@ void show_month_content(cf_cfg_config_t *cfg,const u_char *year,const u_char *mo
 
   u_char mt_name[256],pi[256],*tmp,*tmp1,*script;
 
-  cf_cfg_config_value_t *cs = cf_cfg_get_value(cfg,"ExternCharset"),
+  cf_cfg_config_value_t *cs = cf_cfg_get_value(cfg,"DF:ExternCharset"),
     *stl = cf_cfg_get_value(cfg,"SortThreadList"),
     *m_tp = cf_cfg_get_value(cfg,"MonthsTemplate"),
-    *forumpath = cf_cfg_get_value(cfg,"BaseURL"),
+    *forumpath = cf_cfg_get_value(cfg,"DF:BaseURL"),
     *ecache = cf_cfg_get_value(cfg,"EnableCache"),
     *df = cf_cfg_get_value(cfg,"DateFormatList"),
-    *lc = cf_cfg_get_value(cfg,"DateLocale"),
+    *lc = cf_cfg_get_value(cfg,"DF:DateLocale"),
     *cache  = NULL,*clevel = NULL,
-    *mode = cf_cfg_get_value(cfg,"TemplateMode"),
-    *lang = cf_cfg_get_value(cfg,"Language");
+    *mode = cf_cfg_get_value(cfg,"DF:TemplateMode"),
+    *lang = cf_cfg_get_value(cfg,"DF:Language");
 
   cf_array_t *ary;
 
@@ -537,11 +537,11 @@ void generate_thread_output(cf_cfg_config_t *cfg,cf_cl_thread_t *thread,cf_hiera
   int printed = 0;
   u_char *date,*tmp;
   cf_string_t strbuffer;
-  cf_cfg_config_value_t *qc = cf_cfg_get_value(cfg,"QuotingChars"),
+  cf_cfg_config_value_t *qc = cf_cfg_get_value(cfg,"DF:QuotingChars"),
     *ms = cf_cfg_get_value(cfg,"MaxSigLines"),
     *ss = cf_cfg_get_value(cfg,"ShowSig"),
     *tf = cf_cfg_get_value(cfg,"DateFormatViewList"),
-    *dl = cf_cfg_get_value(cfg,"DateLocale");
+    *dl = cf_cfg_get_value(cfg,"DF:DateLocale");
 
   cf_tpl_variable_t ary;
 
@@ -669,12 +669,12 @@ void print_thread(cf_cfg_config_t *cfg,cf_cl_thread_t *thr,const u_char *year,co
 
   cf_cfg_config_value_t *main_tpl_cfg = cf_cfg_get_value(cfg,"ThreadTemplate"),
     *threadlist_tpl_cfg = cf_cfg_get_value(cfg,"ThreadListTemplate"),
-    *forumpath = cf_cfg_get_value(cfg,"BaseURL"),
+    *forumpath = cf_cfg_get_value(cfg,"DF:BaseURL"),
     *ecache = cf_cfg_get_value(cfg,"EnableCache"),
     *cache, *clevel,
-    *cs = cf_cfg_get_value(cfg,"ExternCharset"),
-    *mode = cf_cfg_get_value(cfg,"TemplateMode"),
-    *lang = cf_cfg_get_value(cfg,"Language");
+    *cs = cf_cfg_get_value(cfg,"DF:ExternCharset"),
+    *mode = cf_cfg_get_value(cfg,"DF:TemplateMode"),
+    *lang = cf_cfg_get_value(cfg,"DF:Language");
 
   int authed = cf_hash_get(GlobalValues,"ShowInvisible",13) != NULL;
 
@@ -754,7 +754,7 @@ void show_thread(cf_cfg_config_t *cfg,const u_char *year,const u_char *month,con
   cf_mod_api_t is_admin = cf_get_mod_api_ent("is_admin");
   int admin = uname ? is_admin(uname) == NULL ? 0 : 1 : 0;
 
-  cf_cfg_config_value_t *cs = cf_cfg_get_value(cfg,"ExternCharset"),
+  cf_cfg_config_value_t *cs = cf_cfg_get_value(cfg,"DF:ExternCharset"),
     *sm = cf_cfg_get_value(cfg,"SortMessages"),
     *ecache = cf_cfg_get_value(cfg,"EnableCache"),
     *cache, *clevel;
@@ -870,7 +870,7 @@ int main(int argc,char *argv[],char *env[]) {
     return EXIT_FAILURE;
   }
 
-  cs = cf_cfg_get_value(&cfg,"ExternCharset");
+  cs = cf_cfg_get_value(&cfg,"DF:ExternCharset");
 
   /* first action: authorization modules */
   ret = cf_run_auth_handlers(&cfg,head);
@@ -880,7 +880,7 @@ int main(int argc,char *argv[],char *env[]) {
     if(*pi && pi[strlen(pi)-1] != '/') {
       cf_str_init(&tmp);
 
-      v = cf_cfg_get_value(&cfg,"ArchiveURL");
+      v = cf_cfg_get_value(&cfg,"DF:ArchiveURL");
       cf_str_chars_append(&tmp,v->sval,strlen(v->sval));
       cf_str_chars_append(&tmp,pi,strlen(pi));
       cf_str_char_append(&tmp,'/');
@@ -895,7 +895,7 @@ int main(int argc,char *argv[],char *env[]) {
 
   if(ret != FLT_EXIT) {
     memset(&rm_infos,0,sizeof(rm_infos));
-    v = cf_cfg_get_value(&cfg,"PostingURL");
+    v = cf_cfg_get_value(&cfg,"DF:PostingURL");
     rm_infos.posting_uri[0] = v->avals[0].sval;
     rm_infos.posting_uri[1] = v->avals[1].sval;
     cf_hash_set(GlobalValues,"RM",2,&rm_infos,sizeof(rm_infos));

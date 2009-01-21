@@ -49,7 +49,7 @@ struct sockaddr_un;
 
 /* {{{ flt_tidx_module */
 int flt_tidx_module(forum_t *forum,thread_t *thr) {
-  cf_name_value_t *v = cf_cfg_get_first_value(&fo_default_conf,forum->name,"ThreadIndexFile");
+  cf_name_value_t *v = cf_cfg_get_first_value(&fo_default_conf,forum->name,"DF:ThreadIndexFile");
   struct stat st;
   struct tm t;
   DB *db;

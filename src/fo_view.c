@@ -70,15 +70,15 @@ void show_xmlhttp_thread(cf_cfg_config_t *cfg,cf_hash_t *head,void *shm_ptr,u_in
 
   #ifdef CF_SHARED_MEM
   int sock;
-  cf_cfg_config_value_t *sockpath = cf_cfg_get_value(cfg,"SocketName");
+  cf_cfg_config_value_t *sockpath = cf_cfg_get_value(cfg,"DF:SocketName");
   #endif
 
   memset(&tsd,0,sizeof(tsd));
 
-  tplmode       = cf_cfg_get_value(cfg,"TemplateMode");
-  lang          = cf_cfg_get_value(cfg,"Language");
+  tplmode       = cf_cfg_get_value(cfg,"DF:TemplateMode");
+  lang          = cf_cfg_get_value(cfg,"DF:Language");
   fo_thread_tpl = cf_cfg_get_value(cfg,"TemplateForumThread");
-  cs            = cf_cfg_get_value(cfg,"ExternCharset");
+  cs            = cf_cfg_get_value(cfg,"DF:ExternCharset");
 
   cf_gen_tpl_name(fo_thread_tplname,256,tplmode->sval,lang->sval,fo_thread_tpl->sval);
 
@@ -157,7 +157,7 @@ void show_posting(cf_cfg_config_t *cfg,cf_hash_t *head,void *shm_ptr,u_int64_t t
 
   cf_cfg_config_value_t *tm  = cf_cfg_get_value(cfg,"ThreadMode"),
     *rm             = cf_cfg_get_value(cfg,"ReadMode"),
-    *cs             = cf_cfg_get_value(cfg,"ExternCharset"),
+    *cs             = cf_cfg_get_value(cfg,"DF:ExternCharset"),
     *fbase          = NULL,
     *name           = cf_cfg_get_value(cfg,"Name"),
     *email          = cf_cfg_get_value(cfg,"EMail"),
@@ -174,7 +174,7 @@ void show_posting(cf_cfg_config_t *cfg,cf_hash_t *head,void *shm_ptr,u_int64_t t
   int del = cf_hash_get(GlobalValues,"ShowInvisible",13) == NULL ? CF_KILL_DELETED : CF_KEEP_DELETED;
 
   #ifdef CF_SHARED_MEM
-  cf_cfg_config_value_t *shminf = cf_cfg_get_value(cfg,"SharedMemIds");
+  cf_cfg_config_value_t *shminf = cf_cfg_get_value(cfg,"DF:SharedMemIds");
   int shmids[3] = { shminf->avals[0].ival,shminf->avals[1].ival,shminf->avals[2].ival };
   #endif
 
@@ -226,8 +226,8 @@ void show_posting(cf_cfg_config_t *cfg,cf_hash_t *head,void *shm_ptr,u_int64_t t
   cf_tpl_setvalue(&tpl,"charset",TPL_VARIABLE_STRING,cs->sval,strlen(cs->sval));
 
   uname = cf_hash_get(GlobalValues,"UserName",8) != 0;
-  fbase = cf_cfg_get_value(cfg,"BaseURL");
-  ps    = cf_cfg_get_value(cfg,"PostScript");
+  fbase = cf_cfg_get_value(cfg,"DF:BaseURL");
+  ps    = cf_cfg_get_value(cfg,"DF:PostScript");
   reg   = cf_cfg_get_value(cfg,"UserManage");
 
   tmp = cf_get_link(fbase->avals[uname].sval,0,0);
@@ -298,11 +298,11 @@ void show_threadlist(cf_cfg_config_t *cfg,void *shm_ptr,cf_hash_t *head)
 
   int uname = cf_hash_get(GlobalValues,"UserName",8) != NULL;
 
-  cf_cfg_config_value_t *cs = cf_cfg_get_value(cfg,"ExternCharset"),
+  cf_cfg_config_value_t *cs = cf_cfg_get_value(cfg,"DF:ExternCharset"),
     *fbase         = NULL,
     *pbase         = NULL,
     *time_fmt      = cf_cfg_get_value(cfg,"DateFormatLoadTime"),
-    *time_lc       = cf_cfg_get_value(cfg,"DateLocale");
+    *time_lc       = cf_cfg_get_value(cfg,"DF:DateLocale");
 
   cf_template_t tpl_begin,tpl_end;
 
@@ -321,7 +321,7 @@ void show_threadlist(cf_cfg_config_t *cfg,void *shm_ptr,cf_hash_t *head)
   #endif
 
   #ifdef CF_SHARED_MEM
-  cf_cfg_config_value_t *shminf = cf_cfg_get_value(cfg,"SharedMemIds");
+  cf_cfg_config_value_t *shminf = cf_cfg_get_value(cfg,"DF:SharedMemIds");
   int shmids[3] = { shminf->avals[0].ival,shminf->avals[1].ival,shminf->avals[2].ival };
   #endif
 
@@ -379,8 +379,8 @@ void show_threadlist(cf_cfg_config_t *cfg,void *shm_ptr,cf_hash_t *head)
    */
   else {
     /* {{{ more initialization */
-    fbase    = cf_cfg_get_value(cfg,"BaseURL");
-    pbase    = cf_cfg_get_value(cfg,"PostScript");
+    fbase    = cf_cfg_get_value(cfg,"DF:BaseURL");
+    pbase    = cf_cfg_get_value(cfg,"DF:PostScript");
 
     if(cf_tpl_init(&tpl_begin,rm->pre_threadlist_tpl) != 0) {
       printf("Status: 500 Internal Server Error\015\012Content-Type: %s; charset=%s\015\012\015\012",content_type?content_type:(u_char *)"text/html",cs->sval);
@@ -607,7 +607,7 @@ int main(int argc,char *argv[],char *env[]) {
   }
   /* }}} */
 
-  uconfpath = cf_cfg_get_value(&cfg,"ConfigDirectory");
+  uconfpath = cf_cfg_get_value(&cfg,"DF:ConfigDirectory");
   pt        = cf_cfg_get_value(&cfg,"ParamType");
   head      = cf_cgi_new();
   if(*pt->sval == 'P') cf_cgi_parse_path_info_nv(head);
@@ -637,7 +637,7 @@ int main(int argc,char *argv[],char *env[]) {
   /* run init handlers */
   if(ret != FLT_EXIT) ret = cf_run_init_handlers(&cfg,head);
 
-  cs = cf_cfg_get_value(&cfg,"ExternCharset");
+  cs = cf_cfg_get_value(&cfg,"DF:ExternCharset");
   content_type = cf_hash_get(GlobalValues,"OutputContentType",17);
 
   /* {{{ get readmode information */
@@ -663,7 +663,7 @@ int main(int argc,char *argv[],char *env[]) {
       exit(0);
     }
     #else
-    shminf = cf_cfg_get_value(&cfg,"SharedMemIds");
+    shminf = cf_cfg_get_value(&cfg,"DF:SharedMemIds");
     shmids[0] = shminf->avals[0].ival;
     shmids[1] = shminf->avals[1].ival;
     shmids[2] = shminf->avals[2].ival;

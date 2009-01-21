@@ -163,7 +163,7 @@ int flt_stdreplacements_smileys(cf_configuration_t *fdc,cf_configuration_t *fvc,
 
   if(!flt_stdrepl_theme) return FLT_DECLINE;
   if(flt_stdrepl_fname == NULL) flt_stdrepl_fname = cf_hash_get(GlobalValues,"FORUM_NAME",10);
-  xhtml = cf_cfg_get_first_value(fdc,flt_stdrepl_fname,"XHTMLMode");
+  xhtml = cf_cfg_get_first_value(fdc,flt_stdrepl_fname,"DF:XHTMLMode");
 
   for(i=0;flt_stdrepl_smiles[i];++i) {
     if(cf_strcmp(directive,flt_stdrepl_smiles[i]) == 0) {

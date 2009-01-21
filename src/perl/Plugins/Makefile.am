@@ -5,7 +5,7 @@ EXTRA_DIST=HTTPAuth.pm \
 	ImportExport.pm \
 	XMLRPCUserManagement.pm \
 	Pathes.pm \
-	UserconfCategories.pm \
+	UserconfDF:Categories.pm \
 	Wizard.pm \
 	Setvalue.pm
 

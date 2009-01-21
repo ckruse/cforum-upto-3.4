@@ -62,13 +62,13 @@ int flt_preview_execute(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_
 
   if(head) {
     if(cf_cgi_get(head,"preview")) {
-      v = cf_cfg_get_first_value(dc,forum_name,"DateLocale");
+      v = cf_cfg_get_first_value(dc,forum_name,"DF:DateLocale");
 
       date = cf_general_get_time(flt_preview_datefmt,v->values[0],&len,&p->date);
       cf_cgi_set(head,"date",date,len);
       free(date);
 
-      v = cf_cfg_get_first_value(pc,forum_name,"QuotingChars");
+      v = cf_cfg_get_first_value(pc,forum_name,"DF:QuotingChars");
       cf_str_init(&cnt);
       msg_to_html(NULL,p->content.content,&cnt,NULL,v->values[0],-1,1);
 

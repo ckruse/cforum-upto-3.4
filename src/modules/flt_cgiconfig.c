@@ -51,12 +51,12 @@ int flt_cgiconfig_post(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t
 
   size_t l;
 
-  cf_name_value_t *cs = cf_cfg_get_first_value(dc,forum_name,"ExternCharset");
+  cf_name_value_t *cs = cf_cfg_get_first_value(dc,forum_name,"DF:ExternCharset");
   cf_readmode_t *rm = cf_hash_get(GlobalValues,"RM",2);
 
-  cf_name_value_t *threaded_uri = cf_cfg_get_first_value(dc,forum_name,UserName?"UPostingURL":"PostingURL");
-  cf_name_value_t *list_uri = cf_cfg_get_first_value(dc,forum_name,UserName?"UPostingURL_List":"PostingURL_List");
-  cf_name_value_t *nested_uri = cf_cfg_get_first_value(dc,forum_name,UserName?"UPostingURL_Nested":"PostingURL_Nested");
+  cf_name_value_t *threaded_uri = cf_cfg_get_first_value(dc,forum_name,UserName?"UDF:PostingURL":"DF:PostingURL");
+  cf_name_value_t *list_uri = cf_cfg_get_first_value(dc,forum_name,UserName?"UDF:PostingURL_List":"DF:PostingURL_List");
+  cf_name_value_t *nested_uri = cf_cfg_get_first_value(dc,forum_name,UserName?"UDF:PostingURL_Nested":"DF:PostingURL_Nested");
 
   /* {{{ ShowThread links */
   if((tmp = cf_cgi_get(head,"showthread")) != NULL) cf_remove_static_uri_flag("showthread");

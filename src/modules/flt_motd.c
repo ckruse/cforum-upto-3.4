@@ -50,7 +50,7 @@ int flt_motd_execute(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t *
   struct stat st;
   u_char *txt;
   u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
-  cf_name_value_t *cs = cf_cfg_get_first_value(dc,forum_name,"ExternCharset");
+  cf_name_value_t *cs = cf_cfg_get_first_value(dc,forum_name,"DF:ExternCharset");
 
   if(MOTD_File && MOTD_enable) {
     if(stat(MOTD_File,&st) != -1) {

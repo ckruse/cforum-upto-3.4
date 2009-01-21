@@ -312,7 +312,7 @@ void flt_directives_generate_uri(const u_char *uri,const u_char *title,cf_string
 int flt_directives_execute(cf_configuration_t *fdc,cf_configuration_t *fvc,cl_thread_t *thread,const u_char *directive,const u_char **parameters,size_t plen,cf_string_t *bco,cf_string_t *bci,cf_string_t *content,cf_string_t *cite,const u_char *qchars,int sig) {
   u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   size_t len = 0,i,len1 = 0;
-  cf_name_value_t *xhtml = cf_cfg_get_first_value(fdc,forum_name,"XHTMLMode");
+  cf_name_value_t *xhtml = cf_cfg_get_first_value(fdc,forum_name,"DF:XHTMLMode");
   u_int64_t tid,mid;
   u_char *ptr,*tmp,*tmp1 = NULL,**list = NULL,*title_alt = NULL,*tmp2 = NULL,*uname = cf_hash_get(GlobalValues,"UserName",8);
   cf_readmode_t *rm = cf_hash_get(GlobalValues,"RM",2);

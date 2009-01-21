@@ -613,7 +613,7 @@ int flt_mailonpost_post_handler(cf_hash_t *head,cf_configuration_t *dc,cf_config
     }
   }
 
-  cs = cf_cfg_get_first_value(dc,flt_mailonpost_fn,"ExternCharset");
+  cs = cf_cfg_get_first_value(dc,flt_mailonpost_fn,"DF:ExternCharset");
 
   if(ret == DB_NOTFOUND) {
     link = cf_advanced_get_link(rm->posting_uri[1],thread->tid,thread->messages->mid,NULL,1,&len,"mailonpost","yes");

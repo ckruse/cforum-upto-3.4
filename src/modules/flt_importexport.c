@@ -56,7 +56,7 @@ void flt_importexport_export(cf_hash_t *cgi,cf_configuration_t *dc,cf_configurat
 
   cf_uconf_userconfig_t *modxml;
   size_t i,j;
-  cf_name_value_t *vals,*cs = cf_cfg_get_first_value(&fo_default_conf,fn,"ExternCharset");
+  cf_name_value_t *vals,*cs = cf_cfg_get_first_value(&fo_default_conf,fn,"DF:ExternCharset");
   cf_string_t str;
   cf_uconf_directive_t *directive;
 
@@ -107,8 +107,8 @@ void flt_importexport_export(cf_hash_t *cgi,cf_configuration_t *dc,cf_configurat
 void flt_importexport_importform(cf_hash_t *cgi,cf_configuration_t *dc,cf_configuration_t *uc,cf_configuration_t *uconf) {
   u_char tplname[256];
   cf_template_t tpl;
-  cf_name_value_t *cs = cf_cfg_get_first_value(&fo_default_conf,flt_importexport_fn,"ExternCharset"),
-    *ubase  = cf_cfg_get_first_value(&fo_default_conf,flt_importexport_fn,"UBaseURL"),
+  cf_name_value_t *cs = cf_cfg_get_first_value(&fo_default_conf,flt_importexport_fn,"DF:ExternCharset"),
+    *ubase  = cf_cfg_get_first_value(&fo_default_conf,flt_importexport_fn,"UDF:BaseURL"),
     *script = cf_cfg_get_first_value(&fo_default_conf,flt_importexport_fn,"UserConfig");
 
   cf_gen_tpl_name(tplname,256,flt_importexport_form);
@@ -281,8 +281,8 @@ void flt_importexport_import(cf_hash_t *cgi,cf_configuration_t *dc,cf_configurat
   GdomeDOMImplementation *di;
 
   cf_string_t *imprtcfg,str1;
-  cf_name_value_t *cs = cf_cfg_get_first_value(dc,fn,"ExternCharset"),
-    *ubase  = cf_cfg_get_first_value(dc,flt_importexport_fn,"UBaseURL"),
+  cf_name_value_t *cs = cf_cfg_get_first_value(dc,fn,"DF:ExternCharset"),
+    *ubase  = cf_cfg_get_first_value(dc,flt_importexport_fn,"UDF:BaseURL"),
     *script = cf_cfg_get_first_value(dc,flt_importexport_fn,"UserConfig");
 
   cf_uconf_userconfig_t *intrnl,*merged;

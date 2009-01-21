@@ -50,12 +50,12 @@ static u_char *flt_basic_fn = NULL;
 /* {{{ flt_basic_execute */
 int flt_basic_execute(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t *vc,cf_template_t *begin,cf_template_t *end) {
   u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
-  cf_name_value_t *ubase = cf_cfg_get_first_value(dc,forum_name,"UBaseURL");
-  cf_name_value_t *cs = cf_cfg_get_first_value(dc,forum_name,"ExternCharset");
+  cf_name_value_t *ubase = cf_cfg_get_first_value(dc,forum_name,"UDF:BaseURL");
+  cf_name_value_t *cs = cf_cfg_get_first_value(dc,forum_name,"DF:ExternCharset");
   u_char *UserName = cf_hash_get(GlobalValues,"UserName",8);
   cf_name_value_t *dflt = cf_cfg_get_first_value(vc,forum_name,"DateFormatLoadTime");
-  cf_name_value_t *loc = cf_cfg_get_first_value(dc,forum_name,"DateLocale");
-  cf_name_value_t *cats = cfg_get_first_value(dc,forum_name,"Categories");
+  cf_name_value_t *loc = cf_cfg_get_first_value(dc,forum_name,"DF:DateLocale");
+  cf_name_value_t *cats = cfg_get_first_value(dc,forum_name,"DF:Categories");
   cf_name_value_t *ucfg;
   cf_tpl_variable_t array;
 
@@ -127,7 +127,7 @@ int flt_basic_execute(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t 
 /* {{{ flt_basic_handle_posting */
 int flt_basic_handle_posting(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t *vc,cl_thread_t *thr,cf_template_t *tpl) {
   u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
-  cf_name_value_t *cs = cf_cfg_get_first_value(dc,forum_name,"ExternCharset");
+  cf_name_value_t *cs = cf_cfg_get_first_value(dc,forum_name,"DF:ExternCharset");
   u_char *UserName = cf_hash_get(GlobalValues,"UserName",8);
 
   if(UserName) {
@@ -151,7 +151,7 @@ int flt_basic_handle_posting(cf_hash_t *head,cf_configuration_t *dc,cf_configura
 /* {{{ flt_basic_set_target */
 int flt_basic_set_target(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t *vc,message_t *msg,u_int64_t tid,int mode) {
   u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
-  cf_name_value_t *cs = cf_cfg_get_first_value(dc,forum_name,"ExternCharset");
+  cf_name_value_t *cs = cf_cfg_get_first_value(dc,forum_name,"DF:ExternCharset");
 
   if(Cfg.BaseTarget && *Cfg.BaseTarget && mode == 0) {
     cf_set_variable_hash(&msg->hashvar,cs,"target",Cfg.BaseTarget,strlen(Cfg.BaseTarget),1);

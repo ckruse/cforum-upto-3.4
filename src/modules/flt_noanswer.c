@@ -188,7 +188,7 @@ int flt_noanswer_post(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t 
   if(cf_hash_get(GlobalValues,"ShowInvisible",13) != NULL) return FLT_DECLINE;
 
   fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
-  cs = cf_cfg_get_first_value(dc,fn,"ExternCharset");
+  cs = cf_cfg_get_first_value(dc,fn,"DF:ExternCharset");
   printf("Status: 403 Forbidden\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
   cf_error_message("E_noanswer",NULL);
 

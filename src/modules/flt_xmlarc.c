@@ -362,7 +362,7 @@ int flt_xmlarc_validate_thread(const u_char *year,const u_char *month,const u_ch
       cf_str_cleanup(&str);
 
       if(*tid != 't') {
-        v = cf_cfg_get_first_value(&fo_default_conf,flt_xmlarc_fn,"ArchiveURL");
+        v = cf_cfg_get_first_value(&fo_default_conf,flt_xmlarc_fn,"DF:ArchiveURL");
 
         cf_str_char_set(&str,v->values[0],strlen(v->values[0]));
         cf_str_chars_append(&str,year,strlen(year));
@@ -383,7 +383,7 @@ int flt_xmlarc_validate_thread(const u_char *year,const u_char *month,const u_ch
   }
 
   cf_str_cleanup(&str);
-  v = cf_cfg_get_first_value(&fo_default_conf,flt_xmlarc_fn,"ExternCharset");
+  v = cf_cfg_get_first_value(&fo_default_conf,flt_xmlarc_fn,"DF:ExternCharset");
 
   printf("Status: 404 Not Found\015\012Content-Type: text/html; charset=%s\015\012\015\012",v->values[0]);
   cf_error_message("E_ARCHIVE_THREADNOTPRESENT",NULL);
@@ -414,7 +414,7 @@ int flt_xmlarc_validate_month(const u_char *year,const u_char *month) {
   }
 
   cf_str_cleanup(&str);
-  v = cf_cfg_get_first_value(&fo_default_conf,flt_xmlarc_fn,"ExternCharset");
+  v = cf_cfg_get_first_value(&fo_default_conf,flt_xmlarc_fn,"DF:ExternCharset");
 
   printf("Status: 404 Not Found\015\012Content-Type: text/html; charset=%s\015\012\015\012",v->values[0]);
   cf_error_message("E_ARCHIVE_MONTHNOTPRESENT",NULL);
@@ -443,7 +443,7 @@ int flt_xmlarc_validate_year(const u_char *year) {
   }
 
   cf_str_cleanup(&str);
-  v = cf_cfg_get_first_value(&fo_default_conf,flt_xmlarc_fn,"ExternCharset");
+  v = cf_cfg_get_first_value(&fo_default_conf,flt_xmlarc_fn,"DF:ExternCharset");
 
   printf("Status: 404 Not Found\015\012Content-Type: text/html; charset=%s\015\012\015\012",v->values[0]);
   cf_error_message("E_ARCHIVE_YEARNOTPRESENT",NULL);

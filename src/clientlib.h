@@ -554,7 +554,7 @@ void cf_remove_static_uri_flag(const u_char *name);
 
 /**
  * This function generates a link to a thread
- * \param link The link string (if NULL, PostingURL or UPostingURL will be used)
+ * \param link The link string (if NULL, DF:PostingURL or UDF:PostingURL will be used)
  * \param forum_name The name of the forum context. May be NULL if parameter link is given
  * \param tid The thread id
  * \param mid The message id

@@ -142,7 +142,7 @@ int flt_oc_execute_filter(cf_hash_t *head,cf_configuration_t *dc,cf_configuratio
   if(flt_oc_dbfile == NULL) return FLT_DECLINE;
   if(flt_oc_fn == NULL) flt_oc_fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
 
-  vs = cf_cfg_get_first_value(dc,flt_oc_fn,UserName ? "UBaseURL" : "BaseURL");
+  vs = cf_cfg_get_first_value(dc,flt_oc_fn,UserName ? "UDF:BaseURL" : "DF:BaseURL");
   cf_tpl_hashvar_setvalue(&thread->messages->hashvar,"openclose",TPL_VARIABLE_INT,1);
 
   i = snprintf(buff,512,"t%"PRIu64,thread->tid);

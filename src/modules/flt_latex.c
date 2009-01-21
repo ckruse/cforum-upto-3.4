@@ -302,7 +302,7 @@ int flt_latex_execute(cf_configuration_t *fdc,cf_configuration_t *fvc,cl_thread_
   }
 
   fn     =  cf_hash_get(GlobalValues,"FORUM_NAME",10);
-  xhtml  = cf_cfg_get_first_value(fdc,fn,"XHTMLMode");
+  xhtml  = cf_cfg_get_first_value(fdc,fn,"DF:XHTMLMode");
 
   flt_latex_create_md5_sum(my_cnt,len,sum);
 

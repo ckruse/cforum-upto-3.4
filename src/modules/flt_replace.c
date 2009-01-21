@@ -64,7 +64,7 @@ string_t *flt_replace_body_plain2coded(const u_char *text,configuration_t *cfg) 
 
   str_init(str);
 
-  v = cfg_get_first_value(cfg,flt_replace_fn,"QuotingChars");
+  v = cfg_get_first_value(cfg,flt_replace_fn,"DF:QuotingChars");
 
   qchars = htmlentities(v->values[0],0);
   len = strlen(qchars);

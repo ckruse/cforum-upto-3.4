@@ -111,7 +111,7 @@ int flt_link_set_links_post(cf_hash_t *head,cf_configuration_t *dc,cf_configurat
   u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   message_t *msg;
   cf_string_t str;
-  cf_name_value_t *cs = cf_cfg_get_first_value(&fo_default_conf,forum_name,"ExternCharset"),
+  cf_name_value_t *cs = cf_cfg_get_first_value(&fo_default_conf,forum_name,"DF:ExternCharset"),
     *rm = cf_cfg_get_first_value(vc,forum_name,"ReadMode");
 
   /* user doesn't want <link> tags */

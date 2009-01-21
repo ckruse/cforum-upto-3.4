@@ -83,7 +83,7 @@ void rfc822_date(cf_cfg_config_t *cfg,cf_string_t *str,time_t date) {
   size_t len;
   struct tm *tm;
 
-  cf_cfg_config_value_t *lc = cf_cfg_get_value(cfg,"DateLocaleEn");
+  cf_cfg_config_value_t *lc = cf_cfg_get_value(cfg,"DF:DateLocaleEn");
 
   setlocale(LC_TIME,lc->sval);
 
@@ -146,7 +146,7 @@ void atom_head(cf_cfg_config_t *cfg,cf_string_t *str,cf_cl_thread_t *thread) {
     *atom_lang = cf_cfg_get_value(cfg,"FeedLang"),
     *atom_uri = cf_cfg_get_value(cfg,thread?"AtomUriThread":"AtomUri"),
     *atom_id = cf_cfg_get_value(cfg,"AtomId"),
-    *burl = cf_cfg_get_value(cfg,uname ? "UBaseURL":"BaseURL");
+    *burl = cf_cfg_get_value(cfg,uname ? "UDF:BaseURL":"DF:BaseURL");
 
   cf_readmode_t *rm = cf_hash_get(GlobalValues,"RM",2);
 
@@ -241,7 +241,7 @@ void rss_head(cf_cfg_config_t *cfg,cf_string_t *str,cf_cl_thread_t *thread) {
     *rss_lang  = cf_cfg_get_value(cfg,"FeedLang"),
     *rss_wbm   = cf_cfg_get_value(cfg,"RSSWebMaster"),
     *rss_cat   = cf_cfg_get_value(cfg,"RSSCategory"),
-    *burl      = cf_cfg_get_value(cfg,"BaseURL"),
+    *burl      = cf_cfg_get_value(cfg,"DF:BaseURL"),
     *purl;
 
   cf_str_chars_append(str,"<?xml version=\"1.0\"?>\n" \
@@ -263,7 +263,7 @@ void rss_head(cf_cfg_config_t *cfg,cf_string_t *str,cf_cl_thread_t *thread) {
 
   cf_str_chars_append(str,"<link>",6);
   if(thread) {
-    purl = cf_cfg_get_value(cfg,"PostingURL");
+    purl = cf_cfg_get_value(cfg,"DF:PostingURL");
     tmp = cf_get_link(purl->avals[authed].sval,thread->tid,thread->messages->mid);
     cf_str_chars_append(str,"<![CDATA[",9);
     cf_str_chars_append(str,tmp,strlen(tmp));
@@ -321,7 +321,7 @@ void atom_thread(cf_cfg_config_t *cfg,cf_string_t *str,cf_cl_thread_t *thread,cf
 
   cf_string_t tmpstr;
 
-  cf_cfg_config_value_t *qchars = cf_cfg_get_value(cfg,"QuotingChars"),
+  cf_cfg_config_value_t *qchars = cf_cfg_get_value(cfg,"DF:QuotingChars"),
     *ms     = cf_cfg_get_value(cfg,"MaxSigLines"),
     *ss     = cf_cfg_get_value(cfg,"ShowSig");
 
@@ -421,8 +421,8 @@ void rss_thread(cf_cfg_config_t *cfg,cf_string_t *str,cf_cl_thread_t *thread,cf_
 
   cf_string_t tmpstr;
 
-  cf_cfg_config_value_t *burl   = cf_cfg_get_value(cfg,"PostingURL"),
-    *qchars = cf_cfg_get_value(cfg,"QuotingChars"),
+  cf_cfg_config_value_t *burl   = cf_cfg_get_value(cfg,"DF:PostingURL"),
+    *qchars = cf_cfg_get_value(cfg,"DF:QuotingChars"),
     *ms     = cf_cfg_get_value(cfg,"MaxSigLines"),
     *ss     = cf_cfg_get_value(cfg,"ShowSig");
 
@@ -515,13 +515,13 @@ void show_thread(cf_cfg_config_t *cfg,cf_hash_t *head,void *sock,u_int64_t tid)
   #ifndef CF_SHARED_MEM
   rline_t tsd;
   #else
-  cf_cfg_config_value_t *shminf = cf_cfg_get_value(cfg,"SharedMemIds");
+  cf_cfg_config_value_t *shminf = cf_cfg_get_value(cfg,"DF:SharedMemIds");
   int shmids[3] = { shminf->avals[0].ival,shminf->avals[1].ival,shminf->avals[2].ival };
   #endif
 
   cf_string_t *tmp;
 
-  cf_cfg_config_value_t *cs = cf_cfg_get_value(cfg,"ExternCharset");
+  cf_cfg_config_value_t *cs = cf_cfg_get_value(cfg,"DF:ExternCharset");
 
   cf_string_t cnt;
 
@@ -602,8 +602,8 @@ void gen_threadlist_atom(cf_cfg_config_t *cfg,cf_cl_thread_t *thread,cf_string_t
 
   cf_readmode_t *rm = cf_hash_get(GlobalValues,"RM",2);
 
-  cf_cfg_config_value_t *burl = cf_cfg_get_value(cfg,"PostingURL"),
-    *qchars = cf_cfg_get_value(cfg,"QuotingChars"),
+  cf_cfg_config_value_t *burl = cf_cfg_get_value(cfg,"DF:PostingURL"),
+    *qchars = cf_cfg_get_value(cfg,"DF:QuotingChars"),
     *ms     = cf_cfg_get_value(cfg,"MaxSigLines"),
     *ss     = cf_cfg_get_value(cfg,"ShowSig");
 
@@ -698,8 +698,8 @@ void gen_threadlist_rss(cf_cfg_config_t *cfg,cf_cl_thread_t *thread,cf_string_t 
   cf_string_t tmpstr;
   int authed = uname ? 1 : 0;
 
-  cf_cfg_config_value_t *burl   = cf_cfg_get_value(cfg,"PostingURL"),
-    *qchars = cf_cfg_get_value(cfg,"QuotingChars"),
+  cf_cfg_config_value_t *burl   = cf_cfg_get_value(cfg,"DF:PostingURL"),
+    *qchars = cf_cfg_get_value(cfg,"DF:QuotingChars"),
     *ms     = cf_cfg_get_value(cfg,"MaxSigLines"),
     *ss     = cf_cfg_get_value(cfg,"ShowSig");
 
@@ -784,12 +784,12 @@ void show_threadlist(cf_cfg_config_t *cfg,void *shm_ptr,cf_hash_t *head)
   size_t len;
   u_char buff[512];
   #else
-  cf_cfg_config_value_t *shminf = cf_cfg_get_value(cfg,"SharedMemIds");
+  cf_cfg_config_value_t *shminf = cf_cfg_get_value(cfg,"DF:SharedMemIds");
   int shmids[3] = { shminf->avals[0].ival,shminf->avals[1].ival,shminf->avals[2].ival };
   void *ptr,*ptr1;
   #endif
 
-  cf_cfg_config_value_t *cs = cf_cfg_get_value(cfg,"ExternCharset");
+  cf_cfg_config_value_t *cs = cf_cfg_get_value(cfg,"DF:ExternCharset");
 
   cf_cl_thread_t thread;
   cf_message_t *msg;
@@ -1103,7 +1103,7 @@ int main(int argc,char *argv[],char *env[]) {
   /* }}} */
 
   pt = cf_cfg_get_value(&cfg,"ParamType");
-  uconfpath = cf_cfg_get_value(&cfg,"ConfigDirectory");
+  uconfpath = cf_cfg_get_value(&cfg,"DF:ConfigDirectory");
 
   head = cf_cgi_new();
   if(*pt->sval == 'P') cf_cgi_parse_path_info_nv(head);
@@ -1127,7 +1127,7 @@ int main(int argc,char *argv[],char *env[]) {
   /* run init handlers */
   if(ret != FLT_EXIT) ret = cf_run_init_handlers(&cfg,head);
 
-  cs = cf_cfg_get_value(&cfg,"ExternCharset");
+  cs = cf_cfg_get_value(&cfg,"DF:ExternCharset");
 
   /* {{{ get readmode information */
   if(ret != FLT_EXIT) {
@@ -1152,7 +1152,7 @@ int main(int argc,char *argv[],char *env[]) {
       exit(0);
     }
     #else
-    shminf = cf_cfg_get_value(&cfg,"SharedMemIds");
+    shminf = cf_cfg_get_value(&cfg,"DF:SharedMemIds");
     shmids[0] = shminf->avals[0].ival;
     shmids[1] = shminf->avals[1].ival;
     shmids[2] = shminf->avals[2].ival;

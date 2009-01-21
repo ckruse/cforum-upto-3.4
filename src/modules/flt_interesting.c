@@ -230,7 +230,7 @@ int flt_interesting_mark_interesting(cf_hash_t *head,cf_configuration_t *dc,cf_c
   message_t *msg;
 
   if(UserName) {
-    url = cf_cfg_get_first_value(dc,forum_name,"UBaseURL");
+    url = cf_cfg_get_first_value(dc,forum_name,"UDF:BaseURL");
     msg = cf_msg_get_first_visible(thread->messages);
 
     /* run only in threadlist mode and only in pre mode */

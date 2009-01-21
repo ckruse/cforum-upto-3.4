@@ -104,7 +104,7 @@ void flt_posting_replace_placeholders(const u_char *str,cf_string_t *appender,cl
 /* {{{ flt_posting_execute_filter */
 int flt_posting_execute_filter(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t *vc,cl_thread_t *thread,cf_template_t *tpl) {
   u_char buff[256],*tmp,*qchars,*msgcnt,*UserName,*forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
-  cf_name_value_t *ps,*v,*cs = cf_cfg_get_first_value(dc,forum_name,"ExternCharset"),*dq,*st,*qc,*ms,*ss,*locale,*df,*rm = cf_cfg_get_first_value(vc,forum_name,"ReadMode");
+  cf_name_value_t *ps,*v,*cs = cf_cfg_get_first_value(dc,forum_name,"DF:ExternCharset"),*dq,*st,*qc,*ms,*ss,*locale,*df,*rm = cf_cfg_get_first_value(vc,forum_name,"ReadMode");
   int utf8;
   size_t len,qclen,msgcntlen;
   cf_string_t cite,content,threadlist;
@@ -130,10 +130,10 @@ int flt_posting_execute_filter(cf_hash_t *head,cf_configuration_t *dc,cf_configu
 
   dq = cf_cfg_get_first_value(vc,forum_name,"DoQuote");
   st = cf_cfg_get_first_value(vc,forum_name,"ShowThread");
-  qc = cf_cfg_get_first_value(vc,forum_name,"QuotingChars");
+  qc = cf_cfg_get_first_value(vc,forum_name,"DF:QuotingChars");
   ms = cf_cfg_get_first_value(vc,forum_name,"MaxSigLines");
   ss = cf_cfg_get_first_value(vc,forum_name,"ShowSig");
-  locale = cf_cfg_get_first_value(dc,forum_name,"DateLocale");
+  locale = cf_cfg_get_first_value(dc,forum_name,"DF:DateLocale");
   df = cf_cfg_get_first_value(vc,forum_name,"DateFormatThreadView");
 
   utf8 = cf_strcmp(cs->values[0],"UTF-8") == 0;
@@ -143,8 +143,8 @@ int flt_posting_execute_filter(cf_hash_t *head,cf_configuration_t *dc,cf_configu
     qclen  = strlen(qchars);
   }
 
-  if(UserName) ps = cf_cfg_get_first_value(dc,forum_name,"UPostScript");
-  else         ps = cf_cfg_get_first_value(dc,forum_name,"PostScript");
+  if(UserName) ps = cf_cfg_get_first_value(dc,forum_name,"UDF:PostScript");
+  else         ps = cf_cfg_get_first_value(dc,forum_name,"DF:PostScript");
 
   cf_tpl_var_init(&hash,TPL_VARIABLE_HASH);
 
@@ -262,8 +262,8 @@ int flt_posting_execute_filter(cf_hash_t *head,cf_configuration_t *dc,cf_configu
 int flt_posting_post_display(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t *pc,cf_template_t *tpl,message_t *p) {
   u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   cf_name_value_t *v;
-  cf_name_value_t *cs = cf_cfg_get_first_value(dc,forum_name,"ExternCharset");
-  cf_name_value_t *qc = cf_cfg_get_first_value(pc,forum_name,"QuotingChars");
+  cf_name_value_t *cs = cf_cfg_get_first_value(dc,forum_name,"DF:ExternCharset");
+  cf_name_value_t *qc = cf_cfg_get_first_value(pc,forum_name,"DF:QuotingChars");
   cf_string_t body,tmp;
 
   cl_thread_t thr;
@@ -338,7 +338,7 @@ int flt_posting_post_cnt(cf_configuration_t *dc,cf_configuration_t *vc,cl_thread
   u_char *tmp;
 
   if(cite) {
-    cs = cf_cfg_get_first_value(dc,forum_name,"ExternCharset");
+    cs = cf_cfg_get_first_value(dc,forum_name,"DF:ExternCharset");
 
     if(flt_posting_cfg.Bye) {
       if(cf_strcasecmp(cs->values[0],"utf-8") == 0 || (tmp = htmlentities_charset_convert(flt_posting_cfg.Bye,"UTF-8",cs->values[0],NULL,0)) == NULL) tmp = strdup(flt_posting_cfg.Bye);
@@ -368,7 +368,7 @@ int flt_posting_pre_cnt(cf_configuration_t *dc,cf_configuration_t *vc,cl_thread_
 
   if(cite) {
     if(flt_posting_cfg.Hi) {
-      cs = cf_cfg_get_first_value(dc,forum_name,"ExternCharset");
+      cs = cf_cfg_get_first_value(dc,forum_name,"DF:ExternCharset");
 
       if(cf_strcasecmp(cs->values[0],"utf-8") == 0 || (tmp = htmlentities_charset_convert(flt_posting_cfg.Hi,"UTF-8",cs->values[0],NULL,0)) == NULL) tmp = strdup(flt_posting_cfg.Hi);
       flt_posting_replace_placeholders(tmp,cite,thr,cs);
@@ -393,10 +393,10 @@ int flt_posting_rm_collector(cf_hash_t *head,cf_configuration_t *dc,cf_configura
   rm = cf_cfg_get_first_value(vc,flt_posting_fn,"ReadMode");
 
   if(cf_strcmp(rm->values[0],"thread") == 0) {
-    v = cf_cfg_get_first_value(dc,flt_posting_fn,"PostingURL");
+    v = cf_cfg_get_first_value(dc,flt_posting_fn,"DF:PostingURL");
     rm_infos->posting_uri[0] = v->values[0];
 
-    v = cf_cfg_get_first_value(dc,flt_posting_fn,"UPostingURL");
+    v = cf_cfg_get_first_value(dc,flt_posting_fn,"UDF:PostingURL");
     rm_infos->posting_uri[1] = v->values[0];
 
     if((v = cf_cfg_get_first_value(vc,flt_posting_fn,"TemplateForumBegin")) != NULL) {

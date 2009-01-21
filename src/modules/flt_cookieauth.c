@@ -40,7 +40,7 @@ static u_char *flt_cookieauth_fn = NULL;
 /* {{{ flt_cookieauth_run */
 int flt_cookieauth_run(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t *vc) {
   u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
-  cf_name_value_t *v = cf_cfg_get_first_value(dc,forum_name,"AuthMode");
+  cf_name_value_t *v = cf_cfg_get_first_value(dc,forum_name,"DF:AuthMode");
   u_char *path;
   cf_hash_t *cookies;
   cf_string_t *name;

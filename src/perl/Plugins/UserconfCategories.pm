@@ -1,6 +1,6 @@
-package Plugins::UserconfCategories;
+package Plugins::UserconfDF:Categories;
 
-# \file UserconfCategories.pm
+# \file UserconfDF:Categories.pm
 # \author Christian Kruse, <cjk@wwwtech.de>
 #
 # a plugin to make whitelist and blacklist in fo_userconf nicer
@@ -37,7 +37,7 @@ sub transform {
 sub execute {
   my ($fo_default_conf,$fo_userconf_conf,$user_config,$cgi,$tpl) = @_;
 
-  my $cats = get_conf_val($user_config,'global','ShowCategories');
+  my $cats = get_conf_val($user_config,'global','ShowDF:Categories');
 
   if($cats) {
     my $catsvar = new CForum::Template::t_cf_tpl_variable($CForum::Template::TPL_VARIABLE_ARRAY);
@@ -47,7 +47,7 @@ sub execute {
     $tpl->setvar('hidedcats',$catsvar);
   }
 
-  $cats = get_conf_val($user_config,'global','HighlightCategories');
+  $cats = get_conf_val($user_config,'global','HighlightDF:Categories');
   if($cats) {
     my $catsvar = new CForum::Template::t_cf_tpl_variable($CForum::Template::TPL_VARIABLE_ARRAY);
     my @catsary = split /,/,$cats;

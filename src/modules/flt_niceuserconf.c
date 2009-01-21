@@ -46,12 +46,12 @@ void flt_niceuserconf_nicevalues(cf_hash_t *cgi,cf_configuration_t *dc,cf_config
   u_char *fn = cf_hash_get(GlobalValues,"FORUM_NAME",10),**list;
   register u_char *ptr;
 
-  cf_name_value_t *values,*cs = cf_cfg_get_first_value(&fo_default_conf,fn,"ExternCharset");
+  cf_name_value_t *values,*cs = cf_cfg_get_first_value(&fo_default_conf,fn,"DF:ExternCharset");
   cf_tpl_variable_t var;
   size_t i,len;
   cf_string_t str;
 
-  if((values = cf_cfg_get_first_value(user,fn,"HighlightCategories")) != NULL) {
+  if((values = cf_cfg_get_first_value(user,fn,"HighlightDF:Categories")) != NULL) {
     cf_tpl_var_init(&var,TPL_VARIABLE_ARRAY);
     len = cf_split(values->values[0],",",&list);
 

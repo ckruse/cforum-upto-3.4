@@ -99,7 +99,7 @@ int flt_spellcheck_execute(cf_hash_t *head,configuration_t *dc,configuration_t *
     return FLT_DECLINE;
   }
 
-  v = cfg_get_first_value(pc,forum_name,"QuotingChars");
+  v = cfg_get_first_value(pc,forum_name,"DF:QuotingChars");
 
   if(cf_cgi_get(head,"spellcheck_ok")) {
     array_init(&replacements,sizeof(flt_spellcheck_replacement_t),NULL);
@@ -351,7 +351,7 @@ int flt_spellcheck_cmd(configfile_t *cfile,conf_opt_t *opt,const u_char *context
   if(cf_strcmp(opt->name,"SpellCheckerEnabled") == 0) {
     flt_spellcheck_enabled = cf_strcmp(args[0],"yes") == 0;
   }
-  else if(cf_strcmp(opt->name,"SpellCheckerLanguage") == 0) {
+  else if(cf_strcmp(opt->name,"SpellCheckerDF:Language") == 0) {
     if(flt_spellcheck_language) free(flt_spellcheck_language);
     flt_spellcheck_language = strdup(args[0]);
   }
@@ -363,7 +363,7 @@ int flt_spellcheck_cmd(configfile_t *cfile,conf_opt_t *opt,const u_char *context
 
 conf_opt_t flt_spellcheck_config[] = {
   { "SpellCheckerEnabled",          flt_spellcheck_cmd, CFG_OPT_CONFIG|CFG_OPT_NEEDED|CFG_OPT_LOCAL, NULL },
-  { "SpellCheckerLanguage",         flt_spellcheck_cmd, CFG_OPT_CONFIG|CFG_OPT_NEEDED|CFG_OPT_LOCAL, NULL },
+  { "SpellCheckerDF:Language",         flt_spellcheck_cmd, CFG_OPT_CONFIG|CFG_OPT_NEEDED|CFG_OPT_LOCAL, NULL },
   { "SpellCheckerDefaultActivated", flt_spellcheck_cmd, CFG_OPT_CONFIG|CFG_OPT_LOCAL|CFG_OPT_USER,   NULL },
   { NULL, NULL, 0, NULL }
 };

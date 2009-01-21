@@ -1274,7 +1274,7 @@ int flt_syntax_highlight(cf_string_t *content,cf_string_t *bco,const u_char *lan
   int found = 0;
   cf_string_t code;
   u_char *pos = NULL;
-  cf_name_value_t *xmlm = cf_cfg_get_first_value(&fo_default_conf,forum_name,"XHTMLMode");
+  cf_name_value_t *xmlm = cf_cfg_get_first_value(&fo_default_conf,forum_name,"DF:XHTMLMode");
 
   for(i=0;i<flt_syntax_files.elements;++i) {
     file = cf_array_element_at(&flt_syntax_files,i);

@@ -112,9 +112,9 @@ void show_edit_content(cf_hash_t *head,const u_char *msg,const u_char *source,in
   u_char tplname[256],*fn = cf_hash_get(GlobalValues,"FORUM_NAME",10),*tmp,buff[256];
 
   cf_name_value_t *cval,
-    *cs = cf_cfg_get_first_value(&fo_default_conf,fn,"ExternCharset"),
+    *cs = cf_cfg_get_first_value(&fo_default_conf,fn,"DF:ExternCharset"),
     *tplnv = cf_cfg_get_first_value(&fo_userconf_conf,fn,"Edit"),
-    *cats = cf_cfg_get_first_value(&fo_default_conf,fn,"Categories");
+    *cats = cf_cfg_get_first_value(&fo_default_conf,fn,"DF:Categories");
 
   cf_uconf_userconfig_t *modxml;
   cf_template_t tpl;
@@ -264,7 +264,7 @@ void show_edit_content(cf_hash_t *head,const u_char *msg,const u_char *source,in
   if(saved) cf_tpl_setvalue(&tpl,"save",TPL_VARIABLE_INT,1);
   if(cf_hash_get(GlobalValues,"is_admin",8) != NULL) cf_tpl_setvalue(&tpl,"save",TPL_VARIABLE_INT,1);
 
-  cval = cf_cfg_get_first_value(&fo_default_conf,fn,"UBaseURL");
+  cval = cf_cfg_get_first_value(&fo_default_conf,fn,"UDF:BaseURL");
   cf_set_variable(&tpl,cs,"forumbase",cval->values[0],strlen(cval->values[0]),1);
 
   cval = cf_cfg_get_first_value(&fo_default_conf,fn,"UserConfig");
@@ -308,7 +308,7 @@ void show_edit_content(cf_hash_t *head,const u_char *msg,const u_char *source,in
 void do_save(cf_hash_t *head) {
   cf_uconf_userconfig_t *merged;
   u_char *msg,*uname,*ucfg, *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);;
-  cf_name_value_t *cs = cf_cfg_get_first_value(&fo_default_conf,forum_name,"ExternCharset");
+  cf_name_value_t *cs = cf_cfg_get_first_value(&fo_default_conf,forum_name,"DF:ExternCharset");
   cf_array_t errmsgs;
 
   if((uname = cf_hash_get(GlobalValues,"UserName",8)) == NULL) {
@@ -351,7 +351,7 @@ void do_save(cf_hash_t *head) {
 u_char *normalize_params(cf_hash_t *head,const u_char *name) {
   u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10),*converted,c;
   register u_char *ptr;
-  cf_name_value_t *cs = cf_cfg_get_first_value(&fo_default_conf,forum_name,"ExternCharset");
+  cf_name_value_t *cs = cf_cfg_get_first_value(&fo_default_conf,forum_name,"DF:ExternCharset");
   cf_hash_keylist_t *key;
   cf_cgi_param_t *param;
   size_t flen;
@@ -580,7 +580,7 @@ int main(int argc,char *argv[],char *env[]) {
   /* }}} */
 
   /* first action: authorization modules */
-  cs  = cf_cfg_get_first_value(&fo_default_conf,forum_name,"ExternCharset");
+  cs  = cf_cfg_get_first_value(&fo_default_conf,forum_name,"DF:ExternCharset");
   ret = cf_run_auth_handlers(head);
 
   if((uname = cf_hash_get(GlobalValues,"UserName",8)) == NULL) {

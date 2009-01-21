@@ -433,8 +433,8 @@ int flt_visited_set_link(cf_hash_t *head,cf_configuration_t *dc,cf_configuration
   u_char buff[512];
   int UserName = cf_hash_get(GlobalValues,"UserName",8) != NULL;
   u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
-  cf_name_value_t *x = cf_cfg_get_first_value(dc,forum_name,UserName?"UBaseURL":"BaseURL");
-  cf_name_value_t *cs = cf_cfg_get_first_value(dc,forum_name,"ExternCharset");
+  cf_name_value_t *x = cf_cfg_get_first_value(dc,forum_name,UserName?"UDF:BaseURL":"DF:BaseURL");
+  cf_name_value_t *cs = cf_cfg_get_first_value(dc,forum_name,"DF:ExternCharset");
   size_t len;
   message_t *msg = cf_msg_get_first_visible(thr->messages);
 
