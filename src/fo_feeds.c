@@ -137,14 +137,13 @@ void str_str_cdata_append(cf_string_t *dest, cf_string_t *src) {
 
 /* {{{ atom_ and rss_head */
 void atom_head(cf_cfg_config_t *cfg,cf_string_t *str,cf_cl_thread_t *thread) {
-  u_char *tmp = NULL,*tmp1 = NULL,*uname = cf_hash_get(GlobalValues,"UserName",8);
+  u_char *tmp = NULL,*tmp1 = NULL,*tmp2 = NULL,*uname = cf_hash_get(GlobalValues,"UserName",8);
 
   int authed = uname ? 1 : 0;
 
   cf_cfg_config_value_t *atom_title = cf_cfg_get_value(cfg,"AtomTitle"),
     *atom_tgline = cf_cfg_get_value(cfg,"AtomTagline"),
     *atom_lang = cf_cfg_get_value(cfg,"FeedLang"),
-    *burl = cf_cfg_get_value(cfg,"BaseURL"),
     *atom_uri = cf_cfg_get_value(cfg,thread?"AtomUriThread":"AtomUri"),
     *atom_id = cf_cfg_get_value(cfg,"AtomId"),
     *burl = cf_cfg_get_value(cfg,uname ? "UBaseURL":"BaseURL");
@@ -195,9 +194,9 @@ void atom_head(cf_cfg_config_t *cfg,cf_string_t *str,cf_cl_thread_t *thread) {
   cf_str_chars_append(str,"\"/>",3);
 
   cf_str_chars_append(str,"<link rel=\"alternate\" type=\"text/html\" href=\"",45);
-  if(thread) str_chars_append(str,tmp1,strlen(tmp1));
-  else str_chars_append(str,burl->sval,strlen(burl->sval));
-  str_chars_append(str,"\"/>",3);
+  if(thread) cf_str_chars_append(str,tmp1,strlen(tmp1));
+  else cf_str_chars_append(str,burl->sval,strlen(burl->sval));
+  cf_str_chars_append(str,"\"/>",3);
 
   cf_str_chars_append(str,"<updated>",9);
   if(thread) w3c_datetime(str,thread->newest->date);
@@ -781,7 +780,7 @@ void show_threadlist(cf_cfg_config_t *cfg,void *shm_ptr,cf_hash_t *head)
   int ret;
   #ifndef CF_SHARED_MEM
   rline_t tsd;
-  u_char *line;
+  u_char *line,*forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   size_t len;
   u_char buff[512];
   #else
@@ -792,15 +791,16 @@ void show_threadlist(cf_cfg_config_t *cfg,void *shm_ptr,cf_hash_t *head)
 
   cf_cfg_config_value_t *cs = cf_cfg_get_value(cfg,"ExternCharset");
 
-  cf_cl_thread_t thread,*threadp;
+  cf_cl_thread_t thread;
   cf_message_t *msg;
-  size_t i;
   int del = cf_hash_get(GlobalValues,"ShowInvisible",13) == NULL ? CF_KILL_DELETED : CF_KEEP_DELETED,mode = CF_MODE_RSS;
 
   cf_string_t cnt,*tmp;
 
   #ifndef CF_NO_SORTING
   cf_array_t threads;
+  cf_cl_thread_t *threadp
+  size_t i;
   #endif
 
   cf_str_init(&cnt);
@@ -1061,7 +1061,7 @@ int main(int argc,char *argv[],char *env[]) {
   };
 
   int ret;
-  u_char  *ucfg,*UserName;
+  u_char  *ucfg,*UserName,*forum_name;
   cf_hash_t *head;
   cf_cfg_config_value_t *cs = NULL,*uconfpath,*pt;
 
@@ -1081,6 +1081,11 @@ int main(int argc,char *argv[],char *env[]) {
   /* initialization */
   cf_init();
   cf_htmllib_init();
+
+  if((forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10)) == NULL) {
+    fprintf(stderr,"Could not get forum name!");
+    return EXIT_FAILURE;
+  }
 
   #ifndef CF_SHARED_MEM
   sock = 0;

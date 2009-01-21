@@ -423,7 +423,7 @@ void cf_error_message(cf_cfg_config_t *cfg,const u_char *err,FILE *out, ...) {
               case 'f':
                 fvar = va_arg(ap,double);
                 size = snprintf(ibuff,50,"%.2f",fvar);
-                str_chars_append(&msg,ibuff,size);
+                cf_str_chars_append(&msg,ibuff,size);
                 break;
 
               default:
@@ -529,7 +529,7 @@ u_char *cf_get_error_message(cf_cfg_config_t *cfg,const u_char *err,size_t *len,
         case 'f':
           fvar = va_arg(ap,double);
           size = snprintf(ibuff,50,"%.2f",fvar);
-          str_chars_append(&msg,ibuff,size);
+          cf_str_chars_append(&msg,ibuff,size);
           break;
 
         default:

@@ -102,7 +102,7 @@ int cf_run_validate_inline(cf_cfg_config_t *cfg,const u_char *directive,const u_
 }
 /* }}} */
 
-/* {{{ next_line_is_no_quote_line */
+/* {{{ cf_next_line_is_no_quote_line */
 static int cf_next_line_is_no_quote_line(const u_char *ptr) {
   int eq;
 
@@ -152,7 +152,7 @@ static int cf_run_validate_block_directive(cf_cfg_config_t *cfg,const u_char *di
 /* }}} */
 
 /* {{{ parse_message */
-static u_char *cf_parse_message(cf_cfg_config_t *cfg,cf_cl_thread_t *thread,u_char *start,cf_array_t *stack,cf_string_t *content,cf_string_t *cite,const u_char *qchars,size_t qclen,int utf8,int xml,int max_sig_lines,int show_sig,int linebrk,int sig,int *qmode,int line) {
+static u_char *cf_parse_message(cf_cfg_config_t *cfg,cf_cl_thread_t *thread,u_char *start,cf_array_t *stack,cf_string_t *content,cf_string_t *cite,const u_char *qchars,size_t qclen,int utf8,int xml,int max_sig_lines,int show_sig,int sig,int *qmode,int line) {
   const u_char *ptr,*tmp,*ptr1;
   int rc,run = 1,sb = 0,fail,ending,doit,quotemode = 0;
   u_char *directive,*parameter,*safe,*buff,*retval;
@@ -274,7 +274,7 @@ static u_char *cf_parse_message(cf_cfg_config_t *cfg,cf_cl_thread_t *thread,u_ch
             }
 
             if(ptr1 == tmp) {
-              parameter = fo_alloc(NULL,1,1,FO_ALLOC_MALLOC);
+              parameter = cf_alloc(NULL,1,1,CF_ALLOC_MALLOC);
               *parameter = '\0';
             }
             else parameter = strndup(tmp+1,ptr-tmp-1);
@@ -292,7 +292,7 @@ static u_char *cf_parse_message(cf_cfg_config_t *cfg,cf_cl_thread_t *thread,u_ch
             cf_str_init(&d_content);
             cf_str_init(&d_cite);
 
-            retval = cf_parse_message(cfg,thread,(u_char *)ptr1+1,stack,&d_content,cite ? &d_cite : NULL,qchars,qclen,utf8,xml,max_sig_lines,show_sig,linebrk,sig,quotemode,line);
+            retval = cf_parse_message(cfg,thread,(u_char *)ptr1+1,stack,&d_content,cite ? &d_cite : NULL,qchars,qclen,utf8,xml,max_sig_lines,show_sig,sig,&quotemode,line);
 
             cf_array_pop(stack);
 
@@ -358,7 +358,7 @@ static u_char *cf_parse_message(cf_cfg_config_t *cfg,cf_cl_thread_t *thread,u_ch
 
             stack_elem.args = cf_alloc(stack_elem.args,++stack_elem.argnum,sizeof(*stack_elem.args),CF_ALLOC_REALLOC);
             if(ptr1 == tmp) {
-              stack_elem.args[stack_elem.argnum-1] = fo_alloc(NULL,1,1,FO_ALLOC_MALLOC);
+              stack_elem.args[stack_elem.argnum-1] = cf_alloc(NULL,1,1,CF_ALLOC_MALLOC);
               *(stack_elem.args[stack_elem.argnum-1]) = '\0';
             }
             else stack_elem.args[stack_elem.argnum-1] = strndup(tmp,ptr1-tmp);
@@ -376,7 +376,7 @@ static u_char *cf_parse_message(cf_cfg_config_t *cfg,cf_cl_thread_t *thread,u_ch
             cf_str_init(&d_content);
             cf_str_init(&d_cite);
 
-            retval = cf_parse_message(cfg,thread,(u_char *)ptr1+1,stack,&d_content,cite ? &d_cite : NULL,qchars,qclen,utf8,xml,max_sig_lines,show_sig,linebrk,sig,quotemode,line);
+            retval = cf_parse_message(cfg,thread,(u_char *)ptr1+1,stack,&d_content,cite ? &d_cite : NULL,qchars,qclen,utf8,xml,max_sig_lines,show_sig,sig,&quotemode,line);
             cf_array_pop(stack);
 
             /* directive is invalid (e.g. no content, wrong nesting), get defined state */
@@ -444,8 +444,8 @@ static u_char *cf_parse_message(cf_cfg_config_t *cfg,cf_cl_thread_t *thread,u_ch
 
           if(quotemode) {
             if(qmode) {
-              stack_tmp = array_element_at(stack,stack->elements-1);
-              if(cf_strcmp(stack_tmp->name,"_QUOTING_") == 0 && next_line_is_no_quote_line(ptr)) {
+              stack_tmp = cf_array_element_at(stack,stack->elements-1);
+              if(cf_strcmp(stack_tmp->name,"_QUOTING_") == 0 && cf_next_line_is_no_quote_line(ptr)) {
                 *qmode = 0;
                 return (u_char *)ptr + 5;
               }
@@ -468,42 +468,42 @@ static u_char *cf_parse_message(cf_cfg_config_t *cfg,cf_cl_thread_t *thread,u_ch
 
           stack_elem.name = "_QUOTING_";
           stack_elem.begin = (u_char *)ptr;
-          array_push(stack,&stack_elem);
+          cf_array_push(stack,&stack_elem);
 
-          str_init(&d_content);
-          str_init(&d_cite);
+          cf_str_init(&d_content);
+          cf_str_init(&d_cite);
 
-          retval = parse_message(thread,(u_char *)ptr+1,stack,&d_content,cite ? &d_cite : NULL,qchars,qclen,utf8,xml,max_sig_lines,show_sig,sig,&quotemode,line);
-          array_pop(stack);
+          retval = cf_parse_message(cfg,thread,(u_char *)ptr+1,stack,&d_content,cite ? &d_cite : NULL,qchars,qclen,utf8,xml,max_sig_lines,show_sig,sig,&quotemode,line);
+          cf_array_pop(stack);
           quotemode = 0;
 
           /* directive is invalid (e.g. no content, wrong nesting), get defined state */
           if(retval == NULL || d_content.len == 0) {
             ptr += 1;
-            str_char_append(content,0x7F);
-            if(sig == 0 && cite) str_chars_append(cite,qchars,qclen);
-            str_cleanup(&d_content);
-            str_cleanup(&d_cite);
+            cf_str_char_append(content,0x7F);
+            if(sig == 0 && cite) cf_str_chars_append(cite,qchars,qclen);
+            cf_str_cleanup(&d_content);
+            cf_str_cleanup(&d_cite);
             goto default_action;
           }
 
-          str_chars_append(content,"<span class=\"q\">",16);
-          str_char_append(content,0x7F);
-          if(sig == 0 && cite) str_chars_append(cite,qchars,qclen);
+          cf_str_chars_append(content,"<span class=\"q\">",16);
+          cf_str_char_append(content,0x7F);
+          if(sig == 0 && cite) cf_str_chars_append(cite,qchars,qclen);
 
           /* ok, go and run append content */
-          str_str_append(content,&d_content);
-          str_chars_append(content,"</span>",7);
-          if(sig == 0 && cite) str_str_append(cite,&d_cite);
+          cf_str_str_append(content,&d_content);
+          cf_str_chars_append(content,"</span>",7);
+          if(sig == 0 && cite) cf_str_str_append(cite,&d_cite);
 
-          str_cleanup(&d_content);
-          str_cleanup(&d_cite);
+          cf_str_cleanup(&d_content);
+          cf_str_cleanup(&d_cite);
 
           ptr = retval;
         }
         else {
-          str_char_append(content,0x7F);
-          if(sig == 0 && cite) str_chars_append(cite,qchars,qclen);
+          cf_str_char_append(content,0x7F);
+          if(sig == 0 && cite) cf_str_chars_append(cite,qchars,qclen);
         }
 
         break;
@@ -548,10 +548,10 @@ static u_char *cf_parse_message(cf_cfg_config_t *cfg,cf_cl_thread_t *thread,u_ch
   }
 
   if(sig) cf_str_chars_append(content,"</span>",7);
-  if(quotemode && stack->elements == 0) str_chars_append(content,"</span>",7);
+  if(quotemode && stack->elements == 0) cf_str_chars_append(content,"</span>",7);
 
   if(quotemode && stack->elements > 0) {
-    stack_tmp = array_element_at(stack,stack->elements-1);
+    stack_tmp = cf_array_element_at(stack,stack->elements-1);
     if(cf_strcmp(stack_tmp->name,"_QUOTING_") == 0) return (u_char *)ptr;
   }
 
@@ -955,7 +955,7 @@ void cf_msg_to_html(cf_cfg_config_t *cfg,cf_cl_thread_t *thread,const u_char *ms
   cf_array_init(&my_stack,sizeof(cf_html_stack_elem_t),NULL);
   cf_str_init(&content1);
 
-  cf_parse_message(cfg,thread,(u_char *)msg,&my_stack,content,cite,qchars,qclen,utf8,xml,max_sig_lines,show_sig,0,0,0,0);
+  cf_parse_message(cfg,thread,(u_char *)msg,&my_stack,content,cite,qchars,qclen,utf8,xml,max_sig_lines,show_sig,0,NULL,0);
 
   /* doin this because of plugins like the syntax parser; they could match quoting chars as operators */
   for(ptr=content1.content;*ptr;++ptr) {

@@ -510,7 +510,7 @@ int validate_cgi_variables(cf_cfg_config_t *conf,cf_hash_t *head) {
         }
         /* }}} */
 
-        if(*cfg->values[1] == '!') negate = 1;
+        if(*cfg->avals[i].avals[1].sval == '!') negate = 1;
 
         switch(*(cfg->avals[i].avals[1].sval+negate)) {
           case 'e':
@@ -545,7 +545,7 @@ int validate_cgi_variables(cf_cfg_config_t *conf,cf_hash_t *head) {
          * positive result and negate = 1 => error.
          */
         if((ret == -1 && negate == 0) || (ret != -1 && negate == 1)) {
-          snprintf(ErrorString,50,"E_%s_invalid",cfg->values[0]);
+          snprintf(ErrorString,50,"E_%s_invalid",cfg->avals[i].avals[0].sval);
           return -1;
         }
       }
@@ -670,12 +670,12 @@ u_char *get_remote_addr(void) {
 
 /* {{{ get_thread */
 int get_thread(cf_cfg_config_t *cfg,cf_cl_thread_t *thr,cf_hash_t *head,int overwritten) {
-  u_char *tmp,*rqmethod;
+  u_char *tmp;
   u_int64_t tid,mid;
   #ifndef CF_SHARED_MEM
   int sock;
   rline_t rl;
-  cf_cfg_config_value_t *cfg = cf_cfg_get_value(cfg,"SocketName");
+  cf_cfg_config_value_t *cfg_sock = cf_cfg_get_value(cfg,"SocketName");
   #else
   cf_cfg_config_value_t *shminf = cf_cfg_get_value(cfg,"SharedMemIds");
   int shmids[3] = { shminf->avals[0].ival,shminf->avals[1].ival,shminf->avals[2].ival };
@@ -698,7 +698,7 @@ int get_thread(cf_cfg_config_t *cfg,cf_cl_thread_t *thr,cf_hash_t *head,int over
         #ifdef CF_SHARED_MEM
         if((shm = cf_get_shm_ptr(shmids)) == NULL) return -1;
         #else
-        if((sock = cf_socket_setup(cfg->sval)) == -1) return -1;
+        if((sock = cf_socket_setup(cfg_sock->sval)) == -1) return -1;
         #endif
         else {
           #ifdef CF_SHARED_MEM
@@ -763,8 +763,8 @@ int main(int argc,char *argv[],char *env[]) {
     "fo_default", "fo_post"
   };
 
-  int ret;
-  u_char  *ucfg,buff[256],*forum_name;
+  int ret,work_on_post = 1;
+  u_char  *ucfg,buff[256],*forum_name,*rqmethod;
   cf_hash_t *head;
   cf_cfg_config_value_t *cs = NULL,*cfg_val,*socknam,*qchars;
   u_char *UserName,*link,*tmp;

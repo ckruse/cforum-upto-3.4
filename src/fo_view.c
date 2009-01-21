@@ -153,7 +153,7 @@ void show_posting(cf_cfg_config_t *cfg,cf_hash_t *head,void *shm_ptr,u_int64_t t
 
   int uname;
 
-  u_char buff[256],*tmp;
+  u_char buff[256],*tmp,*content_type = cf_hash_get(GlobalValues,"OutputContentType",17);
 
   cf_cfg_config_value_t *tm  = cf_cfg_get_value(cfg,"ThreadMode"),
     *rm             = cf_cfg_get_value(cfg,"ReadMode"),
@@ -307,8 +307,7 @@ void show_threadlist(cf_cfg_config_t *cfg,void *shm_ptr,cf_hash_t *head)
   cf_template_t tpl_begin,tpl_end;
 
   time_t tm;
-  cf_cl_thread_t thread,*threadp;
-  size_t i;
+  cf_cl_thread_t thread;
   int del = cf_hash_get(GlobalValues,"ShowInvisible",13) == NULL ? CF_KILL_DELETED : CF_KEEP_DELETED;
 
   cf_string_t tlist;
@@ -316,12 +315,14 @@ void show_threadlist(cf_cfg_config_t *cfg,void *shm_ptr,cf_hash_t *head)
   cf_readmode_t *rm = cf_hash_get(GlobalValues,"RM",2);
 
   #ifndef CF_NO_SORTING
+  size_t i;
+  cf_cl_thread_t *threadp;
   cf_array_t threads;
+  #endif
 
   #ifdef CF_SHARED_MEM
   cf_cfg_config_value_t *shminf = cf_cfg_get_value(cfg,"SharedMemIds");
   int shmids[3] = { shminf->avals[0].ival,shminf->avals[1].ival,shminf->avals[2].ival };
-  #endif
   #endif
 
   /* {{{ initialization work */
@@ -440,7 +441,7 @@ void show_threadlist(cf_cfg_config_t *cfg,void *shm_ptr,cf_hash_t *head)
       if(thread.messages) {
         if((thread.messages->invisible == 0 && thread.messages->may_show) || del == CF_KEEP_DELETED) {
           cf_str_init(&tlist);
-          if(cf_gen_threadlist(&thread,head,&tlist,rm->threadlist_thread_tpl,"full",rm->posting_uri[UserName?1:0],CF_MODE_THREADLIST) != FLT_EXIT) fwrite(tlist.content,1,tlist.len,stdout);
+          if(cf_gen_threadlist(cfg,&thread,head,&tlist,rm->threadlist_thread_tpl,"full",rm->posting_uri[uname],CF_MODE_THREADLIST) != FLT_EXIT) fwrite(tlist.content,1,tlist.len,stdout);
           cf_str_cleanup(&tlist);
           cf_cleanup_thread(&thread);
         }
