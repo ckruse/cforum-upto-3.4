@@ -1,7 +1,7 @@
 package Plugins::UserconfCategories;
 
 # \file UserconfCategories.pm
-# \author Christian Kruse, <ckruse@wwwtech.de>
+# \author Christian Kruse, <cjk@wwwtech.de>
 #
 # a plugin to make whitelist and blacklist in fo_userconf nicer
 

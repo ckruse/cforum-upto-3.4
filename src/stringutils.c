@@ -205,54 +205,48 @@ u_char *strndup(const u_char *str,size_t len) {
 
 
 /* {{{ cf_strcmp */
-int cf_strcmp(const u_char *str1,const u_char *str2) {
-  register u_char *ptr1 = (u_char *)str1;
-  register u_char *ptr2 = (u_char *)str2;
+int cf_strcmp(register const u_char *str1,register const u_char *str2) {
+  for(;*str1 && *str2 && *str1 == *str2;str1++,str2++);
 
-  for(;*ptr1 && *ptr2 && *ptr1 == *ptr2;ptr1++,ptr2++);
-
-  if(*ptr1 == *ptr2) return 0;
+  if(*str1 == *str2) return 0;
 
   return 1;
 }
 /* }}} */
 
 /* {{{ cf_strcasecmp */
-int cf_strcasecmp(const u_char *str1,const u_char *str2) {
-  register u_char *ptr1 = (u_char *)str1;
-  register u_char *ptr2 = (u_char *)str2;
+int cf_strcasecmp(register const u_char *str1,register const u_char *str2) {
+  for(;*str1 && *str2 && toupper(*str1) == toupper(*str2);str1++,str2++);
 
-  for(;*ptr1 && *ptr2 && toupper(*ptr1) == toupper(*ptr2);ptr1++,ptr2++);
-
-  if(toupper(*ptr1) == toupper(*ptr2)) return 0;
+  if(toupper(*str1) == toupper(*str2)) return 0;
 
   return 1;
 }
 /* }}} */
 
 /* {{{ cf_strncmp */
-int cf_strncmp(const u_char *str1,const u_char *str2,size_t n) {
-  register u_char *ptr1 = (u_char *)str1;
-  register u_char *ptr2 = (u_char *)str2;
+int cf_strncmp(register const u_char *str1,register const u_char *str2,size_t n) {
   register size_t i;
 
-  for(i=0;*ptr1 && *ptr2 && *ptr1 == *ptr2 && i < n;ptr1++,ptr2++,i++) {
+  for(i=0;*str1 && *str2 && *str1 == *str2 && i < n;str1++,str2++,i++) {
     if(i == n - 1) return 0;
   }
+
+  if(*str1 == *str2) return 0;
 
   return 1;
 }
 /* }}} */
 
 /* {{{ cf_strncasecmp */
-int cf_strncasecmp(const u_char *str1,const u_char *str2,size_t n) {
-  register u_char *ptr1 = (u_char *)str1;
-  register u_char *ptr2 = (u_char *)str2;
+int cf_strncasecmp(register const u_char *str1,register const u_char *str2,size_t n) {
   register size_t i;
 
-  for(i=0;*ptr1 && *ptr2 && i < n && toupper(*ptr1) == toupper(*ptr2);ptr1++,ptr2++,i++) {
+  for(i=0;*str1 && *str2 && i < n && toupper(*str1) == toupper(*str2);str1++,str2++,i++) {
     if(i == n - 1) return 0;
   }
+
+  if(*str1 == *str2) return 0;
 
   return 1;
 }

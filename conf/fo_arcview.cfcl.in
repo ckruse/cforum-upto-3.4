@@ -28,7 +28,7 @@ AV:SortMessages       = "ascending"; # ascending/descending
 AV:DateFormatList     = "%d. %m. %Y";
 AV:DateFormatViewList = "%d. %m. %Y, %H:%M";
 
-AV:EnableCache        = "yes";
+AV:EnableCache        = Yes;
 AV:CacheLevel         = 6;
 
 

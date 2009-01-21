@@ -51,7 +51,7 @@
 #define CF_TOK_COMMARPAREN 0x27
 #define CF_TOK_NEXTTOK  0x28
 
-#define CF_TOK_IFELSEELSEIF 0x21
+#define CF_TOK_IFELSEELSEIF 0x29
 /* }}} */
 
 /* {{{ return values (parser and lexer) */

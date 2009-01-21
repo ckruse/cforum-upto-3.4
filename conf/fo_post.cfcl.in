@@ -50,13 +50,13 @@ FP:FieldConfig = (
 );
 
 FP:FieldNeeded = (
-  ("Name",    "yes", "yes"),
-  ("EMail",   "yes", "yes"),
-  ("subject", "yes", "no"),
-  ("body",    "yes", "yes"),
-  ("unid",    "yes", "yes"),
-  ("qchar",   "yes", "yes"),
-  ("cat",     "yes", "no")
+  ("Name",    Yes, Yes),
+  ("EMail",   Yes, Yes),
+  ("subject", Yes, No),
+  ("body",    Yes, Yes),
+  ("unid",    Yes, Yes),
+  ("qchar",   Yes, Yes),
+  ("cat",     Yes, No)
 );
 
 FP:FieldValidate = (
@@ -68,7 +68,7 @@ FP:FieldValidate = (
 FP:PreviewDateFormat = "%d. %B %Y, %H:%M";
 FP:DateFormat        = "%d. %B %Y, %H:%M";
 
-Postingassistant:MustValidate = "yes";
+Postingassistant:MustValidate = Yes;
 
 Postingassistant:BadWords        = ("fick","wichs","arschloch","nutte","hure","muschi");
 Postingassistant:BadwordsAllowed = 3;
@@ -76,9 +76,9 @@ Postingassistant:BadwordsAllowed = 3;
 Postingassistant:FormateDeficitesAllowed = 5;
 
 Postingassistant:QuotingPercent    = 50;
-Postingassistant:QuoteMustValidate = "yes";
+Postingassistant:QuoteMustValidate = Yes;
 
-Spellcheck:Enabled       = "yes";
+Spellcheck:Enabled       = Yes;
 Spellcheck:Path          = "/usr/bin/ispell";
 Spellcheck:Dictionary    = "german";
 Spellcheck:FormatterType = "utf8";

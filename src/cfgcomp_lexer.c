@@ -300,6 +300,16 @@ int cf_cfg_lexer(cf_cfg_stream_t *stream,int changestate) {
       if(changestate) stream->pos = ptr;
       return CF_TOK_OR;
     }
+    else if(cf_strcasecmp(tname,"yes") == 0) {
+      stream->numtok = 1;
+      if(changestate) stream->pos = ptr;
+      return CF_TOK_NUM;
+    }
+    else if(cf_strcasecmp(tname,"no") == 0) {
+      stream->numtok = 0;
+      if(changestate) stream->pos = ptr;
+      return CF_TOK_NUM;
+    }
     else {
       stream->stok = tname;
       if(changestate) stream->pos = ptr;

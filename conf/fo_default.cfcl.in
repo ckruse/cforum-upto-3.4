@@ -11,7 +11,7 @@
 
 DF:SocketName        = "@SOCKET_PATH@";
 DF:TemplateMode      = "html4";
-DF:XHTMLMode         = "no";
+DF:XHTMLMode         = No;
 DF:ErrorTemplate     = "@CMAKE_INSTALL_SYSCONFDIR_FULL@/cforum/templates/forum1/%s_%s_fatal.so";
 DF:ThreadIndexFile   = "@CMAKE_INSTALL_LOCALSTATEDIR_FULL@/cforum/forum1_tididx.dat";
 
@@ -38,7 +38,7 @@ DF:Language          = "de";
 DF:MessagesDatabase  = "@CMAKE_INSTALL_LOCALSTATEDIR_FULL@/cforum/forum1_messages.db";
 
 DF:InactivityDelete  = 50;
-DF:SendMailBeforeDelete = "yes";
+DF:SendMailBeforeDelete = Yes;
 
 DF:QuotingChars       = "»» ";
 

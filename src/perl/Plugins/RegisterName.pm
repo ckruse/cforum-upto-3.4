@@ -2,7 +2,7 @@ package Plugins::RegisterName;
 
 #
 # \file CheckRegisteredName.pm
-# \author Christian Kruse, <ckruse@wwwtech.de>
+# \author Christian Kruse, <cjk@wwwtech.de>
 #
 # a plugin to register usernames
 #
@@ -45,7 +45,7 @@ sub execute {
 
   my $sock = new IO::Socket::UNIX(
     Type => SOCK_STREAM,
-    Peer => get_conf_val($fo_default_conf,'global','SocketName')
+    Peer => get_conf_val($fo_default_conf,'global','DF:SocketName')
   ) or do {
     main::generate_edit_output($cgi,$fo_default_conf,$fo_view_conf,$fo_userconf_conf,$new_uconf,sprintf(get_error($fo_default_conf,'NO_CONN'),"$!"));
     return;
@@ -119,13 +119,13 @@ sub unregister {
   if($regist eq 'yes') {
     my $sock = new IO::Socket::UNIX(
       Type => SOCK_STREAM,
-      Peer => get_conf_val($fo_default_conf,$main::Forum,'SocketName')
+      Peer => get_conf_val($fo_default_conf,'DF:SocketName')
     ) or die(get_error($fo_default_conf,'NO_CONN'));
 
     print $sock "SELECT ".$main::Forum."\n";
     my $line = <$sock>;
 
-    print $sock "AUTH DELETE\nName: ".$user_config->{Name}->[0]->[0]."\nPass: ".$main::UserName."\n\n";
+    print $sock "AUTH DELETE\nName: ".get_conf_val($user_config,'Name')."\nPass: ".$main::UserName."\n\n";
 
     $line = <$sock>;
     if(!defined $line || $line !~ /^200/) {

@@ -1,7 +1,7 @@
 package Plugins::Setvalue;
 
 # \file Setvalue.pm
-# \author Christian Kruse, <ckruse@wwwtech.de>
+# \author Christian Kruse, <cjk@wwwtech.de>
 #
 # a plugin to set specific configuration values
 

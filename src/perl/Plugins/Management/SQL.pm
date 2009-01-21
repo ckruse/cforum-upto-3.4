@@ -2,7 +2,7 @@ package Plugins::Management::SQL;
 
 #
 # \file SQL.pm
-# \author Christian Kruse, <ckruse@wwwtech.de>
+# \author Christian Kruse, <cjk@wwwtech.de>
 #
 # Backend user management plugin
 #

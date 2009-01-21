@@ -40,26 +40,26 @@ Load "flt_preview";
 Load "flt_cgiconfig";
 
 Syntax:PatternsDirectory       = "@CMAKE_INSTALL_SYSCONFDIR_FULL@/cforum/patterns/";
-Openclose:ThreadsOpenByDefault = "yes";
-Posting:DoQuote                = "yes";
+Openclose:ThreadsOpenByDefault = Yes;
+Posting:DoQuote                = Yes;
 DF:ReadMode                = "thread"; # thread, list, nested
 DF:ThreadMode              = "list"; # list, nested
 FV:ShowThread              = "partitial"; # full, partitial, none
 # Listhighlight:VIPList                = ("Cheatah","Stefan Einspender","Stefan Muenz");
 # Listhighlight:VIPColors              = ("#FF00FF","#0000FF");
-Frameset:ShowForumAsFrameset     = "no";
+Frameset:ShowForumAsFrameset     = No;
 # Basic:BaseTarget             = "view";
 
 FV:ParamType               = "Q"; # Q (query string) or P (path info)
 
-Http:SendLastModified        = "yes";
+Http:SendLastModified        = Yes;
 Http:SendExpires             = "1M";
-Http:HandleLastModifiedSince = "yes";
+Http:HandleLastModifiedSince = Yes;
 
-Preview:GeneratePreview         = "yes";
+Preview:GeneratePreview         = Yes;
 
 Motd:MotdFile                = "/etc/motd";
-Motd:EnableMotd              = "yes";
+Motd:EnableMotd              = Yes;
 
 # Date format
 #

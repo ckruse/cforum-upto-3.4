@@ -1,7 +1,7 @@
 package Plugins::Wizard;
 
 # \file Wizard.pm
-# \author Christian Kruse, <ckruse@wwwtech.de>
+# \author Christian Kruse, <cjk@wwwtech.de>
 #
 # a plugin to lead the user through the configuration
 
