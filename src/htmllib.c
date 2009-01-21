@@ -1067,7 +1067,7 @@ int cf_gen_threadlist(cf_cfg_config_t *cfg,cf_cl_thread_t *thread,cf_hash_t *hea
 
   int ret,level;
 
-  cf_cfg_config_value_t *dft = cf_cfg_get_value(cfg,"DateFormatThreadList"),
+  cf_cfg_config_value_t *dft = cf_cfg_get_value(cfg,"FV:DateFormatThreadList"),
     *locale = cf_cfg_get_value(cfg,"DF:DateLocale"),
     *cs = cf_cfg_get_value(cfg,"DF:ExternCharset");
 

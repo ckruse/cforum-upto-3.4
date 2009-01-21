@@ -77,7 +77,7 @@ void show_xmlhttp_thread(cf_cfg_config_t *cfg,cf_hash_t *head,void *shm_ptr,u_in
 
   tplmode       = cf_cfg_get_value(cfg,"DF:TemplateMode");
   lang          = cf_cfg_get_value(cfg,"DF:Language");
-  fo_thread_tpl = cf_cfg_get_value(cfg,"TemplateForumThread");
+  fo_thread_tpl = cf_cfg_get_value(cfg,"FV:TemplateForumThread");
   cs            = cf_cfg_get_value(cfg,"DF:ExternCharset");
 
   cf_gen_tpl_name(fo_thread_tplname,256,tplmode->sval,lang->sval,fo_thread_tpl->sval);
@@ -301,7 +301,7 @@ void show_threadlist(cf_cfg_config_t *cfg,void *shm_ptr,cf_hash_t *head)
   cf_cfg_config_value_t *cs = cf_cfg_get_value(cfg,"DF:ExternCharset"),
     *fbase         = NULL,
     *pbase         = NULL,
-    *time_fmt      = cf_cfg_get_value(cfg,"DateFormatLoadTime"),
+    *time_fmt      = cf_cfg_get_value(cfg,"FV:DateFormatLoadTime"),
     *time_lc       = cf_cfg_get_value(cfg,"DF:DateLocale");
 
   cf_template_t tpl_begin,tpl_end;
@@ -608,7 +608,7 @@ int main(int argc,char *argv[],char *env[]) {
   /* }}} */
 
   uconfpath = cf_cfg_get_value(&cfg,"DF:ConfigDirectory");
-  pt        = cf_cfg_get_value(&cfg,"ParamType");
+  pt        = cf_cfg_get_value(&cfg,"FV:ParamType");
   head      = cf_cgi_new();
   if(*pt->sval == 'P') cf_cgi_parse_path_info_nv(head);
 

@@ -128,13 +128,13 @@ int flt_posting_execute_filter(cf_hash_t *head,cf_configuration_t *dc,cf_configu
 
   UserName = cf_hash_get(GlobalValues,"UserName",8);
 
-  dq = cf_cfg_get_first_value(vc,forum_name,"DoQuote");
-  st = cf_cfg_get_first_value(vc,forum_name,"ShowThread");
+  dq = cf_cfg_get_first_value(vc,forum_name,"FV:DoQuote");
+  st = cf_cfg_get_first_value(vc,forum_name,"FV:ShowThread");
   qc = cf_cfg_get_first_value(vc,forum_name,"DF:QuotingChars");
   ms = cf_cfg_get_first_value(vc,forum_name,"MaxSigLines");
   ss = cf_cfg_get_first_value(vc,forum_name,"ShowSig");
   locale = cf_cfg_get_first_value(dc,forum_name,"DF:DateLocale");
-  df = cf_cfg_get_first_value(vc,forum_name,"DateFormatThreadView");
+  df = cf_cfg_get_first_value(vc,forum_name,"FV:DateFormatThreadView");
 
   utf8 = cf_strcmp(cs->values[0],"UTF-8") == 0;
 
@@ -399,17 +399,17 @@ int flt_posting_rm_collector(cf_hash_t *head,cf_configuration_t *dc,cf_configura
     v = cf_cfg_get_first_value(dc,flt_posting_fn,"UDF:PostingURL");
     rm_infos->posting_uri[1] = v->values[0];
 
-    if((v = cf_cfg_get_first_value(vc,flt_posting_fn,"TemplateForumBegin")) != NULL) {
+    if((v = cf_cfg_get_first_value(vc,flt_posting_fn,"FV:TemplateForumBegin")) != NULL) {
       cf_gen_tpl_name(buff,256,v->values[0]);
       rm_infos->pre_threadlist_tpl = strdup(buff);
     }
 
-    if((v = cf_cfg_get_first_value(vc,flt_posting_fn,"TemplateForumThread")) != NULL) {
+    if((v = cf_cfg_get_first_value(vc,flt_posting_fn,"FV:TemplateForumThread")) != NULL) {
       cf_gen_tpl_name(buff,256,v->values[0]);
       rm_infos->thread_posting_tpl = rm_infos->threadlist_thread_tpl = strdup(buff);
     }
 
-    if((v = cf_cfg_get_first_value(vc,flt_posting_fn,"TemplateForumEnd")) != NULL) {
+    if((v = cf_cfg_get_first_value(vc,flt_posting_fn,"FV:TemplateForumEnd")) != NULL) {
       cf_gen_tpl_name(buff,256,v->values[0]);
       rm_infos->post_threadlist_tpl = strdup(buff);
     }
@@ -435,15 +435,15 @@ int flt_posting_handle_greet(cf_configfile_t *cfile,cf_conf_opt_t *opt,const u_c
 
   tmp = strdup(args[0]);
 
-  if(cf_strcmp(opt->name,"Hi") == 0) {
+  if(cf_strcmp(opt->name,"Posting:Hi") == 0) {
     if(flt_posting_cfg.Hi) free(flt_posting_cfg.Hi);
     flt_posting_cfg.Hi          = tmp;
   }
-  else if(cf_strcmp(opt->name,"Bye") == 0) {
+  else if(cf_strcmp(opt->name,"Posting:Bye") == 0) {
     if(flt_posting_cfg.Bye) free(flt_posting_cfg.Bye);
     flt_posting_cfg.Bye         = tmp;
   }
-  else if(cf_strcmp(opt->name,"Signature") == 0) {
+  else if(cf_strcmp(opt->name,"Posting:Signature") == 0) {
     if(flt_posting_cfg.Signature) free(flt_posting_cfg.Signature);
     flt_posting_cfg.Signature   = tmp;
   }
@@ -508,12 +508,12 @@ void flt_posting_cleanup(void) {
 /* }}} */
 
 cf_conf_opt_t flt_posting_config[] = {
-  { "Hi",                 flt_posting_handle_greet,    CF_CFG_OPT_CONFIG|CF_CFG_OPT_USER|CF_CFG_OPT_LOCAL, NULL },
-  { "Bye",                flt_posting_handle_greet,    CF_CFG_OPT_CONFIG|CF_CFG_OPT_USER|CF_CFG_OPT_LOCAL, NULL },
-  { "Signature",          flt_posting_handle_greet,    CF_CFG_OPT_CONFIG|CF_CFG_OPT_USER|CF_CFG_OPT_LOCAL, NULL },
-  { "TextBox",            flt_posting_handle_box,      CF_CFG_OPT_CONFIG|CF_CFG_OPT_USER|CF_CFG_OPT_LOCAL, NULL },
-  { "ActivePostingColor", flt_posting_handle_actpcol,  CF_CFG_OPT_CONFIG|CF_CFG_OPT_USER|CF_CFG_OPT_LOCAL, NULL },
-  { "TemplatePosting",    flt_posting_handle_tpl,      CF_CFG_OPT_CONFIG|CF_CFG_OPT_LOCAL,              NULL },
+  { "Posting:Hi",                 flt_posting_handle_greet,    CF_CFG_OPT_CONFIG|CF_CFG_OPT_USER|CF_CFG_OPT_LOCAL, NULL },
+  { "Posting:Bye",                flt_posting_handle_greet,    CF_CFG_OPT_CONFIG|CF_CFG_OPT_USER|CF_CFG_OPT_LOCAL, NULL },
+  { "Posting:Signature",          flt_posting_handle_greet,    CF_CFG_OPT_CONFIG|CF_CFG_OPT_USER|CF_CFG_OPT_LOCAL, NULL },
+  { "Posting:TextBox",            flt_posting_handle_box,      CF_CFG_OPT_CONFIG|CF_CFG_OPT_USER|CF_CFG_OPT_LOCAL, NULL },
+  { "Posting:ActivePostingColor", flt_posting_handle_actpcol,  CF_CFG_OPT_CONFIG|CF_CFG_OPT_USER|CF_CFG_OPT_LOCAL, NULL },
+  { "Posting:Template",           flt_posting_handle_tpl,      CF_CFG_OPT_CONFIG|CF_CFG_OPT_LOCAL,              NULL },
   { NULL, NULL, 0, NULL }
 };
 

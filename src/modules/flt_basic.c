@@ -53,7 +53,7 @@ int flt_basic_execute(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t 
   cf_name_value_t *ubase = cf_cfg_get_first_value(dc,forum_name,"UDF:BaseURL");
   cf_name_value_t *cs = cf_cfg_get_first_value(dc,forum_name,"DF:ExternCharset");
   u_char *UserName = cf_hash_get(GlobalValues,"UserName",8);
-  cf_name_value_t *dflt = cf_cfg_get_first_value(vc,forum_name,"DateFormatLoadTime");
+  cf_name_value_t *dflt = cf_cfg_get_first_value(vc,forum_name,"FV:DateFormatLoadTime");
   cf_name_value_t *loc = cf_cfg_get_first_value(dc,forum_name,"DF:DateLocale");
   cf_name_value_t *cats = cfg_get_first_value(dc,forum_name,"DF:Categories");
   cf_name_value_t *ucfg;
@@ -167,26 +167,26 @@ int flt_basic_handle_command(cf_configfile_t *cfile,cf_conf_opt_t *opt,const u_c
   if(flt_basic_fn == NULL) flt_basic_fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   if(!context || cf_strcmp(flt_basic_fn,context) != 0) return 0;
 
-  if(cf_strcmp(opt->name,"FontColor") == 0) {
+  if(cf_strcmp(opt->name,"Basic:FontColor") == 0) {
     if(Cfg.FontColor) free(Cfg.FontColor);
     Cfg.FontColor = strdup(args[0]);
   }
-  else if(cf_strcmp(opt->name,"FontSize") == 0) {
+  else if(cf_strcmp(opt->name,"Basic:FontSize") == 0) {
     if(Cfg.FontSize) free(Cfg.FontSize);
     Cfg.FontSize  = strdup(args[0]);
   }
-  else if(cf_strcmp(opt->name,"FontFamily") == 0) {
+  else if(cf_strcmp(opt->name,"Basic:FontFamily") == 0) {
     if(Cfg.FontFamily) free(Cfg.FontFamily);
     Cfg.FontFamily = strdup(args[0]);
   }
-  else if(cf_strcmp(opt->name,"AutoReload") == 0) {
+  else if(cf_strcmp(opt->name,"Basic:AutoReload") == 0) {
     Cfg.AutoReload = strtol(args[0],NULL,10) * 60L;
   }
-  else if(cf_strcmp(opt->name,"BaseTarget") == 0) {
+  else if(cf_strcmp(opt->name,"Basic:BaseTarget") == 0) {
     if(Cfg.BaseTarget) free(Cfg.BaseTarget);
     Cfg.BaseTarget = strdup(args[0]);
   }
-  else if(cf_strcmp(opt->name,"QuoteColor") == 0) {
+  else if(cf_strcmp(opt->name,"Basic:QuoteColor") == 0) {
     if(Cfg.QuoteColorF) free(Cfg.QuoteColorF);
     if(Cfg.QuoteColorB) free(Cfg.QuoteColorB);
     Cfg.QuoteColorF = strdup(args[0]);
@@ -209,12 +209,12 @@ void flt_basic_cleanup(void) {
 /* }}} */
 
 cf_conf_opt_t flt_basic_config[] = {
-  { "FontColor",  flt_basic_handle_command, CF_CFG_OPT_USER|CF_CFG_OPT_CONFIG|CF_CFG_OPT_LOCAL, NULL },
-  { "FontSize",   flt_basic_handle_command, CF_CFG_OPT_USER|CF_CFG_OPT_CONFIG|CF_CFG_OPT_LOCAL, NULL },
-  { "FontFamily", flt_basic_handle_command, CF_CFG_OPT_USER|CF_CFG_OPT_CONFIG|CF_CFG_OPT_LOCAL, NULL },
-  { "AutoReload", flt_basic_handle_command, CF_CFG_OPT_USER|CF_CFG_OPT_CONFIG|CF_CFG_OPT_LOCAL, NULL },
-  { "BaseTarget", flt_basic_handle_command, CF_CFG_OPT_USER|CF_CFG_OPT_CONFIG|CF_CFG_OPT_LOCAL, NULL },
-  { "QuoteColor", flt_basic_handle_command, CF_CFG_OPT_USER|CF_CFG_OPT_CONFIG|CF_CFG_OPT_LOCAL, NULL },
+  { "Basic:FontColor",  flt_basic_handle_command, CF_CFG_OPT_USER|CF_CFG_OPT_CONFIG|CF_CFG_OPT_LOCAL, NULL },
+  { "Basic:FontSize",   flt_basic_handle_command, CF_CFG_OPT_USER|CF_CFG_OPT_CONFIG|CF_CFG_OPT_LOCAL, NULL },
+  { "Basic:FontFamily", flt_basic_handle_command, CF_CFG_OPT_USER|CF_CFG_OPT_CONFIG|CF_CFG_OPT_LOCAL, NULL },
+  { "Basic:AutoReload", flt_basic_handle_command, CF_CFG_OPT_USER|CF_CFG_OPT_CONFIG|CF_CFG_OPT_LOCAL, NULL },
+  { "Basic:BaseTarget", flt_basic_handle_command, CF_CFG_OPT_USER|CF_CFG_OPT_CONFIG|CF_CFG_OPT_LOCAL, NULL },
+  { "Basic:QuoteColor", flt_basic_handle_command, CF_CFG_OPT_USER|CF_CFG_OPT_CONFIG|CF_CFG_OPT_LOCAL, NULL },
   { NULL, NULL, 0, NULL }
 };
 

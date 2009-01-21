@@ -203,13 +203,13 @@ int flt_nested_execute_filter(cf_hash_t *head,cf_configuration_t *dc,cf_configur
   ShowInvisible = cf_hash_get(GlobalValues,"ShowInvisible",13) == NULL ? 0 : 1;
 
   cs = cf_cfg_get_first_value(dc,forum_name,"DF:ExternCharset");
-  st = cf_cfg_get_first_value(vc,forum_name,"ShowThread");
+  st = cf_cfg_get_first_value(vc,forum_name,"FV:ShowThread");
   qc = cf_cfg_get_first_value(vc,forum_name,"DF:QuotingChars");
   ms = cf_cfg_get_first_value(vc,forum_name,"MaxSigLines");
   ss = cf_cfg_get_first_value(vc,forum_name,"ShowSig");
   locale = cf_cfg_get_first_value(dc,forum_name,"DF:DateLocale");
-  df = cf_cfg_get_first_value(vc,forum_name,"DateFormatThreadView");
-  dft = cf_cfg_get_first_value(vc,forum_name,"DateFormatThreadList");
+  df = cf_cfg_get_first_value(vc,forum_name,"FV:DateFormatThreadView");
+  dft = cf_cfg_get_first_value(vc,forum_name,"FV:DateFormatThreadList");
   lt = cf_cfg_get_first_value(dc,forum_name,UserName ? "UDF:PostingURL_Nested" : "DF:PostingURL_Nested");
 
   utf8 = cf_strcmp(cs->values[0],"UTF-8") == 0;
@@ -268,17 +268,17 @@ int flt_nested_rm_collector(cf_hash_t *head,cf_configuration_t *dc,cf_configurat
     v = cf_cfg_get_first_value(dc,fn,"UDF:PostingURL_Nested");
     rm_infos->posting_uri[1] = v->values[0];
 
-    if((v = cf_cfg_get_first_value(vc,fn,"TemplateForumBegin")) != NULL) {
+    if((v = cf_cfg_get_first_value(vc,fn,"FV:TemplateForumBegin")) != NULL) {
       cf_gen_tpl_name(buff,256,v->values[0]);
       rm_infos->pre_threadlist_tpl = strdup(buff);
     }
 
-    if((v = cf_cfg_get_first_value(vc,fn,"TemplateForumThread")) != NULL) {
+    if((v = cf_cfg_get_first_value(vc,fn,"FV:TemplateForumThread")) != NULL) {
       cf_gen_tpl_name(buff,256,v->values[0]);
       rm_infos->thread_posting_tpl = rm_infos->threadlist_thread_tpl = strdup(buff);
     }
 
-    if((v = cf_cfg_get_first_value(vc,fn,"TemplateForumEnd")) != NULL) {
+    if((v = cf_cfg_get_first_value(vc,fn,"FV:TemplateForumEnd")) != NULL) {
       cf_gen_tpl_name(buff,256,v->values[0]);
       rm_infos->post_threadlist_tpl = strdup(buff);
     }
@@ -314,7 +314,7 @@ int flt_nested_handle(cf_configfile_t *cfile,cf_conf_opt_t *opt,const u_char *co
 /* }}} */
 
 cf_conf_opt_t flt_nested_config[] = {
-  { "TemplateForumNested", flt_nested_handle,  CF_CFG_OPT_CONFIG|CF_CFG_OPT_LOCAL, NULL },
+  { "Nested:TemplateForum", flt_nested_handle,  CF_CFG_OPT_CONFIG|CF_CFG_OPT_LOCAL, NULL },
   { NULL, NULL, 0, NULL }
 };
 

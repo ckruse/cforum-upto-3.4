@@ -278,10 +278,10 @@ void flt_oc_cleanup(void) {
 /* }}} */
 
 cf_conf_opt_t flt_openclose_config[] = {
-  { "ThreadsOpenByDefault", flt_oc_get_conf, CF_CFG_OPT_CONFIG|CF_CFG_OPT_USER|CF_CFG_OPT_LOCAL, NULL },
-  { "UseJavaScript",        flt_oc_get_conf, CF_CFG_OPT_CONFIG|CF_CFG_OPT_USER|CF_CFG_OPT_LOCAL, NULL },
-  { "OpenThreadIfNew",      flt_oc_get_conf, CF_CFG_OPT_CONFIG|CF_CFG_OPT_USER|CF_CFG_OPT_LOCAL, NULL },
-  { "OcDbFile",             flt_oc_get_conf, CF_CFG_OPT_USER|CF_CFG_OPT_LOCAL, NULL },
+  { "OpenClose:ThreadsOpenByDefault", flt_oc_get_conf, CF_CFG_OPT_CONFIG|CF_CFG_OPT_USER|CF_CFG_OPT_LOCAL, NULL },
+  { "OpenClose:UseJavaScript",        flt_oc_get_conf, CF_CFG_OPT_CONFIG|CF_CFG_OPT_USER|CF_CFG_OPT_LOCAL, NULL },
+  { "OpenClose:OpenThreadIfNew",      flt_oc_get_conf, CF_CFG_OPT_CONFIG|CF_CFG_OPT_USER|CF_CFG_OPT_LOCAL, NULL },
+  { "OpenClose:OcDbFile",             flt_oc_get_conf, CF_CFG_OPT_USER|CF_CFG_OPT_LOCAL, NULL },
   { NULL, NULL, 0, NULL }
 };
 

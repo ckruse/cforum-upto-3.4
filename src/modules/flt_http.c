@@ -295,10 +295,10 @@ int flt_http_handle_command(cf_configfile_t *cfile,cf_conf_opt_t *opt,const u_ch
   if(!context || cf_strcmp(flt_http_fn,context) != 0) return 0;
 
   if(argnum == 1) {
-    if(cf_strcmp(opt->name,"SendLastModified") == 0) {
+    if(cf_strcmp(opt->name,"Http:SendLastModified") == 0) {
       http_config.send_last_modified = cf_strcasecmp(args[0],"yes") == 0;
     }
-    else if(cf_strcmp(opt->name,"SendExpires") == 0) {
+    else if(cf_strcmp(opt->name,"Http:SendExpires") == 0) {
       http_config.expires_set  = 1;
       http_config.send_expires = strtol(args[0],(char **)&ptr,10);
 
@@ -312,7 +312,7 @@ int flt_http_handle_command(cf_configfile_t *cfile,cf_conf_opt_t *opt,const u_ch
       }
 
     }
-    else if(cf_strcmp(opt->name,"HandleLastModifiedSince") == 0) {
+    else if(cf_strcmp(opt->name,"Http:HandleLastModifiedSince") == 0) {
       if(cf_strcmp(args[0],"yes") == 0) {
         http_config.handle_last_modified_since = 1;
       }
@@ -412,9 +412,9 @@ time_t flt_http_lm(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t *vc
 /* }}} */
 
 cf_conf_opt_t flt_http_config[] = {
-  { "SendLastModified",        flt_http_handle_command, CF_CFG_OPT_CONFIG|CF_CFG_OPT_LOCAL, NULL },
-  { "SendExpires",             flt_http_handle_command, CF_CFG_OPT_CONFIG|CF_CFG_OPT_LOCAL, NULL },
-  { "HandleLastModifiedSince", flt_http_handle_command, CF_CFG_OPT_CONFIG|CF_CFG_OPT_LOCAL, NULL },
+  { "Http:SendLastModified",        flt_http_handle_command, CF_CFG_OPT_CONFIG|CF_CFG_OPT_LOCAL, NULL },
+  { "Http:SendExpires",             flt_http_handle_command, CF_CFG_OPT_CONFIG|CF_CFG_OPT_LOCAL, NULL },
+  { "Http:HandleLastModifiedSince", flt_http_handle_command, CF_CFG_OPT_CONFIG|CF_CFG_OPT_LOCAL, NULL },
   { NULL, NULL, 0, NULL }
 };
 

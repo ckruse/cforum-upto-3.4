@@ -1102,7 +1102,7 @@ int main(int argc,char *argv[],char *env[]) {
   }
   /* }}} */
 
-  pt = cf_cfg_get_value(&cfg,"ParamType");
+  pt = cf_cfg_get_value(&cfg,"FV:ParamType");
   uconfpath = cf_cfg_get_value(&cfg,"DF:ConfigDirectory");
 
   head = cf_cgi_new();

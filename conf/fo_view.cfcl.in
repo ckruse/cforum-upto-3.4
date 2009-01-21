@@ -39,9 +39,8 @@ Load "flt_mailonpost";
 Load "flt_preview";
 Load "flt_cgiconfig";
 
-Openclose:ThreadsOpenByDefault = Yes;
-Posting:DoQuote                = Yes;
-DF:ReadMode                = "thread"; # thread, list, nested
+OpenClose:ThreadsOpenByDefault = Yes;
+FV:DoQuote                 = Yes;
 DF:ThreadMode              = "list"; # list, nested
 FV:ShowThread              = "partitial"; # full, partitial, none
 # Listhighlight:VIPList                = ("Cheatah","Stefan Einspender","Stefan Muenz");
@@ -55,10 +54,10 @@ Http:SendLastModified        = Yes;
 Http:SendExpires             = "1M";
 Http:HandleLastModifiedSince = Yes;
 
-Preview:GeneratePreview         = Yes;
+Preview:Generate             = Yes;
 
-Motd:MotdFile                = "/etc/motd";
-Motd:EnableMotd              = Yes;
+Motd:File                    = "/etc/motd";
+Motd:Enable                  = Yes;
 
 # Date format
 #
@@ -71,17 +70,17 @@ FV:DateFormatThreadList    = "%d. %m. %Y, %H:%M";
 FV:DateFormatThreadView    = "%d. %B %Y, %H:%M";
 
 WITH(FORUM1)
-  Frameset:TemplatesFrameset     = ("@CMAKE_INSTALL_SYSCONFDIR_FULL@/cforum/templates/forum1/%s_%s_frameset.so", "@CMAKE_INSTALL_SYSCONFDIR_FULL@/cforum/templates/forum1/%s_%s_blank.so");
+  Frameset:Templates = ("@CMAKE_INSTALL_SYSCONFDIR_FULL@/cforum/templates/forum1/%s_%s_frameset.so", "@CMAKE_INSTALL_SYSCONFDIR_FULL@/cforum/templates/forum1/%s_%s_blank.so");
 
   FV:TemplateForumBegin    = "@CMAKE_INSTALL_SYSCONFDIR_FULL@/cforum/templates/forum1/%s_%s_forum_begin.so";
   FV:TemplateForumEnd      = "@CMAKE_INSTALL_SYSCONFDIR_FULL@/cforum/templates/forum1/%s_%s_forum_end.so";
-  Posting:TemplateForumThread   = "@CMAKE_INSTALL_SYSCONFDIR_FULL@/cforum/templates/forum1/%s_%s_forum_thread.so";
-  List:TemplateForumList     = "@CMAKE_INSTALL_SYSCONFDIR_FULL@/cforum/templates/forum1/%s_%s_forum_list.so";
-  Nested:TemplateForumNested   = "@CMAKE_INSTALL_SYSCONFDIR_FULL@/cforum/templates/forum1/%s_%s_forum_nested.so";
+  FV:TemplateForumThread   = "@CMAKE_INSTALL_SYSCONFDIR_FULL@/cforum/templates/forum1/%s_%s_forum_thread.so";
+  List:TemplateForum       = "@CMAKE_INSTALL_SYSCONFDIR_FULL@/cforum/templates/forum1/%s_%s_forum_list.so";
+  Nested:TemplateForum     = "@CMAKE_INSTALL_SYSCONFDIR_FULL@/cforum/templates/forum1/%s_%s_forum_nested.so";
 
-  Posting:TemplatePosting       = "@CMAKE_INSTALL_SYSCONFDIR_FULL@/cforum/templates/forum1/%s_%s_forum_posting.so";
+  Posting:Template         = "@CMAKE_INSTALL_SYSCONFDIR_FULL@/cforum/templates/forum1/%s_%s_forum_posting.so";
 
-  Mailonpost:MailDatabase          = "@CMAKE_INSTALL_LOCALSTATEDIR_FULL@/cforum/mail_forum1.db";
+  MailOnPost:MailDatabase          = "@CMAKE_INSTALL_LOCALSTATEDIR_FULL@/cforum/mail_forum1.db";
 end;
 
 

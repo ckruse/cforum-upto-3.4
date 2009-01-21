@@ -58,7 +58,7 @@ int flt_cgiconfig_post(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t
   cf_name_value_t *list_uri = cf_cfg_get_first_value(dc,forum_name,UserName?"UDF:PostingURL_List":"DF:PostingURL_List");
   cf_name_value_t *nested_uri = cf_cfg_get_first_value(dc,forum_name,UserName?"UDF:PostingURL_Nested":"DF:PostingURL_Nested");
 
-  /* {{{ ShowThread links */
+  /* {{{ FV:ShowThread links */
   if((tmp = cf_cgi_get(head,"showthread")) != NULL) cf_remove_static_uri_flag("showthread");
 
   link = cf_advanced_get_link(rm->posting_uri[UserName?1:0],thread->tid,thread->threadmsg->mid,NULL,1,&l,"showthread","part");
@@ -108,7 +108,7 @@ int flt_cgiconfig_init_handler(cf_hash_t *head,cf_configuration_t *dc,cf_configu
     forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
 
     if((val = cf_cgi_get(head,"showthread")) != NULL) {
-      v = cf_cfg_get_first_value(vc,forum_name,"ShowThread");
+      v = cf_cfg_get_first_value(vc,forum_name,"FV:ShowThread");
 
       if(cf_strcmp(val->content,"part") == 0) {
         free(v->values[0]);

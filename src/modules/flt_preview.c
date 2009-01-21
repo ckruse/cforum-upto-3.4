@@ -115,11 +115,11 @@ int flt_preview_cmd(cf_configfile_t *cfile,cf_conf_opt_t *opt,const u_char *cont
   if(flt_preview_fn == NULL) flt_preview_fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   if(!context || cf_strcmp(flt_preview_fn,context) != 0) return 0;
 
-  if(cf_strcmp(opt->name,"PreviewDateFormat") == 0) {
+  if(cf_strcmp(opt->name,"Preview:DateFormat") == 0) {
     if(flt_preview_datefmt) free(flt_preview_datefmt);
     flt_preview_datefmt = strdup(args[0]);
   }
-  else if(cf_strcmp(opt->name,"GeneratePreview") == 0) {
+  else if(cf_strcmp(opt->name,"Preview:Generate") == 0) {
     flt_preview_gen_prev = cf_strcmp(args[0],"yes") == 0;
   }
   else {

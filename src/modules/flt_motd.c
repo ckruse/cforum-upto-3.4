@@ -75,7 +75,7 @@ int flt_motd_handle(cf_configfile_t *cfile,cf_conf_opt_t *opt,const u_char *cont
   if(flt_motd_fn == NULL) flt_motd_fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   if(!context || cf_strcmp(flt_motd_fn,context) != 0) return 0;
 
-  if(cf_strcmp(opt->name,"MotdFile") == 0) MOTD_File = strdup(args[0]);
+  if(cf_strcmp(opt->name,"Motd:File") == 0) MOTD_File = strdup(args[0]);
   else MOTD_enable = cf_strcmp(args[0],"yes") == 0;
 
   return 0;
@@ -87,8 +87,8 @@ void flt_motd_cleanup(void) {
 }
 
 cf_conf_opt_t flt_motd_config[] = {
-  { "MotdFile",   flt_motd_handle, CF_CFG_OPT_CONFIG|CF_CFG_OPT_LOCAL, NULL },
-  { "EnableMotd", flt_motd_handle, CF_CFG_OPT_USER|CF_CFG_OPT_CONFIG|CF_CFG_OPT_LOCAL, NULL },
+  { "Motd:File",   flt_motd_handle, CF_CFG_OPT_CONFIG|CF_CFG_OPT_LOCAL, NULL },
+  { "Motd:Enable", flt_motd_handle, CF_CFG_OPT_USER|CF_CFG_OPT_CONFIG|CF_CFG_OPT_LOCAL, NULL },
   { NULL, NULL, 0, NULL }
 };
 
