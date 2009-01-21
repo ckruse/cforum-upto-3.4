@@ -39,7 +39,6 @@ Load "flt_mailonpost";
 Load "flt_preview";
 Load "flt_cgiconfig";
 
-Syntax:PatternsDirectory       = "@CMAKE_INSTALL_SYSCONFDIR_FULL@/cforum/patterns/";
 Openclose:ThreadsOpenByDefault = Yes;
 Posting:DoQuote                = Yes;
 DF:ReadMode                = "thread"; # thread, list, nested

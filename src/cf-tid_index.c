@@ -100,7 +100,7 @@ int is_thread(const char *path) {
  * \param month The month
  */
 void index_month(cf_cfg_config_t *cfg,char *year,char *month) {
-  cf_cfg_config_value_t *apath = cf_cfg_get_value(cfg,"ArchivePath");
+  cf_cfg_config_value_t *apath = cf_cfg_get_value(cfg,"OL:ArchivePath");
   char path[256],path1[256],ym[256];
   struct stat st;
   DBT key,data;
@@ -174,7 +174,7 @@ void index_month(cf_cfg_config_t *cfg,char *year,char *month) {
  * \param year The year
  */
 void do_year(cf_cfg_config_t *cfg,char *year) {
-  cf_cfg_config_value_t *apath = cf_cfg_get_value(cfg,"ArchivePath");
+  cf_cfg_config_value_t *apath = cf_cfg_get_value(cfg,"OL:ArchivePath");
   char path[256];
 
   DIR *months;
@@ -277,7 +277,7 @@ int main(int argc,char *argv[],char *envp[]) {
   }
   /* }}} */
 
-  ent = cf_cfg_get_value(&cfg,"ArchivePath");
+  ent = cf_cfg_get_value(&cfg,"OL:ArchivePath");
   idxfile = cf_cfg_get_value(&cfg,"DF:ThreadIndexFile");
 
   /* {{{ open database */

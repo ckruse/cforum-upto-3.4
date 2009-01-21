@@ -1469,11 +1469,11 @@ int flt_syntax_init(cf_hash_t *cgi,cf_configuration_t *dc,cf_configuration_t *vc
 int flt_syntax_handle(cf_configfile_t *cfile,cf_conf_opt_t *opt,const u_char *context,u_char **args,size_t argnum) {
   u_char *fn;
 
-  if(cf_strcmp(opt->name,"ActivateSyntax") == 0) {
+  if(cf_strcmp(opt->name,"Sxntax:Activate") == 0) {
     fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
     if(cf_strcmp(fn,context) == 0) flt_syntax_active = cf_strcmp(args[0],"yes") == 0;
   }
-  else if(cf_strcmp(opt->name,"ReplaceTabs") == 0) {
+  else if(cf_strcmp(opt->name,"Syntax:ReplaceTabs") == 0) {
     fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
     if(cf_strcmp(fn,context) == 0) flt_syntax_tabsreplace = atoi(args[0]);
   }
@@ -1491,9 +1491,9 @@ void flt_syntax_cleanup(void) {
 }
 
 cf_conf_opt_t flt_syntax_config[] = {
-  { "ActivateSyntax",    flt_syntax_handle, CF_CFG_OPT_CONFIG|CF_CFG_OPT_USER|CF_CFG_OPT_LOCAL, NULL },
-  { "ReplaceTabs",       flt_syntax_handle, CF_CFG_OPT_CONFIG|CF_CFG_OPT_USER|CF_CFG_OPT_LOCAL, NULL },
-  { "PatternsDirectory", flt_syntax_handle, CF_CFG_OPT_CONFIG|CF_CFG_OPT_GLOBAL|CF_CFG_OPT_NEEDED,  NULL },
+  { "Syntax:Activate",    flt_syntax_handle, CF_CFG_OPT_CONFIG|CF_CFG_OPT_USER|CF_CFG_OPT_LOCAL, NULL },
+  { "Syntax:ReplaceTabs",       flt_syntax_handle, CF_CFG_OPT_CONFIG|CF_CFG_OPT_USER|CF_CFG_OPT_LOCAL, NULL },
+  { "Syntax:PatternsDirectory", flt_syntax_handle, CF_CFG_OPT_CONFIG|CF_CFG_OPT_GLOBAL|CF_CFG_OPT_NEEDED,  NULL },
   { NULL, NULL, 0, NULL }
 };
 

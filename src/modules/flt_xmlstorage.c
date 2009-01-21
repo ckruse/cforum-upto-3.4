@@ -1043,7 +1043,7 @@ int flt_xmlstorage_archive_threads(forum_t *forum,thread_t **threads,size_t len)
       return FLT_OK;
   }
 
-  path  = cf_cfg_get_first_value(&fo_default_conf,forum->name,"ArchivePath");
+  path  = cf_cfg_get_first_value(&fo_default_conf,forum->name,"OL:ArchivePath");
   mpath = cf_cfg_get_first_value(&fo_default_conf,forum->name,"MessagePath");
   impl  = gdome_di_mkref();
 
@@ -1123,7 +1123,7 @@ int flt_xmlstorage_remove_thread(forum_t *forum,thread_t *thr) {
 
 cf_conf_opt_t flt_xmlstorage_config[] = {
   { "MessagePath", cf_handle_command, CF_CFG_OPT_NEEDED|CF_CFG_OPT_CONFIG|CF_CFG_OPT_LOCAL, &fo_default_conf },
-  { "ArchivePath", cf_handle_command, CF_CFG_OPT_NEEDED|CF_CFG_OPT_CONFIG|CF_CFG_OPT_LOCAL, &fo_default_conf },
+  { "OL:ArchivePath", cf_handle_command, CF_CFG_OPT_NEEDED|CF_CFG_OPT_CONFIG|CF_CFG_OPT_LOCAL, &fo_default_conf },
   { NULL, NULL, 0, NULL }
 };
 

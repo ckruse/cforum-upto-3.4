@@ -9,6 +9,8 @@
 # $LastChangedBy$
 #
 
+Syntax:PatternsDirectory  = "@CMAKE_INSTALL_SYSCONFDIR_FULL@/cforum/patterns/";
+
 DF:SocketName        = "@SOCKET_PATH@";
 DF:TemplateMode      = "html4";
 DF:XHTMLMode         = No;
@@ -58,5 +60,7 @@ WITH(FORUM1)
     "XSL", "ZUR INFO", "ZU DIESEM FORUM"
   );
 end;
+
+OL:ArchivePath = "@CMAKE_INSTALL_LOCALSTATEDIR_FULL@/cforum/archive/forum1/";
 
 # eof

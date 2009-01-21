@@ -648,7 +648,7 @@ void flt_xmlarc_cleanup(void) {
 }
 
 cf_conf_opt_t flt_xmlarc_config[] = {
-  { "ArchivePath", flt_xmlarc_handle, CF_CFG_OPT_NEEDED|CF_CFG_OPT_CONFIG|CF_CFG_OPT_LOCAL, NULL },
+  { "OL:ArchivePath", flt_xmlarc_handle, CF_CFG_OPT_NEEDED|CF_CFG_OPT_CONFIG|CF_CFG_OPT_LOCAL, NULL },
   { NULL, NULL, 0, NULL }
 };
 

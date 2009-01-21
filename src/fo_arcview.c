@@ -167,8 +167,8 @@ void show_years(cf_cfg_config_t *cfg) {
 
   u_char *username = cf_hash_get(GlobalValues,"UserName",8),*script;
   cf_cfg_config_value_t *cs = cf_cfg_get_value(cfg,"DF:ExternCharset"),
-    *sy = cf_cfg_get_value(cfg,"SortYearList"),
-    *yt = cf_cfg_get_value(cfg,"YearsTemplate"),
+    *sy = cf_cfg_get_value(cfg,"AV:SortYearList"),
+    *yt = cf_cfg_get_value(cfg,"AV:YearsTemplate"),
     *forumpath = cf_cfg_get_value(cfg,"DF:BaseURL"),
     *mode = cf_cfg_get_value(cfg,"DF:TemplateMode"),
     *lang = cf_cfg_get_value(cfg,"DF:Language");
@@ -236,9 +236,9 @@ void show_year_content(cf_cfg_config_t *cfg,const u_char *year) {
   u_char *username = cf_hash_get(GlobalValues,"UserName",8),*script;
   u_char mt_name[256],*mname;
 
-  cf_cfg_config_value_t *mt = cf_cfg_get_value(cfg,"MonthsTemplate"),
+  cf_cfg_config_value_t *mt = cf_cfg_get_value(cfg,"AV:MonthsTemplate"),
     *cs = cf_cfg_get_value(cfg,"DF:ExternCharset"),
-    *sm = cf_cfg_get_value(cfg,"SortMonthList"),
+    *sm = cf_cfg_get_value(cfg,"AV:SortMonthList"),
     *forumpath = cf_cfg_get_value(cfg,"DF:BaseURL"),
     *mode = cf_cfg_get_value(cfg,"DF:TemplateMode"),
     *lang = cf_cfg_get_value(cfg,"DF:Language");
@@ -369,11 +369,11 @@ void show_month_content(cf_cfg_config_t *cfg,const u_char *year,const u_char *mo
   u_char mt_name[256],pi[256],*tmp,*tmp1,*script;
 
   cf_cfg_config_value_t *cs = cf_cfg_get_value(cfg,"DF:ExternCharset"),
-    *stl = cf_cfg_get_value(cfg,"SortThreadList"),
+    *stl = cf_cfg_get_value(cfg,"AV:SortThreadList"),
     *m_tp = cf_cfg_get_value(cfg,"MonthsTemplate"),
     *forumpath = cf_cfg_get_value(cfg,"DF:BaseURL"),
-    *ecache = cf_cfg_get_value(cfg,"EnableCache"),
-    *df = cf_cfg_get_value(cfg,"DateFormatList"),
+    *ecache = cf_cfg_get_value(cfg,"AV:EnableCache"),
+    *df = cf_cfg_get_value(cfg,"AV:DateFormatList"),
     *lc = cf_cfg_get_value(cfg,"DF:DateLocale"),
     *cache  = NULL,*clevel = NULL,
     *mode = cf_cfg_get_value(cfg,"DF:TemplateMode"),
@@ -391,8 +391,8 @@ void show_month_content(cf_cfg_config_t *cfg,const u_char *year,const u_char *mo
   /* {{{ check for cache */
   if(ecache && *ecache->sval == 'y' && !show_invisible) {
     do_cache = 1;
-    cache  = cf_cfg_get_value(cfg,"CacheDir");
-    clevel = cf_cfg_get_value(cfg,"CacheLevel");
+    cache  = cf_cfg_get_value(cfg,"AV:CacheDir");
+    clevel = cf_cfg_get_value(cfg,"AV:CacheLevel");
 
     if(ecache) cache_level = clevel->ival;
     else       cache_level = 6;
@@ -540,7 +540,7 @@ void generate_thread_output(cf_cfg_config_t *cfg,cf_cl_thread_t *thread,cf_hiera
   cf_cfg_config_value_t *qc = cf_cfg_get_value(cfg,"DF:QuotingChars"),
     *ms = cf_cfg_get_value(cfg,"MaxSigLines"),
     *ss = cf_cfg_get_value(cfg,"ShowSig"),
-    *tf = cf_cfg_get_value(cfg,"DateFormatViewList"),
+    *tf = cf_cfg_get_value(cfg,"AV:DateFormatViewList"),
     *dl = cf_cfg_get_value(cfg,"DF:DateLocale");
 
   cf_tpl_variable_t ary;
@@ -667,10 +667,10 @@ void generate_thread_output(cf_cfg_config_t *cfg,cf_cl_thread_t *thread,cf_hiera
 void print_thread(cf_cfg_config_t *cfg,cf_cl_thread_t *thr,const u_char *year,const u_char *month,const u_char *pi,int admin,int show_invisible) {
   u_char *fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
 
-  cf_cfg_config_value_t *main_tpl_cfg = cf_cfg_get_value(cfg,"ThreadTemplate"),
-    *threadlist_tpl_cfg = cf_cfg_get_value(cfg,"ThreadListTemplate"),
+  cf_cfg_config_value_t *main_tpl_cfg = cf_cfg_get_value(cfg,"AV:ThreadTemplate"),
+    *threadlist_tpl_cfg = cf_cfg_get_value(cfg,"AV:ThreadListTemplate"),
     *forumpath = cf_cfg_get_value(cfg,"DF:BaseURL"),
-    *ecache = cf_cfg_get_value(cfg,"EnableCache"),
+    *ecache = cf_cfg_get_value(cfg,"AV:EnableCache"),
     *cache, *clevel,
     *cs = cf_cfg_get_value(cfg,"DF:ExternCharset"),
     *mode = cf_cfg_get_value(cfg,"DF:TemplateMode"),
@@ -725,8 +725,8 @@ void print_thread(cf_cfg_config_t *cfg,cf_cl_thread_t *thr,const u_char *year,co
   fwrite(main_tpl.parsed.content,1,main_tpl.parsed.len,stdout);
 
   if(show_invisible == 0 && ecache && *ecache->sval == 'y') {
-    cache  = cf_cfg_get_value(cfg,"CacheDir");
-    clevel = cf_cfg_get_value(cfg,"CacheLevel");
+    cache  = cf_cfg_get_value(cfg,"AV:CacheDir");
+    clevel = cf_cfg_get_value(cfg,"AV:CacheLevel");
 
     if(clevel) cache_level = clevel->ival;
     else       cache_level = 6;
@@ -755,8 +755,8 @@ void show_thread(cf_cfg_config_t *cfg,const u_char *year,const u_char *month,con
   int admin = uname ? is_admin(uname) == NULL ? 0 : 1 : 0;
 
   cf_cfg_config_value_t *cs = cf_cfg_get_value(cfg,"DF:ExternCharset"),
-    *sm = cf_cfg_get_value(cfg,"SortMessages"),
-    *ecache = cf_cfg_get_value(cfg,"EnableCache"),
+    *sm = cf_cfg_get_value(cfg,"AV:SortMessages"),
+    *ecache = cf_cfg_get_value(cfg,"AV:EnableCache"),
     *cache, *clevel;
 
   cf_cache_entry_t *cent;
@@ -765,8 +765,8 @@ void show_thread(cf_cfg_config_t *cfg,const u_char *year,const u_char *month,con
 
   /* {{{ check for cache */
   if(ecache && *ecache->sval == 'y' && !show_invisible) {
-    cache  = cf_cfg_get_value(cfg,"CacheDir");
-    clevel = cf_cfg_get_value(cfg,"CacheLevel");
+    cache  = cf_cfg_get_value(cfg,"AV:CacheDir");
+    clevel = cf_cfg_get_value(cfg,"AV:CacheLevel");
 
     if(clevel) cache_level = clevel->ival;
     else cache_level = 6;

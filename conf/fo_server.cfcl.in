@@ -50,7 +50,6 @@ WITH(FORUM1)
   # ExternInterface = "192.168.50.2";
 
   Xmlstorage:MessagePath = "@CMAKE_INSTALL_LOCALSTATEDIR_FULL@/cforum/messages/forum1/";
-  Xmlstorage:ArchivePath = "@CMAKE_INSTALL_LOCALSTATEDIR_FULL@/cforum/archive/forum1/";
   Registerednames:DB     = "@CMAKE_INSTALL_LOCALSTATEDIR_FULL@/cforum/registered_names_forum1.db";
 end;
 
