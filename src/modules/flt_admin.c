@@ -35,27 +35,21 @@
 #include "htmllib.h"
 /* }}} */
 
-u_char **flt_admin_Admins = NULL;
-static size_t flt_admin_AdminNum = 0;
 static int my_errno      = 0;
 static int is_admin      = -1;
-static int flt_admin_204 = 0;
-
-static u_char *flt_admin_fn = NULL;
+static cf_cfg_configuration_t *flt_admin_cfg = NULL;
 
 /* {{{ flt_admin_is_admin */
 int flt_admin_is_admin(const u_char *name) {
   size_t i;
+  cf_cfg_config_value_t *admins;
 
-  if(!name) return 0;
-  if(is_admin != -1) return is_admin;
+  if(!name || is_admin != -1 || flt_admin_cfg == NULL || (admins = cf_cfg_get_value(flt_admin_cfg,"DF:Admins")) == NULL) return 0;
 
-  if(flt_admin_Admins) {
-    for(i=0;i<flt_admin_AdminNum;i++) {
-      if(cf_strcmp(flt_admin_Admins[i],name) == 0) {
-        is_admin = 1;
-        return 1;
-      }
+  for(i=0;i<admins->alen;++i) {
+    if(cf_strcmp(admins->avals[i].sval,name) == 0) {
+      is_admin = 1;
+      return 1;
     }
   }
 
@@ -72,24 +66,25 @@ int flt_admin_is_admin(const u_char *name) {
 /* {{{ flt_admin_gogogo */
 
 #ifndef CF_SHARED_MEM
-int flt_admin_gogogo(cf_hash_t *cgi,cf_configuration_t *dc,cf_configuration_t *vc,int sock)
+int flt_admin_gogogo(cf_hash_t *cgi,cf_configuration_t *cfg,int sock)
 #else
-int flt_admin_gogogo(cf_hash_t *cgi,cf_configuration_t *dc,cf_configuration_t *vc,void *ptr)
+int flt_admin_gogogo(cf_hash_t *cgi,cf_configuration_t *cfg,void *ptr)
 #endif
 {
   #ifdef CF_SHARED_MEM
-  int sock;
+  int sock,shmids[3];
+  cf_cfg_config_value_t *sockpath,*shminf;
   #endif
   u_char buff[512],*answer;
   size_t len;
   rline_t rl;
   int x = 0;
   cf_string_t *action = NULL,*tid,*mid,*mode,str;
+  cf_cfg_config_value_t *send204 = cf_cfg_get_value(cfg,"Admin:Send204");
 
   u_int64_t itid,imid;
 
   u_char *UserName = cf_hash_get(GlobalValues,"UserName",8);
-  u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
 
   if(!flt_admin_is_admin(UserName)) return FLT_DECLINE;
 
@@ -105,7 +100,11 @@ int flt_admin_gogogo(cf_hash_t *cgi,cf_configuration_t *dc,cf_configuration_t *v
 
     #ifdef CF_SHARED_MEM
     /* if in shared memory mode, the sock parameter is a pointer to the shared mem segment */
-    sock = cf_socket_setup();
+    sockpath = cf_cfg_get_value(cfg,"DF:SocketName");
+    if((sock = cf_socket_setup(sockpath->sval)) < 0) {
+      fprintf(stderr,"Could not open socket: %s\n",strerror(errno));
+      return FLT_DECLINE;
+    }
     #endif
 
     len = snprintf(buff,512,"SELECT %s\n",forum_name);
@@ -146,7 +145,11 @@ int flt_admin_gogogo(cf_hash_t *cgi,cf_configuration_t *dc,cf_configuration_t *v
     }
 
     #ifdef CF_SHARED_MEM
-    ptr = cf_reget_shm_ptr();
+    shminf = cf_cfg_get_value(cfg,"DF:SharedMemIds");
+    shmids[0] = shminf->avals[0].ival;
+    shmids[1] = shminf->avals[1].ival;
+    shmids[2] = shminf->avals[2].ival;
+    ptr = cf_reget_shm_ptr(shmids);
     writen(sock,"QUIT\n",5);
     close(sock);
     #endif
@@ -155,7 +158,7 @@ int flt_admin_gogogo(cf_hash_t *cgi,cf_configuration_t *dc,cf_configuration_t *v
       cf_hash_entry_delete(cgi,"t",1);
       cf_hash_entry_delete(cgi,"m",1);
 
-      if(flt_admin_204) {
+      if(send204->ival) {
         printf("Status: 204 No Content\015\012\015\012");
         return FLT_EXIT;
       }
@@ -170,20 +173,19 @@ int flt_admin_gogogo(cf_hash_t *cgi,cf_configuration_t *dc,cf_configuration_t *v
 /* }}} */
 
 /* {{{ flt_admin_setvars */
-int flt_admin_setvars(cf_hash_t *cgi,cf_configuration_t *dc,cf_configuration_t *vc,cf_template_t *top,cf_template_t *down) {
+int flt_admin_setvars(cf_hash_t *cgi,cf_configuration_t *cfg,cf_template_t *top,cf_template_t *down) {
   u_char *msg,buff[256];
   size_t len,len1;
   u_char *UserName = cf_hash_get(GlobalValues,"UserName",8);
   int ShowInvisible = cf_hash_get(GlobalValues,"ShowInvisible",13) != NULL;
-  u_char *fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
-  cf_name_value_t *usejs = cf_cfg_get_first_value(&fo_view_conf,fn,"AdminUseJS");
+  cf_name_value_t *usejs = cf_cfg_get_first_value(cfg,"Admin:UseJS");
 
   if(flt_admin_is_admin(UserName)) {
     cf_tpl_setvalue(top,"admin",TPL_VARIABLE_INT,1);
 
     if(ShowInvisible) {
       cf_tpl_setvalue(top,"aaf",TPL_VARIABLE_INT,1);
-      if(usejs && cf_strcmp(usejs->values[0],"yes") == 0) cf_tpl_setvalue(top,"AdminJS",TPL_VARIABLE_INT,1);
+      if(usejs && usejs->ival == 0) cf_tpl_setvalue(top,"AdminJS",TPL_VARIABLE_INT,1);
     }
 
     if(my_errno) {
@@ -203,7 +205,7 @@ int flt_admin_setvars(cf_hash_t *cgi,cf_configuration_t *dc,cf_configuration_t *
 /* }}} */
 
 /* {{{ flt_admin_posting_setvars */
-int flt_admin_posting_setvars(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t *vc,cl_thread_t *thread,cf_template_t *tpl) {
+int flt_admin_posting_setvars(cf_hash_t *head,cf_configuration_t *cfg,cf_cl_thread_t *thread,cf_template_t *tpl) {
   u_char *UserName = cf_hash_get(GlobalValues,"UserName",8);
   int ShowInvisible = cf_hash_get(GlobalValues,"ShowInvisible",13) != NULL;
 
@@ -220,7 +222,7 @@ int flt_admin_posting_setvars(cf_hash_t *head,cf_configuration_t *dc,cf_configur
 /* }}} */
 
 /* {{{ flt_admin_setvars_thread */
-int flt_admin_setvars_thread(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t *vc,cl_thread_t *thread,message_t *msg,cf_tpl_variable_t *hash) {
+int flt_admin_setvars_thread(cf_hash_t *head,cf_configuration_t *cfg,cf_cl_thread_t *thread,cf_message_t *msg,cf_tpl_variable_t *hash) {
   u_char *UserName = cf_hash_get(GlobalValues,"UserName",8);
   int si = cf_hash_get(GlobalValues,"ShowInvisible",13) != NULL;
 
@@ -237,21 +239,16 @@ int flt_admin_setvars_thread(cf_hash_t *head,cf_configuration_t *dc,cf_configura
 /* }}} */
 
 /* {{{ flt_admin_init */
-int flt_admin_init(cf_hash_t *cgi,cf_configuration_t *dc,cf_configuration_t *vc) {
-  u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
-  cf_name_value_t *v = cf_cfg_get_first_value(dc,forum_name,"Administrators");
+int flt_admin_init(cf_hash_t *cgi,cf_configuration_t *cfg) {
+  cf_cfg_config_value_t *v = cf_cfg_get_value(cfg,"DF:Admins");
   cf_string_t *val = NULL;
   u_char *UserName = cf_hash_get(GlobalValues,"UserName",8);
 
+  flt_admin_cfg = cfg;
+
   cf_register_mod_api_ent("flt_admin","is_admin",(mod_api_t)flt_admin_is_admin);
 
-  if(!UserName) return FLT_DECLINE;
-  if(v) flt_admin_AdminNum = cf_split(v->values[0],",",&flt_admin_Admins);
-
-  if(!cgi)      return FLT_DECLINE;
-
-  val = cf_cgi_get(cgi,"aaf");
-  if(!val) return FLT_DECLINE;
+  if(!UserName || !cgi || (val = cf_cgi_get(cgi,"aaf")) == NULL) return FLT_DECLINE;
 
   /* ShowInvisible is imported from the client library */
   if(flt_admin_is_admin(UserName) && *val->content == '1') {
@@ -264,14 +261,13 @@ int flt_admin_init(cf_hash_t *cgi,cf_configuration_t *dc,cf_configuration_t *vc)
 /* }}} */
 
 /* {{{ flt_admin_posthandler */
-int flt_admin_posthandler(cf_hash_t *cgi,cf_configuration_t *dc,cf_configuration_t *vc,message_t *msg,u_int64_t tid,int mode) {
-  u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);  
+int flt_admin_posthandler(cf_hash_t *cgi,cf_configuration_t *cfg,cf_message_t *msg,u_int64_t tid,int mode) {
   u_char *link;
   size_t l;
   u_char *UserName = cf_hash_get(GlobalValues,"UserName",8);
   int ShowInvisible = cf_hash_get(GlobalValues,"ShowInvisible",13) != NULL;
   cf_readmode_t *rm = cf_hash_get(GlobalValues,"RM",2);
-  cf_name_value_t *usejs = cf_cfg_get_first_value(&fo_view_conf,forum_name,"AdminUseJS");
+  cf_cfg_config_value_t *usejs = cf_cfg_get_value(cfg,"Admin:UseJS");
 
   if(!UserName) return FLT_DECLINE;
 
@@ -279,7 +275,7 @@ int flt_admin_posthandler(cf_hash_t *cgi,cf_configuration_t *dc,cf_configuration
     cf_tpl_hashvar_setvalue(&msg->hashvar,"admin",TPL_VARIABLE_INT,1);
 
     cf_tpl_hashvar_setvalue(&msg->hashvar,"aaf",TPL_VARIABLE_INT,1);
-    if(usejs && cf_strcmp(usejs->values[0],"yes") == 0 && (mode & CF_MODE_THREADLIST)) cf_tpl_hashvar_setvalue(&msg->hashvar,"AdminJS",TPL_VARIABLE_INT,1);
+    if(usejs && usejs->ival && (mode & CF_MODE_THREADLIST)) cf_tpl_hashvar_setvalue(&msg->hashvar,"AdminJS",TPL_VARIABLE_INT,1);
 
     link = cf_advanced_get_link(rm->posting_uri[1],tid,msg->mid,NULL,1,&l,"faa","archive");
     cf_tpl_hashvar_setvalue(&msg->hashvar,"archive_link",TPL_VARIABLE_STRING,link,l);
@@ -301,16 +297,6 @@ int flt_admin_posthandler(cf_hash_t *cgi,cf_configuration_t *dc,cf_configuration
   }
 
   return FLT_DECLINE;
-}
-/* }}} */
-
-/* {{{ flt_admin_finish */
-void flt_admin_finish(void) {
-  size_t i;
-  if(flt_admin_Admins) {
-    for(i=0;i<flt_admin_AdminNum;i++) free(flt_admin_Admins[i]);
-    free(flt_admin_Admins);
-  }
 }
 /* }}} */
 
@@ -344,21 +330,10 @@ time_t flt_admin_lm(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t *v
 }
 /* }}} */
 
-/* {{{ flt_admin_handle */
-int flt_admin_handle(cf_configfile_t *cfile,cf_conf_opt_t *opt,const u_char *context,u_char **args,size_t argnum) {
-  if(flt_admin_fn == NULL) flt_admin_fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
-  if(!context || cf_strcmp(flt_admin_fn,context) != 0) return 0;
-
-  if(cf_strcmp(opt->name,"AdminSend204") == 0) flt_admin_204 = cf_strcmp(args[0],"yes") == 0;
-
-  return 0;
-}
-/* }}} */
-
-cf_conf_opt_t flt_admin_config[] = {
-  { "AdminSend204", flt_admin_handle, CF_CFG_OPT_USER|CF_CFG_OPT_LOCAL, NULL },
-  { NULL, NULL, 0, NULL }
-};
+/**
+ * Config directives:
+ * Admin:Send204 = (yes|no);
+ */
 
 cf_handler_config_t flt_admin_handlers[] = {
   { CONNECT_INIT_HANDLER, flt_admin_gogogo },
@@ -372,13 +347,12 @@ cf_handler_config_t flt_admin_handlers[] = {
 
 cf_module_config_t flt_admin = {
   MODULE_MAGIC_COOKIE,
-  flt_admin_config,
   flt_admin_handlers,
   NULL,
   flt_admin_validator,
   flt_admin_lm,
   NULL,
-  flt_admin_finish
+  NULL
 };
 
 /* eof */

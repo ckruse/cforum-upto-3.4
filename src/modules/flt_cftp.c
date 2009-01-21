@@ -44,12 +44,12 @@ struct sockaddr_un;
 #include "fo_server.h"
 /* }}} */
 
-int flt_cftp_handler(int sockfd,forum_t *forum,const u_char **tokens,int tnum,rline_t *tsd) {
-  cf_name_value_t *sort_t_v = cf_cfg_get_first_value(&fo_server_conf,forum->name,"FS:SortThreads"),
-               *sort_m_v = cf_cfg_get_first_value(&fo_server_conf,forum->name,"FS:SortMessages");
+int flt_cftp_handler(cf_configuration_t *cfg,int sockfd,forum_t *forum,const u_char **tokens,int tnum,rline_t *tsd) {
+  cf_cfg_config_value_t *sort_t_v = cf_cfg_get_value_w_nam(cfg,forum->name,"FS:SortThreads",1),
+               *sort_m_v = cf_cfg_get_value_w_nam(cfg,forum->name,"FS:SortMessages",1);
 
-  int sort_m = cf_strcmp(sort_m_v->values[0],"ascending") == 0 ? CF_SORT_ASCENDING : CF_SORT_DESCENDING,
-      sort_t = cf_strcmp(sort_t_v->values[0],"ascending") == 0 ? CF_SORT_ASCENDING : CF_SORT_DESCENDING,
+  int sort_m = cf_strcmp(sort_m_v->sval,"ascending") == 0 ? CF_SORT_ASCENDING : CF_SORT_DESCENDING,
+      sort_t = cf_strcmp(sort_t_v->sval,"ascending") == 0 ? CF_SORT_ASCENDING : CF_SORT_DESCENDING,
       ret;
 
   size_t i,
@@ -555,18 +555,13 @@ int flt_cftp_register_handlers(int sock) {
   return FLT_OK;
 }
 
-cf_conf_opt_t flt_cftp_config[] = {
-  { NULL, NULL, 0, NULL }
-};
-
 cf_handler_config_t flt_cftp_handlers[] = {
-  { INIT_HANDLER,            flt_cftp_register_handlers   },
+  { INIT_HANDLER, flt_cftp_register_handlers   },
   { 0, NULL }
 };
 
 cf_module_config_t flt_cftp = {
   MODULE_MAGIC_COOKIE,
-  flt_cftp_config,
   flt_cftp_handlers,
   NULL,
   NULL,

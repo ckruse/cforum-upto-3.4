@@ -67,7 +67,7 @@
 void cf_setup_shared_mem(cf_cfg_config_t *cfg,cf_forum_t *forum) {
   union semun smn;
   unsigned short x = 0;
-  cf_cfg_config_value_t *v = cf_cfg_get_value(cfg,"DF:SharedMemIds");
+  cf_cfg_config_value_t *v = cf_cfg_get_value_w_nam(cfg,forum->name,"DF:SharedMemIds",0);
 
   if((forum->shm.sem = semget(v->avals[2].ival,1,S_IRWXU|S_IRWXG|S_IRWXO|IPC_CREAT)) == -1) {
     cf_log(cfg,CF_ERR,__FILE__,__LINE__,"semget: %s\n",strerror(errno));
@@ -202,11 +202,11 @@ void cf_log(cf_cfg_config_t *cfg,int mode,const u_char *file,unsigned int line,c
   }
 
   if(!head.log.std) {
-    v = cf_cfg_get_value(cfg,"FS:StdLog");
+    v = cf_cfg_get_value_w_nam(cfg,NULL,"FS:StdLog",1);
     head.log.std = fopen(v->sval,"a");
   }
   if(!head.log.err) {
-    v = cf_cfg_get_value(cfg,"FS:ErrorLog");
+    v = cf_cfg_get_value_w_nam(cfg,NULL,"FS:ErrorLog",1);
     head.log.err = fopen(v->sval,"a");
   }
 
@@ -445,7 +445,7 @@ void *cf_worker(void *arg) {
 /* {{{ cf_setup_socket */
 int cf_setup_socket(cf_cfg_config_t *cfg,struct sockaddr_un *addr) {
   int sock;
-  cf_cfg_config_value_t *sockpath = cf_cfg_get_value(cfg,"DF:SocketName");
+  cf_cfg_config_value_t *sockpath = cf_cfg_get_value_w_nam(cfg,NULL,"DF:SocketName",1);
 
   if((sock = socket(AF_LOCAL,SOCK_STREAM,0)) == -1) {
     cf_log(cfg,CF_ERR,__FILE__,__LINE__,"socket: %s\n",strerror(errno));
@@ -1284,7 +1284,7 @@ void cf_generate_cache(cf_cfg_config_t *cfg,cf_forum_t *forum) {
   /* }}} */
   /* {{{ make cache for all forums */
   else {
-    forums = cf_cfg_get_value(cfg,"DF:Forums");
+    forums = cf_cfg_get_value_w_nam(cfg,NULL,"DF:Forums",1);
 
     for(i=0;i<forums->alen;i++) {
       if((forum = cf_hash_get(head.forums,forums->avals[i].sval,strlen(forums->avals[i].sval))) != NULL) {
@@ -1317,7 +1317,7 @@ void cf_generate_cache(cf_cfg_config_t *cfg,cf_forum_t *forum) {
   #else
   if(forum) cf_generate_shared_memory(cfg,forum);
   else {
-    forums = cf_cfg_get_value(cfg,"DF:Forums");
+    forums = cf_cfg_get_value_w_nam(cfg,NULL,"DF:Forums",1);
 
     for(i=0;i<forums->alen;i++) {
       if((forum = cf_hash_get(head.forums,forums->avals[i].sval,strlen(forums->avals[i].sval))) != NULL) cf_generate_shared_memory(cfg,forum);
@@ -1484,7 +1484,7 @@ void cf_generate_shared_memory(cf_cfg_config_t *cfg,cf_forum_t *forum) {
   cf_mem_pool_t pool;
   cf_thread_t *t,*t1;
   cf_posting_t *p;
-  cf_cfg_config_value_t *v = cf_cfg_get_value(cfg,"DF:SharedMemIds");
+  cf_cfg_config_value_t *v = cf_cfg_get_value_w_nam(cfg,forum->name,"DF:SharedMemIds",0);
   u_int32_t val;
   time_t tm = time(NULL);
   unsigned short semval;

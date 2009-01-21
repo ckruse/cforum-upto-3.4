@@ -41,7 +41,7 @@
 /* }}} */
 
 /* {{{ flt_bbcodes_execute_b */
-int flt_bbcodes_execute_b(cf_configuration_t *fdc,cf_configuration_t *fvc,cl_thread_t *thread,const u_char *directive,const u_char **parameters,size_t plen,cf_string_t *bco,cf_string_t *bci,cf_string_t *content,cf_string_t *cite,const u_char *qchars,int sig) {
+int flt_bbcodes_execute_b(cf_configuration_t *cfg,cl_thread_t *thread,const u_char *directive,const u_char **parameters,size_t plen,cf_string_t *bco,cf_string_t *bci,cf_string_t *content,cf_string_t *cite,const u_char *qchars,int sig) {
   cf_str_chars_append(bco,"<strong>",8);
   cf_str_str_append(bco,content);
   cf_str_chars_append(bco,"</strong>",9);
@@ -57,7 +57,7 @@ int flt_bbcodes_execute_b(cf_configuration_t *fdc,cf_configuration_t *fvc,cl_thr
 /* }}} */
 
 /* {{{ flt_bbcodes_execute_i */
-int flt_bbcodes_execute_i(cf_configuration_t *fdc,cf_configuration_t *fvc,cl_thread_t *thread,const u_char *directive,const u_char **parameters,size_t plen,cf_string_t *bco,cf_string_t *bci,cf_string_t *content,cf_string_t *cite,const u_char *qchars,int sig) {
+int flt_bbcodes_execute_i(cf_configuration_t *fdc,cf_cl_thread_t *thread,const u_char *directive,const u_char **parameters,size_t plen,cf_string_t *bco,cf_string_t *bci,cf_string_t *content,cf_string_t *cite,const u_char *qchars,int sig) {
   cf_str_chars_append(bco,"<em>",4);
   cf_str_str_append(bco,content);
   cf_str_chars_append(bco,"</em>",5);
@@ -73,7 +73,7 @@ int flt_bbcodes_execute_i(cf_configuration_t *fdc,cf_configuration_t *fvc,cl_thr
 /* }}} */
 
 /* {{{ flt_bbcodes_execute_u */
-int flt_bbcodes_execute_u(cf_configuration_t *fdc,cf_configuration_t *fvc,cl_thread_t *thread,const u_char *directive,const u_char **parameters,size_t plen,cf_string_t *bco,cf_string_t *bci,cf_string_t *content,cf_string_t *cite,const u_char *qchars,int sig) {
+int flt_bbcodes_execute_u(cf_configuration_t *cfg,cf_cl_thread_t *thread,const u_char *directive,const u_char **parameters,size_t plen,cf_string_t *bco,cf_string_t *bci,cf_string_t *content,cf_string_t *cite,const u_char *qchars,int sig) {
   cf_str_chars_append(bco,"<span class=\"underlined\">",25);
   cf_str_str_append(bco,content);
   cf_str_chars_append(bco,"</span>",7);
@@ -89,7 +89,7 @@ int flt_bbcodes_execute_u(cf_configuration_t *fdc,cf_configuration_t *fvc,cl_thr
 /* }}} */
 
 /* {{{ flt_bbcodes_execute_q */
-int flt_bbcodes_execute_q(cf_configuration_t *fdc,cf_configuration_t *fvc,cl_thread_t *thread,const u_char *directive,const u_char **parameters,size_t plen,cf_string_t *bco,cf_string_t *bci,cf_string_t *content,cf_string_t *cite,const u_char *qchars,int sig) {
+int flt_bbcodes_execute_q(cf_configuration_t *fdc,cf_cl_thread_t *thread,const u_char *directive,const u_char **parameters,size_t plen,cf_string_t *bco,cf_string_t *bci,cf_string_t *content,cf_string_t *cite,const u_char *qchars,int sig) {
   cf_str_chars_append(bco,"<q>",25);
   cf_str_str_append(bco,content);
   cf_str_chars_append(bco,"</q>",7);
@@ -114,7 +114,7 @@ int flt_bbcodes_execute_q(cf_configuration_t *fdc,cf_configuration_t *fvc,cl_thr
 }
 /* }}} */
 
-int flt_bbcodes_init(cf_hash_t *cgi,cf_configuration_t *dc,cf_configuration_t *vc) {
+int flt_bbcodes_init(cf_hash_t *cgi,cf_configuration_t *cfg) {
   cf_html_register_directive("b",flt_bbcodes_execute_b,CF_HTML_DIR_TYPE_NOARG|CF_HTML_DIR_TYPE_BLOCK);
   cf_html_register_directive("i",flt_bbcodes_execute_i,CF_HTML_DIR_TYPE_NOARG|CF_HTML_DIR_TYPE_BLOCK);
   cf_html_register_directive("u",flt_bbcodes_execute_u,CF_HTML_DIR_TYPE_NOARG|CF_HTML_DIR_TYPE_BLOCK);
@@ -125,10 +125,6 @@ int flt_bbcodes_init(cf_hash_t *cgi,cf_configuration_t *dc,cf_configuration_t *v
 }
 
 
-cf_conf_opt_t flt_bbcodes_config[] = {
-  { NULL, NULL, 0, NULL }
-};
-
 cf_handler_config_t flt_bbcodes_handlers[] = {
   { INIT_HANDLER, flt_bbcodes_init },
   { 0, NULL }
@@ -136,7 +132,6 @@ cf_handler_config_t flt_bbcodes_handlers[] = {
 
 cf_module_config_t flt_bbcodes = {
   MODULE_MAGIC_COOKIE,
-  flt_bbcodes_config,
   flt_bbcodes_handlers,
   NULL,
   NULL,

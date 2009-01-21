@@ -224,7 +224,7 @@ typedef struct cf_cfg_config_s {
   cf_array_t nmspcs;
 
   cf_tree_t args;
-  
+
 } cf_cfg_config_t;
 /* }}} */
 
@@ -326,6 +326,16 @@ void cf_cfg_destroy_module(cf_module_t *mod);
  * \return NULL if not found, the cf_cfg_config_value_t structure on success
  */
 cf_cfg_config_value_t *cf_cfg_get_value(cf_cfg_config_t *cfg,const u_char *name);
+
+/**
+ * This function returns the configuration entry named by name parameter of forum specified by forum parameter
+ * \param cfg The configuration file structure
+ * \param forum The forum name
+ * \param name The configuration entry name
+ * \param global specifies if a config value may be read from the global namespace
+ * \return NULL if not found, the cf_cfg_config_value_t structure on success
+ */
+cf_cfg_config_value_t *cf_cfg_get_value_w_nam(cf_cfg_config_t *cfg,const u_char *forum,const u_char *name,int global);
 
 int cf_cfg_read_conffile(cf_cfg_config_t *cfg,const u_char *fname);
 int cf_cfg_get_conf(cf_cfg_config_t *cfg,const u_char **which, size_t llen);

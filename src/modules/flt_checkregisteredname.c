@@ -48,9 +48,9 @@
 
 /* {{{ flt_checkregisteredname_execute */
 #ifdef CF_SHARED_MEM
-int flt_checkregisteredname_execute(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t *pc,message_t *p,cl_thread_t *thr,void *ptr,int sock,int mode)
+int flt_checkregisteredname_execute(cf_hash_t *head,cf_configuration_t *cfg,cf_message_t *p,cf_cl_thread_t *thr,void *ptr,int sock,int mode)
 #else
-int flt_checkregisteredname_execute(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t *pc,message_t *p,cl_thread_t *thr,int sock,int mode)
+int flt_checkregisteredname_execute(cf_hash_t *head,cf_configuration_t *cfg,cf_message_t *p,cf_cl_thread_t *thr,int sock,int mode)
 #endif
 {
   u_char *username = cf_hash_get(GlobalValues,"UserName",8);
@@ -103,23 +103,24 @@ int flt_checkregisteredname_execute(cf_hash_t *head,cf_configuration_t *dc,cf_co
 /* }}} */
 
 /* {{{ flt_checkregisteredname_register */
-int flt_checkregisteredname_register(cf_hash_t *cgi,cf_configuration_t *dc,cf_configuration_t *uc,cf_configuration_t *oldconf,cf_uconf_userconfig_t *newconf) {
+int flt_checkregisteredname_register(cf_hash_t *cgi,cf_configuration_t *cfg,cf_configuration_t *oldconf,cf_uconf_userconfig_t *newconf) {
   u_char
     buff[512],
     *line,
-    *oldname = NULL,*newname,*oldregistered = NULL,*newregistered,
+    *oldname = NULL,*oldregistered = NULL,
     *fn = cf_hash_get(GlobalValues,"FORUM_NAME",10),
     *uname = cf_hash_get(GlobalValues,"UserName",8);
 
-  cf_name_value_t *cs = cf_cfg_get_first_value(dc,fn,"DF:ExternCharset"),*on,*or;
-  int sock,status,doer;
+  cf_cfg_config_value_t *cs = cf_cfg_get_value(cfg,"DF:ExternCharset"),*on,*or,*nn,*nr,*sockpath;
+  int sock,status,doer,oldregistered = 0,newregistered = 0;
   size_t len;
   rline_t tsd;
   cf_string_t str;
 
   if(!uname) return FLT_DECLINE; /* cannot happen, but who knows... */
 
-  if((sock = cf_socket_setup()) < 0) {
+  sockpath = cf_cfg_get_value(cfg,"DF:SocketName");
+  if((sock = cf_socket_setup(sockpath->sval)) < 0) {
     printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
     show_edit_content(cgi,"E_NO_CONN","cgi",0,NULL);
     return FLT_EXIT;
@@ -146,19 +147,21 @@ int flt_checkregisteredname_register(cf_hash_t *cgi,cf_configuration_t *dc,cf_co
 
   free(line);
 
-  on            = cf_cfg_get_first_value(oldconf,fn,"Name");
-  or            = cf_cfg_get_first_value(oldconf,fn,"RegisteredName");
-  newname       = (u_char *)cf_uconf_get_conf_val(newconf,"Name",0);
-  newregistered = (u_char *)cf_uconf_get_conf_val(newconf,"RegisteredName",0);
+  on = cf_cfg_get_value(oldconf,"USR:Name");
+  or = cf_cfg_get_value(oldconf,"USR:RegisteredName");
+  nn = cf_cfg_get_value(newconf,"USR:Name");
+  nr = cf_cfg_get_value(newconf,"USR:RegisteredName");
 
-  if(on) oldname = on->values[0];
-  if(or) oldregistered = or->values[0];
+  if(on) oldname = on->sval;
+  if(or) oldregistered = or->ival;
+  if(nn) newname = nn->sval;
+  if(nr) newregistered = nr->ival;
 
   /* in this case we don't need to do anything: nothing changed */
-  if(oldregistered && cf_strcmp(oldregistered,"yes") == 0 && newregistered && cf_strcmp(newregistered,"yes") == 0 && oldname && newname && cf_strcmp(oldname,newname) == 0) return FLT_OK;
+  if(oldregistered && newregistered && oldname && newname && cf_strcmp(oldname,newname) == 0) return FLT_OK;
 
   /* {{{ oldregistered and newregistered set, but either newname or oldname is not set or unequal */
-  else if(oldregistered && cf_strcmp(oldregistered,"yes") == 0 && newregistered && cf_strcmp(newregistered,"yes") == 0) {
+  else if(oldregistered && newregistered) {
     cf_str_init_growth(&str,512);
 
     /* {{{ we shall register a new name but the new name is not given; so just unregister old name */
@@ -224,12 +227,12 @@ int flt_checkregisteredname_register(cf_hash_t *cgi,cf_configuration_t *dc,cf_co
   /* }}} */
 
   /* {{{ oldregistered and newregistered set, but one of them is "no" */
-  else if(oldregistered && newregistered) {
+  else if(oldregistered || newregistered) {
     doer = 0;
     cf_str_init_growth(&str,512);
 
     /* {{{ delete old registration */
-    if(cf_strcmp(oldregistered,"yes") == 0 && cf_strcmp(newregistered,"no") == 0 && oldname) {
+    if(oldregistered && newregistered == 0 && oldname) {
       doer = 1;
       cf_str_char_set(&str,"AUTH DELETE\nName: ",18);
       cf_str_cstr_append(&str,oldname);
@@ -238,7 +241,7 @@ int flt_checkregisteredname_register(cf_hash_t *cgi,cf_configuration_t *dc,cf_co
       cf_str_chars_append(&str,"\n\n",2);
     }
     /* }}} */
-    else if(cf_strcmp(oldregistered,"no") == 0 && cf_strcmp(newregistered,"yes") == 0 && newname) {
+    else if(oldregistered == 0 && newregistered && newname) {
       doer = 1;
       cf_str_char_set(&str,"AUTH SET\nNew-Name: ",19);
       cf_str_cstr_append(&str,newname);
@@ -246,67 +249,6 @@ int flt_checkregisteredname_register(cf_hash_t *cgi,cf_configuration_t *dc,cf_co
       cf_str_cstr_append(&str,uname);
       cf_str_chars_append(&str,"\n\n",2);
     }
-
-    if(doer) {
-      writen(sock,str.content,str.len);
-      cf_str_cleanup(&str);
-
-      if((line = readline(sock,&tsd)) == NULL) {
-        close(sock);
-        printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
-        show_edit_content(cgi,"E_NO_CONN","cgi",0,NULL);
-        return FLT_EXIT;
-      }
-
-      if((status = atoi(line)) != 200) {
-        free(line);
-        close(sock);
-
-        if(status == 500) {
-          printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
-          show_edit_content(cgi,"E_FO_500","cgi",0,NULL);
-        }
-        else {
-          printf("Status: 403 Forbidden\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
-          show_edit_content(cgi,"E_FO_504","cgi",0,NULL);
-        }
-
-        return FLT_EXIT;
-      }
-
-      free(line);
-    }
-
-    close(sock);
-    return FLT_OK;
-  }
-  /* }}} */
-
-  /* {{{ either oldregistered or newregistered not set */
-  else {
-    doer = 0;
-    cf_str_init_growth(&str,512);
-
-    /* {{{ delete old auth */
-    if(oldregistered && !newregistered && cf_strcmp(oldregistered,"yes") == 0 && oldname) {
-      doer = 1;
-      cf_str_char_set(&str,"AUTH DELETE\nName: ",18);
-      cf_str_cstr_append(&str,oldname);
-      cf_str_chars_append(&str,"\nPass: ",7);
-      cf_str_cstr_append(&str,uname);
-      cf_str_chars_append(&str,"\n\n",2);
-    }
-    /* }}} */
-    /* {{{ set new auth */
-    else if(!oldregistered && newregistered && cf_strcmp(newregistered,"yes") == 0 && newname) {
-      doer = 1;
-      cf_str_char_set(&str,"AUTH SET\nNew-Name: ",19);
-      cf_str_cstr_append(&str,newname);
-      cf_str_chars_append(&str,"\nPass: ",7);
-      cf_str_cstr_append(&str,uname);
-      cf_str_chars_append(&str,"\n\n",2);
-    }
-    /* }}} */
 
     if(doer) {
       writen(sock,str.content,str.len);
@@ -347,10 +289,6 @@ int flt_checkregisteredname_register(cf_hash_t *cgi,cf_configuration_t *dc,cf_co
 }
 /* }}} */
 
-cf_conf_opt_t flt_checkregisteredname_config[] = {
-  { NULL, NULL, 0, NULL }
-};
-
 cf_handler_config_t flt_checkregisteredname_handlers[] = {
   { NEW_POST_HANDLER,    flt_checkregisteredname_execute },
   { UCONF_WRITE_HANDLER, flt_checkregisteredname_register },
@@ -359,7 +297,6 @@ cf_handler_config_t flt_checkregisteredname_handlers[] = {
 
 cf_module_config_t flt_checkregisteredname = {
   MODULE_MAGIC_COOKIE,
-  flt_checkregisteredname_config,
   flt_checkregisteredname_handlers,
   NULL,
   NULL,

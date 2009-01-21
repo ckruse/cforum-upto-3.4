@@ -35,44 +35,31 @@
 #include "clientlib.h"
 /* }}} */
 
-struct {
-  u_char *FontColor;
-  u_char *FontSize;
-  u_char *FontFamily;
-  long  AutoReload;
-  u_char *BaseTarget;
-  u_char *QuoteColorF;
-  u_char *QuoteColorB;
-} Cfg = { NULL, NULL, NULL, 0, NULL, NULL, NULL };
-
-static u_char *flt_basic_fn = NULL;
-
 /* {{{ flt_basic_execute */
-int flt_basic_execute(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t *vc,cf_template_t *begin,cf_template_t *end) {
-  u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
-  cf_name_value_t *ubase = cf_cfg_get_first_value(dc,forum_name,"UDF:BaseURL");
-  cf_name_value_t *cs = cf_cfg_get_first_value(dc,forum_name,"DF:ExternCharset");
-  u_char *UserName = cf_hash_get(GlobalValues,"UserName",8);
-  cf_name_value_t *dflt = cf_cfg_get_first_value(vc,forum_name,"FV:DateFormatLoadTime");
-  cf_name_value_t *loc = cf_cfg_get_first_value(dc,forum_name,"DF:DateLocale");
-  cf_name_value_t *cats = cfg_get_first_value(dc,forum_name,"DF:Categories");
-  cf_name_value_t *ucfg;
+int flt_basic_execute(cf_hash_t *head,cf_configuration_t *cfg,cf_template_t *begin,cf_template_t *end) {
+  cf_cfg_config_value_t *base = cf_cfg_get_value(cfg,"DF:BaseURL"),
+  *cs = cf_cfg_get_value(cfg,"DF:ExternCharset"),
+    *dflt = cf_cfg_get_value(cfg,"FV:DateFormatLoadTime"),
+    *loc = cf_cfg_get_value(cfg,"DF:DateLocale"),
+    *cats = cfg_get_value(cfg,"DF:Categories"),
+    *ucfg = cf_cfg_get_value(cfg,"UserManage"),
+    *tmp;
   cf_tpl_variable_t array;
 
-  u_char buff[20];
-  time_t tm  = time(NULL);
-  size_t len  = 0;
-  size_t n;
+  u_char buff[20],*UserName = cf_hash_get(GlobalValues,"UserName",8);
+  time_t tm = time(NULL);
+  size_t len = 0,n;
+  int set = 0;
   u_char *time;
 
-  cf_set_variable(begin,cs,"ubase",ubase->values[0],strlen(ubase->values[0]),1);
-  cf_set_variable(end,cs,"ubase",ubase->values[0],strlen(ubase->values[0]),1);
+  cf_set_variable(begin,cs->sval,"ubase",base->avals[1].sval,strlen(ubase->avals[1].sval),1); // TODO: user-base-url
+  cf_set_variable(end,cs->sval,"ubase",base->avals[1].sval,strlen(ubase->avals[1].sval),1); // TODO: user-base-url
 
   /* {{{ set categories */
   cf_tpl_var_init(&array,TPL_VARIABLE_ARRAY);
 
-  for(i=0;i<cats->valnum;++i) {
-    tmp   = charset_convert_entities(cats->values[i],strlen(cats->values[i]),"UTF-8",cs->values[0],&len);
+  for(i=0;i<cats->alen;++i) {
+    tmp   = charset_convert_entities(cats->avals[i].sval,strlen(cats->avals[i].sval),"UTF-8",cs->sval,&len);
     cf_tpl_var_addvalue(&array,TPL_VARIABLE_STRING,tmp,len);
     free(tmp);
   }
@@ -80,34 +67,41 @@ int flt_basic_execute(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t 
   /* }}} */
 
   if(UserName) {
-    ucfg = cf_cfg_get_first_value(dc,forum_name,"UserConfig");
+    cf_tpl_setvalue(begin,"authed",TPL_VARIABLE_STRING,"1",1); // TODO: user-authed
+    cf_tpl_setvalue(end,"authed",TPL_VARIABLE_STRING,"1",1); // TODO: user-authed
+    cf_set_variable(begin,cs->sval,"userconfig",ucfg->avals[0].sval,strlen(ucfg->avals[0].sval),1); // TODO: user-config (or something like that)
+    cf_set_variable(end,cs->sval,"userconfig",ucfg->avals[0].sval,strlen(ucfg->avals[0].sval),1); // TODO: user-config (see above)
 
-    cf_tpl_setvalue(begin,"authed",TPL_VARIABLE_STRING,"1",1);
-    cf_tpl_setvalue(end,"authed",TPL_VARIABLE_STRING,"1",1);
-    cf_set_variable(begin,cs,"userconfig",ucfg->values[0],strlen(ucfg->values[0]),1);
-    cf_set_variable(end,cs,"userconfig",ucfg->values[0],strlen(ucfg->values[0]),1);
-
-    if((Cfg.FontColor && *Cfg.FontColor) || (Cfg.FontSize && *Cfg.FontSize) || (Cfg.FontFamily && *Cfg.FontFamily)) {
-      cf_tpl_setvalue(begin,"font",TPL_VARIABLE_STRING,"1",1);
-
-      if(Cfg.FontColor && *Cfg.FontColor) {
-        cf_set_variable(begin,cs,"fontcolor",Cfg.FontColor,strlen(Cfg.FontColor),1);
-      }
-      if(Cfg.FontSize && *Cfg.FontSize) {
-        cf_set_variable(begin,cs,"fontsize",Cfg.FontSize,strlen(Cfg.FontSize),1);
-      }
-      if(Cfg.FontFamily && *Cfg.FontFamily) {
-        cf_set_variable(begin,cs,"fontfamily",Cfg.FontFamily,strlen(Cfg.FontFamily),1);
-      }
+    if((tmp = cf_cfg_get_value(cfg,"Basic:FontColor")) != NULL) {
+      cf_tpl_setvalue(begin,"font",TPL_VARIABLE_STRING,"1",1); // TODO: basic-font
+      set = 1;
+      cf_set_variable(begin,cs->sval,"fontcolor",tmp->sval,strlen(tmp->sval),1); // TODO: basic-font-color
     }
 
-    if(Cfg.AutoReload) {
-      n    = sprintf(buff,"%ld",Cfg.AutoReload);
-      tm  += (time_t)Cfg.AutoReload;
-      time = cf_general_get_time(dflt->values[0],loc->values[0],&len,&tm);
+    if((tmp = cf_cfg_get_value(cfg,"Basic:FontSize")) != NULL) {
+      if(set == 0) {
+        cf_tpl_setvalue(begin,"font",TPL_VARIABLE_STRING,"1",1); // TODO: basic-font
+        set = 1;
+      }
+      cf_set_variable(begin,cs->sval,"fontsize",tmp->sval,strlen(tmp->sval),1); // TODO: basic-font-size
+    }
 
-      cf_set_variable(begin,cs,"autoreload",buff,n,1);
-      cf_set_variable(begin,cs,"autoreloadtime",time,len,1);
+    if((tmp = cf_cfg_get_value(cfg,"Basic:FontFamily")) != NULL) {
+      if(set == 0) {
+        cf_tpl_setvalue(begin,"font",TPL_VARIABLE_STRING,"1",1); // TODO: basic-font
+        set = 1;
+      }
+
+      cf_set_variable(begin,cs->sval,"fontfamily",tmp->sval,strlen(tmp->sval),1); // TODO: basic-font-family
+    }
+
+    if((tmp = cf_cfg_get_value(cfg,"Basic:AutoReload")) != NULL) {
+      n    = sprintf(buff,"%ld",tmp->ival);
+      tm  += (time_t)tmp->ival;
+      time = cf_general_get_time(dflt->sval,loc->sval,&len,&tm);
+
+      cf_set_variable(begin,cs->sval,"autoreload",buff,n,1); // TODO: basic-auto-reload
+      cf_set_variable(begin,cs->sval,"autoreloadtime",time,len,1); // TODO: basic-auto-reload-time
 
       free(time);
     }
@@ -115,9 +109,8 @@ int flt_basic_execute(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t 
     return FLT_OK;
   }
   else {
-    ucfg = cf_cfg_get_first_value(dc,forum_name,"UserRegister");
-    cf_set_variable(begin,cs,"userconfig",ucfg->values[0],strlen(ucfg->values[0]),1);
-    cf_set_variable(end,cs,"userconfig",ucfg->values[0],strlen(ucfg->values[0]),1);
+    cf_set_variable(begin,cs->sval,"userconfig",ucfg->avals[1].sval,strlen(ucfg->avals[1].sval),1); // TODO: user-register
+    cf_set_variable(end,cs->sval,"userconfig",ucfg->avals[1].sval,strlen(ucfg->avals[1].sval),1); // TODO: user-register
   }
 
   return FLT_DECLINE;
@@ -125,23 +118,46 @@ int flt_basic_execute(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t 
 /* }}} */
 
 /* {{{ flt_basic_handle_posting */
-int flt_basic_handle_posting(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t *vc,cl_thread_t *thr,cf_template_t *tpl) {
-  u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
-  cf_name_value_t *cs = cf_cfg_get_first_value(dc,forum_name,"DF:ExternCharset");
+int flt_basic_handle_posting(cf_hash_t *head,cf_configuration_t *cfg,cf_cl_thread_t *thr,cf_template_t *tpl) {
+  cf_cfg_config_value_t *cs = cf_cfg_get_first_value(dc,forum_name,"DF:ExternCharset"),*tmp;
   u_char *UserName = cf_hash_get(GlobalValues,"UserName",8);
+  int set = 0;
 
   if(UserName) {
-    if((Cfg.FontColor && *Cfg.FontColor) || (Cfg.FontSize && *Cfg.FontSize) || (Cfg.FontFamily && *Cfg.FontFamily) || (Cfg.QuoteColorF && *Cfg.QuoteColorF) || (Cfg.QuoteColorB && *Cfg.QuoteColorB)) {
-      cf_tpl_setvalue(tpl,"font",TPL_VARIABLE_STRING,"1",1);
-
-      if(Cfg.FontColor && *Cfg.FontColor)     cf_set_variable(tpl,cs,"fontcolor",Cfg.FontColor,strlen(Cfg.FontColor),1);
-      if(Cfg.FontSize && *Cfg.FontSize)       cf_set_variable(tpl,cs,"fontsize",Cfg.FontSize,strlen(Cfg.FontSize),1);
-      if(Cfg.FontFamily && *Cfg.FontFamily)   cf_set_variable(tpl,cs,"fontfamily",Cfg.FontFamily,strlen(Cfg.FontFamily),1);
-      if(Cfg.QuoteColorF && *Cfg.QuoteColorF) cf_set_variable(tpl,cs,"qcolor",Cfg.QuoteColorF,strlen(Cfg.QuoteColorF),1);
-      if(Cfg.QuoteColorB && *Cfg.QuoteColorB) cf_set_variable(tpl,cs,"qcolorback",Cfg.QuoteColorB,strlen(Cfg.QuoteColorB),1);
+    if((tmp = cf_cfg_get_value(cfg,"Basic:FontColor")) != NULL) {
+      cf_tpl_setvalue(begin,"font",TPL_VARIABLE_STRING,"1",1); // TODO: basic-font
+      set = 1;
+      cf_set_variable(begin,cs->sval,"fontcolor",tmp->sval,strlen(tmp->sval),1); // TODO: basic-font-color
     }
 
-    return FLT_OK;
+    if((tmp = cf_cfg_get_value(cfg,"Basic:FontSize")) != NULL) {
+      if(set == 0) {
+        cf_tpl_setvalue(begin,"font",TPL_VARIABLE_STRING,"1",1); // TODO: basic-font
+        set = 1;
+      }
+      cf_set_variable(begin,cs->sval,"fontsize",tmp->sval,strlen(tmp->sval),1); // TODO: basic-font-size
+    }
+
+    if((tmp = cf_cfg_get_value(cfg,"Basic:FontFamily")) != NULL) {
+      if(set == 0) {
+        cf_tpl_setvalue(begin,"font",TPL_VARIABLE_STRING,"1",1); // TODO: basic-font
+        set = 1;
+      }
+
+      cf_set_variable(begin,cs->sval,"fontfamily",tmp->sval,strlen(tmp->sval),1); // TODO: basic-font-family
+    }
+
+    if((tmp = cf_cfg_get_value(cfg,"Basic:FontFamily")) != NULL) {
+      if(set == 0) {
+        cf_tpl_setvalue(begin,"font",TPL_VARIABLE_STRING,"1",1); // TODO: basic-font
+        set = 1;
+      }
+
+      cf_set_variable(begin,cs->sval,"qcolor",tmp->avals[0].sval,strlen(tmp->avals[0].sval),1); // TODO: basic-quote-color
+      cf_set_variable(begin,cs->sval,"qcolorback",tmp->avals[1].sval,strlen(tmp->avals[1].sval),1); // TODO: basic-quote-background-color
+    }
+
+    return set ? FLT_OK : FLT_DECLINE;
   }
 
   return FLT_DECLINE;
@@ -149,12 +165,11 @@ int flt_basic_handle_posting(cf_hash_t *head,cf_configuration_t *dc,cf_configura
 /* }}} */
 
 /* {{{ flt_basic_set_target */
-int flt_basic_set_target(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t *vc,message_t *msg,u_int64_t tid,int mode) {
-  u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
-  cf_name_value_t *cs = cf_cfg_get_first_value(dc,forum_name,"DF:ExternCharset");
+int flt_basic_set_target(cf_hash_t *head,cf_configuration_t *cfg,cf_message_t *msg,u_int64_t tid,int mode) {
+  cf_name_value_t *cs = cf_cfg_get_first_value(dc,forum_name,"DF:ExternCharset"),*target;
 
-  if(Cfg.BaseTarget && *Cfg.BaseTarget && mode == 0) {
-    cf_set_variable_hash(&msg->hashvar,cs,"target",Cfg.BaseTarget,strlen(Cfg.BaseTarget),1);
+  if((target = cf_cfg_get_value(cfg,"Basic:BaseTarget")) != NULL && mode == 0) {
+    cf_set_variable_hash(&msg->hashvar,cs->sval,"target",target->sval,strlen(target->sval),1); // TODO: basic-base-target
     return FLT_OK;
   }
 
@@ -197,26 +212,15 @@ int flt_basic_handle_command(cf_configfile_t *cfile,cf_conf_opt_t *opt,const u_c
 }
 /* }}} */
 
-/* {{{ flt_basic_cleanup */
-void flt_basic_cleanup(void) {
-  if(Cfg.FontColor)   free(Cfg.FontColor);
-  if(Cfg.FontSize)    free(Cfg.FontSize);
-  if(Cfg.FontFamily)  free(Cfg.FontFamily);
-  if(Cfg.BaseTarget)  free(Cfg.BaseTarget);
-  if(Cfg.QuoteColorF) free(Cfg.QuoteColorF);
-  if(Cfg.QuoteColorB) free(Cfg.QuoteColorB);
-}
-/* }}} */
-
-cf_conf_opt_t flt_basic_config[] = {
-  { "Basic:FontColor",  flt_basic_handle_command, CF_CFG_OPT_USER|CF_CFG_OPT_CONFIG|CF_CFG_OPT_LOCAL, NULL },
-  { "Basic:FontSize",   flt_basic_handle_command, CF_CFG_OPT_USER|CF_CFG_OPT_CONFIG|CF_CFG_OPT_LOCAL, NULL },
-  { "Basic:FontFamily", flt_basic_handle_command, CF_CFG_OPT_USER|CF_CFG_OPT_CONFIG|CF_CFG_OPT_LOCAL, NULL },
-  { "Basic:AutoReload", flt_basic_handle_command, CF_CFG_OPT_USER|CF_CFG_OPT_CONFIG|CF_CFG_OPT_LOCAL, NULL },
-  { "Basic:BaseTarget", flt_basic_handle_command, CF_CFG_OPT_USER|CF_CFG_OPT_CONFIG|CF_CFG_OPT_LOCAL, NULL },
-  { "Basic:QuoteColor", flt_basic_handle_command, CF_CFG_OPT_USER|CF_CFG_OPT_CONFIG|CF_CFG_OPT_LOCAL, NULL },
-  { NULL, NULL, 0, NULL }
-};
+/**
+ * config values:
+ * Basic:FontColor = "#col";
+ * Basic:FontSize = "size";
+ * Basic:FontFamily = "family";
+ * Basic:AutoReload = <num minutes>;
+ * Basic:BaseTarget = "target";
+ * Basic:QuoteColor = ("#fore-col","#back-col");
+*/
 
 cf_handler_config_t flt_basic_handlers[] = {
   { VIEW_INIT_HANDLER, flt_basic_execute        },
@@ -233,7 +237,7 @@ cf_module_config_t flt_basic = {
   NULL,
   NULL,
   NULL,
-  flt_basic_cleanup
+  NULL
 };
 
 

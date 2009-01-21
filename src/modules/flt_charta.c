@@ -35,14 +35,12 @@
 #include "clientlib.h"
 /* }}} */
 
-static u_char *flt_charta_fn = NULL;
-unsigned long flt_charta_charta_enabled = 0;
-
 /* {{{ flt_charta_execute_filter */
-int flt_charta_execute_filter(cf_hash_t *head,configuration_t *dc,configuration_t *vc,cl_thread_t *thread,cf_template_t *tpl) {
+int flt_charta_execute_filter(cf_hash_t *head,cf_configuration_t *cfg,cf_cl_thread_t *thread,cf_template_t *tpl) {
   u_char *UserName = cf_hash_get(GlobalValues,"UserName",8);
+  cf_cfg_config_value_t *enabled = cf_cfg_get_value(cfg,"Charta:Enable");
 
-  if(flt_charta_charta_enabled) {
+  if(enabled && enabled->ival) {
     cf_tpl_setvalue(tpl,"charta_showref",TPL_VARIABLE_INT,1);
     if(UserName) cf_tpl_setvalue(tpl,"charta_authed",TPL_VARIABLE_INT,1);
 
@@ -54,10 +52,11 @@ int flt_charta_execute_filter(cf_hash_t *head,configuration_t *dc,configuration_
 /* }}} */
 
 /* {{{ flt_charta_post_display */
-int flt_charta_post_display(cf_hash_t *head,configuration_t *dc,configuration_t *pc,cf_template_t *tpl,message_t *p) {
+int flt_charta_post_display(cf_hash_t *head,cf_configuration_t *cfg,cf_template_t *tpl,cf_message_t *p) {
   u_char *UserName = cf_hash_get(GlobalValues,"UserName",8);
+  cf_cfg_config_value_t *enabled = cf_cfg_get_value(cfg,"Charta:Enable");
 
-  if(flt_charta_charta_enabled) {
+  if(enabled && enabled->ival) {
     cf_tpl_setvalue(tpl,"charta_showref",TPL_VARIABLE_INT,1);
     if(UserName) cf_tpl_setvalue(tpl,"charta_authed",TPL_VARIABLE_INT,1);
 
@@ -68,24 +67,10 @@ int flt_charta_post_display(cf_hash_t *head,configuration_t *dc,configuration_t 
 }
 /* }}} */
 
-/* {{{ flt_charta_handle_command */
-int flt_charta_handle_command(configfile_t *cfile,conf_opt_t *opt,const u_char *context,u_char **args,size_t argnum) {
-  if(flt_charta_fn == NULL) flt_charta_fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
-  if(!context || cf_strcmp(flt_charta_fn,context) != 0) return 0;
-
-  if(cf_strcmp(opt->name,"ChartaEnable") == 0) {
-    if(argnum != 1) return 0;
-    flt_charta_charta_enabled = cf_strcmp(args[0],"yes") == 0;
-  }
-
-  return 0;
-}
-/* }}} */
-
-cf_conf_opt_t flt_charta_config[] = {
-  { "ChartaEnable",            flt_charta_handle_command,     CFG_OPT_CONFIG|CFG_OPT_LOCAL, NULL},
-  { NULL, NULL, 0, NULL }
-};
+/**
+ * config options:
+ * Charta:Enable = Yes|No;
+*/
 
 cf_handler_config_t flt_charta_handlers[] = {
   { POSTING_HANDLER,       flt_charta_execute_filter },
@@ -95,7 +80,6 @@ cf_handler_config_t flt_charta_handlers[] = {
 
 cf_module_config_t flt_charta = {
   MODULE_MAGIC_COOKIE,
-  flt_charta_config,
   flt_charta_handlers,
   NULL,
   NULL,

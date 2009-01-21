@@ -43,67 +43,72 @@
 #define FLT_CAPTCHA_ENABLED 1
 #define FLT_CAPTCHA_ENABLED_AUTH 2
 
-typedef struct {
-  u_char *question;
-  u_char *answer;
-} flt_captcha_question_t;
-
-static u_char *flt_captcha_fn = NULL;
-static int flt_captcha_enabled = 0;
-static cf_array_t flt_captcha_questions;
-static int flt_captcha_must_init = 1;
-
 #ifdef CF_SHARED_MEM
-int flt_captcha_new_posting(cf_hash_t *head,configuration_t *dc,configuration_t *pc,message_t *p,cl_thread_t *thr,void *ptr,int sock,int mode)
+int flt_captcha_new_posting(cf_hash_t *head,cf_configuration_t *cfg,cf_message_t *p,cf_cl_thread_t *thr,void *ptr,int sock,int mode)
 #else
-int flt_captcha_new_posting(cf_hash_t *head,configuration_t *dc,configuration_t *pc,message_t *p,cl_thread_t *thr,int sock,int mode)
+int flt_captcha_new_posting(cf_hash_t *head,cf_configuration_t *cfg,cf_message_t *p,cf_cl_thread_t *thr,int sock,int mode)
 #endif
 {
   u_char *anum,*answer;
   size_t num;
-  flt_captcha_question_t *q;
+  cf_cfg_config_value_t *enabled,*questions;
+  u_char *UserName;
+  int auth = 0;
+  int enable = 0;
+
+  if((enabled = cf_cfg_get_value(cfg,"Captcha:Enable")) == NULL) return FLT_DECLINE;
+
+  enable = enabled->type == CF_ASM_ARG_NUM && enabled->ival == 0;
+  auth = enabled->type == CF_ASM_ARG_STR && cf_strcmp(enabled->sval,"auth") == 0;
+
+  if(enable == 0 && auth == 0) return FLT_DECLINE;
+  if((UserName = cf_hash_get(GlobalValues,"UserName",8)) != NULL && auth == 0) return FLT_DECLINE;
 
   if(head && (anum = cf_cgi_get(head,"captcha_num")) != NULL) {
-    num = atoi(anum);
-    answer = cf_cgi_get(head,"captcha_answer");
-    q = cf_array_element_at(&flt_captcha_questions,num);
+    if((questions = cf_cfg_get_value(cfg,"Captcha:Questions")) != NULL) {
+      num = atoi(anum);
+      answer = cf_cgi_get(head,"captcha_answer");
 
-    if(answer == NULL || cf_strcmp(answer,q->answer) != 0) {
-      strcpy(ErrorString,"E_captcha");
-      display_posting_form(head,p,NULL);
-      return FLT_EXIT;
+      if(num >= 0 && num < questions->alen) {
+        if(answer != NULL && cf_strcmp(answer,qestions->avals[num].avals[1].sval) == 0) return FLT_OK;
+      }
     }
-
-    return FLT_OK;
   }
 
-  return FLT_DECLINE;
+  strcpy(ErrorString,"E_captcha");
+  display_posting_form(head,p,NULL);
+  return FLT_EXIT;
 }
 
 /* {{{ flt_captcha_post_display */
-int flt_captcha_post_display(cf_hash_t *head,configuration_t *dc,configuration_t *pc,cf_template_t *tpl,message_t *p) {
+int flt_captcha_post_display(cf_hash_t *head,cf_configuration_t *cfg,cf_template_t *tpl,cf_message_t *p) {
   u_char *anum,*UserName;
   size_t num;
   flt_captcha_question_t *q;
 
-  if(flt_captcha_must_init) return FLT_DECLINE;
+  cf_cfg_config_value_t *enabled,*questions;
 
-  if(flt_captcha_enabled & FLT_CAPTCHA_ENABLED) {
-    if(((UserName = cf_hash_get(GlobalValues,"UserName",8)) != NULL && flt_captcha_enabled & FLT_CAPTCHA_ENABLED_AUTH) || UserName == NULL) {
-      if(head && (anum = cf_cgi_get(head,"captcha_num")) != NULL) {
-        num = atoi(anum);
-        if(num >= flt_captcha_questions.elements) num = flt_captcha_questions.elements - 1;
-      }
-      else {
-        num = (size_t)(((float)flt_captcha_questions.elements) * rand() / (RAND_MAX + 1.0));
-        if(num >= flt_captcha_questions.elements) num = flt_captcha_questions.elements - 1;
-      }
+  int auth = 0;
+  int enable = 0;
 
-      q = cf_array_element_at(&flt_captcha_questions,num);
-      cf_tpl_setvalue(tpl,"captcha",TPL_VARIABLE_INT,(int)num);
-      cf_tpl_setvalue(tpl,"captcha_question",TPL_VARIABLE_STRING,q->question,strlen(q->question));
-      cf_tpl_setvalue(tpl,"captcha_answer",TPL_VARIABLE_STRING,q->answer,strlen(q->answer));
-    }
+  if((enabled = cf_cfg_get_value(cfg,"Captcha:Enable")) == NULL) return FLT_DECLINE;
+
+  enable = enabled->type == CF_ASM_ARG_NUM && enabled->ival == 0;
+  auth = enabled->type == CF_ASM_ARG_STR && cf_strcmp(enabled->sval,"auth") == 0;
+
+  if(enable == 0 && auth == 0) return FLT_DECLINE;
+  if((UserName = cf_hash_get(GlobalValues,"UserName",8)) != NULL && auth == 0) return FLT_DECLINE;
+
+  if((questions = cf_cfg_get_value(cfg,"Captcha:Questions")) != NULL) {
+    if(head && (anum = cf_cgi_get(head,"captcha_num")) != NULL) num = atoi(anum);
+    else num = (size_t)(((float)questions->alen) * rand() / (RAND_MAX + 1.0));
+
+    if(num >= questions->alen) num = questions->alen - 1;
+
+    cf_tpl_setvalue(tpl,"captcha",TPL_VARIABLE_INT,(int)num);
+    cf_tpl_setvalue(tpl,"captcha_question",TPL_VARIABLE_STRING,questions->avals[num].avals[0].sval,strlen(questions->avals[num].avals[0].sval));
+    cf_tpl_setvalue(tpl,"captcha_answer",TPL_VARIABLE_STRING,question->avals[num].avals[1].sval,strlen(question->avals[num].avals[1].sval));
+    return FLT_OK;
   }
 
   return FLT_DECLINE;
@@ -114,55 +119,14 @@ int flt_captcha_posting(cf_hash_t *head,configuration_t *dc,configuration_t *vc,
   return flt_captcha_post_display(head,dc,vc,tpl,NULL);
 }
 
-/* {{{ flt_captcha_destroy */
-void flt_captcha_destroy(void *a) {
-  flt_captcha_question_t *el = (flt_captcha_question_t *)a;
-  free(el->question);
-  free(el->answer);
-}
-/* }}} */
-
-/* {{{ flt_captcha_handle_command */
-int flt_captcha_handle_command(configfile_t *cfile,conf_opt_t *opt,const u_char *context,u_char **args,size_t argnum) {
-  flt_captcha_question_t q;
-
-  if(flt_captcha_fn == NULL) flt_captcha_fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
-  if(!context || cf_strcmp(flt_captcha_fn,context) != 0) return 0;
-
-  if(flt_captcha_must_init == 1) {
-    flt_captcha_must_init = 0;
-    cf_array_init(&flt_captcha_questions,sizeof(flt_captcha_question_t),flt_captcha_destroy);
-  }
-
-  if(cf_strcmp(opt->name,"CaptchaEnable") == 0) {
-    if(cf_strcmp(args[0],"auth") == 0) flt_captcha_enabled = FLT_CAPTCHA_ENABLED|FLT_CAPTCHA_ENABLED_AUTH;
-    else if(cf_strcmp(args[0],"yes") == 0) flt_captcha_enabled = FLT_CAPTCHA_ENABLED;
-  }
-  else if(cf_strcmp(opt->name,"CaptchaQuestion") == 0) {
-    if(argnum != 2) {
-      fprintf(stderr,"CaptchaQuestion requires two arguments\n");
-      return 1;
-    }
-
-    q.question = args[0];
-    q.answer = args[1];
-    free(args);
-
-    cf_array_push(&flt_captcha_questions,&q);
-
-    return -1;
-  }
-
-  return 0;
-}
-/* }}} */
-
-
-cf_conf_opt_t flt_captcha_config[] = {
-  { "CaptchaEnable",   flt_captcha_handle_command, CFG_OPT_CONFIG|CFG_OPT_LOCAL, NULL},
-  { "CaptchaQuestion", flt_captcha_handle_command, CFG_OPT_CONFIG|CFG_OPT_LOCAL, NULL},
-  { NULL, NULL, 0, NULL }
-};
+/**
+ * Config options:
+ * Captcha:Enable = Yes|No;
+ * Captcha:Questions = (
+ *   ("Question1","Answer1")
+ *   ("Question2","Answer2")
+ * );
+*/
 
 cf_handler_config_t flt_captcha_handlers[] = {
   { NEW_POST_HANDLER,      flt_captcha_new_posting },
@@ -173,7 +137,6 @@ cf_handler_config_t flt_captcha_handlers[] = {
 
 cf_module_config_t flt_captcha = {
   MODULE_MAGIC_COOKIE,
-  flt_captcha_config,
   flt_captcha_handlers,
   NULL,
   NULL,

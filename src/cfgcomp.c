@@ -208,6 +208,34 @@ cf_cfg_config_value_t *cf_cfg_get_value(cf_cfg_config_t *cfg,const u_char *name)
 }
 /* }}} */
 
+/* {{{ cf_cfg_get_value_w_nam */
+cf_cfg_config_value_t *cf_cfg_get_value_w_nam(cf_cfg_config_t *cfg,const u_char *forum,const u_char *name,int global) {
+  size_t i;
+
+  cf_cfg_config_t *cfgns;
+
+  cf_tree_dataset_t dt,*dtp;
+
+  memset(&dt,0,sizeof(dt));
+  dt.key = (void *)name;
+
+  if(forum) {
+    for(i=0;i<cfg->nmspcs.elements;++i) {
+      cfgns = cf_array_element_at(&cfg->nmspcs,i);
+
+      if(cf_strcmp(cfgns->name,forum) == 0) {
+        if((dtp = (cf_tree_dataset_t *)cf_tree_find(&cfgns->args,cfgns->args.root,&dt)) != NULL) return dtp->data;
+      }
+    }
+  }
+
+  if(global && (dtp = (cf_tree_dataset_t *)cf_tree_find(&cfg->args,cfg->args.root,&dt)) != NULL) return dtp->data;
+
+  return NULL;
+}
+/* }}} */
+
+
 /* {{{ cf_get_conf_file */
 cf_array_t *cf_get_conf_file(const u_char **which,size_t llen) {
   cf_array_t *ary = cf_alloc(NULL,1,sizeof(*ary),CF_ALLOC_CALLOC);
