@@ -663,7 +663,8 @@ string_t *body_plain2coded(const u_char *text) {
   /*
    * ok, third phase:
    * - strip whitespaces at the end of a line and string
-   * - change more than one whitespace at the beginning to &nbsp;
+   * - change more than one whitespace at the beginning and in the middle
+   *   of the string to &nbsp; (except for tabs)
    * - transform the signature to internal representation
    * - transform \n to <br />
    */
@@ -679,8 +680,8 @@ string_t *body_plain2coded(const u_char *text) {
       str_chars_append(str,"<br />-- <br />",15);
     }
     else if(*ptr == '\012') str_chars_append(str,"<br />",6);
-    else if(isspace(*ptr)) {
-      for(end=ptr;*end && isspace(*end) && *end != '\012';++end);
+    else if(isspace(*ptr) && *ptr != '\t') {
+      for(end=ptr;*end && isspace(*end) && *end != '\t' && *end != '\012';++end);
 
       /* strip newlines at the end of the line */
       if(*end == '\012') {

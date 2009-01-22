@@ -63,21 +63,24 @@ int flt_captcha_new_posting(cf_hash_t *head,configuration_t *dc,configuration_t 
   size_t num;
   flt_captcha_question_t *q;
 
+  if(flt_captcha_must_init) return FLT_DECLINE;
+  if((flt_charta_enabled & FLT_CHARTA_ENABLED) != 0) return FLT_DECLINE;
+  if(cf_hash_get(GlobalValues,"UserName",8) != NULL && (flt_captcha_enabled & FLT_CAPTCHA_ENABLED_AUTH) == 0) return FLT_DECLINE;
+
+
   if(head && (anum = cf_cgi_get(head,"captcha_num")) != NULL) {
     num = atoi(anum);
     answer = cf_cgi_get(head,"captcha_answer");
     q = array_element_at(&flt_captcha_questions,num);
 
-    if(answer == NULL || cf_strcmp(answer,q->answer) != 0) {
-      strcpy(ErrorString,"E_captcha");
-      display_posting_form(head,p,NULL);
-      return FLT_EXIT;
-    }
+    if(answer != NULL && cf_strcmp(answer,q->answer) == 0) return FLT_OK;
 
     return FLT_OK;
   }
 
-  return FLT_DECLINE;
+  strcpy(ErrorString,"E_captcha");
+  display_posting_form(head,p,NULL);
+  return FLT_EXIT;
 }
 
 /* {{{ flt_captcha_post_display */

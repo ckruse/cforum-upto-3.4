@@ -1,3 +1,7 @@
+2009-01-22 Christian Kruse <cjk@wwwtech.de>
+	* src/fo_post.c: Fixed a bug in tab handling; patch was supplied by
+		Alexander Nitsch
+
 2009-01-20 Christian Kruse <cjk@wwwtech.de>
 	* src/modules/CMakeLists.txt, src/modules/flt_captcha.c: Implemented an easy
 		captcha: admin can define questions which the user has to answer before he
