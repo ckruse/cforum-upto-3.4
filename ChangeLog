@@ -1,3 +1,7 @@
+2009-01-27 Christian Kruse <cjk@wwwtech.de>
+	* src/modules/flt_postingassistant.c: Implemented #144
+	* src/fo_post.c: Fixed a really nasty bug with the back link
+
 2009-01-22 Christian Kruse <cjk@wwwtech.de>
 	* src/fo_post.c: Fixed a bug in tab handling; patch was supplied by
 		Alexander Nitsch

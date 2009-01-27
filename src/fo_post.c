@@ -1248,10 +1248,9 @@ int main(int argc,char *argv[],char *env[]) {
 
             writen(sock,"QUIT\n",5);
 
-            if(cfg_val && cf_strcmp(cfg_val->values[0],"yes") == 0) {
-              link = cf_get_link(rm_infos.posting_uri[UserName?1:0],tid,mid);
-              cf_http_redirect_with_nice_uri(link,0);
-            }
+            link = cf_get_link(rm_infos.posting_uri[UserName?1:0],tid,mid);
+
+            if(cfg_val && cf_strcmp(cfg_val->values[0],"yes") == 0) cf_http_redirect_with_nice_uri(link,0);
             else display_finishing_screen(p,link);
 
             cf_cleanup_message(p);

@@ -273,7 +273,7 @@ float flt_poas_check_sig(u_char *str) {
 /* }}} */
 
 /* {{{ flt_poas_standardchecks */
-int flt_poas_standardchecks(message_t *p,cf_tpl_variable_t *var) {
+int flt_poas_standardchecks(message_t *p,cl_thread_t *thr,cf_tpl_variable_t *var) {
   float score = flt_poas_conf.fds_allowed;
   float min_score;
   u_char *err;
@@ -283,13 +283,15 @@ int flt_poas_standardchecks(message_t *p,cf_tpl_variable_t *var) {
   fprintf(stderr,"score is: %3.3f\n",score);
   #endif
 
-  min_score = flt_poas_check_for_signs(p->subject.content,0,0);
-  if(min_score != .0) {
-    score -= min_score;
+  if(thr == NULL || cf_strcmp(thr->threadmsg->subject.content,p->subject.content) != 0) {
+    min_score = flt_poas_check_for_signs(p->subject.content,0,0);
+    if(min_score != .0) {
+      score -= min_score;
 
-    if((err = cf_get_error_message("E_pa_signs_subject",&len,min_score)) != NULL) {
-      cf_tpl_var_addvalue(var,TPL_VARIABLE_STRING,err,len);
-      free(err);
+      if((err = cf_get_error_message("E_pa_signs_subject",&len,min_score)) != NULL) {
+        cf_tpl_var_addvalue(var,TPL_VARIABLE_STRING,err,len);
+        free(err);
+      }
     }
   }
   #ifdef DEBUG
@@ -489,7 +491,7 @@ int flt_poas_execute(cf_hash_t *head,configuration_t *dc,configuration_t *pc,mes
   if(cf_cgi_get(head,"assicheck") == NULL || flt_poas_conf.poas_must_validate) {
     cf_tpl_var_init(&var,TPL_VARIABLE_ARRAY);
 
-    if(flt_poas_standardchecks(p,&var) != 0) {
+    if(flt_poas_standardchecks(p,thr,&var) != 0) {
       cf_cgi_set(head,"assicheck","1");
       //strcpy(ErrorString,"E_posting_format");
       display_posting_form(head,p,&var);
