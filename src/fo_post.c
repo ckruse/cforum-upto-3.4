@@ -62,7 +62,7 @@
  * Function for displaying the user the 'Ok, posting has been processed' site
  * \param p The message struct
  */
-void display_finishing_screen(cf_cfg_config_t *cfg,cf_message_t *p) {
+void display_finishing_screen(cf_cfg_config_t *cfg,cf_message_t *p,u_char *link) {
   cf_template_t tpl;
   u_char tplname[256];
   int uname = cf_hash_get(GlobalValues,"UserName",8) != NULL;
@@ -97,8 +97,9 @@ void display_finishing_screen(cf_cfg_config_t *cfg,cf_message_t *p) {
   cf_str_init(&content);
 
   cf_set_variable(&tpl,cs->sval,"charset",cs->sval,strlen(cs->sval),1);
-  cf_set_variable(&tpl,cs->sval,"new-posting-uri",ps->avals[uname].sval,strlen(ps->avals[uname].sval),1);
-  cf_set_variable(&tpl,cs->sval,"forum-base-uri",fb->avals[uname].sval,strlen(fb->avals[uname].sval),1);
+  cf_set_variable(&tpl,cs->sval,"script",ps->avals[uname].sval,strlen(ps->avals[uname].sval),1); //TODO: new-posting-uri
+  cf_set_variable(&tpl,cs->sval,"forumbase",fb->avals[uname].sval,strlen(fb->avals[uname].sval),1); //TODO: forum-base-uri
+  cf_set_variable(&tpl,cs->sval,"new_link",link,strlen(link),1); //TODO: posting-uri
 
   cf_set_variable(&tpl,cs->sval,"Name",p->author.content,p->author.len,1);
   cf_set_variable(&tpl,cs->sval,"subject",p->subject.content,p->subject.len,1);
@@ -1152,13 +1153,12 @@ int main(int argc,char *argv[],char *env[]) {
 
             writen(sock,"QUIT\n",5);
 
-            if(cfg_val && cf_strcmp(cfg_val->sval,"yes") == 0) {
-              link = cf_get_link(rm_infos.posting_uri[UserName?1:0],tid,mid);
-              cf_http_redirect_with_nice_uri(link,0);
-              free(link);
-            }
-            else display_finishing_screen(&cfg,p);
+            link = cf_get_link(rm_infos.posting_uri[UserName?1:0],tid,mid);
 
+            if(cfg_val && cf_strcmp(cfg_val->sval,"yes") == 0) cf_http_redirect_with_nice_uri(link,0);
+            else display_finishing_screen(&cfg,p,link);
+
+            free(link);
             cf_cleanup_message(p);
             free(p);
 

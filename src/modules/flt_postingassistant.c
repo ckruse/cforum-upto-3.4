@@ -18,7 +18,7 @@
 /* }}} */
 
 /* {{{ Includes */
-#include "cfconfig.h"
+#include "config.h"
 #include "defines.h"
 
 #include <stdio.h>
@@ -32,7 +32,7 @@
 #include "readline.h"
 #include "hashlib.h"
 #include "utils.h"
-#include "cfgcomp.h"
+#include "configparser.h"
 #include "cfcgi.h"
 #include "template.h"
 #include "clientlib.h"
@@ -165,7 +165,7 @@ float flt_poas_check_for_signs(u_char *str,int strict,int musthave) {
 
         signs = 0;
     }
-  }
+    }
 
 
   if(signs >= 2) {
@@ -273,7 +273,7 @@ float flt_poas_check_sig(u_char *str) {
 /* }}} */
 
 /* {{{ flt_poas_standardchecks */
-int flt_poas_standardchecks(message_t *p,cf_tpl_variable_t *var) {
+int flt_poas_standardchecks(message_t *p,cl_thread_t *thr,cf_tpl_variable_t *var) {
   float score = flt_poas_conf.fds_allowed;
   float min_score;
   u_char *err;
@@ -283,13 +283,15 @@ int flt_poas_standardchecks(message_t *p,cf_tpl_variable_t *var) {
   fprintf(stderr,"score is: %3.3f\n",score);
   #endif
 
-  min_score = flt_poas_check_for_signs(p->subject.content,0,0);
-  if(min_score != .0) {
-    score -= min_score;
+  if(thr == NULL || cf_strcmp(thr->threadmsg->subject.content,p->subject.content) != 0) {
+    min_score = flt_poas_check_for_signs(p->subject.content,0,0);
+    if(min_score != .0) {
+      score -= min_score;
 
-    if((err = cf_get_error_message("E_pa_signs_subject",&len,min_score)) != NULL) {
-      cf_tpl_var_addvalue(var,TPL_VARIABLE_STRING,err,len);
-      free(err);
+      if((err = cf_get_error_message("E_pa_signs_subject",&len,min_score)) != NULL) {
+        cf_tpl_var_addvalue(var,TPL_VARIABLE_STRING,err,len);
+        free(err);
+      }
     }
   }
   #ifdef DEBUG
@@ -305,6 +307,7 @@ int flt_poas_standardchecks(message_t *p,cf_tpl_variable_t *var) {
       free(err);
     }
   }
+
   #ifdef DEBUG
   fprintf(stderr,"score after signs-check in author is: %3.3f\n",score);
   #endif
@@ -318,6 +321,7 @@ int flt_poas_standardchecks(message_t *p,cf_tpl_variable_t *var) {
       free(err);
     }
   }
+
   #ifdef DEBUG
   fprintf(stderr,"score after signs-check in content is: %3.3f\n",score);
   #endif
@@ -331,6 +335,7 @@ int flt_poas_standardchecks(message_t *p,cf_tpl_variable_t *var) {
       free(err);
     }
   }
+
   #ifdef DEBUG
   fprintf(stderr,"score after cases-check in subject is: %3.3f\n",score);
   #endif
@@ -344,6 +349,7 @@ int flt_poas_standardchecks(message_t *p,cf_tpl_variable_t *var) {
       free(err);
     }
   }
+
   #ifdef DEBUG
   fprintf(stderr,"score after cases-check in author is: %3.3f\n",score);
   #endif
@@ -357,6 +363,7 @@ int flt_poas_standardchecks(message_t *p,cf_tpl_variable_t *var) {
       free(err);
     }
   }
+
   #ifdef DEBUG
   fprintf(stderr,"score after cases-check in content is: %3.3f\n",score);
   #endif
@@ -370,6 +377,7 @@ int flt_poas_standardchecks(message_t *p,cf_tpl_variable_t *var) {
       free(err);
     }
   }
+
   #ifdef DEBUG
   fprintf(stderr,"score after newlines-check in content is: %3.3f\n",score);
   #endif
@@ -383,6 +391,7 @@ int flt_poas_standardchecks(message_t *p,cf_tpl_variable_t *var) {
       free(err);
     }
   }
+
   #ifdef DEBUG
   fprintf(stderr,"score after sig-check is: %3.3f\n",score);
   #endif
@@ -395,6 +404,7 @@ int flt_poas_standardchecks(message_t *p,cf_tpl_variable_t *var) {
       free(err);
     }
   }
+
   #ifdef DEBUG
   fprintf(stderr,"score after mail-check is: %3.3f\n",score);
   #endif
@@ -470,9 +480,9 @@ int flt_poas_qp_check(message_t *p) {
 
 /* {{{ flt_poas_execute */
 #ifdef CF_SHARED_MEM
-int flt_poas_execute(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t *pc,message_t *p,cl_thread_t *thr,void *ptr,int sock,int mode)
+int flt_poas_execute(cf_hash_t *head,configuration_t *dc,configuration_t *pc,message_t *p,cl_thread_t *thr,void *ptr,int sock,int mode)
 #else
-int flt_poas_execute(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t *pc,message_t *p,cl_thread_t *thr,int sock,int mode)
+int flt_poas_execute(cf_hash_t *head,configuration_t *dc,configuration_t *pc,message_t *p,cl_thread_t *thr,int sock,int mode)
 #endif
 {
   cf_tpl_variable_t var;
@@ -481,7 +491,7 @@ int flt_poas_execute(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t *
   if(cf_cgi_get(head,"assicheck") == NULL || flt_poas_conf.poas_must_validate) {
     cf_tpl_var_init(&var,TPL_VARIABLE_ARRAY);
 
-    if(flt_poas_standardchecks(p,&var) != 0) {
+    if(flt_poas_standardchecks(p,thr,&var) != 0) {
       cf_cgi_set(head,"assicheck","1");
       //strcpy(ErrorString,"E_posting_format");
       display_posting_form(head,p,&var);
@@ -493,7 +503,7 @@ int flt_poas_execute(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t *
 
   /* check for bad words */
   if(flt_poas_badwords_check(p) != 0) {
-    cf_cgi_set(head,"assicheck","1",2);
+    cf_cgi_set(head,"assicheck","1");
     strcpy(ErrorString,"E_posting_badwords");
     display_posting_form(head,p,NULL);
     return FLT_EXIT;
@@ -502,7 +512,7 @@ int flt_poas_execute(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t *
   /* check for quotes */
   if(cf_cgi_get(head,"assicheck") == NULL || flt_poas_conf.qp_must_validate) {
     if(flt_poas_qp_check(p) != 0) {
-      cf_cgi_set(head,"assicheck","1",2);
+      cf_cgi_set(head,"assicheck","1");
       strcpy(ErrorString,"E_posting_quoting");
       display_posting_form(head,p,NULL);
       return FLT_EXIT;
@@ -515,7 +525,7 @@ int flt_poas_execute(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t *
 /* }}} */
 
 /* {{{ flt_poas_handle */
-int flt_poas_handle(cf_configfile_t *cfile,cf_conf_opt_t *opt,const u_char *context,u_char **args,size_t argnum) {
+int flt_poas_handle(configfile_t *cfile,conf_opt_t *opt,const u_char *context,u_char **args,size_t argnum) {
   if(flt_poas_fn == NULL) flt_poas_fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   if(!context || cf_strcmp(flt_poas_fn,context) != 0) return 0;
 
@@ -527,7 +537,7 @@ int flt_poas_handle(cf_configfile_t *cfile,cf_conf_opt_t *opt,const u_char *cont
       flt_poas_conf.fds_allowed = atof(args[0]);
       break;
     case 'B':
-      if(cf_strcmp(opt->name,"BadWords") == 0) flt_poas_conf.bws_len = cf_split(args[0],",",&flt_poas_conf.bws);
+      if(cf_strcmp(opt->name,"BadWords") == 0) flt_poas_conf.bws_len = split(args[0],",",&flt_poas_conf.bws);
       else flt_poas_conf.bws_allowed = atoi(args[0]);
       break;
     case 'Q':
@@ -555,22 +565,22 @@ void flt_poas_finish(void) {
 }
 /* }}} */
 
-cf_conf_opt_t flt_poas_config[] = {
-  { "PostingAssistant:MustValidate", flt_poas_handle, CF_CFG_OPT_CONFIG|CF_CFG_OPT_LOCAL, NULL },
-  { "PostingAssistant:BadWords",                     flt_poas_handle, CF_CFG_OPT_CONFIG|CF_CFG_OPT_LOCAL, NULL },
-  { "PostingAssistant:BadwordsAllowed",              flt_poas_handle, CF_CFG_OPT_CONFIG|CF_CFG_OPT_LOCAL, NULL },
-  { "PostingAssistant:FormateDeficitesAllowed",      flt_poas_handle, CF_CFG_OPT_CONFIG|CF_CFG_OPT_LOCAL, NULL },
-  { "PostingAssistant:QuotingPercent",               flt_poas_handle, CF_CFG_OPT_CONFIG|CF_CFG_OPT_LOCAL, NULL },
-  { "PostingAssistant:QuoteMustValidate",            flt_poas_handle, CF_CFG_OPT_CONFIG|CF_CFG_OPT_LOCAL, NULL },
+conf_opt_t flt_poas_config[] = {
+  { "PostingAssistantMustValidate", flt_poas_handle, CFG_OPT_CONFIG|CFG_OPT_LOCAL, NULL },
+  { "BadWords",                     flt_poas_handle, CFG_OPT_CONFIG|CFG_OPT_LOCAL, NULL },
+  { "BadwordsAllowed",              flt_poas_handle, CFG_OPT_CONFIG|CFG_OPT_LOCAL, NULL },
+  { "FormateDeficitesAllowed",      flt_poas_handle, CFG_OPT_CONFIG|CFG_OPT_LOCAL, NULL },
+  { "QuotingPercent",               flt_poas_handle, CFG_OPT_CONFIG|CFG_OPT_LOCAL, NULL },
+  { "QuoteMustValidate",            flt_poas_handle, CFG_OPT_CONFIG|CFG_OPT_LOCAL, NULL },
   { NULL, NULL, 0, NULL }
 };
 
-cf_handler_config_t flt_poas_handlers[] = {
+handler_config_t flt_poas_handlers[] = {
   { NEW_POST_HANDLER, flt_poas_execute },
   { 0, NULL }
 };
 
-cf_module_config_t flt_postingassistant = {
+module_config_t flt_postingassistant = {
   MODULE_MAGIC_COOKIE,
   flt_poas_config,
   flt_poas_handlers,
