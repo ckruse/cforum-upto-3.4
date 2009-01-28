@@ -64,18 +64,15 @@ int flt_captcha_new_posting(cf_hash_t *head,configuration_t *dc,configuration_t 
   flt_captcha_question_t *q;
 
   if(flt_captcha_must_init) return FLT_DECLINE;
-  if((flt_captcha_enabled & FLT_CAPTCHA_ENABLED) != 0) return FLT_DECLINE;
+  if((flt_captcha_enabled & FLT_CAPTCHA_ENABLED) == 0) return FLT_DECLINE;
   if(cf_hash_get(GlobalValues,"UserName",8) != NULL && (flt_captcha_enabled & FLT_CAPTCHA_ENABLED_AUTH) == 0) return FLT_DECLINE;
-
 
   if(head && (anum = cf_cgi_get(head,"captcha_num")) != NULL) {
     num = atoi(anum);
     answer = cf_cgi_get(head,"captcha_answer");
     q = array_element_at(&flt_captcha_questions,num);
 
-    if(answer != NULL && cf_strcmp(answer,q->answer) == 0) return FLT_OK;
-
-    return FLT_OK;
+    if(answer != NULL && q != NULL && cf_strcmp(answer,q->answer) == 0) return FLT_OK;
   }
 
   strcpy(ErrorString,"E_captcha");
