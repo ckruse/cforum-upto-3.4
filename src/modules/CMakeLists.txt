@@ -1,5 +1,9 @@
 include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR}/.. ${CMAKE_CURRENT_SOURCE_DIR})
 
+# We always need OpenSSL - for HMAC for CSRF protection (and for MD5 for flt_latex)
+find_package (OpenSSL REQUIRED)
+include_directories (${OPENSSL_INCLUDE_DIR})
+
 add_library (flt_admin MODULE flt_admin.c)
 add_library (flt_cftp MODULE flt_cftp.c)
 add_library (flt_httpauth MODULE flt_httpauth.c)
@@ -18,6 +22,8 @@ add_library (flt_categorycheck MODULE flt_categorycheck.c)
 add_library (flt_xmlarc MODULE flt_xmlarc.c ../xml_handling)
 target_link_libraries (flt_xmlarc ${GDOME_LIBRARIES})
 add_library (flt_http MODULE flt_http.c)
+add_library (flt_csrf MODULE flt_csrf.c)
+target_link_libraries (flt_csrf ${OPENSSL_LIBRARIES})
 
 set_target_properties (
     flt_admin
@@ -33,6 +39,7 @@ set_target_properties (
     flt_categorycheck
     flt_xmlarc
     flt_http
+    flt_csrf
   PROPERTIES
     LINK_FLAGS "-export-dynamic -avoid-version"
     PREFIX ""
@@ -53,12 +60,13 @@ install (
     flt_categorycheck
     flt_xmlarc
     flt_http
+    flt_csrf
   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}/cforum
 )
 
 # Optional modules
-set (ALL_MODULES flt_basic flt_category flt_deleted flt_frameset flt_http
-  flt_link flt_listhighlight flt_livefilter flt_openclose flt_include
+set (ALL_MODULES flt_basic flt_category flt_deleted flt_frameset flt_link
+  flt_listhighlight flt_livefilter flt_openclose flt_include
   flt_registerednames flt_tplmode flt_urlrewrite flt_visited flt_extern
   flt_threadreturnanchor flt_tipoftheday flt_postingassistant
   flt_remotesignature flt_preview flt_spellcheck flt_handle404 flt_voting
@@ -76,6 +84,7 @@ SET (EXTRALIBS_flt_visited ${BERKELEY_DB_LIBRARIES})
 SET (EXTRALIBS_flt_scoring ${BERKELEY_DB_LIBRARIES} ${PCRE_LIBRARIES})
 SET (EXTRALIBS_flt_syntax ${PCRE_LIBRARIES})
 SET (EXTRALIBS_flt_replace ${PCRE_LIBRARIES} cfvalidate)
+SET (EXTRALIBS_flt_latex ${OPENSSL_LIBRARIES})
 
 add_custom_command (
   OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/flt_scoring.c
@@ -108,12 +117,6 @@ if (ENABLE_flt_spellcheck STREQUAL "ON")
   include_directories (${ASPELL_INCLUDE_DIR})
   SET (EXTRALIBS_flt_spellcheck ${ASPELL_LIBRARIES})
 endif (ENABLE_flt_spellcheck STREQUAL "ON")
-
-if (ENABLE_flt_latex STREQUAL "ON")
-  find_package (OpenSSL REQUIRED)
-  include_directories (${OPENSSL_INCLUDE_DIR})
-  SET (EXTRALIBS_flt_latex ${OPENSSL_LIBRARIES})
-endif (ENABLE_flt_latex STREQUAL "ON")
 
 foreach (module ${ALL_MODULES})
   if (ENABLE_${module} STREQUAL "ON")

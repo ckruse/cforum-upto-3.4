@@ -1,3 +1,10 @@
+2009-02-01 Christian Seiler <webmaster@christian-seiler.de>
+	* CMakeLists.txt: Removed CMake policy warnings
+	* src/modules/CMakeLists.txt, src/modules/flt_csrf.c,
+		conf/errormessages.de.txt, conf/fo_post.conf.in,
+		conf/fo_view.conf.in, conf/fo_vote.conf.in: Implemented CSRF
+		protection.
+
 2009-01-27 Christian Kruse <cjk@wwwtech.de>
 	* src/modules/flt_postingassistant.c: Implemented #144
 	* src/fo_post.c: Fixed a really nasty bug with the back link

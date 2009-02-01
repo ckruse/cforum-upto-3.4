@@ -26,6 +26,7 @@ Load "flt_visited"
 Load "flt_include"
 Load "flt_livefilter"
 Load "flt_httpauth"
+Load "flt_csrf"
 Load "flt_admin"
 Load "flt_link"
 Load "flt_threadreturnanchor"
@@ -85,6 +86,9 @@ Forum FORUM1 {
  DateFormatThreadView   "%d. %B %Y, %H:%M"
 
  MailDatabase "@CMAKE_INSTALL_LOCALSTATEDIR_FULL@/cforum/mail_forum1.db"
+
+ CSRFValidTime          "86400"
+ CSRFKey                "insert some random key here (same as in fo_view and fo_vote)"
 }
 
 # eof

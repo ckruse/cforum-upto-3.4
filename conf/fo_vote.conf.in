@@ -11,10 +11,13 @@
 
 ModulePath "@CMAKE_INSTALL_LIBDIR_FULL@/cforum/"
 Load "flt_httpauth"
-
+Load "flt_csrf"
 
 Forum FORUM1 {
   VotingDatabase "@CMAKE_INSTALL_LOCALSTATEDIR_FULL@/cforum/forum1_voting.dat"
   OkTemplate "@CMAKE_INSTALL_SYSCONFDIR_FULL@/cforum/templates/forum1/%s_%s_vote_ok.so"
+
+ CSRFValidTime          "86400"
+ CSRFKey                "insert some random key here (same as in fo_view and fo_vote)"
 }
 

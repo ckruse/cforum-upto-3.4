@@ -27,6 +27,7 @@ Load "flt_preview"
 Load "flt_syntax"
 Load "flt_checkregisteredname"
 Load "flt_mailonpost"
+Load "flt_csrf"
 
 PatternsDirectory "@CMAKE_INSTALL_SYSCONFDIR_FULL@/cforum/patterns/"
 
@@ -101,6 +102,9 @@ Forum FORUM1 {
  ThreadTemplate "@CMAKE_INSTALL_SYSCONFDIR_FULL@/cforum/templates/forum1/%s_%s_thread.so"
  FatalTemplate "@CMAKE_INSTALL_SYSCONFDIR_FULL@/cforum/templates/forum1/%s_%s_fatal.so"
  OkTemplate "@CMAKE_INSTALL_SYSCONFDIR_FULL@/cforum/templates/forum1/%s_%s_post_ok.so"
+
+ CSRFValidTime          "86400"
+ CSRFKey                "insert some random key here (same as in fo_view and fo_vote)"
 }
 
 
