@@ -90,13 +90,13 @@ static u_char *generate_csrf_key(u_char *user,int previous) {
 
   int result_len = 0, i;
 
-  if(snprintf(buf,maxlen,"%s%ld",user,current_time_section)>=maxlen) {
+  if(snprintf(buf,maxlen,"%s%ld",user,current_time_section) >= maxlen) {
     free(buf);
-	free(result_buf);
+    free(result_buf);
     return NULL;
   }
 
-  if (HMAC(EVP_sha1(),flt_csrf_key,strlen(flt_csrf_key),buf,strlen(buf),result_buf,&result_len) == NULL) {
+  if(HMAC(EVP_sha1(),flt_csrf_key,strlen(flt_csrf_key),buf,strlen(buf),result_buf,&result_len) == NULL) {
     free(buf);
     free(result_buf);
     return NULL;
@@ -105,10 +105,7 @@ static u_char *generate_csrf_key(u_char *user,int previous) {
   // Hex encode the result
   free(buf);
   buf = fo_alloc(NULL,1,2*result_len+1,FO_ALLOC_MALLOC);
-  for (i = 0; i < result_len; i++) {
-    snprintf(buf + 2*i, 3, "%02x", result_buf[i]);
-  }
-  // sprintf automatically adds the final \0 above!
+  for(i = 0; i < result_len; i++) snprintf(buf + 2*i, 3, "%02x", result_buf[i]); // sprintf automatically adds the final \0!
 
   free(result_buf);
   return buf;
@@ -119,9 +116,9 @@ static u_char *generate_csrf_key(u_char *user,int previous) {
 static int check_csrf_key(u_char *user,char *csrf_token_user) {
   u_char *csrf_token_generated = generate_csrf_key(user,0);
 
-  if (!csrf_token_generated) return -1;
+  if(!csrf_token_generated) return -1;
 
-  if (strcmp(csrf_token_generated,csrf_token_user) == 0) {
+  if(strcmp(csrf_token_generated,csrf_token_user) == 0) {
     free(csrf_token_generated);
     return 0;
   }
@@ -129,9 +126,9 @@ static int check_csrf_key(u_char *user,char *csrf_token_user) {
   free(csrf_token_generated);
   csrf_token_generated = generate_csrf_key(user,1);
 
-  if (!csrf_token_generated) return -1;
+  if(!csrf_token_generated) return -1;
 
-  if (strcmp(csrf_token_generated,csrf_token_user) == 0) {
+  if(strcmp(csrf_token_generated,csrf_token_user) == 0) {
     free(csrf_token_generated);
     return 0;
   }
@@ -152,25 +149,25 @@ int flt_csrf_newpost(cf_hash_t *head,configuration_t *dc,configuration_t *pc,mes
   u_char *csrf_token_user;
   int ret = 0;
 
-  if (!UserName) return FLT_DECLINE;
+  if(!UserName) return FLT_DECLINE;
 
-  if (!head) {
+  if(!head) {
     strcpy(ErrorString,"E_CSRF_VIOLATION");
     display_posting_form(head,p,NULL);
     return FLT_EXIT;
   }
 
-  if ((csrf_token_user = cf_cgi_get(head,"csrftoken")) == NULL) ret = 1;
+  if((csrf_token_user = cf_cgi_get(head,"csrftoken")) == NULL) ret = 1;
 
-  if (ret == 0) ret = check_csrf_key(UserName,csrf_token_user);
+  if(ret == 0) ret = check_csrf_key(UserName,csrf_token_user);
 
-  if (ret == 1) {
+  if(ret == 1) {
     strcpy(ErrorString,"E_CSRF_VIOLATION");
     display_posting_form(head,p,NULL);
     return FLT_EXIT;
-  } else if (ret == 0) {
-    return FLT_DECLINE;
-  } else {
+  }
+  else if (ret == 0) return FLT_DECLINE;
+  else {
     cf_error_message("E_CSRF_INTERNAL",NULL);
     return FLT_EXIT;
   }
@@ -185,7 +182,7 @@ int flt_csrf_posthandler(cf_hash_t *cgi,configuration_t *dc,configuration_t *vc,
   if(!UserName) return FLT_DECLINE;
 
   csrf_token = FLT_CSRF_CURRENTTOKEN(UserName);
-  if (!csrf_token) return FLT_DECLINE;
+  if(!csrf_token) return FLT_DECLINE;
 
   cf_tpl_hashvar_setvalue(&msg->hashvar,"csrftoken",TPL_VARIABLE_STRING,csrf_token,strlen(csrf_token));
   return FLT_OK;
@@ -197,10 +194,10 @@ int flt_csrf_setvars(cf_hash_t *cgi,configuration_t *dc,configuration_t *vc,cf_t
   u_char *UserName = cf_hash_get(GlobalValues,"UserName",8);
   u_char *csrf_token;
 
-  if (!UserName) return FLT_DECLINE;
+  if(!UserName) return FLT_DECLINE;
 
   csrf_token = FLT_CSRF_CURRENTTOKEN(UserName);
-  if (!csrf_token) return FLT_DECLINE;
+  if(!csrf_token) return FLT_DECLINE;
 
   cf_tpl_setvalue(top,"csrftoken",TPL_VARIABLE_STRING,csrf_token,strlen(csrf_token));
   cf_tpl_setvalue(down,"csrftoken",TPL_VARIABLE_STRING,csrf_token,strlen(csrf_token));
@@ -214,10 +211,10 @@ int flt_csrf_setvars_thread(cf_hash_t *head,configuration_t *dc,configuration_t 
   u_char *UserName = cf_hash_get(GlobalValues,"UserName",8);
   u_char *csrf_token;
 
-  if (!UserName) return FLT_DECLINE;
+  if(!UserName) return FLT_DECLINE;
 
   csrf_token = FLT_CSRF_CURRENTTOKEN(UserName);
-  if (!csrf_token) return FLT_DECLINE;
+  if(!csrf_token) return FLT_DECLINE;
 
   cf_tpl_hashvar_setvalue(hash,"csrftoken",TPL_VARIABLE_STRING,csrf_token,strlen(csrf_token));
   return FLT_OK;
@@ -229,10 +226,10 @@ int flt_csrf_posting_setvars(cf_hash_t *head,configuration_t *dc,configuration_t
   u_char *UserName = cf_hash_get(GlobalValues,"UserName",8);
   u_char *csrf_token;
 
-  if (!UserName) return FLT_DECLINE;
+  if(!UserName) return FLT_DECLINE;
 
   csrf_token = FLT_CSRF_CURRENTTOKEN(UserName);
-  if (!csrf_token) return FLT_DECLINE;
+  if(!csrf_token) return FLT_DECLINE;
 
   cf_tpl_setvalue(tpl,"csrftoken",TPL_VARIABLE_STRING,csrf_token,strlen(csrf_token));
   return FLT_OK;
@@ -244,10 +241,10 @@ int flt_csrf_post_display(cf_hash_t *head,configuration_t *dc,configuration_t *p
   u_char *UserName = cf_hash_get(GlobalValues,"UserName",8);
   u_char *csrf_token;
 
-  if (!UserName) return FLT_DECLINE;
+  if(!UserName) return FLT_DECLINE;
 
   csrf_token = FLT_CSRF_CURRENTTOKEN(UserName);
-  if (!csrf_token) return FLT_DECLINE;
+  if(!csrf_token) return FLT_DECLINE;
 
   cf_tpl_setvalue(tpl,"csrftoken",TPL_VARIABLE_STRING,csrf_token,strlen(csrf_token));
   return FLT_OK;
@@ -264,32 +261,28 @@ int flt_csrf_init(cf_hash_t *cgi,configuration_t *dc,configuration_t *vc) {
   u_char *value;
   int res;
 
-  if (!UserName) return FLT_DECLINE;
+  if(!UserName) return FLT_DECLINE;
 
-  if (!cgi) return FLT_DECLINE;
+  if(!cgi) return FLT_DECLINE;
 
   // We react to the following
   //   ?faa=... -> admin action
   //   ?a=...   -> hide
   //   ?mv=...  -> mark as visited
   //   ?mav=... -> mark all visited
-  if (cf_cgi_get(cgi,"faa") != NULL ||
-    ((value = (u_char *)cf_cgi_get(cgi,"a")) != NULL && strcmp(value,"nd") != 0) ||
-    cf_cgi_get(cgi,"mv") != NULL || cf_cgi_get(cgi,"mav") != NULL
-  ) {
+  if(cf_cgi_get(cgi,"faa") != NULL || ((value = (u_char *)cf_cgi_get(cgi,"a")) != NULL && strcmp(value,"nd") != 0) || cf_cgi_get(cgi,"mv") != NULL || cf_cgi_get(cgi,"mav") != NULL) {
     csrf_token_user = cf_cgi_get(cgi,"csrftoken");
-    if (!csrf_token_user) {
+    if(!csrf_token_user) {
       printf("Status: 500 Internal Server Error\015\012Content-Type: %s; charset=%s\015\012\015\012",content_type?content_type:(u_char *)"text/html",cs->values[0]);
       cf_error_message("E_CSRF_VIOLATION",NULL);
       return FLT_EXIT;
     }
-    if ((res = check_csrf_key(UserName,csrf_token_user)) == 1) {
+    if((res = check_csrf_key(UserName,csrf_token_user)) == 1) {
       printf("Status: 500 Internal Server Error\015\012Content-Type: %s; charset=%s\015\012\015\012",content_type?content_type:(u_char *)"text/html",cs->values[0]);
       cf_error_message("E_CSRF_VIOLATION",NULL);
       return FLT_EXIT;
-    } else if (res == 0) {
-      return FLT_DECLINE;
     }
+    else if(res == 0) return FLT_DECLINE;
 
     printf("Status: 500 Internal Server Error\015\012Content-Type: %s; charset=%s\015\012\015\012",content_type?content_type:(u_char *)"text/html",cs->values[0]);
     cf_error_message("E_CSRF_INTERNAL",NULL);
