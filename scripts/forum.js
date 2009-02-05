@@ -6,17 +6,44 @@ var MODIFIER_SHIFT = 1;
 var MODIFIER_ALT   = 2;
 var MODIFIER_CTRL  = 4;
 
-var wiki_uri = 'http://de.wikipedia.org/wiki/';
-
 var active_thread = null;
-var wiki_window   = null;
 
-/* get XmlHttpRequest instance */
-xmlhttp = false;
+function recurseVars(v) {
+  var txt = "";
+  switch (typeof(v)) {
+    case "boolean": return "[bool]"+(v?'yes':'no');
+    case "string": return "[string]"+v;
+    case "number": return "[number]"+v;
+    case "undefined": return "[undefined]";
+    case "function": return "[function]"+v;
+    case "object":
+      txt += "[object]\n";
+      for (var item in v) {
+        txt += "  propertyname="+item+ " value="+v[item]+"\n";
+      }
+      return txt;
+  }
+}
+function log(msg,hint) {
+  if (window.console) {
+    window.console.log(hint+":\n"+recurseVars(msg));
+  }
+  else {
+  //  alert(hint+":\n"+recurseVars(msg));
+  }
+
+  return msg;
+}
+
+
+
+/* {{{ XmlHttpRequest */
+
+var xmlhttp = false;
 
 /*@cc_on @*/
 /*@if (@_jscript_version >= 5)
-// JScript gives us Conditional compilation, we can cope with old IE versions.
+// JScript gives us Conditional compilation, we can cope with old IE versions
 // and security blocked creation of the objects.
 try {
   xmlhttp = new ActiveXObject("Msxml2.XMLHTTP");
@@ -30,16 +57,18 @@ catch (e) {
   }
 }
 @end @*/
-if (!xmlhttp && typeof XMLHttpRequest != 'undefined') xmlhttp = new XMLHttpRequest();
+if(!xmlhttp && typeof XMLHttpRequest != 'undefined') xmlhttp = new XMLHttpRequest();
 
-/* {{{ stringlist handling */
 function xmlhttp_get_contents(xml,uri,uname,pass) {
-  if(uname && pass) xmlhttp.open("GET",uri,false,uname,pass);
-  else xmlhttp.open("GET", uri, false);
-
+  xmlhttp.open("GET", uri, false);
   xmlhttp.send(null);
   return xmlhttp.responseText;
 }
+/* }}} */
+
+
+
+/* {{{ stringlist handling */
 
 function set_stringlist_value(prompttxt,base,directive,param) {
   if(!xmlhttp) return true;
@@ -65,6 +94,8 @@ function set_stringlist_value(prompttxt,base,directive,param) {
 
   if(base.indexOf(window.location.protocol) < 0) uri = window.location.protocol + '//' + window.location.hostname;
   uri += base + '?a=setvalue&directive='+directive+'&'+param+'='+encodeURIComponent(val)+'&type=stringlist&unique=' + date.getTime();
+
+  if(csrftoken) uri += "&csrftoken=" + encodeURIComponent(csrftoken);
 
   xmlhttp_get_contents(xmlhttp,uri,null,null);
 
@@ -98,16 +129,47 @@ function remove_stringlist_value(prompttxt,base,directive,param) {
   if(base.indexOf(window.location.protocol) < 0) uri = window.location.protocol + '//' + window.location.hostname;
   uri  += base + '?a=removevalue&directive='+directive+'&'+param+'='+encodeURIComponent(val)+'&type=stringlist&unique=' + date.getTime();
 
+  if(csrftoken) uri += "&csrftoken=" + encodeURIComponent(csrftoken);
+
   xmlhttp_get_contents(xmlhttp,uri,null,null);
 
   window.location.reload();
 
   return false;
 }
+
+/* Tastatur-Shortcuts */
+
+function add_to_blacklist() {
+  return set_stringlist_value("Name, der auf die Blacklist soll",userconf_uri,'BlackList','blacklist');
+}
+
+function remove_from_blacklist() {
+  return remove_stringlist_value("Name, der von der Blacklist entfernt werden soll",userconf_uri,"BlackList","blacklist")
+}
+
+function add_to_whitelist() {
+  return set_stringlist_value("Name, der auf die Whitelist soll",userconf_uri,'WhiteList','whitelst');
+}
+
+function remove_from_whitelist() {
+  return remove_stringlist_value("Name, der von der Whitelist entfernt werden soll",userconf_uri,"WhiteList","whitelst")
+}
+
+function add_to_highlightcats() {
+  return set_stringlist_value("Kategorie, die von nun an hervorgehoben werden soll",userconf_uri,'HighlightCategories','highlightcats');
+}
+
+function remove_from_highlightcats() {
+  return remove_stringlist_value("Kategorie, die von nun an nicht mehr hervorgehoben werden soll",userconf_uri,'HighlightCategories','highlightcats');
+}
+
 /* }}} */
 
 
+
 /* {{{ keybinding handling */
+
 function register_keybinding(table,key,modifiers,action) {
   if(key.toLowerCase() != key) {
     key = key.toLowerCase();
@@ -140,9 +202,8 @@ function handle_keyevent(e,table) {
   if(!e) e = window.event;
 
   if(e.target) node = e.target;
-  else if (e.srcElement) node = e.srcElement;
+  else if(e.srcElement) node = e.srcElement;
   if(node.nodeName.toLowerCase() == "textarea" || node.nodeName.toLowerCase() == "input") return true;
-
 
   if(e.which) code = e.which;
   else if(e.keyCode) code = e.keyCode;
@@ -162,7 +223,12 @@ function handle_keyevent(e,table) {
 }
 /* }}} */
 
-/* {{{ posting functions */
+
+
+/* {{{ navigation */
+
+/* Tastatur-Shortcuts */
+
 function next_posting() {
   if(!document.getElementsByTagName) return true;
 
@@ -212,26 +278,6 @@ function focus_reply() {
   return false;
 }
 
-function vote_good() {
-  if(!window.vote) {
-    alert("Um diese Funktion zu nutzen müssen Sie die Option 'Dynamisches Javascript zum Abstimmen nutzen' aktiviert haben!");
-    return true;
-  }
-
-  vote(tid,mid,'good');
-  return false;
-}
-
-function vote_bad() {
-  if(!window.vote) {
-    alert("Um diese Funktion zu nutzen müssen Sie die Option 'Dynamisches Javascript zum Abstimmen nutzen' aktiviert haben!");
-    return true;
-  }
-
-  vote(tid,mid,'bad');
-  return false;
-}
-
 function focus_active() {
   if(!document.getElementsByTagName) return true;
 
@@ -241,7 +287,7 @@ function focus_active() {
   if(!act) return true;
 
   for(var i=0;i<lis.length;++i) {
-    /* check if this is the active */
+    // check if this is the active
     if(lis[i] == act) {
       if(++i == lis.length) return true;
 
@@ -257,44 +303,173 @@ function focus_active() {
   return true;
 }
 
-function kill_post() {
-  window.location.href = forum_uri + '?dt=' + tid + '&a=d';
+/* }}} */
+
+/* {{{ Voting */
+
+function vote(tid,mid,action) {
+  if(!xmlhttp) return true;
+
+  var date    = new Date();
+  var uri     = base_uri + "cgi-bin/user/fo_vote?t=" + tid + "&m=" + mid + "&a=" + action + "&mode=xmlhttp&unique="+date.getTime();
+  if(csrftoken) uri += "&csrftoken=" + encodeURIComponent(csrftoken);
+
+  var content = xmlhttp_get_contents(xmlhttp,uri,null,null);
+
+  if(content) {
+    var elem = document.getElementById('votes-'+action+'-num-m'+mid);
+    if(elem) {
+      elem.innerHTML = content;
+      return false;
+    }
+  }
+
+  return true;
 }
 
-function mark_visited() {
-  window.location.href = forum_uri + '?mv=' + tid;
+/* Tastatur-Shortcuts */
+
+function vote_good() {
+  if(!window.vote) {
+    alert("Um diese Funktion zu nutzen mssen Sie die Option 'Dynamisches Javascript zum Abstimmen nutzen' aktiviert haben!");
+    return true;
+  }
+
+  vote(tid,mid,'good');
+  return false;
+}
+
+function vote_bad() {
+  if(!window.vote) {
+    alert("Um diese Funktion zu nutzen mssen Sie die Option 'Dynamisches Javascript zum Abstimmen nutzen' aktiviert haben!");
+    return true;
+  }
+
+  vote(tid,mid,'bad');
+  return false;
 }
 
 /* }}} */
 
-/* {{{ threadlist functions */
-function add_to_blacklist() {
-  return set_stringlist_value("Name, der auf die Blacklist soll",userconf_uri,'BlackList','blacklist');
+/* {{{ Auf- und Zuklappen */
+function snap(tid,action) {
+  if(!xmlhttp) return true;
+
+  var date  = new Date();
+  var litem = document.getElementById('t'+tid);
+  var list  = litem.parentNode;
+  var uri = forum_base_url+'?oc_t='+tid+'&t='+tid+'&a='+action+'&mode=xmlhttp&unique='+date.getTime();
+  if(csrftoken) uri += "&csrftoken=" + encodeURIComponent(csrftoken);
+
+  var cnt = xmlhttp_get_contents(xmlhttp,uri,null,null);
+
+  var el = document.createElement('div');
+  el.innerHTML = cnt;
+
+  list.replaceChild(el.getElementsByTagName('li')[0],litem);
+  return false;
 }
 
-function remove_from_blacklist() {
-  return remove_stringlist_value("Name, der von der Blacklist entfernt werden soll",userconf_uri,"BlackList","blacklist")
+/* }}} */
+
+/* {{{ Threads ausblenden */
+function deleted(tid) {
+  if(!xmlhttp) return true;
+
+  var li   = document.getElementById('t' + tid);
+  var uri  = forum_base_url+'?dt='+tid+'&t='+tid+'&mode=xmlhttp&a=d';
+  if(csrftoken) uri += "&csrftoken" + encodeURIComponent(csrftoken);
+
+  xmlhttp_get_contents(xmlhttp,uri,null,null);
+  li.style.display = 'none';
+  return false;
 }
 
-function add_to_whitelist() {
-  return set_stringlist_value("Name, der auf die Whitelist soll",userconf_uri,'WhiteList','whitelst');
+/* Tastatur-Shortcuts */
+function kill_post() {
+  var uri = forum_uri + '?dt=' + tid + '&a=d';
+  if(csrftoken) uri += "&csrftoken" + encodeURIComponent(csrftoken);
+  window.location.href = uri;
 }
 
-function remove_from_whitelist() {
-  return remove_stringlist_value("Name, der von der Whitelist entfernt werden soll",userconf_uri,"WhiteList","whitelst")
+/* }}} */
+
+/* {{{ Threads als gelesen markieren */
+function visited(tid) {
+  if(!xmlhttp) return true;
+
+  var date = new Date();
+  var li   = document.getElementById('t'+tid);
+  var list = li.parentNode;
+  var uri  = forum_base_url+'?mv='+tid+'&t='+tid+'&mode=xmlhttp&unique='+date.getTime();
+  if(csrftoken) uri += "&csrftoken" + encodeURIComponent(csrftoken);
+
+  var cnt  = xmlhttp_get_contents(xmlhttp,uri,null,null);
+
+  var el   = document.createElement('div');
+  el.innerHTML = cnt;
+
+  list.replaceChild(el.getElementsByTagName('li')[0],li);
+  return false;
 }
 
-function add_to_highlightcats() {
-  return set_stringlist_value("Kategorie, die von nun an hervorgehoben werden soll",userconf_uri,'HighlightCategories','highlightcats');
-}
+/* Tastatur-Shortcuts */
 
-function remove_from_highlightcats() {
-  return remove_stringlist_value("Kategorie, die von nun an nicht mehr hervorgehoben werden soll",userconf_uri,'HighlightCategories','highlightcats');
+function mark_visited() {
+  var uri = forum_uri + '?mv=' + tid;
+  if(csrftoken) uri += "&csrftoken" + encodeURIComponent(csrftoken);
+  window.location.href = uri;
 }
 
 function mark_all_visited() {
-  window.location.href = forum_base_url + '?mav=1';
+  uri = forum_base_url + '?mav=1';
+  if(csrftoken) uri += "&csrftoken" + encodeURIComponent(csrftoken);
+  window.location.href = uri;
 }
+/* }}} */
+
+/* {{{ Admin-Funktionen */
+function admin(tid,mid,action) {
+  if(!xmlhttp) return true;
+
+  if (action == 'del') {
+    var result = window.confirm('Wollen Sie den Beitrag samt Anworten wirklich lÃ¶schen?');
+    if(!result) return false;
+  }
+  else if (action == 'archive') {
+    var result = window.confirm('Wollen Sie den Thread wirklich von der Forumsseite ins Archiv verschieben?');
+    if(!result) return false;
+  }
+
+  var date = new Date();
+  var li   = document.getElementById('t'+tid);
+  var list = li.parentNode;
+
+  var uri = forum_base_url + '?t=' + tid + '&m=' + mid + '&mode=xmlhttp&unique=' + date.getTime() + '&aaf=1';
+  if(action == 'remove-na' || action == 'set-na' || action == 'set-noarchive' || action == 'remove-noarchive') uri += '&a='+action;
+  else uri += '&faa='+action;
+  if(csrftoken) uri += "&csrftoken=" + encodeURIComponent(csrftoken);
+
+  var cnt = xmlhttp_get_contents(xmlhttp,uri,null,null);
+
+  if(action == "archive") li.style.display = 'none';
+  else {
+    var el = document.createElement('div');
+    el.innerHTML = cnt;
+
+    list.replaceChild(el.getElementsByTagName('li')[0],li);
+  }
+
+  return false;
+}
+/* }}} */
+
+/* {{{ In Wikipedia nachschlagen */
+
+/* Tastatur-Shortcuts */
+
+var wiki_uri = 'http://de.wikipedia.org/wiki/';
+var wiki_window   = null;
 
 function wikipedia_lookup() {
   if(!xmlhttp) return true;
@@ -324,5 +499,19 @@ function wikipedia_lookup() {
 }
 /* }}} */
 
+/* {{{ Chat- und News-Fenster */
+function Chat() {
+  window.open("http://aktuell.de.selfhtml.org/live/chat.htm", "popup", "width=600,height=450");
+}
+
+/*
+
+function News() {
+  window.open("http://aktuell.de.selfhtml.org/news.htm", "popup", "width=520,height=400,scrollbars=yes,resizable=yes,status=yes");
+}
+
+*/
+
+/* }}} */
 
 /* eof */

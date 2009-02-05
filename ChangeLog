@@ -1,3 +1,6 @@
+2009-02-05 Christian Kruse <cjk@wwwtech.de>
+	* scripts/forum.js: Did some updates to support flt_csrf
+
 2009-02-01 Christian Seiler <webmaster@christian-seiler.de>
 	* CMakeLists.txt: Removed CMake policy warnings
 	* src/modules/CMakeLists.txt, src/modules/flt_csrf.c,
