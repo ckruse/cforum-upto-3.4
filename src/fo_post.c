@@ -851,7 +851,7 @@ int main(int argc,char *argv[],char *env[]) {
 
   string_t *str,str1;
 
-  u_char *tidmid,*rqmethod;
+  u_char *tidmid,*rqmethod,*tmp;
   u_int64_t tid = 0,mid = 0;
 
   #ifdef CF_SHARED_MEM
@@ -975,7 +975,7 @@ int main(int argc,char *argv[],char *env[]) {
         if(cf_cgi_get(head,"unid") == NULL) work_on_post = 0;
       }
 
-      if(work_on_post) {
+      if(work_on_post || ((tmp = cf_cgi_get(head,"a")) != NULL && cf_strcmp(tmp,"answer") == 0)) {
         /* {{{ ok, user gave us variables -- lets normalize them */
         *ErrorString = '\0';
         if(normalize_cgi_variables(head,"qchar") != 0) {

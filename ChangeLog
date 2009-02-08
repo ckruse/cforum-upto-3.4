@@ -1,80 +1,8 @@
+2009-02-08 Christian Kruse <cjk@wwwtech.de>
+	* src/fo_post.c: Fixed #158
+
 2009-02-08 Christian Seiler <webmaster@christian-seiler.de>
 	* src/modules/flt_csrf: Fixed #157
 	* src/htmllib.c: Fixed #156
 	* scripts/forum.js: Yet some more CSRF updates
-
-2009-02-05 Christian Kruse <cjk@wwwtech.de>
-	* scripts/forum.js: Did some updates to support flt_csrf
-
-2009-02-01 Christian Seiler <webmaster@christian-seiler.de>
-	* CMakeLists.txt: Removed CMake policy warnings
-	* src/modules/CMakeLists.txt, src/modules/flt_csrf.c,
-		conf/errormessages.de.txt, conf/fo_post.conf.in,
-		conf/fo_view.conf.in, conf/fo_vote.conf.in: Implemented CSRF
-		protection.
-
-2009-01-27 Christian Kruse <cjk@wwwtech.de>
-	* src/modules/flt_postingassistant.c: Implemented #144
-	* src/fo_post.c: Fixed a really nasty bug with the back link
-
-2009-01-22 Christian Kruse <cjk@wwwtech.de>
-	* src/fo_post.c: Fixed a bug in tab handling; patch was supplied by
-		Alexander Nitsch
-
-2009-01-20 Christian Kruse <cjk@wwwtech.de>
-	* src/modules/CMakeLists.txt, src/modules/flt_captcha.c: Implemented an easy
-		captcha: admin can define questions which the user has to answer before he
-		can post.
-	* conf/errormessages.de.txt: Added two new messages
-
-2009-01-16 Christian Kruse <cjk@wwwtech.de>
-	* src/modules/CMakeLists.txt, src/modules/flt_replace.c: Implemented #90
-
-2009-01-15 Christian Kruse <cjk@wwwtech.de>
-	* src/modules/flt_include.c: Implemented #118
-
-2009-01-14 Christian Kruse <cjk@wwwtech.de>
-	* src/fo_post.c, src/htmllib.c: Change signature handling; got rid of
-		silly _/_SIG_/_
-	* scripts/update_sighandling.sh: Added script to update sig handling
-
-2009-01-12 Christian Kruse <cjk@wwwtech.de>
-	* src/modules/flt_charta.c: Added charta module of the SELFHTML Forum. It's
-		a nice spam filter :)
-
-2009-01-11 Christian Seiler <webmaster@christian-seiler.de>
-	* src/modules/CMakeLists.txt, src/modules/flt_spellcheck.c,
-		conf/fo_post.conf.in: Ported spellchecker to apsell (library
-		instead of IPC with ispell)
-
-2009-01-11 Christian Kruse <cjk@wwwtech.de>
-	* src/htmllib.c: Fixed #123, made quoting char handling much better
-	* src/modules/flt_syntax.c: This addon removed the first newline. But in
-		some cases one gets really weird results, removed
-	* src/modules/flt_cgiconfig.c: fixed weird bug where I was brain afk when I
-		wrote this code
-	* src/configparser.c: Added config options necessary config options to
-		provide Atom 1.0
-	* src/feeds.c: Changed to Atom 1.0
-	* src/modules/flt_spellcheck.c, conf/modules.de.xml: Implemented #16
-	* src/defines.h: Changed version to 3.4.13
-	* src/modules/flt_remotesignature.c: Fixed
-		<https://redaktion.selfhtml.org/ticket/384>
-	* src/fo_post.c: Fixed <https://redaktion.selfhtml.org/ticket/527>
-	* src/modules/flt_visited.c: Implemented #87
-
-2009-01-09 Christian Kruse <cjk@wwwtech.de>
-	* scripts/gen_unicode_class_table.pl, src/charconvert.h,
-	src/unicode_classes.c, src/CMakeLists.txt: Added function to classify
-		characters as described in the Unicode standard.
-	* src/modules/flt_directives.c: Fixed bug #117, implemented #119,
-		implemented #134
-	* scripts/cf-msgs2db.pl: Fixed a bug with the --lang parameter
-	* CMakeLists.txt: Added -g compiler flag when debug mode is activated
-	* conf/errormessages.de.txt: Added new messages for posting assistant
-	* src/clientlib.c: Fixed really nasty bug in error messages functions, added
-		%f as format char for double values
-	* src/modules/flt_postingassistant.c: Implemented #126
-	* src/fo_post.c: search&replace is the root of all evil!
-	* src/modules/flt_posting.c: Implemented #37
 
