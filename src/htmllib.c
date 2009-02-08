@@ -423,8 +423,8 @@ static u_char *parse_message(cl_thread_t *thread,u_char *start,array_t *stack,st
               break;
             }
 
-            if(xml) str_chars_append(content,"<span class=\"q\"><br />-- ",25);
-            else str_chars_append(content,"<span class=\"q\"><br>-- ",23);
+            if(xml) str_chars_append(content,"<span class=\"sig\"><br />-- ",25);
+            else str_chars_append(content,"<span class=\"sig\"><br>-- ",23);
             ptr += 9;
             sig = 1;
           }

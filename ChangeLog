@@ -1,4 +1,7 @@
 2009-02-08 Christian Seiler <webmaster@christian-seiler.de>
+	* src/htmllib.c: Fixed #156
+
+2009-02-08 Christian Seiler <webmaster@christian-seiler.de>
 	* scripts/forum.js: Yet some more CSRF updates
 
 2009-02-05 Christian Kruse <cjk@wwwtech.de>
