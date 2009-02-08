@@ -235,6 +235,7 @@ void display_posting_form(cf_hash_t *head,message_t *p,cf_tpl_variable_t *var) {
   cf_set_variable(&tpl,cs,"forumbase",fb->values[0],strlen(fb->values[0]),1);
   cf_set_variable(&tpl,cs,"unid",buff,len,1);
   cf_tpl_setvalue(&tpl,"qchar",TPL_VARIABLE_STRING,"&#255;",6);
+  cf_tpl_setvalue(&tpl,"cf_version",TPL_VARIABLE_STRING,CF_VERSION,strlen(CF_VERSION),1);
   cf_tpl_appendvalue(&tpl,"qchar",qchars,qclen);
 
   if(var) {
