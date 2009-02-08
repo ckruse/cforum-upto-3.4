@@ -270,7 +270,7 @@ int flt_csrf_init(cf_hash_t *cgi,configuration_t *dc,configuration_t *vc) {
   //   ?a=...   -> hide
   //   ?mv=...  -> mark as visited
   //   ?mav=... -> mark all visited
-  if(cf_cgi_get(cgi,"faa") != NULL || ((value = (u_char *)cf_cgi_get(cgi,"a")) != NULL && strcmp(value,"nd") != 0) || cf_cgi_get(cgi,"mv") != NULL || cf_cgi_get(cgi,"mav") != NULL) {
+  if(cf_cgi_get(cgi,"faa") != NULL || ((value = (u_char *)cf_cgi_get(cgi,"a")) != NULL && strcmp(value,"nd") != 0 && strcmp(value,"answer") != 0) || cf_cgi_get(cgi,"mv") != NULL || cf_cgi_get(cgi,"mav") != NULL) {
     csrf_token_user = cf_cgi_get(cgi,"csrftoken");
     if(!csrf_token_user) {
       printf("Status: 500 Internal Server Error\015\012Content-Type: %s; charset=%s\015\012\015\012",content_type?content_type:(u_char *)"text/html",cs->values[0]);
