@@ -282,132 +282,134 @@ int main(int argc,char *argv[],char *env[]) {
     send204 = cfg_get_first_value(&fo_vote_conf,forum_name,"Send204");
 
 
-    if(cmid && ctid && a && is_id(cmid) && is_id(ctid)) {
-      if((sock = cf_socket_setup()) != -1) {
-        /* {{{ open database and lock it */
-        if((ret = db_create(&db,NULL,0)) != 0) {
-          printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
-          cf_error_message("E_FO_500",NULL);
-          fprintf(stderr,"fo_vote: db_create() error: %s\n",db_strerror(ret));
-          return EXIT_FAILURE;
-        }
-
-        if((ret = db->open(db,NULL,dbname->values[0],NULL,DB_BTREE,DB_CREATE,0644)) != 0) {
-          printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
-          cf_error_message("E_FO_500",NULL);
-          fprintf(stderr,"fo_vote: db->open() error: %s\n",db_strerror(ret));
-          return EXIT_FAILURE;
-        }
-
-        if((ret = db->fd(db,&fd)) != 0) {
-          printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
-          cf_error_message("E_FO_500",NULL);
-          fprintf(stderr,"fo_vote: db->fd() error: %s\n",db_strerror(ret));
-          return EXIT_FAILURE;
-        }
-
-        if((ret = flock(fd,LOCK_EX)) != 0) {
-          printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
-          cf_error_message("E_FO_500",NULL);
-          fprintf(stderr,"fo_vote: db->fd() error: %s\n",strerror(errno));
-          return EXIT_FAILURE;
-        }
-        /* }}} */
-
-        memset(&key,0,sizeof(key));
-        memset(&data,0,sizeof(data));
-
-        len = snprintf(buff,512,"%s_%s",uname,cmid);
-
-        key.data = buff;
-        key.size = len;
-
-        if((ret = db->get(db,NULL,&key,&data,0)) == 0) {
-          printf("Status: 403 Forbidden\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
-          if(mode && cf_strcmp(mode,"xmlhttp") == 0) printf("0\n");
-          else cf_error_message("E_VOTE_MULTIPLE",NULL);
-          return EXIT_FAILURE;
-        }
-
-        if(ret != DB_NOTFOUND) {
-          printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
-          if(mode && cf_strcmp(mode,"xmlhttp") == 0) printf("0\n");
-          else cf_error_message("E_VOTE_INTERNAL",NULL);
-          fprintf(stderr,"fo_vote: db->get() error: %s\n",db_strerror(ret));
-          return EXIT_FAILURE;
-        }
-
-        data.data = "1";
-        data.size = 1;
-
-        if((ret = db->put(db,NULL,&key,&data,0)) != 0) {
-          printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
-          if(mode && cf_strcmp(mode,"xmlhttp") == 0) printf("0\n");
-          else cf_error_message("E_VOTE_INTERNAL",NULL);
-          fprintf(stderr,"fo_vote: db->put() error: %s\n",db_strerror(ret));
-          return EXIT_FAILURE;
-        }
-
-        flock(fd,LOCK_UN);
-        db->close(db,0);
-
-        len = snprintf(buff,512,"SELECT %s\nVOTE %s\nTid: %s\nMid: %s\n\nQUIT\n",forum_name,*a=='g'?"GOOD":"BAD",ctid,cmid);
-        writen(sock,buff,len);
-
-        if(mode && cf_strcmp(mode,"xmlhttp") == 0) {
-          memset(&rsd,0,sizeof(rsd));
-
-          printf("Content-Type: text/html\015\012\015\012");
-
-          if((line = readline(sock,&rsd)) != NULL) {
-            if(cf_strncmp(line,"200 Ok",6) == 0) {
-              free(line);
-              if((line = readline(sock,&rsd)) != NULL) {
-                if(cf_strncmp(line,"200 Ok",6) == 0) {
-                  free(line);
-
-                  if((line = readline(sock,&rsd)) != NULL) {
-                    printf("%d",atoi(line+5));
-                    free(line);
-                  }
-                  else printf("0");
-                }
-                else {
-                  free(line);
-                  printf("0");
-                }
-              }
-              else printf("0");
-            }
-            else {
-              free(line);
-              printf("0");
-            }
+    if(ret != FLT_EXIT) {
+      if(cmid && ctid && a && is_id(cmid) && is_id(ctid)) {
+        if((sock = cf_socket_setup()) != -1) {
+          /* {{{ open database and lock it */
+          if((ret = db_create(&db,NULL,0)) != 0) {
+            printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
+            cf_error_message("E_FO_500",NULL);
+            fprintf(stderr,"fo_vote: db_create() error: %s\n",db_strerror(ret));
+            return EXIT_FAILURE;
           }
-          else printf("0");
 
-          close(sock);
-        }
-        else if(send204 && cf_strcmp(send204->values[0],"yes") == 0) {
-          close(sock);
-          printf("Status: 204 No Content\015\012\015\012");
+          if((ret = db->open(db,NULL,dbname->values[0],NULL,DB_BTREE,DB_CREATE,0644)) != 0) {
+            printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
+            cf_error_message("E_FO_500",NULL);
+            fprintf(stderr,"fo_vote: db->open() error: %s\n",db_strerror(ret));
+            return EXIT_FAILURE;
+          }
+
+          if((ret = db->fd(db,&fd)) != 0) {
+            printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
+            cf_error_message("E_FO_500",NULL);
+            fprintf(stderr,"fo_vote: db->fd() error: %s\n",db_strerror(ret));
+            return EXIT_FAILURE;
+          }
+
+          if((ret = flock(fd,LOCK_EX)) != 0) {
+            printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
+            cf_error_message("E_FO_500",NULL);
+            fprintf(stderr,"fo_vote: db->fd() error: %s\n",strerror(errno));
+            return EXIT_FAILURE;
+          }
+          /* }}} */
+
+          memset(&key,0,sizeof(key));
+          memset(&data,0,sizeof(data));
+
+          len = snprintf(buff,512,"%s_%s",uname,cmid);
+
+          key.data = buff;
+          key.size = len;
+
+          if((ret = db->get(db,NULL,&key,&data,0)) == 0) {
+            printf("Status: 403 Forbidden\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
+            if(mode && cf_strcmp(mode,"xmlhttp") == 0) printf("0\n");
+            else cf_error_message("E_VOTE_MULTIPLE",NULL);
+            return EXIT_FAILURE;
+          }
+
+          if(ret != DB_NOTFOUND) {
+            printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
+            if(mode && cf_strcmp(mode,"xmlhttp") == 0) printf("0\n");
+            else cf_error_message("E_VOTE_INTERNAL",NULL);
+            fprintf(stderr,"fo_vote: db->get() error: %s\n",db_strerror(ret));
+            return EXIT_FAILURE;
+          }
+
+          data.data = "1";
+          data.size = 1;
+
+          if((ret = db->put(db,NULL,&key,&data,0)) != 0) {
+            printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
+            if(mode && cf_strcmp(mode,"xmlhttp") == 0) printf("0\n");
+            else cf_error_message("E_VOTE_INTERNAL",NULL);
+            fprintf(stderr,"fo_vote: db->put() error: %s\n",db_strerror(ret));
+            return EXIT_FAILURE;
+          }
+
+          flock(fd,LOCK_UN);
+          db->close(db,0);
+
+          len = snprintf(buff,512,"SELECT %s\nVOTE %s\nTid: %s\nMid: %s\n\nQUIT\n",forum_name,*a=='g'?"GOOD":"BAD",ctid,cmid);
+          writen(sock,buff,len);
+
+          if(mode && cf_strcmp(mode,"xmlhttp") == 0) {
+            memset(&rsd,0,sizeof(rsd));
+
+            printf("Content-Type: text/html\015\012\015\012");
+
+            if((line = readline(sock,&rsd)) != NULL) {
+              if(cf_strncmp(line,"200 Ok",6) == 0) {
+                free(line);
+                if((line = readline(sock,&rsd)) != NULL) {
+                  if(cf_strncmp(line,"200 Ok",6) == 0) {
+                    free(line);
+
+                    if((line = readline(sock,&rsd)) != NULL) {
+                      printf("%d",atoi(line+5));
+                      free(line);
+                    }
+                    else printf("0");
+                  }
+                  else {
+                    free(line);
+                    printf("0");
+                  }
+                }
+                else printf("0");
+              }
+              else {
+                free(line);
+                printf("0");
+              }
+            }
+            else printf("0");
+
+            close(sock);
+          }
+          else if(send204 && cf_strcmp(send204->values[0],"yes") == 0) {
+            close(sock);
+            printf("Status: 204 No Content\015\012\015\012");
+          }
+          else {
+            close(sock);
+            send_ok_output(head,cs);
+          }
         }
         else {
-          close(sock);
-          send_ok_output(head,cs);
+          printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
+          fprintf(stderr,"fo_vote: could not socket: %s\n",strerror(errno));
+          if(mode && cf_strcmp(mode,"xmlhttp") == 0) printf("0\n");
+          else cf_error_message("E_VOTE_INTERNAL",NULL);
         }
       }
       else {
         printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
-        fprintf(stderr,"fo_vote: could not socket: %s\n",strerror(errno));
         if(mode && cf_strcmp(mode,"xmlhttp") == 0) printf("0\n");
         else cf_error_message("E_VOTE_INTERNAL",NULL);
       }
-    }
-    else {
-      printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
-      if(mode && cf_strcmp(mode,"xmlhttp") == 0) printf("0\n");
-      else cf_error_message("E_VOTE_INTERNAL",NULL);
     }
   }
   else {
