@@ -269,15 +269,17 @@ int main(int argc,char *argv[],char *env[]) {
     if(ret != FLT_EXIT) ret = cf_run_init_handlers(head);
 
     /* {{{ get readmode information */
-    memset(&rm_infos,0,sizeof(rm_infos));
-    if((ret = cf_run_readmode_collectors(head,&fo_view_conf,&rm_infos)) != FLT_OK) {
-      printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
-      fprintf(stderr,"cf_run_readmode_collectors() returned %d!\n",ret);
-      cf_error_message("E_CONFIG_ERR",NULL);
-      ret = FLT_EXIT;
+    if(ret != FLT_EXIT) {
+      memset(&rm_infos,0,sizeof(rm_infos));
+      if((ret = cf_run_readmode_collectors(head,&fo_view_conf,&rm_infos)) != FLT_OK) {
+        printf("Status: 500 Internal Server Error\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);
+        fprintf(stderr,"cf_run_readmode_collectors() returned %d!\n",ret);
+        cf_error_message("E_CONFIG_ERR",NULL);
+        ret = FLT_EXIT;
+      }
+      else cf_hash_set(GlobalValues,"RM",2,&rm_infos,sizeof(rm_infos));
     }
-    else cf_hash_set(GlobalValues,"RM",2,&rm_infos,sizeof(rm_infos));
-  /* }}} */
+    /* }}} */
 
     send204 = cfg_get_first_value(&fo_vote_conf,forum_name,"Send204");
 
