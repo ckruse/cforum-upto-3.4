@@ -171,7 +171,7 @@ int main(int argc,char *argv[],char *env[]) {
   size_t i;
   filter_begin_t exec;
   handler_config_t *handler;
-  
+
   cf_readmode_t rm_infos;
 
   /* set signal handler for SIGSEGV (for error reporting) */
@@ -264,6 +264,9 @@ int main(int argc,char *argv[],char *env[]) {
       }
     }
     /* }}} */
+
+    /* run init handlers */
+    if(ret != FLT_EXIT) ret = cf_run_init_handlers(head);
 
     /* {{{ get readmode information */
     memset(&rm_infos,0,sizeof(rm_infos));
