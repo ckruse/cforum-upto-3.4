@@ -378,7 +378,7 @@ function deleted(tid) {
 
   var li   = document.getElementById('t' + tid);
   var uri  = forum_base_url+'?dt='+tid+'&t='+tid+'&mode=xmlhttp&a=d';
-  if(csrftoken) uri += "&csrftoken" + encodeURIComponent(csrftoken);
+  if(csrftoken) uri += "&csrftoken=" + encodeURIComponent(csrftoken);
 
   xmlhttp_get_contents(xmlhttp,uri,null,null);
   li.style.display = 'none';
@@ -388,7 +388,7 @@ function deleted(tid) {
 /* Tastatur-Shortcuts */
 function kill_post() {
   var uri = forum_uri + '?dt=' + tid + '&a=d';
-  if(csrftoken) uri += "&csrftoken" + encodeURIComponent(csrftoken);
+  if(csrftoken) uri += "&csrftoken=" + encodeURIComponent(csrftoken);
   window.location.href = uri;
 }
 
@@ -402,7 +402,7 @@ function visited(tid) {
   var li   = document.getElementById('t'+tid);
   var list = li.parentNode;
   var uri  = forum_base_url+'?mv='+tid+'&t='+tid+'&mode=xmlhttp&unique='+date.getTime();
-  if(csrftoken) uri += "&csrftoken" + encodeURIComponent(csrftoken);
+  if(csrftoken) uri += "&csrftoken=" + encodeURIComponent(csrftoken);
 
   var cnt  = xmlhttp_get_contents(xmlhttp,uri,null,null);
 
@@ -417,13 +417,13 @@ function visited(tid) {
 
 function mark_visited() {
   var uri = forum_uri + '?mv=' + tid;
-  if(csrftoken) uri += "&csrftoken" + encodeURIComponent(csrftoken);
+  if(csrftoken) uri += "&csrftoken=" + encodeURIComponent(csrftoken);
   window.location.href = uri;
 }
 
 function mark_all_visited() {
   uri = forum_base_url + '?mav=1';
-  if(csrftoken) uri += "&csrftoken" + encodeURIComponent(csrftoken);
+  if(csrftoken) uri += "&csrftoken=" + encodeURIComponent(csrftoken);
   window.location.href = uri;
 }
 /* }}} */
