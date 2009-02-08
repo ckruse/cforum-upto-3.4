@@ -1,5 +1,5 @@
 2009-02-08 Christian Kruse <cjk@wwwtech.de>
-	* src/fo_post.c: Fixed #158
+	* src/fo_post.c: Fixed #159
 
 2009-02-08 Christian Seiler <webmaster@christian-seiler.de>
 	* src/modules/flt_csrf: Fixed #157
