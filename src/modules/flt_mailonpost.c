@@ -55,7 +55,8 @@ static u_char *flt_mailonpost_fn     = NULL;
 static u_char *flt_mailonpost_rvrs   = NULL;
 static u_char *flt_mailonpost_udb    = NULL;
 static u_char *flt_mailonpost_uemail = NULL;
-static u_char *flt_mailonpost_amail  = NULL;
+static u_char **flt_mailonpost_amail = NULL;
+static int flt_mailonpost_amail_len  = 0;
 
 struct s_smtp {
   string_t *msg;
@@ -567,7 +568,9 @@ int flt_mailonpost_execute(cf_hash_t *head,configuration_t *dc,configuration_t *
       }
     }
 
-    if(flt_mailonpost_amail) flt_mailonpost_mail(&flt_mailonpost_amail,1,p,&thr);
+    if(flt_mailonpost_amail) {
+      for(i=0;i<flt_mailonpost_amail_len;++i) flt_mailonpost_mail(&flt_mailonpost_amail[i],1,p,&thr);
+    }
   }
 
   flt_mailonpost_destroy(db);
@@ -577,7 +580,6 @@ int flt_mailonpost_execute(cf_hash_t *head,configuration_t *dc,configuration_t *
 /* }}} */
 
 /* {{{ flt_mailonpost_post_handler */
-
 int flt_mailonpost_post_handler(cf_hash_t *head,configuration_t *dc,configuration_t *vc,cl_thread_t *thread,cf_template_t *tpl) {
   u_char *link,buff[256];
   name_value_t *cs,*email;
@@ -632,6 +634,8 @@ int flt_mailonpost_post_handler(cf_hash_t *head,configuration_t *dc,configuratio
 
 /* {{{ flt_mailonpost_cmd */
 int flt_mailonpost_cmd(configfile_t *cfile,conf_opt_t *opt,const u_char *context,u_char **args,size_t argnum) {
+  int i;
+
   if(flt_mailonpost_fn == NULL) flt_mailonpost_fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   if(!context || cf_strcmp(flt_mailonpost_fn,context) != 0) return 0;
 
@@ -656,8 +660,14 @@ int flt_mailonpost_cmd(configfile_t *cfile,conf_opt_t *opt,const u_char *context
     flt_mailonpost_uemail = strdup(args[0]);
   }
   else if(cf_strcmp(opt->name,"AlwaysMail") == 0) {
-    if(flt_mailonpost_amail) free(flt_mailonpost_amail);
-    flt_mailonpost_amail = strdup(args[0]);
+    if(flt_mailonpost_amail) {
+      for(i=0;i<flt_mailonpost_amail_len;++i) free(flt_mailonpost_amail[i]);
+      free(flt_mailonpost_amail);
+    }
+
+    flt_mailonpost_amail = args;
+    flt_mailonpost_amail_len = argnum;
+    return -1; /* do not free values, we use it */
   }
   else {
     if(flt_mailonpost_from) free(flt_mailonpost_from);
@@ -669,6 +679,13 @@ int flt_mailonpost_cmd(configfile_t *cfile,conf_opt_t *opt,const u_char *context
 /* }}} */
 
 void flt_mailonpost_cleanup(void) {
+  int i;
+
+  if(flt_mainonpost_amail) {
+    for(i=0;i<flt_mailonpost_amail_len;++i) free(flt_mailonpost_amail[i]);
+    free(flt_mailonpost_amail);
+  }
+
   if(flt_mailonpost_from) free(flt_mailonpost_from);
   if(flt_mailonpost_host) free(flt_mailonpost_host);
   if(flt_mailonpost_rvrs) free(flt_mailonpost_rvrs);
