@@ -1,6 +1,9 @@
 2009-02-09 Christian Kruse <cjk@wwwtech.de>
-	* src/htmllib.c: Fixed #165
+	* src/htmllib.c: Fixed #165, #168
 	* src/modules/flt_mailonpost.c: Fixed #127
+	* conf/patterns/perl.pat: Fixed #167
+	* src/modules/flt_visited.c: Fixed weird function header
+	* src/fo_vote.c: Fixed silly manual module calling
 
 2009-02-09 Alexander Nitsch <nitscha@cs.tu-berlin.de>
 	* src/fo_post.c: Fixed #154

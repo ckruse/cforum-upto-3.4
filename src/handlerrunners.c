@@ -132,7 +132,7 @@ int cf_run_init_handlers(cf_hash_t *head) {
 /* }}} */
 
 /* {{{ cf_run_auth_handlers */
-int cf_run_auth_handlers(cf_hash_t *head) {
+int cf_run_auth_handlers(cf_hash_t *head,configuration_t *pcfg) {
   size_t i;
   int ret = FLT_DECLINE;
   filter_begin_t func;
@@ -145,7 +145,7 @@ int cf_run_auth_handlers(cf_hash_t *head) {
     for(i=0;i<Modules[AUTH_HANDLER].elements && ret == FLT_DECLINE;i++) {
       handler = array_element_at(&Modules[AUTH_HANDLER],i);
       func    = (filter_begin_t)handler->func;
-      ret     = func(head,&fo_default_conf,&fo_view_conf);
+      ret     = func(head,&fo_default_conf,pcfg);
     }
   }
 

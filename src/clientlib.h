@@ -476,9 +476,10 @@ int cf_run_init_handlers(cf_hash_t *head);
 /**
  * Runs the authentification handlers
  * \param head The CGI hash
+ * \param pcfg The program configuration
  * \return FLT_OK, FLT_EXIT or FLT_DECLINE
  */
-int cf_run_auth_handlers(cf_hash_t *head);
+int cf_run_auth_handlers(cf_hash_t *head,configuration_t *pcfg);
 
 #ifdef CF_SHARED_MEM
 /**

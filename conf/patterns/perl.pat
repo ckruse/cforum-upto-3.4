@@ -30,13 +30,6 @@ block "default"
 
   # TODO: qr,qx,regexps, etc
 
-  # syntax: onstringlist <listen-name> <neuer-block> <span-klasse>
-  onstringlist "keywords" highlight "keyword"
-  onstringlist "operators" highlight "operator"
-  onregexp "^(-&gt;|\\+\\+|--|\\*\\*|!|~|\\+|-|=~|!~|\\*|/|%|\\+|-|\\.|&lt;&lt;|&gt;&gt;|&lt;|&gt;|&lt;=|&gt;=|==|!=|&lt;=&gt;|&amp;|\\||\\^|&amp;&amp;|\\|\\||\\.\\.|\\.\\.\\.|=|\\+=|-=|\\*=|/=|\\*\\*=|\\^=|,|=&gt;)" highlight "operator"
-  onstringlist "symbols" highlight "symbol"
-  onstringlist "makros" highlight "makro"
-
   # syntax: onregexp <regexp> <neuer-block> <span-klasse>
   onregexp "^\\$+[a-zA-Z_][a-zA-Z0-9_]*" highlight "variable"
   onregexp "^@[a-zA-Z_][a-zA-Z0-9_]*" highlight "variable-array"
@@ -45,6 +38,13 @@ block "default"
   onstring "${" "var-block" "variable-complex"
   onstring "@{" "var-block" "variable-complex"
   onstring "%{" "var-block" "variable-hash-complex"
+
+  # syntax: onstringlist <listen-name> <neuer-block> <span-klasse>
+  onstringlist "keywords" highlight "keyword"
+  onstringlist "operators" highlight "operator"
+  onregexp "^(-&gt;|\\+\\+|--|\\*\\*|!|~|\\+|-|=~|!~|\\*|/|%|\\+|-|\\.|&lt;&lt;|&gt;&gt;|&lt;|&gt;|&lt;=|&gt;=|==|!=|&lt;=&gt;|&amp;|\\||\\^|&amp;&amp;|\\|\\||\\.\\.|\\.\\.\\.|=|\\+=|-=|\\*=|/=|\\*\\*=|\\^=|,|=&gt;)" highlight "operator"
+  onstringlist "symbols" highlight "symbol"
+  onstringlist "makros" highlight "makro"
 
   # syntax onregexpafter <vorher-regexp> <regexp-zu-matchen> <neuer-block> <span-klasse>
   # vorher-regexp wird auf das zeichen davor angewandt

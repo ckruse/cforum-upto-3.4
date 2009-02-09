@@ -661,7 +661,7 @@ int main(int argc,char *argv[],char *env[]) {
   if(*pt->values[0] == 'P') cf_cgi_parse_path_info_nv(head);
 
   /* first action: authorization modules */
-  ret = cf_run_auth_handlers(head);
+  ret = cf_run_auth_handlers(head,&fo_view_conf);
 
   /* {{{ read user configuration */
   if(ret != FLT_EXIT && (UserName = cf_hash_get(GlobalValues,"UserName",8)) != NULL) {

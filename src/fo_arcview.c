@@ -920,7 +920,7 @@ int main(int argc,char *argv[],char *env[]) {
   cs = cfg_get_first_value(&fo_default_conf,forum_name,"ExternCharset");
 
   /* first action: authorization modules */
-  ret = cf_run_auth_handlers(head);
+  ret = cf_run_auth_handlers(head,&fo_arcview_conf);
 
   /* {{{ check if URI ends with a slash */
   if((pi = getenv("PATH_INFO")) != NULL && ret != FLT_EXIT) {

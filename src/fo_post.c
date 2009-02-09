@@ -927,7 +927,7 @@ int main(int argc,char *argv[],char *env[]) {
   head = cf_cgi_new();
 
   /* first action: authorization modules */
-  ret = cf_run_auth_handlers(head);
+  ret = cf_run_auth_handlers(head,&fo_post_conf);
 
   /* {{{ read user config */
   if((UserName = cf_hash_get(GlobalValues,"UserName",8)) != NULL) {

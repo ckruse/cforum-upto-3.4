@@ -424,12 +424,7 @@ int flt_visited_init_handler(cf_hash_t *cgi,configuration_t *dc,configuration_t 
 /* }}} */
 
 /* {{{ flt_visited_set_link */
-#ifndef CF_SHARED_MEM
-int flt_visited_set_link(cf_hash_t *head,configuration_t *dc,configuration_t *vc,cl_thread_t *thr,int sock)
-#else
-int flt_visited_set_link(cf_hash_t *head,configuration_t *dc,configuration_t *vc,cl_thread_t *thr,void *sock)
-#endif
-{
+int flt_visited_set_link(cf_hash_t *head,configuration_t *dc,configuration_t *vc,cl_thread_t *thr,int mode) {
   u_char buff[512];
   int UserName = cf_hash_get(GlobalValues,"UserName",8) != NULL;
   u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);

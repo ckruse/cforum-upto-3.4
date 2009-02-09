@@ -168,10 +168,6 @@ int main(int argc,char *argv[],char *env[]) {
   u_char *forum_name;
   rline_t rsd;
 
-  size_t i;
-  filter_begin_t exec;
-  handler_config_t *handler;
-
   cf_readmode_t rm_infos;
 
   /* set signal handler for SIGSEGV (for error reporting) */
@@ -218,20 +214,10 @@ int main(int argc,char *argv[],char *env[]) {
   head   = cf_cgi_new();
   dbname = cfg_get_first_value(&fo_vote_conf,forum_name,"VotingDatabase");
   cs     = cfg_get_first_value(&fo_default_conf,forum_name,"ExternCharset");
-
-  /* {{{ first action: authorization modules */
-  if(Modules[AUTH_HANDLER].elements) {
-    ret = FLT_DECLINE;
-
-    for(i=0;i<Modules[AUTH_HANDLER].elements && ret == FLT_DECLINE;i++) {
-      handler = array_element_at(&Modules[AUTH_HANDLER],i);
-
-      exec = (filter_begin_t)handler->func;
-      ret = exec(head,&fo_default_conf,&fo_vote_conf);
-    }
-  }
   /* }}} */
-  /* }}} */
+
+  /* first action: authorization modules */
+  ret = cf_run_auth_handlers(head,&fo_vote_conf);
 
   if((uname = cf_hash_get(GlobalValues,"UserName",8)) == NULL) {
     printf("Status: 403 Forbidden\015\012Content-Type: text/html; charset=%s\015\012\015\012",cs->values[0]);

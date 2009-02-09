@@ -1111,6 +1111,7 @@ int cf_gen_threadlist(cl_thread_t *thread,cf_hash_t *head,string_t *threadlist,c
 
         if(ret == FLT_EXIT && !ShowInvisible) return FLT_EXIT;
       }
+      else return FLT_EXIT;
 
     }
     else {
