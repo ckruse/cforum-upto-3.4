@@ -208,7 +208,7 @@ int main(int argc,char *argv[],char *env[]) {
   cfg_register_options(&vconf,fo_view_options);
   cfg_register_options(&conf,fo_vote_options);
 
-  if(read_config(&dconf,NULL,CFG_MODE_CONFIG) != 0 || read_config(&conf,NULL,CFG_MODE_CONFIG) != 0 || read_config(&vconf,ignre,CFG_MODE_CONFIG|CFG_MODE_NOLOAD) != 0) {
+  if(read_config(&dconf,NULL,CFG_MODE_CONFIG) != 0 || read_config(&conf,NULL,CFG_MODE_CONFIG) != 0 || read_config(&vconf,NULL,CFG_MODE_CONFIG) != 0) {
     fprintf(stderr,"config file error!\n");
     cfg_cleanup_file(&dconf);
     cfg_cleanup_file(&conf);

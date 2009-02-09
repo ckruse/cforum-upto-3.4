@@ -58,7 +58,7 @@ add_executable (fo_view fo_view.c)
 target_link_libraries (fo_view cfconfigparser cftemplate cfcharconvert cfreadline cfutils cfhashlib cfclientlib cfcgi cfhtml)
 
 add_executable (fo_vote fo_vote.c)
-target_link_libraries (fo_vote cfutils cfhashlib cfreadline cfconfigparser cfclientlib cfcgi cftemplate ${BERKELEY_DB_LIBRARIES})
+target_link_libraries (fo_vote cfconfigparser cftemplate cfcharconvert cfreadline cfutils cfhashlib cfclientlib cfcgi cfhtml ${BERKELEY_DB_LIBRARIES})
 
 add_subdirectory (parsetpl)
 add_subdirectory (modules)
