@@ -103,6 +103,8 @@ void display_finishing_screen(message_t *p,u_char *link) {
   cf_set_variable(&tpl,cs,"forumbase",fb->values[0],strlen(fb->values[0]),1);
   cf_set_variable(&tpl,cs,"new_link",link,strlen(link),1);
 
+  cf_tpl_setvalue(&tpl,"cf_version",TPL_VARIABLE_STRING,CF_VERSION,strlen(CF_VERSION),1);
+
   cf_set_variable(&tpl,cs,"Name",p->author.content,p->author.len,1);
   cf_set_variable(&tpl,cs,"subject",p->subject.content,p->subject.len,1);
 
