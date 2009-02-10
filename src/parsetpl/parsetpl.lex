@@ -86,7 +86,7 @@ context_t  global_context;
     return PARSETPL_TOK_INTEGER;
   }
 
-  \$[A-Za-z0-9_]+     {
+  \$[A-Za-z0-9_.]+     {
     str_chars_append(&content_backup,yytext,yyleng);
     return PARSETPL_TOK_VARIABLE;
   }
