@@ -46,6 +46,9 @@ static u_char *flt_oc_dbfile    = NULL;
 static DB *flt_oc_db            = NULL;
 static u_char *flt_oc_fn        = NULL;
 
+#define FLT_OC_AUTO "1"
+#define FLT_OC_USER "2" /* marks thread as "closed by user" in the database */
+
 
 /* {{{ flt_oc_opendb */
 int flt_oc_opendb(cf_hash_t *cgi,configuration_t *dc,configuration_t *vc) {
@@ -89,7 +92,6 @@ int flt_oc_exec_xmlhttp(cf_hash_t *cgi,configuration_t *dc,configuration_t *vc,v
   u_char *val,buff[512];
   u_int64_t tid;
   int ret;
-  char one[] = "1";
   size_t len;
 
   DBT key,data;
@@ -98,7 +100,10 @@ int flt_oc_exec_xmlhttp(cf_hash_t *cgi,configuration_t *dc,configuration_t *vc,v
 
   if((val = cf_cgi_get(cgi,"a")) != NULL && (cf_strcmp(val,"open") == 0 || cf_strcmp(val,"close") == 0)) {
     if((val = cf_cgi_get(cgi,"oc_t")) != NULL && (tid = str_to_u_int64(val)) != 0) {
-      /* {{{ put tid to database or remove it from database */
+      /* {{{ put tid to database or remove it from database
+       * or, if threads are closed by default, switch tid's associated
+       * value in the datebase between FLT_OC_AUTO and FLT_OC_USER
+       */
       len = snprintf(buff,512,"%"PRIu64,tid);
 
       memset(&key,0,sizeof(key));
@@ -110,13 +115,29 @@ int flt_oc_exec_xmlhttp(cf_hash_t *cgi,configuration_t *dc,configuration_t *vc,v
       if((ret = flt_oc_db->get(flt_oc_db,NULL,&key,&data,0)) != 0) {
         if(ret == DB_NOTFOUND) {
           memset(&data,0,sizeof(data));
-          data.data = one;
-          data.size = sizeof(one);
+          data.data = FLT_OC_AUTO;
+          data.size = sizeof(FLT_OC_AUTO);
 
           if((ret = flt_oc_db->put(flt_oc_db,NULL,&key,&data,0)) != 0) fprintf(stderr,"flt_openclose: db->put() error: %s\n",db_strerror(ret));
         }
       }
-      else flt_oc_db->del(flt_oc_db,NULL,&key,0);
+      else {
+        flt_oc_db->del(flt_oc_db,NULL,&key,0);
+
+        if (ThreadsOpenByDefault == 0) {
+          if (cf_strcmp(data.data,FLT_OC_AUTO) == 0) {
+            memset(&data, 0, sizeof(data));
+            data.data = FLT_OC_USER;
+            data.size = sizeof(FLT_OC_USER);
+          } else {
+            memset(&data, 0, sizeof(data));
+            data.data = FLT_OC_AUTO;
+            data.size = sizeof(FLT_OC_AUTO);
+          }
+
+          if((ret = flt_oc_db->put(flt_oc_db,NULL,&key,&data,0)) != 0) fprintf(stderr,"flt_openclose: db->put() error: %s\n",db_strerror(ret));
+        }
+      }
       /* }}} */
     }
   }
@@ -133,6 +154,8 @@ int flt_oc_execute_filter(cf_hash_t *head,configuration_t *dc,configuration_t *v
   name_value_t *vs;
   message_t *msg;
   mod_api_t is_visited;
+  int key_found = 0;
+  int ret;
 
   DBT key,data;
 
@@ -159,12 +182,18 @@ int flt_oc_execute_filter(cf_hash_t *head,configuration_t *dc,configuration_t *v
     key.data = buff;
     key.size = i;
 
-    if(flt_oc_db->get(flt_oc_db,NULL,&key,&data,0) == 0) {
-      cf_tpl_hashvar_setvalue(&thread->messages->hashvar,"open",TPL_VARIABLE_INT,1);
-      i = snprintf(buff,512,"%s?oc_t=%"PRIu64"&a=close",vs->values[0],thread->tid);
-      cf_tpl_hashvar_setvalue(&thread->messages->hashvar,"link_oc",TPL_VARIABLE_STRING,buff,i);
+    if((ret = flt_oc_db->get(flt_oc_db,NULL,&key,&data,0)) == 0) {
+      key_found = 1;
+      /* Thread's tid was found in the database. Only leave it open if
+       * the user didn't explicitly state to close it.
+       */
+      if (cf_strcmp(data.data,FLT_OC_AUTO) == 0) {
+          cf_tpl_hashvar_setvalue(&thread->messages->hashvar,"open",TPL_VARIABLE_INT,1);
+          i = snprintf(buff,512,"%s?oc_t=%"PRIu64"&a=close",vs->values[0],thread->tid);
+          cf_tpl_hashvar_setvalue(&thread->messages->hashvar,"link_oc",TPL_VARIABLE_STRING,buff,i);
 
-      return FLT_DECLINE; /* thread is open */
+          return FLT_DECLINE; /* thread is open */
+      }
     }
 
     /* shall we close threads? Other filters can tell us not to do
@@ -172,8 +201,10 @@ int flt_oc_execute_filter(cf_hash_t *head,configuration_t *dc,configuration_t *v
      */
     if(cf_hash_get(GlobalValues,"openclose",9) != NULL) return FLT_DECLINE;
 
-    /* Ok, thread should normaly be closed. But lets check for new posts */
-    if(OpenThreadIfNew) {
+    /* Ok, thread should usually be closed now. But let's check for
+     * new posts ... unless the user closed the thread already.
+     */
+    if(OpenThreadIfNew && !key_found) {
       if((is_visited = cf_get_mod_api_ent("is_visited")) != NULL) {
         for(msg=thread->messages;msg;msg=msg->next) {
           /* Thread has at least one not yet visited messages -- leave it open */
@@ -181,6 +212,18 @@ int flt_oc_execute_filter(cf_hash_t *head,configuration_t *dc,configuration_t *v
             cf_tpl_hashvar_setvalue(&thread->messages->hashvar,"open",TPL_VARIABLE_INT,1);
             i = snprintf(buff,500,"%s?oc_t=%"PRIu64"&a=close",vs->values[0],thread->tid);
             cf_tpl_hashvar_setvalue(&thread->messages->hashvar,"link_oc",TPL_VARIABLE_STRING,buff,i);
+
+            /* We haven't seen this thread in the database yet. Add it. */
+            if (ret != 0) {
+              i = snprintf(buff,512,"%"PRIu64,thread->tid);
+              memset(&key,0,sizeof(key));
+              memset(&data,0,sizeof(data));
+              key.data = buff;
+              key.size = i;
+              data.data = FLT_OC_AUTO;
+              data.size = sizeof(FLT_OC_AUTO);
+              if((ret = flt_oc_db->put(flt_oc_db,NULL,&key,&data,0)) != 0) fprintf(stderr,"flt_openclose: db->put() error: %s\n",db_strerror(ret));
+            }
 
             return FLT_DECLINE;
           }
@@ -194,7 +237,7 @@ int flt_oc_execute_filter(cf_hash_t *head,configuration_t *dc,configuration_t *v
     cf_msg_delete_subtree(thread->messages);
   }
   else {
-    /* check, if the actual thread is in the closed threads list */
+    /* check, if the current thread is in the closed threads list */
     i = snprintf(buff,512,"%"PRIu64,thread->tid);
 
     memset(&key,0,sizeof(key));

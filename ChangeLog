@@ -1,3 +1,6 @@
+2009-02-10 Alexander Nitsch <nitscha@cs.tu-berlin.de>
+	* src/modules/flt_openclose.c: Fixed #155
+
 2009-02-09 Christian Kruse <cjk@wwwtech.de>
 	* src/htmllib.c: Fixed #165, #168
 	* src/modules/flt_mailonpost.c: Fixed #127
