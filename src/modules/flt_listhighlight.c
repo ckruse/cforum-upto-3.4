@@ -47,7 +47,8 @@ struct {
   cf_hash_t *VIPList;
   u_char *VIPColorF;
   u_char *VIPColorB;
-} Cfg = { 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL };
+  int MarkOP;
+} Cfg = { 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0 };
 
 static u_char *flt_lh_fn = NULL;
 
@@ -95,6 +96,11 @@ int flt_lh_execute_filter(cf_hash_t *head,configuration_t *dc,configuration_t *v
   u_char *tmp;
   u_char *UserName = cf_hash_get(GlobalValues,"UserName",8);
 
+  static u_int64_t lh_tid = 0;
+  static message_t *lh_msg = NULL;
+
+  if(lh_tid != tid) lh_msg = msg;
+
   /*
    * Initialization
    */
@@ -120,6 +126,10 @@ int flt_lh_execute_filter(cf_hash_t *head,configuration_t *dc,configuration_t *v
 
   if(Cfg.HighlightOwnPostings && uname) {
     if(cf_strcasecmp(msg->author.content,uname->values[0]) == 0) cf_tpl_hashvar_setvalue(&msg->hashvar,"ownposting",TPL_VARIABLE_INT,1);
+  }
+
+  if(Cfg.MarkOP && lh_msg) {
+    if(cf_strcmp(lh_msg->author.content,msg->author.content) == 0) cf_tpl_hashvar_setvalue(&msg->hashvar,"op",TPL_VARIABLE_INT,1);
   }
 
   return FLT_OK;
@@ -233,6 +243,7 @@ int flt_lh_handle_command(configfile_t *cf,conf_opt_t *opt,const u_char *context
     Cfg.VIPColorF = strdup(args[0]);
     Cfg.VIPColorB = strdup(args[1]);
   }
+  else if(cf_strcmp(opt->name,"MarkOP") == 0) Cfg.MarkOP = cf_strcmp(args[0],"yes") == 0;
 
   return 0;
 }
@@ -245,6 +256,7 @@ conf_opt_t flt_listhighlight_config[] = {
   { "WhiteListColors",         flt_lh_handle_command, CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
   { "HighlightCategories",     flt_lh_handle_command, CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
   { "CategoryHighlightColors", flt_lh_handle_command, CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
+  { "MarkOP",                  flt_lh_handle_command, CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
   { "VIPList",                 flt_lh_handle_command, CFG_OPT_CONFIG|CFG_OPT_LOCAL,              NULL },
   { "VIPColors",               flt_lh_handle_command, CFG_OPT_CONFIG|CFG_OPT_LOCAL,              NULL },
   { NULL, NULL, 0, NULL }

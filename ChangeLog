@@ -2,6 +2,8 @@
 	* src/modules/flt_interesting.c: Implemented #2
 	* src/parsetpl/parsetpl.lex: Added dot (.) to the list of allowed characters
 		for template variables
+	* src/modules/flt_listhighlight.c: Implemented #152
+	* conf/modules.de.xml: Added config options for #2 and #152
 
 2009-02-10 Alexander Nitsch <nitscha@cs.tu-berlin.de>
 	* src/modules/flt_openclose.c: Fixed #155
