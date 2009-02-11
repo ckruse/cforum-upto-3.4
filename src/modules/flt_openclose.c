@@ -91,7 +91,7 @@ int flt_oc_exec_xmlhttp(cf_hash_t *cgi,configuration_t *dc,configuration_t *vc,v
 {
   u_char *val,buff[512];
   u_int64_t tid;
-  int ret;
+  int ret,fd;
   size_t len;
 
   DBT key,data;
@@ -119,23 +119,30 @@ int flt_oc_exec_xmlhttp(cf_hash_t *cgi,configuration_t *dc,configuration_t *vc,v
           data.size = sizeof(FLT_OC_AUTO);
 
           if((ret = flt_oc_db->put(flt_oc_db,NULL,&key,&data,0)) != 0) fprintf(stderr,"flt_openclose: db->put() error: %s\n",db_strerror(ret));
+
+          snprintf(buff,256,"%s.tm",flt_oc_dbfile);
+          remove(buff);
+          if((fd = open(buff,O_CREAT|O_TRUNC|O_WRONLY)) != -1) close(fd);
         }
       }
       else {
         flt_oc_db->del(flt_oc_db,NULL,&key,0);
 
         if (ThreadsOpenByDefault == 0) {
-          if (cf_strcmp(data.data,FLT_OC_AUTO) == 0) {
+          if(cf_strcmp(data.data,FLT_OC_AUTO) == 0) {
             memset(&data, 0, sizeof(data));
             data.data = FLT_OC_USER;
             data.size = sizeof(FLT_OC_USER);
-          } else {
+          }
+          else {
             memset(&data, 0, sizeof(data));
             data.data = FLT_OC_AUTO;
             data.size = sizeof(FLT_OC_AUTO);
           }
 
-          if((ret = flt_oc_db->put(flt_oc_db,NULL,&key,&data,0)) != 0) fprintf(stderr,"flt_openclose: db->put() error: %s\n",db_strerror(ret));
+          snprintf(buff,256,"%s.tm",flt_oc_dbfile);
+          remove(buff);
+          if((fd = open(buff,O_CREAT|O_TRUNC|O_WRONLY)) != -1) close(fd);
         }
       }
       /* }}} */
@@ -154,8 +161,7 @@ int flt_oc_execute_filter(cf_hash_t *head,configuration_t *dc,configuration_t *v
   name_value_t *vs;
   message_t *msg;
   mod_api_t is_visited;
-  int key_found = 0;
-  int ret;
+  int key_found = 0,ret,fd;
 
   DBT key,data;
 
@@ -187,12 +193,12 @@ int flt_oc_execute_filter(cf_hash_t *head,configuration_t *dc,configuration_t *v
       /* Thread's tid was found in the database. Only leave it open if
        * the user didn't explicitly state to close it.
        */
-      if (cf_strcmp(data.data,FLT_OC_AUTO) == 0) {
-          cf_tpl_hashvar_setvalue(&thread->messages->hashvar,"open",TPL_VARIABLE_INT,1);
-          i = snprintf(buff,512,"%s?oc_t=%"PRIu64"&a=close",vs->values[0],thread->tid);
-          cf_tpl_hashvar_setvalue(&thread->messages->hashvar,"link_oc",TPL_VARIABLE_STRING,buff,i);
+      if(cf_strcmp(data.data,FLT_OC_AUTO) == 0) {
+        cf_tpl_hashvar_setvalue(&thread->messages->hashvar,"open",TPL_VARIABLE_INT,1);
+        i = snprintf(buff,512,"%s?oc_t=%"PRIu64"&a=close",vs->values[0],thread->tid);
+        cf_tpl_hashvar_setvalue(&thread->messages->hashvar,"link_oc",TPL_VARIABLE_STRING,buff,i);
 
-          return FLT_DECLINE; /* thread is open */
+        return FLT_DECLINE; /* thread is open */
       }
     }
 
@@ -214,7 +220,7 @@ int flt_oc_execute_filter(cf_hash_t *head,configuration_t *dc,configuration_t *v
             cf_tpl_hashvar_setvalue(&thread->messages->hashvar,"link_oc",TPL_VARIABLE_STRING,buff,i);
 
             /* We haven't seen this thread in the database yet. Add it. */
-            if (ret != 0) {
+            if(ret != 0) {
               i = snprintf(buff,512,"%"PRIu64,thread->tid);
               memset(&key,0,sizeof(key));
               memset(&data,0,sizeof(data));
@@ -223,6 +229,10 @@ int flt_oc_execute_filter(cf_hash_t *head,configuration_t *dc,configuration_t *v
               data.data = FLT_OC_AUTO;
               data.size = sizeof(FLT_OC_AUTO);
               if((ret = flt_oc_db->put(flt_oc_db,NULL,&key,&data,0)) != 0) fprintf(stderr,"flt_openclose: db->put() error: %s\n",db_strerror(ret));
+
+              snprintf(buff,256,"%s.tm",flt_oc_dbfile);
+              remove(buff);
+              if((fd = open(buff,O_CREAT|O_TRUNC|O_WRONLY)) != -1) close(fd);
             }
 
             return FLT_DECLINE;
@@ -284,6 +294,14 @@ int flt_oc_validate(cf_hash_t *cgi,configuration_t *dc,configuration_t *vc,time_
 #endif
 {
   u_char *val;
+  struct stat st;
+  char buff[256];
+
+  if(flt_oc_dbfile) {
+    snprintf(buff,256,"%s.tm",flt_oc_dbfile);
+    if(stat(buff,&st) == -1) return FLT_DECLINE;
+    if(st.st_mtime > last_modified) return FLT_EXIT;
+  }
 
   if(cgi) {
     if((val = cf_cgi_get(cgi,"a")) != NULL) {
@@ -294,6 +312,26 @@ int flt_oc_validate(cf_hash_t *cgi,configuration_t *dc,configuration_t *vc,time_
   }
 
   return FLT_OK;
+}
+/* }}} */
+
+/* {{{ flt_oc_lastmodified */
+#ifndef CF_SHARED_MEM
+time_t flt_oc_lastmodified(cf_hash_t *head,configuration_t *dc,configuration_t *vc,int sock)
+#else
+time_t flt_oc_lastmodified(cf_hash_t *head,configuration_t *dc,configuration_t *vc,void *sock)
+#endif
+{
+  struct stat st;
+  char buff[256];
+
+  if(flt_oc_dbfile) {
+    snprintf(buff,256,"%s.tm",flt_oc_dbfile);
+    if(stat(buff,&st) == -1) return -1;
+    return st.st_mtime;
+  }
+
+  return -1;
 }
 /* }}} */
 
@@ -341,7 +379,7 @@ module_config_t flt_openclose = {
   flt_openclose_handlers,
   NULL,
   flt_oc_validate,
-  NULL,
+  flt_oc_lastmodified,
   NULL,
   flt_oc_cleanup
 };
