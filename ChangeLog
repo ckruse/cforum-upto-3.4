@@ -1,6 +1,6 @@
 2009-02-11 Christian Kruse <cjk@wwwtech.de>
 	* src/modules/flt_openclose.c: Changed If-Modified-Since handling and added a
-		Last-Modified handler
+		Last-Modified handler, fixed #169
 
 2009-02-10 Christian Kruse <cjk@wwwtech.de>
 	* src/modules/flt_interesting.c: Implemented #2

@@ -115,8 +115,9 @@ int flt_oc_exec_xmlhttp(cf_hash_t *cgi,configuration_t *dc,configuration_t *vc,v
       if((ret = flt_oc_db->get(flt_oc_db,NULL,&key,&data,0)) != 0) {
         if(ret == DB_NOTFOUND) {
           memset(&data,0,sizeof(data));
-          data.data = FLT_OC_AUTO;
-          data.size = sizeof(FLT_OC_AUTO);
+
+          data.data = FLT_OC_USER;
+          data.size = sizeof(FLT_OC_USER);
 
           if((ret = flt_oc_db->put(flt_oc_db,NULL,&key,&data,0)) != 0) fprintf(stderr,"flt_openclose: db->put() error: %s\n",db_strerror(ret));
 
@@ -193,7 +194,7 @@ int flt_oc_execute_filter(cf_hash_t *head,configuration_t *dc,configuration_t *v
       /* Thread's tid was found in the database. Only leave it open if
        * the user didn't explicitly state to close it.
        */
-      if(cf_strcmp(data.data,FLT_OC_AUTO) == 0) {
+      if(cf_strcmp(data.data,FLT_OC_USER) == 0) {
         cf_tpl_hashvar_setvalue(&thread->messages->hashvar,"open",TPL_VARIABLE_INT,1);
         i = snprintf(buff,512,"%s?oc_t=%"PRIu64"&a=close",vs->values[0],thread->tid);
         cf_tpl_hashvar_setvalue(&thread->messages->hashvar,"link_oc",TPL_VARIABLE_STRING,buff,i);
@@ -257,10 +258,12 @@ int flt_oc_execute_filter(cf_hash_t *head,configuration_t *dc,configuration_t *v
     key.size = i;
 
     if(flt_oc_db->get(flt_oc_db,NULL,&key,&data,0) == 0) {
-      i = snprintf(buff,512,"%s?oc_t=%"PRIu64"&a=open",vs->values[0],thread->tid);
-      cf_tpl_hashvar_setvalue(&thread->messages->hashvar,"link_oc",TPL_VARIABLE_STRING,buff,i,1);
-      cf_msg_delete_subtree(thread->messages);
-      return FLT_DECLINE; /* thread is closed */
+      if(cf_strcmp(data.data,FLT_OC_USER) == 0) {
+        i = snprintf(buff,512,"%s?oc_t=%"PRIu64"&a=open",vs->values[0],thread->tid);
+        cf_tpl_hashvar_setvalue(&thread->messages->hashvar,"link_oc",TPL_VARIABLE_STRING,buff,i,1);
+        cf_msg_delete_subtree(thread->messages);
+        return FLT_DECLINE; /* thread is closed */
+      }
     }
 
     /* this thread must be open */
