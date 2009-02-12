@@ -215,7 +215,7 @@ int main(int argc,char *argv[],char *env[]) {
     /* }}} */
 
     /* run init handlers */
-    if(ret != FLT_EXIT) ret = cf_run_init_handlers(head);
+    if(ret != FLT_EXIT) ret = cf_run_init_handlers(&cfg,head);
 
     /* {{{ get readmode information */
     if(ret != FLT_EXIT) {

@@ -120,7 +120,7 @@ void gen_description(cf_string_t *str,const u_char *descr,cf_cl_thread_t *thread
 /* }}} */
 
 /* {{{ replace problematic ]]> in CDATA sections with ]]]><![CDATA[]> */
-void str_str_cdata_append(cf_string_t *dest, cf_string_t *src) {
+void cf_str_str_cdata_append(cf_string_t *dest, cf_string_t *src) {
   // don't be binary-safe! xml doesn't allow 0-bytes anyway
   u_char *ptr = src->content;
   u_char *found;

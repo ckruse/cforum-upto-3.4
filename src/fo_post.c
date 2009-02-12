@@ -780,7 +780,7 @@ int main(int argc,char *argv[],char *env[]) {
 
   size_t len;
 
-  cf_string_t *str,str1,*val;
+  cf_string_t *str,str1,*val,*strtmp;
 
   cf_string_t *tidmid;
   u_int64_t tid = 0,mid = 0;
@@ -884,7 +884,7 @@ int main(int argc,char *argv[],char *env[]) {
         if(cf_cgi_get(head,"unid") == NULL) work_on_post = 0;
       }
 
-      if(work_on_post || ((tmp = cf_cgi_get(head,"a")) != NULL && cf_strcmp(tmp,"answer") == 0)) {
+      if(work_on_post || ((strtmp = cf_cgi_get(head,"a")) != NULL && cf_strcmp(strtmp->content,"answer") == 0)) {
         /* {{{ ok, user gave us variables -- lets normalize them */
         *ErrorString = '\0';
         if(normalize_cgi_variables(&cfg,head,"qchar") != 0) {
