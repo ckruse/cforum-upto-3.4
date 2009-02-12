@@ -300,7 +300,9 @@ size_t cf_strlen_utf8(const u_char *str,size_t rlen) {
 
 /* {{{ cf_isspace */
 int cf_isspace(u_int32_t num) {
-  if(num == 0x20 || num == 0xA0 || (num >= 0x2000 && num <= 0x200B) || (num >= 0x2028 && num <= 0x202F)) return 1;
+  //if(isspace((int)num)) return 1;
+  if(num == 0x20 || num == 0x9 || num == 0xA0 || num == 0x180E || num == 0x1680 || num == 0x205F || num == 0x3000) return 1;
+  if((num >= 0x2000 && num <= 0x200B) || (num >= 0x2028 && num <= 0x202F)) return 1;
 
   return 0;
 }
