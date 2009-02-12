@@ -107,7 +107,7 @@ void cf_cfg_vm_cpy_val_to_cfg(cf_cfg_config_value_t *cfg,cf_cfg_vm_val_t *val) {
       fprintf(stderr,"invalid cf_cfg_vm_cpy_val_to_cfg call!\n");
       exit(0);
     case CF_ASM_ARG_STR:
-      cfg->sval = strdup(val->cval);
+      cfg->ival = cf_strdup(&cfg->sval,val->cval);
       break;
     case CF_ASM_ARG_NUM:
       cfg->ival = val->i32val;
@@ -154,7 +154,7 @@ void cf_cfg_vm_copy_vmval_to_vmval(cf_cfg_vm_val_t *val1,cf_cfg_vm_val_t *val2) 
 int cf_cfg_vm_cfg_is_true(cf_cfg_config_value_t *cfg) {
   switch(cfg->type) {
     case CF_ASM_ARG_STR:
-      return strlen(cfg->sval);
+      return cfg->ival; /* ival contains string length */
     case CF_ASM_ARG_NUM:
       return cfg->ival != 0;
     case CF_ASM_ARG_ARY:
@@ -429,7 +429,7 @@ int cf_cfg_vm_start(cf_cfg_vm_t *me,cf_cfg_config_t *cfg) {
           if(dtp) cf_cfg_vm_cpy_val_to_cfg((cf_cfg_config_value_t *)dtp->data,&cmd.args[0]);
           else { /* create new config value */
             dt.key  = strdup(cmd.args[1].cval);
-            dt.data = cf_alloc(NULL,1,sizeof(cf_cfg_config_value_t),CF_ALLOC_CALLOC);
+            dt.data = cf_alloc(NULL,1,sizeof(cf_cfg_value_t),CF_ALLOC_CALLOC);
             cf_cfg_vm_cpy_val_to_cfg((cf_cfg_config_value_t *)dtp->data,&cmd.args[0]);
 
             if(sval1 && cf_strcmp(sval1,"global") != 0) {

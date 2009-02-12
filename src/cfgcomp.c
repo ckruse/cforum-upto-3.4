@@ -208,6 +208,52 @@ cf_cfg_config_value_t *cf_cfg_get_value(cf_cfg_config_t *cfg,const u_char *name)
 }
 /* }}} */
 
+/* {{{ cf_cfg_get_value_bool */
+int cf_cfg_get_value_bool(cf_cfg_config_t *cfg,const u_char *name) {
+  u_char *fn = getenv("CF_FORUM_NAME");
+  size_t i;
+
+  cf_cfg_config_t *cfgns;
+  cf_cfg_config_value_t *val = NULL;
+
+  cf_tree_dataset_t dt,*dtp;
+
+  if(!fn) {
+    fprintf(stderr,"CF_FORUM_NAME not set!\n");
+    return 0;
+  }
+
+  memset(&dt,0,sizeof(dt));
+  dt.key = (void *)name;
+
+  for(i=0;i<cfg->nmspcs.elements;++i) {
+    cfgns = cf_array_element_at(&cfg->nmspcs,i);
+
+    if(cf_strcmp(cfgns->name,fn) == 0) {
+      if((dtp = (cf_tree_dataset_t *)cf_tree_find(&cfgns->args,cfgns->args.root,&dt)) != NULL) {
+        val = (cf_cfg_config_value_t *)dtp->data;
+        break;
+      }
+    }
+  }
+
+  if((dtp = (cf_tree_dataset_t *)cf_tree_find(&cfg->args,cfg->args.root,&dt)) != NULL) val = (cf_cfg_config_value_t *)dtp->data;
+
+  if(val != NULL) {
+    switch(val->type) {
+      case CF_ASM_ARG_NUM:
+        return val->ival != 0;
+      case CF_ASM_ARG_STR:
+        return val->sval != NULL && (atoi(val->sval) != 0 || cf_strcasecmp(val->sval,"yes") == 0);
+      case CF_ASM_ARG_ARY:
+        return val->alen != 0;
+    }
+  }
+
+  return 0;
+}
+/* }}} */
+
 /* {{{ cf_cfg_get_value_w_nam */
 cf_cfg_config_value_t *cf_cfg_get_value_w_nam(cf_cfg_config_t *cfg,const u_char *forum,const u_char *name,int global) {
   size_t i;

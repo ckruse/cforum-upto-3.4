@@ -2,7 +2,7 @@
  * \file parsetpl.lex
  * \author Christian Seiler, <self@christian-seiler.de>
  *
- * The temaplte parser
+ * The template parser
  */
 %{
 #include "cfconfig.h"
@@ -86,12 +86,12 @@ context_t  global_context;
     return PARSETPL_TOK_INTEGER;
   }
 
-  \$[A-Za-z0-9_-]+     {
+  \$[A-Za-z0-9_.-]+     {
     cf_str_chars_append(&content_backup,yytext,yyleng);
     return PARSETPL_TOK_VARIABLE;
   }
 
-  @[A-Za-z0-9_-]+     {
+  @[A-Za-z0-9_.-]+     {
     cf_str_chars_append(&content_backup,yytext,yyleng);
     return PARSETPL_TOK_LOOPVAR;
   }

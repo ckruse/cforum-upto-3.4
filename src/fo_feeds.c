@@ -170,7 +170,7 @@ void atom_head(cf_cfg_config_t *cfg,cf_string_t *str,cf_cl_thread_t *thread) {
   cf_str_chars_append(str,"<title>",7);
   if(thread) {
     cf_str_chars_append(str,"<![CDATA[",9);
-    cf_str_str_append(str,&thread->messages->subject);
+    cf_str_str_cdata_append(str,&thread->messages->subject);
     cf_str_chars_append(str,"]]>",3);
   }
   else cf_str_chars_append(str,atom_title->sval,strlen(atom_title->sval));
@@ -211,18 +211,18 @@ void atom_head(cf_cfg_config_t *cfg,cf_string_t *str,cf_cl_thread_t *thread) {
     cf_str_chars_append(str,"<author>",8);
 
     cf_str_chars_append(str,"<name><![CDATA[",15);
-    cf_str_str_append(str,&thread->messages->author);
+    cf_str_str_cdata_append(str,&thread->messages->author);
     cf_str_chars_append(str,"]]></name>",10);
 
     if(thread->messages->hp.len) {
       cf_str_chars_append(str,"<uri><![CDATA[",14);
-      cf_str_str_append(str,&thread->messages->hp);
+      cf_str_str_cdata_append(str,&thread->messages->hp);
       cf_str_chars_append(str,"]]></uri>",9);
     }
 
     if(thread->messages->email.len) {
       cf_str_chars_append(str,"<email><![CDATA[",16);
-      cf_str_str_append(str,&thread->messages->email);
+      cf_str_str_cdata_append(str,&thread->messages->email);
       cf_str_chars_append(str,"]]></email>",11);
     }
 
@@ -255,7 +255,7 @@ void rss_head(cf_cfg_config_t *cfg,cf_string_t *str,cf_cl_thread_t *thread) {
   cf_str_chars_append(str,"<title>",7);
   if(thread) {
     cf_str_chars_append(str,"<![CDATA[",9);
-    cf_str_str_append(str,&thread->messages->subject);
+    cf_str_str_cdata_append(str,&thread->messages->subject);
     cf_str_chars_append(str,"]]>",3);
   }
   else cf_str_chars_append(str,rss_title->sval,strlen(rss_title->sval));
@@ -345,18 +345,18 @@ void atom_thread(cf_cfg_config_t *cfg,cf_string_t *str,cf_cl_thread_t *thread,cf
       cf_str_chars_append(str,"<author>",8);
 
       cf_str_chars_append(str,"<name><![CDATA[",15);
-      cf_str_str_append(str,&thread->messages->author);
+      cf_str_str_cdata_append(str,&msg->author);
       cf_str_chars_append(str,"]]></name>",10);
 
       if(msg->hp.len) {
         cf_str_chars_append(str,"<uri><![CDATA[",14);
-        cf_str_str_append(str,&msg->hp);
+        cf_str_str_cdata_append(str,&msg->hp);
         cf_str_chars_append(str,"]]></uri>",9);
       }
 
       if(msg->email.len) {
         cf_str_chars_append(str,"<email><![CDATA[",16);
-        cf_str_str_append(str,&msg->email);
+        cf_str_str_cdata_append(str,&msg->email);
         cf_str_chars_append(str,"]]></email>",11);
       }
 
@@ -364,7 +364,7 @@ void atom_thread(cf_cfg_config_t *cfg,cf_string_t *str,cf_cl_thread_t *thread,cf
       /* }}} */
 
       cf_str_chars_append(str,"<title><![CDATA[",16);
-      cf_str_str_append(str,&msg->subject);
+      cf_str_str_cdata_append(str,&msg->subject);
       cf_str_chars_append(str,"]]></title>",11);
 
       cf_str_chars_append(str,"<link rel=\"alternate\" type=\"text/html\" href=\"",45);
@@ -396,7 +396,7 @@ void atom_thread(cf_cfg_config_t *cfg,cf_string_t *str,cf_cl_thread_t *thread,cf
         ms ? ms->ival : -1,
         ss ? cf_strcmp(ss->sval,"yes") == 0 : 0
       );
-      cf_str_str_append(str,&tmpstr);
+      cf_str_str_cdata_append(str,&tmpstr);
       cf_str_chars_append(str,"]]></content>",13);
       cf_str_cleanup(&tmpstr);
       /* }}} */
@@ -444,7 +444,7 @@ void rss_thread(cf_cfg_config_t *cfg,cf_string_t *str,cf_cl_thread_t *thread,cf_
       cf_str_chars_append(str,"<item>",6);
 
       cf_str_chars_append(str,"<dc:creator><![CDATA[",21);
-      cf_str_str_append(str,&msg->author);
+      cf_str_str_cdata_append(str,&msg->author);
       if(msg->email.len) {
         cf_str_chars_append(str," (mailto:",9);
         cf_str_str_append(str,&msg->email);
@@ -466,7 +466,7 @@ void rss_thread(cf_cfg_config_t *cfg,cf_string_t *str,cf_cl_thread_t *thread,cf_
 
       if(msg->category.len) {
         cf_str_chars_append(str,"<category>",10);
-        cf_str_str_append(str,&msg->category);
+        cf_str_str_cdata_append(str,&msg->category);
         cf_str_chars_append(str,"</category>",11);
       }
 
@@ -488,7 +488,7 @@ void rss_thread(cf_cfg_config_t *cfg,cf_string_t *str,cf_cl_thread_t *thread,cf_
         ms ? ms->ival : -1,
         ss ? cf_strcmp(ss->sval,"yes") == 0 : 0
       );
-      cf_str_str_append(str,&tmpstr);
+      cf_str_str_cdata_append(str,&tmpstr);
       cf_str_cleanup(&tmpstr);
 
       cf_str_chars_append(str,"]]></description>",17);
@@ -623,18 +623,18 @@ void gen_threadlist_atom(cf_cfg_config_t *cfg,cf_cl_thread_t *thread,cf_string_t
   cf_str_chars_append(str,"<author>",8);
 
   cf_str_chars_append(str,"<name><![CDATA[",15);
-  cf_str_str_append(str,&thread->messages->author);
+  cf_str_str_cdata_append(str,&thread->messages->author);
   cf_str_chars_append(str,"]]></name>",10);
 
   if(thread->messages->hp.len) {
     cf_str_chars_append(str,"<uri><![CDATA[",14);
-    cf_str_str_append(str,&thread->messages->hp);
+    cf_str_str_cdata_append(str,&thread->messages->hp);
     cf_str_chars_append(str,"]]></uri>",9);
   }
 
   if(thread->messages->email.len) {
     cf_str_chars_append(str,"<email><![CDATA[",16);
-    cf_str_str_append(str,&thread->messages->email);
+    cf_str_str_cdata_append(str,&thread->messages->email);
     cf_str_chars_append(str,"]]></email>",11);
   }
 
@@ -642,7 +642,7 @@ void gen_threadlist_atom(cf_cfg_config_t *cfg,cf_cl_thread_t *thread,cf_string_t
   /* }}} */
 
   cf_str_chars_append(str,"<title><![CDATA[",16);
-  cf_str_str_append(str,&thread->messages->subject);
+  cf_str_str_cdata_append(str,&thread->messages->subject);
   cf_str_chars_append(str,"]]></title>",11);
 
   cf_str_chars_append(str,"<link rel=\"alternate\" type=\"text/html\" href=\"",45);
@@ -674,7 +674,7 @@ void gen_threadlist_atom(cf_cfg_config_t *cfg,cf_cl_thread_t *thread,cf_string_t
     ms ? ms->ival : -1,
     ss ? cf_strcmp(ss->sval,"yes") == 0 : 0
   );
-  cf_str_str_append(str,&tmpstr);
+  cf_str_str_cdata_append(str,&tmpstr);
   cf_str_chars_append(str,"]]></content>",13);
   cf_str_cleanup(&tmpstr);
   /* }}} */
@@ -712,7 +712,7 @@ void gen_threadlist_rss(cf_cfg_config_t *cfg,cf_cl_thread_t *thread,cf_string_t 
   cf_str_chars_append(str,"<item>",6);
 
   cf_str_chars_append(str,"<dc:creator><![CDATA[",21);
-  cf_str_str_append(str,&thread->messages->author);
+  cf_str_str_cdata_append(str,&thread->messages->author);
   if(thread->messages->email.len) {
     cf_str_chars_append(str," (mailto:",9);
     cf_str_str_append(str,&thread->messages->email);
@@ -721,7 +721,7 @@ void gen_threadlist_rss(cf_cfg_config_t *cfg,cf_cl_thread_t *thread,cf_string_t 
   cf_str_chars_append(str,"]]></dc:creator>",16);
 
   cf_str_chars_append(str,"<title><![CDATA[",16);
-  cf_str_str_append(str,&thread->messages->subject);
+  cf_str_str_cdata_append(str,&thread->messages->subject);
   cf_str_chars_append(str,"]]></title>",11);
 
   cf_str_chars_append(str,"<link><![CDATA[",15);
@@ -756,7 +756,7 @@ void gen_threadlist_rss(cf_cfg_config_t *cfg,cf_cl_thread_t *thread,cf_string_t 
     ms ? ms->ival : -1,
     ss ? cf_strcmp(ss->sval,"yes") == 0 : 0
   );
-  cf_str_str_append(str,&tmpstr);
+  cf_str_str_cdata_append(str,&tmpstr);
   cf_str_cleanup(&tmpstr);
 
   cf_str_chars_append(str,"]]></description>",17);

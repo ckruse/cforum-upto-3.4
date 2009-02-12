@@ -239,9 +239,9 @@ void show_posting(cf_cfg_config_t *cfg,cf_hash_t *head,void *shm_ptr,u_int64_t t
   cf_set_variable(&tpl,cs->sval,"regscript",reg->avals[2].sval,strlen(reg->avals[2].sval),1); //TODO: usermanage-uri
 
   len = snprintf(buff,256,"%" PRIu64,thread.tid);
-  cf_set_variable(&tpl,cs->sval,"thread-id",buff,len,0);
+  cf_set_variable(&tpl,cs->sval,"tid",buff,len,0); //TODO: thread-id
   len = snprintf(buff,256,"%" PRIu64,thread.threadmsg->mid);
-  cf_set_variable(&tpl,cs->sval,"message-id",buff,len,0);
+  cf_set_variable(&tpl,cs->sval,"mid",buff,len,0); //TODO: message-id
 
   /* user values */
   if(name && *name->sval) cf_set_variable(&tpl,cs->sval,"aname",name->sval,strlen(name->sval),1); //TODO: user-name

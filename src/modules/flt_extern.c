@@ -52,16 +52,20 @@ struct sockaddr_un;
 #include "fo_server.h"
 /* }}} */
 
-static struct sockaddr_in *Extern_addr      = NULL;
-static u_char             *Extern_interface = NULL;
-static int                 Extern_port      = 0;
+static struct sockaddr_in *flt_extern_addr      = NULL;
 
 /* {{{ flt_extern_set_us_up_the_socket */
-int flt_extern_set_us_up_the_socket(struct sockaddr_in *addr) {
+int flt_extern_set_us_up_the_socket(cf_configuration_t *cfg,struct sockaddr_in *addr) {
   int sock,ret,one = 1;
+  cf_cfg_config_value_t *port = cf_cfg_get_value(cfg,"Extern:Port"),*cfg_addr = cf_cfg_get_value(cfg,"Extern:Interface");
+
+  if(!port || port->type != CF_ASM_ARG_NUM || (addr && addr->type != CF_ASM_ARG_STR)) {
+    cf_log(CF_ERR,__FILE__,__LINE__,"flt_extern: socket: port or interface not given\n");
+    return -1;
+  }
 
   if((sock = socket(AF_INET,SOCK_STREAM,0)) == -1) {
-    cf_log(CF_ERR,__FILE__,__LINE__,"flt_extern: socket: %s\n",sock,strerror(errno));
+    cf_log(CF_ERR,__FILE__,__LINE__,"flt_extern: socket: %s\n",strerror(errno));
     return -1;
   }
 
@@ -73,18 +77,16 @@ int flt_extern_set_us_up_the_socket(struct sockaddr_in *addr) {
 
   memset(addr,0,sizeof(*addr));
   addr->sin_family = AF_INET;
-  addr->sin_port   = htons(Extern_port);
+  addr->sin_port   = htons(port->ival);
 
-  if(Extern_interface) {
-    if((ret = inet_aton(Extern_interface,&(addr->sin_addr))) != 0) {
-      cf_log(CF_ERR,__FILE__,__LINE__,"flt_extern: inet_aton(\"%s\"): %s\n",Extern_interface,strerror(ret));
+  if(cfg_addr) {
+    if((ret = inet_aton(cfg_addr->sval,&(addr->sin_addr))) != 0) {
+      cf_log(CF_ERR,__FILE__,__LINE__,"flt_extern: inet_aton(\"%s\"): %s\n",cfg_addr->sval,strerror(ret));
       close(sock);
       return -1;
     }
   }
-  else {
-    addr->sin_addr.s_addr = htonl(INADDR_ANY);
-  }
+  else addr->sin_addr.s_addr = htonl(INADDR_ANY);
 
   if(bind(sock,(struct sockaddr *)addr,sizeof(*addr)) < 0) {
     cf_log(CF_ERR,__FILE__,__LINE__,"flt_extern: bind: %s\n",strerror(errno));
@@ -103,10 +105,10 @@ int flt_extern_set_us_up_the_socket(struct sockaddr_in *addr) {
 /* }}} */
 
 /* {{{ flt_extern_send_list */
-void flt_extern_send_list(forum_t *forum,int sock,time_t date) {
+void flt_extern_send_list(cf_forum_t *forum,int sock,time_t date) {
   cf_string_t str;
-  thread_t *t,*t1;
-  posting_t *p;
+  cf_thread_t *t,*t1;
+  cf_posting_t *p;
   char buff[256];
   size_t n;
   int first;
@@ -187,7 +189,7 @@ void flt_extern_send_list(forum_t *forum,int sock,time_t date) {
 /* }}} */
 
 /* {{{ flt_extern_handle_request */
-void flt_extern_handle_request(int sock) {
+void flt_extern_handle_request(cf_configuration_t *cfg,int sock) {
   rline_t tsd;
   u_char *line;
   u_char **tokens;
@@ -197,9 +199,9 @@ void flt_extern_handle_request(int sock) {
   u_int64_t tid,mid;
   u_char buff[256];
   cf_string_t str;
-  thread_t *t,*t1;
-  posting_t *p;
-  forum_t *forum = NULL;
+  cf_thread_t *t,*t1;
+  cf_posting_t *p;
+  cf_forum_t *forum = NULL;
 
   size_t len;
 
@@ -327,9 +329,7 @@ void flt_extern_handle_request(int sock) {
         }
         else writen(sock,"500 SELECT first\n",17);
       }
-      else {
-        ShallRun = 0;
-      }
+      else ShallRun = 0;
 
       if(line) free(line);
     }
@@ -341,35 +341,25 @@ void flt_extern_handle_request(int sock) {
 
 /* {{{ flt_extern_register_server */
 int flt_extern_register_server(int sock) {
-  Extern_addr = cf_alloc(NULL,1,sizeof(*Extern_addr),CF_ALLOC_CALLOC);
-  sock        = flt_extern_set_us_up_the_socket(Extern_addr);
+  flt_extern_addr = cf_alloc(NULL,1,sizeof(*flt_extern_addr),CF_ALLOC_CALLOC);
+  sock = flt_extern_set_us_up_the_socket(flt_extern_addr);
 
   if(sock < 0) return FLT_EXIT;
-  cf_push_server(sock,(struct sockaddr *)Extern_addr,sizeof(*Extern_addr),flt_extern_handle_request);
+  cf_push_server(sock,(struct sockaddr *)flt_extern_addr,sizeof(*flt_extern_addr),flt_extern_handle_request);
 
   return FLT_OK;
 }
 /* }}} */
 
 void flt_extern_cleanup(void) {
-  if(Extern_addr) free(Extern_addr);
-  if(Extern_interface) free(Extern_interface);
+  if(flt_extern_addr) free(flt_extern_addr);
 }
 
-/* {{{ flt_extern_handle */
-int flt_extern_handle(cf_configfile_t *cf,cf_conf_opt_t *opt,const u_char *context,u_char **args,size_t argnum) {
-  if(cf_strcmp(opt->name,"ExternPort") == 0)           Extern_port      = atoi(args[0]);
-  else if(cf_strcmp(opt->name,"ExternInterface") == 0) Extern_interface = strdup(args[0]);
-
-  return 0;
-}
-/* }}} */
-
-cf_conf_opt_t flt_extern_config[] = {
-  { "Extern:Port",      flt_extern_handle, CF_CFG_OPT_CONFIG|CF_CFG_OPT_NEEDED|CF_CFG_OPT_GLOBAL, NULL },
-  { "Extern:Interface", flt_extern_handle, CF_CFG_OPT_CONFIG|CF_CFG_OPT_GLOBAL,                NULL },
-  { NULL, NULL, 0, NULL }
-};
+/**
+ * Config options:
+ * Extern:Port = 666;
+ * Extern:Interface = "192.168.0.1";
+ */
 
 cf_handler_config_t flt_extern_handlers[] = {
   { INIT_HANDLER,            flt_extern_register_server   },
@@ -378,7 +368,6 @@ cf_handler_config_t flt_extern_handlers[] = {
 
 cf_module_config_t flt_extern = {
   MODULE_MAGIC_COOKIE,
-  flt_extern_config,
   flt_extern_handlers,
   NULL,
   NULL,

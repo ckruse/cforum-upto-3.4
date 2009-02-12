@@ -203,6 +203,16 @@ u_char *strndup(const u_char *str,size_t len) {
 /* }}} */
 #endif
 
+/* {{{ cf_strdup */
+size_t cf_strdup(u_char **dst,const u_char *str) {
+  size_t len = strlen(str);
+  *dst = cf_alloc(NULL,1,len+1,CF_ALLOC_MALLOC);
+
+  memcpy(*dst,str,len+1);
+
+  return len;
+}
+/* }}} */
 
 /* {{{ cf_strcmp */
 int cf_strcmp(register const u_char *str1,register const u_char *str2) {

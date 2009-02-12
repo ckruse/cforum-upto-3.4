@@ -211,7 +211,7 @@ void show_years(cf_cfg_config_t *cfg) {
   }
 
   cf_tpl_setvar(&tpl,"years",&array);
-  cf_set_variable(&tpl,cs->sval,"forum-base-uri",forumpath->avals[authed].sval,strlen(forumpath->avals[authed].sval),1);
+  cf_set_variable(&tpl,cs->sval,"forumbase",forumpath->avals[authed].sval,strlen(forumpath->avals[authed].sval),1); //TODO: nice name
 
   cf_set_variable(&tpl,cs->sval,"charset",cs->sval,strlen(cs->sval),1);
   if((script = getenv("SCRIPT_NAME")) != NULL) cf_set_variable(&tpl,cs->sval,"script",script,strlen(script),1);
@@ -288,7 +288,7 @@ void show_year_content(cf_cfg_config_t *cfg,const u_char *year) {
   }
 
   cf_tpl_setvar(&mt_tpl,"months",&array);
-  cf_set_variable(&mt_tpl,cs->sval,"forum-base-uri",forumpath->avals[authed].sval,strlen(forumpath->avals[authed].sval),1);
+  cf_set_variable(&mt_tpl,cs->sval,"forumbase",forumpath->avals[authed].sval,strlen(forumpath->avals[authed].sval),1); //TODO: nice name
   cf_set_variable(&mt_tpl,cs->sval,"year",year,strlen(year),1);
 
   cf_set_variable(&mt_tpl,cs->sval,"charset",cs->sval,strlen(cs->sval),1);
@@ -462,6 +462,7 @@ void show_month_content(cf_cfg_config_t *cfg,const u_char *year,const u_char *mo
       free(tmp1);
       if(tmp) free(tmp);
     }
+    else cf_tpl_var_addvalue(&array1,TPL_VARIABLE_STRING," ",1);
 
     cf_tpl_var_addvalue(&array1,TPL_VARIABLE_INT,ent->invisible);
 
@@ -470,6 +471,7 @@ void show_month_content(cf_cfg_config_t *cfg,const u_char *year,const u_char *mo
       cf_tpl_var_addvalue(&array1,TPL_VARIABLE_STRING,tmp?tmp:ent->cat,tmp?len:ent->clen);
       if(tmp) free(tmp);
     }
+    else cf_tpl_var_addvalue(&array1,TPL_VARIABLE_STRING," ",1);
 
     cf_tpl_var_add(&array,&array1);
   }

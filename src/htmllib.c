@@ -424,8 +424,8 @@ static u_char *cf_parse_message(cf_cfg_config_t *cfg,cf_cl_thread_t *thread,u_ch
               break;
             }
 
-            if(xml) cf_str_chars_append(content,"<span class=\"q\"><br />-- ",25);
-            else cf_str_chars_append(content,"<span class=\"q\"><br>-- ",23);
+            if(xml) cf_str_chars_append(content,"<br /><span class=\"sig\">-- ",27);
+            else cf_str_chars_append(content,"<br><span class=\"sig\">-- ",25);
             ptr += 9;
             sig = 1;
           }
@@ -1088,11 +1088,15 @@ int cf_gen_threadlist(cf_cfg_config_t *cfg,cf_cl_thread_t *thread,cf_hash_t *hea
     }
     /* }}} */
     /* {{{ set some standard variables */
-    else if(mode == CF_MODE_THREADVIEW) cf_tpl_hashvar_setvalue(&thread->threadmsg->hashvar,"active",TPL_VARIABLE_INT,1);
+    else if(mode == CF_MODE_THREADVIEW) {
+      cf_tpl_hashvar_setvalue(&thread->threadmsg->hashvar,"active",TPL_VARIABLE_INT,1);
+      cf_tpl_setvalue(&tpl,"mode",TPL_VARIABLE_STRING,"threadview",10);
+    }
     else if(mode == CF_MODE_THREADLIST) {
       cf_tpl_hashvar_setvalue(&thread->messages->hashvar,"start",TPL_VARIABLE_INT,1);
       cf_tpl_hashvar_setvalue(&thread->messages->hashvar,"msgnum",TPL_VARIABLE_INT,thread->msg_len);
       cf_tpl_hashvar_setvalue(&thread->messages->hashvar,"answers",TPL_VARIABLE_INT,thread->msg_len-1);
+      cf_tpl_setvalue(&tpl,"mode",TPL_VARIABLE_STRING,"threadlist",10);
     }
     /* }}} */
 
@@ -1105,6 +1109,7 @@ int cf_gen_threadlist(cf_cfg_config_t *cfg,cf_cl_thread_t *thread,cf_hash_t *hea
 
         if(ret == FLT_EXIT && !ShowInvisible) return FLT_EXIT;
       }
+      else return FLT_EXIT;
 
     }
     else {

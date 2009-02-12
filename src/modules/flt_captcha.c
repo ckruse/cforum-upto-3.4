@@ -61,7 +61,7 @@ int flt_captcha_new_posting(cf_hash_t *head,cf_configuration_t *cfg,cf_message_t
   enable = enabled->type == CF_ASM_ARG_NUM && enabled->ival == 0;
   auth = enabled->type == CF_ASM_ARG_STR && cf_strcmp(enabled->sval,"auth") == 0;
 
-  if(enable == 0 && auth == 0) return FLT_DECLINE;
+  if(enable == 0) return FLT_DECLINE;
   if((UserName = cf_hash_get(GlobalValues,"UserName",8)) != NULL && auth == 0) return FLT_DECLINE;
 
   if(head && (anum = cf_cgi_get(head,"captcha_num")) != NULL) {
@@ -96,7 +96,7 @@ int flt_captcha_post_display(cf_hash_t *head,cf_configuration_t *cfg,cf_template
   enable = enabled->type == CF_ASM_ARG_NUM && enabled->ival == 0;
   auth = enabled->type == CF_ASM_ARG_STR && cf_strcmp(enabled->sval,"auth") == 0;
 
-  if(enable == 0 && auth == 0) return FLT_DECLINE;
+  if(enable == 0) return FLT_DECLINE;
   if((UserName = cf_hash_get(GlobalValues,"UserName",8)) != NULL && auth == 0) return FLT_DECLINE;
 
   if((questions = cf_cfg_get_value(cfg,"Captcha:Questions")) != NULL) {

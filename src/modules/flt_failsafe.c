@@ -276,10 +276,10 @@ void flt_failsafe_cleanup(void) {
 }
 /* }}} */
 
-cf_conf_opt_t flt_failsafe_config[] = {
-  { "BackupFile", flt_failsafe_handle_command, CF_CFG_OPT_CONFIG|CF_CFG_OPT_NEEDED|CF_CFG_OPT_LOCAL, NULL },
-  { NULL, NULL, 0, NULL }
-};
+/**
+ * Config options:
+ * Failsafe:File = "/path/to/file";
+ */
 
 cf_handler_config_t flt_failsafe_handlers[] = {
   { INIT_HANDLER,       flt_failsafe_init           },
@@ -291,7 +291,6 @@ cf_handler_config_t flt_failsafe_handlers[] = {
 
 cf_module_config_t flt_failsafe = {
   MODULE_MAGIC_COOKIE,
-  flt_failsafe_config,
   flt_failsafe_handlers,
   NULL,
   NULL,

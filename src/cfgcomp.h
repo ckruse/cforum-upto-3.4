@@ -323,9 +323,17 @@ void cf_cfg_destroy_module(cf_module_t *mod);
  * This function returns the configuration entry named by name
  * \param cfg The configuration file structure
  * \param name The configuration entry name
- * \return NULL if not found, the cf_cfg_config_value_t structure on success
+ * \return NULL if not found, the cf_cfg_value_t structure on success
  */
 cf_cfg_config_value_t *cf_cfg_get_value(cf_cfg_config_t *cfg,const u_char *name);
+
+/**
+ * This function evaluates the configuration entry named by name to a boolean value: if it is an arry, alen != 0, if it is a string, string is not empty and string equals "yes" or string is a number != 0, if it is an integer, ival != 0
+ * \param cfg The configuration file structure
+ * \param name The configuration entry name
+ * \return NULL if not found, the cf_cfg_value_t structure on success
+ */
+int cf_cfg_get_value_bool(cf_cfg_config_t *cfg,const u_char *name);
 
 /**
  * This function returns the configuration entry named by name parameter of forum specified by forum parameter
@@ -333,7 +341,7 @@ cf_cfg_config_value_t *cf_cfg_get_value(cf_cfg_config_t *cfg,const u_char *name)
  * \param forum The forum name
  * \param name The configuration entry name
  * \param global specifies if a config value may be read from the global namespace
- * \return NULL if not found, the cf_cfg_config_value_t structure on success
+ * \return NULL if not found, the cf_cfg_value_t structure on success
  */
 cf_cfg_config_value_t *cf_cfg_get_value_w_nam(cf_cfg_config_t *cfg,const u_char *forum,const u_char *name,int global);
 

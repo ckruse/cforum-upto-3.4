@@ -34,13 +34,9 @@
 #include "clientlib.h"
 /* }}} */
 
-static u_char *flt_cookieauth_name  = NULL;
-static u_char *flt_cookieauth_fn = NULL;
-
 /* {{{ flt_cookieauth_run */
-int flt_cookieauth_run(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t *vc) {
-  u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
-  cf_name_value_t *v = cf_cfg_get_first_value(dc,forum_name,"DF:AuthMode");
+int flt_cookieauth_run(cf_hash_t *head,cf_configuration_t *cfg) {
+  cf_cfg_config_value_t *v = cf_cfg_get_value(cfg,"DF:AuthMode"),*cfg_path;
   u_char *path;
   cf_hash_t *cookies;
   cf_string_t *name;
@@ -51,7 +47,7 @@ int flt_cookieauth_run(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t
   cf_cgi_parse_cookies(cookies);
 
   if((name = cf_cgi_get(cookies,flt_cookieauth_name)) != NULL) {
-    if((path = cf_get_uconf_name(name->content)) != NULL) {
+    if((cfg_path = cf_cfg_get_value(cfg,"DF:ConfigDirectory")) != NULL && (path = cf_get_uconf_name(cfg_path->sval,name->content)) != NULL) {
       free(path);
       cf_hash_set(GlobalValues,"UserName",8,name->content,name->len+1);
     }
@@ -63,26 +59,10 @@ int flt_cookieauth_run(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t
 }
 /* }}} */
 
-/* {{{ flt_cookieauth_handle */
-int flt_cookieauth_handle(cf_configfile_t *cfile,cf_conf_opt_t *opt,const u_char *context,u_char **args,size_t argnum) {
-  if(flt_cookieauth_fn == NULL) flt_cookieauth_fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
-  if(!context || cf_strcmp(flt_cookieauth_fn,context) != 0) return 0;
-
-  if(flt_cookieauth_name) free(flt_cookieauth_name);
-  flt_cookieauth_name = strdup(args[0]);
-
-  return 0;
-}
-/* }}} */
-
-void flt_cookieauth_cleanup(void) {
-  if(flt_cookieauth_name) free(flt_cookieauth_name);
-}
-
-cf_conf_opt_t flt_cookieauth_config[] = {
-  { "CookieName", flt_cookieauth_handle, CF_CFG_OPT_CONFIG|CF_CFG_OPT_LOCAL, NULL },
-  { NULL, NULL, 0, NULL }
-};
+  /**
+   * Config options:
+   * Cookie:Name = "name";
+   */
 
 cf_handler_config_t flt_cookieauth_handlers[] = {
   { AUTH_HANDLER, flt_cookieauth_run },
@@ -91,13 +71,12 @@ cf_handler_config_t flt_cookieauth_handlers[] = {
 
 cf_module_config_t flt_cookieauth = {
   MODULE_MAGIC_COOKIE,
-  flt_cookieauth_config,
   flt_cookieauth_handlers,
   NULL,
   NULL,
   NULL,
   NULL,
-  flt_cookieauth_cleanup
+  NULL
 };
 
 

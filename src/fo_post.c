@@ -101,6 +101,8 @@ void display_finishing_screen(cf_cfg_config_t *cfg,cf_message_t *p,u_char *link)
   cf_set_variable(&tpl,cs->sval,"forumbase",fb->avals[uname].sval,strlen(fb->avals[uname].sval),1); //TODO: forum-base-uri
   cf_set_variable(&tpl,cs->sval,"new_link",link,strlen(link),1); //TODO: posting-uri
 
+  cf_tpl_setvalue(&tpl,"cf_version",TPL_VARIABLE_STRING,CF_VERSION,strlen(CF_VERSION),1);
+
   cf_set_variable(&tpl,cs->sval,"Name",p->author.content,p->author.len,1);
   cf_set_variable(&tpl,cs->sval,"subject",p->subject.content,p->subject.len,1);
 
@@ -232,6 +234,7 @@ void display_posting_form(cf_cfg_config_t *cfg,cf_hash_t *head,cf_message_t *p,c
   cf_set_variable(&tpl,cs->sval,"unid",buff,len,1);
   cf_tpl_setvalue(&tpl,"qchar",TPL_VARIABLE_STRING,"&#255;",6);
   cf_tpl_appendvalue(&tpl,"qchar",qchars,qclen);
+  cf_tpl_setvalue(&tpl,"cf_version",TPL_VARIABLE_STRING,CF_VERSION,strlen(CF_VERSION),1);
 
   if(var) {
     cf_tpl_setvalue(&tpl,"err",TPL_VARIABLE_INT,1);
@@ -430,8 +433,8 @@ int normalize_cgi_variables(cf_cfg_config_t *cfg,cf_hash_t *head,const u_char *f
 
     free(str1->content);
 
-    str1->content[flen-2] = '\0';
     str1->content = buff;
+    str1->content[flen-2] = '\0';
     str1->len     = flen-2;
     str1->reserved= flen-2;
   }
@@ -881,7 +884,7 @@ int main(int argc,char *argv[],char *env[]) {
         if(cf_cgi_get(head,"unid") == NULL) work_on_post = 0;
       }
 
-      if(work_on_post) {
+      if(work_on_post || ((tmp = cf_cgi_get(head,"a")) != NULL && cf_strcmp(tmp,"answer") == 0)) {
         /* {{{ ok, user gave us variables -- lets normalize them */
         *ErrorString = '\0';
         if(normalize_cgi_variables(&cfg,head,"qchar") != 0) {
@@ -890,7 +893,6 @@ int main(int argc,char *argv[],char *env[]) {
             display_posting_form(&cfg,head,NULL,NULL);
           }
           else {
-            *ErrorString = '\0';
             display_posting_form(&cfg,head,thr.threadmsg,NULL);
             cf_cleanup_thread(&thr);
           }
@@ -903,7 +905,6 @@ int main(int argc,char *argv[],char *env[]) {
         if(validate_cgi_variables(&cfg,head) != 0) {
           if(get_thread(&cfg,&thr,head,1) == -1) display_posting_form(&cfg,head,NULL,NULL);
           else {
-            *ErrorString = '\0';
             display_posting_form(&cfg,head,thr.threadmsg,NULL);
             cf_cleanup_thread(&thr);
           }
@@ -922,7 +923,7 @@ int main(int argc,char *argv[],char *env[]) {
           cf_tpl_var_init(&var,TPL_VARIABLE_ARRAY);
 
           if((ret = cf_validate_msg(&cfg,NULL,str->content,&var)) == FLT_ERROR) {
-            cf_cgi_set(head,"validate","no",3);
+            cf_cgi_set(head,"validate","no",2);
 
             if(get_thread(&cfg,&thr,head,1) == -1) display_posting_form(&cfg,head,NULL,&var);
             else display_posting_form(&cfg,head,thr.threadmsg,&var);

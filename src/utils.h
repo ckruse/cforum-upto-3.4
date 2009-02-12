@@ -316,6 +316,15 @@ u_char *strdup(const u_char *str);
 u_char *strndup(const u_char *str,size_t len);
 #endif
 
+/**
+ * Duplicates a C string and sets *dst to the new buffer
+ * \param dst The pointer to set to the new string
+ * \param str The string to copy
+ * \return The length of the C string (size - 1, 0-byte not counted)
+ * \attention You have to free() the returned buffer!
+ */
+size_t cf_strdup(u_char **dst,const u_char *str);
+
 #ifdef HAS_NO_GETLINE
 /**
  * This function reads a complete line from FILE *stream.
