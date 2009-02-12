@@ -51,6 +51,48 @@
 #define CF_UNI_CLS_SK  29
 #define CF_UNI_CLS_PS  30
 
+#define CF_UNI_PROP_IDEOGRAPHIC  1
+#define CF_UNI_PROP_OTHER_MATH  2
+#define CF_UNI_PROP_RADICAL  3
+#define CF_UNI_PROP_VARIATION_SELECTOR  4
+#define CF_UNI_PROP_BIDI_CONTROL  5
+#define CF_UNI_PROP_IDS_BINARY_OPERATOR  6
+#define CF_UNI_PROP_OTHER_ID_CONTINUE  7
+#define CF_UNI_PROP_NONCHARACTER_CODE_POINT  8
+#define CF_UNI_PROP_STERM  9
+#define CF_UNI_PROP_PATTERN_SYNTAX  10
+#define CF_UNI_PROP_OTHER_ALPHABETIC  11
+#define CF_UNI_PROP_TERMINAL_PUNCTUATION  12
+#define CF_UNI_PROP_IDS_TRINARY_OPERATOR  13
+#define CF_UNI_PROP_DEPRECATED  14
+#define CF_UNI_PROP_OTHER_DEFAULT_IGNORABLE_CODE_POINT  15
+#define CF_UNI_PROP_UNIFIED_IDEOGRAPH  16
+#define CF_UNI_PROP_PATTERN_WHITE_SPACE  17
+#define CF_UNI_PROP_ASCII_HEX_DIGIT  18
+#define CF_UNI_PROP_QUOTATION_MARK  19
+#define CF_UNI_PROP_OTHER_LOWERCASE  20
+#define CF_UNI_PROP_WHITE_SPACE  21
+#define CF_UNI_PROP_DIACRITIC  22
+#define CF_UNI_PROP_JOIN_CONTROL  23
+#define CF_UNI_PROP_EXTENDER  24
+#define CF_UNI_PROP_HEX_DIGIT  25
+#define CF_UNI_PROP_LOGICAL_ORDER_EXCEPTION  26
+#define CF_UNI_PROP_DASH  27
+#define CF_UNI_PROP_OTHER_ID_START  28
+#define CF_UNI_PROP_SOFT_DOTTED  29
+#define CF_UNI_PROP_HYPHEN  30
+#define CF_UNI_PROP_OTHER_UPPERCASE  31
+#define CF_UNI_PROP_OTHER_GRAPHEME_EXTEND  32
+
+
+/**
+ * This function tries to get the property of a unicode character as described in
+ * <http://www.unicode.org/Public/UNIDATA/PropList.txt>
+ * \param c The unicode character to get the properties of
+ * \return The unicode property
+ */
+int cf_char_property(u_int32_t c);
+
 /**
  * This function tries to classify a unicode character as described in
  * <http://www.unicode.org/Public/UNIDATA/UCD.html#General_Category_Values>

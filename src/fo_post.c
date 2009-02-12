@@ -330,7 +330,7 @@ int normalize_cgi_variables(cf_hash_t *head,const u_char *field_name) {
         ptr = param->value;
         do {
           ptr+=i=utf8_to_unicode(ptr,len-(int)(ptr-param->value),&num);
-          if(cf_isspace(num) && num != 0x9) str_char_append(&str,' ');
+          if(cf_isspace(num) && num != 0x9 && num != 012 && num != 015) str_char_append(&str,' ');
           else {
             i = unicode_to_utf8(num,ubuff,10);
             str_chars_append(&str,ubuff,i);
@@ -395,8 +395,8 @@ int normalize_cgi_variables(cf_hash_t *head,const u_char *field_name) {
         len = strlen(param->value);
         ptr = param->value;
         do {
-          ptr+=i=utf8_to_unicode(ptr,len-(int)(ptr-param->value),&num);
-          if(cf_isspace(num) && num != 0x9) str_char_append(&str,' ');
+          ptr += i =utf8_to_unicode(ptr,len-(int)(ptr-param->value),&num);
+          if(cf_isspace(num) && num != 0x9 && num != 012 && num != 015) str_char_append(&str,' ');
           else {
             i = unicode_to_utf8(num,ubuff,10);
             str_chars_append(&str,ubuff,i);
