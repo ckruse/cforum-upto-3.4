@@ -97,6 +97,17 @@ int flt_include_exec_post(cf_hash_t *head,configuration_t *dc,configuration_t *v
 }
 /* }}} */
 
+/* {{{ flt_include_exec_newpost */
+int flt_include_exec_newpost(cf_hash_t *head,configuration_t *dc,configuration_t *pc,cf_template_t *tpl,message_t *p) {
+  if(p == NULL) {
+    flt_include_exec_list(head,dc,pc,tpl,NULL);
+    return FLT_OK;
+  }
+
+  return FLT_DECLINE;
+}
+/* }}} */
+
 /* {{{ flt_incldue_handle */
 int flt_include_handle(configfile_t *cf,conf_opt_t *opt,const u_char *context,u_char **args,size_t argnum) {
   if(flt_include_fn == NULL) flt_include_fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
@@ -152,8 +163,9 @@ conf_opt_t flt_include_config[] = {
 };
 
 handler_config_t flt_include_handlers[] = {
-  { VIEW_INIT_HANDLER, flt_include_exec_list },
-  { POSTING_HANDLER,   flt_include_exec_post },
+  { VIEW_INIT_HANDLER,    flt_include_exec_list },
+  { POSTING_HANDLER,      flt_include_exec_post },
+  { POST_DISPLAY_HANDLER, flt_include_exec_newpost },
   { 0, NULL }
 };
 

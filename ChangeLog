@@ -6,6 +6,7 @@
 	* src/modules/flt_directives.c: Changed to use ICU
 	* src/fo_post.c: Rewrote unicode whitespace conversion and fixed #170 with
 		it
+	* src/modules/flt_include.c: Implemented #153
 
 2009-02-11 Christian Kruse <cjk@wwwtech.de>
 	* src/modules/flt_openclose.c: Changed If-Modified-Since handling and added a
