@@ -165,6 +165,23 @@ int flt_deleted_pl_filter(cf_hash_t *head,configuration_t *dc,configuration_t *v
 }
 /* }}} */
 
+int flt_deleted_perpost(cf_hash_t *head,configuration_t *dc,configuration_t *vc,cl_thread_t *thread,message_t *msg,cf_tpl_variable_t *hash) {
+  long i;
+  if(Cfg.BLlen && Cfg.bl_in_thrv) {
+    for(i=0;i<Cfg.BLlen;i++) {
+      if(cf_strcasecmp(msg->author.content,Cfg.BlackList[i]) == 0) {
+        msg->may_show = 0;
+
+        if(Cfg.FollowUps == 0) cf_msg_delete_subtree(msg);
+
+        return FLT_OK;
+      }
+    }
+  }
+
+  return FLT_DECLINE;
+}
+
 /* {{{ flt_deleted_del_thread */
 #ifndef CF_SHARED_MEM
 int flt_deleted_del_thread(cf_hash_t *head,configuration_t *dc,configuration_t *vc,int sock)
@@ -435,6 +452,7 @@ handler_config_t flt_deleted_handlers[] = {
   { CONNECT_INIT_HANDLER, flt_deleted_del_thread    },
   { VIEW_HANDLER,         flt_deleted_execute       },
   { VIEW_LIST_HANDLER,    flt_deleted_pl_filter     },
+  { PERPOST_VAR_HANDLER,  flt_deleted_perpost       },
   { 0, NULL }
 };
 

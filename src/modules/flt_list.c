@@ -88,6 +88,9 @@ int flt_list_execute_filter(cf_hash_t *head,configuration_t *dc,configuration_t 
     if((msg->may_show && msg->invisible == 0) || ShowInvisible == 1) {
       cf_tpl_var_init(&hash,TPL_VARIABLE_HASH);
 
+      cf_run_perpost_var_handlers(head,thread,msg,&hash);
+      if(msg->may_show == 0) continue;
+
       cf_set_variable_hash(&hash,cs,"title",msg->subject.content,msg->subject.len,1);
       cf_set_variable_hash(&hash,cs,"name",msg->author.content,msg->author.len,1);
       if(msg->email.len) cf_set_variable_hash(&hash,cs,"email",msg->email.content,msg->email.len,1);
@@ -133,7 +136,6 @@ int flt_list_execute_filter(cf_hash_t *head,configuration_t *dc,configuration_t 
       len = snprintf(buff,256,"%"PRIu64,msg->mid);
       cf_set_variable_hash(&hash,cs,"mid",buff,len,0);
 
-      cf_run_perpost_var_handlers(head,thread,msg,&hash);
       cf_tpl_var_add(&array,&hash);
     }
   }

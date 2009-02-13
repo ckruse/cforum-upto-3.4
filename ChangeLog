@@ -1,3 +1,8 @@
+2009-02-13 Christian Kruse <cjk@wwwtech.de>
+	* src/modules/flt_deleted.c, src/modules/flt_list.c,
+	src/modules/flt_nested.c: Fixed #160; not a nice way in flt_nested.c but it
+		works
+
 2009-02-12 Christian Kruse <cjk@wwwtech.de>
 	* src/unicode_classes.c, src/charconvert.h, src/CMakeLists.txt,
 	scripts/gen_unicode_class_table.pl, cmake/modules/FindICU.cmake: Removed
