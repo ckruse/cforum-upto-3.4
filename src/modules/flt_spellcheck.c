@@ -95,9 +95,7 @@ int flt_spellcheck_execute(cf_hash_t *head,configuration_t *dc,configuration_t *
   const char *word;
 
   if(!head) return FLT_DECLINE;
-  if(!cf_cgi_get(head,"spellcheck")) {
-    return FLT_DECLINE;
-  }
+  if(!cf_cgi_get(head,"spellcheck")) return FLT_DECLINE;
 
   v = cfg_get_first_value(pc,forum_name,"QuotingChars");
 
@@ -188,16 +186,20 @@ int flt_spellcheck_execute(cf_hash_t *head,configuration_t *dc,configuration_t *
   aspell_config_replace(spell_config, "lang", flt_spellcheck_language ? (char *)flt_spellcheck_language : "en_US");
   aspell_config_replace(spell_config, "encoding", "utf-8");
   possible_err = new_aspell_speller(spell_config);
-  if (aspell_error_number(possible_err) != 0) {
+  if(aspell_error_number(possible_err) != 0) {
+    strcpy(ErrorString,"E_SPELLCHECK_INTERNAL");
+    display_posting_form(head,p,NULL);
     fprintf(stderr, "[warning] aspell initialization error: %s\n", aspell_error_message(possible_err));
-    return FLT_DECLINE;
+    return FLT_EXIT;
   }
 
   spell_checker = to_aspell_speller(possible_err);
   possible_err = new_aspell_document_checker(spell_checker);
-  if (aspell_error_number(possible_err) != 0) {
+  if(aspell_error_number(possible_err) != 0) {
+    strcpy(ErrorString,"E_SPELLCHECK_INTERNAL");
+    display_posting_form(head,p,NULL);
     fprintf(stderr, "[warning] aspell initialization error: %s\n", aspell_error_message(possible_err));
-    return FLT_DECLINE;
+    return FLT_EXIT;
   }
 
   document_checker = to_aspell_document_checker(possible_err);

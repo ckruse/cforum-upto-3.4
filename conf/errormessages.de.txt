@@ -109,3 +109,4 @@ E_charta_accept_missing: Sie müssen der Charta zustimmen!
 E_captcha: Das Captcha muss korrekt beantwortet werden!
 E_CSRF_VIOLATION: Jemand scheint Ihren Browser dazu verwenden zu wollen, eine Anfrage automatisiert abzuschicken. Dies wurde unterbunden. Falls Sie wirklich diese Aktion ausführen wollten, laden Sie die Seite, von der Sie kommen, neu und versuchen Sie es erneut.
 E_CSRF_INTERNAL: Ein interner Fehler im CSRF-Schutz ist aufgetreten. Bitte wenden Sie sich an Ihren Systemadministrator.
+E_SPELLCHECK_INTERNAL: Ein interner Fehler in der Rechtschreibprüfung ist aufgetreten. Bitte wenden Sie sich an Ihren Systemadministrator.

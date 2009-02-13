@@ -1,4 +1,5 @@
 2009-02-13 Christian Kruse <cjk@wwwtech.de>
+	* conf/errormessages.de.txt, src/modules/flt_spellcheck.c: Fixed #158
 	* src/modules/flt_deleted.c, src/modules/flt_list.c,
 	src/modules/flt_nested.c: Fixed #160; not a nice way in flt_nested.c but it
 		works
