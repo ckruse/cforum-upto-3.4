@@ -261,8 +261,7 @@ int normalize_cgi_variables(cf_cfg_config_t *cfg,cf_hash_t *head,const u_char *f
   size_t flen,len,i;
   cf_string_t *field = cf_cgi_get(head,(u_char *)field_name);
   register u_char *ptr;
-  u_char c;
-  u_char *converted;
+  u_char *converted,ubuff[10];
   cf_cfg_config_value_t *cs = cf_cfg_get_value(cfg,"DF:ExternCharset");
   cf_cgi_param_t *param;
   char *buff;
@@ -321,23 +320,16 @@ int normalize_cgi_variables(cf_cfg_config_t *cfg,cf_hash_t *head,const u_char *f
 
         /* {{{ removed unicode whitespaces */
         cf_str_init(&str);
-        for(ptr=converted;*ptr;++ptr) {
-          // \xC2\xA0 is nbsp
-          if(cf_strncmp(ptr,"\xC2\xA0",2) == 0) {
-            cf_str_char_append(&str,' ');
-            ++ptr;
+        len = param->value.len;
+        ptr = param->value.content;
+        do {
+          ptr += i = utf8_to_unicode(ptr,len-(int)(ptr-param->value.content),&num);
+          if(cf_isspace(num) && num != 0x9 && num != 012 && num != 015) cf_str_char_append(&str,' ');
+          else {
+            i = unicode_to_utf8(num,ubuff,10);
+            cf_str_chars_append(&str,ubuff,i);
           }
-          // \xE2\x80[\x80-\x8B\xA8-\xAF] are unicode whitespaces
-          else if(cf_strncmp(ptr,"\xE2\x80",2) == 0) {
-            c = *(ptr+3);
-            if((c >= 0x80 && c <= 0x8B) || (c >= 0xA8 && c <= 0xAF)) {
-              cf_str_char_append(&str,' ');
-              ptr += 2;
-            }
-            else cf_str_char_append(&str,*ptr);
-          }
-          else cf_str_char_append(&str,*ptr);
-        }
+        } while(*ptr);
         /* }}} */
 
         cf_str_cleanup(&param->value);
@@ -396,23 +388,16 @@ int normalize_cgi_variables(cf_cfg_config_t *cfg,cf_hash_t *head,const u_char *f
 
         /* {{{ removed unicode whitespaces */
         cf_str_init(&str);
-        for(ptr=param->value.content;*ptr;++ptr) {
-          // \xC2\xA0 is nbsp
-          if(cf_strncmp(ptr,"\xC2\xA0",2) == 0) {
-            cf_str_char_append(&str,' ');
-            ++ptr;
+        len = param->value.len;
+        ptr = param->value.content;
+        do {
+          ptr += i =utf8_to_unicode(ptr,len-(int)(ptr-param->value.content),&num);
+          if(cf_isspace(num) && num != 0x9 && num != 012 && num != 015) cf_str_char_append(&str,' ');
+          else {
+            i = unicode_to_utf8(num,ubuff,10);
+            cf_str_chars_append(&str,ubuff,i);
           }
-          // \xE2\x80[\x80-\x8B\xA8-\xAF] are unicode whitespaces
-          else if(cf_strncmp(ptr,"\xE2\x80",2) == 0) {
-            c = *(ptr+3);
-            if((c >= 0x80 && c <= 0x8B) || (c >= 0xA8 && c <= 0xAF)) {
-              cf_str_char_append(&str,' ');
-              ptr += 2;
-            }
-            else cf_str_char_append(&str,*ptr);
-          }
-          else cf_str_char_append(&str,*ptr);
-        }
+        } while(*ptr);
         /* }}} */
 
         cf_str_cleanup(&param->value);

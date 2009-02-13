@@ -2,11 +2,11 @@ configure_file (${CMAKE_CURRENT_SOURCE_DIR}/cfconfig.h.cmake
   ${CMAKE_CURRENT_BINARY_DIR}/cfconfig.h)
 include_directories (BEFORE ${CMAKE_CURRENT_BINARY_DIR})
 
-add_library (cfcharconvert SHARED charconvert.c unicode_classes.c
-  unicode_properties.c)
+add_library (cfcharconvert SHARED charconvert.c)
 if (HAVE_LIBICONV)
   target_link_libraries (cfcharconvert iconv)
 endif (HAVE_LIBICONV)
+target_link_libraries (cfcharconvert ${ICU_LIBRARY})
 
 add_library (cfreadline SHARED readline.c)
 
