@@ -1,9 +1,9 @@
 2009-02-12 Christian Kruse <cjk@wwwtech.de>
-	* scripts/gen_unicode_prolist.pl: Added script to generate a unicode
-		character property list
-	* src/unicode_properties.c, src/charconvert.h, src/CMakeLists.txt:
-		Implemented a function to get the properties of unicode characters
-	* src/stringutils.c: Rewrote cf_isspace() to use cf_char_property()
+	* src/unicode_classes.c, src/charconvert.h, src/CMakeLists.txt,
+	scripts/gen_unicode_class_table.pl, cmake/modules/FindICU.cmake: Removed
+		unicode functions, now using ICU <http://icu-project.org/>.
+	* src/stringutils.c: Rewrote cf_isspace() to use ICU
+	* src/modules/flt_directives.c: Changed to use ICU
 	* src/fo_post.c: Rewrote unicode whitespace conversion and fixed #170 with
 		it
 

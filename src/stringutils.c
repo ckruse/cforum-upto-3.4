@@ -29,6 +29,10 @@
 #include <sys/time.h>
 #include <sys/types.h>
 
+#include <unicode/utypes.h>
+#include <unicode/uchar.h>
+#include <unicode/uclean.h>
+
 #include "charconvert.h"
 #include "utils.h"
 /* }}} */
@@ -300,9 +304,7 @@ size_t cf_strlen_utf8(const u_char *str,size_t rlen) {
 
 /* {{{ cf_isspace */
 int cf_isspace(u_int32_t num) {
-  int prop = cf_char_property(num);
-
-  if(prop == CF_UNI_PROP_PATTERN_WHITE_SPACE || prop == CF_UNI_PROP_WHITE_SPACE) return 1;
+  if(u_hasBinaryProperty(num,UCHAR_PATTERN_WHITE_SPACE) || u_hasBinaryProperty(num,UCHAR_WHITE_SPACE)) return 1;
 
   return 0;
 }

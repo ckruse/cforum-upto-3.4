@@ -3,7 +3,7 @@ if(COMMAND cmake_policy)
   cmake_policy(SET CMP0003 NEW)
 endif(COMMAND cmake_policy)
 
-project (cforum-selfhtml)
+project (cforum)
 
 set (CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/modules/")
 include (CheckLibraryExists)
@@ -98,10 +98,13 @@ find_package (SWIG REQUIRED)
 find_package (CURL REQUIRED)
 find_package (IDN REQUIRED)
 find_package (ZLIB REQUIRED)
+find_package (ICU REQUIRED)
 
 add_definitions (${GDOME_CFLAGS})
 
-include_directories (${BERKELEY_DB_INCLUDE_DIR} ${PERL_INCLUDE_PATH} ${FLEX_INCLUDE_DIR} ${GDOME_INCLUDE_DIR} ${PCRE_INCLUDE_DIR} ${CURL_INCLUDE_DIR} ${IDN_INCLUDE_DIR})
+include_directories (${BERKELEY_DB_INCLUDE_DIR} ${PERL_INCLUDE_PATH}
+  ${FLEX_INCLUDE_DIR} ${GDOME_INCLUDE_DIR} ${PCRE_INCLUDE_DIR}
+  ${CURL_INCLUDE_DIR} ${IDN_INCLUDE_DIR} ${ICU_INCLUDE})
 
 # Make sure rpath is ok
 SET(CMAKE_SKIP_BUILD_RPATH FALSE)

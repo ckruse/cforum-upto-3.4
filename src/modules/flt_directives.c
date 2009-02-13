@@ -29,6 +29,10 @@
 
 #include <pcre.h>
 
+#include <unicode/utypes.h>
+#include <unicode/uchar.h>
+#include <unicode/uclean.h>
+
 #include "readline.h"
 #include "hashlib.h"
 #include "utils.h"
@@ -565,9 +569,9 @@ int flt_directives_execute(configuration_t *fdc,configuration_t *fvc,cl_thread_t
       if(strlen(start) > 6 || strlen(start) < 1) return FLT_DECLINE;
 
       chr = strtoull(start,NULL,16);
-      cls = cf_classify_char(chr);
+      cls = U_GET_GC_MASK(chr);
 
-      if(cls == CF_UNI_CLS_CC || cls == CF_UNI_CLS_CF || cls == CF_UNI_CLS_CS || cls == CF_UNI_CLS_CN || cls == -1) return FLT_DECLINE;
+      if(cls & U_GC_CC_MASK || cls & U_GC_CF_MASK || cls & U_GC_CS_MASK || cls & U_GC_CN_MASK || cls == -1) return FLT_DECLINE;
 
       if((cls = unicode_to_utf8(chr,utf8_chr,10)) == EINVAL) return FLT_DECLINE;
       str_chars_append(content,utf8_chr,cls);
@@ -819,9 +823,9 @@ int flt_directives_validate(configuration_t *fdc,configuration_t *fvc,const u_ch
       }
 
       chr = strtoull(start,NULL,16);
-      cls = cf_classify_char(chr);
+      cls = U_GET_GC_MASK(chr);
 
-      if(cls == CF_UNI_CLS_CC || cls == CF_UNI_CLS_CF || cls == CF_UNI_CLS_CS || cls == CF_UNI_CLS_CN || cls == -1) {
+      if(cls & U_GC_CC_MASK || cls & U_GC_CF_MASK || cls & U_GC_CS_MASK || cls & U_GC_CN_MASK || cls == -1) {
         if((err = cf_get_error_message("E_invalid_char",&len)) != NULL) {
           cf_tpl_var_addvalue(var,TPL_VARIABLE_STRING,err,len);
           free(err);
