@@ -215,7 +215,7 @@ void display_posting_form(cf_hash_t *head,message_t *p,cf_tpl_variable_t *var) {
   if(head) {
     for(key=head->keys.elems;key;key=key->next) {
       for(param = cf_hash_get(head,key->key,strlen(key->key));param;param=param->next) {
-        if(param->value) {
+        if(param->value && *param->value) {
           /* we don't want to have empty URLs */
           len = strlen(param->name);
           if(cf_strcasecmp(param->name+len-3,"Url") == 0) {
@@ -326,8 +326,8 @@ int normalize_cgi_variables(cf_hash_t *head,const u_char *field_name) {
 
         /* {{{ removed unicode whitespaces */
         str_init(&str);
-        len = strlen(param->value);
-        ptr = param->value;
+        len = strlen(converted);
+        ptr = converted;
         do {
           ptr+=i=utf8_to_unicode(ptr,len-(int)(ptr-param->value),&num);
           if(cf_isspace(num) && num != 0x9 && num != 012 && num != 015) str_char_append(&str,' ');
@@ -340,7 +340,6 @@ int normalize_cgi_variables(cf_hash_t *head,const u_char *field_name) {
 
         free(param->value);
         param->value = str.content;
-
         free(converted);
       }
     }
@@ -391,21 +390,23 @@ int normalize_cgi_variables(cf_hash_t *head,const u_char *field_name) {
         }
 
         /* {{{ removed unicode whitespaces */
-        str_init(&str);
-        len = strlen(param->value);
-        ptr = param->value;
-        do {
-          ptr += i =utf8_to_unicode(ptr,len-(int)(ptr-param->value),&num);
-          if(cf_isspace(num) && num != 0x9 && num != 012 && num != 015) str_char_append(&str,' ');
-          else {
-            i = unicode_to_utf8(num,ubuff,10);
-            str_chars_append(&str,ubuff,i);
-          }
-        } while(*ptr);
-        /* }}} */
+        if(*param->value) {
+          str_init(&str);
+          len = strlen(param->value);
+          ptr = param->value;
+          do {
+            ptr += i =utf8_to_unicode(ptr,len-(int)(ptr-param->value),&num);
+            if(cf_isspace(num) && num != 0x9 && num != 012 && num != 015) str_char_append(&str,' ');
+            else {
+              i = unicode_to_utf8(num,ubuff,10);
+              str_chars_append(&str,ubuff,i);
+            }
+          } while(*ptr);
+          /* }}} */
 
-        free(param->value);
-        param->value = str.content;
+          free(param->value);
+          param->value = str.content;
+        }
       }
     }
     /* }}} */
