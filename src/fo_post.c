@@ -390,8 +390,8 @@ int normalize_cgi_variables(cf_hash_t *head,const u_char *field_name) {
         }
 
         /* {{{ removed unicode whitespaces */
+        str_init(&str);
         if(*param->value) {
-          str_init(&str);
           len = strlen(param->value);
           ptr = param->value;
           do {
@@ -402,11 +402,11 @@ int normalize_cgi_variables(cf_hash_t *head,const u_char *field_name) {
               str_chars_append(&str,ubuff,i);
             }
           } while(*ptr);
-          /* }}} */
-
-          free(param->value);
-          param->value = str.content;
         }
+        /* }}} */
+
+        free(param->value);
+        param->value = str.content;
       }
     }
     /* }}} */

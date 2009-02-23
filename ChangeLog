@@ -1,3 +1,6 @@
+2009-02-23 Alexander Nitsch <nitscha@cs.tu-berlin.de>
+	* src/fo_post.c: Fixed #176
+
 2009-02-22 Christian Kruse <cjk@wwwtech.de>
 	* src/fo_post.c: Fixed #172
 
