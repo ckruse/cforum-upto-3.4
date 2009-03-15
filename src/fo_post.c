@@ -612,9 +612,12 @@ string_t *body_plain2coded(const u_char *text) {
       case '\012':
         str_char_append(str,'\012');
 
+        /* normalize consecutive run of quoting chars starting a new line */
         if(cf_strncmp(ptr+1,qchars,len) == 0) {
-          str_char_append(str,(u_char)127);
-          ptr += len;
+          for(++ptr; *ptr && cf_strncmp(ptr,qchars,len) == 0; ptr+=len) {
+            str_char_append(str,(u_char)127);
+          }
+          ptr--;
         }
 
         break;
@@ -642,8 +645,11 @@ string_t *body_plain2coded(const u_char *text) {
 
       default:
         if(ptr == body && cf_strncmp(ptr,qchars,len) == 0) {
-          str_char_append(str,(u_char)127);
-          ptr += len - 1;
+          /* normalize consecutive run of quoting chars at beginning of message */
+          for(; *ptr && cf_strncmp(ptr,qchars,len) == 0; ptr+=len) {
+            str_char_append(str,(u_char)127);
+          }
+          ptr--;
         }
         else str_char_append(str,*ptr);
     }
