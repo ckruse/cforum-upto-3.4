@@ -301,7 +301,7 @@ void flt_directives_generate_uri(const u_char *uri,const u_char *title,cf_string
      * OK, we got the border around the link, now lets generate the link text
      */
 
-    if(flt_directives_lt_toks.elements == 0 && (link_tpl = cf_cfg_get_value(cfg,"Directives:Link:Template")) != NULL) flt_directives_parse_link_tpl(link_tpl->sval);
+    if(flt_directives_lt_toks.elements == 0 && (link_tpl = cf_cfg_get_value(cfg,"Directives:Link:Template")) != NULL) flt_directives_parse_linktemplate(link_tpl->sval);
 
     if(flt_directives_lt_toks.elements) {
       for(i=0;i<flt_directives_lt_toks.elements;i++) {

@@ -25,6 +25,7 @@
 
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <inttypes.h>
 #include <fcntl.h>
 #include <unistd.h>
 
@@ -44,6 +45,8 @@
 static u_char *flt_interesting_file     = NULL;
 static int     flt_interesting_resp_204 = 0;
 static int     flt_interesting_mop      = 0;
+
+static int     flt_interesting_involved = 0;
 static u_char *flt_interesting_cols[2]  = { NULL, NULL };
 
 static u_char *flt_interesting_fname    = NULL;
@@ -221,44 +224,51 @@ int flt_interesting_mark_thread_on_post(cf_hash_t *head,cf_configuration_t *dc,c
 
 /* {{{ flt_interesting_mark_interesting */
 int flt_interesting_mark_interesting(cf_hash_t *head,cf_configuration_t *dc,cf_configuration_t *vc,cl_thread_t *thread,int mode) {
-  cf_name_value_t *url;
+  cf_name_value_t *url,*name;
   u_char *UserName = cf_hash_get(GlobalValues,"UserName",8);
   u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   DBT key,data;
   size_t len;
+  int marked = 0;
   u_char buff[256];
-  message_t *msg;
+  message_t *msg,*msg1;
 
-  if(UserName) {
-    url = cf_cfg_get_first_value(dc,forum_name,"UDF:BaseURL");
-    msg = cf_msg_get_first_visible(thread->messages);
+  /* run only in threadlist mode and only in pre mode */
+  if((mode & CF_MODE_PRE) == 0 || (mode & CF_MODE_THREADLIST) == 0 || UserName == NULL) return FLT_DECLINE;
 
-    /* run only in threadlist mode and only in pre mode */
-    if(mode & CF_MODE_PRE) {
-      if(flt_interesting_file) {
-        memset(&key,0,sizeof(key));
-        memset(&data,0,sizeof(data));
+  url = cf_cfg_get_first_value(dc,forum_name,"UDF:BaseURL");
+  msg = cf_msg_get_first_visible(thread->messages);
+  name= cfg_get_first_value(vc,forum_name,"Name");
 
-        len = snprintf(buff,256,"%"PRIu64,thread->tid);
-        key.data = buff;
-        key.size = len;
+  if(flt_interesting_file) {
+    memset(&key,0,sizeof(key));
+    memset(&data,0,sizeof(data));
 
-        if(flt_interesting_db->get(flt_interesting_db,NULL,&key,&data,0) == 0) {
-          cf_tpl_hashvar_setvalue(&msg->hashvar,"mi",TPL_VARIABLE_INT,1);
+    len = snprintf(buff,256,"%"PRIu64,thread->tid);
+    key.data = buff;
+    key.size = len;
 
-          len = snprintf(buff,150,"%s?a=rmi&mit=%"PRIu64,url->values[0],thread->tid);
-          cf_tpl_hashvar_setvalue(&msg->hashvar,"rmilink",TPL_VARIABLE_STRING,buff,len);
-        }
-        else {
-          len = snprintf(buff,150,"%s?a=mi&mit=%"PRIu64,url->values[0],thread->tid);
-          cf_tpl_hashvar_setvalue(&msg->hashvar,"milink",TPL_VARIABLE_STRING,buff,len);
-        }
-      }
+    if(flt_interesting_db->get(flt_interesting_db,NULL,&key,&data,0) == 0) {
+      marked = 1;
+      cf_tpl_hashvar_setvalue(&msg->hashvar,"mi",TPL_VARIABLE_INT,1);
+
+      len = snprintf(buff,150,"%s?a=rmi&mit=%"PRIu64,url->values[0],thread->tid);
+      cf_tpl_hashvar_setvalue(&msg->hashvar,"rmilink",TPL_VARIABLE_STRING,buff,len);
     }
-
-    return FLT_OK;
+    else {
+      len = snprintf(buff,150,"%s?a=mi&mit=%"PRIu64,url->values[0],thread->tid);
+      cf_tpl_hashvar_setvalue(&msg->hashvar,"milink",TPL_VARIABLE_STRING,buff,len);
+    }
   }
 
+  if(marked == 0 && name != NULL && flt_interesting_involved) {
+    for(msg1=msg;msg1 != NULL;msg1=msg1->next) {
+      if(msg->invisible == 0 && cf_strcmp(msg1->author.content,name->values[0]) == 0) {
+        cf_tpl_hashvar_setvalue(&msg->hashvar,"user.involved",TPL_VARIABLE_INT,1);
+        break;
+      }
+    }
+  }
 
   return FLT_OK;
 }
@@ -342,6 +352,7 @@ int flt_interesting_handle(cf_configfile_t *cf,cf_conf_opt_t *opt,const u_char *
   }
   else if(cf_strcmp(opt->name,"Interesting204") == 0) flt_interesting_resp_204 = cf_strcmp(args[0],"yes") == 0;
   else if(cf_strcmp(opt->name,"InterestingMarkOwnPosts") == 0) flt_interesting_mop = cf_strcmp(args[0],"yes") == 0;
+  else if(cf_strcmp(opt->name,"InterestingMarkInvolved") == 0) flt_interesting_involved = cf_strcmp(args[0],"yes") == 0;
   else if(cf_strcmp(opt->name,"InterestingColors") == 0) {
     if(flt_interesting_cols[0]) free(flt_interesting_cols[0]);
     if(flt_interesting_cols[1]) free(flt_interesting_cols[1]);
@@ -366,6 +377,7 @@ cf_conf_opt_t flt_interesting_config[] = {
   { "Interesting204",          flt_interesting_handle, CF_CFG_OPT_USER|CF_CFG_OPT_LOCAL, NULL },
   { "InterestingMarkOwnPosts", flt_interesting_handle, CF_CFG_OPT_USER|CF_CFG_OPT_LOCAL, NULL },
   { "InterestingColors",       flt_interesting_handle, CF_CFG_OPT_USER|CF_CFG_OPT_LOCAL, NULL },
+  { "InterestingMarkInvolved", flt_interesting_handle, CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
   { NULL, NULL, 0, NULL }
 };
 

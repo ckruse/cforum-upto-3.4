@@ -119,7 +119,7 @@ int flt_basic_execute(cf_hash_t *head,cf_configuration_t *cfg,cf_template_t *beg
 
 /* {{{ flt_basic_handle_posting */
 int flt_basic_handle_posting(cf_hash_t *head,cf_configuration_t *cfg,cf_cl_thread_t *thr,cf_template_t *tpl) {
-  cf_cfg_config_value_t *cs = cf_cfg_get_first_value(dc,forum_name,"DF:ExternCharset"),*tmp;
+  cf_cfg_config_value_t *cs = cf_cfg_get_value(cfg,"DF:ExternCharset"),*tmp;
   u_char *UserName = cf_hash_get(GlobalValues,"UserName",8);
   int set = 0;
 
@@ -166,7 +166,7 @@ int flt_basic_handle_posting(cf_hash_t *head,cf_configuration_t *cfg,cf_cl_threa
 
 /* {{{ flt_basic_set_target */
 int flt_basic_set_target(cf_hash_t *head,cf_configuration_t *cfg,cf_message_t *msg,u_int64_t tid,int mode) {
-  cf_name_value_t *cs = cf_cfg_get_first_value(dc,forum_name,"DF:ExternCharset"),*target;
+  cf_cfg_config_value_t *cs = cf_cfg_get_value(cfg,"DF:ExternCharset"),*target;
 
   if((target = cf_cfg_get_value(cfg,"Basic:BaseTarget")) != NULL && mode == 0) {
     cf_set_variable_hash(&msg->hashvar,cs->sval,"target",target->sval,strlen(target->sval),1); // TODO: basic-base-target

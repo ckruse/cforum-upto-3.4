@@ -15,6 +15,20 @@
     </argument>
   </directive>
 
+  <directive name="MarkOP" arguments="1">
+    <argument paramname="markop" ifNotCommitted="no">
+      <validate>^(?:yes|no)$</validate>
+      <error>Sollen Postings, die vom Ursprungsposter sind, hervorgehoben werden? Geben Sie &quot;ja&quot; oder &quot;nein&quot; an!</error>
+    </argument>
+  </directive>
+
+  <directive name="InterestingMarkInvolved" arguments="1">
+    <argument paramname="interestingmarkinvolved" ifNotCommitted="no">
+      <validate>^(?:yes|no)$</validate>
+      <error>Sollen Threads, in denen Sie involviert sind, hervorgehoben werden? Geben Sie &quot;ja&quot; oder &quot;nein&quot; an!</error>
+    </argument>
+  </directive>
+
   <directive name="SpellCheckerDefaultActivated" arguments="1">
     <argument paramname="spellcheckerdefaultactivated" ifNotCommitted="no">
       <validate>^(?:yes|no)$</validate>

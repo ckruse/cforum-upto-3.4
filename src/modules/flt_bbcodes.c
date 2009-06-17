@@ -41,7 +41,7 @@
 /* }}} */
 
 /* {{{ flt_bbcodes_execute_b */
-int flt_bbcodes_execute_b(cf_configuration_t *cfg,cl_thread_t *thread,const u_char *directive,const u_char **parameters,size_t plen,cf_string_t *bco,cf_string_t *bci,cf_string_t *content,cf_string_t *cite,const u_char *qchars,int sig) {
+int flt_bbcodes_execute_b(cf_configuration_t *cfg,cf_cl_thread_t *thread,const u_char *directive,const u_char **parameters,size_t plen,cf_string_t *bco,cf_string_t *bci,cf_string_t *content,cf_string_t *cite,const u_char *qchars,int sig) {
   cf_str_chars_append(bco,"<strong>",8);
   cf_str_str_append(bco,content);
   cf_str_chars_append(bco,"</strong>",9);

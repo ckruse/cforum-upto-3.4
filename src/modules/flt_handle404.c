@@ -24,6 +24,7 @@
 #include <string.h>
 #include <time.h>
 #include <sys/types.h>
+#include <inttypes.h>
 
 #include <sys/stat.h>
 #include <unistd.h>

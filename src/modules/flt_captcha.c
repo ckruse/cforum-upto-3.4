@@ -93,11 +93,8 @@ int flt_captcha_post_display(cf_hash_t *head,cf_configuration_t *cfg,cf_template
 
   if((enabled = cf_cfg_get_value(cfg,"Captcha:Enable")) == NULL) return FLT_DECLINE;
 
-  enable = enabled->type == CF_ASM_ARG_NUM && enabled->ival == 0;
-  auth = enabled->type == CF_ASM_ARG_STR && cf_strcmp(enabled->sval,"auth") == 0;
-
-  if(enable == 0) return FLT_DECLINE;
-  if((UserName = cf_hash_get(GlobalValues,"UserName",8)) != NULL && auth == 0) return FLT_DECLINE;
+  if(enabled->type == CF_ASM_ARG_NUM && enabled->ival == 0) return FLT_DECLINE;
+  if((UserName = cf_hash_get(GlobalValues,"UserName",8)) != NULL && enabled->type == CF_ASM_ARG_STR && cf_strcmp(enabled->sval,"auth") == 0) return FLT_DECLINE;
 
   if((questions = cf_cfg_get_value(cfg,"Captcha:Questions")) != NULL) {
     if(head && (anum = cf_cgi_get(head,"captcha_num")) != NULL) num = atoi(anum);

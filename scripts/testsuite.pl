@@ -141,7 +141,7 @@ while($RUN) {
 
 sub random_data($$$) {
   my ($min,$max,$nl) = (shift,shift,shift);
-  #my @rand_chars = (('A'..'Z','a'..'z',0..9),split(//,"#+-*/<>!\"�$%&/'?����\\-_.:,;"));
+  #my @rand_chars = (('A'..'Z','a'..'z',0..9),split(//,"#+-*/<>!\"§$%&/'?üäöß\\-_.:,;"));
   my @rand_chars = ('A'..'Z','a'..'z',0..9,' ');
   my $str = '';
 
@@ -169,7 +169,7 @@ sub writer($) {
     # fieldname => { min => minlen, max => maxlen, newline => 0|1 }
     unid => { min => 5, max => 10, newline => 0 },
     qchar => "\377> ",
-    Name => ["Christian","Erwin","G�nther","Hugo","Harald","Herbert","Ina","Iris","Veronika","Daniela","Daniel","Andres","Gundula","Raimund","Richard","Bernhard","Hinrich","Anne","Stefanie","Christine","Anja"],
+    Name => ["Christian","Erwin","Günther","Hugo","Harald","Herbert","Ina","Iris","Veronika","Daniela","Daniel","Andres","Gundula","Raimund","Richard","Bernhard","Hinrich","Anne","Stefanie","Christine","Anja"],
     EMail => 'cjk@wwwtech.de',
     cat => ["ZU DIESEM FORUM","ZUR INFO","BROWSER","HTTP","HTML","E-MAIL","DHTML","GRAFIK","PROVIDER","RECHT","DESIGN","INTERNET-ANBINDUNG","FTP","ASP","CGI","CSS","DATENBANK","JAVA","JAVASCRIPT","MEINUNG","MENSCHELEI","PERL","PHP","PROGRAMMIERTECHNIK"],
     subject => { min => 15, max => 20, newline => 0 },
