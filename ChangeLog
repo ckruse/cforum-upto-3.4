@@ -1,3 +1,11 @@
+2009-06-29 Christian Seiler <self@christian-seiler.de>
+	* src/modules/flt_openclose.c: Threads are now reopened again if
+		there are unread postings inside (this was broken as a
+		side-effect of [1700])
+	* src/swig/CForum-Template/CForum-Template.i: Added missing method
+		(was not used but compiler warning stopped recent Gentoo
+		versions from merging the package)
+
 2009-03-15 Alexander Nitsch <nitscha@cs.tu-berlin.de>
 	* src/fo_post.c: Fixed #177
 
