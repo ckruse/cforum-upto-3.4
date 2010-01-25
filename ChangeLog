@@ -1,3 +1,6 @@
+2010-01-25 Christian Seiler <self@christian-seiler.de>
+	* src/modules/flt_directives.c: Fixed XSS vulnerability.
+
 2009-06-29 Christian Seiler <self@christian-seiler.de>
 	* src/modules/flt_openclose.c: Threads are now reopened again if
 		there are unread postings inside (this was broken as a
