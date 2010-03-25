@@ -1,3 +1,12 @@
+2010-03-25 Alexander Nitsch <nitscha@cs.tu-berlin.de>
+	* cmake/modules/FindICU.cmake: Made CMake stop if ICU lib cannot
+		be found.
+	* cmake/modules/FindPerlLibs.cmake: Added Debian's default scheme
+		to list of possible include paths for Perl header file.
+	* CMakeLists.txt: Explicitly specified the project's language
+		so CMake will not complain about a missing C++ compiler that
+		is not needed anyway.
+
 2010-01-25 Christian Seiler <self@christian-seiler.de>
 	* src/modules/flt_directives.c: Fixed XSS vulnerability.
 
