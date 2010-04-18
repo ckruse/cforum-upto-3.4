@@ -46,22 +46,22 @@ static const u_char *symbols[] = {
 #define flt_lf_get_type(x) (symbols[x])
 
 #define PREC_ID    60
-#define PREC_EQ    50 /* =, != */
+#define PREC_EQ    50 /* =, !=, =~, !~ */
 #define PREC_AND   40
 #define PREC_OR    30
 #define PREC_PAREN 20
 
-#define TOK_EOS          0x00
-#define TOK_EQ           0x01
-#define TOK_NE           0x02
-#define TOK_OR           0x03
-#define TOK_AND          0x04
-#define TOK_ID           0x05
-#define TOK_STR          0x06
-#define TOK_CONTAINS     0x07
-#define TOK_LPAREN       0x08
-#define TOK_RPAREN       0x09
-#define TOK_CONTAINS_NOT 0x0A
+#define TOK_EOS          0x00 /**< end of string (no more tokens found) */
+#define TOK_EQ           0x01 /**< "equals" operator */
+#define TOK_NE           0x02 /**< "negation" operator */
+#define TOK_OR           0x03 /**< "or" operator */
+#define TOK_AND          0x04 /**< "and" operator */
+#define TOK_ID           0x05 /**< general identifier */
+#define TOK_STR          0x06 /**< double quoted string */
+#define TOK_CONTAINS     0x07 /**< "contains" operator */
+#define TOK_LPAREN       0x08 /**< opening parenthesis */
+#define TOK_RPAREN       0x09 /**< closing parenthesis */
+#define TOK_CONTAINS_NOT 0x0A /**< "contains not" operator */
 
 #define T_STRING 0x00
 #define T_INT    0x01
@@ -84,7 +84,7 @@ typedef struct s_node {
   struct s_node *left,*right,*parent,*argument;
 } flt_lf_node_t;
 
-static flt_lf_node_t *flt_lf_first = NULL;
+static flt_lf_node_t *flt_lf_first = NULL; /**< root of the parse tree */
 static int flt_lf_active = 0;
 static int flt_lf_overwrite = 0;
 
@@ -95,6 +95,13 @@ static int flt_lf_success = 1;
 static u_char *flt_lf_fn = NULL;
 
 /* {{{ flt_lf_case_strstr */
+/**
+ * Case-insensitive search for first occurrence of a string.
+ *
+ * \param haystack string to be scanned
+ * \param needle   string to be matched
+ * \return pointer to first occurrence in haystack, or NULL if needle was not found
+ */
 u_char *flt_lf_case_strstr(const u_char *haystack,const u_char *needle) {
   size_t len1 = strlen(haystack);
   size_t len2 = strlen(needle);
@@ -112,6 +119,15 @@ u_char *flt_lf_case_strstr(const u_char *haystack,const u_char *needle) {
 /* }}} */
 
 /* {{{ flt_lf_read_string */
+/**
+ * Reads characters from string till the first double quote and appends them to
+ * the content of the global flt_lf_str variable (not including the double
+ * quote). Literal newlines, tabs and escaped double quotes are recognized,
+ * evaluated and also appended.
+ *
+ * \param ptr string to be read
+ * \return zero on success, or -1 if no unescaped double quote was found
+ */
 int flt_lf_read_string(register u_char *ptr) {
   str_init(&flt_lf_str);
 
@@ -144,6 +160,16 @@ int flt_lf_read_string(register u_char *ptr) {
 /* }}} */
 
 /* {{{ flt_lf_scanner */
+/**
+ * Finds the next token in the filter string. Token type is returned whereas
+ * its value will be written to the global flt_lf_str variable. Each time it is
+ * called, this function will advance the current position in the filter string
+ * behind the end of the token.
+ *
+ * \param str filter string
+ * \param pos pointer to current position in filter string
+ * \return type of the token as one of TOK_*
+ */
 int flt_lf_scanner(u_char *str,u_char **pos) {
   register u_char *ptr = *pos;
   int ret;
@@ -234,6 +260,14 @@ int flt_lf_scanner(u_char *str,u_char **pos) {
 /* }}} */
 
 /* {{{ flt_lf_insert_node */
+/**
+ * Adds a new node to the parse tree.
+ *
+ * \param cur  node that determines the insertion point (or NULL)
+ * \param tok  new node to be inserted
+ * \param root current subtree's root (or NULL if not used)
+ * \return the inserted node
+ */
 flt_lf_node_t *flt_lf_insert_node(flt_lf_node_t *cur,flt_lf_node_t *tok,flt_lf_node_t *root) {
   flt_lf_node_t *n = cur;
 
@@ -244,6 +278,7 @@ flt_lf_node_t *flt_lf_insert_node(flt_lf_node_t *cur,flt_lf_node_t *tok,flt_lf_n
   }
 
   if(cur->prec <= tok->prec) {
+    /* add tok below cur (as its child) */
     tok->parent = cur;
 
     if(cur->left) {
@@ -254,7 +289,10 @@ flt_lf_node_t *flt_lf_insert_node(flt_lf_node_t *cur,flt_lf_node_t *tok,flt_lf_n
     }
   }
   else {
-    /* we have to search the right position due to the precedence */
+    /* We have to search the right position due to the precedence.
+     * Move upward in the tree until either the root is reached or a node cur
+     * with lower precedence than our token is found.
+     */
     while(cur && cur->prec > tok->prec) {
       n   = cur;
       cur = cur->parent;
@@ -287,6 +325,17 @@ flt_lf_node_t *flt_lf_insert_node(flt_lf_node_t *cur,flt_lf_node_t *tok,flt_lf_n
 /* }}} */
 
 /* {{{ flt_lf_parse_string */
+/**
+ * Tokenizes and parses the filter string, building a parse tree.
+ *
+ * \param str       filter string
+ * \param pos       pointer to current position in filter string
+ * \param tpl       current template
+ * \param node      (currently unused parameter)
+ * \param root_node current section's root in parse tree (or NULL if not used)
+ * \param dc        configuration
+ * \return zero on success
+ */
 int flt_lf_parse_string(u_char *str,u_char **pos,cf_template_t *tpl,flt_lf_node_t *node,flt_lf_node_t *root_node,configuration_t *dc) {
   int ret = 0;
   flt_lf_node_t *current = NULL;
@@ -364,6 +413,10 @@ int flt_lf_parse_string(u_char *str,u_char **pos,cf_template_t *tpl,flt_lf_node_
 /* }}} */
 
 /* {{{ flt_lf_form */
+/**
+ * Parses filter string passed in parameter "lf" via CGI. Also makes this
+ * string accessible to the template system as variable of the same name.
+ */
 int flt_lf_form(cf_hash_t *head,configuration_t *dc,configuration_t *vc,cf_template_t *begin,cf_template_t *end) {
   u_char *filter_str,*pos;
 
@@ -399,6 +452,11 @@ int flt_lf_intval(const u_char *val) {
 /* }}} */
 
 /* {{{ flt_fl_to_string */
+/**
+ * Converts value to string representation.
+ *
+ * \param v element whose value to convert
+ */
 void flt_lf_to_string(flt_lf_result_t *v) {
   u_char buff[256];
 
@@ -423,6 +481,11 @@ void flt_lf_to_string(flt_lf_result_t *v) {
 /* }}} */
 
 /* {{{ flt_lf_to_bool */
+/**
+ * Converts value to boolean representation.
+ *
+ * \param v element whose value to convert
+ */
 void flt_lf_to_bool(flt_lf_result_t *v) {
   u_char *tmp;
 
@@ -448,6 +511,11 @@ void flt_lf_to_bool(flt_lf_result_t *v) {
 /* }}} */
 
 /* {{{ flt_lf_to_int */
+/**
+ * Converts value to integer representation.
+ *
+ * \param v element whose value to convert
+ */
 void flt_lf_to_int(flt_lf_result_t *v) {
   u_char *tmp;
 
@@ -571,6 +639,12 @@ time_t flt_lf_transform_date(const u_char *datestr,flt_lf_result_t *v) {
 /* }}} */
 
 /* {{{ flt_lf_to_date */
+/**
+ * Converts value to date representation. The input should be supplied as
+ * string type in order to make any sense.
+ *
+ * \param v element whose value to convert
+ */
 void flt_lf_to_date(flt_lf_result_t *v) {
   u_char *tmp;
 
@@ -593,6 +667,12 @@ void flt_lf_to_date(flt_lf_result_t *v) {
 /* }}} */
 
 /* {{{ flt_lf_r2l */
+/**
+ * Converts right element's type to match left element's type.
+ *
+ * \param l left element
+ * \param r right element
+ */
 void flt_lf_r2l(flt_lf_result_t *l,flt_lf_result_t *r) {
   switch(l->type) {
     case T_BOOL:
@@ -624,6 +704,14 @@ int flt_lf_is_true(flt_lf_result_t *v) {
 
 
 /* {{{ flt_lf_evaluate */
+/**
+ * Processes and evaluates the parse tree with data from a message.
+ *
+ * \param n   starting point in parse tree
+ * \param msg message object
+ * \param tid message's thread ID
+ * \return result of the evaluation
+ */
 flt_lf_result_t *flt_lf_evaluate(flt_lf_node_t *n,message_t *msg,u_int64_t tid) {
   mod_api_t is_visited = cf_get_mod_api_ent("is_visited");
   flt_lf_result_t *result = fo_alloc(NULL,1,sizeof(*result),FO_ALLOC_CALLOC);
@@ -799,23 +887,23 @@ flt_lf_result_t *flt_lf_evaluate(flt_lf_node_t *n,message_t *msg,u_int64_t tid) 
       /* {{{ id */
       if(n->content > (u_char *)1) {
         switch(*n->content) {
-          case 'a':
+          case 'a': /* message author */
             result->type = T_STRING;
             result->val  = strdup(msg->author.content);
             return result;
-          case 's':
+          case 's': /* message subject */
             result->type = T_STRING;
             result->val  = strdup(msg->subject.content);
             return result;
-          case 'c':
+          case 'c': /* message category */
             result->type = T_STRING;
             result->val  = msg->category.len ? strdup(msg->category.content) : strdup("");
             return result;
-          case 'd':
+          case 'd': /* message date */
             result->type = T_DATE;
             result->val  = (void *)msg->date;
             return result;
-          case 'l':
+          case 'l': /* message level */
             result->type = T_INT;
             result->val = (void *)msg->level;
             return result;
@@ -827,7 +915,7 @@ flt_lf_result_t *flt_lf_evaluate(flt_lf_node_t *n,message_t *msg,u_int64_t tid) 
             }
             else result->val = (void *)(msg->may_show == 0 ? 0 : 1);
             return result;
-          case 't':
+          case 't': /* thread ID */
             result->type = T_INT;
             result->val = (void *)tid;
             return result;
@@ -864,6 +952,9 @@ flt_lf_result_t *flt_lf_evaluate(flt_lf_node_t *n,message_t *msg,u_int64_t tid) 
 /* }}} */
 
 /* {{{ flt_lf_filter */
+/**
+ * Applies the filter to a message, deciding whether to show or hide it.
+ */
 int flt_lf_filter(cf_hash_t *head,configuration_t *dc,configuration_t *vc,message_t *msg,u_int64_t tid,int mode) {
   if(mode & CF_MODE_THREADVIEW) return FLT_DECLINE;
   flt_lf_result_t *res;
