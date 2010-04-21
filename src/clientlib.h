@@ -158,6 +158,7 @@ typedef int (*connect_filter_t)(cf_hash_t *,configuration_t *,configuration_t *,
  * \param hash The CGI object hash
  * \param dc The default configuration object
  * \param vc The fo_view configuration object
+ * \param thread The thread object
  * \param mode The mode argument
  * \return FLT_OK, FLT_DECLINE or FLT_EXIT. FLT_EXIT means, do not print this thread
  */
