@@ -37,11 +37,11 @@ E_posting_quoting: Sie haben mehr als 25%% zitierte Zeichen in Ihrem Posting. Si
 E_pa_signs_subject: Der Betreff enthält drei oder mehr gleiche Zeichen hintereinander (-%f Punkte). Sind Sie sicher, dass Sie das Posting so abschicken wollen?
 E_pa_signs_author: Der Name enthält drei oder mehr gleiche Zeichen hintereinander (-%f Punkte). Sind Sie sicher, dass Sie das Posting so abschicken wollen?
 E_pa_signs_content: Der Text enthält drei oder mehr gleiche Zeichen hintereinander oder enthält keine Satzzeichen (-%f Punkte). Sind Sie sicher, dass Sie das Posting so abschicken wollen?
-E_pa_cases_small_subject: Der Betreff enthält nur große Buchstaben (-%f Punkte). Sind Sie sicher, dass Sie das Posting so abschicken wollen?
+E_pa_cases_small_subject: Der Betreff enthält nur große Buchstaben oder beginnt mit zu vielen davon (-%f Punkte). Sind Sie sicher, dass Sie das Posting so abschicken wollen?
 E_pa_cases_capital_subject: Der Betreff enthält nur kleine Buchstaben (-%f Punkte). Sind Sie sicher, dass Sie das Posting so abschicken wollen?
-E_pa_cases_small_author: Der Name enthält nur große Buchstaben (-%f Punkte). Sind Sie sicher, dass Sie das Posting so abschicken wollen?
+E_pa_cases_small_author: Der Name enthält nur große Buchstaben oder beginnt mit zu vielen davon (-%f Punkte). Sind Sie sicher, dass Sie das Posting so abschicken wollen?
 E_pa_cases_capital_author: Der Name enthält nur kleine Buchstaben (-%f Punkte). Sind Sie sicher, dass Sie das Posting so abschicken wollen?
-E_pa_cases_small_content: Der Text enthält nur große Buchstaben (-%f Punkte). Sind Sie sicher, dass Sie das Posting so abschicken wollen?
+E_pa_cases_small_content: Der Text enthält nur große Buchstaben oder beginnt mit zu vielen davon (-%f Punkte). Sind Sie sicher, dass Sie das Posting so abschicken wollen?
 E_pa_cases_capital_content: Der Text enthält nur kleine Buchstaben (-%f Punkte). Sind Sie sicher, dass Sie das Posting so abschicken wollen?
 E_pa_newlines_content: Der Text enthält weniger als oder genau zwei Zeilenumbrüche (-%f Punkte). Sind Sie sicher, dass Sie das Posting so abschicken wollen?
 E_pa_sig: Die Signatur ist nicht Spezifikations-gemäß (maximal 4 Zeilen, pro Zeile maximal 72 Zeichen, keine Bilder, Signatur länger als Inhalt: -%f Punkte). Sind Sie sicher, dass Sie das Posting so abschicken wollen?

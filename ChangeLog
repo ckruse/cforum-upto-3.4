@@ -2,6 +2,9 @@
 	* src/modules/flt_postingassistant.c: The posting assistant will
 		now skip checks for upper/lower case in the subject if a
 		follow-up posting did not change the subject.
+	* conf/errormessages.de.txt: Posting assistant's error messages
+		related to too many	upper-case letters do now state the problem
+		more precisely.
 
 2010-03-25 Alexander Nitsch <nitscha@cs.tu-berlin.de>
 	* cmake/modules/FindICU.cmake: Made CMake stop if ICU lib cannot
