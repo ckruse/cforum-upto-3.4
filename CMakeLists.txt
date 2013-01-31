@@ -3,7 +3,7 @@ if(COMMAND cmake_policy)
   cmake_policy(SET CMP0003 NEW)
 endif(COMMAND cmake_policy)
 
-project (cforum C)
+project (cforum)
 
 set (CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/modules/")
 include (CheckLibraryExists)

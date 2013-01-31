@@ -8,9 +8,9 @@
 
 /* {{{ Initial headers */
 /*
- * $LastChangedDate$
- * $LastChangedRevision$
- * $LastChangedBy$
+ * $LastChangedDate: 2009-06-12 15:41:54 +0200 (Fri, 12 Jun 2009) $
+ * $LastChangedRevision: 1748 $
+ * $LastChangedBy: ckruse $
  *
  */
 /* }}} */

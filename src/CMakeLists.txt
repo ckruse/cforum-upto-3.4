@@ -80,7 +80,7 @@ set_target_properties (
     cfserverlib
     cfclientlib
   PROPERTIES
-    LINK_FLAGS "-export-dynamic -avoid-version"
+    LINK_FLAGS "-export-dynamic"
 )
 
 set_target_properties (

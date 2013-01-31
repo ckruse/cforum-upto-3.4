@@ -10,7 +10,7 @@
 /* {{{ Initial headers */
 /*
  * $LastChangedDate$
- * $LastChangedRevision$
+ * $LastChangedRevision: 1640 $
  * $LastChangedBy$
  *
  */

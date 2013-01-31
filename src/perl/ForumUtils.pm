@@ -2,9 +2,9 @@ package ForumUtils;
 
 # {{{ initial comments
 #
-# $LastChangedDate$
-# $LastChangedRevision$
-# $LastChangedBy$
+# $LastChangedDate: 2008-05-05 17:02:24 +0200 (Mon, 05 May 2008) $
+# $LastChangedRevision: 1589 $
+# $LastChangedBy: cseiler $
 #
 # }}}
 
@@ -41,7 +41,7 @@ BEGIN {
   );
 }
 
-sub VERSION {(q$Revision$ =~ /([\d.]+)\s*$/)[0] or '0.0'}
+sub VERSION {(q$Revision: 1589 $ =~ /([\d.]+)\s*$/)[0] or '0.0'}
 
 use BerkeleyDB;
 use POSIX qw/setlocale mktime strftime LC_ALL/;

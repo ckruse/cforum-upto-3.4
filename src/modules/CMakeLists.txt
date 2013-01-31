@@ -41,7 +41,7 @@ set_target_properties (
     flt_http
     flt_csrf
   PROPERTIES
-    LINK_FLAGS "-export-dynamic -avoid-version"
+    LINK_FLAGS "-export-dynamic"
     PREFIX ""
 )
 
@@ -122,7 +122,7 @@ foreach (module ${ALL_MODULES})
   if (ENABLE_${module} STREQUAL "ON")
     message (STATUS "Enabling ${module}")
     add_library (${module} MODULE ${module}.c)
-    set_target_properties (${module} PROPERTIES LINK_FLAGS "-export-dynamic -avoid-version" PREFIX "")
+    set_target_properties (${module} PROPERTIES LINK_FLAGS "-export-dynamic" PREFIX "")
     if (EXTRALIBS_${module})
       target_link_libraries (${module} ${EXTRALIBS_${module}})
     endif (EXTRALIBS_${module})

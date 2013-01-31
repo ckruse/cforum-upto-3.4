@@ -99,8 +99,8 @@ typedef struct s_function {
 #define PARSETPL_ERR -1
 #define PARSETPL_ERR_FILENOTFOUND          -1
 #define PARSETPL_ERR_UNRECOGNIZEDCHARACTER -2
-#define PARSETPL_ERR_UNTERMINATEDSTRING    -3 
-#define PARSETPL_ERR_UNTERMINATEDTAG       -4 
+#define PARSETPL_ERR_UNTERMINATEDSTRING    -3
+#define PARSETPL_ERR_UNTERMINATEDTAG       -4
 #define PARSETPL_ERR_INVALIDTAG            -5
 #define PARSETPL_ERR_NOTINLOOP             -6
 
@@ -133,7 +133,7 @@ extern context_t global_context;
 extern FILE *yyin;
 extern FILE *yyout;
 extern char *yytext;
-extern int yyleng;
+extern size_t yyleng;
 
 int parse_file(const u_char *filename);
 

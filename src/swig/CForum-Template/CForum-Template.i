@@ -97,11 +97,6 @@ void cf_template_t_setvar(cf_template_t *tpl,const char *vname,cf_tpl_variable_t
   cf_tpl_setvar(tpl,vname,var);
 }
 
-const cf_tpl_variable_t *cf_template_t_getvar(cf_template_t *tpl,const char *vname) {
-  return cf_tpl_getvar(tpl,vname);
-}
-
-
 void cf_template_t_setvalue(cf_template_t *tpl,const char *vname,const char *val) {
   cf_tpl_setvalue(tpl,vname,TPL_VARIABLE_STRING,(const u_char *)val,(int)strlen(val));
 }

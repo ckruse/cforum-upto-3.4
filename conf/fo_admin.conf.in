@@ -4,9 +4,9 @@
 #
 # The configuration for the user management program
 #
-# $LastChangedDate$
-# $LastChangedRevision$
-# $LastChangedBy$
+# $LastChangedDate: 2008-05-05 17:02:24 +0200 (Mon, 05 May 2008) $
+# $LastChangedRevision: 1589 $
+# $LastChangedBy: cseiler $
 #
 
 AddModule "Plugins::HTTPAuth"

@@ -8,9 +8,9 @@
 
 /* {{{ Initial comment */
 /*
- * $LastChangedDate$
- * $LastChangedRevision$
- * $LastChangedBy$
+ * $LastChangedDate: 2009-03-15 16:46:31 +0100 (Sun, 15 Mar 2009) $
+ * $LastChangedRevision: 1716 $
+ * $LastChangedBy: anitsch $
  *
  */
 /* }}} */

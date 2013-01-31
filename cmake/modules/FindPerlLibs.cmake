@@ -17,6 +17,7 @@
 
 SET(PERL_POSSIBLE_LIB_PATHS
   /usr/lib
+  /usr/lib/perl5/core_perl/CORE
 )
 
 FIND_PROGRAM(PERL_EXECUTABLE
@@ -72,9 +73,9 @@ IF (PERL_EXECUTABLE)
   SET(PERL_POSSIBLE_INCLUDE_PATHS
     /usr/lib/perl5/${PERL_VERSION}/${PERL_ARCHNAME}/CORE
     /usr/lib/perl/${PERL_VERSION}/${PERL_ARCHNAME}/CORE
-    /usr/lib/perl/${PERL_VERSION}/CORE
     /usr/lib/perl/5.8/CORE
     /usr/lib/perl5/5.8/CORE
+    /usr/lib/perl5/core_perl/CORE
   )
 
   EXECUTE_PROCESS(

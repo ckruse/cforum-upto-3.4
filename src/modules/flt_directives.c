@@ -7,9 +7,9 @@
 
 /* {{{ Initial comments */
 /*
- * $LastChangedDate$
- * $LastChangedRevision$
- * $LastChangedBy$
+ * $LastChangedDate: 2009-02-13 06:26:52 +0100 (Fri, 13 Feb 2009) $
+ * $LastChangedRevision: 1706 $
+ * $LastChangedBy: ckruse $
  *
  */
 /* }}} */
@@ -483,13 +483,10 @@ int flt_directives_execute(configuration_t *fdc,configuration_t *fvc,cl_thread_t
         tid = str_to_u_int64(parameter+2);
         mid = str_to_u_int64(tmp1);
         tmp1 = cf_get_link(rm->posting_uri[uname?1:0],tid,mid);
-        if(tmp2) {
-          title_alt = htmlentities(tmp2 + 7,1);
-        }
+        if(tmp2) tmp2 += 7;
 
-        flt_directives_generate_uri(tmp1,title_alt,content,cite,sig,fdc,fvc,0);
+        flt_directives_generate_uri(tmp1,tmp2,content,cite,sig,fdc,fvc,0);
 
-        free(title_alt);
         free(tmp1);
 
         return FLT_OK;

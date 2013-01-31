@@ -7,9 +7,9 @@
 
 /* {{{ Initial comments */
 /*
- * $LastChangedDate$
- * $LastChangedRevision$
- * $LastChangedBy$
+ * $LastChangedDate: 2009-02-11 09:14:34 +0100 (Wed, 11 Feb 2009) $
+ * $LastChangedRevision: 1700 $
+ * $LastChangedBy: ckruse $
  *
  */
 /* }}} */
@@ -211,7 +211,7 @@ int flt_oc_execute_filter(cf_hash_t *head,configuration_t *dc,configuration_t *v
     /* Ok, thread should usually be closed now. But let's check for
      * new posts ... unless the user closed the thread already.
      */
-    if(OpenThreadIfNew || !key_found) {
+    if(OpenThreadIfNew && !key_found) {
       if((is_visited = cf_get_mod_api_ent("is_visited")) != NULL) {
         for(msg=thread->messages;msg;msg=msg->next) {
           /* Thread has at least one not yet visited messages -- leave it open */

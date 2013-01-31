@@ -9,16 +9,16 @@ package Plugins::Pathes;
 
 # {{{ initial comments
 #
-# $LastChangedDate$
-# $LastChangedRevision$
-# $LastChangedBy$
+# $LastChangedDate: 2009-01-16 14:32:24 +0100 (Fri, 16 Jan 2009) $
+# $LastChangedRevision: 1639 $
+# $LastChangedBy: ckruse $
 #
 # }}}
 
 # {{{ plugin header
 use strict;
 
-sub VERSION {(q$Revision$ =~ /([\d.]+)\s*$/)[0] or '0.0'}
+sub VERSION {(q$Revision: 1639 $ =~ /([\d.]+)\s*$/)[0] or '0.0'}
 
 use IO::Socket;
 

@@ -7,9 +7,9 @@
 
 /* {{{ Initial comments */
 /*
- * $LastChangedDate$
- * $LastChangedRevision$
- * $LastChangedBy$
+ * $LastChangedDate: 2009-02-10 10:41:42 +0100 (Tue, 10 Feb 2009) $
+ * $LastChangedRevision: 1693 $
+ * $LastChangedBy: anitsch $
  *
  * Basic idea: Usually, CSRF protection is done via a unique token in the
  * session that must match the user's token in order to accept non-idemponent

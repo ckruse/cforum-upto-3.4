@@ -9,9 +9,9 @@ package Plugins::XMLRPCUserManagement;
 
 # {{{ initial comments
 #
-# $LastChangedDate$
-# $LastChangedRevision$
-# $LastChangedBy$
+# $LastChangedDate: 2005-04-13 08:02:46 +0200 (Wed, 13 Apr 2005) $
+# $LastChangedRevision: 834 $
+# $LastChangedBy: ckruse $
 #
 # }}}
 
@@ -20,7 +20,7 @@ package Plugins::XMLRPCUserManagement;
 
 use strict;
 
-sub VERSION {(q$Revision$ =~ /([\d.]+)\s*$/)[0] or '0.0'}
+sub VERSION {(q$Revision: 834 $ =~ /([\d.]+)\s*$/)[0] or '0.0'}
 
 use ForumUtils qw/get_config_files get_user_config_file create_directory_structure read_configuration/;
 

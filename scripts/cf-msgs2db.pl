@@ -2,9 +2,9 @@
 
 # {{{ initial comments
 #
-# $LastChangedDate$
-# $LastChangedRevision$
-# $LastChangedBy$
+# $LastChangedDate: 2009-01-09 17:43:14 +0100 (Fri, 09 Jan 2009) $
+# $LastChangedRevision: 1597 $
+# $LastChangedBy: ckruse $
 #
 # }}}
 
@@ -14,7 +14,7 @@ use strict;
 use BerkeleyDB;
 use Getopt::Long;
 
-sub VERSION {(q$Revision$ =~ /([\d.]+)\s*$/)[0] or '0.0'}
+sub VERSION {(q$Revision: 1597 $ =~ /([\d.]+)\s*$/)[0] or '0.0'}
 # }}}
 
 my $messagefile_in = '';

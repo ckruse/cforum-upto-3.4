@@ -10,9 +10,9 @@
 
 /* {{{ Initial comments */
 /*
- * $LastChangedDate$
- * $LastChangedRevision$
- * $LastChangedBy$
+ * $LastChangedDate: 2009-01-20 21:19:19 +0100 (Tue, 20 Jan 2009) $
+ * $LastChangedRevision: 1646 $
+ * $LastChangedBy: ckruse $
  *
  */
 /* }}} */

@@ -1,31 +1,3 @@
-2010-05-19 Alexander Nitsch <nitscha@cs.tu-berlin.de>
-	* src/modules/flt_postingassistant.c: The posting assistant will
-		now skip checks for upper/lower case in the subject if a
-		follow-up posting did not change the subject.
-	* conf/errormessages.de.txt: Posting assistant's error messages
-		related to too many	upper-case letters do now state the problem
-		more precisely.
-
-2010-03-25 Alexander Nitsch <nitscha@cs.tu-berlin.de>
-	* cmake/modules/FindICU.cmake: Made CMake stop if ICU lib cannot
-		be found.
-	* cmake/modules/FindPerlLibs.cmake: Added Debian's default scheme
-		to list of possible include paths for Perl header file.
-	* CMakeLists.txt: Explicitly specified the project's language
-		so CMake will not complain about a missing C++ compiler that
-		is not needed anyway.
-
-2010-01-25 Christian Seiler <self@christian-seiler.de>
-	* src/modules/flt_directives.c: Fixed XSS vulnerability.
-
-2009-06-29 Christian Seiler <self@christian-seiler.de>
-	* src/modules/flt_openclose.c: Threads are now reopened again if
-		there are unread postings inside (this was broken as a
-		side-effect of [1700])
-	* src/swig/CForum-Template/CForum-Template.i: Added missing method
-		(was not used but compiler warning stopped recent Gentoo
-		versions from merging the package)
-
 2009-03-15 Alexander Nitsch <nitscha@cs.tu-berlin.de>
 	* src/fo_post.c: Fixed #177
 

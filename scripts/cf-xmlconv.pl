@@ -2,9 +2,9 @@
 
 # {{{ initial comments
 #
-# $LastChangedDate$
-# $LastChangedRevision$
-# $LastChangedBy$
+# $LastChangedDate: 2005-04-13 08:02:46 +0200 (Wed, 13 Apr 2005) $
+# $LastChangedRevision: 834 $
+# $LastChangedBy: ckruse $
 #
 # }}}
 

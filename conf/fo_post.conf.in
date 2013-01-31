@@ -4,9 +4,9 @@
 #
 # The fo_post config file
 #
-# $LastChangedDate$
-# $LastChangedRevision$
-# $LastChangedBy$
+# $LastChangedDate: 2009-02-01 20:59:10 +0100 (Sun, 01 Feb 2009) $
+# $LastChangedRevision: 1664 $
+# $LastChangedBy: cseiler $
 #
 
 ModulePath "@CMAKE_INSTALL_LIBDIR_FULL@/cforum/"

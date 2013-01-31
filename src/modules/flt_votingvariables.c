@@ -7,9 +7,9 @@
 
 /* {{{ Initial comments */
 /*
- * $LastChangedDate$
- * $LastChangedRevision$
- * $LastChangedBy$
+ * $LastChangedDate: 2009-01-16 14:32:24 +0100 (Fri, 16 Jan 2009) $
+ * $LastChangedRevision: 1639 $
+ * $LastChangedBy: ckruse $
  *
  */
 /* }}} */
@@ -107,6 +107,23 @@ int flt_votingvariables_setvars(cf_hash_t *head,configuration_t *dc,configuratio
 }
 /* }}} */
 
+int flt_votingvariables_view_list_handler(cf_hash_t *head,configuration_t *dc,configuration_t *vc,message_t *msg,u_int64_t tid,int mode) {
+  u_char buff[512];
+  size_t len;
+
+  if((mode & CF_MODE_POST) || !flt_vv_Config.activate || !flt_vv_Config.show_votes) {
+    return FLT_DECLINE;
+  }
+
+  len = snprintf(buff, 512, "%"PRIu32, msg->votes_good);
+  cf_tpl_hashvar_setvalue(&msg->hashvar, "votes_good", TPL_VARIABLE_STRING, buff, len);
+
+  len = snprintf(buff, 512, "%"PRIu32, msg->votes_bad);
+  cf_tpl_hashvar_setvalue(&msg->hashvar, "votes_bad", TPL_VARIABLE_STRING, buff, len);
+
+  return FLT_OK;
+}
+
 /* {{{ flt_votingvariables_handle */
 int flt_votingvariables_handle(configfile_t *cfile,conf_opt_t *opt,const u_char *context,u_char **args,size_t argnum) {
   if(!flt_vv_fn) flt_vv_fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
@@ -130,6 +147,7 @@ conf_opt_t flt_votingvariables_config[] = {
 handler_config_t flt_votingvariables_handlers[] = {
   { POSTING_HANDLER,     flt_votingvariables_execute_filter },
   { PERPOST_VAR_HANDLER, flt_votingvariables_setvars },
+  { VIEW_LIST_HANDLER,   flt_votingvariables_view_list_handler },
   { 0, NULL }
 };
 

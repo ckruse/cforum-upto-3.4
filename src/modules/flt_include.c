@@ -7,9 +7,9 @@
 
 /* {{{ Initial comments */
 /*
- * $LastChangedDate$
- * $LastChangedRevision$
- * $LastChangedBy$
+ * $LastChangedDate: 2009-02-13 07:15:12 +0100 (Fri, 13 Feb 2009) $
+ * $LastChangedRevision: 1708 $
+ * $LastChangedBy: ckruse $
  *
  */
 /* }}} */
