@@ -107,22 +107,50 @@ int flt_votingvariables_setvars(cf_hash_t *head,configuration_t *dc,configuratio
 }
 /* }}} */
 
-int flt_votingvariables_view_list_handler(cf_hash_t *head,configuration_t *dc,configuration_t *vc,message_t *msg,u_int64_t tid,int mode) {
+int flt_votingvariables_view_handler(cf_hash_t *head, configuration_t *dc, configuration_t *vc, cl_thread_t *thread, int mode) {
   u_char buff[512];
   size_t len;
+  int num_votes = 0, votes_good = 0, votes_bad = 0;
+  message_t *msg;
+
 
   if((mode & CF_MODE_POST) || !flt_vv_Config.activate || !flt_vv_Config.show_votes) {
     return FLT_DECLINE;
   }
 
-  len = snprintf(buff, 512, "%"PRIu32, msg->votes_good);
-  cf_tpl_hashvar_setvalue(&msg->hashvar, "votes_good", TPL_VARIABLE_STRING, buff, len);
+  for(msg = thread->messages; msg; msg = msg->next) {
+    len = snprintf(buff, 512, "%"PRIu32, msg->votes_good);
+    cf_tpl_hashvar_setvalue(&msg->hashvar, "votings.votes_good", TPL_VARIABLE_STRING, buff, len);
 
-  len = snprintf(buff, 512, "%"PRIu32, msg->votes_bad);
-  cf_tpl_hashvar_setvalue(&msg->hashvar, "votes_bad", TPL_VARIABLE_STRING, buff, len);
+    len = snprintf(buff, 512, "%"PRIu32, msg->votes_bad);
+    cf_tpl_hashvar_setvalue(&msg->hashvar, "votings.votes_bad", TPL_VARIABLE_STRING, buff, len);
+
+    if(msg->votes_good || msg->votes_bad) {
+      ++num_votes;
+    }
+    if(msg->votes_good) {
+      votes_good += msg->votes_good;
+    }
+    if(msg->votes_bad) {
+      votes_bad += msg->votes_bad;
+    }
+  }
+
+  len = snprintf(buff, 512, "%d", num_votes);
+  cf_tpl_hashvar_setvalue(&thread->messages->hashvar, "votings.total_voted_messages", TPL_VARIABLE_STRING, buff, len);
+
+  len = snprintf(buff, 512, "%d", votes_bad);
+  cf_tpl_hashvar_setvalue(&thread->messages->hashvar, "votings.total_votings_bad", TPL_VARIABLE_STRING, buff, len);
+
+  len = snprintf(buff, 512, "%d", votes_good);
+  cf_tpl_hashvar_setvalue(&thread->messages->hashvar, "votings.total_votings_good", TPL_VARIABLE_STRING, buff, len);
+
+  len = snprintf(buff, 512, "%d", votes_good + votes_bad);
+  cf_tpl_hashvar_setvalue(&thread->messages->hashvar, "votings.total_votings", TPL_VARIABLE_STRING, buff, len);
 
   return FLT_OK;
 }
+
 
 /* {{{ flt_votingvariables_handle */
 int flt_votingvariables_handle(configfile_t *cfile,conf_opt_t *opt,const u_char *context,u_char **args,size_t argnum) {
@@ -147,7 +175,7 @@ conf_opt_t flt_votingvariables_config[] = {
 handler_config_t flt_votingvariables_handlers[] = {
   { POSTING_HANDLER,     flt_votingvariables_execute_filter },
   { PERPOST_VAR_HANDLER, flt_votingvariables_setvars },
-  { VIEW_LIST_HANDLER,   flt_votingvariables_view_list_handler },
+  { VIEW_HANDLER,        flt_votingvariables_view_handler },
   { 0, NULL }
 };
 
