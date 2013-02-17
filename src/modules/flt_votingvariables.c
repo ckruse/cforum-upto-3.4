@@ -43,7 +43,11 @@ static struct {
   int activate;
   int show_votes;
   int use_js;
-} flt_vv_Config = { 0, 0, 0 };
+  size_t *good_thresholds;
+  size_t good_threshold_len;
+  size_t *bad_thresholds;
+  size_t bad_threshold_len;
+} flt_vv_Config = { 0, 0, 0, NULL, 0, NULL, 0 };
 
 static u_char *flt_vv_fn = NULL;
 
@@ -109,10 +113,9 @@ int flt_votingvariables_setvars(cf_hash_t *head,configuration_t *dc,configuratio
 
 int flt_votingvariables_view_handler(cf_hash_t *head, configuration_t *dc, configuration_t *vc, cl_thread_t *thread, int mode) {
   u_char buff[512];
-  size_t len;
+  size_t len, i;
   int num_votes = 0, votes_good = 0, votes_bad = 0;
   message_t *msg;
-
 
   if((mode & CF_MODE_POST) || !flt_vv_Config.activate || !flt_vv_Config.show_votes) {
     return FLT_DECLINE;
@@ -124,6 +127,18 @@ int flt_votingvariables_view_handler(cf_hash_t *head, configuration_t *dc, confi
 
     len = snprintf(buff, 512, "%"PRIu32, msg->votes_bad);
     cf_tpl_hashvar_setvalue(&msg->hashvar, "votings.votes_bad", TPL_VARIABLE_STRING, buff, len);
+
+    for(i = 0; i < flt_vv_Config.good_threshold_len; ++i) {
+      len = snprintf(buff, 511, "votings.votes_good_threshold_%zu", i);
+      buff[len] = 0;
+
+      if(msg->votes_good > flt_vv_Config.good_thresholds[i]) {
+        cf_tpl_hashvar_setvalue(&msg->hashvar, buff, TPL_VARIABLE_STRING, "yes", 3);
+      }
+      else {
+        cf_tpl_hashvar_setvalue(&msg->hashvar, buff, TPL_VARIABLE_STRING, "no", 2);
+      }
+    }
 
     if(msg->votes_good || msg->votes_bad) {
       ++num_votes;
@@ -154,6 +169,8 @@ int flt_votingvariables_view_handler(cf_hash_t *head, configuration_t *dc, confi
 
 /* {{{ flt_votingvariables_handle */
 int flt_votingvariables_handle(configfile_t *cfile,conf_opt_t *opt,const u_char *context,u_char **args,size_t argnum) {
+  size_t i;
+
   if(!flt_vv_fn) flt_vv_fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   if(!context || cf_strcmp(flt_vv_fn,context) != 0) return 0;
 
@@ -161,14 +178,33 @@ int flt_votingvariables_handle(configfile_t *cfile,conf_opt_t *opt,const u_char 
   else if(cf_strcmp(opt->name,"VotesShow") == 0) flt_vv_Config.show_votes = cf_strcmp(args[0],"yes") == 0;
   else if(cf_strcmp(opt->name,"VotingUseJS") == 0) flt_vv_Config.use_js = cf_strcmp(args[0],"yes") == 0;
 
+  else if(cf_strcmp(opt->name,"VotingGoodThresholds") == 0 && argnum > 0) {
+    flt_vv_Config.good_thresholds = fo_alloc(NULL, argnum, sizeof(*flt_vv_Config.good_thresholds), FO_ALLOC_MALLOC);
+    flt_vv_Config.good_threshold_len = argnum;
+
+    for(i = 0; i < argnum; ++i) {
+      flt_vv_Config.good_thresholds[i] = atoi(args[i]);
+    }
+  }
+  else if(cf_strcmp(opt->name,"VotingBadThresholds") == 0 && argnum > 0) {
+    flt_vv_Config.bad_thresholds = fo_alloc(NULL, argnum, sizeof(*flt_vv_Config.bad_thresholds), FO_ALLOC_MALLOC);
+    flt_vv_Config.bad_threshold_len = argnum;
+
+    for(i = 0; i < argnum; ++i) {
+      flt_vv_Config.bad_thresholds[i] = atoi(args[i]);
+    }
+  }
+
   return 0;
 }
 /* }}} */
 
 conf_opt_t flt_votingvariables_config[] = {
-  { "VotingActivate", flt_votingvariables_handle, CFG_OPT_CONFIG|CFG_OPT_LOCAL, NULL },
-  { "VotesShow",      flt_votingvariables_handle, CFG_OPT_CONFIG|CFG_OPT_LOCAL, NULL },
-  { "VotingUseJS",    flt_votingvariables_handle, CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
+  { "VotingActivate",       flt_votingvariables_handle, CFG_OPT_CONFIG|CFG_OPT_LOCAL, NULL },
+  { "VotesShow",            flt_votingvariables_handle, CFG_OPT_CONFIG|CFG_OPT_LOCAL, NULL },
+  { "VotingUseJS",          flt_votingvariables_handle, CFG_OPT_CONFIG|CFG_OPT_USER|CFG_OPT_LOCAL, NULL },
+  { "VotingGoodThresholds", flt_votingvariables_handle, CFG_OPT_CONFIG|CFG_OPT_LOCAL, NULL },
+  { "VotingBadThresholds",  flt_votingvariables_handle, CFG_OPT_CONFIG|CFG_OPT_LOCAL, NULL },
   { NULL, NULL, 0, NULL }
 };
 
