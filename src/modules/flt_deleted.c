@@ -230,7 +230,7 @@ int flt_deleted_del_thread(cf_hash_t *head,configuration_t *dc,configuration_t *
           /* {{{ set timestamp on file */
           snprintf(buff,256,"%s.tm",Cfg.DeletedFile);
           remove(buff);
-          if((fd = open(buff,O_CREAT|O_TRUNC|O_WRONLY)) != -1) close(fd);
+          if((fd = open(buff,O_CREAT|O_TRUNC|O_WRONLY, S_IRUSR|S_IWUSR)) != -1) close(fd);
 
           cf_hash_entry_delete(head,"dt",1);
           cf_hash_entry_delete(head,"a",1);

@@ -133,7 +133,7 @@ extern context_t global_context;
 extern FILE *yyin;
 extern FILE *yyout;
 extern char *yytext;
-extern size_t yyleng;
+//extern size_t yyleng;
 
 int parse_file(const u_char *filename);
 
