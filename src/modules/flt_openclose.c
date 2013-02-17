@@ -123,7 +123,7 @@ int flt_oc_exec_xmlhttp(cf_hash_t *cgi,configuration_t *dc,configuration_t *vc,v
 
           snprintf(buff,256,"%s.tm",flt_oc_dbfile);
           remove(buff);
-          if((fd = open(buff,O_CREAT|O_TRUNC|O_WRONLY)) != -1) close(fd);
+          if((fd = open(buff,O_CREAT|O_TRUNC|O_WRONLY, S_IRUSR|S_IWUSR)) != -1) close(fd);
         }
       }
       else {
@@ -143,7 +143,7 @@ int flt_oc_exec_xmlhttp(cf_hash_t *cgi,configuration_t *dc,configuration_t *vc,v
 
           snprintf(buff,256,"%s.tm",flt_oc_dbfile);
           remove(buff);
-          if((fd = open(buff,O_CREAT|O_TRUNC|O_WRONLY)) != -1) close(fd);
+          if((fd = open(buff,O_CREAT|O_TRUNC|O_WRONLY, S_IRUSR|S_IWUSR)) != -1) close(fd);
         }
       }
       /* }}} */
@@ -233,7 +233,7 @@ int flt_oc_execute_filter(cf_hash_t *head,configuration_t *dc,configuration_t *v
 
               snprintf(buff,256,"%s.tm",flt_oc_dbfile);
               remove(buff);
-              if((fd = open(buff,O_CREAT|O_TRUNC|O_WRONLY)) != -1) close(fd);
+              if((fd = open(buff,O_CREAT|O_TRUNC|O_WRONLY, S_IRUSR|S_IWUSR)) != -1) close(fd);
             }
 
             return FLT_DECLINE;

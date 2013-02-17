@@ -118,7 +118,7 @@ void *flt_visited_mark_visited_api(void *vmid) {
 
     snprintf(buff,256,"%s.tm",Cfg.VisitedFile);
     remove(buff);
-    if((fd = open(buff,O_CREAT|O_TRUNC|O_WRONLY)) != -1) close(fd);
+    if((fd = open(buff,O_CREAT|O_TRUNC|O_WRONLY, S_IRUSR|S_IWUSR)) != -1) close(fd);
 
     return vmid;
   }
@@ -203,7 +203,7 @@ int flt_visited_execute_filter(cf_hash_t *head,configuration_t *dc,configuration
 
           snprintf(buff,256,"%s.tm",Cfg.VisitedFile);
           remove(buff);
-          if((fd = open(buff,O_CREAT|O_TRUNC|O_WRONLY)) != -1) close(fd);
+          if((fd = open(buff,O_CREAT|O_TRUNC|O_WRONLY, S_IRUSR|S_IWUSR)) != -1) close(fd);
 
           return FLT_OK;
         }
@@ -238,7 +238,7 @@ int flt_visited_execute_filter(cf_hash_t *head,configuration_t *dc,configuration
             if((ret = Cfg.db->put(Cfg.db,NULL,&key,&data,0)) == 0) {
               snprintf(buff,256,"%s.tm",Cfg.VisitedFile);
               remove(buff);
-              if((fd = open(buff,O_CREAT|O_TRUNC|O_WRONLY)) != -1) close(fd);
+              if((fd = open(buff,O_CREAT|O_TRUNC|O_WRONLY, S_IRUSR|S_IWUSR)) != -1) close(fd);
             }
             else fprintf(stderr,"flt_visited: db->put(): %s\n",db_strerror(ret));
 
@@ -266,7 +266,7 @@ int flt_visited_execute_filter(cf_hash_t *head,configuration_t *dc,configuration
           if((ret = Cfg.db->put(Cfg.db,NULL,&key,&data,0)) != 0) fprintf(stderr,"flt_visited: db->put(): %s\n",db_strerror(ret));
           snprintf(buff,256,"%s.tm",Cfg.VisitedFile);
           remove(buff);
-          if((fd = open(buff,O_CREAT|O_TRUNC|O_WRONLY)) != -1) close(fd);
+          if((fd = open(buff,O_CREAT|O_TRUNC|O_WRONLY, S_IRUSR|S_IWUSR)) != -1) close(fd);
         }
       }
 
@@ -322,7 +322,7 @@ int flt_visited_mark_visited(cf_hash_t *head,configuration_t *dc,configuration_t
       if((ret = Cfg.db->put(Cfg.db,NULL,&key,&data,0)) == 0) {
         snprintf(buff,256,"%s.tm",Cfg.VisitedFile);
         remove(buff);
-        if((fd = open(buff,O_CREAT|O_TRUNC|O_WRONLY)) != -1) close(fd);
+        if((fd = open(buff,O_CREAT|O_TRUNC|O_WRONLY, S_IRUSR|S_IWUSR)) != -1) close(fd);
       }
       else fprintf(stderr,"flt_visited: db->put(): %s\n",db_strerror(ret));
 

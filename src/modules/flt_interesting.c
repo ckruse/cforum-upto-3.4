@@ -128,7 +128,7 @@ int flt_interesting_mark_thread(cf_hash_t *head,configuration_t *dc,configuratio
           /* {{{ set timestamp on file */
           snprintf(buff,256,"%s.tm",flt_interesting_file);
           remove(buff);
-          if((fd = open(buff,O_CREAT|O_TRUNC|O_WRONLY)) != -1) close(fd);
+          if((fd = open(buff,O_CREAT|O_TRUNC|O_WRONLY, S_IRUSR|S_IWUSR)) != -1) close(fd);
 
           cf_hash_entry_delete(head,"mit",1);
           cf_hash_entry_delete(head,"a",1);
@@ -165,7 +165,7 @@ int flt_interesting_mark_thread(cf_hash_t *head,configuration_t *dc,configuratio
           /* {{{ set timestamp on file */
           snprintf(buff,256,"%s.tm",flt_interesting_file);
           remove(buff);
-          if((fd = open(buff,O_CREAT|O_TRUNC|O_WRONLY)) != -1) close(fd);
+          if((fd = open(buff,O_CREAT|O_TRUNC|O_WRONLY, S_IRUSR|S_IWUSR)) != -1) close(fd);
 
           cf_hash_entry_delete(head,"mit",1);
           cf_hash_entry_delete(head,"a",1);
