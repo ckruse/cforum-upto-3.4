@@ -51,6 +51,8 @@ static struct {
 
 static u_char *flt_vv_fn = NULL;
 
+int flt_votingvariables_view_handler(cf_hash_t *, configuration_t *, configuration_t *, cl_thread_t *, int);
+
 /* {{{ flt_votingvariables_execute_filter */
 int flt_votingvariables_execute_filter(cf_hash_t *head,configuration_t *dc,configuration_t *vc,cl_thread_t *thread,cf_template_t *tpl) {
   u_char *UserName = cf_hash_get(GlobalValues,"UserName",8);
@@ -62,6 +64,8 @@ int flt_votingvariables_execute_filter(cf_hash_t *head,configuration_t *dc,confi
 
     if(flt_vv_Config.show_votes) cf_tpl_setvalue(tpl,"show_votes",TPL_VARIABLE_INT,1);
     if(flt_vv_Config.use_js) cf_tpl_setvalue(tpl,"VotingUseJS",TPL_VARIABLE_INT,1);
+
+    flt_votingvariables_view_handler(head, dc, vc, thread, CF_MODE_POST);
 
     return FLT_OK;
   }
