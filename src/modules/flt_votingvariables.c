@@ -51,8 +51,6 @@ static struct {
 
 static u_char *flt_vv_fn = NULL;
 
-int flt_votingvariables_view_handler(cf_hash_t *, configuration_t *, configuration_t *, cl_thread_t *, int);
-
 /* {{{ flt_votingvariables_execute_filter */
 int flt_votingvariables_execute_filter(cf_hash_t *head,configuration_t *dc,configuration_t *vc,cl_thread_t *thread,cf_template_t *tpl) {
   u_char *UserName = cf_hash_get(GlobalValues,"UserName",8);
@@ -64,8 +62,6 @@ int flt_votingvariables_execute_filter(cf_hash_t *head,configuration_t *dc,confi
 
     if(flt_vv_Config.show_votes) cf_tpl_setvalue(tpl,"show_votes",TPL_VARIABLE_INT,1);
     if(flt_vv_Config.use_js) cf_tpl_setvalue(tpl,"VotingUseJS",TPL_VARIABLE_INT,1);
-
-    flt_votingvariables_view_handler(head, dc, vc, thread, CF_MODE_POST);
 
     return FLT_OK;
   }
@@ -80,8 +76,10 @@ int flt_votingvariables_setvars(cf_hash_t *head,configuration_t *dc,configuratio
   u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
 
   name_value_t *v = cfg_get_first_value(dc,forum_name,"VoteURL"),*cs = cfg_get_first_value(dc,forum_name,"ExternCharset");
+  message_t *msg1;
 
-  size_t len;
+  int num_votes = 0, votes_good = 0, votes_bad = 0;
+  size_t len, i;
 
   if(flt_vv_Config.activate) {
     len = snprintf(buff,512,"%"PRIu64,msg->mid);
@@ -106,6 +104,44 @@ int flt_votingvariables_setvars(cf_hash_t *head,configuration_t *dc,configuratio
 
       len = snprintf(buff,512,"%"PRIu32,msg->votes_bad);
       cf_tpl_hashvar_setvalue(hash,"votes_bad",TPL_VARIABLE_STRING,buff,len);
+    }
+
+    for(i = 0; i < flt_vv_Config.good_threshold_len; ++i) {
+      len = snprintf(buff, 511, "votings.votes_good_threshold_%zu", i);
+      buff[len] = 0;
+
+      if(msg->votes_good > flt_vv_Config.good_thresholds[i]) {
+        cf_tpl_hashvar_setvalue(hash, buff, TPL_VARIABLE_STRING, "yes", 3);
+      }
+      else {
+        cf_tpl_hashvar_setvalue(hash, buff, TPL_VARIABLE_STRING, "no", 2);
+      }
+    }
+
+    if(msg == thread->messages) {
+      for(msg1 = thread->messages; msg1; msg1 = msg1->next) {
+        if(msg1->votes_good || msg1->votes_bad) {
+          ++num_votes;
+        }
+        if(msg1->votes_good) {
+          votes_good += msg1->votes_good;
+        }
+        if(msg1->votes_bad) {
+          votes_bad += msg1->votes_bad;
+        }
+      }
+
+      len = snprintf(buff, 512, "%d", num_votes);
+      cf_tpl_hashvar_setvalue(hash, "votings.total_voted_messages", TPL_VARIABLE_STRING, buff, len);
+
+      len = snprintf(buff, 512, "%d", votes_bad);
+      cf_tpl_hashvar_setvalue(hash, "votings.total_votings_bad", TPL_VARIABLE_STRING, buff, len);
+
+      len = snprintf(buff, 512, "%d", votes_good);
+      cf_tpl_hashvar_setvalue(hash, "votings.total_votings_good", TPL_VARIABLE_STRING, buff, len);
+
+      len = snprintf(buff, 512, "%d", votes_good + votes_bad);
+      cf_tpl_hashvar_setvalue(hash, "votings.total_votings", TPL_VARIABLE_STRING, buff, len);
     }
 
     return FLT_OK;
