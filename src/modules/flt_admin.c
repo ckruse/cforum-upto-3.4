@@ -175,7 +175,7 @@ int flt_admin_gogogo(cf_hash_t *cgi,configuration_t *dc,configuration_t *vc,void
 /* {{{ flt_admin_setvars */
 int flt_admin_setvars(cf_hash_t *cgi,configuration_t *dc,configuration_t *vc,cf_template_t *top,cf_template_t *down) {
   u_char *msg,buff[256];
-  size_t len,len1;
+  size_t len1;
   u_char *UserName = cf_hash_get(GlobalValues,"UserName",8);
   int ShowInvisible = cf_hash_get(GlobalValues,"ShowInvisible",13) != NULL;
   u_char *fn = cf_hash_get(GlobalValues,"FORUM_NAME",10);
@@ -190,7 +190,7 @@ int flt_admin_setvars(cf_hash_t *cgi,configuration_t *dc,configuration_t *vc,cf_
     }
 
     if(my_errno) {
-      len = snprintf(buff,256,"E_FO_%d",my_errno);
+      snprintf(buff,256,"E_FO_%d",my_errno);
       msg = cf_get_error_message(buff,&len1);
       if(msg) {
         cf_tpl_setvalue(top,"flt_admin_errmsg",TPL_VARIABLE_STRING,msg,len1);
@@ -268,13 +268,14 @@ int flt_admin_init(cf_hash_t *cgi,configuration_t *dc,configuration_t *vc) {
 
 /* {{{ flt_admin_posthandler */
 int flt_admin_posthandler(cf_hash_t *cgi,configuration_t *dc,configuration_t *vc,message_t *msg,u_int64_t tid,int mode) {
-  u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);  
+  u_char *forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   u_char *link;
   size_t l;
   u_char *UserName = cf_hash_get(GlobalValues,"UserName",8);
   int ShowInvisible = cf_hash_get(GlobalValues,"ShowInvisible",13) != NULL;
   cf_readmode_t *rm = cf_hash_get(GlobalValues,"RM",2);
   name_value_t *usejs = cfg_get_first_value(&fo_view_conf,forum_name,"AdminUseJS");
+  cf_post_flag_t *flag;
 
   if(!UserName) return FLT_DECLINE;
 
@@ -299,6 +300,9 @@ int flt_admin_posthandler(cf_hash_t *cgi,configuration_t *dc,configuration_t *vc
       cf_tpl_hashvar_setvalue(&msg->hashvar,"undel_link",TPL_VARIABLE_STRING,link,l);
       free(link);
     }
+
+    cf_tpl_hashvar_setvalue(&msg->hashvar,"ip",TPL_VARIABLE_STRING,msg->remote_addr.content,msg->remote_addr.len);
+    if((flag = cf_flag_by_name(&msg->flags,"UserName")) != NULL) cf_tpl_hashvar_setvalue(&msg->hashvar,"uname",TPL_VARIABLE_STRING,flag->val,strlen(flag->val));
 
     return FLT_OK;
   }
