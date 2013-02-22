@@ -120,6 +120,10 @@ int flt_votingvariables_setvars(cf_hash_t *head,configuration_t *dc,configuratio
 
     if(msg == thread->messages) {
       for(msg1 = thread->messages; msg1; msg1 = msg1->next) {
+        if(msg1->invisible) {
+          continue;
+        }
+
         if(msg1->votes_good || msg1->votes_bad) {
           ++num_votes;
         }
@@ -180,14 +184,16 @@ int flt_votingvariables_view_handler(cf_hash_t *head, configuration_t *dc, confi
       }
     }
 
-    if(msg->votes_good || msg->votes_bad) {
-      ++num_votes;
-    }
-    if(msg->votes_good) {
-      votes_good += msg->votes_good;
-    }
-    if(msg->votes_bad) {
-      votes_bad += msg->votes_bad;
+    if(!msg->invisible) {
+      if(msg->votes_good || msg->votes_bad) {
+        ++num_votes;
+      }
+      if(msg->votes_good) {
+        votes_good += msg->votes_good;
+      }
+      if(msg->votes_bad) {
+        votes_bad += msg->votes_bad;
+      }
     }
   }
 
