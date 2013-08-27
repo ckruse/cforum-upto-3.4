@@ -105,11 +105,13 @@ void flt_posting_replace_placeholders(const u_char *str,string_t *appender,cl_th
 int flt_posting_execute_filter(cf_hash_t *head,configuration_t *dc,configuration_t *vc,cl_thread_t *thread,cf_template_t *tpl) {
   u_char buff[256],*tmp,*qchars,*msgcnt,*UserName,*forum_name = cf_hash_get(GlobalValues,"FORUM_NAME",10);
   name_value_t *ps,*v,*cs = cfg_get_first_value(dc,forum_name,"ExternCharset"),*dq,*st,*qc,*ms,*ss,*locale,*df,*rm = cfg_get_first_value(vc,forum_name,"ReadMode");
+  name_value_t *cats = cfg_get_first_value(dc, forum_name, "Categories");
   int utf8;
   size_t len,qclen,msgcntlen;
   string_t cite,content,threadlist;
-  cf_tpl_variable_t hash;
+  cf_tpl_variable_t hash, ary;
   cf_readmode_t *rm_infos = cf_hash_get(GlobalValues,"RM",2);
+  unsigned i;
 
   /* {{{ standard variables, set always, mode doesn't matter */
   if(flt_posting_cfg.TWidth) cf_tpl_setvalue(tpl,"twidth",TPL_VARIABLE_STRING,flt_posting_cfg.TWidth,strlen(flt_posting_cfg.TWidth));
@@ -121,6 +123,16 @@ int flt_posting_execute_filter(cf_hash_t *head,configuration_t *dc,configuration
     if(flt_posting_cfg.ActiveColorF && *flt_posting_cfg.ActiveColorF) cf_set_variable(tpl,cs,"activecolorf",flt_posting_cfg.ActiveColorF,strlen(flt_posting_cfg.ActiveColorF),1);
     if(flt_posting_cfg.ActiveColorB && *flt_posting_cfg.ActiveColorB) cf_set_variable(tpl,cs,"activecolorb",flt_posting_cfg.ActiveColorB,strlen(flt_posting_cfg.ActiveColorB),1);
   }
+  /* }}} */
+
+  /* {{{ set categories */
+  cf_tpl_var_init(&ary, TPL_VARIABLE_ARRAY);
+  for(i = 0; i < cats->valnum; ++i) {
+    tmp = charset_convert_entities(cats->values[i], strlen(cats->values[i]), "UTF-8", cs->values[0], &len);
+    cf_tpl_var_addvalue(&ary, TPL_VARIABLE_STRING, tmp, len);
+    free(tmp);
+  }
+  cf_tpl_setvar(tpl, "cats", &ary);
   /* }}} */
 
   /* are we in the right read mode? */
