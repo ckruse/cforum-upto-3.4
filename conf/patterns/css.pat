@@ -7,7 +7,7 @@
 start = "default"
 
 list "mediatypes" = "all,aural,braille,embossed,handheld,print,projection,screen,tty,tv"
-list "properties" = "azimuth,background-attachment,background-color,background-image,background-position,background-repeat,background,border-collapse,border-color,border-spacing,border-style,border-top,border-right,border-bottom,border-left,border-top-color,border-right-color,border-bottom-color,border-left-color,border-top-style,border-right-style,border-bottom-style,border-left-style,border-top-width,border-right-width,border-bottom-width,border-left-width,border-width,border,bottom,caption-side,clear,clip,color,content,counter-increment,counter-reset,cue-after,cue-before,cue,cursor,direction,display,elevation,empty-cells,float,font-family,font-size,font-style,font-variant,font-weight,font,height,left,letter-spacing,line-height,list-style-image,list-style-position,list-style-type,list-style,margin-right,margin-left,margin-top,margin-bottom,margin,max-height,max-width,min-height,min-width,orphans,outline-color,outline-style,outline-width,outline,overflow,padding-top,padding-right,padding-bottom,padding-left,padding,page-break-after,page-break-before,page-break-inside,pause-after,pause-before,pause,pitch-range,pitch,play-during,position,quotes,richness,right,speak-header,speak-numeral,speak-punctuation,speak,speech-rate,stress,table-layout,text-align,text-decoration,text-indent,text-transform,top,unicode-bidi,vertical-align,visibility,voice-family,volume,white-space,widows,width,word-spacing,z-index"
+list "properties" = "additive-symbols,align-content,align-items,align-self,alignment-adjust,alignment-baseline,animation,animation-delay,animation-direction,animation-duration,animation-iteration-count,animation-play-state,backface-visibility,background,background-attachment,background-clip,background-color,background-image,background-origin,background-position,background-repeat,background-size,baseline-shift,binding,bleed,bookmark-label,bookmark-level,bookmark-state,bookmark-target,border,border-bottom,border-bottom-color,border-bottom-left-radius,border-bottom-right-radius,border-bottom-style,border-bottom-width,border-collapse,border-color,border-image,border-image-outset,border-image-repeat,border-image-slice,border-image-source,border-image-width,border-left,border-left-color,border-left-style,border-left-width,border-radius,border-right,border-right-color,border-right-style,border-right-width,border-spacing,border-style,border-top,border-top-color,border-top-left-radius,border-top-right-radius,border-top-style,border-top-width,border-width,bottom,box-decoration-break,box-shadow,box-sizing,break-after,break-before,break-inside,caption-side,clear,clip,color,column-count,column-fill,column-gap,column-rule,column-rule-color,column-rule-style,column-rule-width,column-span,column-width,columns,content,counter-increment,counter-reset,crop,cue,cue-after,cue-before,cursor,direction,display,dominant-baseline,drop-initial-after-adjust,drop-initial-before-adjust,drop-initial-before-align,drop-initial-size,drop-initial-value,empty-cells,fallback,fit,fit-position,flex,flex-basis,flex-direction,flex-flow,flex-grow,flex-shrink,flex-wrap,float,float-offset,font,font-family,font-feature-settings,font-kerning,font-language-override,font-size,font-size-adjust,font-stretch,font-style,font-synthesis,font-variant,font-variant-alternates,font-variant-caps,font-variant-east-asian,font-variant-ligatures,font-variant-numeric,font-variant-position,font-weight,grid-columns,grid-rows,hanging-punctuation,height,hyphens,icon,image-orientation,image-resolution,inline-box-align,justify-content,left,letter-spacing,line-break,line-height,line-stacking,line-stacking-ruby,line-stacking-shift,line-stacking-strategy,list-style,list-style-image,list-style-position,list-style-type,margin,margin-bottom,margin-left,margin-right,margin-top,marks,marquee-direction,marquee-play-count,marquee-speed,marquee-style,max-height,max-width,max-zoom,min-height,min-width,min-zoom,move-to,nav-down,nav-index,nav-left,nav-right,nav-up,negative,object-fit,object-position,opacity,order,orientation,orphans,outline,outline-color,outline-offset,outline-style,outline-width,overflow,overflow-style,overflow-wrap,overflow-x,overflow-y,padding,padding-bottom,padding-left,padding-right,padding-top,page,page-break-after,page-break-before,page-break-inside,page-policy,pause,pause-after,pause-before,perspective,perspective-origin,position,prefix,presentation-level,quotes,range,resize,resolution,rest,rest-after,rest-before,right,rotation,rotation-point,ruby-align,ruby-overhang,ruby-position,ruby-span,shape-image-threshold,shape-inside,shape-outside,size,speak,speak-as,src,string-set,suffix,symbols,system,tab-size,table-layout,target,target-name,target-new,target-position,text-align,text-align-last,text-decoration,text-decoration-color,text-decoration-line,text-decoration-skip,text-decoration-style,text-emphasis,text-emphasis-color,text-emphasis-position,text-emphasis-style,text-height,text-indent,text-justify,text-overflow,text-shadow,text-transform,text-underline-position,top,transform,transform-origin,transform-style,transition,transition-delay,transition-duration,transition-property,transition-timing-function,unicode-bidi,unicode-range,user-zoom,vertical-align,visibility,voice-balance,voice-duration,voice-family,voice-pitch,voice-range,voice-rate,voice-stress,voice-volume,white-space,widows,width,word-break,word-spacing,word-wrap,wrap,wrap-flow,wrap-margin,wrap-padding,wrap-through,z-index,zoom"
 
 block "default"
   lineend stay
@@ -22,8 +22,10 @@ block "default"
   onregexp "^#\\w[\\w_-]*" highlight "id-selector"
   onregexp "^\\.\\w[\\w_-]*" highlight "class-selector"
   onregexp "^:lang\\([\\w_-]+\\)" highlight "pseudo-class-selector"
-  onregexp "^:(first-line|first-letter|before|after)" highlight "pseudo-element-selector"
-  onregexp "^:(first-child|link|visited|active|hover|focus|first|last|left|right)" highlight "pseudo-class-selector"
+  onregexp "^:(nth-child|nth-last-child|nth-of-type|nth-last-of-type)\\((\\w|\\+|-|\\*|\\/)+\\)" highlight "pseudo-class-selector"
+  onregexp "^:not\\(([\\w_-]|:|#|\\.|\\[|\\]|\\+|\\~|>|\\s)+\\)" highlight "pseudo-class-selector"
+  onregexp "^::(first-line|first-letter|before|after)" highlight "pseudo-element-selector"
+  onregexp "^:(link|visited|hover|active|focus|target|lang|enabled|disabled|checked|indeterminate|root|first-child|last-child|first-of-type|last-of-type|only-child|only-of-type|empty)" highlight "pseudo-class-selector"
   onregexp "^:[\\w_-]+" highlight "invalid-pseudo-selector"
   onregexp "^(\\w[\\w_-]*|\\*)" highlight "element-selector"
 
@@ -46,6 +48,7 @@ block "declarations"
   
   onstring "}" pop
   onstringlist "properties" "declaration" "property"
+  onregexp "^-(?:moz|o|webkit|ms)-[A-Za-z_-]+(?=\s*:)" "declaration" "vendor"
   onregexp "^-?[A-Za-z_-]+(?=\s*:)" "declaration" "unknown-property"
   onstring "/*" "comment" "comment"
 end
@@ -70,7 +73,7 @@ block "declaration2"
   onregexp "^#([0-9A-Fa-f]{3}){1,2}\\b" highlight "value"
   onregexp "^[-+]?[0-9]\\.?[0-9]*(em|ex|px|in|cm|mm|pt|pc|deg|rad|grad|ms|s|Hz|kHz)\\b" highlight "value"
   onregexp "^[-+]?[0-9]\\.?[0-9]*%?" highlight "value"
-  onregexp "^(url|attr|rect|rgb|counters?)" "parvalue" "value"
+  onregexp "^(url|attr|rect|rgb|counters?|calc|linear-gradient|radial-gradient)" "parvalue" "value"
 end
 
 block "parvalue"
@@ -116,9 +119,11 @@ block "media2"
   onregexp "^#\\w[\\w_-]*" highlight "id-selector"
   onregexp "^\\.\\w[\\w_-]*" highlight "class-selector"
   onregexp "^:lang\\([\\w_-]+\\)" highlight "pseudo-class-selector"
-  onregexp "^:(first-child|link|visited|active|hover|focus|first|last|left|right)" highlight "pseudo-class-selector"
-  onregexp "^:(first-line|first-letter|before|after)" highlight "pseudo-element-selector"
-  onregexp "^:[\w_-]+" highlight "invalid-pseudo-selector"
+  onregexp "^:(nth-child|nth-last-child|nth-of-type|nth-last-of-type)\\((\\w|\\+|-|\\*|\\/)+\\)" highlight "pseudo-class-selector"
+  onregexp "^:not\\(([\\w_-]|:|#|\\.|\\[|\\]|\\+|\\~|>|\\s)+\\)" highlight "pseudo-class-selector"
+  onregexp "^::(first-line|first-letter|before|after)" highlight "pseudo-element-selector"
+  onregexp "^:(link|visited|hover|active|focus|target|lang|enabled|disabled|checked|indeterminate|root|first-child|last-child|first-of-type|last-of-type|only-child|only-of-type|empty)" highlight "pseudo-class-selector"
+  onregexp "^:[\\w_-]+" highlight "invalid-pseudo-selector"
   onregexp "^\\w[\\w_-]*" highlight "element-selector"
   onstring "/*" "comment" "comment"
   onstring "&quot;" "string" "string"
